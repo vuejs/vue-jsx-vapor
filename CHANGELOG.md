@@ -1,3 +1,12 @@
+# [2.2.0](https://github.com/vuejs/vue-jsx-vapor/compare/v2.1.8...v2.2.0) (2025-04-05)
+
+
+### Features
+
+* **vue-jsx-vapor:** support SSR ([1ae4fe9](https://github.com/vuejs/vue-jsx-vapor/commit/1ae4fe9ceb66a280b689675c880a7870dac13160))
+
+
+
 ## [2.1.8](https://github.com/vuejs/vue-jsx-vapor/compare/v2.1.7...v2.1.8) (2025-03-28)
 
 
