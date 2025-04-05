@@ -1,25 +1,34 @@
 import { isFunctionalNode } from '@vue-jsx-vapor/macros/api'
 import getHash from 'hash-sum'
+import { injectSSR } from './ssr'
 import type { BabelFileResult, types } from '@babel/core'
 
-interface HotComponent {
+export interface HotComponent {
   local: string
   exported: string
   id: string
 }
 
-export function registerHMR(
+export function injectHMRAndSSR(
   result: BabelFileResult,
   id: string,
-  defineComponentNames = ['defineComponent', 'defineVaporComponent'],
+  options?: {
+    ssr?: boolean
+    root?: string
+    defineComponentNames?: string[]
+  },
 ) {
+  const ssr = options?.ssr
+  const defineComponentNames = options?.defineComponentNames ?? [
+    'defineComponent',
+    'defineVaporComponent',
+  ]
   const { ast } = result
 
   // check for hmr injection
   const declaredComponents: string[] = []
   const hotComponents: HotComponent[] = []
   let hasDefaultExport = false
-  const ssr = false
 
   for (const node of ast!.program.body) {
     if (node.type === 'VariableDeclaration') {
@@ -112,16 +121,9 @@ if (import.meta.hot) {
       result.code = code
     }
 
-    // if (ssr) {
-    //   const normalizedId = normalizePath(path.relative(root, id))
-    //   let ssrInjectCode =
-    //     `\nimport { ssrRegisterHelper } from "${ssrRegisterHelperId}"` +
-    //     `\nconst __moduleId = ${JSON.stringify(normalizedId)}`
-    //   for (const { local } of hotComponents) {
-    //     ssrInjectCode += `\nssrRegisterHelper(${local}, __moduleId)`
-    //   }
-    //   result.code += ssrInjectCode
-    // }
+    if (ssr) {
+      result.code += injectSSR(id, hotComponents, options?.root)
+    }
   }
 }
 

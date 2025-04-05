@@ -1,17 +1,22 @@
-import Macros from '@vue-jsx-vapor/macros/raw'
+import macros from '@vue-jsx-vapor/macros/raw'
+import { transformJsxDirective } from '@vue-macros/jsx-directive/api'
 import { createFilter, normalizePath } from 'unplugin-utils'
 import { transformVueJsxVapor } from './core'
-import { registerHMR } from './core/hmr'
+import { injectHMRAndSSR } from './core/hmr'
 import runtimeCode from './core/runtime?raw'
+import { ssrRegisterHelperCode, ssrRegisterHelperId } from './core/ssr'
+import { transformVueJsx } from './core/vue-jsx'
 import type { Options } from './options'
 import type { UnpluginOptions } from 'unplugin'
 
 const plugin = (options: Options = {}): UnpluginOptions[] => {
   const transformInclude = createFilter(
-    options?.include || /\.[cm]?[jt]sx?$/,
-    options?.exclude,
+    options?.include || /\.[cm]?[jt]sx$/,
+    options?.exclude || /node_modules/,
   )
+  let root = ''
   let needHMR = false
+  let needSourceMap = false
   return [
     {
       name: 'vue-jsx-vapor',
@@ -33,23 +38,29 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
           }
         },
         configResolved(config) {
+          root = config.root
           needHMR = config.command === 'serve'
+          needSourceMap = config.command === 'serve' || !!config.build.sourcemap
         },
       },
       resolveId(id) {
+        if (id === ssrRegisterHelperId) return id
         if (normalizePath(id) === 'vue-jsx-vapor/runtime') return id
       },
       loadInclude(id) {
+        if (id === ssrRegisterHelperId) return true
         return normalizePath(id) === 'vue-jsx-vapor/runtime'
       },
       load(id) {
+        if (id === ssrRegisterHelperId) return ssrRegisterHelperCode
         if (normalizePath(id) === 'vue-jsx-vapor/runtime') return runtimeCode
       },
       transformInclude,
-      transform(code, id) {
-        const result = transformVueJsxVapor(code, id, options)
+      transform(code, id, opt?: { ssr?: boolean }) {
+        const result = transformVueJsxVapor(code, id, options, needSourceMap)
         if (result?.code) {
-          needHMR && registerHMR(result, id)
+          ;(needHMR || opt?.ssr) &&
+            injectHMRAndSSR(result, id, { ssr: opt?.ssr, root })
           return {
             code: result.code,
             map: result.map,
@@ -57,10 +68,32 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
         }
       },
     },
+    {
+      name: '@vue-macros/jsx-directive',
+      transformInclude,
+      transform(code, id, opt?: { ssr?: boolean }) {
+        if (options.interop || opt?.ssr) {
+          return transformJsxDirective(code, id, {
+            lib: 'vue',
+            prefix: 'v-',
+            version: 3.6,
+          })
+        }
+      },
+    },
+    {
+      name: '@vitejs/plugin-vue-jsx',
+      transformInclude,
+      transform(code, id, opt?: { ssr?: boolean }) {
+        if (options.interop || opt?.ssr) {
+          return transformVueJsx(code, id, needSourceMap)
+        }
+      },
+    },
     ...(options.macros === false
       ? []
       : options.macros
-        ? [Macros(options.macros === true ? undefined : options.macros)]
+        ? [macros(options.macros === true ? undefined : options.macros)]
         : []),
   ]
 }

@@ -1,20 +1,16 @@
 import { transformSync } from '@babel/core'
 // @ts-ignore missing type
 import babelTypescript from '@babel/plugin-transform-typescript'
-import jsx from '@vue-jsx-vapor/babel'
-import type { Options } from '../options'
+import jsx from '@vue/babel-plugin-jsx'
 
-export type { Options }
-
-export function transformVueJsxVapor(
+export function transformVueJsx(
   code: string,
   id: string,
-  options?: Options,
   needSourceMap = false,
 ) {
-  return transformSync(code, {
+  const result = transformSync(code, {
     plugins: [
-      [jsx, { compile: options?.compile, interop: options?.interop }],
+      jsx,
       ...(id.endsWith('.tsx')
         ? [[babelTypescript, { isTSX: true, allowExtensions: true }]]
         : []),
@@ -24,6 +20,11 @@ export function transformVueJsxVapor(
     sourceFileName: id,
     babelrc: false,
     configFile: false,
-    ast: true,
   })
+  if (result?.code) {
+    return {
+      code: result.code,
+      map: result.map,
+    }
+  }
 }

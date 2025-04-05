@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node vite.js --port 5174"
+    "dev": "node vite.js --port 5174",
+    "build": "node vite.js build"
   },
   "devDependencies": {
     "@vitejs/plugin-vue-jsx": "^4.1.1",
