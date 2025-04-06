@@ -3,6 +3,7 @@ import { walkIdentifiers } from '@vue/compiler-sfc'
 import { restructure } from '../restructure'
 import type { FunctionalNode, RootMapValue } from '..'
 import { transformAwait } from './await'
+import { transformReturn } from './return'
 import type { ObjectExpression } from '@babel/types'
 
 export function transformDefineComponent(
@@ -10,6 +11,7 @@ export function transformDefineComponent(
   propsName: string,
   map: RootMapValue,
   s: MagicStringAST,
+  autoReturnFunction = false,
 ): void {
   if (!map.defineComponent) return
 
@@ -94,6 +96,9 @@ export function transformDefineComponent(
   }
 
   transformAwait(root, s)
+  if (autoReturnFunction) {
+    transformReturn(root, s)
+  }
 }
 
 function prependObjectExpression(

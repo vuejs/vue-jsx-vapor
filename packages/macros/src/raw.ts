@@ -39,7 +39,10 @@ const plugin = (userOptions: Options = {}): UnpluginOptions => {
       if (importMap.get(id)) return true
       return filter(id)
     },
-    transform(code, id) {
+    transform(code, id, opt?: { ssr?: boolean }) {
+      if (opt?.ssr) {
+        options.defineComponent.autoReturnFunction = true
+      }
       if (importMap.get(id)) return transformStyle(code, id, options)
       return transformJsxMacros(code, id, importMap, options)
     },

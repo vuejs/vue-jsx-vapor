@@ -37,3 +37,22 @@ describe('fixtures', async () => {
       })?.code,
   )
 })
+
+describe('defineComponent autoReturnFunction fixtures', async () => {
+  await testFixtures(
+    import.meta.glob('./fixtures/**/define-component.tsx', {
+      eager: true,
+      as: 'raw',
+    }),
+    (args, id, code) =>
+      transformJsxMacros(code, id, new Map(), {
+        include: ['*.tsx'],
+        version: 3.6,
+        ...options,
+        defineComponent: {
+          alias: ['defineComponent', 'defineVaporComponent'],
+          autoReturnFunction: true,
+        },
+      })?.code,
+  )
+})

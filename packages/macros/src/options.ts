@@ -8,7 +8,7 @@ import {
 } from '@vue-macros/common'
 
 export type Options = BaseOptions & {
-  defineComponent?: { alias: string[] }
+  defineComponent?: { alias: string[]; autoReturnFunction?: boolean }
   defineModel?: { alias: string[] }
   defineExpose?: { alias: string[] }
   defineSlots?: { alias: string[] }
