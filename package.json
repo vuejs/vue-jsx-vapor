@@ -31,7 +31,7 @@
     "lint": "eslint .",
     "play": "npm -C playground run dev",
     "test": "vitest",
-    "release": "pnpm lint && bumpp -r --all -x 'pnpm run changelog'",
+    "release": "bumpp -r --all -x 'pnpm run changelog'",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "docs:dev": "pnpm run -C ./docs dev",
     "docs:preview": "pnpm run -C ./docs preview",

@@ -33,6 +33,10 @@ export default defineConfig({
             text: 'Migration',
             link: `/introduction/migration`,
           },
+          {
+            text: 'ESLint',
+            link: `/introduction/eslint`,
+          },
         ],
       },
       {
@@ -59,7 +63,7 @@ export default defineConfig({
     ],
   },
   markdown: {
-    languages: ['js', 'ts'],
+    languages: ['js', 'ts', 'tsx'],
     codeTransformers: [
       transformerTwoslash({
         twoslasher: createTwoslasher({

@@ -33,7 +33,7 @@ export default defineVaporComponent(() => {
 
         <Count value={count.value} />
         <Count1 value={count} />
-        <Count2 value={count.value} ref={compRef} />
+        <Count2 ref={compRef} value={count.value} />
         {compRef.value?.double}
       </fieldset>
 

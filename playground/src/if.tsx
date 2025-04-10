@@ -29,7 +29,9 @@ export default defineVaporComponent(() => {
         <fieldset>
           <legend>v-if</legend>
           <div>
-            <div v-if={count.value === 1}>{count.value}</div>
+            <div v-if={count.value === 1} a b c d e>
+              {count.value}
+            </div>
             <Foo v-else-if={count.value === 2} />
             <div v-else-if={count.value >= 3}>lg 3: {count.value}</div>
             <div v-else>lt 0: {count.value}</div>
@@ -38,4 +40,9 @@ export default defineVaporComponent(() => {
       </div>
     </div>
   )
+  defineStyle(`
+    .foo {
+      color: red;
+    }
+  `)
 })

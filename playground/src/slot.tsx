@@ -26,17 +26,17 @@ export default () => {
       <div style="display: flex;">
         <fieldset>
           <legend>v-slots</legend>
-          <Comp v-slots={slots} foo={foo.value} />
+          <Comp foo={foo.value} v-slots={slots} />
 
           <Comp
-            v-slots={{ default: (scope) => <div>{scope.foo}</div> }}
             foo={foo.value}
+            v-slots={{ default: (scope) => <div>{scope.foo}</div> }}
           />
         </fieldset>
 
         <fieldset>
           <legend>v-slot</legend>
-          <Comp v-slot:$slotName_value$={scope} foo={foo.value}>
+          <Comp foo={foo.value} v-slot:$slotName_value$={scope}>
             <div>{scope.foo}</div>
           </Comp>
         </fieldset>

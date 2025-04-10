@@ -1,0 +1,64 @@
+{
+  "name": "@vue-jsx-vapor/eslint",
+  "version": "2.2.0",
+  "packageManager": "pnpm@10.4.1",
+  "description": "Vue JSX Vapor ESLint Plugin",
+  "type": "module",
+  "keywords": [
+    "vue",
+    "jsx",
+    "vapor",
+    "eslint"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
+  "bugs": {
+    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "dev": "./src/index.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+    },
+    "./*": "./*"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/*",
+        "./*"
+      ]
+    }
+  },
+  "publishConfig": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+    },
+    "./*": "./*"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "DEV=true tsup",
+    "release": "bumpp && npm publish",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@prettier/sync": "^0.5.5"
+  },
+  "devDependencies": {
+    "@typescript-eslint/utils": "^8.29.1",
+    "eslint-vitest-rule-tester": "^2.2.0"
+  }
+}

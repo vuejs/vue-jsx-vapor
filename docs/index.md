@@ -33,5 +33,8 @@ features:
   - icon: 🌈
     title: Hot Module Replacement
     details: Support functional components or defined by defineComponent.
+  - icon: ⚙️
+    title: ESLint
+    details: Provide an ESLint plugin for vue-jsx-vapor to automatically fix code.
 ---
 

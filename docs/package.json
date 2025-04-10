@@ -8,6 +8,7 @@
     "preview": "vitepress preview"
   },
   "dependencies": {
+    "@vue-jsx-vapor/eslint": "workspace:*",
     "vue": "catalog:",
     "vue-jsx-vapor": "workspace:*"
   },

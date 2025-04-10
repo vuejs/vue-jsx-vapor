@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`jsx-sort-props > basic 1`] = `
+"
+        <div a b />
+      "
+`;
+
+exports[`jsx-sort-props > reservedFirst 1`] = `"<App v-if={true} v-for={i in 4} a b />"`;
+
+exports[`jsx-sort-props > reservedFirst and reservedLast 1`] = `"<App v-model={foo} v-model:b={foo} a b c onClick={() => {}} v-slot:a={{ foo }} v-slot:b={{ foo }} />"`;
+
+exports[`jsx-sort-props > reservedLast 1`] = `"<App onClick={() => {}} v-slot={{ foo }} />"`;
