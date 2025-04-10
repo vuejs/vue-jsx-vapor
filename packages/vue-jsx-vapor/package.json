@@ -1,6 +1,6 @@
 {
   "name": "vue-jsx-vapor",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "packageManager": "pnpm@10.4.1",
   "description": "Convert Vue JSX to Vapor",
   "type": "module",

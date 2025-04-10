@@ -1,3 +1,13 @@
+# [2.3.0](https://github.com/vuejs/vue-jsx-vapor/compare/v2.2.0...v2.3.0) (2025-04-10)
+
+
+### Features
+
+* introduce eslint ([f241afa](https://github.com/vuejs/vue-jsx-vapor/commit/f241afa302d026dc0fa6e3d76ef2a26bfac9b37d))
+* **macros/defineComponent:** support auto return functional component for SSR ([c0b310f](https://github.com/vuejs/vue-jsx-vapor/commit/c0b310f36453015201ed6c8e77f8b720310d8fda))
+
+
+
 # [2.2.0](https://github.com/vuejs/vue-jsx-vapor/compare/v2.1.8...v2.2.0) (2025-04-05)
 
 
