@@ -59,6 +59,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
+      { icon: 'discord', link: 'https://discord.gg/hMnyhpJH' },
       { icon: 'github', link: 'https://github.com/vuejs/vue-jsx-vapor' },
     ],
   },
