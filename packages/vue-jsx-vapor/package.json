@@ -179,8 +179,8 @@
     "./*": "./*"
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "DEV=true tsup",
+    "build": "tsdown",
+    "dev": "DEV=true tsdown",
     "lint": "eslint .",
     "play": "npm -C playground run dev",
     "release": "bumpp && npm publish",

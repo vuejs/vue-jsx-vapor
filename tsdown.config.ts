@@ -1,6 +1,6 @@
 import process from 'node:process'
-import { defineConfig, type Options } from 'tsup'
-import Raw from 'unplugin-raw/esbuild'
+import { defineConfig, type Options } from 'tsdown'
+import Raw from 'unplugin-raw/rolldown'
 
 export const config = (options: Options = {}) =>
   defineConfig({
@@ -9,13 +9,11 @@ export const config = (options: Options = {}) =>
     format: ['cjs', 'esm'],
     watch: !!process.env.DEV,
     dts: !process.env.DEV,
-    cjsInterop: true,
-    splitting: true,
     external: ['vue'],
     define: {
       __DEV__: 'true',
     },
-    esbuildPlugins: [Raw() as any],
+    plugins: [Raw()],
     ...options,
   })
 

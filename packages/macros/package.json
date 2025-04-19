@@ -140,8 +140,8 @@
     "./*": "./*"
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "DEV=true tsup"
+    "build": "tsdown",
+    "dev": "DEV=true tsdown"
   },
   "peerDependencies": {
     "@nuxt/kit": "^3",

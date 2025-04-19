@@ -1,4 +1,4 @@
-import { config } from '../../tsup.config.js'
+import { config } from '../../tsdown.config.js'
 
 export default config({
   entry: ['src/index.ts'],

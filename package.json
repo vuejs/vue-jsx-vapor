@@ -45,9 +45,9 @@
     "bumpp": "^10.0.3",
     "conventional-changelog-cli": "^5.0.0",
     "eslint": "^9.22.0",
-    "tsup": "^8.4.0",
+    "tsdown": "^0.8.1",
     "typescript": "^5.8.2",
-    "unplugin-raw": "^0.4.4",
+    "unplugin-raw": "^0.4.5",
     "vite": "catalog:",
     "vitest": "catalog:",
     "vue-jsx-vapor": "workspace:*"

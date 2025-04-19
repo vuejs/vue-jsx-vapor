@@ -49,8 +49,8 @@
     "./*": "./*"
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "DEV=true tsup",
+    "build": "tsdown",
+    "dev": "DEV=true tsdown",
     "release": "bumpp && npm publish",
     "test": "vitest"
   },
