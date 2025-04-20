@@ -14,7 +14,10 @@ export const config = (options: Options = {}) =>
       __DEV__: 'true',
     },
     plugins: [Raw()],
+    outputOptions: {
+      exports: 'named',
+    },
     ...options,
   })
 
-export default defineConfig(config())
+export default config()
