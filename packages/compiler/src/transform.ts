@@ -85,21 +85,21 @@ export class TransformContext<
   root: TransformContext<RootNode>
   index: number = 0
 
-  block: BlockIRNode = this.ir.block
+  block: BlockIRNode
   options: Required<
     Omit<TransformOptions, 'filename' | keyof CompilerCompatOptions>
   >
 
   template: string = ''
   childrenTemplate: (string | null)[] = []
-  dynamic: IRDynamicInfo = this.ir.block.dynamic
+  dynamic: IRDynamicInfo
 
   inVOnce: boolean = false
   inVFor: number = 0
 
   comment: CommentNode[] = []
-  component: Set<string> = this.ir.component
-  directive: Set<string> = this.ir.directive
+  component: Set<string>
+  directive: Set<string>
 
   slots: IRSlots[] = []
 
@@ -111,6 +111,10 @@ export class TransformContext<
     options: TransformOptions = {},
   ) {
     this.options = extend({}, defaultOptions, options)
+    this.block = this.ir.block
+    this.dynamic = this.ir.block.dynamic
+    this.component = this.ir.component
+    this.directive = this.ir.directive
     this.root = this as TransformContext<RootNode>
   }
 
