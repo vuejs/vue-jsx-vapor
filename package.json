@@ -51,5 +51,10 @@
     "vite": "catalog:",
     "vitest": "catalog:",
     "vue-jsx-vapor": "workspace:*"
+  },
+  "pnpm": {
+    "overrides": {
+      "estree-walker": "2.0.2"
+    }
   }
 }
