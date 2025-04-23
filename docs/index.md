@@ -5,7 +5,7 @@ layout: home
 hero:
   name: "Vue JSX Vapor"
   text: "Type-safe, Improve DX, High Performance"
-  tagline: Supports Vapor mode, all build-in directives and most macros of Vue.
+  tagline: Supports Vapor Mode, all build-in directives and most macros of Vue.
   image:
     src: /logo.svg
     alt: Vue JSX Vapor

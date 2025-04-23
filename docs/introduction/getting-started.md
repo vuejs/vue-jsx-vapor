@@ -1,6 +1,6 @@
 # Getting Started
 
-`vue-jsx-vapor` is a Vapor mode of `vue-jsx`. It supports all directives and most macros of Vue.
+`vue-jsx-vapor` is a Vapor Mode of `vue-jsx`. It supports all directives and most macros of Vue.
 
 We assume you are already familiar with the basic usages of Vue before you continue.
 
