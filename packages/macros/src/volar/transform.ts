@@ -83,10 +83,7 @@ export function transformJsxMacros(
           codes,
           node.getStart(ast),
           node.expression.getStart(ast),
-          `return {\nprops: {} as { ${props.join(', ')} }`,
-          `,\nslots: {} as ${map.defineSlots ?? '{}'}`,
-          `,\nexpose: (exposed: import('vue').ShallowUnwrapRef<${map.defineExpose ?? '{}'}>) => {}`,
-          `,\nrender: `,
+          `const ${HELPER_PREFIX}render = `,
           shouldWrapByCall ? '(' : '',
         )
         replaceRange(
@@ -94,7 +91,13 @@ export function transformJsxMacros(
           node.expression.end,
           node.expression.end,
           shouldWrapByCall ? ')()' : '',
-          `\n}`,
+          `
+return {
+  props: {} as {${props.join(', ')}},
+  slots: {} as ${map.defineSlots ?? '{}'},
+  expose: (exposed: import('vue').ShallowUnwrapRef<${map.defineExpose ?? '{}'}>) => {},
+  render: ${HELPER_PREFIX}render,
+}`,
         )
       }
     })
