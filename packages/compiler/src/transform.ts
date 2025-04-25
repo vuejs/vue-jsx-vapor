@@ -1,6 +1,7 @@
 import {
   defaultOnError,
   defaultOnWarn,
+  isConstantNode,
   type TransformOptions as BaseTransformOptions,
   type CommentNode,
   type CompilerCompatOptions,
@@ -163,9 +164,15 @@ export class TransformContext<
     ...operations: OperationNode[]
   ) {
     expressions = expressions.filter((exp) => !isConstantExpression(exp))
-    if (this.inVOnce || expressions.length === 0) {
+    if (
+      this.inVOnce ||
+      expressions.length === 0 ||
+      expressions.every((e) => e.ast && isConstantNode(e.ast, {}))
+    ) {
       return this.registerOperation(...operations)
     }
+
+    this.block.expressions.push(...expressions)
     const existing = this.block.effect.find((e) =>
       isSameExpression(e.expressions, expressions),
     )
