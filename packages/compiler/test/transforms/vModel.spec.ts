@@ -1,4 +1,4 @@
-import { DOMErrorCodes } from '@vue/compiler-dom'
+import { DOMErrorCodes, ErrorCodes } from '@vue/compiler-dom'
 import { describe, expect, test, vi } from 'vitest'
 import {
   IRNodeTypes,
@@ -159,6 +159,30 @@ describe('compiler: vModel transform', () => {
         onError,
       })
       expect(onError).not.toHaveBeenCalled()
+    })
+
+    test('empty expression', () => {
+      const onError = vi.fn()
+      compileWithVModel('<span v-model="" />', { onError })
+
+      expect(onError).toHaveBeenCalledTimes(1)
+      expect(onError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          code: ErrorCodes.X_V_MODEL_MALFORMED_EXPRESSION,
+        }),
+      )
+    })
+
+    test('mal-formed expression', () => {
+      const onError = vi.fn()
+      compileWithVModel('<span v-model={a + b} />', { onError })
+
+      expect(onError).toHaveBeenCalledTimes(1)
+      expect(onError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          code: ErrorCodes.X_V_MODEL_MALFORMED_EXPRESSION,
+        }),
+      )
     })
   })
 

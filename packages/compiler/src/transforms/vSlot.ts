@@ -20,7 +20,7 @@ import {
   isEmptyText,
   isJSXComponent,
   isTemplate,
-  resolveDirectiveNode,
+  resolveDirective,
   resolveLocation,
   resolveSimpleExpressionNode,
 } from '../utils'
@@ -36,7 +36,7 @@ export const transformVSlot: NodeTransform = (node, context) => {
 
   const dir = findProp(node, 'v-slot')
   const resolvedDirective = dir
-    ? resolveDirectiveNode(dir, context, true)
+    ? resolveDirective(dir, context, true)
     : undefined
   const { parent } = context
 
@@ -109,7 +109,7 @@ function transformComponentSlot(
 }
 
 const elseIfRE = /^v-else(-if)?$/
-// <template #foo>
+// <template v-slot:foo>
 function transformTemplateSlot(
   node: JSXElement,
   dir: VaporDirectiveNode,
@@ -134,7 +134,7 @@ function transformTemplateSlot(
       registerSlot(slots, arg, block)
     }
   } else if (vIf) {
-    const vIfDir = resolveDirectiveNode(vIf, context)
+    const vIfDir = resolveDirective(vIf, context)
     registerDynamicSlot(slots, {
       slotType: IRSlotType.CONDITIONAL,
       condition: vIfDir.exp!,
@@ -145,7 +145,7 @@ function transformTemplateSlot(
       },
     })
   } else if (vElse) {
-    const vElseDir = resolveDirectiveNode(vElse, context)
+    const vElseDir = resolveDirective(vElse, context)
     const vIfSlot = slots.at(-1) as IRSlotDynamic
     if (vIfSlot.slotType === IRSlotType.CONDITIONAL) {
       let ifNode = vIfSlot

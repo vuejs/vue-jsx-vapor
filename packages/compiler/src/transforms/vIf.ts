@@ -10,7 +10,7 @@ import {
   type NodeTransform,
   type TransformContext,
 } from '../transform'
-import { isEmptyText, resolveDirectiveNode, resolveLocation } from '../utils'
+import { isEmptyText, resolveDirective, resolveLocation } from '../utils'
 import { createBranch } from './utils'
 import type { JSXAttribute, JSXElement } from '@babel/types'
 
@@ -26,7 +26,7 @@ export function processIf(
   attribute: JSXAttribute,
   context: TransformContext,
 ): (() => void) | undefined {
-  const dir = resolveDirectiveNode(attribute, context)
+  const dir = resolveDirective(attribute, context)
   if (dir.name !== 'else' && (!dir.exp || !dir.exp.content.trim())) {
     const loc = dir.exp ? dir.exp.loc : resolveLocation(node.loc, context)
     context.options.onError(

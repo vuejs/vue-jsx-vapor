@@ -1,9 +1,7 @@
 // import {
 //   type BindingMetadata,
-//   BindingTypes,
 //   NodeTypes,
 // } from '@vue/compiler-dom'
-import { BindingTypes } from '@vue/compiler-dom'
 import { describe, expect, test } from 'vitest'
 import {
   // IRDynamicPropsKind,
@@ -41,9 +39,6 @@ describe('compiler: element transform', () => {
   test('resolve namespaced component from setup bindings (inline const)', () => {
     const { code, helpers } = compileWithElementTransform(`<Foo.Example/>`, {
       inline: true,
-      bindingMetadata: {
-        Foo: BindingTypes.SETUP_CONST,
-      },
     })
     expect(code).toMatchInlineSnapshot(`
       "

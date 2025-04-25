@@ -14,14 +14,9 @@ import {
 } from '@babel/types'
 import {
   createSimpleExpression,
-  ElementTypes,
   isLiteralWhitelisted,
-  Namespaces,
   NodeTypes,
   walkIdentifiers,
-  type AttributeNode,
-  type DirectiveNode,
-  type ElementNode,
   type SimpleExpressionNode,
   type TextNode,
 } from '@vue/compiler-dom'
@@ -129,6 +124,7 @@ export function resolveSimpleExpressionNode(
   return exp
 }
 
+const resolvedExpressions = new WeakSet()
 export function resolveExpression(
   node: Node | undefined | null,
   context: TransformContext,
@@ -153,14 +149,15 @@ export function resolveExpression(
               ? node.name
               : context.ir.source.slice(node.start!, node.end!)
   const location = node ? node.loc : null
+  const isResolved = node && resolvedExpressions.has(node)
   if (source && !isStatic && effect && !isConstant(node)) {
     source = `() => (${source})`
-    if (location && node) {
+    if (location && node && !isResolved) {
       location.start.column -= 7
       node.start! -= 7
     }
   }
-  if (node) {
+  if (node && !isResolved) {
     const offset = node.start! - 1
     walkIdentifiers(
       node,
@@ -171,6 +168,7 @@ export function resolveExpression(
       },
       true,
     )
+    resolvedExpressions.add(node)
   }
   return resolveSimpleExpression(source, isStatic, location, node)
 }
@@ -238,63 +236,8 @@ export function resolveValue(
     : undefined
 }
 
-export function resolveNode(
-  node: JSXElement,
-  context: TransformContext,
-): ElementNode {
-  const tag =
-    node.openingElement.name.type === 'JSXIdentifier'
-      ? node.openingElement.name.name
-      : ''
-  const loc = resolveLocation(node.loc, context)
-  const tagType = isJSXComponent(node)
-    ? ElementTypes.COMPONENT
-    : ElementTypes.ELEMENT
-  const props = node.openingElement.attributes.reduce(
-    (result, attr) => {
-      if (attr.type === 'JSXAttribute') {
-        result.push(
-          attr.value?.type === 'StringLiteral'
-            ? {
-                type: NodeTypes.ATTRIBUTE,
-                name: String(attr.name.name),
-                nameLoc: resolveLocation(attr.name.loc, context),
-                value: resolveValue(attr.value, context),
-                loc: resolveLocation(attr.loc, context),
-              }
-            : resolveDirectiveNode(attr, context),
-        )
-      } else if (attr.type === 'JSXSpreadAttribute') {
-        result.push({
-          type: NodeTypes.DIRECTIVE,
-          name: 'bind',
-          rawName: getText(attr, context),
-          exp: resolveExpression(attr.argument, context),
-          arg: undefined,
-          loc: resolveLocation(node.loc, context),
-          modifiers: [],
-        })
-      }
-      return result
-    },
-    [] as Array<AttributeNode | DirectiveNode>,
-  )
-
-  return {
-    type: NodeTypes.ELEMENT,
-    props,
-    children: node.children as any[],
-    tag,
-    loc,
-    ns: Namespaces.HTML,
-    tagType,
-    isSelfClosing: !!node.selfClosing,
-    codegenNode: undefined,
-  }
-}
-
 const namespaceRE = /^(?:\$([\w-]+)\$)?([\w-]+)?/
-export function resolveDirectiveNode(
+export function resolveDirective(
   node: JSXAttribute,
   context: TransformContext,
   withFn = false,
@@ -365,7 +308,7 @@ export function resolveExpressionWithFn(node: Node, context: TransformContext) {
       )
 }
 
-export function isJSXComponent(node: Node): node is JSXElement {
+export function isJSXComponent(node: Node) {
   if (node.type !== 'JSXElement') return false
 
   const { openingElement } = node

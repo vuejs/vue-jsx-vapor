@@ -124,6 +124,13 @@ export interface SetDynamicEventsIRNode extends BaseIRNode {
   event: SimpleExpressionNode
 }
 
+export interface SetTextIRNode extends BaseIRNode {
+  type: IRNodeTypes.SET_TEXT
+  element: number
+  values: SimpleExpressionNode[]
+  generated?: boolean // whether this is a generated empty text node by `processTextLikeContainer`
+}
+
 export interface SetNodesIRNode extends BaseIRNode {
   type: IRNodeTypes.SET_NODES
   element: number
@@ -232,6 +239,7 @@ export type IRNode = OperationNode | RootIRNode
 export type OperationNode =
   | SetPropIRNode
   | SetDynamicPropsIRNode
+  | SetTextIRNode
   | SetNodesIRNode
   | SetEventIRNode
   | SetDynamicEventsIRNode

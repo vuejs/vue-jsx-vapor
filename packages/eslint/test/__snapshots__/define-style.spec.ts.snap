@@ -10,17 +10,6 @@ exports[`define-style > basic 1`] = `
       "
 `;
 
-exports[`define-style > basic 2`] = `
-"
-        defineStyle(\`
-          .foo {
-            color: red
-            background: blue;
-          }
-        \`)
-        "
-`;
-
 exports[`define-style > syntax error 1`] = `
 "
         defineStyle(\`
