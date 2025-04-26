@@ -149,7 +149,7 @@ export function getRootMap(options: TransformOptions): RootMap {
       if (!rootMap.has(root)) rootMap.set(root, {})
       if (!rootMap.get(root)!.defineComponent) {
         rootMap.get(root)!.defineComponent = true
-        transformDefineComponent(parents[2], options)
+        transformDefineComponent(parents[2], parents[3], options)
       }
     }
 
