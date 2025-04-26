@@ -25,10 +25,10 @@ catalog:
   '@vue/shared': https://pkg.pr.new/@vue/shared@42f38ca
 
   '@vue-macros/common': *vue-macros
+  '@vue-macros/jsx-directive': *vue-macros
   '@vue-macros/reactivity-transform': *vue-macros
   '@vue-macros/test-utils': *vue-macros
   '@vue-macros/volar': *vue-macros
-  '@vue-macros/jsx-directive': *vue-macros
 
   '@types/hash-sum': ^1.0.2
   hash-sum: ^2.0.0
