@@ -14,7 +14,7 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Features', link: '/features/directives' },
-      { text: 'REPL', link: 'https://repl.zmjs.dev/vuejs/vue-jsx-vapor' },
+      { text: 'Playground', link: 'https://repl.zmjs.dev/vuejs/vue-jsx-vapor' },
     ],
 
     sidebar: [

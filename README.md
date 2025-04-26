@@ -4,7 +4,7 @@
 
 Vue JSX Vapor.
 
-[Docs](https://jsx-vapor.netlify.app/) . [REPL](https://repl.zmjs.dev/vuejs/vue-jsx-vapor)
+[Docs](https://jsx-vapor.netlify.app/) . [Playground](https://repl.zmjs.dev/vuejs/vue-jsx-vapor)
 
 ## Install
 

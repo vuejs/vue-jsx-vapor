@@ -4,7 +4,7 @@
 
 ## Vapor in Virtual DOM
 
-[REPL](https://repl.zmjs.dev/vuejs/vapor-in-virtual-dom)
+[Playground](https://repl.zmjs.dev/vuejs/vapor-in-virtual-dom)
 
 ::: code-group
 
@@ -63,7 +63,7 @@ export default defineComponent(() => {
 
 ## Virtual DOM in Vapor
 
-[REPL](https://repl.zmjs.dev/vuejs/virtual-dom-in-vapor)
+[Playground](https://repl.zmjs.dev/vuejs/virtual-dom-in-vapor)
 
 ::: code-group
 
