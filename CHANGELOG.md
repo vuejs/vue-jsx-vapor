@@ -1,3 +1,12 @@
+## [2.3.2](https://github.com/vuejs/vue-jsx-vapor/compare/v2.3.1...v2.3.2) (2025-04-26)
+
+
+### Bug Fixes
+
+* **macros/volar:** add semicolon for defineComponent ([1289cb3](https://github.com/vuejs/vue-jsx-vapor/commit/1289cb3c13d6414fba6b2804109a647a9627a2c2))
+
+
+
 ## [2.3.1](https://github.com/vuejs/vue-jsx-vapor/compare/v2.3.0...v2.3.1) (2025-04-25)
 
 
