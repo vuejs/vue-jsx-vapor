@@ -5,7 +5,7 @@ packages:
 
 defines:
   - &babel ^7.26.8
-  - &vue-macros ^3.0.0-beta.7
+  - &vue-macros ^3.0.0-beta.10
 
 catalog:
   '@babel/core': *babel
@@ -28,6 +28,7 @@ catalog:
   '@vue-macros/reactivity-transform': *vue-macros
   '@vue-macros/test-utils': *vue-macros
   '@vue-macros/volar': *vue-macros
+  '@vue-macros/jsx-directive': *vue-macros
 
   '@types/hash-sum': ^1.0.2
   hash-sum: ^2.0.0
