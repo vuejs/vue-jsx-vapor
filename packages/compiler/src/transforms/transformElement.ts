@@ -1,4 +1,5 @@
 import {
+  createSimpleExpression,
   isValidHTMLNesting,
   type SimpleExpressionNode,
 } from '@vue/compiler-dom'
@@ -271,7 +272,7 @@ function transformProp(
       value:
         prop.value && prop.value.type === 'StringLiteral'
           ? resolveSimpleExpression(prop.value.value, true, prop.value.loc!)
-          : EMPTY_EXPRESSION,
+          : createSimpleExpression('true', false),
     }
   }
 

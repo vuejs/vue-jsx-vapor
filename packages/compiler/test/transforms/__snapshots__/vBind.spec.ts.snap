@@ -1,5 +1,37 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`compiler v-bind > .attr modifier 1`] = `
+"
+  const n0 = t0()
+  _renderEffect(() => _setAttr(n0, "foo-bar", id))
+  return n0
+"
+`;
+
+exports[`compiler v-bind > .camel modifier 1`] = `
+"
+  const n0 = t0()
+  _renderEffect(() => _setProp(n0, "fooBar", id))
+  return n0
+"
+`;
+
+exports[`compiler v-bind > .prop modifier 1`] = `
+"
+  const n0 = t0()
+  _renderEffect(() => _setDOMProp(n0, "fooBar", id))
+  return n0
+"
+`;
+
+exports[`compiler v-bind > no expression 1`] = `
+"
+  const n0 = t0()
+  _setProp(n0, "id", true)
+  return n0
+"
+`;
+
 exports[`compiler v-bind > with constant value 1`] = `
 "
   const n0 = t0()
