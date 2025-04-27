@@ -24,7 +24,6 @@ import type {
   NodeTransform,
   TransformContext,
 } from '../transform'
-import { EMPTY_EXPRESSION } from './utils'
 import type { JSXAttribute, JSXElement, JSXSpreadAttribute } from '@babel/types'
 
 export const isReservedProp = /* #__PURE__ */ makeMap(
