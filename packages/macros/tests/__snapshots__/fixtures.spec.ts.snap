@@ -2,14 +2,12 @@
 
 exports[`defineComponent autoReturnFunction fixtures > ./fixtures/define-component.tsx 1`] = `
 "
-import { createPropsDefaultProxy as __MACROS_createPropsDefaultProxy } from "vue-jsx-vapor/macros/with-defaults";
 import { useAttrs as __MACROS_useAttrs } from "vue";
 import { useModel as __MACROS_useModel } from "vue-jsx-vapor/macros/use-model";
 import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, nextTick } from 'vue'
 
 const Comp = defineComponent(
-  (__MACROS_props) => {
-const __MACROS_default_props = __MACROS_createPropsDefaultProxy(__MACROS_props, {'.bar': 'bar'!});const attrs = __MACROS_useAttrs();
+  (__MACROS_props) => {const attrs = __MACROS_useAttrs();
     __MACROS_useModel(__MACROS_props, 'modelValue',)
     const foo = $(
       __MACROS_useModel(__MACROS_props, 'foo', {
@@ -19,17 +17,31 @@ const __MACROS_default_props = __MACROS_createPropsDefaultProxy(__MACROS_props, 
         type: String,
       })!,
     )
-    return () => <div>{[foo, __MACROS_default_props.bar, attrs.baz]}</div>
+    return () => <div>{[foo, __MACROS_props.bar, attrs.baz]}</div>
   },
-  {props: { 'bar': { required: true }, 'modelValue': null, 'onUpdate:modelValue': null, 'modelModifiers': null, 'foo': { required: true, validator: (value) => {
+  {props: {
+'bar': {required: true,type: String,default: 'bar',}, 
+'modelValue': null, 
+'onUpdate:modelValue': null, 
+'modelModifiers': null, 
+'foo': { required: true, validator: (value) => {
           return value === 'foo'
-        }, type: String }, 'onUpdate:foo': null, 'fooModifiers': null },inheritAttrs: false, name: 'Comp' },
+        }, type: String }, 
+'onUpdate:foo': null, 
+'fooModifiers': null
+},inheritAttrs: false, name: 'Comp' },
 )
 
 const Comp1 = defineComponent((props: { bar: 'bar'; 'onUpdate:bar': any }) => {
   const foo = __MACROS_useModel(props, 'foo')
   return () => <div>{[foo.value, props['bar'], props['onUpdate:bar']]}</div>
-}, { props: { 'bar': null, 'onUpdate:bar': null, 'foo': null, 'onUpdate:foo': null, 'fooModifiers': null } })
+}, { props: {
+'bar': null, 
+'onUpdate:bar': null, 
+'foo': null, 
+'onUpdate:foo': null, 
+'fooModifiers': null
+} })
 
 const Comp2 = defineComponent(async (__MACROS_props) => {
 let __temp, __restore
@@ -49,19 +61,43 @@ let __temp, __restore
 )
   return () => <div>{foo}</div>
 })
-"
+
+const foo = () => {}
+defineComponent((__MACROS_props) => {
+  return () => (
+    <>
+      {__MACROS_props.a}
+      {__MACROS_props.b}
+      {__MACROS_props.c}
+      {__MACROS_props.d}
+      {__MACROS_props.e}
+      {__MACROS_props.f}
+      {__MACROS_props.g}
+      {__MACROS_props.h}
+      {__MACROS_props.i}
+    </>
+  )
+}, { props: {
+'a': {type: Number,default: 0,}, 
+'b': {type: String,default: 'b',}, 
+'c': {type: Boolean,default: true,}, 
+'d': {type: Function,default: () => {},}, 
+'e': {type: Object,default: () => ({}),}, 
+'f': {type: Array,default: () => ([]),}, 
+'g': {default: foo,skipFactory: true,}, 
+'h': {default: null,}, 
+'i': {required: true,default: undefined,}
+} })"
 `;
 
 exports[`fixtures > ./fixtures/define-component.tsx 1`] = `
 "
-import { createPropsDefaultProxy as __MACROS_createPropsDefaultProxy } from "vue-jsx-vapor/macros/with-defaults";
 import { useAttrs as __MACROS_useAttrs } from "vue";
 import { useModel as __MACROS_useModel } from "vue-jsx-vapor/macros/use-model";
 import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, nextTick } from 'vue'
 
 const Comp = defineComponent(
-  (__MACROS_props) => {
-const __MACROS_default_props = __MACROS_createPropsDefaultProxy(__MACROS_props, {'.bar': 'bar'!});const attrs = __MACROS_useAttrs();
+  (__MACROS_props) => {const attrs = __MACROS_useAttrs();
     __MACROS_useModel(__MACROS_props, 'modelValue',)
     const foo = $(
       __MACROS_useModel(__MACROS_props, 'foo', {
@@ -71,17 +107,31 @@ const __MACROS_default_props = __MACROS_createPropsDefaultProxy(__MACROS_props, 
         type: String,
       })!,
     )
-    return <div>{[foo, __MACROS_default_props.bar, attrs.baz]}</div>
+    return <div>{[foo, __MACROS_props.bar, attrs.baz]}</div>
   },
-  {props: { 'bar': { required: true }, 'modelValue': null, 'onUpdate:modelValue': null, 'modelModifiers': null, 'foo': { required: true, validator: (value) => {
+  {props: {
+'bar': {required: true,type: String,default: 'bar',}, 
+'modelValue': null, 
+'onUpdate:modelValue': null, 
+'modelModifiers': null, 
+'foo': { required: true, validator: (value) => {
           return value === 'foo'
-        }, type: String }, 'onUpdate:foo': null, 'fooModifiers': null },inheritAttrs: false, name: 'Comp' },
+        }, type: String }, 
+'onUpdate:foo': null, 
+'fooModifiers': null
+},inheritAttrs: false, name: 'Comp' },
 )
 
 const Comp1 = defineComponent((props: { bar: 'bar'; 'onUpdate:bar': any }) => {
   const foo = __MACROS_useModel(props, 'foo')
   return <div>{[foo.value, props['bar'], props['onUpdate:bar']]}</div>
-}, { props: { 'bar': null, 'onUpdate:bar': null, 'foo': null, 'onUpdate:foo': null, 'fooModifiers': null } })
+}, { props: {
+'bar': null, 
+'onUpdate:bar': null, 
+'foo': null, 
+'onUpdate:foo': null, 
+'fooModifiers': null
+} })
 
 const Comp2 = defineComponent(async (__MACROS_props) => {
 let __temp, __restore
@@ -101,7 +151,33 @@ let __temp, __restore
 )
   return () => <div>{foo}</div>
 })
-"
+
+const foo = () => {}
+defineComponent((__MACROS_props) => {
+  return (
+    <>
+      {__MACROS_props.a}
+      {__MACROS_props.b}
+      {__MACROS_props.c}
+      {__MACROS_props.d}
+      {__MACROS_props.e}
+      {__MACROS_props.f}
+      {__MACROS_props.g}
+      {__MACROS_props.h}
+      {__MACROS_props.i}
+    </>
+  )
+}, { props: {
+'a': {type: Number,default: 0,}, 
+'b': {type: String,default: 'b',}, 
+'c': {type: Boolean,default: true,}, 
+'d': {type: Function,default: () => {},}, 
+'e': {type: Object,default: () => ({}),}, 
+'f': {type: Array,default: () => ([]),}, 
+'g': {default: foo,skipFactory: true,}, 
+'h': {default: null,}, 
+'i': {required: true,default: undefined,}
+} })"
 `;
 
 exports[`fixtures > ./fixtures/define-expose.tsx 1`] = `

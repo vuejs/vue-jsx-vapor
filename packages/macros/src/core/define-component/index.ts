@@ -1,10 +1,10 @@
 import { importHelperFn, type MagicStringAST } from '@vue-macros/common'
 import { walkIdentifiers } from '@vue/compiler-sfc'
-import { restructure } from '../restructure'
-import type { FunctionalNode, RootMapValue } from '..'
+import { isFunctionalNode, type FunctionalNode, type RootMapValue } from '..'
+import { getDefaultValue, restructure } from '../restructure'
 import { transformAwait } from './await'
 import { transformReturn } from './return'
-import type { ObjectExpression } from '@babel/types'
+import type { Node, ObjectExpression } from '@babel/types'
 
 export function transformDefineComponent(
   root: FunctionalNode,
@@ -28,8 +28,40 @@ export function transformDefineComponent(
   if (root.params[0]) {
     if (root.params[0].type === 'Identifier') {
       getWalkedIds(root, propsName).forEach((id) => (props[id] = null))
-    } else {
-      const restructuredProps = restructure(s, root, {
+    } else if (root.params[0].type === 'ObjectPattern') {
+      const restructuredProps = root.params[0]
+      for (const prop of restructuredProps.properties) {
+        if (prop.type !== 'ObjectProperty' || prop.key.type !== 'Identifier')
+          continue
+        const propName = prop.key.name
+        if (prop.value.type !== 'AssignmentPattern') {
+          props[propName] = null
+          continue
+        }
+        const defaultValue = getDefaultValue(prop.value.right)
+        const isRequired = prop.value.right.type === 'TSNonNullExpression'
+
+        props[propName] = `{`
+        if (isRequired) {
+          props[propName] += 'required: true,'
+        }
+        if (defaultValue) {
+          const { value, type, skipFactory } = getTypeAndValue(s, defaultValue)
+          if (type) {
+            props[propName] += `type: ${type},`
+          }
+          if (value) {
+            props[propName] += `default: ${value},`
+          }
+          if (skipFactory) {
+            props[propName] += 'skipFactory: true,'
+          }
+        }
+        props[propName] += `}`
+      }
+
+      restructure(s, root, {
+        skipDefaultProps: true,
         generateRestProps: (restPropsName, index, list) => {
           if (index === list.length - 1) {
             hasRestProp = true
@@ -38,11 +70,6 @@ export function transformDefineComponent(
           }
         },
       })
-      for (const prop of restructuredProps) {
-        if (prop.path.endsWith('props') && !prop.isRest) {
-          props[prop.name] = prop.isRequired ? '{ required: true }' : null
-        }
-      }
     }
   }
 
@@ -79,16 +106,16 @@ export function transformDefineComponent(
 
   const propsString = Object.entries(props)
     .map(([key, value]) => `'${key}': ${value}`)
-    .join(', ')
+    .join(', \n')
   if (propsString) {
     const argument = map.defineComponent.arguments[1]
     if (!argument) {
       s.appendRight(
         root.end!,
-        `, {${hasRestProp ? 'inheritAttrs: false,' : ''} props: { ${propsString} } }`,
+        `, {${hasRestProp ? 'inheritAttrs: false,' : ''} props: {\n${propsString}\n} }`,
       )
     } else if (argument.type === 'ObjectExpression') {
-      prependObjectExpression(argument, 'props', `{ ${propsString} }`, s)
+      prependObjectExpression(argument, 'props', `{\n${propsString}\n}`, s)
       if (hasRestProp) {
         prependObjectExpression(argument, 'inheritAttrs', 'false', s)
       }
@@ -121,24 +148,55 @@ function prependObjectExpression(
 
 function getWalkedIds(root: FunctionalNode, propsName: string) {
   const walkedIds = new Set<string>()
-  walkIdentifiers(
-    root.body,
-    (id, parent) => {
-      if (
-        id.name === propsName &&
-        (parent?.type === 'MemberExpression' ||
-          parent?.type === 'OptionalMemberExpression')
-      ) {
-        const prop =
-          parent.property.type === 'Identifier'
-            ? parent.property.name
-            : parent.property.type === 'StringLiteral'
-              ? parent.property.value
-              : ''
-        if (prop) walkedIds.add(prop)
-      }
-    },
-    false,
-  )
+  walkIdentifiers(root.body, (id, parent) => {
+    if (
+      id.name === propsName &&
+      (parent?.type === 'MemberExpression' ||
+        parent?.type === 'OptionalMemberExpression')
+    ) {
+      const prop =
+        parent.property.type === 'Identifier'
+          ? parent.property.name
+          : parent.property.type === 'StringLiteral'
+            ? parent.property.value
+            : ''
+      if (prop) walkedIds.add(prop)
+    }
+  })
   return walkedIds
+}
+
+function getTypeAndValue(s: MagicStringAST, node: Node) {
+  let value = ''
+  let type = ''
+  let skipFactory = false
+  if (node.type === 'StringLiteral') {
+    type = 'String'
+    value = `'${node.value}'`
+  } else if (node.type === 'BooleanLiteral') {
+    type = 'Boolean'
+    value = String(node.value)
+  } else if (node.type === 'NumericLiteral') {
+    type = 'Number'
+    value = String(node.value)
+  } else if (node.type === 'ObjectExpression') {
+    type = 'Object'
+    value = `() => (${s.sliceNode(node)})`
+  } else if (node.type === 'ArrayExpression') {
+    type = 'Array'
+    value = `() => (${s.sliceNode(node)})`
+  } else if (isFunctionalNode(node)) {
+    type = 'Function'
+    value = s.sliceNode(node)
+  } else if (node.type === 'Identifier') {
+    if (node.name === 'undefined') {
+      value = 'undefined'
+    } else {
+      skipFactory = true
+      value = s.sliceNode(node)
+    }
+  } else if (node.type === 'NullLiteral') {
+    value = 'null'
+  }
+  return { value, type, skipFactory }
 }

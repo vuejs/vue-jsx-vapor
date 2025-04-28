@@ -28,3 +28,30 @@ const Comp2 = defineComponent(async () => {
   })
   return () => <div>{foo}</div>
 })
+
+const foo = () => {}
+defineComponent(({
+  a = 0,
+  b = 'b',
+  c = true,
+  d = () => {},
+  e = {},
+  f = [],
+  g = foo,
+  h = null,
+  i = undefined!,
+}) => {
+  return (
+    <>
+      {a}
+      {b}
+      {c}
+      {d}
+      {e}
+      {f}
+      {g}
+      {h}
+      {i}
+    </>
+  )
+})

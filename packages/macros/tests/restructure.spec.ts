@@ -58,4 +58,13 @@ describe('transform', () => {
     )!
     expect(code).toMatchSnapshot()
   })
+
+  test('reconstruct AssignmentPattern', () => {
+    const code = transformRestructure(
+      `function App({foo: {foo = 1} = ({} as any)!, bar: [bar = 2] = []}){
+        return <>{[foo, bar]}</>
+      }`,
+    )!
+    expect(code).toMatchSnapshot()
+  })
 })

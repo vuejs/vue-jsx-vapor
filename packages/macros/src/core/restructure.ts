@@ -1,7 +1,7 @@
 import {
   HELPER_PREFIX,
   importHelperFn,
-  type MagicString,
+  type MagicStringAST,
 } from '@vue-macros/common'
 import { walkIdentifiers } from '@vue/compiler-sfc'
 import { withDefaultsHelperId } from './helper'
@@ -10,6 +10,7 @@ import type { Node } from '@babel/types'
 
 type Options = {
   withDefaultsFrom?: string
+  skipDefaultProps?: boolean
   generateRestProps?: (
     restPropsName: string,
     index: number,
@@ -23,11 +24,10 @@ type Prop = {
   value: string
   defaultValue?: string
   isRest?: boolean
-  isRequired?: boolean
 }
 
 export function restructure(
-  s: MagicString,
+  s: MagicStringAST,
   node: FunctionalNode,
   options: Options = {},
 ): Prop[] {
@@ -35,18 +35,10 @@ export function restructure(
   const propList: Prop[] = []
   for (const param of node.params) {
     const path = `${HELPER_PREFIX}props${index++ || ''}`
-    const props = getProps(param, path, s, [], options)
+    const props = getProps(s, options, param, path)
     if (props) {
-      const hasDefaultValue = props.some((i) => i.defaultValue)
       s.overwrite(param.start!, param.end!, path)
-      propList.push(
-        ...(hasDefaultValue
-          ? props.map((i) => ({
-              ...i,
-              path: i.path.replace(HELPER_PREFIX, `${HELPER_PREFIX}default_`),
-            }))
-          : props),
-      )
+      propList.push(...props)
     }
   }
 
@@ -54,36 +46,15 @@ export function restructure(
     const defaultValues: Record<string, Prop[]> = {}
     const rests = []
     for (const prop of propList) {
-      if (prop.defaultValue) {
-        const basePath = prop.path.split(/\.|\[/)[0]
-        ;(defaultValues[basePath] ??= []).push(prop)
-      }
       if (prop.isRest) {
         rests.push(prop)
       }
-    }
-    for (const [path, values] of Object.entries(defaultValues)) {
-      const createPropsDefaultProxy = importHelperFn(
-        s,
-        0,
-        'createPropsDefaultProxy',
-        undefined,
-        options.withDefaultsFrom ?? withDefaultsHelperId,
-      )
-      const resolvedPath = path.replace(
-        `${HELPER_PREFIX}default_`,
-        HELPER_PREFIX,
-      )
-      const resolvedValues = values
-        .map(
-          (i) => `'${i.path.replace(path, '')}${i.value}': ${i.defaultValue}`,
-        )
-        .join(', ')
-      prependFunctionalNode(
-        node,
-        s,
-        `\nconst ${path} = ${createPropsDefaultProxy}(${resolvedPath}, {${resolvedValues}})`,
-      )
+      if (prop.defaultValue) {
+        const paths = prop.path.split(/\.|\[/)
+        if (!options.skipDefaultProps || paths.length !== 1) {
+          ;(defaultValues[paths[0]] ??= []).push(prop)
+        }
+      }
     }
 
     for (const [index, rest] of rests.entries()) {
@@ -96,6 +67,26 @@ export function restructure(
             0,
             'createPropsRestProxy',
           )}(${rest.path}, [${rest.value}])`,
+      )
+    }
+
+    for (const [path, values] of Object.entries(defaultValues)) {
+      const createPropsDefaultProxy = importHelperFn(
+        s,
+        0,
+        'createPropsDefaultProxy',
+        undefined,
+        options.withDefaultsFrom ?? withDefaultsHelperId,
+      )
+      const resolvedValues = values
+        .map(
+          (i) => `'${i.path.replace(path, '')}${i.value}': ${i.defaultValue}`,
+        )
+        .join(', ')
+      prependFunctionalNode(
+        node,
+        s,
+        `\n${path} = ${createPropsDefaultProxy}(${path}, {${resolvedValues}})`,
       )
     }
 
@@ -123,11 +114,11 @@ export function restructure(
 }
 
 function getProps(
-  node: Node,
-  path: string = '',
-  s: MagicString,
-  props: Prop[] = [],
+  s: MagicStringAST,
   options: Options,
+  node: Node,
+  path = '',
+  props: Prop[] = [],
 ) {
   const properties =
     node.type === 'ObjectPattern'
@@ -141,7 +132,11 @@ function getProps(
   properties.forEach((prop, index) => {
     if (prop?.type === 'Identifier') {
       // { foo }
-      props.push({ name: prop.name, path, value: `[${index}]` })
+      props.push({
+        name: prop.name,
+        path,
+        value: `[${index}]`,
+      })
       propNames.push(`'${prop.name}'`)
     } else if (
       prop?.type === 'AssignmentPattern' &&
@@ -152,33 +147,41 @@ function getProps(
         path,
         name: prop.left.name,
         value: `[${index}]`,
-        defaultValue: s.slice(prop.right.start!, prop.right.end!),
+        defaultValue: s.sliceNode(getDefaultValue(prop.right)),
       })
       propNames.push(`'${prop.left.name}'`)
     } else if (
       prop?.type === 'ObjectProperty' &&
       prop.key.type === 'Identifier'
     ) {
-      if (
-        prop.value.type === 'AssignmentPattern' &&
-        prop.value.left.type === 'Identifier'
-      ) {
-        // { foo: bar = 'foo' }
-        props.push({
-          path,
-          name: prop.value.left.name,
-          value: `.${prop.key.name}`,
-          defaultValue: s.slice(prop.value.right.start!, prop.value.right.end!),
-          isRequired: prop.value.right.type === 'TSNonNullExpression',
-        })
+      if (prop.value.type === 'AssignmentPattern') {
+        if (prop.value.left.type === 'Identifier') {
+          // { foo: bar = 'foo' }
+          props.push({
+            path,
+            name: prop.value.left.name,
+            value: `.${prop.key.name}`,
+            defaultValue: s.sliceNode(getDefaultValue(prop.value.right)),
+          })
+        } else {
+          // { foo: { bar } = {} }
+          getProps(
+            s,
+            options,
+            prop.value.left,
+            `${path}.${prop.key.name}`,
+            props,
+          )
+        }
       } else if (
-        !getProps(prop.value, `${path}.${prop.key.name}`, s, props, options)
+        !getProps(s, options, prop.value, `${path}.${prop.key.name}`, props)
       ) {
         // { foo: bar }
+        const name =
+          prop.value.type === 'Identifier' ? prop.value.name : prop.key.name
         props.push({
           path,
-          name:
-            prop.value.type === 'Identifier' ? prop.value.name : prop.key.name,
+          name,
           value: `.${prop.key.name}`,
         })
       }
@@ -196,15 +199,25 @@ function getProps(
         isRest: true,
       })
     } else if (prop) {
-      getProps(prop, `${path}[${index}]`, s, props, options)
+      getProps(s, options, prop, `${path}[${index}]`, props)
     }
   })
   return props.length ? props : undefined
 }
 
+export function getDefaultValue(node: Node): Node {
+  if (node.type === 'TSNonNullExpression') {
+    return getDefaultValue(node.expression)
+  }
+  if (node.type === 'TSAsExpression') {
+    return getDefaultValue(node.expression)
+  }
+  return node
+}
+
 function prependFunctionalNode(
   node: FunctionalNode,
-  s: MagicString,
+  s: MagicStringAST,
   result: string,
 ): void {
   const isBlockStatement = node.body.type === 'BlockStatement'
