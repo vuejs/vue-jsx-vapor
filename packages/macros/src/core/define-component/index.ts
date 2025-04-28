@@ -41,23 +41,27 @@ export function transformDefineComponent(
         const defaultValue = getDefaultValue(prop.value.right)
         const isRequired = prop.value.right.type === 'TSNonNullExpression'
 
-        props[propName] = `{`
+        const propOptions = []
         if (isRequired) {
-          props[propName] += 'required: true,'
+          propOptions.push('required: true')
         }
         if (defaultValue) {
           const { value, type, skipFactory } = getTypeAndValue(s, defaultValue)
           if (type) {
-            props[propName] += `type: ${type},`
+            propOptions.push(`type: ${type}`)
           }
           if (value) {
-            props[propName] += `default: ${value},`
+            propOptions.push(`default: ${value}`)
           }
           if (skipFactory) {
-            props[propName] += 'skipFactory: true,'
+            propOptions.push('skipFactory: true')
           }
         }
-        props[propName] += `}`
+        if (propOptions.length) {
+          props[propName] = `{ ${propOptions.join(', ')} }`
+        } else {
+          props[propName] = null
+        }
       }
 
       restructure(s, root, {
@@ -73,36 +77,7 @@ export function transformDefineComponent(
     }
   }
 
-  for (const { expression, isRequired } of map.defineModel || []) {
-    const modelOptions =
-      expression.arguments[0]?.type === 'ObjectExpression'
-        ? expression.arguments[0]
-        : expression.arguments[1]?.type === 'ObjectExpression'
-          ? expression.arguments[1]
-          : undefined
-    const options: any = {}
-    if (isRequired) options.required = true
-    for (const prop of modelOptions?.properties || []) {
-      if (
-        prop.type === 'ObjectProperty' &&
-        prop.key.type === 'Identifier' &&
-        ['validator', 'type', 'required'].includes(prop.key.name)
-      ) {
-        options[prop.key.name] = s.sliceNode(prop.value)
-      }
-    }
-    const propName =
-      expression.arguments[0]?.type === 'StringLiteral'
-        ? expression.arguments[0].value
-        : 'modelValue'
-    props[propName] = Object.keys(options).length
-      ? `{ ${Object.entries(options)
-          .map(([key, value]) => `${key}: ${value}`)
-          .join(', ')} }`
-      : null
-    props[`onUpdate:${propName}`] = null
-    props[`${propName === 'modelValue' ? 'model' : propName}Modifiers`] = null
-  }
+  transformDefineModel(s, map.defineModel, props)
 
   const propsString = Object.entries(props)
     .map(([key, value]) => `'${key}': ${value}`)
@@ -164,6 +139,59 @@ function getWalkedIds(root: FunctionalNode, propsName: string) {
     }
   })
   return walkedIds
+}
+
+function transformDefineModel(
+  s: MagicStringAST,
+  defineModel: RootMapValue['defineModel'],
+  props: Record<string, string | null>,
+) {
+  for (const { expression, isRequired } of defineModel || []) {
+    const modelOptions =
+      expression.arguments[0]?.type === 'ObjectExpression'
+        ? expression.arguments[0]
+        : expression.arguments[1]?.type === 'ObjectExpression'
+          ? expression.arguments[1]
+          : undefined
+    const options: any = {}
+    if (isRequired) options.required = true
+    let defaultValueNode: Node | undefined
+    for (const prop of modelOptions?.properties || []) {
+      if (
+        prop.type === 'ObjectProperty' &&
+        prop.key.type === 'Identifier' &&
+        ['validator', 'type', 'required', 'default'].includes(prop.key.name)
+      ) {
+        if (prop.key.name === 'default') {
+          defaultValueNode = prop.value
+        }
+        options[prop.key.name] = s.sliceNode(prop.value)
+      }
+    }
+    if (defaultValueNode && !options.type) {
+      const { value, type, skipFactory } = getTypeAndValue(s, defaultValueNode)
+      if (type) {
+        options.type = type
+      }
+      if (value) {
+        options.default = value
+      }
+      if (skipFactory) {
+        options.skipFactory = 'true'
+      }
+    }
+    const propName =
+      expression.arguments[0]?.type === 'StringLiteral'
+        ? expression.arguments[0].value
+        : 'modelValue'
+    props[propName] = Object.keys(options).length
+      ? `{ ${Object.entries(options)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join(', ')} }`
+      : null
+    props[`onUpdate:${propName}`] = null
+    props[`${propName === 'modelValue' ? 'model' : propName}Modifiers`] = null
+  }
 }
 
 function getTypeAndValue(s: MagicStringAST, node: Node) {

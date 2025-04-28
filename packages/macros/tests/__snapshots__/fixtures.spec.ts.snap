@@ -20,7 +20,7 @@ const Comp = defineComponent(
     return () => <div>{[foo, __MACROS_props.bar, attrs.baz]}</div>
   },
   {props: {
-'bar': {required: true,type: String,default: 'bar',}, 
+'bar': { required: true, type: String, default: 'bar' }, 
 'modelValue': null, 
 'onUpdate:modelValue': null, 
 'modelModifiers': null, 
@@ -78,15 +78,15 @@ defineComponent((__MACROS_props) => {
     </>
   )
 }, { props: {
-'a': {type: Number,default: 0,}, 
-'b': {type: String,default: 'b',}, 
-'c': {type: Boolean,default: true,}, 
-'d': {type: Function,default: () => {},}, 
-'e': {type: Object,default: () => ({}),}, 
-'f': {type: Array,default: () => ([]),}, 
-'g': {default: foo,skipFactory: true,}, 
-'h': {default: null,}, 
-'i': {required: true,default: undefined,}
+'a': { type: Number, default: 0 }, 
+'b': { type: String, default: 'b' }, 
+'c': { type: Boolean, default: true }, 
+'d': { type: Function, default: () => {} }, 
+'e': { type: Object, default: () => ({}) }, 
+'f': { type: Array, default: () => ([]) }, 
+'g': { default: foo, skipFactory: true }, 
+'h': { default: null }, 
+'i': { required: true, default: undefined }
 } })"
 `;
 
@@ -110,7 +110,7 @@ const Comp = defineComponent(
     return <div>{[foo, __MACROS_props.bar, attrs.baz]}</div>
   },
   {props: {
-'bar': {required: true,type: String,default: 'bar',}, 
+'bar': { required: true, type: String, default: 'bar' }, 
 'modelValue': null, 
 'onUpdate:modelValue': null, 
 'modelModifiers': null, 
@@ -168,15 +168,15 @@ defineComponent((__MACROS_props) => {
     </>
   )
 }, { props: {
-'a': {type: Number,default: 0,}, 
-'b': {type: String,default: 'b',}, 
-'c': {type: Boolean,default: true,}, 
-'d': {type: Function,default: () => {},}, 
-'e': {type: Object,default: () => ({}),}, 
-'f': {type: Array,default: () => ([]),}, 
-'g': {default: foo,skipFactory: true,}, 
-'h': {default: null,}, 
-'i': {required: true,default: undefined,}
+'a': { type: Number, default: 0 }, 
+'b': { type: String, default: 'b' }, 
+'c': { type: Boolean, default: true }, 
+'d': { type: Function, default: () => {} }, 
+'e': { type: Object, default: () => ({}) }, 
+'f': { type: Array, default: () => ([]) }, 
+'g': { default: foo, skipFactory: true }, 
+'h': { default: null }, 
+'i': { required: true, default: undefined }
 } })"
 `;
 
@@ -207,10 +207,18 @@ export const Comp2 = ({ foo, ...__MACROS_props }: any) => {
 
 exports[`fixtures > ./fixtures/define-model.tsx 1`] = `
 "
-import { useModel as __MACROS_useModel } from "vue-jsx-vapor/macros/use-model";export const Comp = ({ bar, ...__MACROS_props }: { bar: string }) => {
-  const foo = __MACROS_useModel<string, 'm1' | 'm2'>(__MACROS_props, 'foo', { default: bar })
+import { useModel as __MACROS_useModel } from "vue-jsx-vapor/macros/use-model";
+import { defineComponent } from 'vue'
+
+export const Comp = defineComponent((__MACROS_props) => {
+  const foo = __MACROS_useModel<string, 'm1' | 'm2'>(__MACROS_props, 'foo', { default: __MACROS_props.bar })
   return <div>{foo.value}</div>
-}
+}, { props: {
+'bar': null, 
+'foo': { default: __MACROS_props.bar, skipFactory: true }, 
+'onUpdate:foo': null, 
+'fooModifiers': null
+} })
 
 export default function (__MACROS_props) {
   const modelValue = $(__MACROS_useModel<string>(__MACROS_props, 'modelValue',)!)
