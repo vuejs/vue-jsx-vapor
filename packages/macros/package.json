@@ -1,6 +1,6 @@
 {
   "name": "@vue-jsx-vapor/macros",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "packageManager": "pnpm@10.4.1",
   "description": "Macros for Vue JSX Vapor",
   "type": "module",

@@ -1,3 +1,14 @@
+## [2.3.3](https://github.com/vuejs/vue-jsx-vapor/compare/v2.3.2...v2.3.3) (2025-04-28)
+
+
+### Features
+
+* **compiler:** defaults prop.value to true when it is null ([e653e77](https://github.com/vuejs/vue-jsx-vapor/commit/e653e77f34202a4874eb26b82720775b0411cbfb))
+* **macros:** automatically infer type from default value ([d7b31d6](https://github.com/vuejs/vue-jsx-vapor/commit/d7b31d67b70277141d427b036f4f09917c829238))
+* **macros:** automatically infer type from default value for defineModel ([47c139e](https://github.com/vuejs/vue-jsx-vapor/commit/47c139e93d6cb6ee5f12e15de485ec2a2138c20b))
+
+
+
 ## [2.3.2](https://github.com/vuejs/vue-jsx-vapor/compare/v2.3.1...v2.3.2) (2025-04-26)
 
 
