@@ -71,7 +71,7 @@ const After = <App v-if={list} v-for={i in list} a b />
 
 ### `reservedLast`
 
-Defaults to `['v-text', 'v-html', 'v-slots', 'v-slot']`
+Defaults to `['v-slot', 'v-slots', 'v-text', 'v-html']`
 
 This can be an array option. These props must be listed after all other props.
 These will respect the order specified in the array:

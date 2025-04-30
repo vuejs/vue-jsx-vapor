@@ -143,8 +143,8 @@ function contextCompare(
 ) {
   let aProp = getPropName(a)
   let bProp = getPropName(b)
-  const aPropWithoutNamespace = aProp.split(':')[0]
-  const bPropWithoutNamespace = bProp.split(':')[0]
+  const aPropNamespace = aProp.split(':')[0]
+  const bPropNamespace = bProp.split(':')[0]
 
   const aSortToEnd = shouldSortToEnd(a)
   const bSortToEnd = shouldSortToEnd(b)
@@ -159,11 +159,7 @@ function contextCompare(
 
     if (aIndex === -1 && bIndex > -1) return 1
 
-    if (
-      aIndex > -1 &&
-      bIndex > -1 &&
-      aPropWithoutNamespace !== bPropWithoutNamespace
-    )
+    if (aIndex > -1 && bIndex > -1 && aPropNamespace !== bPropNamespace)
       return aIndex > bIndex ? 1 : -1
   }
 
@@ -174,12 +170,8 @@ function contextCompare(
 
     if (aLastIndex === -1 && bLastIndex > -1) return -1
 
-    if (
-      aLastIndex > -1 &&
-      bLastIndex > -1 &&
-      aPropWithoutNamespace !== bPropWithoutNamespace
-    )
-      return aLastIndex > bLastIndex ? 1 : -1
+    if (aLastIndex > -1 && bLastIndex > -1 && aPropNamespace !== bPropNamespace)
+      return aLastIndex > bLastIndex ? -1 : 1
   }
 
   if (options.callbacksLast) {
@@ -566,6 +558,8 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
 
           let previousPropName = getPropName(memo)
           let currentPropName = getPropName(decl)
+          const previousReservedNamespace = previousPropName.split(':')[0]
+          const currentReservedNamespace = currentPropName.split(':')[0]
           const previousValue = (memo as Tree.JSXAttribute).value
           const currentValue = decl.value
           const previousIsCallback = isCallbackPropName(previousPropName)
@@ -609,6 +603,14 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
 
               return memo
             }
+
+            if (
+              previousReservedIndex > -1 &&
+              currentReservedIndex > -1 &&
+              currentReservedIndex > previousReservedIndex &&
+              previousReservedNamespace !== currentReservedNamespace
+            )
+              return decl
           }
 
           if (reservedLastList.length > 0) {
@@ -638,6 +640,14 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
 
               return memo
             }
+
+            if (
+              previousReservedIndex > -1 &&
+              currentReservedIndex > -1 &&
+              currentReservedIndex > previousReservedIndex &&
+              previousReservedNamespace !== currentReservedNamespace
+            )
+              return decl
           }
 
           if (callbacksLast) {

@@ -29,7 +29,7 @@ export default ({ rules = {}, ...options }: Linter.Config<Rules> = {}) => ({
           'ref',
           'v-model',
         ],
-        reservedLast: ['v-text', 'v-html', 'v-slots', 'v-slot'],
+        reservedLast: ['v-slot', 'v-slots', 'v-text', 'v-html'],
       },
     ],
     'vue-jsx-vapor/define-style': rules['vue-jsx-vapor/define-style'] || 'warn',
