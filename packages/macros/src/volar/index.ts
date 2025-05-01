@@ -1,33 +1,16 @@
-import {
-  HELPER_PREFIX,
-  type MarkRequired,
-  type Overwrite,
-} from '@vue-macros/common'
+import { HELPER_PREFIX, type Overwrite } from '@vue-macros/common'
 import { replaceRange, type TsmVirtualCode } from 'ts-macro'
-import type { Options } from '../options'
+import type { OptionsResolved } from '../options'
 import { transformDefineComponent } from './define-component'
 
 export { transformJsxMacros } from './transform'
 export { getGlobalTypes } from './global-types'
 
-type UserOptions = MarkRequired<
-  Exclude<Options, false>,
-  | 'defineModel'
-  | 'defineSlots'
-  | 'defineStyle'
-  | 'defineExpose'
-  | 'defineComponent'
->
 export type TransformOptions = Overwrite<
   TsmVirtualCode,
   {
     ts: typeof import('typescript')
-    defineModel: UserOptions['defineModel']
-    defineSlots: UserOptions['defineSlots']
-    defineStyle: UserOptions['defineStyle']
-    defineExpose: UserOptions['defineExpose']
-    defineComponent: UserOptions['defineComponent']
-  }
+  } & OptionsResolved
 >
 
 export type JsxMacros = {

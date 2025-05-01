@@ -7,23 +7,25 @@ import {
   type MarkRequired,
 } from '@vue-macros/common'
 
+type DefineComponentOptions = { alias?: string[]; autoReturnFunction?: boolean }
+type DefineModelOptions = { alias?: string[] }
+type DefineExposeOptions = { alias?: string[] }
+type DefineSlotsOptions = { alias?: string[] }
+type DefineStyleOptions = { alias?: string[] }
 export type Options = BaseOptions & {
-  defineComponent?: { alias: string[]; autoReturnFunction?: boolean }
-  defineModel?: { alias: string[] }
-  defineExpose?: { alias: string[] }
-  defineSlots?: { alias: string[] }
-  defineStyle?: { alias: string[] }
+  defineComponent?: DefineComponentOptions
+  defineModel?: DefineModelOptions
+  defineExpose?: DefineExposeOptions
+  defineSlots?: DefineSlotsOptions
+  defineStyle?: DefineStyleOptions
 }
-export type OptionsResolved = MarkRequired<
-  Options,
-  | 'include'
-  | 'version'
-  | 'defineComponent'
-  | 'defineModel'
-  | 'defineExpose'
-  | 'defineSlots'
-  | 'defineStyle'
->
+export type OptionsResolved = MarkRequired<Options, 'include' | 'version'> & {
+  defineComponent: MarkRequired<DefineComponentOptions, 'alias'>
+  defineModel: MarkRequired<DefineModelOptions, 'alias'>
+  defineExpose: MarkRequired<DefineExposeOptions, 'alias'>
+  defineSlots: MarkRequired<DefineSlotsOptions, 'alias'>
+  defineStyle: MarkRequired<DefineStyleOptions, 'alias'>
+}
 
 export function resolveOptions(options: Options): OptionsResolved {
   // waiting for vue@3.6 release
@@ -35,14 +37,15 @@ export function resolveOptions(options: Options): OptionsResolved {
     ...options,
     version,
     defineComponent: {
-      alias: options?.defineComponent?.alias ?? [
+      ...options.defineComponent,
+      alias: options.defineComponent?.alias ?? [
         'defineComponent',
         'defineVaporComponent',
       ],
     },
-    defineModel: { alias: options?.defineModel?.alias ?? ['defineModel'] },
-    defineSlots: { alias: options?.defineSlots?.alias ?? ['defineSlots'] },
-    defineExpose: { alias: options?.defineExpose?.alias ?? ['defineExpose'] },
-    defineStyle: { alias: options?.defineStyle?.alias ?? ['defineStyle'] },
+    defineModel: { alias: options.defineModel?.alias ?? ['defineModel'] },
+    defineSlots: { alias: options.defineSlots?.alias ?? ['defineSlots'] },
+    defineExpose: { alias: options.defineExpose?.alias ?? ['defineExpose'] },
+    defineStyle: { alias: options.defineStyle?.alias ?? ['defineStyle'] },
   }
 }
