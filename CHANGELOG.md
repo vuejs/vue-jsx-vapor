@@ -1,3 +1,13 @@
+## [2.3.4](https://github.com/vuejs/vue-jsx-vapor/compare/v2.3.3...v2.3.4) (2025-05-02)
+
+
+### Bug Fixes
+
+* **eslint/jsx-sort-props:** correct sort for reservedProps ([7ddd014](https://github.com/vuejs/vue-jsx-vapor/commit/7ddd01492bcb4d451683a71b8868538aa1ae1e12))
+* **macros:** make alias option optional ([d459bd1](https://github.com/vuejs/vue-jsx-vapor/commit/d459bd1baf2f7fccd7830812aae30b7a680b701f))
+
+
+
 ## [2.3.3](https://github.com/vuejs/vue-jsx-vapor/compare/v2.3.2...v2.3.3) (2025-04-28)
 
 
