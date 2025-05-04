@@ -9,13 +9,13 @@ import type { Node, ObjectExpression } from '@babel/types'
 export function transformDefineComponent(
   root: FunctionalNode,
   propsName: string,
-  map: RootMapValue,
+  macros: RootMapValue,
   s: MagicStringAST,
   autoReturnFunction = false,
 ): void {
-  if (!map.defineComponent) return
+  if (!macros.defineComponent) return
 
-  const defineComponentName = s.sliceNode(map.defineComponent.callee)
+  const defineComponentName = s.sliceNode(macros.defineComponent.callee)
   if (
     defineComponentName &&
     !['defineComponent', 'defineVaporComponent'].includes(defineComponentName)
@@ -77,13 +77,13 @@ export function transformDefineComponent(
     }
   }
 
-  transformDefineModel(s, map.defineModel, props)
+  transformDefineModel(s, macros.defineModel, props)
 
   const propsString = Object.entries(props)
     .map(([key, value]) => `'${key}': ${value}`)
     .join(', \n')
   if (propsString) {
-    const argument = map.defineComponent.arguments[1]
+    const argument = macros.defineComponent.arguments[1]
     if (!argument) {
       s.appendRight(
         root.end!,

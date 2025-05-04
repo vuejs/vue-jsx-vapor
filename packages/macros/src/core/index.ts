@@ -31,7 +31,7 @@ export type FunctionalNode =
 
 export type DefineStyle = {
   expression: CallExpression
-  isDeclaration: boolean
+  isCssModules: boolean
   lang: string
 }
 
@@ -57,8 +57,8 @@ export function transformJsxMacros(
   const rootMap = getRootMap(ast, s, options)
 
   let defineStyleIndex = 0
-  for (const [root, map] of rootMap) {
-    map.defineStyle?.forEach((defineStyle) => {
+  for (const [root, macros] of rootMap) {
+    macros.defineStyle?.forEach((defineStyle) => {
       transformDefineStyle(defineStyle, defineStyleIndex++, root, s, importMap)
     })
 
@@ -71,7 +71,7 @@ export function transformJsxMacros(
       } else if (root.params[0].type === 'ObjectPattern') {
         const lastProp = root.params[0].properties.at(-1)
         if (
-          !map.defineComponent &&
+          !macros.defineComponent &&
           lastProp?.type === 'RestElement' &&
           lastProp.argument.type === 'Identifier'
         ) {
@@ -94,25 +94,25 @@ export function transformJsxMacros(
       s.appendRight(getParamsStart(root, s.original), propsName)
     }
 
-    if (map.defineComponent) {
+    if (macros.defineComponent) {
       transformDefineComponent(
         root,
         propsName,
-        map,
+        macros,
         s,
         options.defineComponent?.autoReturnFunction,
       )
     }
-    if (map.defineModel?.length) {
-      map.defineModel.forEach(({ expression }) => {
+    if (macros.defineModel?.length) {
+      macros.defineModel.forEach(({ expression }) => {
         transformDefineModel(expression, propsName, s)
       })
     }
-    if (map.defineSlots) {
-      transformDefineSlots(map.defineSlots, s)
+    if (macros.defineSlots) {
+      transformDefineSlots(macros.defineSlots, s)
     }
-    if (map.defineExpose) {
-      transformDefineExpose(map.defineExpose, s, options.version)
+    if (macros.defineExpose) {
+      transformDefineExpose(macros.defineExpose, s, options.version)
     }
   }
 
@@ -170,7 +170,7 @@ function getRootMap(ast: Program, s: MagicStringAST, options: OptionsResolved) {
               : 'css'
           ;(rootMap.get(root)!.defineStyle ??= []).push({
             expression: macroExpression,
-            isDeclaration: node.type === 'VariableDeclaration',
+            isCssModules: node.type === 'VariableDeclaration',
             lang,
           })
         } else if (options.defineSlots.alias.includes(macroName)) {

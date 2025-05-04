@@ -9,15 +9,18 @@ export function transformJsxMacros(
 ): void {
   const { ts, codes, ast } = options
 
-  for (const [root, map] of rootMap) {
-    transformDefineStyle(map.defineStyle, options)
+  let defineStyleIndex = 0
+  for (const [root, macros] of rootMap) {
+    macros.defineStyle?.forEach((defaultStyle) =>
+      transformDefineStyle(defaultStyle, defineStyleIndex++, options),
+    )
 
     if (!root?.body) continue
 
     const asyncModifier = root.modifiers?.find(
       (modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword,
     )
-    if (asyncModifier && map.defineComponent)
+    if (asyncModifier && macros.defineComponent)
       replaceRange(codes, asyncModifier.pos, asyncModifier.end)
     const result = `({}) as __VLS_PickNotAny<typeof ${HELPER_PREFIX}ctx.render, {}> & { __ctx: typeof ${HELPER_PREFIX}ctx }`
 
@@ -56,7 +59,7 @@ export function transformJsxMacros(
 
     ts.forEachChild(root.body, (node) => {
       if (ts.isReturnStatement(node) && node.expression) {
-        const props = [...(map.defineModel ?? [])]
+        const props = [...(macros.defineModel ?? [])]
         const elements =
           root.parameters[0] &&
           !root.parameters[0].type &&
@@ -78,7 +81,7 @@ export function transformJsxMacros(
         const shouldWrapByCall =
           (ts.isArrowFunction(node.expression) ||
             ts.isFunctionExpression(node.expression)) &&
-          map.defineComponent
+          macros.defineComponent
         replaceRange(
           codes,
           node.getStart(ast),
@@ -94,8 +97,8 @@ export function transformJsxMacros(
           `
 return {
   props: {} as {${props.join(', ')}},
-  slots: {} as ${map.defineSlots ?? '{}'},
-  expose: (exposed: import('vue').ShallowUnwrapRef<${map.defineExpose ?? '{}'}>) => {},
+  slots: {} as ${macros.defineSlots ?? '{}'},
+  expose: (exposed: import('vue').ShallowUnwrapRef<${macros.defineExpose ?? '{}'}>) => {},
   render: ${HELPER_PREFIX}render,
 }`,
         )

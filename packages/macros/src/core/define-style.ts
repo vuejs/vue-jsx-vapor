@@ -11,7 +11,7 @@ export function transformDefineStyle(
   s: MagicStringAST,
   importMap: Map<string, string>,
 ): void {
-  const { expression, lang, isDeclaration } = defineStyle
+  const { expression, lang, isCssModules } = defineStyle
   if (expression.arguments[0]?.type !== 'TemplateLiteral') return
 
   let css = s.sliceNode(expression.arguments[0]).slice(1, -1)
@@ -79,16 +79,16 @@ export function transformDefineStyle(
     .sliceNode(expression.arguments[0])
     .slice(1, -1)
     .replaceAll(/\/\/(.*)(?=\n)/g, '/*$1*/')
-  const module = isDeclaration ? 'module.' : ''
+  const module = isCssModules ? 'module.' : ''
   const importId = `${helperPrefix}/define-style/${index}?scopeId=${scopeId}&scoped=${scoped}&lang.${module}${lang}`
   importMap.set(importId, css)
   s.appendLeft(
     0,
-    isDeclaration
+    isCssModules
       ? `import style${index} from "${importId}";`
       : `import "${importId}";`,
   )
-  s.overwriteNode(expression, isDeclaration ? `style${index}` : '')
+  s.overwriteNode(expression, isCssModules ? `style${index}` : '')
 }
 
 function getReturnStatement(root: FunctionalNode) {

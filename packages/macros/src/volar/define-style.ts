@@ -1,49 +1,31 @@
-import { HELPER_PREFIX } from '@vue-macros/common'
-import { generateClassProperty } from '@vue/language-core/lib/codegen/style/classProperty.js'
-import { parseCssClassNames } from '@vue/language-core/lib/utils/parseCssClassNames.js'
 import { replaceRange } from 'ts-macro'
-import type { JsxMacros, TransformOptions } from '.'
+import type { DefineStyle, TransformOptions } from '.'
 
 export function transformDefineStyle(
-  defineStyles: JsxMacros['defineStyle'],
+  { expression, isCssModules }: DefineStyle,
+  index: number,
   options: TransformOptions,
 ): void {
-  if (!defineStyles?.length) return
   const { ts, codes, ast } = options
-  defineStyles.forEach(({ expression, isCssModules }, index) => {
-    if (
-      isCssModules &&
-      expression?.arguments[0] &&
-      !expression.typeArguments &&
-      ts.isTemplateLiteral(expression.arguments[0])
-    ) {
-      replaceRange(
-        codes,
-        expression.arguments.pos - 1,
-        expression.arguments.pos - 1,
-        `<${HELPER_PREFIX}PrettifyLocal<{}`,
-        ...generateCssClassesType(
-          expression.arguments[0].getText(ast).slice(1, -1),
-          expression.arguments[0].getStart(ast) + 1,
-          index,
-        ),
-        '>>',
-      )
-    }
-
-    addEmbeddedCode(expression, index, options)
-  })
-}
-
-function* generateCssClassesType(css: string, offset: number, index: number) {
-  for (const className of [...parseCssClassNames(css)]) {
-    yield* generateClassProperty(
-      index,
-      className.text,
-      className.offset + offset,
-      'string',
+  if (
+    isCssModules &&
+    expression?.arguments[0] &&
+    !expression.typeArguments &&
+    ts.isTemplateLiteral(expression.arguments[0])
+  ) {
+    replaceRange(
+      codes,
+      expression.arguments.pos - 1,
+      expression.arguments.pos - 1,
+      `<{`,
+      ...parseCssClassNames(
+        expression.arguments[0].getText(ast).slice(1, -1),
+      ).map(({ text }) => `\n'${text.slice(1)}': string`),
+      '\n}>',
     )
   }
+
+  addEmbeddedCode(expression, index, options)
 }
 
 function addEmbeddedCode(
@@ -87,4 +69,23 @@ function addEmbeddedCode(
     ],
     embeddedCodes: [],
   })
+}
+
+const commentReg = /(?<=\/\*)[\s\S]*?(?=\*\/)|(?<=\/\/)[\s\S]*?(?=\n)/g
+const cssClassNameReg = /(?=(\.[a-z_][-\w]*)[\s.,+~>:#)[{])/gi
+const fragmentReg = /(?<=\{)[^{]*(?=(?<!\\);)/g
+
+function parseCssClassNames(css: string) {
+  for (const reg of [commentReg, fragmentReg]) {
+    css = css.replace(reg, (match) => ' '.repeat(match.length))
+  }
+  const matches = css.matchAll(cssClassNameReg)
+  const result = []
+  for (const match of matches) {
+    const matchText = match[1]
+    if (matchText) {
+      result.push({ offset: match.index, text: matchText })
+    }
+  }
+  return result
 }

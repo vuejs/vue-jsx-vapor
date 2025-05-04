@@ -1,7 +1,6 @@
 {
   "name": "@vue-jsx-vapor/eslint",
   "version": "2.3.4",
-  "packageManager": "pnpm@10.4.1",
   "description": "Vue JSX Vapor ESLint Plugin",
   "type": "module",
   "keywords": [

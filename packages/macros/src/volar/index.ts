@@ -13,14 +13,15 @@ export type TransformOptions = Overwrite<
   } & OptionsResolved
 >
 
+export type DefineStyle = {
+  expression: import('typescript').CallExpression
+  isCssModules: boolean
+}
 export type JsxMacros = {
   defineModel?: string[]
   defineSlots?: string
   defineExpose?: string
-  defineStyle?: {
-    expression: import('typescript').CallExpression
-    isCssModules: boolean
-  }[]
+  defineStyle?: DefineStyle[]
   defineComponent?: true
 }
 export type RootMap = Map<
@@ -35,13 +36,7 @@ function getMacro(
   node: import('typescript').Node | undefined,
   ts: typeof import('typescript'),
   options: TransformOptions,
-):
-  | {
-      expression: import('typescript').CallExpression
-      initializer: import('typescript').Node
-      isRequired: boolean
-    }
-  | undefined {
+) {
   if (!node) return
 
   if (ts.isVariableStatement(node)) {
@@ -108,12 +103,6 @@ export function getRootMap(options: TransformOptions): RootMap {
     node: import('typescript').Node,
     parents: import('typescript').Node[],
   ) {
-    ts.forEachChild(node, (child) => {
-      parents.unshift(node)
-      walk(child, parents)
-      parents.shift()
-    })
-
     const root =
       parents[1] &&
       (ts.isArrowFunction(parents[1]) ||
@@ -137,96 +126,105 @@ export function getRootMap(options: TransformOptions): RootMap {
     }
 
     const macro = getMacro(node, ts, options)
-    if (!macro) return
+    if (macro) {
+      const { expression, initializer } = macro
+      let isRequired = macro.isRequired
+      if (!rootMap.has(root)) rootMap.set(root, {})
+      const macroName = expression.expression.getText(ast)
+      if (macroName.startsWith('defineStyle')) {
+        ;(rootMap.get(root)!.defineStyle ??= [])!.push({
+          expression,
+          isCssModules: ts.isVariableStatement(node),
+        })
+        return
+      }
 
-    const { expression, initializer } = macro
-    let isRequired = macro.isRequired
-    if (!rootMap.has(root)) rootMap.set(root, {})
-    const macroName = expression.expression.getText(ast)
-    if (macroName.startsWith('defineStyle')) {
-      ;(rootMap.get(root)!.defineStyle ??= [])!.push({
-        expression,
-        isCssModules: !!ts.isVariableStatement(node),
-      })
-    }
+      if (root) {
+        if (options.defineModel.alias.includes(macroName)) {
+          const modelName =
+            expression.arguments[0] &&
+            ts.isStringLiteralLike(expression.arguments[0])
+              ? expression.arguments[0].text
+              : 'modelValue'
+          const modelOptions =
+            expression.arguments[0] &&
+            ts.isStringLiteralLike(expression.arguments[0])
+              ? expression.arguments[1]
+              : expression.arguments[0]
+          if (modelOptions && ts.isObjectLiteralExpression(modelOptions)) {
+            let hasRequired = false
+            for (const prop of modelOptions.properties) {
+              if (
+                ts.isPropertyAssignment(prop) &&
+                prop.name.getText(ast) === 'required'
+              ) {
+                hasRequired = true
+                isRequired = prop.initializer.kind === ts.SyntaxKind.TrueKeyword
+              }
+            }
 
-    if (!root) return
-
-    if (options.defineModel.alias.includes(macroName)) {
-      const modelName =
-        expression.arguments[0] &&
-        ts.isStringLiteralLike(expression.arguments[0])
-          ? expression.arguments[0].text
-          : 'modelValue'
-      const modelOptions =
-        expression.arguments[0] &&
-        ts.isStringLiteralLike(expression.arguments[0])
-          ? expression.arguments[1]
-          : expression.arguments[0]
-      if (modelOptions && ts.isObjectLiteralExpression(modelOptions)) {
-        let hasRequired = false
-        for (const prop of modelOptions.properties) {
-          if (
-            ts.isPropertyAssignment(prop) &&
-            prop.name.getText(ast) === 'required'
-          ) {
-            hasRequired = true
-            isRequired = prop.initializer.kind === ts.SyntaxKind.TrueKeyword
+            if (!hasRequired && isRequired) {
+              replaceRange(
+                codes,
+                modelOptions.end - 1,
+                modelOptions.end - 1,
+                `${!modelOptions.properties.hasTrailingComma && modelOptions.properties.length ? ',' : ''} required: true`,
+              )
+            }
+          } else if (isRequired) {
+            replaceRange(
+              codes,
+              expression.arguments.end,
+              expression.arguments.end,
+              `${!expression.arguments.hasTrailingComma && expression.arguments.length ? ',' : ''} { required: true }`,
+            )
           }
-        }
 
-        if (!hasRequired && isRequired) {
+          const id = toValidAssetId(modelName, `${HELPER_PREFIX}model`)
+          const typeString = `import('vue').UnwrapRef<typeof ${id}>`
+          const defineModel = (rootMap.get(root)!.defineModel ??= [])
+          defineModel.push(
+            `${modelName.includes('-') ? `'${modelName}'` : modelName}${isRequired ? ':' : '?:'} ${typeString}`,
+            `'onUpdate:${modelName}'?: ($event: ${typeString}) => any`,
+          )
+          if (expression.typeArguments?.[1]) {
+            defineModel.push(
+              `${modelName}Modifiers?: Partial<Record<${expression.typeArguments[1].getText(ast)}, boolean>>`,
+            )
+          }
+          if (ts.isVariableStatement(node))
+            replaceRange(
+              codes,
+              initializer.getStart(ast),
+              initializer.getStart(ast),
+              `// @ts-ignore\n${id};\nlet ${id} = `,
+            )
+        } else if (options.defineSlots.alias.includes(macroName)) {
           replaceRange(
             codes,
-            modelOptions.end - 1,
-            modelOptions.end - 1,
-            `${!modelOptions.properties.hasTrailingComma && modelOptions.properties.length ? ',' : ''} required: true`,
+            expression.getStart(ast),
+            expression.getStart(ast),
+            `// @ts-ignore\n${HELPER_PREFIX}slots;\nconst ${HELPER_PREFIX}slots = `,
           )
+          rootMap.get(root)!.defineSlots =
+            `Partial<typeof ${HELPER_PREFIX}slots>`
+        } else if (options.defineExpose.alias.includes(macroName)) {
+          replaceRange(
+            codes,
+            expression.getStart(ast),
+            expression.getStart(ast),
+            `// @ts-ignore\n${HELPER_PREFIX}exposed;\nconst ${HELPER_PREFIX}exposed = `,
+          )
+          rootMap.get(root)!.defineExpose = `typeof ${HELPER_PREFIX}exposed`
         }
-      } else if (isRequired) {
-        replaceRange(
-          codes,
-          expression.arguments.end,
-          expression.arguments.end,
-          `${!expression.arguments.hasTrailingComma && expression.arguments.length ? ',' : ''} { required: true }`,
-        )
       }
-
-      const id = toValidAssetId(modelName, `${HELPER_PREFIX}model`)
-      const typeString = `import('vue').UnwrapRef<typeof ${id}>`
-      const defineModel = (rootMap.get(root)!.defineModel ??= [])
-      defineModel.push(
-        `${modelName.includes('-') ? `'${modelName}'` : modelName}${isRequired ? ':' : '?:'} ${typeString}`,
-        `'onUpdate:${modelName}'?: ($event: ${typeString}) => any`,
-      )
-      if (expression.typeArguments?.[1]) {
-        defineModel.push(
-          `${modelName}Modifiers?: Partial<Record<${expression.typeArguments[1].getText(ast)}, boolean>>`,
-        )
-      }
-      replaceRange(
-        codes,
-        initializer.getStart(ast),
-        initializer.getStart(ast),
-        `// @ts-ignore\n${id};\nlet ${id} = `,
-      )
-    } else if (options.defineSlots.alias.includes(macroName)) {
-      replaceRange(
-        codes,
-        expression.getStart(ast),
-        expression.getStart(ast),
-        `// @ts-ignore\n${HELPER_PREFIX}slots;\nconst ${HELPER_PREFIX}slots = `,
-      )
-      rootMap.get(root)!.defineSlots = `Partial<typeof ${HELPER_PREFIX}slots>`
-    } else if (options.defineExpose.alias.includes(macroName)) {
-      replaceRange(
-        codes,
-        expression.getStart(ast),
-        expression.getStart(ast),
-        `// @ts-ignore\n${HELPER_PREFIX}exposed;\nconst ${HELPER_PREFIX}exposed = `,
-      )
-      rootMap.get(root)!.defineExpose = `typeof ${HELPER_PREFIX}exposed`
     }
+
+    ts.forEachChild(node, (child) => {
+      parents.unshift(node)
+      walk(child, parents)
+      parents.shift()
+    })
   }
 
   ts.forEachChild(ast, (node) => walk(node, []))
