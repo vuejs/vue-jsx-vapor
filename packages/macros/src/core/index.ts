@@ -18,6 +18,7 @@ import type {
   CallExpression,
   FunctionDeclaration,
   FunctionExpression,
+  LVal,
   Node,
   Program,
 } from '@babel/types'
@@ -35,13 +36,16 @@ export type DefineStyle = {
   lang: string
 }
 
-export type RootMapValue = {
+export type Macros = {
   defineComponent?: CallExpression
   defineModel?: {
     expression: CallExpression
     isRequired: boolean
   }[]
-  defineSlots?: CallExpression
+  defineSlots?: {
+    expression: CallExpression
+    id?: LVal
+  }
   defineExpose?: CallExpression
   defineStyle?: DefineStyle[]
 }
@@ -59,7 +63,14 @@ export function transformJsxMacros(
   let defineStyleIndex = 0
   for (const [root, macros] of rootMap) {
     macros.defineStyle?.forEach((defineStyle) => {
-      transformDefineStyle(defineStyle, defineStyleIndex++, root, s, importMap)
+      transformDefineStyle(
+        defineStyle,
+        defineStyleIndex++,
+        root,
+        s,
+        importMap,
+        macros,
+      )
     })
 
     if (root === undefined) continue
@@ -109,7 +120,7 @@ export function transformJsxMacros(
       })
     }
     if (macros.defineSlots) {
-      transformDefineSlots(macros.defineSlots, s)
+      transformDefineSlots(macros.defineSlots.expression, s)
     }
     if (macros.defineExpose) {
       transformDefineExpose(macros.defineExpose, s, options.version)
@@ -121,7 +132,7 @@ export function transformJsxMacros(
 
 function getRootMap(ast: Program, s: MagicStringAST, options: OptionsResolved) {
   const parents: (Node | undefined | null)[] = []
-  const rootMap = new Map<FunctionalNode | undefined, RootMapValue>()
+  const rootMap = new Map<FunctionalNode | undefined, Macros>()
   walkAST<Node>(ast, {
     enter(node, parent) {
       parents.unshift(parent)
@@ -174,7 +185,13 @@ function getRootMap(ast: Program, s: MagicStringAST, options: OptionsResolved) {
             lang,
           })
         } else if (options.defineSlots.alias.includes(macroName)) {
-          rootMap.get(root)!.defineSlots = macroExpression
+          rootMap.get(root)!.defineSlots = {
+            expression: macroExpression,
+            id:
+              node.type === 'VariableDeclaration'
+                ? node.declarations[0].id
+                : undefined,
+          }
         } else if (options.defineExpose.alias.includes(macroName)) {
           rootMap.get(root)!.defineExpose = macroExpression
         }

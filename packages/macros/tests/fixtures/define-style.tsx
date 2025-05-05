@@ -20,12 +20,16 @@ export default defineComponent(() => {
       }
     }
   `)
+  const { default: Default, ...slots } = defineSlots()
   return () => (
     <>
       <div class={styles.bar}>foo</div>
       <div class="bar">
         <span>bar</span>
       </div>
+
+      <Default />
+      <slots.title />
     </>
   )
 })

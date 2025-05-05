@@ -1,6 +1,6 @@
 import { importHelperFn, type MagicStringAST } from '@vue-macros/common'
 import { walkIdentifiers } from '@vue/compiler-sfc'
-import { isFunctionalNode, type FunctionalNode, type RootMapValue } from '..'
+import { isFunctionalNode, type FunctionalNode, type Macros } from '..'
 import { getDefaultValue, restructure } from '../restructure'
 import { transformAwait } from './await'
 import { transformReturn } from './return'
@@ -9,7 +9,7 @@ import type { Node, ObjectExpression } from '@babel/types'
 export function transformDefineComponent(
   root: FunctionalNode,
   propsName: string,
-  macros: RootMapValue,
+  macros: Macros,
   s: MagicStringAST,
   autoReturnFunction = false,
 ): void {
@@ -143,7 +143,7 @@ function getWalkedIds(root: FunctionalNode, propsName: string) {
 
 function transformDefineModel(
   s: MagicStringAST,
-  defineModel: RootMapValue['defineModel'],
+  defineModel: Macros['defineModel'],
   props: Record<string, string | null>,
 ) {
   for (const { expression, isRequired } of defineModel || []) {

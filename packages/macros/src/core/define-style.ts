@@ -1,7 +1,12 @@
 import { walkAST, type MagicStringAST } from '@vue-macros/common'
 import hash from 'hash-sum'
 import { helperPrefix } from './helper'
-import { isFunctionalNode, type DefineStyle, type FunctionalNode } from '.'
+import {
+  isFunctionalNode,
+  type DefineStyle,
+  type FunctionalNode,
+  type Macros,
+} from '.'
 import type { Node } from '@babel/types'
 
 export function transformDefineStyle(
@@ -10,6 +15,7 @@ export function transformDefineStyle(
   root: FunctionalNode | undefined,
   s: MagicStringAST,
   importMap: Map<string, string>,
+  { defineSlots }: Macros,
 ): void {
   const { expression, lang, isCssModules } = defineStyle
   if (expression.arguments[0]?.type !== 'TemplateLiteral') return
@@ -62,14 +68,37 @@ export function transformDefineStyle(
     }
   }
 
-  if (scoped && returnExpression) {
-    walkAST<Node>(returnExpression, {
+  if (scoped && root) {
+    const slotNames = defineSlots?.id
+      ? defineSlots.id.type === 'Identifier'
+        ? defineSlots.id.name
+        : defineSlots.id.type === 'ObjectPattern'
+          ? defineSlots.id.properties.map((prop) =>
+              s.sliceNode(
+                prop.type === 'RestElement' ? prop.argument : prop.value,
+              ),
+            )
+          : []
+      : []
+    walkAST<Node>(root, {
       enter(node) {
         if (
           node.type === 'JSXElement' &&
           s.sliceNode(node.openingElement.name) !== 'template'
         ) {
-          s.appendRight(node.openingElement.name.end!, ` data-v-${scopeId}=""`)
+          let subfix = ''
+          if (slotNames.length) {
+            const name = s.sliceNode(
+              node.openingElement.name.type === 'JSXMemberExpression'
+                ? node.openingElement.name.object
+                : node.openingElement.name,
+            )
+            subfix = slotNames.includes(name) ? '-s' : ''
+          }
+          s.appendRight(
+            node.openingElement.name.end!,
+            ` data-v-${scopeId}${subfix}=""`,
+          )
         }
       },
     })
