@@ -1,3 +1,12 @@
+## [2.3.5](https://github.com/vuejs/vue-jsx-vapor/compare/v2.3.4...v2.3.5) (2025-05-05)
+
+
+### Features
+
+* **macros:** support :slotted for defineStyle ([fb10489](https://github.com/vuejs/vue-jsx-vapor/commit/fb10489f0674b0756ef8bbc7250b6ee545d7dc14))
+
+
+
 ## [2.3.4](https://github.com/vuejs/vue-jsx-vapor/compare/v2.3.3...v2.3.4) (2025-05-02)
 
 
