@@ -191,6 +191,7 @@
     "esbuild": "*",
     "rollup": "^3",
     "vite": ">=3",
+    "vue": "^3.5.0",
     "webpack": "^4 || ^5"
   },
   "peerDependenciesMeta": {

@@ -5,7 +5,7 @@ packages:
 
 defines:
   - &babel ^7.26.8
-  - &vue-macros ^3.0.0-beta.10
+  - &vue-macros ^3.0.0-beta.12
 
 catalog:
   '@babel/core': *babel
@@ -19,10 +19,10 @@ catalog:
   '@nuxt/kit': ^3.16.0
   '@nuxt/schema': ^3.16.0
 
-  '@vue/compiler-dom': https://pkg.pr.new/@vue/compiler-dom@42f38ca
-  '@vue/compiler-sfc': https://pkg.pr.new/@vue/compiler-sfc@42f38ca
-  '@vue/compiler-vapor': https://pkg.pr.new/@vue/compiler-vapor@42f38ca
-  '@vue/shared': https://pkg.pr.new/@vue/shared@42f38ca
+  '@vue/compiler-dom': https://pkg.pr.new/@vue/compiler-dom@d386396
+  '@vue/compiler-sfc': https://pkg.pr.new/@vue/compiler-sfc@d386396
+  '@vue/compiler-vapor': https://pkg.pr.new/@vue/compiler-vapor@d386396
+  '@vue/shared': https://pkg.pr.new/@vue/shared@d386396
 
   '@vue-macros/common': *vue-macros
   '@vue-macros/jsx-directive': *vue-macros
@@ -32,9 +32,9 @@ catalog:
 
   '@types/hash-sum': ^1.0.2
   hash-sum: ^2.0.0
-  ts-macro: ^0.1.25
+  ts-macro: ^0.1.29
   unplugin: ^2.2.2
   unplugin-utils: ^0.2.4
   vite: ^6.2.1
   vitest: ^3.0.8
-  vue: https://pkg.pr.new/vue@42f38ca
+  vue: https://pkg.pr.new/vue@d386396

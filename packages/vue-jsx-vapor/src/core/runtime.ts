@@ -2,6 +2,7 @@ import {
   effectScope,
   insert,
   isFragment,
+  isVaporComponent,
   remove,
   renderEffect,
   VaporFragment,
@@ -12,7 +13,7 @@ import {
 export { shallowRef as useRef } from 'vue'
 
 function createFragment(
-  nodes: Block[],
+  nodes: Block,
   anchor: Node | undefined = document.createTextNode(''),
 ) {
   const frag = new VaporFragment(nodes)
@@ -20,19 +21,21 @@ function createFragment(
   return frag
 }
 
-function normalizeValue(value: any, anchor?: Element): Block {
-  if (value instanceof Node || isFragment(value)) {
+function normalizeNode(node: any, anchor?: Element): Block {
+  if (node instanceof Node || isFragment(node)) {
     anchor && (anchor.textContent = '')
-    return value
-  } else if (Array.isArray(value)) {
+    return node
+  } else if (isVaporComponent(node)) {
+    anchor && (anchor.textContent = '')
+    return createFragment(node, anchor)
+  } else if (Array.isArray(node)) {
     anchor && (anchor.textContent = '')
     return createFragment(
-      value.map((i) => normalizeValue(i)),
+      node.map((i) => normalizeNode(i)),
       anchor,
     )
   } else {
-    const result =
-      value == null || typeof value === 'boolean' ? '' : String(value)
+    const result = node == null || typeof node === 'boolean' ? '' : String(node)
     if (anchor) {
       anchor.textContent = result
       return anchor
@@ -43,7 +46,7 @@ function normalizeValue(value: any, anchor?: Element): Block {
 }
 
 function resolveValue(current: Block, value: any, anchor?: Element) {
-  const node = normalizeValue(value, anchor)
+  const node = normalizeNode(value, anchor)
   if (current) {
     if (isFragment(current)) {
       const { anchor } = current
