@@ -1,3 +1,12 @@
+## [2.3.6](https://github.com/vuejs/vue-jsx-vapor/compare/v2.3.5...v2.3.6) (2025-05-12)
+
+
+### Features
+
+* **vue-jsx-vapor:** support vaporComponent for createNodes ([403a800](https://github.com/vuejs/vue-jsx-vapor/commit/403a800e60166bd225ebbfb9b60d4c3ee6f68dbb))
+
+
+
 ## [2.3.5](https://github.com/vuejs/vue-jsx-vapor/compare/v2.3.4...v2.3.5) (2025-05-05)
 
 
