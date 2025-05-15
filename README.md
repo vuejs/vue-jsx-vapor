@@ -21,7 +21,7 @@ npm i vue-jsx-vapor
 
 ## Usage
 
-- [📜 Documentation]((https://jsx-vapor.netlify.app/))
+- [📜 Documentation](https://jsx-vapor.netlify.app/)
 - [🛰️ Playground](https://repl.zmjs.dev/vuejs/vue-jsx-vapor)
 
 <details>
