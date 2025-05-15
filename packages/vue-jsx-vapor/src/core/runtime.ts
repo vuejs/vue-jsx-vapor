@@ -1,5 +1,5 @@
 import {
-  effectScope,
+  EffectScope,
   insert,
   isFragment,
   isVaporComponent,
@@ -7,7 +7,6 @@ import {
   renderEffect,
   VaporFragment,
   type Block,
-  type EffectScope,
 } from 'vue'
 
 export { shallowRef as useRef } from 'vue'
@@ -80,7 +79,7 @@ function resolveValues(values: any[] = [], _anchor?: Element) {
     if (typeof value === 'function') {
       renderEffect(() => {
         if (scopes[index]) scopes[index].stop()
-        scopes[index] = effectScope()
+        scopes[index] = new EffectScope()
         nodes[index] = scopes[index].run(() =>
           resolveValue(nodes[index], value(), anchor),
         )!

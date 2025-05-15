@@ -26,10 +26,10 @@ features:
     details: Support most macros of Vue, Friendly to JSX.
   - icon: 🦾
     title: Type Safe
-    details: Provide Volar support by install TS Macro (VSCode plugin).
+    details: Provide Volar plugin support by install TS Macro (VSCode plugin).
   - icon: ⚡️
     title: High Performance
-    details: It has the same performance with Vue Vapor!
+    details: It has the same performance as Vue Vapor!
   - icon: 🌈
     title: Hot Module Replacement
     details: Support functional components or defined by defineComponent.
