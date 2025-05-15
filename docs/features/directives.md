@@ -131,32 +131,3 @@ export default () => {
   )
 }
 ```
-
-## `v-slot`
-
-```tsx twoslash
-export const Comp = () => {
-  defineSlots<{
-    default: (scope: { foo: string }) => any
-    title: (scope: { bar: number }) => any
-  }>()
-  return <div />
-}
-
-const slots = defineSlots<{
-  default: (scope: { foo: string }) => any
-  title: (scope: { bar: number }) => any
-}>()
-
-// ---cut-start---
-// prettier-ignore
-// ---cut-end---
-export default () => (
-  <Comp>
-    <template v-for={(Slot, name) in slots} v-slot:$name$={scope}>
-      //                                             ^?
-      <Slot v-if={Slot} {...scope} />
-    </template>
-  </Comp>
-)
-```
