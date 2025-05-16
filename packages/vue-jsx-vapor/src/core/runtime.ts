@@ -3,8 +3,10 @@ import {
   insert,
   isFragment,
   isVaporComponent,
+  pauseTracking,
   remove,
   renderEffect,
+  resetTracking,
   VaporFragment,
   type Block,
 } from 'vue'
@@ -78,11 +80,13 @@ function resolveValues(values: any[] = [], _anchor?: Element) {
     const anchor = index === values.length - 1 ? _anchor : undefined
     if (typeof value === 'function') {
       renderEffect(() => {
+        pauseTracking()
         if (scopes[index]) scopes[index].stop()
         scopes[index] = new EffectScope()
         nodes[index] = scopes[index].run(() =>
           resolveValue(nodes[index], value(), anchor),
         )!
+        resetTracking()
       })
     } else {
       nodes[index] = resolveValue(nodes[index], value, anchor)
