@@ -15,7 +15,7 @@ export default defineComponent(() => {
   const styles = defineStyle.scss(`
     .bar {
       color: ${color.value};
-      .barBaz {
+      .bar-baz {
         background: red;
       }
     }
@@ -25,7 +25,7 @@ export default defineComponent(() => {
     <>
       <div class={styles.bar}>foo</div>
       <div class="bar">
-        <span>bar</span>
+        <span class={styles['bar-baz']}>bar</span>
       </div>
 
       <Default />

@@ -1,4 +1,4 @@
-import { replaceRange } from 'ts-macro'
+import { allCodeFeatures, replaceRange, type Code } from 'ts-macro'
 import type { DefineStyle, TransformOptions } from '.'
 
 export function transformDefineStyle(
@@ -20,12 +20,43 @@ export function transformDefineStyle(
       `<{`,
       ...parseCssClassNames(
         expression.arguments[0].getText(ast).slice(1, -1),
-      ).map(({ text }) => `\n'${text.slice(1)}': string`),
+      ).flatMap(
+        ({ text, offset }) =>
+          [
+            `\n`,
+            [
+              `'${text.slice(1)}'`,
+              `style_${index}`,
+              expression.arguments.pos + offset + 1,
+              { navigation: true },
+            ],
+            `: string`,
+          ] as Code[],
+      ),
       '\n}>',
     )
   }
 
   addEmbeddedCode(expression, index, options)
+}
+
+const commentReg = /(?<=\/\*)[\s\S]*?(?=\*\/)|(?<=\/\/)[\s\S]*?(?=\n)/g
+const cssClassNameReg = /(?=(\.[a-z_][-\w]*)[\s.,+~>:#)[{])/gi
+const fragmentReg = /(?<=\{)[^{]*(?=(?<!\\);)/g
+
+function parseCssClassNames(css: string) {
+  for (const reg of [commentReg, fragmentReg]) {
+    css = css.replace(reg, (match) => ' '.repeat(match.length))
+  }
+  const matches = css.matchAll(cssClassNameReg)
+  const result = []
+  for (const match of matches) {
+    const matchText = match[1]
+    if (matchText) {
+      result.push({ offset: match.index, text: matchText })
+    }
+  }
+  return result
 }
 
 function addEmbeddedCode(
@@ -57,35 +88,9 @@ function addEmbeddedCode(
         sourceOffsets: [style.getStart(ast) + 1],
         generatedOffsets: [0],
         lengths: [styleText.length],
-        data: {
-          completion: true,
-          format: true,
-          navigation: true,
-          semantic: true,
-          structure: true,
-          verification: true,
-        },
+        data: allCodeFeatures,
       },
     ],
     embeddedCodes: [],
   })
-}
-
-const commentReg = /(?<=\/\*)[\s\S]*?(?=\*\/)|(?<=\/\/)[\s\S]*?(?=\n)/g
-const cssClassNameReg = /(?=(\.[a-z_][-\w]*)[\s.,+~>:#)[{])/gi
-const fragmentReg = /(?<=\{)[^{]*(?=(?<!\\);)/g
-
-function parseCssClassNames(css: string) {
-  for (const reg of [commentReg, fragmentReg]) {
-    css = css.replace(reg, (match) => ' '.repeat(match.length))
-  }
-  const matches = css.matchAll(cssClassNameReg)
-  const result = []
-  for (const match of matches) {
-    const matchText = match[1]
-    if (matchText) {
-      result.push({ offset: match.index, text: matchText })
-    }
-  }
-  return result
 }
