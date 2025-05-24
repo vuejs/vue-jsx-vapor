@@ -1485,7 +1485,8 @@ export type ReservedProps = {
 
 export type NativeElements = {
   [K in keyof IntrinsicElementAttributes]: IntrinsicElementAttributes[K] &
-    ReservedProps
+    ReservedProps &
+    import('vue').HTMLAttributes
 }
 
 interface BaseSyntheticEvent<E = object, C = unknown, T = unknown> {
