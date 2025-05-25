@@ -14,7 +14,7 @@ const plugin: PluginReturn<Options | undefined, true> = createPlugin(
       options?.macros === false
         ? []
         : options?.macros
-          ? jsxMacros(options.macros ? undefined : options.macros)(ctx)
+          ? jsxMacros(options.macros === true ? undefined : options.macros)(ctx)
           : [],
     ].flat()
   },
