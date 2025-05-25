@@ -16,7 +16,7 @@ const Comp = defineComponent(
       <Comp />
     </div>
   },
-  { name: 'Comp' },
+  { name: 'Comp', props: { Comp: Object } },
 )
 
 const Comp1 = defineComponent((props: { bar: 'bar'; 'onUpdate:bar': any, comp: any }) => {

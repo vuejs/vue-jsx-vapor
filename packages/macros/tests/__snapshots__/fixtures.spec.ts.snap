@@ -22,7 +22,7 @@ const Comp = defineComponent(
       <__MACROS_props.Comp />
     </div>
   },
-  {props: {
+  {inheritAttrs: false, name: 'Comp', props: {...{
 'bar': { required: true, type: String, default: 'bar' }, 
 'Comp': null, 
 'modelValue': null, 
@@ -33,7 +33,7 @@ const Comp = defineComponent(
         }, type: String }, 
 'onUpdate:foo': null, 
 'fooModifiers': null
-},inheritAttrs: false, name: 'Comp' },
+}, ...{ Comp: Object }} },
 )
 
 const Comp1 = defineComponent((props: { bar: 'bar'; 'onUpdate:bar': any, comp: any }) => {
@@ -120,7 +120,7 @@ const Comp = defineComponent(
       <__MACROS_props.Comp />
     </div>
   },
-  {props: {
+  {inheritAttrs: false, name: 'Comp', props: {...{
 'bar': { required: true, type: String, default: 'bar' }, 
 'Comp': null, 
 'modelValue': null, 
@@ -131,7 +131,7 @@ const Comp = defineComponent(
         }, type: String }, 
 'onUpdate:foo': null, 
 'fooModifiers': null
-},inheritAttrs: false, name: 'Comp' },
+}, ...{ Comp: Object }} },
 )
 
 const Comp1 = defineComponent((props: { bar: 'bar'; 'onUpdate:bar': any, comp: any }) => {

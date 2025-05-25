@@ -90,7 +90,21 @@ export function transformDefineComponent(
         `, {${hasRestProp ? 'inheritAttrs: false,' : ''} props: {\n${propsString}\n} }`,
       )
     } else if (argument.type === 'ObjectExpression') {
-      prependObjectExpression(argument, 'props', `{\n${propsString}\n}`, s)
+      const resolvedPropsString = `{\n${propsString}\n}`
+      const prop = prependObjectExpression(
+        argument,
+        'props',
+        resolvedPropsString,
+        s,
+      )
+      if (
+        prop &&
+        prop.type === 'ObjectProperty' &&
+        prop.value.type === 'ObjectExpression'
+      ) {
+        s.appendLeft(prop.value.start!, `{...${resolvedPropsString}, ...`)
+        s.appendRight(prop.value.end!, '}')
+      }
       if (hasRestProp) {
         prependObjectExpression(argument, 'inheritAttrs', 'false', s)
       }
@@ -109,16 +123,16 @@ function prependObjectExpression(
   value: string,
   s: MagicStringAST,
 ) {
-  if (
-    !argument.properties?.find(
-      (prop) =>
-        prop.type === 'ObjectProperty' &&
-        prop.key.type === 'Identifier' &&
-        prop.key.name === name,
-    )
-  ) {
+  const prop = argument.properties?.find(
+    (prop) =>
+      prop.type === 'ObjectProperty' &&
+      prop.key.type === 'Identifier' &&
+      prop.key.name === name,
+  )
+  if (!prop) {
     s.appendRight(argument.start! + 1, `${name}: ${value},`)
   }
+  return prop
 }
 
 function getWalkedIds(root: FunctionalNode, propsName: string) {
