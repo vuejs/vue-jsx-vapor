@@ -1,7 +1,7 @@
 import { defineComponent, nextTick } from 'vue'
 
 const Comp = defineComponent(
-  ({ bar = 'bar'!, ...attrs }: { bar: 'bar'; baz: 'baz' }) => {
+  ({ bar = 'bar'!, Comp, ...attrs }: { bar: 'bar'; baz: 'baz', Comp: any }) => {
     defineModel()
     const foo = $(
       defineModel('foo', {
@@ -11,14 +11,20 @@ const Comp = defineComponent(
         type: String,
       })!,
     )
-    return <div>{[foo, bar, attrs.baz]}</div>
+    return <div>
+      {[foo, bar, attrs.baz]}
+      <Comp />
+    </div>
   },
   { name: 'Comp' },
 )
 
-const Comp1 = defineComponent((props: { bar: 'bar'; 'onUpdate:bar': any }) => {
+const Comp1 = defineComponent((props: { bar: 'bar'; 'onUpdate:bar': any, comp: any }) => {
   const foo = defineModel('foo')
-  return <div>{[foo.value, props['bar'], props['onUpdate:bar']]}</div>
+  return <div>
+      {[foo.value, props['bar'], props['onUpdate:bar']]}
+      <props.comp />
+    </div>
 })
 
 const Comp2 = defineComponent(async () => {

@@ -1,6 +1,6 @@
 import { importHelperFn, type MagicStringAST } from '@vue-macros/common'
-import { walkIdentifiers } from '@vue/compiler-sfc'
 import { isFunctionalNode, type FunctionalNode, type Macros } from '..'
+import { walkIdentifiers } from '../babel-utils'
 import { getDefaultValue, restructure } from '../restructure'
 import { transformAwait } from './await'
 import { transformReturn } from './return'
@@ -127,10 +127,12 @@ function getWalkedIds(root: FunctionalNode, propsName: string) {
     if (
       id.name === propsName &&
       (parent?.type === 'MemberExpression' ||
+        parent?.type === 'JSXMemberExpression' ||
         parent?.type === 'OptionalMemberExpression')
     ) {
       const prop =
-        parent.property.type === 'Identifier'
+        parent.property.type === 'Identifier' ||
+        parent.property.type === 'JSXIdentifier'
           ? parent.property.name
           : parent.property.type === 'StringLiteral'
             ? parent.property.value

@@ -3,7 +3,7 @@ import {
   importHelperFn,
   type MagicStringAST,
 } from '@vue-macros/common'
-import { walkIdentifiers } from '@vue/compiler-sfc'
+import { walkIdentifiers } from './babel-utils'
 import { withDefaultsHelperId } from './helper'
 import type { FunctionalNode } from '.'
 import type { Node } from '@babel/types'
