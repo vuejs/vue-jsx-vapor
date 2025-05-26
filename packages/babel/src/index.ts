@@ -113,8 +113,10 @@ export default (): {
           }
 
           path.node.body.unshift(
-            ...parse(statements.join('\n'), { sourceType: 'module' }).program
-              .body,
+            ...parse(statements.join('\n'), {
+              sourceType: 'module',
+              plugins: ['typescript'],
+            }).program.body,
           )
         },
       },
