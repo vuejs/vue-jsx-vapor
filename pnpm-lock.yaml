@@ -42,9 +42,6 @@ catalogs:
     '@vue-macros/jsx-directive':
       specifier: ^3.0.0-beta.12
       version: 3.0.0-beta.12
-    '@vue-macros/reactivity-transform':
-      specifier: ^3.0.0-beta.12
-      version: 3.0.0-beta.12
     '@vue-macros/test-utils':
       specifier: ^3.0.0-beta.12
       version: 3.0.0-beta.12
@@ -101,9 +98,6 @@ importers:
       '@types/node':
         specifier: ^22.13.10
         version: 22.15.21
-      '@vue-macros/reactivity-transform':
-        specifier: 'catalog:'
-        version: 3.0.0-beta.12(vue@3.5.14(typescript@5.8.3))
       bumpp:
         specifier: ^10.0.3
         version: 10.1.1
@@ -2400,6 +2394,7 @@ packages:
 
   '@vue-macros/common@3.0.0-beta.12':
     resolution: {integrity: sha512-+kD4iz7I7XeRmFxWlH1d8EVYXRB0ssa/ihgHK5A3rHma6y2iBEBhcDACTvkPWZqSc5iihRmiE8zVA/MDyGt7ww==}
+    version: 3.0.0-beta.12
     engines: {node: '>=20.18.0'}
     peerDependencies:
       vue: ^2.7.0 || ^3.2.25
@@ -2415,12 +2410,6 @@ packages:
   '@vue-macros/jsx-directive@3.0.0-beta.12':
     resolution: {integrity: sha512-0WuPHWPXaOVZN/PfRGTKm7HQFZ4zH1MjipvxclCIfie7R6IYDkzsW89NjQYgD23KRXYx/U9pDFTzVPot+5OZbQ==}
     engines: {node: '>=20.18.0'}
-
-  '@vue-macros/reactivity-transform@3.0.0-beta.12':
-    resolution: {integrity: sha512-RszGdLb6fc8YC6acwI+JnjTk6Ac3gXV6MR52r+NsNWQ6hQ9gcNDWEx1ZhWeHy4tdq5ON+wAWzRrTVhiVyzrBbA==}
-    engines: {node: '>=20.18.0'}
-    peerDependencies:
-      vue: ^2.7.0 || ^3.2.25
 
   '@vue-macros/short-bind@3.0.0-beta.12':
     resolution: {integrity: sha512-hGn9959oSuEOqG5Ed5Q7OKmYyWxGznmmmS7217UGVBK6lDZJF9dmldB4u773Lmm27+stFQuisJ5O4SV9QFFzKQ==}
@@ -7008,16 +6997,6 @@ snapshots:
     transitivePeerDependencies:
       - vue
 
-  '@vue-macros/common@3.0.0-beta.12(vue@3.5.14(typescript@5.8.3))':
-    dependencies:
-      '@vue/compiler-sfc': 3.5.13
-      ast-kit: 2.0.0
-      local-pkg: 1.1.1
-      magic-string-ast: 0.9.1
-      unplugin-utils: 0.2.4
-    optionalDependencies:
-      vue: 3.5.14(typescript@5.8.3)
-
   '@vue-macros/common@3.0.0-beta.12(vue@https://pkg.pr.new/vue@7874664(typescript@5.8.3))':
     dependencies:
       '@vue/compiler-sfc': 3.5.13
@@ -7043,16 +7022,6 @@ snapshots:
       vue: 3.5.13(typescript@5.8.3)
     transitivePeerDependencies:
       - typescript
-
-  '@vue-macros/reactivity-transform@3.0.0-beta.12(vue@3.5.14(typescript@5.8.3))':
-    dependencies:
-      '@babel/parser': 7.27.2
-      '@vue-macros/common': 3.0.0-beta.12(vue@3.5.14(typescript@5.8.3))
-      '@vue/compiler-core': 3.5.13
-      '@vue/shared': 3.5.13
-      magic-string: 0.30.17
-      unplugin: 2.3.2
-      vue: 3.5.14(typescript@5.8.3)
 
   '@vue-macros/short-bind@3.0.0-beta.12(vue@https://pkg.pr.new/vue@7874664(typescript@5.8.3))':
     dependencies:

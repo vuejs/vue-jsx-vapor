@@ -26,22 +26,8 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "dev": "./src/index.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
-    },
-    "./*": "./*"
-  },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "./dist/*",
-        "./*"
-      ]
-    }
-  },
-  "publishConfig": {
-    ".": {
+      "types": "./dist/index.d.ts",
+      "jsx-vapor-dev": "./src/index.ts",
       "require": "./dist/index.cjs",
       "import": "./dist/index.js"
     },

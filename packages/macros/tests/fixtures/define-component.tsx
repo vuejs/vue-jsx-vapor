@@ -1,4 +1,6 @@
-import { defineComponent, nextTick } from 'vue'
+import { defineComponent, nextTick, unref } from 'vue'
+
+const $ = unref
 
 const Comp = defineComponent(
   ({ bar = 'bar'!, Comp, ...attrs }: { bar: 'bar'; baz: 'baz', Comp: any }) => {

@@ -26,7 +26,6 @@ catalog:
 
   '@vue-macros/common': *vue-macros
   '@vue-macros/jsx-directive': *vue-macros
-  '@vue-macros/reactivity-transform': *vue-macros
   '@vue-macros/test-utils': *vue-macros
   '@vue-macros/volar': *vue-macros
 

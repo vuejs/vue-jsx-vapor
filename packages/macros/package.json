@@ -27,112 +27,68 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "dev": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "jsx-vapor-dev": "./src/index.ts",
       "require": "./dist/index.cjs",
       "import": "./dist/index.js"
     },
     "./astro": {
-      "dev": "./src/astro.ts",
+      "types": "./dist/astro.d.ts",
+      "jsx-vapor-dev": "./src/astro.ts",
       "require": "./dist/astro.cjs",
       "import": "./dist/astro.js"
     },
     "./rspack": {
-      "dev": "./src/rspack.ts",
+      "types": "./dist/rspack.d.ts",
+      "jsx-vapor-dev": "./src/rspack.ts",
       "require": "./dist/rspack.cjs",
       "import": "./dist/rspack.js"
     },
     "./vite": {
-      "dev": "./src/vite.ts",
+      "types": "./dist/vite.d.ts",
+      "jsx-vapor-dev": "./src/vite.ts",
       "require": "./dist/vite.cjs",
       "import": "./dist/vite.js"
     },
     "./webpack": {
-      "dev": "./src/webpack.ts",
+      "types": "./dist/webpack.d.ts",
+      "jsx-vapor-dev": "./src/webpack.ts",
       "require": "./dist/webpack.cjs",
       "import": "./dist/webpack.js"
     },
     "./rollup": {
-      "dev": "./src/rollup.ts",
+      "types": "./dist/rollup.d.ts",
+      "jsx-vapor-dev": "./src/rollup.ts",
       "require": "./dist/rollup.cjs",
       "import": "./dist/rollup.js"
     },
     "./esbuild": {
-      "dev": "./src/esbuild.ts",
+      "types": "./dist/esbuild.d.ts",
+      "jsx-vapor-dev": "./src/esbuild.ts",
       "require": "./dist/esbuild.cjs",
       "import": "./dist/esbuild.js"
     },
     "./nuxt": {
-      "dev": "./src/nuxt.ts",
+      "types": "./dist/nuxt.d.ts",
+      "jsx-vapor-dev": "./src/nuxt.ts",
       "require": "./dist/nuxt.cjs",
       "import": "./dist/nuxt.js"
     },
     "./api": {
-      "dev": "./src/api.ts",
+      "types": "./dist/api.d.ts",
+      "jsx-vapor-dev": "./src/api.ts",
       "require": "./dist/api.cjs",
       "import": "./dist/api.js"
     },
     "./raw": {
-      "dev": "./src/raw.ts",
+      "types": "./dist/raw.d.ts",
+      "jsx-vapor-dev": "./src/raw.ts",
       "require": "./dist/raw.cjs",
       "import": "./dist/raw.js"
     },
     "./volar": {
-      "dev": "./src/volar.ts",
-      "require": "./dist/volar.cjs",
-      "import": "./dist/volar.js"
-    },
-    "./*": "./*"
-  },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "./dist/*",
-        "./*"
-      ]
-    }
-  },
-  "publishConfig": {
-    ".": {
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
-    },
-    "./astro": {
-      "require": "./dist/astro.cjs",
-      "import": "./dist/astro.js"
-    },
-    "./rspack": {
-      "require": "./dist/rspack.cjs",
-      "import": "./dist/rspack.js"
-    },
-    "./vite": {
-      "require": "./dist/vite.cjs",
-      "import": "./dist/vite.js"
-    },
-    "./webpack": {
-      "require": "./dist/webpack.cjs",
-      "import": "./dist/webpack.js"
-    },
-    "./rollup": {
-      "require": "./dist/rollup.cjs",
-      "import": "./dist/rollup.js"
-    },
-    "./esbuild": {
-      "require": "./dist/esbuild.cjs",
-      "import": "./dist/esbuild.js"
-    },
-    "./nuxt": {
-      "require": "./dist/nuxt.cjs",
-      "import": "./dist/nuxt.js"
-    },
-    "./api": {
-      "require": "./dist/api.cjs",
-      "import": "./dist/api.js"
-    },
-    "./raw": {
-      "require": "./dist/raw.cjs",
-      "import": "./dist/raw.js"
-    },
-    "./volar": {
+      "types": "./dist/volar.d.ts",
+      "jsx-vapor-dev": "./src/volar.ts",
       "require": "./dist/volar.cjs",
       "import": "./dist/volar.js"
     },

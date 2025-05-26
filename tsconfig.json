@@ -10,10 +10,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "types": [
-      "vite/client",
-      "@vue-macros/reactivity-transform/macros-global.d.ts"
-    ],
+    "types": ["vite/client"],
     "strict": true,
     "strictNullChecks": true,
     "esModuleInterop": true,
