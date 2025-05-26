@@ -1,3 +1,23 @@
+# [2.4.0](https://github.com/vuejs/vue-jsx-vapor/compare/v2.3.6...v2.4.0) (2025-05-26)
+
+
+### Bug Fixes
+
+* **babel:** add typescript plugin for parse ([2d0cd50](https://github.com/vuejs/vue-jsx-vapor/commit/2d0cd50245ac6c6add853b7c69c6a86758a0b9c4))
+* **vue-jsx-vapor/volar:** correct passing macros's options ([21d8b0a](https://github.com/vuejs/vue-jsx-vapor/commit/21d8b0a390db96ad9f8a1f200715579d3dc97609))
+
+
+### Features
+
+* **macros/define-style:** support navigation for css-modules ([710127d](https://github.com/vuejs/vue-jsx-vapor/commit/710127d020fc10d2bb4a85c3cc83986fa2294440))
+* **macros:** add JSX support for auto generate props ([4cfcc0d](https://github.com/vuejs/vue-jsx-vapor/commit/4cfcc0ded95f03281cf166c5ae0fdc309003e0d5))
+* **macros:** props allowed to be overridden for defineComponent ([2f5ce4a](https://github.com/vuejs/vue-jsx-vapor/commit/2f5ce4ad78677c755764b9a199d70665c366baab))
+* **vue-jsx-vapor:** add pauseTracking and pauseTracking for createNodes ([617eb2f](https://github.com/vuejs/vue-jsx-vapor/commit/617eb2f0c0ebb6155b11e4a1bf1b0e627f447e75))
+* **vue-jsx-vapor:** introduce useProps and useFullProps ([69041a7](https://github.com/vuejs/vue-jsx-vapor/commit/69041a748f6908c9a1e1a2750107defd6a3308fb))
+* **vue-jsx-vapor:** support custom HTMLAttributes for jsx-runtime ([22fb370](https://github.com/vuejs/vue-jsx-vapor/commit/22fb370ab8468268c1f7934326943c61d92f342d))
+
+
+
 ## [2.3.6](https://github.com/vuejs/vue-jsx-vapor/compare/v2.3.5...v2.3.6) (2025-05-12)
 
 
