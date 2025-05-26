@@ -29,6 +29,7 @@ export default defineVaporComponent(() => {
         <fieldset>
           <legend>v-if</legend>
           <div>
+            {/* @ts-ignore */}
             <div v-if={count.value === 1} a b c d e>
               {count.value}
             </div>

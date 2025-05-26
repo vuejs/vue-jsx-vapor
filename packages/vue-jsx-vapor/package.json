@@ -23,7 +23,8 @@
     "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
   },
   "files": [
-    "dist"
+    "dist",
+    "jsx-runtime"
   ],
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -102,16 +103,16 @@
       "import": "./dist/unplugin.js"
     },
     "./jsx-runtime": {
-      "types": "./dist/jsx-runtime.d.ts",
+      "types": "./jsx-runtime/index.d.ts",
       "jsx-vapor-dev": "./src/jsx-runtime.ts",
-      "require": "./dist/jsx-runtime.cjs",
-      "default": "./dist/jsx-runtime.js"
+      "require": "./jsx-runtime/index.cjs",
+      "default": "./jsx-runtime/index.js"
     },
     "./jsx-dev-runtime": {
-      "types": "./dist/jsx-runtime.d.ts",
+      "types": "./jsx-runtime/index.d.ts",
       "jsx-vapor-dev": "./src/jsx-runtime.ts",
-      "require": "./dist/jsx-runtime.cjs",
-      "default": "./dist/jsx-runtime.js"
+      "require": "./jsx-runtime/index.cjs",
+      "default": "./jsx-runtime/index.js"
     },
     "./volar": {
       "types": "./dist/volar.d.ts",
