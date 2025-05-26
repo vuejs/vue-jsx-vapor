@@ -4,7 +4,9 @@ exports[`defineComponent autoReturnFunction fixtures > ./fixtures/define-compone
 "
 import { useAttrs as __MACROS_useAttrs } from "vue";
 import { useModel as __MACROS_useModel } from "vue-jsx-vapor/macros/use-model";
-import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, nextTick } from 'vue'
+import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, nextTick, unref } from 'vue'
+
+const $ = unref
 
 const Comp = defineComponent(
   (__MACROS_props) => {const attrs = __MACROS_useAttrs();
@@ -102,7 +104,9 @@ exports[`fixtures > ./fixtures/define-component.tsx 1`] = `
 "
 import { useAttrs as __MACROS_useAttrs } from "vue";
 import { useModel as __MACROS_useModel } from "vue-jsx-vapor/macros/use-model";
-import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, nextTick } from 'vue'
+import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, nextTick, unref } from 'vue'
+
+const $ = unref
 
 const Comp = defineComponent(
   (__MACROS_props) => {const attrs = __MACROS_useAttrs();
@@ -224,7 +228,9 @@ export const Comp2 = ({ foo, ...__MACROS_props }: any) => {
 exports[`fixtures > ./fixtures/define-model.tsx 1`] = `
 "
 import { useModel as __MACROS_useModel } from "vue-jsx-vapor/macros/use-model";
-import { defineComponent } from 'vue'
+import { defineComponent, unref } from 'vue'
+
+const $ = unref
 
 export const Comp = defineComponent((__MACROS_props) => {
   const foo = __MACROS_useModel<string, 'm1' | 'm2'>(__MACROS_props, 'foo', { default: __MACROS_props.bar })
