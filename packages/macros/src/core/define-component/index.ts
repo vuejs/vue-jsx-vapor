@@ -1,7 +1,17 @@
-import { importHelperFn, type MagicStringAST } from '@vue-macros/common'
-import { isFunctionalNode, type FunctionalNode, type Macros } from '..'
-import { walkIdentifiers } from '../babel-utils'
-import { getDefaultValue, restructure } from '../restructure'
+import {
+  HELPER_PREFIX,
+  importHelperFn,
+  type MagicStringAST,
+} from '@vue-macros/common'
+import {
+  getDefaultValue,
+  isFunctionalNode,
+  prependFunctionalNode,
+  walkIdentifiers,
+  type FunctionalNode,
+} from '../babel-utils'
+import { restructure } from '../restructure'
+import type { Macros } from '..'
 import { transformAwait } from './await'
 import { transformReturn } from './return'
 import type { Node, ObjectExpression } from '@babel/types'
@@ -28,6 +38,22 @@ export function transformDefineComponent(
   if (root.params[0]) {
     if (root.params[0].type === 'Identifier') {
       getWalkedIds(root, propsName).forEach((id) => (props[id] = null))
+      prependFunctionalNode(
+        root,
+        s,
+        `const ${propsName} = ${importHelperFn(
+          s,
+          0,
+          'useFullProps',
+          undefined,
+          'vue-jsx-vapor',
+        )}()`,
+      )
+      s.overwrite(
+        root.params[0].start!,
+        root.params[0].end!,
+        `${HELPER_PREFIX}props`,
+      )
     } else if (root.params[0].type === 'ObjectPattern') {
       const restructuredProps = root.params[0]
       for (const prop of restructuredProps.properties) {

@@ -4,6 +4,7 @@ exports[`defineComponent autoReturnFunction fixtures > ./fixtures/define-compone
 "
 import { useAttrs as __MACROS_useAttrs } from "vue";
 import { useModel as __MACROS_useModel } from "vue-jsx-vapor/macros/use-model";
+import { useFullProps as __MACROS_useFullProps } from "vue-jsx-vapor";
 import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, nextTick, unref } from 'vue'
 
 const $ = unref
@@ -38,7 +39,7 @@ const Comp = defineComponent(
 }, ...{ Comp: Object }} },
 )
 
-const Comp1 = defineComponent((props: { bar: 'bar'; 'onUpdate:bar': any, comp: any }) => {
+const Comp1 = defineComponent((__MACROS_props) => {const props = __MACROS_useFullProps();
   const foo = __MACROS_useModel(props, 'foo')
   return () => <div>
       {[foo.value, props['bar'], props['onUpdate:bar']]}
@@ -104,6 +105,7 @@ exports[`fixtures > ./fixtures/define-component.tsx 1`] = `
 "
 import { useAttrs as __MACROS_useAttrs } from "vue";
 import { useModel as __MACROS_useModel } from "vue-jsx-vapor/macros/use-model";
+import { useFullProps as __MACROS_useFullProps } from "vue-jsx-vapor";
 import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, nextTick, unref } from 'vue'
 
 const $ = unref
@@ -138,7 +140,7 @@ const Comp = defineComponent(
 }, ...{ Comp: Object }} },
 )
 
-const Comp1 = defineComponent((props: { bar: 'bar'; 'onUpdate:bar': any, comp: any }) => {
+const Comp1 = defineComponent((__MACROS_props) => {const props = __MACROS_useFullProps();
   const foo = __MACROS_useModel(props, 'foo')
   return <div>
       {[foo.value, props['bar'], props['onUpdate:bar']]}
@@ -202,22 +204,22 @@ defineComponent((__MACROS_props) => {
 
 exports[`fixtures > ./fixtures/define-expose.tsx 1`] = `
 "
-import { currentInstance as __MACROS_currentInstance } from "vue";export function Comp(__MACROS_props) {
-  ;(__MACROS_currentInstance.exposed = {
+import { getCurrentInstance as __MACROS_getCurrentInstance } from "vue-jsx-vapor";export function Comp(__MACROS_props) {
+  ;(__MACROS_getCurrentInstance().exposed = {
     foo: 1,
   })
   return <div />
 }
 
 export const Comp1 = function (props: any) {
-  ;(__MACROS_currentInstance.exposed = {
+  ;(__MACROS_getCurrentInstance().exposed = {
     foo: props.foo,
   })
   return <div />
 }
 
 export const Comp2 = ({ foo, ...__MACROS_props }: any) => {
-  ;(__MACROS_currentInstance.exposed = {
+  ;(__MACROS_getCurrentInstance().exposed = {
     foo,
   })
   return <div />

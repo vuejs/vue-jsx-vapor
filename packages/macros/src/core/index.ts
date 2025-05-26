@@ -8,27 +8,21 @@ import {
   type CodeTransform,
 } from '@vue-macros/common'
 import type { OptionsResolved } from '../options'
+import {
+  getParamsStart,
+  isFunctionalNode,
+  type FunctionalNode,
+} from './babel-utils'
 import { transformDefineComponent } from './define-component'
 import { transformDefineExpose } from './define-expose'
 import { transformDefineModel } from './define-model'
 import { transformDefineSlots } from './define-slots'
 import { transformDefineStyle } from './define-style'
-import type {
-  ArrowFunctionExpression,
-  CallExpression,
-  FunctionDeclaration,
-  FunctionExpression,
-  LVal,
-  Node,
-  Program,
-} from '@babel/types'
+import type { CallExpression, LVal, Node, Program } from '@babel/types'
+
+export { isFunctionalNode }
 
 export { restructure } from './restructure'
-
-export type FunctionalNode =
-  | FunctionDeclaration
-  | FunctionExpression
-  | ArrowFunctionExpression
 
 export type DefineStyle = {
   expression: CallExpression
@@ -123,7 +117,7 @@ export function transformJsxMacros(
       transformDefineSlots(macros.defineSlots.expression, s)
     }
     if (macros.defineExpose) {
-      transformDefineExpose(macros.defineExpose, s, options.version)
+      transformDefineExpose(macros.defineExpose, s)
     }
   }
 
@@ -204,15 +198,6 @@ function getRootMap(ast: Program, s: MagicStringAST, options: OptionsResolved) {
   return rootMap
 }
 
-export function isFunctionalNode(node?: Node | null): node is FunctionalNode {
-  return !!(
-    node &&
-    (node.type === 'ArrowFunctionExpression' ||
-      node.type === 'FunctionDeclaration' ||
-      node.type === 'FunctionExpression')
-  )
-}
-
 export function getMacroExpression(
   node: Node,
   options: OptionsResolved,
@@ -241,13 +226,4 @@ export function getMacroExpression(
       return node
     }
   }
-}
-
-export function getParamsStart(node: FunctionalNode, code: string): number {
-  return node.params[0]
-    ? node.params[0].start!
-    : node.start! +
-        (code.slice(node.start!, node.body.start!).match(/\(\s*\)/)?.index ||
-          0) +
-        1
 }

@@ -1,4 +1,4 @@
-import { isFunctionalNode, type FunctionalNode } from '..'
+import { isFunctionalNode, type FunctionalNode } from '../babel-utils'
 import type { MagicStringAST } from '@vue-macros/common'
 
 export function transformReturn(root: FunctionalNode, s: MagicStringAST): void {
