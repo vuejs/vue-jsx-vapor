@@ -204,7 +204,7 @@ defineComponent((__MACROS_props) => {
 
 exports[`fixtures > ./fixtures/define-expose.tsx 1`] = `
 "
-import { getCurrentInstance as __MACROS_getCurrentInstance } from "vue-jsx-vapor";export function Comp(__MACROS_props) {
+import { getCurrentInstance as __MACROS_getCurrentInstance } from "vue-jsx-vapor/runtime";export function Comp(__MACROS_props) {
   ;(__MACROS_getCurrentInstance().exposed = {
     foo: 1,
   })
