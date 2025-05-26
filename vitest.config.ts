@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   resolve: {
-    conditions: ['dev'],
+    conditions: ['jsx-vapor-dev'],
   },
   test: {
     include: ['./packages/**/*.spec.ts'],

@@ -6,7 +6,7 @@
     "jsxImportSource": "vue-jsx-vapor",
     "lib": ["esnext", "DOM"],
     "useDefineForClassFields": false,
-    "customConditions": ["dev"],
+    "customConditions": ["jsx-vapor-dev"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,

@@ -4,7 +4,7 @@
     "jsx": "preserve",
     "jsxImportSource": "vue-jsx-vapor",
     "lib": ["ESNext", "DOM"],
-    "customConditions": ["dev"],
+    "customConditions": ["jsx-vapor-dev"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,

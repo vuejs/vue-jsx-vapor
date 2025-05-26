@@ -45,7 +45,7 @@
     "bumpp": "^10.0.3",
     "conventional-changelog-cli": "^5.0.0",
     "eslint": "^9.22.0",
-    "tsdown": "^0.9.3",
+    "tsdown": "^0.12.3",
     "typescript": "^5.8.2",
     "unplugin-raw": "^0.4.5",
     "vite": "catalog:",

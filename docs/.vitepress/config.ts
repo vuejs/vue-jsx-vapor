@@ -71,7 +71,7 @@ export default defineConfig({
           compilerOptions: {
             jsx: 1,
             jsxImportSource: 'vue-jsx-vapor',
-            customConditions: ['dev'],
+            customConditions: ['jsx-vapor-dev'],
           },
           tsmCompilerOptions: {
             plugins: [vueJsxVapor({ macros: true })],
