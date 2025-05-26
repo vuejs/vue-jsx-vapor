@@ -1,3 +1,17 @@
+## [2.4.1](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.0...v2.4.1) (2025-05-26)
+
+
+### Bug Fixes
+
+* **vue-jsx-vapor:** expose correct jsx-runtime type ([bdd3613](https://github.com/vuejs/vue-jsx-vapor/commit/bdd36133dc4e49efc4d1af916058ee655ddb8b83))
+
+
+### Features
+
+* **macros:** use vue-jsx-vapor/runtime to support browser environments ([20be1a0](https://github.com/vuejs/vue-jsx-vapor/commit/20be1a0ce7385ee4d1821444470f106c1e585039))
+
+
+
 # [2.4.0](https://github.com/vuejs/vue-jsx-vapor/compare/v2.3.6...v2.4.0) (2025-05-26)
 
 
