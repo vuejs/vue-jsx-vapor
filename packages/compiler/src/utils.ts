@@ -16,6 +16,7 @@ import {
   createSimpleExpression,
   isLiteralWhitelisted,
   NodeTypes,
+  unwrapTSNode,
   walkIdentifiers,
   type SimpleExpressionNode,
   type TextNode,
@@ -130,14 +131,16 @@ export function resolveExpression(
   context: TransformContext,
   effect = false,
 ): SimpleExpressionNode {
-  node = node?.type === 'JSXExpressionContainer' ? node.expression : node
+  if (!node) return createSimpleExpression('', true)
+  node = unwrapTSNode(
+    node.type === 'JSXExpressionContainer' ? node.expression : node,
+  )
   const isStatic =
-    !!node &&
-    (node.type === 'StringLiteral' ||
-      node.type === 'JSXText' ||
-      node.type === 'JSXIdentifier')
+    node.type === 'StringLiteral' ||
+    node.type === 'JSXText' ||
+    node.type === 'JSXIdentifier'
   let source =
-    !node || node.type === 'JSXEmptyExpression'
+    node.type === 'JSXEmptyExpression'
       ? ''
       : node.type === 'JSXIdentifier'
         ? node.name
@@ -148,8 +151,8 @@ export function resolveExpression(
             : node.type === 'Identifier'
               ? node.name
               : context.ir.source.slice(node.start!, node.end!)
-  const location = node ? node.loc : null
-  const isResolved = node && resolvedExpressions.has(node)
+  const location = node.loc
+  const isResolved = resolvedExpressions.has(node)
   if (source && !isStatic && effect && !isConstant(node)) {
     source = `() => (${source})`
     if (location && node && !isResolved) {
@@ -157,7 +160,7 @@ export function resolveExpression(
       node.start! -= 7
     }
   }
-  if (node && !isResolved) {
+  if (!isResolved) {
     const offset = node.start! - 1
     walkIdentifiers(
       node,

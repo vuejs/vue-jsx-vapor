@@ -329,4 +329,16 @@ describe('v-on', () => {
       '_delegate(n0, "click", _withModifiers(e => _ctx.test(e), ["stop"]))',
     )
   })
+
+  test('expression with type', () => {
+    const { code } = compileWithVOn(`<div onClick={handleClick as any} />`)
+    expect(code).toMatchInlineSnapshot(`
+      "
+        const n0 = t0()
+        n0.$evtclick = e => handleClick(e)
+        return n0
+      "
+    `)
+    expect(code).contains('n0.$evtclick = e => handleClick(e)')
+  })
 })
