@@ -67,7 +67,7 @@ function createFragment(
   return frag
 }
 
-function normalizeNode(node: any, anchor?: Element): Block {
+function normalizeNode(node: any, anchor?: Node): Block {
   if (node instanceof Node || isFragment(node)) {
     anchor && (anchor.textContent = '')
     return node
@@ -91,7 +91,7 @@ function normalizeNode(node: any, anchor?: Element): Block {
   }
 }
 
-function resolveValue(current: Block, value: any, anchor?: Element) {
+function resolveValue(current: Block, value: any, anchor?: Node) {
   const node = normalizeNode(value, anchor)
   if (current) {
     if (isFragment(current)) {
@@ -118,7 +118,7 @@ function resolveValue(current: Block, value: any, anchor?: Element) {
   return node
 }
 
-function resolveValues(values: any[] = [], _anchor?: Element) {
+function resolveValues(values: any[] = [], _anchor?: Node) {
   const nodes: Block[] = []
   const frag = createFragment(nodes, _anchor)
   const scopes: EffectScope[] = []
@@ -139,7 +139,7 @@ function resolveValues(values: any[] = [], _anchor?: Element) {
   return frag
 }
 
-export function setNodes(anchor: Element, ...values: any[]) {
+export function setNodes(anchor: Node, ...values: any[]) {
   const resolvedValues = resolveValues(values, anchor)
   anchor.parentNode && insert(resolvedValues, anchor.parentNode, anchor)
 }
