@@ -3,11 +3,9 @@ import {
   insert,
   isFragment,
   isVaporComponent,
-  pauseTracking,
   proxyRefs,
   remove,
   renderEffect,
-  resetTracking,
   toRefs,
   useAttrs,
   VaporFragment,
@@ -101,12 +99,12 @@ function resolveValue(current: Block, value: any, anchor?: Element) {
       if (anchor && anchor.parentNode) {
         remove(current.nodes, anchor.parentNode)
         insert(node, anchor.parentNode, anchor)
-        ;(anchor as Element).remove()
+        anchor.parentNode.removeChild(anchor)
       }
     } else if (current instanceof Node) {
       if (isFragment(node) && current.parentNode) {
         insert(node, current.parentNode, current)
-        ;(current as Element).remove()
+        current.parentNode.removeChild(current)
       } else if (node instanceof Node) {
         if (current.nodeType === 3 && node.nodeType === 3) {
           current.textContent = node.textContent
@@ -122,24 +120,23 @@ function resolveValue(current: Block, value: any, anchor?: Element) {
 
 function resolveValues(values: any[] = [], _anchor?: Element) {
   const nodes: Block[] = []
+  const frag = createFragment(nodes, _anchor)
   const scopes: EffectScope[] = []
   for (const [index, value] of values.entries()) {
     const anchor = index === values.length - 1 ? _anchor : undefined
     if (typeof value === 'function') {
       renderEffect(() => {
-        pauseTracking()
         if (scopes[index]) scopes[index].stop()
         scopes[index] = new EffectScope()
         nodes[index] = scopes[index].run(() =>
           resolveValue(nodes[index], value(), anchor),
         )!
-        resetTracking()
       })
     } else {
       nodes[index] = resolveValue(nodes[index], value, anchor)
     }
   }
-  return nodes
+  return frag
 }
 
 export function setNodes(anchor: Element, ...values: any[]) {

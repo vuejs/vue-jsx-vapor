@@ -159,9 +159,6 @@ importers:
       '@babel/plugin-syntax-jsx':
         specifier: 'catalog:'
         version: 7.25.9(@babel/core@7.26.9)
-      '@babel/plugin-transform-typescript':
-        specifier: 'catalog:'
-        version: 7.26.8(@babel/core@7.26.9)
       '@babel/traverse':
         specifier: 'catalog:'
         version: 7.26.9
