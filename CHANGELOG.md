@@ -1,3 +1,18 @@
+## [2.4.2](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.1...v2.4.2) (2025-05-29)
+
+
+### Bug Fixes
+
+* **comiler:** unwrap type for expressions ([a5c0c85](https://github.com/vuejs/vue-jsx-vapor/commit/a5c0c8521a0b4af0fba485214ff365b42d1f513b))
+* **vue-jsx-vapor:** remove pauseTracking ([78fcc0a](https://github.com/vuejs/vue-jsx-vapor/commit/78fcc0a0b06e83539ca8baa4d2821b13d423b4b6))
+
+
+### Features
+
+* **vue-jsx-vapor:** support array expression ([bccb5ef](https://github.com/vuejs/vue-jsx-vapor/commit/bccb5ef9e7d3dd2115951c2b459694c06bd9be38))
+
+
+
 ## [2.4.1](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.0...v2.4.1) (2025-05-26)
 
 

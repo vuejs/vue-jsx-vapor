@@ -1,5 +1,5 @@
 {
-  "version": "2.4.1",
+  "version": "2.4.2",
   "packageManager": "pnpm@10.10.0",
   "description": "Vue JSX Vapor",
   "type": "module",
