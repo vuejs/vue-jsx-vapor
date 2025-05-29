@@ -91,15 +91,15 @@ function normalizeNode(node: any, anchor?: Node): Block {
   }
 }
 
-function resolveValue(current: Block, value: any, anchor?: Node) {
-  const node = normalizeNode(value, anchor)
+function resolveValue(current: Block, value: any, _anchor?: Node) {
+  const node = normalizeNode(value, _anchor)
   if (current) {
     if (isFragment(current)) {
       const { anchor } = current
       if (anchor && anchor.parentNode) {
         remove(current.nodes, anchor.parentNode)
         insert(node, anchor.parentNode, anchor)
-        anchor.parentNode.removeChild(anchor)
+        !_anchor && anchor.parentNode.removeChild(anchor)
       }
     } else if (current instanceof Node) {
       if (isFragment(node) && current.parentNode) {

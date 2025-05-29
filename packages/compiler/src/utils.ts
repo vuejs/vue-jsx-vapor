@@ -67,7 +67,10 @@ export function getLiteralExpressionValue(
 export const isConstant = (node: Node | null | undefined): boolean => {
   if (!node) return false
   if (node.type === 'Identifier') {
-    return node.name === 'undefined'
+    return node.name === 'undefined' || isGloballyAllowed(node.name)
+  }
+  if (['JSXElement', 'JSXFragment', 'NullLiteral'].includes(node.type)) {
+    return true
   }
   if (node.type === 'ArrayExpression') {
     const { elements } = node
