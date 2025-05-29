@@ -7,6 +7,7 @@ export default [
       'unicorn/filename-case',
       'import/no-default-export',
       'unicorn/no-new-array',
+      'unicorn/prefer-dom-node-remove',
     )
     .append([
       {
