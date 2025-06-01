@@ -8,16 +8,12 @@ import {
   type CodeTransform,
 } from '@vue-macros/common'
 import type { OptionsResolved } from '../options'
-import {
-  getParamsStart,
-  isFunctionalNode,
-  type FunctionalNode,
-} from './babel-utils'
 import { transformDefineComponent } from './define-component'
 import { transformDefineExpose } from './define-expose'
 import { transformDefineModel } from './define-model'
 import { transformDefineSlots } from './define-slots'
 import { transformDefineStyle } from './define-style'
+import { getParamsStart, isFunctionalNode, type FunctionalNode } from './utils'
 import type { CallExpression, LVal, Node, Program } from '@babel/types'
 
 export { isFunctionalNode }

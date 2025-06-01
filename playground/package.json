@@ -8,10 +8,10 @@
     "build": "node vite.js build"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue-jsx": "^4.1.1",
+    "@vitejs/plugin-vue-jsx": "^4.2.0",
     "vite": "catalog:",
-    "vite-hyper-config": "^0.5.0",
-    "vite-plugin-inspect": "^0.8.9",
+    "vite-hyper-config": "^0.7.0",
+    "vite-plugin-inspect": "^11.1.0",
     "vue": "catalog:",
     "vue-jsx-vapor": "workspace:*"
   }

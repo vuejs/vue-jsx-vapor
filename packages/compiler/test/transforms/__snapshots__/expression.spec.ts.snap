@@ -67,23 +67,6 @@ exports[`compiler: expression > conditional expression with v-once 1`] = `
 "
 `;
 
-exports[`compiler: expression > expression with type 1`] = `
-"
-  const n5 = t2()
-  _setInsertionState(n5)
-  const n0 = _createIf(() => (ok), () => {
-    const n2 = t0()
-    const x2 = _child(n2)
-    _setNodes(x2, () => (msg))
-    return n2
-  }, () => {
-    const n4 = t1()
-    return n4
-  })
-  return n5
-"
-`;
-
 exports[`compiler: expression > logical expression 1`] = `
 "
   const n0 = _createIf(() => (ok), () => {

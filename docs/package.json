@@ -13,8 +13,8 @@
     "vue-jsx-vapor": "workspace:*"
   },
   "devDependencies": {
-    "@shikijs/vitepress-twoslash": "^3.2.1",
+    "@shikijs/vitepress-twoslash": "^3.4.2",
     "@ts-macro/twoslash": "^0.0.3",
-    "vitepress": "^2.0.0-alpha.4"
+    "vitepress": "2.0.0-alpha.5"
   }
 }

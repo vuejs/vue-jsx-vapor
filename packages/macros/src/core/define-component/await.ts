@@ -6,7 +6,7 @@ import {
   walkAST,
   type MagicStringAST,
 } from '@vue-macros/common'
-import type { FunctionalNode } from '../babel-utils'
+import type { FunctionalNode } from '../utils'
 import type { AwaitExpression, Node, Statement } from '@babel/types'
 
 export function transformAwait(root: FunctionalNode, s: MagicStringAST): void {

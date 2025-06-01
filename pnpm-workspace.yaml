@@ -4,25 +4,25 @@ packages:
   - docs
 
 defines:
-  - &babel ^7.26.8
-  - &vue-macros ^3.0.0-beta.12
+  - &babel ^7.27.3
+  - &vue-macros ^3.0.0-beta.13
 
 catalog:
   '@babel/core': *babel
   '@babel/parser': *babel
-  '@babel/plugin-syntax-jsx': ^7.25.9
-  '@babel/plugin-transform-typescript': *babel
+  '@babel/plugin-syntax-jsx': ^7.27.1
+  '@babel/plugin-transform-typescript': ^7.27.1
   '@babel/traverse': *babel
   '@babel/types': *babel
   '@types/babel__core': ^7.20.5
 
-  '@nuxt/kit': ^3.16.0
-  '@nuxt/schema': ^3.16.0
+  '@nuxt/kit': ^3.17.4
+  '@nuxt/schema': ^3.17.4
 
-  '@vue/compiler-dom': https://pkg.pr.new/@vue/compiler-dom@46e707d
-  '@vue/compiler-sfc': https://pkg.pr.new/@vue/compiler-sfc@46e707d
-  '@vue/compiler-vapor': https://pkg.pr.new/@vue/compiler-vapor@46e707d
-  '@vue/shared': https://pkg.pr.new/@vue/shared@46e707d
+  '@vue/compiler-dom': https://pkg.pr.new/@vue/compiler-dom@280bc48
+  '@vue/compiler-sfc': https://pkg.pr.new/@vue/compiler-sfc@280bc48
+  '@vue/compiler-vapor': https://pkg.pr.new/@vue/compiler-vapor@280bc48
+  '@vue/shared': https://pkg.pr.new/@vue/shared@280bc48
 
   '@vue-macros/common': *vue-macros
   '@vue-macros/jsx-directive': *vue-macros
@@ -31,9 +31,9 @@ catalog:
 
   '@types/hash-sum': ^1.0.2
   hash-sum: ^2.0.0
-  ts-macro: ^0.1.29
-  unplugin: ^2.2.2
+  ts-macro: ^0.1.30
+  unplugin: ^2.3.5
   unplugin-utils: ^0.2.4
-  vite: ^6.2.1
-  vitest: ^3.0.8
-  vue: https://pkg.pr.new/vue@46e707d
+  vite: ^6.3.5
+  vitest: ^3.1.4
+  vue: https://pkg.pr.new/vue@280bc48

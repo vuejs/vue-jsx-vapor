@@ -1,16 +1,16 @@
 import {
   HELPER_PREFIX,
   importHelperFn,
+  walkIdentifiers,
   type MagicStringAST,
 } from '@vue-macros/common'
+import { restructure } from '../restructure'
 import {
   getDefaultValue,
   isFunctionalNode,
   prependFunctionalNode,
-  walkIdentifiers,
   type FunctionalNode,
-} from '../babel-utils'
-import { restructure } from '../restructure'
+} from '../utils'
 import type { Macros } from '..'
 import { transformAwait } from './await'
 import { transformReturn } from './return'

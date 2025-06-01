@@ -1,15 +1,15 @@
 import {
   HELPER_PREFIX,
   importHelperFn,
+  walkIdentifiers,
   type MagicStringAST,
 } from '@vue-macros/common'
+import { withDefaultsHelperId } from './helper'
 import {
   getDefaultValue,
   prependFunctionalNode,
-  walkIdentifiers,
   type FunctionalNode,
-} from './babel-utils'
-import { withDefaultsHelperId } from './helper'
+} from './utils'
 import type { Node } from '@babel/types'
 
 type Options = {
