@@ -5,6 +5,7 @@ import {
   type RootNode,
 } from '../ir'
 import {
+  findProp,
   getLiteralExpressionValue,
   isEmptyText,
   isJSXComponent,
@@ -111,7 +112,7 @@ function processInterpolation(context: TransformContext) {
 
   const id = context.reference()
 
-  if (isFragmentNode(parent)) {
+  if (isFragmentNode(parent) || findProp(parent, 'v-slot')) {
     context.registerOperation({
       type: IRNodeTypes.CREATE_NODES,
       id,

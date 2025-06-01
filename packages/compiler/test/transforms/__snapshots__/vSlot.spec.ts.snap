@@ -126,8 +126,7 @@ exports[`compiler: transform slot > nested slots scoping 1`] = `
     "default": (_slotProps0) => {
       const n5 = _createComponent(Inner, null, {
         "default": (_slotProps1) => {
-          const n3 = t0()
-          _setNodes(n3, () => (_slotProps0["foo"] + _slotProps1["bar"] + baz))
+          const n3 = _createNodes(() => (_slotProps0["foo"] + _slotProps1["bar"] + baz))
           return n3
         }
       })
@@ -146,8 +145,7 @@ exports[`compiler: transform slot > on component dynamically named slot 1`] = `
       () => ({
         name: named, 
         fn: (_slotProps0) => {
-          const n0 = t0()
-          _setNodes(n0, () => (_slotProps0["foo"] + bar))
+          const n0 = _createNodes(() => (_slotProps0["foo"] + bar))
           return n0
         }
       })
@@ -161,8 +159,7 @@ exports[`compiler: transform slot > on component named slot 1`] = `
 "
   const n1 = _createComponent(Comp, null, {
     "named": (_slotProps0) => {
-      const n0 = t0()
-      _setNodes(n0, () => (_slotProps0["foo"] + bar))
+      const n0 = _createNodes(() => (_slotProps0["foo"] + bar))
       return n0
     }
   })
@@ -174,8 +171,7 @@ exports[`compiler: transform slot > on-component default slot 1`] = `
 "
   const n1 = _createComponent(Comp, null, {
     "default": (_slotProps0) => {
-      const n0 = t0()
-      _setNodes(n0, () => (_slotProps0["foo"] + bar))
+      const n0 = _createNodes(() => (_slotProps0["foo"] + bar))
       return n0
     }
   })
