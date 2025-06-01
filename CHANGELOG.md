@@ -1,3 +1,12 @@
+## [2.4.3](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.2...v2.4.3) (2025-06-01)
+
+
+### Bug Fixes
+
+* **compiler:** use createNodes instead of setNodes for v-slot ([1c5cf09](https://github.com/vuejs/vue-jsx-vapor/commit/1c5cf090c9edb9dde36309054ced58e81a58d711))
+
+
+
 ## [2.4.2](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.1...v2.4.2) (2025-05-29)
 
 
