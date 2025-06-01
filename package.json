@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@sxzz/eslint-config": "^7.0.2",
-    "@ts-macro/tsc": "^0.1.30",
+    "@ts-macro/tsc": "catalog:",
     "@types/node": "^22.15.29",
     "bumpp": "^10.1.1",
     "conventional-changelog-cli": "^5.0.0",

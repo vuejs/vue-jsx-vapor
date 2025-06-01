@@ -6,6 +6,7 @@ packages:
 defines:
   - &babel ^7.27.3
   - &vue-macros ^3.0.0-beta.13
+  - &ts-macro ^0.1.31
 
 catalog:
   '@babel/core': *babel
@@ -29,9 +30,10 @@ catalog:
   '@vue-macros/test-utils': *vue-macros
   '@vue-macros/volar': *vue-macros
 
+  '@ts-macro/tsc': *ts-macro
   '@types/hash-sum': ^1.0.2
   hash-sum: ^2.0.0
-  ts-macro: ^0.1.30
+  ts-macro: *ts-macro
   unplugin: ^2.3.5
   unplugin-utils: ^0.2.4
   vite: ^6.3.5

@@ -30,6 +30,9 @@ catalogs:
     '@nuxt/schema':
       specifier: ^3.17.4
       version: 3.17.4
+    '@ts-macro/tsc':
+      specifier: ^0.1.31
+      version: 0.1.31
     '@types/babel__core':
       specifier: ^7.20.5
       version: 7.20.5
@@ -64,8 +67,8 @@ catalogs:
       specifier: ^2.0.0
       version: 2.0.0
     ts-macro:
-      specifier: ^0.1.30
-      version: 0.1.30
+      specifier: ^0.1.31
+      version: 0.1.31
     unplugin:
       specifier: ^2.3.5
       version: 2.3.5
@@ -93,8 +96,8 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2(@types/eslint@9.6.1)(@typescript-eslint/eslint-plugin@8.33.0(@typescript-eslint/parser@8.33.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(@typescript-eslint/utils@8.33.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
       '@ts-macro/tsc':
-        specifier: ^0.1.30
-        version: 0.1.30(rollup@4.41.1)
+        specifier: 'catalog:'
+        version: 0.1.31(rollup@4.41.1)
       '@types/node':
         specifier: ^22.15.29
         version: 22.15.29
@@ -142,8 +145,8 @@ importers:
         specifier: ^3.4.2
         version: 3.4.2(@nuxt/kit@3.17.4)(typescript@5.8.3)
       '@ts-macro/twoslash':
-        specifier: ^0.0.3
-        version: 0.0.3(rollup@4.41.1)(typescript@5.8.3)
+        specifier: ^0.0.4
+        version: 0.0.4(rollup@4.41.1)(typescript@5.8.3)
       vitepress:
         specifier: 2.0.0-alpha.5
         version: 2.0.0-alpha.5(@algolia/client-search@5.25.0)(@types/node@22.15.29)(jiti@2.4.2)(lightningcss@1.30.1)(postcss@8.5.4)(search-insights@2.17.3)(terser@5.39.0)(tsx@4.19.2)(typescript@5.8.3)(yaml@2.8.0)
@@ -235,7 +238,7 @@ importers:
         version: 3.29.5
       ts-macro:
         specifier: 'catalog:'
-        version: 0.1.30
+        version: 0.1.31
       unplugin:
         specifier: 'catalog:'
         version: 2.3.5
@@ -305,7 +308,7 @@ importers:
         version: 3.29.5
       ts-macro:
         specifier: 'catalog:'
-        version: 0.1.30
+        version: 0.1.31
       unplugin:
         specifier: 'catalog:'
         version: 2.3.5
@@ -1580,15 +1583,15 @@ packages:
       rollup:
         optional: true
 
-  '@ts-macro/language-plugin@0.1.30':
-    resolution: {integrity: sha512-Tto5v1TmfzdKUZObtevSFsT/qZuv0fXwea3JypqyrsdwXJjsnJZj/ztxKwudO9jO+AKdacSvjtm9LYBD4dqY8Q==}
+  '@ts-macro/language-plugin@0.1.31':
+    resolution: {integrity: sha512-jJJfyxyNH/XkIX+vcd2xn8mPgktds1tth1b2UOkZJeSb/X8jzkgRHGjw0tnDee1LosZNPWL/L0cGl2oimICvLw==}
 
-  '@ts-macro/tsc@0.1.30':
-    resolution: {integrity: sha512-37TchG6OtBmjjdDG9+MjrCkvwxwWpRHD8RlwB1aha3QMSGrfam/4mXCZ18LaHopSdtcHi3cnBUIEh9grg+AgAA==}
+  '@ts-macro/tsc@0.1.31':
+    resolution: {integrity: sha512-+9C1vCpIAONLTCBhlFV6kYbPFSute5tZV1L89RpwweaWTPk408XIX3OU+30Qdmu/4CrxAYrtBZ8LoRkKHZ3g6g==}
     hasBin: true
 
-  '@ts-macro/twoslash@0.0.3':
-    resolution: {integrity: sha512-tqcYHJbXS5F2QHsBPbPFQWIqv7YfWLr5BKSCSHSM3HePnBizwgTuQXYaJyP5VWnZexzJq59CV3sYPtJ0AhVWYQ==}
+  '@ts-macro/twoslash@0.0.4':
+    resolution: {integrity: sha512-ThOpmVuAVp7kERDfPsBC4m9gCT+GYaUf20mfSi4bFusan1lbRiSDTRm/BEkvFGj3L2wGJ3Ff9YRrgDHhT4B7vg==}
     peerDependencies:
       typescript: '*'
 
@@ -3855,8 +3858,8 @@ packages:
     resolution: {integrity: sha512-D+iim+DHIwK9kbZvubENmtnYFqHfFV0OKwzT8yU/W+xyUK1A71+iRFmJYBGqNUo3fJ2Ob4oIQfan63mhzh614A==}
     hasBin: true
 
-  rollup-utils@0.0.3:
-    resolution: {integrity: sha512-5aMmOPg3kbeRdFpDSSEDwfWC9xnPyTv3dJ40iF26CQ84YCsiAM9TjVq0GEHN8woqEfeRmvaOGrSoLdKlUOYZHA==}
+  rollup-utils@0.0.5:
+    resolution: {integrity: sha512-Naai1vGKHGTrvrSuWOX1rSJSKodmJ8aZ3mtF0hHFP64NOtsKvnOGbxD4162fWGePdCWxAckEBNHQ/QX7S81H4g==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
@@ -4114,8 +4117,8 @@ packages:
     peerDependencies:
       typescript: '>=4.8.4'
 
-  ts-macro@0.1.30:
-    resolution: {integrity: sha512-ykOBr59xag8dhDKo9yIk/5Gf4w8xQgQxSiJjfcwsZeCWTXC9C8gIWFQw6szfKcutRbWwjvDvuvxmyT/QjxlS0w==}
+  ts-macro@0.1.31:
+    resolution: {integrity: sha512-sTc/vSZTp7pcH1URyjIMk2HfeAm/OvOhok3a81kQtr1N84uTxD8nANspZX1YKGKJgN1h95k9zLk67B4I+KJy0g==}
 
   tsdown@0.12.5:
     resolution: {integrity: sha512-5tzqVakJOdIVJLBB6K1e7L4pPTkyLxArkidwsY1jd4P1/4GplYxeHGRmGz8evsXaPJW6IumdbDvIVnmWMnIy2A==}
@@ -5607,29 +5610,29 @@ snapshots:
       rolldown: 1.0.0-beta.10-commit.87188ed
       rollup: 4.41.1
 
-  '@ts-macro/language-plugin@0.1.30(rollup@4.41.1)':
+  '@ts-macro/language-plugin@0.1.31(rollup@4.41.1)':
     dependencies:
       '@volar/language-core': 2.4.14
       '@volar/typescript': 2.4.14
       jiti: 2.4.2
-      rollup-utils: 0.0.3(rollup@4.41.1)
-      ts-macro: 0.1.30
+      rollup-utils: 0.0.5(rollup@4.41.1)
+      ts-macro: 0.1.31
       vscode-uri: 3.1.0
     transitivePeerDependencies:
       - rollup
 
-  '@ts-macro/tsc@0.1.30(rollup@4.41.1)':
+  '@ts-macro/tsc@0.1.31(rollup@4.41.1)':
     dependencies:
-      '@ts-macro/language-plugin': 0.1.30(rollup@4.41.1)
+      '@ts-macro/language-plugin': 0.1.31(rollup@4.41.1)
       '@volar/typescript': 2.4.14
     transitivePeerDependencies:
       - rollup
 
-  '@ts-macro/twoslash@0.0.3(rollup@4.41.1)(typescript@5.8.3)':
+  '@ts-macro/twoslash@0.0.4(rollup@4.41.1)(typescript@5.8.3)':
     dependencies:
-      '@ts-macro/language-plugin': 0.1.30(rollup@4.41.1)
+      '@ts-macro/language-plugin': 0.1.31(rollup@4.41.1)
       '@volar/language-core': 2.4.14
-      ts-macro: 0.1.30
+      ts-macro: 0.1.31
       twoslash: 0.3.1(typescript@5.8.3)
       twoslash-protocol: 0.3.1
       typescript: 5.8.3
@@ -6026,7 +6029,7 @@ snapshots:
       '@vue-macros/short-vmodel': 3.0.0-beta.13(vue@https://pkg.pr.new/vue@280bc48(typescript@5.8.3))
       '@vue/language-core': 2.2.10(typescript@5.8.3)
       muggle-string: 0.4.1
-      ts-macro: 0.1.30
+      ts-macro: 0.1.31
     transitivePeerDependencies:
       - typescript
       - vue
@@ -8394,7 +8397,7 @@ snapshots:
       '@rolldown/binding-win32-ia32-msvc': 1.0.0-beta.10-commit.87188ed
       '@rolldown/binding-win32-x64-msvc': 1.0.0-beta.10-commit.87188ed
 
-  rollup-utils@0.0.3(rollup@4.41.1):
+  rollup-utils@0.0.5(rollup@4.41.1):
     dependencies:
       '@types/estree': 1.0.7
       estree-walker: 2.0.2
@@ -8653,7 +8656,7 @@ snapshots:
     dependencies:
       typescript: 5.8.3
 
-  ts-macro@0.1.30:
+  ts-macro@0.1.31:
     dependencies:
       muggle-string: 0.4.1
 
