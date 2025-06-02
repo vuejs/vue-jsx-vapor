@@ -1470,26 +1470,21 @@ export interface Events<T = Element> {
   onTransitionstart: TransitionEventHandler<T>
 }
 
-type EventHandlers<E> = {
+export type EventHandlers<E> = {
   [K in keyof E]?: E[K] extends (...args: any) => any
     ? E[K]
     : (payload: E[K]) => void
 }
 
-export type ReservedProps = {
-  key?: PropertyKey
-  ref?: import('vue').VNodeRef
-  ref_for?: boolean
-  ref_key?: string
-}
+type _ReservedProps = import('vue').ReservedProps
+export interface ReservedProps extends _ReservedProps {}
 
 export type NativeElements = {
   [K in keyof IntrinsicElementAttributes]: IntrinsicElementAttributes[K] &
-    ReservedProps &
-    import('vue').HTMLAttributes
+    ReservedProps
 }
 
-interface BaseSyntheticEvent<E = object, C = unknown, T = unknown> {
+export interface BaseSyntheticEvent<E = object, C = unknown, T = unknown> {
   nativeEvent: E
   currentTarget: C
   target: T
@@ -1514,48 +1509,51 @@ interface BaseSyntheticEvent<E = object, C = unknown, T = unknown> {
  * This might be a child element to the element on which the event listener is registered.
  * If you thought this should be `EventTarget & T`, see https://github.com/DefinitelyTyped/DefinitelyTyped/issues/11508#issuecomment-256045682
  */
-interface SyntheticEvent<T = Element, E = Event>
+export interface SyntheticEvent<T = Element, E = Event>
   extends BaseSyntheticEvent<E, EventTarget & T, EventTarget> {}
 
-type EventHandler<E extends SyntheticEvent<any>> = {
+export type EventHandler<E extends SyntheticEvent<any>> = {
   bivarianceHack: (event: E) => void
 }['bivarianceHack']
 
-type BaseEventHandler<T = Element> = EventHandler<SyntheticEvent<T>>
+export type BaseEventHandler<T = Element> = EventHandler<SyntheticEvent<T>>
 
-interface ClipboardEvent<T = Element>
+export interface ClipboardEvent<T = Element>
   extends SyntheticEvent<T, globalThis.ClipboardEvent> {
   clipboardData: DataTransfer
 }
-type ClipboardEventHandler<T = Element> = EventHandler<ClipboardEvent<T>>
+export type ClipboardEventHandler<T = Element> = EventHandler<ClipboardEvent<T>>
 
-interface CompositionEvent<T = Element>
+export interface CompositionEvent<T = Element>
   extends SyntheticEvent<T, globalThis.CompositionEvent> {
   data: string
 }
-type CompositionEventHandler<T = Element> = EventHandler<CompositionEvent<T>>
+export type CompositionEventHandler<T = Element> = EventHandler<
+  CompositionEvent<T>
+>
 
-interface DragEvent<T = Element> extends MouseEvent<T, globalThis.DragEvent> {
+export interface DragEvent<T = Element>
+  extends MouseEvent<T, globalThis.DragEvent> {
   dataTransfer: DataTransfer
 }
-type DragEventHandler<T = Element> = EventHandler<DragEvent<T>>
+export type DragEventHandler<T = Element> = EventHandler<DragEvent<T>>
 
-interface FocusEvent<Target = Element, RelatedTarget = Element>
+export interface FocusEvent<Target = Element, RelatedTarget = Element>
   extends SyntheticEvent<Target, globalThis.FocusEvent> {
   relatedTarget: (EventTarget & RelatedTarget) | null
   target: EventTarget & Target
 }
-type FocusEventHandler<T = Element> = EventHandler<FocusEvent<T>>
+export type FocusEventHandler<T = Element> = EventHandler<FocusEvent<T>>
 
-interface FormEvent<T = Element> extends SyntheticEvent<T> {}
-type FormEventHandler<T = Element> = EventHandler<FormEvent<T>>
+export interface FormEvent<T = Element> extends SyntheticEvent<T> {}
+export type FormEventHandler<T = Element> = EventHandler<FormEvent<T>>
 
-interface ChangeEvent<T = Element> extends SyntheticEvent<T> {
+export interface ChangeEvent<T = Element> extends SyntheticEvent<T> {
   target: EventTarget & T
 }
-type ChangeEventHandler<T = Element> = EventHandler<ChangeEvent<T>>
+export type ChangeEventHandler<T = Element> = EventHandler<ChangeEvent<T>>
 
-interface KeyboardEvent<T = Element>
+export interface KeyboardEvent<T = Element>
   extends UIEvent<T, globalThis.KeyboardEvent> {
   altKey: boolean
   /** @deprecated */
@@ -1580,7 +1578,7 @@ interface KeyboardEvent<T = Element>
   /** @deprecated */
   which: number
 }
-type KeyboardEventHandler<T = Element> = EventHandler<KeyboardEvent<T>>
+export type KeyboardEventHandler<T = Element> = EventHandler<KeyboardEvent<T>>
 
 export type ModifierKey =
   | 'Alt'
@@ -1597,7 +1595,7 @@ export type ModifierKey =
   | 'Super'
   | 'Symbol'
   | 'SymbolLock'
-interface MouseEvent<T = Element, E = globalThis.MouseEvent>
+export interface MouseEvent<T = Element, E = globalThis.MouseEvent>
   extends UIEvent<T, E> {
   altKey: boolean
   button: number
@@ -1619,39 +1617,43 @@ interface MouseEvent<T = Element, E = globalThis.MouseEvent>
   screenY: number
   shiftKey: boolean
 }
-type MouseEventHandler<T = Element> = EventHandler<MouseEvent<T>>
+export type MouseEventHandler<T = Element> = EventHandler<MouseEvent<T>>
 
-interface AbstractView {
+export interface AbstractView {
   styleMedia: StyleMedia
   document: Document
 }
-interface UIEvent<T = Element, E = globalThis.UIEvent>
+export interface UIEvent<T = Element, E = globalThis.UIEvent>
   extends SyntheticEvent<T, E> {
   detail: number
   view: AbstractView
 }
-type UIEventHandler<T = Element> = EventHandler<UIEvent<T>>
+export type UIEventHandler<T = Element> = EventHandler<UIEvent<T>>
 
-interface WheelEvent<T = Element> extends MouseEvent<T, globalThis.WheelEvent> {
+export interface WheelEvent<T = Element>
+  extends MouseEvent<T, globalThis.WheelEvent> {
   deltaMode: number
   deltaX: number
   deltaY: number
   deltaZ: number
 }
-type WheelEventHandler<T = Element> = EventHandler<WheelEvent<T>>
+export type WheelEventHandler<T = Element> = EventHandler<WheelEvent<T>>
 
-interface AnimationEvent<T = Element>
+export interface AnimationEvent<T = Element>
   extends SyntheticEvent<T, globalThis.AnimationEvent> {
   animationName: string
   elapsedTime: number
   pseudoElement: string
 }
-type AnimationEventHandler<T = Element> = EventHandler<AnimationEvent<T>>
+export type AnimationEventHandler<T = Element> = EventHandler<AnimationEvent<T>>
 
-interface TransitionEvent<T = Element>
+export interface TransitionEvent<T = Element>
   extends SyntheticEvent<T, globalThis.TransitionEvent> {
   elapsedTime: number
   propertyName: string
   pseudoElement: string
 }
-type TransitionEventHandler<T = Element> = EventHandler<TransitionEvent<T>>
+export type TransitionEventHandler<T = Element> = EventHandler<
+  TransitionEvent<T>
+>
+

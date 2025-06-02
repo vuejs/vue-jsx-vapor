@@ -1,5 +1,5 @@
-import { Fragment, h } from 'vue'
-import type { NativeElements } from './jsx-runtime/dom'
+import { Fragment, h, type VNode } from 'vue'
+import type { NativeElements, ReservedProps } from 'vue-jsx-vapor'
 
 function jsx(type: any, props: any, key: any): ReturnType<typeof h> {
   const { children } = props
@@ -12,27 +12,19 @@ function jsx(type: any, props: any, key: any): ReturnType<typeof h> {
 
 export { Fragment, jsx, jsx as jsxDEV, jsx as jsxs }
 
-type VNode = import('vue').VNode
-type ReservedProps = import('vue').ReservedProps
-type AllowedComponentProps = import('vue').AllowedComponentProps
-type ComponentCustomProps = import('vue').ComponentCustomProps
-
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
-    interface Element extends VNode {}
-    interface ElementClass {
+    export interface Element extends VNode {}
+    export interface ElementClass {
       $props: {}
     }
-    interface ElementAttributesProperty {
+    export interface ElementAttributesProperty {
       $props: {}
     }
-    interface IntrinsicElements extends NativeElements {
+    export interface IntrinsicElements extends NativeElements {
       [name: string]: any
     }
-    interface IntrinsicAttributes
-      extends ReservedProps,
-        AllowedComponentProps,
-        ComponentCustomProps {}
+    export interface IntrinsicAttributes extends ReservedProps {}
   }
 }
