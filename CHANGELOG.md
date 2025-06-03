@@ -1,3 +1,12 @@
+## [2.4.4](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.3...v2.4.4) (2025-06-03)
+
+
+### Features
+
+* **vue-jsx-vapor:** expose jsx-runtime/dom ([2802d74](https://github.com/vuejs/vue-jsx-vapor/commit/2802d7483965e46631b440f3d9b34f00e1eb3e10))
+
+
+
 ## [2.4.3](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.2...v2.4.3) (2025-06-01)
 
 
