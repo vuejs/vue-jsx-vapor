@@ -4,9 +4,9 @@ packages:
   - docs
 
 defines:
-  - &babel ^7.27.3
+  - &babel ^7.27.4
   - &vue-macros ^3.0.0-beta.14
-  - &ts-macro ^0.1.31
+  - &ts-macro ^0.1.33
 
 catalog:
   '@babel/core': *babel
@@ -17,8 +17,8 @@ catalog:
   '@babel/types': *babel
   '@types/babel__core': ^7.20.5
 
-  '@nuxt/kit': ^3.17.4
-  '@nuxt/schema': ^3.17.4
+  '@nuxt/kit': ^3.17.5
+  '@nuxt/schema': ^3.17.5
 
   '@vue/compiler-dom': https://pkg.pr.new/@vue/compiler-dom@280bc48
   '@vue/compiler-sfc': https://pkg.pr.new/@vue/compiler-sfc@280bc48
@@ -37,5 +37,5 @@ catalog:
   unplugin: ^2.3.5
   unplugin-utils: ^0.2.4
   vite: ^6.3.5
-  vitest: ^3.1.4
+  vitest: ^3.2.2
   vue: https://pkg.pr.new/vue@280bc48

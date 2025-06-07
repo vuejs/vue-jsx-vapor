@@ -6,7 +6,7 @@ export function transformDefineComponent(
   parent: import('typescript').Node,
   options: TransformOptions,
 ): void {
-  const { codes, source, ast, ts } = options
+  const { codes, ast, ts } = options
 
   replaceRange(codes, node.arguments[0].end, node.end - 1)
 
@@ -17,12 +17,11 @@ export function transformDefineComponent(
     node.expression.end + 1,
     ts.isExpressionStatement(parent) ? ';' : '',
     '(',
-    [node.expression.getText(ast), source, node.getStart(ast), allCodeFeatures],
+    [node.expression.getText(ast), node.getStart(ast), allCodeFeatures],
     '(() => ({}) as any, ',
     componentOptions
       ? [
           componentOptions.getText(ast),
-          source,
           componentOptions.getStart(ast),
           allCodeFeatures,
         ]
