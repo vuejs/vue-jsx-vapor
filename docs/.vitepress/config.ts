@@ -43,11 +43,11 @@ export default defineConfig({
         text: 'Features',
         items: [
           {
-            text: 'directives',
+            text: 'Directives',
             link: '/features/directives',
           },
           {
-            text: 'macros',
+            text: 'Macros',
             link: '/features/macros',
           },
           {
