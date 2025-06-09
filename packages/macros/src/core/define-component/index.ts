@@ -1,6 +1,7 @@
 import {
   HELPER_PREFIX,
   importHelperFn,
+  walkAST,
   walkIdentifiers,
   type MagicStringAST,
 } from '@vue-macros/common'
@@ -65,7 +66,15 @@ export function transformDefineComponent(
           continue
         }
         const defaultValue = getDefaultValue(prop.value.right)
-        const isRequired = prop.value.right.type === 'TSNonNullExpression'
+        let isRequired = false
+        walkAST(prop.value.right, {
+          enter(node) {
+            if (node.type === 'TSNonNullExpression') {
+              isRequired = true
+              this.skip()
+            }
+          },
+        })
 
         const propOptions = []
         if (isRequired) {

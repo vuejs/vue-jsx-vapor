@@ -3,7 +3,7 @@ import { defineComponent, nextTick, unref } from 'vue'
 const $ = unref
 
 const Comp = defineComponent(
-  ({ bar = 'bar'!, Comp, ...attrs }: { bar: 'bar'; baz: 'baz', Comp: any }) => {
+  ({ bar = 'bar'! as string, Comp, ...attrs }: { bar: string; baz: 'baz', Comp: any }) => {
     defineModel()
     const foo = $(
       defineModel('foo', {

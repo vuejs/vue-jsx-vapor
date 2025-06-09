@@ -67,15 +67,22 @@ export function transformJsxMacros(
             ? root.parameters[0].name.elements
             : []
         for (const element of elements) {
-          if (ts.isIdentifier(element.name))
+          if (ts.isIdentifier(element.name)) {
+            const isRequired = ts.forEachChild(
+              element,
+              function isNonNullExpression(node): boolean {
+                return (
+                  ts.isNonNullExpression(node) ||
+                  !!ts.forEachChild(node, isNonNullExpression)
+                )
+              },
+            )
             props.push(
               `${element.name.escapedText}${
-                element.initializer &&
-                ts.isNonNullExpression(element.initializer)
-                  ? ':'
-                  : '?:'
+                isRequired ? ':' : '?:'
               } typeof ${element.name.escapedText}`,
             )
+          }
         }
 
         const shouldWrapByCall =
