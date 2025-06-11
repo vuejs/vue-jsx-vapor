@@ -1,5 +1,6 @@
 import prettier from '@prettier/sync'
 import type { MessageIds, RuleOptions } from './types'
+import type { TSESTree } from '@typescript-eslint/utils'
 import type { RuleModule } from '@typescript-eslint/utils/ts-eslint'
 
 const rule: RuleModule<MessageIds, RuleOptions> = {
@@ -39,7 +40,6 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
           node.callee.type === 'MemberExpression'
             ? node.callee.object
             : node.callee
-        const offset = callee.loc.start.column
         const parser =
           node.callee.type === 'MemberExpression' &&
           node.callee.property.type === 'Identifier'
@@ -61,8 +61,18 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
               })
             }
 
-            const placeholder = ' '.repeat(offset + tabWidth)
-            const result = `\n${placeholder}${formattedCss.slice(0, -1).replaceAll('\n', `\n${placeholder}`)}\n${' '.repeat(offset)}`
+            const line = callee.loc.start.line
+            function getOffset(node: TSESTree.Node) {
+              if (node.parent?.loc.start.line === line) {
+                return getOffset(node.parent)
+              }
+              return node.loc.start.column
+            }
+            const column = getOffset(callee)
+            const placeholder = ' '.repeat(column + tabWidth)
+            const result = `\n${placeholder}${formattedCss
+              .slice(0, -1)
+              .replaceAll('\n', `\n${placeholder}`)}\n${' '.repeat(column)}`
             if (result !== cssRaw) {
               context.report({
                 node: arg,
