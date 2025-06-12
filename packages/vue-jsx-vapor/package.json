@@ -122,6 +122,17 @@
     },
     "./*": "./*"
   },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/*",
+        "./*"
+      ],
+      "jsx-runtime": [
+        "./jsx-runtime/index.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "build": "tsdown",
     "dev": "DEV=true tsdown",

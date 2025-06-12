@@ -94,6 +94,14 @@
     },
     "./*": "./*"
   },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/*",
+        "./*"
+      ]
+    }
+  },
   "scripts": {
     "build": "tsdown",
     "dev": "DEV=true tsdown"
