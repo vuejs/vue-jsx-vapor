@@ -23,8 +23,13 @@ declare global {
       $props: {}
     }
     export interface IntrinsicElements extends NativeElements {
+      // allow arbitrary elements
+      // @ts-ignore suppress ts:2374 = Duplicate string index signature.
       [name: string]: any
     }
-    export interface IntrinsicAttributes extends ReservedProps {}
+    export interface IntrinsicAttributes extends ReservedProps {
+      class?: unknown
+      style?: unknown
+    }
   }
 }
