@@ -1,3 +1,13 @@
+## [2.4.5](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.4...v2.4.5) (2025-06-12)
+
+
+### Features
+
+* **eslint:** enhance offset calculation for defineStyle formatting ([7d53c74](https://github.com/vuejs/vue-jsx-vapor/commit/7d53c74642078ccadb0534322dcdb6a273503e1b))
+* **macros:** improve handling of required props in defineComponent ([1889468](https://github.com/vuejs/vue-jsx-vapor/commit/1889468f68c70814e5c029b928aa0894e8a28886))
+
+
+
 ## [2.4.4](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.3...v2.4.4) (2025-06-03)
 
 
