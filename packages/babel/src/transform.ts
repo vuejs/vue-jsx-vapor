@@ -22,7 +22,7 @@ export const transformJSX: VisitNodeFunction<
   let { code, helpers, preamble, map } = compile(root.node, {
     isTS,
     filename: state.filename,
-    sourceMap: true,
+    sourceMap: state.opts.sourceMap,
     source: ' '.repeat(root.node.start || 0) + root.source,
     ...state.opts.compile,
   })

@@ -16,7 +16,7 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
   )
   let root = ''
   let needHMR = false
-  let needSourceMap = false
+  let needSourceMap = options.sourceMap || false
   return [
     {
       name: 'vue-jsx-vapor',
@@ -40,7 +40,8 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
         configResolved(config) {
           root = config.root
           needHMR = config.command === 'serve'
-          needSourceMap = config.command === 'serve' || !!config.build.sourcemap
+          needSourceMap ||=
+            config.command === 'serve' || !!config.build.sourcemap
         },
       },
       resolveId(id) {

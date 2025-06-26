@@ -8,6 +8,7 @@ export interface Options {
   exclude?: FilterPattern
   interop?: boolean
   compile?: CompilerOptions
+  sourceMap?: boolean
   /** @default true */
   ref?:
     | {

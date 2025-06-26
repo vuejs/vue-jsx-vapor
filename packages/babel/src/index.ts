@@ -24,6 +24,7 @@ export type Options = {
   opts: {
     interop?: boolean
     compile?: CompilerOptions
+    sourceMap?: boolean
   }
 }
 
