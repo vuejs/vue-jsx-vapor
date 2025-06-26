@@ -4,9 +4,9 @@ packages:
   - docs
 
 defines:
-  - &babel ^7.27.4
-  - &vue-macros ^3.0.0-beta.14
-  - &ts-macro ^0.1.33
+  - &babel ^7.27.7
+  - &vue-macros ^3.0.0-beta.15
+  - &ts-macro ^0.1.34
 
 catalog:
   '@babel/core': *babel
@@ -37,5 +37,5 @@ catalog:
   unplugin: ^2.3.5
   unplugin-utils: ^0.2.4
   vite: ^6.3.5
-  vitest: ^3.2.2
+  vitest: ^3.2.4
   vue: https://pkg.pr.new/vue@72d63f1

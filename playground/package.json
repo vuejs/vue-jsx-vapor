@@ -10,7 +10,7 @@
   "devDependencies": {
     "vite": "catalog:",
     "vite-hyper-config": "^0.7.0",
-    "vite-plugin-inspect": "^11.1.0",
+    "vite-plugin-inspect": "^11.2.0",
     "vue": "catalog:",
     "vue-jsx-vapor": "workspace:*"
   }

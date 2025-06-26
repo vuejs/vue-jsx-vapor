@@ -14,14 +14,7 @@ export function transformVueJsxVapor(
 ) {
   return transformSync(code, {
     plugins: [
-      [
-        jsx,
-        {
-          compile: options?.compile,
-          interop: options?.interop,
-          sourceMap: needSourceMap,
-        },
-      ],
+      [jsx, { compile: options?.compile, interop: options?.interop }],
       ...(id.endsWith('.tsx')
         ? [[babelTypescript, { isTSX: true, allowExtensions: true }]]
         : []),

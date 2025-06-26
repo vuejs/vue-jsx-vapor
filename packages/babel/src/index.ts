@@ -3,7 +3,7 @@ import { parse } from '@babel/parser'
 import _SyntaxJSX from '@babel/plugin-syntax-jsx'
 import { transformJSX } from './transform'
 import { isConditionalExpression, isJSXElement } from './utils'
-import type { Visitor } from '@babel/core'
+import type { BabelFile, Visitor } from '@babel/core'
 import type { VisitNodeFunction } from '@babel/traverse'
 import type { JSXElement, JSXFragment, Node } from '@babel/types'
 import type { CompilerOptions } from '@vue-jsx-vapor/compiler'
@@ -16,6 +16,7 @@ export type Options = {
   delegateEventSet: Set<string>
   preambleMap: Map<string, string>
   preambleIndex: number
+  file: BabelFile
   roots: {
     node: JSXElement | JSXFragment
     source: string
@@ -24,7 +25,6 @@ export type Options = {
   opts: {
     interop?: boolean
     compile?: CompilerOptions
-    sourceMap?: boolean
   }
 }
 
