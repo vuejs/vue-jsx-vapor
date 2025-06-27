@@ -27,6 +27,10 @@ const seen = new WeakMap<
   WeakSet<TextLike | BlockIRNode['node'] | RootNode>
 >()
 
+export function markNonTemplate(node: Node, context: TransformContext): void {
+  seen.get(context.root)!.add(node)
+}
+
 export const transformText: NodeTransform = (node, context) => {
   if (!seen.has(context.root)) seen.set(context.root, new WeakSet())
   if (seen.get(context.root)!.has(node)) {
@@ -69,7 +73,7 @@ export const transformText: NodeTransform = (node, context) => {
           prev.type === 'JSXText'
         ) {
           // mark leading text node for skipping
-          seen.get(context.root)!.add(prev)
+          markNonTemplate(prev, context)
         }
       }
     }
@@ -155,7 +159,7 @@ function createTextLikeExpressions(
 ) {
   const values = []
   for (const node of nodes) {
-    seen.get(context.root)!.add(node)
+    markNonTemplate(node, context)
     if (isEmptyText(node)) continue
     values.push(resolveExpression(node, context, !context.inVOnce))
   }
