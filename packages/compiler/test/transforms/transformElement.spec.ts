@@ -1,21 +1,21 @@
-// import {
-//   type BindingMetadata,
-//   NodeTypes,
-// } from '@vue/compiler-dom'
 import { describe, expect, test } from 'vitest'
 import {
-  // IRDynamicPropsKind,
-  // IRNodeTypes,
   transformChildren,
   transformElement,
   transformText,
   transformVBind,
+  transformVFor,
   transformVOn,
 } from '../../src'
 import { makeCompile } from './_utils'
 
 const compileWithElementTransform = makeCompile({
-  nodeTransforms: [transformElement, transformChildren, transformText],
+  nodeTransforms: [
+    transformVFor,
+    transformElement,
+    transformChildren,
+    transformText,
+  ],
   directiveTransforms: {
     bind: transformVBind,
     on: transformVOn,
@@ -28,7 +28,7 @@ describe('compiler: element transform', () => {
       const { code, helpers } = compileWithElementTransform(`<Foo/>`)
       expect(code).toMatchInlineSnapshot(`
         "
-          const n0 = _createComponent(Foo)
+          const n0 = _createComponent(Foo, null, null, true)
           return n0
         "
       `)
@@ -42,7 +42,7 @@ describe('compiler: element transform', () => {
     })
     expect(code).toMatchInlineSnapshot(`
       "
-        const n0 = _createComponent(Foo.Example)
+        const n0 = _createComponent(Foo.Example, null, null, true)
         return n0
       "
     `)
@@ -62,5 +62,25 @@ describe('compiler: element transform', () => {
       `<Foo class="foo" class={{ bar: isBar }} />`,
     )
     expect(code).toMatchSnapshot()
+  })
+
+  test('generate single root component', () => {
+    const { code } = compileWithElementTransform(`<Comp/>`)
+    expect(code).toMatchSnapshot()
+    expect(code).contains('_createComponent(Comp, null, null, true)')
+  })
+
+  test('Fragment should not mark as single root', () => {
+    const { code } = compileWithElementTransform(`<><Comp/></>`)
+    expect(code).toMatchSnapshot()
+    expect(code).contains('_createComponent(Comp)')
+  })
+
+  test('v-for on component should not mark as single root', () => {
+    const { code } = compileWithElementTransform(
+      `<Comp v-for={item in items} key={item}/>`,
+    )
+    expect(code).toMatchSnapshot()
+    expect(code).contains('_createComponent(Comp)')
   })
 })

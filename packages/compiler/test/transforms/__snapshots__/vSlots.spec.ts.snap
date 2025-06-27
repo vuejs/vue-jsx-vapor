@@ -6,7 +6,7 @@ exports[`compiler: transform v-slots > basic 1`] = `
     $: [
       { default: ({ foo })=> <>{ foo + bar }</> }
     ]
-  })
+  }, true)
   return n0
 "
 `;

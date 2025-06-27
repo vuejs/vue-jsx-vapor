@@ -12,7 +12,7 @@ exports[`compiler: transform slot > dynamic slots name 1`] = `
         }
       })
     ]
-  })
+  }, true)
   return n4
 "
 `;
@@ -29,7 +29,7 @@ exports[`compiler: transform slot > dynamic slots name w/ v-for 1`] = `
         }
       })))
     ]
-  })
+  }, true)
   return n4
 "
 `;
@@ -62,7 +62,7 @@ exports[`compiler: transform slot > dynamic slots name w/ v-if / v-else[-if] 1`]
             }
           })
     ]
-  })
+  }, true)
   return n10
 "
 `;
@@ -74,7 +74,7 @@ exports[`compiler: transform slot > implicit default slot 1`] = `
       const n0 = t0()
       return n0
     }
-  })
+  }, true)
   return n1
 "
 `;
@@ -86,7 +86,7 @@ exports[`compiler: transform slot > named slots w/ comment 1`] = `
       const n3 = t0()
       return n3
     }
-  })
+  }, true)
   return n6
 "
 `;
@@ -103,7 +103,7 @@ exports[`compiler: transform slot > named slots w/ implicit default slot 1`] = `
       const n4 = t2()
       return [n3, n4]
     }
-  })
+  }, true)
   return n6
 "
 `;
@@ -115,7 +115,7 @@ exports[`compiler: transform slot > nested component slot 1`] = `
       const n0 = _createComponent(B)
       return n0
     }
-  })
+  }, true)
   return n1
 "
 `;
@@ -133,7 +133,7 @@ exports[`compiler: transform slot > nested slots scoping 1`] = `
       const n7 = _createNodes(() => (_slotProps0["foo"] + bar + baz))
       return [n5, n7]
     }
-  })
+  }, true)
   return n11
 "
 `;
@@ -150,7 +150,7 @@ exports[`compiler: transform slot > on component dynamically named slot 1`] = `
         }
       })
     ]
-  })
+  }, true)
   return n1
 "
 `;
@@ -162,7 +162,7 @@ exports[`compiler: transform slot > on component named slot 1`] = `
       const n0 = _createNodes(() => (_slotProps0["foo"] + bar))
       return n0
     }
-  })
+  }, true)
   return n1
 "
 `;
@@ -174,7 +174,7 @@ exports[`compiler: transform slot > on-component default slot 1`] = `
       const n0 = _createNodes(() => (_slotProps0["foo"] + bar))
       return n0
     }
-  })
+  }, true)
   return n1
 "
 `;
@@ -185,7 +185,7 @@ exports[`compiler: transform slot > quote slot name 1`] = `
     "nav-bar-title-before": () => {
       return null
     }
-  })
+  }, true)
   return n1
 "
 `;

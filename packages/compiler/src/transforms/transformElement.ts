@@ -65,9 +65,7 @@ export const transformElement: NodeTransform = (node, context) => {
       parent = parent.parent
     }
     const singleRoot =
-      context.root === parent &&
-      parent.node.children.filter((child) => !isJSXComponent(child)).length ===
-        1
+      context.root === parent && parent.node.type !== 'JSXFragment'
     ;(isComponent ? transformComponentElement : transformNativeElement)(
       tag,
       propsResult,
@@ -110,7 +108,7 @@ function transformComponentElement(
     tag,
     props: propsResult[0] ? propsResult[1] : [propsResult[1]],
     asset,
-    root: singleRoot,
+    root: singleRoot && !context.inVFor,
     slots: [...context.slots],
     once: context.inVOnce,
   }

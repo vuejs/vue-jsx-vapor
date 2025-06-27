@@ -208,7 +208,7 @@ describe('compiler: vModel transform', () => {
       expect(code).toMatchSnapshot()
       expect(code).contains(`modelValue: () => (foo),`)
       expect(code).contains(
-        `"onUpdate:modelValue": () => _value => (foo = _value) })`,
+        `"onUpdate:modelValue": () => _value => (foo = _value)`,
       )
       expect(ir.block.dynamic.children[0].operation).toMatchObject({
         type: IRNodeTypes.CREATE_COMPONENT_NODE,

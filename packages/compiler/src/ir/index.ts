@@ -45,7 +45,7 @@ export interface BaseIRNode {
 }
 
 export interface RootNode {
-  type: IRNodeTypes.ROOT
+  type: IRNodeTypes.ROOT | JSXFragment['type']
   source: string
   children: JSXFragment['children']
 }

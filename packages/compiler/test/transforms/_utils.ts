@@ -13,7 +13,9 @@ export function makeCompile(options: CompilerOptions = {}) {
       plugins: ['jsx', 'typescript'],
     }).program
     let children!: JSXElement[] | JSXFragment['children']
+    let tagType
     if (statement.type === 'ExpressionStatement') {
+      tagType = statement.expression.type
       children =
         statement.expression.type === 'JSXFragment'
           ? statement.expression.children
@@ -22,7 +24,7 @@ export function makeCompile(options: CompilerOptions = {}) {
             : []
     }
     const ast: RootNode = {
-      type: IRNodeTypes.ROOT,
+      type: tagType === 'JSXFragment' ? 'JSXFragment' : IRNodeTypes.ROOT,
       children,
       source,
     }

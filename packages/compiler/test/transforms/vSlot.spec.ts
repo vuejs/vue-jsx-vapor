@@ -177,7 +177,7 @@ describe('compiler: transform slot', () => {
             const n4 = t2()
             return [n3, n4]
           }
-        })
+        }, true)
         return n6
       "
     `)
@@ -327,7 +327,7 @@ describe('compiler: transform slot', () => {
               }
             })))
           ]
-        })
+        }, true)
         return n4
       "
     `)

@@ -4,7 +4,7 @@ exports[`compiler: vModel transform > component > v-model for component should g
 "
   const n0 = _createComponent(Comp, { modelValue: () => (foo),
   "onUpdate:modelValue": () => _value => (foo = _value),
-  modelValueModifiers: () => ({ trim: true, "bar-baz": true }) })
+  modelValueModifiers: () => ({ trim: true, "bar-baz": true }) }, null, true)
   return n0
 "
 `;
@@ -12,7 +12,7 @@ exports[`compiler: vModel transform > component > v-model for component should g
 exports[`compiler: vModel transform > component > v-model for component should work 1`] = `
 "
   const n0 = _createComponent(Comp, { modelValue: () => (foo),
-  "onUpdate:modelValue": () => _value => (foo = _value) })
+  "onUpdate:modelValue": () => _value => (foo = _value) }, null, true)
   return n0
 "
 `;
@@ -26,7 +26,7 @@ exports[`compiler: vModel transform > component > v-model with arguments for com
     bar: () => (bar),
     "onUpdate:bar": () => _value => (bar = _value),
     barModifiers: () => ({ number: true })
-  })
+  }, null, true)
   return n0
 "
 `;
@@ -34,7 +34,7 @@ exports[`compiler: vModel transform > component > v-model with arguments for com
 exports[`compiler: vModel transform > component > v-model with arguments for component should work 1`] = `
 "
   const n0 = _createComponent(Comp, { bar: () => (foo),
-  "onUpdate:bar": () => _value => (foo = _value) })
+  "onUpdate:bar": () => _value => (foo = _value) }, null, true)
   return n0
 "
 `;
@@ -48,7 +48,7 @@ exports[`compiler: vModel transform > component > v-model with dynamic arguments
     () => ({ [bar.value]: bar,
     ["onUpdate:" + bar.value]: () => _value => (bar = _value),
     [bar.value + "Modifiers"]: () => ({ number: true }) })
-  ] })
+  ] }, null, true)
   return n0
 "
 `;
@@ -58,7 +58,7 @@ exports[`compiler: vModel transform > component > v-model with dynamic arguments
   const n0 = _createComponent(Comp, { $: [
     () => ({ [arg]: foo,
     ["onUpdate:" + arg]: () => _value => (foo = _value) })
-  ] })
+  ] }, null, true)
   return n0
 "
 `;
