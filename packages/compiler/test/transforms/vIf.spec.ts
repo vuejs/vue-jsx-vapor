@@ -213,6 +213,17 @@ describe('compiler: v-if', () => {
     })
   })
 
+  test('v-if + v-if / v-else[-if]', () => {
+    const { code } = compileWithVIf(
+      `<div>
+        <span v-if="foo">foo</span>
+        <span v-if="bar">bar</span>
+        <span v-else>baz</span>
+      </div>`,
+    )
+    expect(code).toMatchSnapshot()
+  })
+
   test('comment between branches', () => {
     const { code, ir } = compileWithVIf(
       `
