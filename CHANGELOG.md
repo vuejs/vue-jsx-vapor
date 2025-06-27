@@ -1,3 +1,20 @@
+## [2.4.6](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.5...v2.4.6) (2025-06-27)
+
+
+### Bug Fixes
+
+* **compiler-vapor:** properly locate last if node ([9633b9c](https://github.com/vuejs/vue-jsx-vapor/commit/9633b9cec201be95275a5f5328490dc3011bdcf7))
+* **compiler:** correct execution order of operations ([485e709](https://github.com/vuejs/vue-jsx-vapor/commit/485e709e33a62ae095006ffbef7c830083ddcb85))
+* **compiler:** prevent v-for components from being single root ([9c10b3b](https://github.com/vuejs/vue-jsx-vapor/commit/9c10b3b9018b2512efbbac243a2e16562ff7a32b))
+
+
+### Features
+
+* add sourceMap option ([9566477](https://github.com/vuejs/vue-jsx-vapor/commit/95664775d5750dc641bc60dfb4a52ac1832c4158))
+* **vue-jsx-vapor:** add class and style for IntrinsicAttributes ([997045f](https://github.com/vuejs/vue-jsx-vapor/commit/997045feb0b77d05cec87704673d2736065c1e74))
+
+
+
 ## [2.4.5](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.4...v2.4.5) (2025-06-12)
 
 
