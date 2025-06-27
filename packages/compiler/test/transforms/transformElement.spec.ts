@@ -13,8 +13,8 @@ const compileWithElementTransform = makeCompile({
   nodeTransforms: [
     transformVFor,
     transformElement,
-    transformChildren,
     transformText,
+    transformChildren,
   ],
   directiveTransforms: {
     bind: transformVBind,

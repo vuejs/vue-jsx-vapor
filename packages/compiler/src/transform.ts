@@ -161,41 +161,31 @@ export class TransformContext<
 
   registerEffect(
     expressions: SimpleExpressionNode[],
-    ...operations: OperationNode[]
+    operation: OperationNode | OperationNode[],
+    getEffectIndex = (): number => this.block.effect.length,
+    getOperationIndex = (): number => this.block.operation.length,
   ) {
+    const operations = [operation].flat()
     expressions = expressions.filter((exp) => !isConstantExpression(exp))
     if (
       this.inVOnce ||
       expressions.length === 0 ||
       expressions.every((e) => e.ast && isConstantNode(e.ast, {}))
     ) {
-      return this.registerOperation(...operations)
+      return this.registerOperation(operations, getOperationIndex)
     }
 
-    this.block.expressions.push(...expressions)
-    const existing = this.block.effect.find((e) =>
-      isSameExpression(e.expressions, expressions),
-    )
-    if (existing) {
-      existing.operations.push(...operations)
-    } else {
-      this.block.effect.push({
-        expressions,
-        operations,
-      })
-    }
-
-    function isSameExpression(
-      a: SimpleExpressionNode[],
-      b: SimpleExpressionNode[],
-    ) {
-      if (a.length !== b.length) return false
-      return a.every((exp, i) => exp.content === b[i].content)
-    }
+    this.block.effect.splice(getEffectIndex(), 0, {
+      expressions,
+      operations,
+    })
   }
 
-  registerOperation(...node: OperationNode[]) {
-    this.block.operation.push(...node)
+  registerOperation(
+    operation: OperationNode | OperationNode[],
+    getOperationIndex = (): number => this.block.operation.length,
+  ) {
+    this.block.operation.splice(getOperationIndex(), 0, ...[operation].flat())
   }
 
   create<E extends T>(node: E, index: number): TransformContext<E> {

@@ -49,4 +49,30 @@ describe('compile', () => {
       expect(code).toMatchSnapshot()
     })
   })
+
+  describe('execution order', () => {
+    test('basic', () => {
+      const { code } = compile(`<div foo={true}>{foo}</div>`)
+      expect(code).matchSnapshot()
+      expect(code).contains(
+        `_setProp(n0, "foo", true)
+  const x0 = _child(n0)
+  _setNodes(x0, () => (foo))`,
+      )
+    })
+    test('with v-once', () => {
+      const { code } = compile(
+        `<div>
+          <span v-once>{ foo }</span>
+          { bar }<br/>
+          { baz }
+        </div>`,
+      )
+      expect(code).matchSnapshot()
+      expect(code).contains(
+        `_setNodes(n1, () => (bar))
+  _setNodes(n2, () => (baz))`,
+      )
+    })
+  })
 })

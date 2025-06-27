@@ -35,6 +35,10 @@ const isEventRegex = /^on[A-Z]/
 const isDirectiveRegex = /^v-[a-z]/
 
 export const transformElement: NodeTransform = (node, context) => {
+  let effectIndex = context.block.effect.length
+  const getEffectIndex = () => effectIndex++
+  let operationIndex = context.block.operation.length
+  const getOperationIndex = () => operationIndex++
   return function postTransformElement() {
     ;({ node } = context)
     if (node.type !== 'JSXElement' || isTemplate(node)) return
@@ -71,6 +75,8 @@ export const transformElement: NodeTransform = (node, context) => {
       propsResult,
       singleRoot,
       context as TransformContext<JSXElement>,
+      getEffectIndex,
+      getOperationIndex,
     )
   }
 }
@@ -120,6 +126,8 @@ function transformNativeElement(
   propsResult: PropsResult,
   singleRoot: boolean,
   context: TransformContext<JSXElement>,
+  getEffectIndex: () => number,
+  getOperationIndex: () => number,
 ) {
   const { scopeId } = context.options
 
@@ -131,12 +139,17 @@ function transformNativeElement(
   const dynamicProps: string[] = []
   if (propsResult[0] /* dynamic props */) {
     const [, dynamicArgs, expressions] = propsResult
-    context.registerEffect(expressions, {
-      type: IRNodeTypes.SET_DYNAMIC_PROPS,
-      element: context.reference(),
-      props: dynamicArgs,
-      root: singleRoot,
-    })
+    context.registerEffect(
+      expressions,
+      {
+        type: IRNodeTypes.SET_DYNAMIC_PROPS,
+        element: context.reference(),
+        props: dynamicArgs,
+        root: singleRoot,
+      },
+      getEffectIndex,
+      getOperationIndex,
+    )
   } else {
     for (const prop of propsResult[1]) {
       const { key, values } = prop
@@ -145,13 +158,18 @@ function transformNativeElement(
         if (values[0].content) template += `="${values[0].content}"`
       } else {
         dynamicProps.push(key.content)
-        context.registerEffect(values, {
-          type: IRNodeTypes.SET_PROP,
-          element: context.reference(),
-          prop,
-          tag,
-          root: singleRoot,
-        })
+        context.registerEffect(
+          values,
+          {
+            type: IRNodeTypes.SET_PROP,
+            element: context.reference(),
+            prop,
+            tag,
+            root: singleRoot,
+          },
+          getEffectIndex,
+          getOperationIndex,
+        )
       }
     }
   }

@@ -13,8 +13,8 @@ import { makeCompile } from './_utils'
 const compileWithVIf = makeCompile({
   nodeTransforms: [
     transformVOnce,
-    transformText,
     transformElement,
+    transformText,
     transformChildren,
   ],
 })

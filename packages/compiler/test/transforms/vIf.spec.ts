@@ -3,7 +3,6 @@ import { describe, expect, test } from 'vitest'
 import {
   IRNodeTypes,
   transformChildren,
-  // transformComment,
   transformElement,
   transformText,
   transformVIf,
@@ -15,9 +14,8 @@ import { makeCompile } from './_utils'
 const compileWithVIf = makeCompile({
   nodeTransforms: [
     transformVIf,
-    transformText,
     transformElement,
-    // transformComment,
+    transformText,
     transformChildren,
   ],
   directiveTransforms: {

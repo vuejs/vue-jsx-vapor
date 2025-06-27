@@ -13,8 +13,8 @@ import { makeCompile } from './_utils'
 
 const compileWithSlots = makeCompile({
   nodeTransforms: [
-    transformText,
     transformElement,
+    transformText,
     transformVSlot,
     transformChildren,
   ],

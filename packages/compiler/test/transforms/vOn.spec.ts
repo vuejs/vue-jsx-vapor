@@ -11,7 +11,7 @@ import {
 import { makeCompile } from './_utils'
 
 const compileWithVOn = makeCompile({
-  nodeTransforms: [transformText, transformElement, transformChildren],
+  nodeTransforms: [transformElement, transformText, transformChildren],
   directiveTransforms: {
     on: transformVOn,
     bind: transformVBind,

@@ -15,8 +15,8 @@ import { makeCompile } from './_utils'
 const compileWithVFor = makeCompile({
   nodeTransforms: [
     transformVFor,
-    transformText,
     transformElement,
+    transformText,
     transformChildren,
   ],
   directiveTransforms: {

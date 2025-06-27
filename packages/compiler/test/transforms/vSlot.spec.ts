@@ -16,10 +16,10 @@ import { makeCompile } from './_utils'
 
 const compileWithSlots = makeCompile({
   nodeTransforms: [
-    transformText,
     transformVIf,
     transformVFor,
     transformElement,
+    transformText,
     transformVSlot,
     transformChildren,
   ],
