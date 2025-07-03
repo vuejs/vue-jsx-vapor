@@ -204,22 +204,22 @@ defineComponent((__MACROS_props) => {
 
 exports[`fixtures > ./fixtures/define-expose.tsx 1`] = `
 "
-import { getCurrentInstance as __MACROS_getCurrentInstance } from "vue-jsx-vapor/runtime";export function Comp(__MACROS_props) {
-  ;(__MACROS_getCurrentInstance().exposed = {
+import { getCurrentInstance as __MACROS_getCurrentInstance } from "vue";export function Comp(__MACROS_props) {
+  ;(__MACROS_getCurrentInstance(true).exposed = {
     foo: 1,
   })
   return <div />
 }
 
 export const Comp1 = function (props: any) {
-  ;(__MACROS_getCurrentInstance().exposed = {
+  ;(__MACROS_getCurrentInstance(true).exposed = {
     foo: props.foo,
   })
   return <div />
 }
 
 export const Comp2 = ({ foo, ...__MACROS_props }: any) => {
-  ;(__MACROS_getCurrentInstance().exposed = {
+  ;(__MACROS_getCurrentInstance(true).exposed = {
     foo,
   })
   return <div />

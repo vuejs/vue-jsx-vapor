@@ -1,5 +1,7 @@
 import {
+  createComponent as _createComponent,
   EffectScope,
+  getCurrentInstance,
   insert,
   isFragment,
   isVaporComponent,
@@ -10,17 +12,9 @@ import {
   useAttrs,
   VaporFragment,
   type Block,
-  type GenericComponentInstance,
 } from 'vue'
 
-import * as Vue from 'vue'
-
 export { shallowRef as useRef } from 'vue'
-
-export function getCurrentInstance(): GenericComponentInstance | null {
-  // @ts-ignore
-  return Vue.currentInstance || Vue.getCurrentInstance()
-}
 
 /**
  * Returns the props of the current component instance.
@@ -35,7 +29,7 @@ export function getCurrentInstance(): GenericComponentInstance | null {
  * ```
  */
 export function useProps() {
-  const i = getCurrentInstance()
+  const i = getCurrentInstance(true)
   return i!.props
 }
 
