@@ -1,3 +1,12 @@
+## [2.4.7](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.6...v2.4.7) (2025-07-04)
+
+
+### Features
+
+* support functional component in interop mode ([26afc8c](https://github.com/vuejs/vue-jsx-vapor/commit/26afc8ccf3887066feffefadd01782678f55a6a9))
+
+
+
 ## [2.4.6](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.5...v2.4.6) (2025-06-27)
 
 
