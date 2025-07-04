@@ -16,6 +16,11 @@ import {
 
 export { shallowRef as useRef } from 'vue'
 
+export const createComponent: typeof _createComponent = (...args) => {
+  typeof args[0] === 'function' && (args[0].__vapor = true)
+  return _createComponent(...args)
+}
+
 /**
  * Returns the props of the current component instance.
  *

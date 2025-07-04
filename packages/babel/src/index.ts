@@ -95,14 +95,20 @@ export default (): {
             statements.unshift(preambleResult)
           }
 
-          const helpers = ['setNodes', 'createNodes'].filter((helper) => {
+          const helpers = [
+            'setNodes',
+            'createNodes',
+            state.opts.interop ? 'createComponent' : '',
+          ].filter((helper) => {
             const result = importSet.has(helper)
             result && importSet.delete(helper)
             return result
           })
           if (helpers.length) {
             statements.unshift(
-              `import { ${helpers.map((i) => `${i} as _${i}`).join(', ')} } from 'vue-jsx-vapor/runtime';\n`,
+              `import { ${helpers
+                .map((i) => `${i} as _${i}`)
+                .join(', ')} } from 'vue-jsx-vapor/runtime';\n`,
             )
           }
 
