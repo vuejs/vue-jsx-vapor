@@ -1,6 +1,6 @@
 {
   "name": "@vue-jsx-vapor/macros",
-  "version": "2.4.7",
+  "version": "2.4.8",
   "description": "Macros for Vue JSX Vapor",
   "type": "module",
   "keywords": [

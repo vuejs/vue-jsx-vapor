@@ -1,3 +1,12 @@
+## [2.4.8](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.7...v2.4.8) (2025-07-05)
+
+
+### Bug Fixes
+
+* **compiler:** use parseExpression instead of walkIdentifiers ([13fa2f4](https://github.com/vuejs/vue-jsx-vapor/commit/13fa2f40e30ec3bcae2d2f438f35307e80f366de))
+
+
+
 ## [2.4.7](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.6...v2.4.7) (2025-07-04)
 
 
