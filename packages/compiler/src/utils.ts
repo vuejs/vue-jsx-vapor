@@ -17,7 +17,6 @@ import {
   isLiteralWhitelisted,
   NodeTypes,
   unwrapTSNode,
-  walkIdentifiers,
   type SimpleExpressionNode,
   type TextNode,
 } from '@vue/compiler-dom'
@@ -137,7 +136,7 @@ export function resolveExpression(
   if (!node) return createSimpleExpression('', true)
   node = unwrapTSNode(
     node.type === 'JSXExpressionContainer' ? node.expression : node,
-  )
+  ) as Node
   const isStatic =
     node.type === 'StringLiteral' ||
     node.type === 'JSXText' ||
@@ -163,20 +162,17 @@ export function resolveExpression(
       node.start! -= 7
     }
   }
-  if (!isResolved) {
-    const offset = node.start! - 1
-    walkIdentifiers(
-      node,
-      (id) => {
-        if (!id.loc) return
-        id.start = id.loc.start.index! - offset
-        id.end = id.loc.end.index! - offset
-      },
-      true,
-    )
-    resolvedExpressions.add(node)
-  }
-  return resolveSimpleExpression(source, isStatic, location, node)
+
+  return resolveSimpleExpression(
+    source,
+    isStatic,
+    location,
+    isStatic
+      ? undefined
+      : parseExpression(`(${source})`, {
+          plugins: context.options.expressionPlugins,
+        }),
+  )
 }
 
 export function resolveSimpleExpression(
@@ -309,7 +305,7 @@ export function resolveExpressionWithFn(node: Node, context: TransformContext) {
         false,
         node.loc,
         parseExpression(`(${text})=>{}`, {
-          plugins: ['typescript'],
+          plugins: context.options.expressionPlugins,
         }),
       )
 }
