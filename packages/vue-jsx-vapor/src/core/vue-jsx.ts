@@ -21,7 +21,7 @@ export function transformVueJsx(
     babelrc: false,
     configFile: false,
   })
-  if (result?.code) {
+  if (result && result.code !== code) {
     return {
       code: result.code,
       map: result.map,

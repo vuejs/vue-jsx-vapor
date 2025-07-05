@@ -100,7 +100,7 @@ export function injectHMRAndSSR(
       result.code = `${result.code!.replaceAll(
         `export default `,
         `const __default__ = `,
-      )}\nexport default __default__`
+      )}\nexport default __default__;`
     }
 
     if (!ssr && !/\?vue&type=script/.test(id)) {
@@ -108,15 +108,15 @@ export function injectHMRAndSSR(
       let callbackCode = ``
       for (const { local, exported, id } of hotComponents) {
         code +=
-          `\n${local}.__hmrId = "${id}"` +
-          `\n__VUE_HMR_RUNTIME__.createRecord("${id}", ${local})`
+          `\n${local}.__hmrId = "${id}";` +
+          `\n__VUE_HMR_RUNTIME__.createRecord("${id}", ${local});`
         callbackCode += `
-      __VUE_HMR_RUNTIME__.rerender(mod['${exported}'].__hmrId, mod['${exported}'].setup || mod['${exported}'])`
+    __VUE_HMR_RUNTIME__.rerender(mod['${exported}'].__hmrId, mod['${exported}'].setup || mod['${exported}']);`
       }
 
       code += `
 if (import.meta.hot) {
-  import.meta.hot.accept((mod) => {${callbackCode}\n})
+  import.meta.hot.accept(mod => {${callbackCode}\n  });
 }`
       result.code = code
     }
