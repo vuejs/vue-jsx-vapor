@@ -40,10 +40,10 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@prettier/sync": "^0.5.5"
+    "@prettier/sync": "^0.6.1"
   },
   "devDependencies": {
-    "@typescript-eslint/utils": "^8.35.0",
+    "@typescript-eslint/utils": "^8.35.1",
     "eslint-vitest-rule-tester": "^2.2.0"
   }
 }

@@ -14,7 +14,13 @@ import { transformDefineModel } from './define-model'
 import { transformDefineSlots } from './define-slots'
 import { transformDefineStyle } from './define-style'
 import { getParamsStart, isFunctionalNode, type FunctionalNode } from './utils'
-import type { CallExpression, LVal, Node, Program } from '@babel/types'
+import type {
+  CallExpression,
+  LVal,
+  Node,
+  Program,
+  VoidPattern,
+} from '@babel/types'
 
 export { isFunctionalNode }
 
@@ -34,7 +40,7 @@ export type Macros = {
   }[]
   defineSlots?: {
     expression: CallExpression
-    id?: LVal
+    id?: VoidPattern | LVal
   }
   defineExpose?: CallExpression
   defineStyle?: DefineStyle[]
