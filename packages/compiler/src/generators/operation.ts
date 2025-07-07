@@ -14,7 +14,6 @@ import { genFor } from './for'
 import { genSetHtml } from './html'
 import { genIf } from './if'
 import { genDynamicProps, genSetProp } from './prop'
-import { genSlotOutlet } from './slotOutlet'
 import { genDeclareOldRef, genSetTemplateRef } from './templateRef'
 import {
   genCreateNodes,
@@ -86,7 +85,7 @@ export function genOperation(
     case IRNodeTypes.DECLARE_OLD_REF:
       return genDeclareOldRef(oper)
     case IRNodeTypes.SLOT_OUTLET_NODE:
-      return genSlotOutlet(oper, context)
+      return []
     case IRNodeTypes.DIRECTIVE:
       return genBuiltinDirective(oper, context)
     case IRNodeTypes.GET_TEXT_CHILD:

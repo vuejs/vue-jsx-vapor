@@ -8,7 +8,6 @@ import {
   genCall,
   INDENT_END,
   INDENT_START,
-  LF,
   NEWLINE,
   type CodeFragment,
 } from './generators/utils'
@@ -130,11 +129,6 @@ export function generate(
   const templates = genTemplates(ir.template, ir.rootTemplateIndex, context)
   const imports = genHelperImports(context)
   const preamble = imports + templates + delegates
-
-  const newlineCount = [...preamble].filter((c) => c === '\n').length
-  if (newlineCount) {
-    frag.unshift(...new Array<CodeFragment>(newlineCount).fill(LF))
-  }
 
   const [code, map] = codeFragmentToString(frag, context)
 

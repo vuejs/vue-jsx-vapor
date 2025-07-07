@@ -1,6 +1,5 @@
 import { parse } from '@babel/parser'
 import { extend, isString } from '@vue/shared'
-
 import { generate, type VaporCodegenResult } from './generate'
 import { IRNodeTypes, type HackOptions, type RootNode } from './ir'
 import {

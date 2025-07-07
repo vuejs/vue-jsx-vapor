@@ -3,11 +3,11 @@ import {
   isStaticProperty,
   NewlineType,
   TS_NODE_TYPES,
-  walkIdentifiers,
   type SimpleExpressionNode,
   type SourceLocation,
 } from '@vue/compiler-dom'
 import { isString } from '@vue/shared'
+import { walkIdentifiers } from 'ast-kit'
 import { isConstantExpression } from '../utils'
 import type { CodegenContext } from '../generate'
 import { buildCodeFragment, type CodeFragment } from './utils'
@@ -55,16 +55,21 @@ export function genExpression(
   if (ids.length) {
     const [frag, push] = buildCodeFragment()
     const isTSNode = ast && TS_NODE_TYPES.includes(ast.type)
+    const offset =
+      (ast?.start ? ast.start - 1 : 0) - ((ast as any)._offset || 0)
     ids
       .sort((a, b) => a.start! - b.start!)
       .forEach((id, i) => {
         // range is offset by -1 due to the wrapping parens when parsed
-        const start = id.start! - 1
-        const end = id.end! - 1
+        const start = id.start! - 1 - offset
+        const end = id.end! - 1 - offset
         const last = ids[i - 1]
 
         if (!isTSNode || i !== 0) {
-          const leadingText = content.slice(last ? last.end! - 1 : 0, start)
+          const leadingText = content.slice(
+            last ? last.end! - 1 - offset : 0,
+            start,
+          )
           if (leadingText.length) push([leadingText, NewlineType.Unknown])
         }
 
@@ -87,7 +92,6 @@ export function genExpression(
               source,
             },
             hasMemberExpression ? undefined : assignment,
-            id,
             parent,
           ),
         )
@@ -111,7 +115,6 @@ function genIdentifier(
   context: CodegenContext,
   loc?: SourceLocation,
   assignment?: string,
-  id?: Identifier,
   parent?: Node,
 ): CodeFragment[] {
   const { identifiers } = context

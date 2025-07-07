@@ -13,15 +13,12 @@ import type { CodegenContext } from '../generate'
 export { genExpression } from './expression'
 
 export const NEWLINE: unique symbol = Symbol(`newline`)
-/** increase offset but don't push actual code */
-export const LF: unique symbol = Symbol(`line feed`)
 export const INDENT_START: unique symbol = Symbol(`indent start`)
 export const INDENT_END: unique symbol = Symbol(`indent end`)
 
 type FalsyValue = false | null | undefined
 export type CodeFragment =
   | typeof NEWLINE
-  | typeof LF
   | typeof INDENT_START
   | typeof INDENT_END
   | string
@@ -130,11 +127,6 @@ export function codeFragmentToString(
       continue
     } else if (frag === INDENT_END) {
       indentLevel--
-      continue
-    } else if (frag === LF) {
-      pos.line++
-      pos.column = 0
-      pos.offset++
       continue
     }
 

@@ -2,10 +2,10 @@ import {
   createSimpleExpression,
   isMemberExpression,
   toValidAssetId,
-  walkIdentifiers,
   type SimpleExpressionNode,
 } from '@vue/compiler-dom'
 import { camelize, extend, isArray } from '@vue/shared'
+import { walkIdentifiers } from 'ast-kit'
 import {
   IRDynamicPropsKind,
   IRSlotType,
