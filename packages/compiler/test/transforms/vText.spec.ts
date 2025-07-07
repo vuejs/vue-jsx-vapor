@@ -59,7 +59,7 @@ describe('v-text', () => {
 
   test('should raise error and ignore children when v-text is present', () => {
     const onError = vi.fn()
-    const { code, ir, preamble } = compileWithVText(
+    const { code, ir, templates } = compileWithVText(
       `<div v-text={test}>hello</div>`,
       {
         onError,
@@ -70,7 +70,7 @@ describe('v-text', () => {
     ])
 
     // children should have been removed
-    expect(ir.template).toEqual(['<div> </div>'])
+    expect(ir.templates).toEqual(['<div> </div>'])
 
     expect(ir.block.effect).toMatchObject([
       {
@@ -99,7 +99,7 @@ describe('v-text', () => {
 
     expect(code).matchSnapshot()
     // children should have been removed
-    expect(preamble).contains('template("<div> </div>", true)')
+    expect(templates).contains('_template("<div> </div>", true)')
   })
 
   test('should raise error if has no expression', () => {

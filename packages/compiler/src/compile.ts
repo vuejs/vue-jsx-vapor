@@ -1,17 +1,7 @@
 import { parse } from '@babel/parser'
-import {
-  generate,
-  type VaporCodegenResult as BaseVaporCodegenResult,
-} from '@vue/compiler-vapor'
 import { extend, isString } from '@vue/shared'
-import { customGenOperation } from './generate'
-
-import {
-  IRNodeTypes,
-  type HackOptions,
-  type RootIRNode,
-  type RootNode,
-} from './ir'
+import { generate, type VaporCodegenResult } from './generate'
+import { IRNodeTypes, type HackOptions, type RootNode } from './ir'
 import {
   transform,
   type DirectiveTransform,
@@ -35,22 +25,12 @@ import { transformVText } from './transforms/vText'
 import type { ExpressionStatement, JSXElement, JSXFragment } from '@babel/types'
 import type { CompilerOptions as BaseCompilerOptions } from '@vue/compiler-dom'
 
-export { generate }
-
-export interface VaporCodegenResult
-  extends Omit<BaseVaporCodegenResult, 'ast'> {
-  ast: RootIRNode
-  customHelpers: Set<string>
-}
-
 // code/AST -> IR (transform) -> JS (generate)
 export function compile(
   source: JSXElement | JSXFragment | string,
   options: CompilerOptions = {},
 ): VaporCodegenResult {
   const resolvedOptions = extend({}, options, {
-    inline: true,
-    prefixIdentifiers: false,
     expressionPlugins: options.expressionPlugins || ['jsx'],
   })
   if (!resolvedOptions.source && isString(source)) {
@@ -101,14 +81,12 @@ export function compile(
     }),
   )
 
-  return generate(ir as any, {
-    ...resolvedOptions,
-    customGenOperation,
-  }) as unknown as VaporCodegenResult
+  return generate(ir, resolvedOptions)
 }
 
 export type CompilerOptions = HackOptions<BaseCompilerOptions> & {
   source?: string
+  templates?: string[]
 }
 export type TransformPreset = [
   NodeTransform[],

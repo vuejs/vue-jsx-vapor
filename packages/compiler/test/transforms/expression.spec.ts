@@ -23,14 +23,13 @@ describe('compiler: expression', () => {
   test('conditional expression', () => {
     const { code, helpers, ir } = compileWithVIf(
       `<>{ok? <span>{msg}</span> : fail ? <div>fail</div>  : null }</>`,
-      { inline: false },
     )
 
     expect(code).toMatchSnapshot()
 
     expect(helpers).contains('createIf')
 
-    expect(ir.template).toEqual(['<span> </span>', '<div>fail</div>'])
+    expect(ir.templates).toEqual(['<span> </span>', '<div>fail</div>'])
     const op = ir.block.dynamic.children[0].operation
     expect(op).toMatchObject({
       type: IRNodeTypes.IF,
@@ -64,7 +63,7 @@ describe('compiler: expression', () => {
 
     expect(helpers).contains('createIf')
 
-    expect(ir.template).toEqual(['<div> </div>'])
+    expect(ir.templates).toEqual(['<div> </div>'])
     const op = ir.block.dynamic.children[0].operation
     expect(op).toMatchObject({
       type: IRNodeTypes.IF,
@@ -97,7 +96,7 @@ describe('compiler: expression', () => {
     expect(code).toMatchSnapshot()
 
     expect(helpers).contains('createIf')
-    expect(ir.template).toEqual([
+    expect(ir.templates).toEqual([
       '<span> </span>',
       '<div>fail</div>',
       '<div></div>',

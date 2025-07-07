@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`transform > transform multiple components 1`] = `
+"import { child as _child, delegateEvents as _delegateEvents, template as _template, createIf as _createIf } from 'vue';
+import { setNodes as _setNodes } from 'vue-jsx-vapor/runtime';
+const t0 = _template("<div> </div>", true),
+  t1 = _template("<div>Hello</div>"),
+  t2 = _template("<div>World</div>");
+_delegateEvents("click", "dblclick");
+const a = (() => {
+  const n0 = t0();
+  const x0 = _child(n0);
+  _setNodes(x0, () => Hello);
+  n0.$evtclick = e => onClick(e);
+  return n0;
+})();
+const b = (() => {
+  const n0 = _createIf(() => foo, () => {
+    const n2 = t1();
+    n2.$evtclick = e => onClick(e);
+    return n2;
+  }, () => {
+    const n4 = t2();
+    n4.$evtdblclick = e => onDblclick(e);
+    return n4;
+  });
+  return n0;
+})();"
+`;

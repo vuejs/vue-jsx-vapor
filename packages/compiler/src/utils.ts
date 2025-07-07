@@ -127,7 +127,6 @@ export function resolveSimpleExpressionNode(
   return exp
 }
 
-const resolvedExpressions = new WeakSet()
 export function resolveExpression(
   node: Node | undefined | null,
   context: TransformContext,
@@ -154,24 +153,17 @@ export function resolveExpression(
               ? node.name
               : context.ir.source.slice(node.start!, node.end!)
   const location = node.loc
-  const isResolved = resolvedExpressions.has(node)
   if (source && !isStatic && effect && !isConstant(node)) {
     source = `() => (${source})`
-    if (location && node && !isResolved) {
-      location.start.column -= 7
-      node.start! -= 7
-    }
+    // add offset flag to avoid re-parsing
+    ;(node as any)._offset = 7
   }
 
   return resolveSimpleExpression(
     source,
     isStatic,
     location,
-    isStatic
-      ? undefined
-      : parseExpression(`(${source})`, {
-          plugins: context.options.expressionPlugins,
-        }),
+    isStatic ? undefined : node,
   )
 }
 
