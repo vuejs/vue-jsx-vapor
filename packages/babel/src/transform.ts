@@ -19,37 +19,18 @@ export const transformJSX: VisitNodeFunction<
   if (!root || !root.inVaporComponent) return
 
   const isTS = state.filename?.endsWith('tsx')
-  let { code, helpers, preamble, map } = compile(root.node, {
+  const { code, map, helpers, templates, delegates } = compile(root.node, {
     isTS,
     filename: state.filename,
     sourceMap: !!state.file.opts.sourceMaps,
     source: ' '.repeat(root.node.start || 0) + root.source,
+    templates: state.templates.slice(),
     ...state.opts.compile,
   })
 
   helpers.forEach((helper) => state.importSet.add(helper))
-
-  preamble = preamble.replaceAll(
-    /(?<=const )t(?=(\d))/g,
-    `_t${state.preambleIndex}`,
-  )
-  code = code.replaceAll(/(?<== )t(?=\d)/g, `_t${state.preambleIndex}`)
-  state.preambleIndex++
-
-  for (const [, key, value] of preamble.matchAll(
-    /const (_t\d+) = (_template\(.*\))/g,
-  )) {
-    const result = state.preambleMap.get(value)
-    if (result) {
-      code = code.replaceAll(key, result)
-    } else {
-      state.preambleMap.set(value, key)
-    }
-  }
-
-  for (const [, events] of preamble.matchAll(/_delegateEvents\((.*)\)/g)) {
-    events.split(', ').forEach((event) => state.delegateEventSet.add(event))
-  }
+  delegates.forEach((delegate) => state.delegateEventSet.add(delegate))
+  state.templates.push(...templates.slice(state.templates.length))
 
   const ast = parse(`(() => {${code}})()`, {
     sourceFilename: state.filename,

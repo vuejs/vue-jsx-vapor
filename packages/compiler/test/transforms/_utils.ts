@@ -32,10 +32,12 @@ export function makeCompile(options: CompilerOptions = {}) {
       ...options,
       ...overrideOptions,
     }) as any
-    const { code, helpers, preamble } = generate(ir, {
-      ...options,
-      ...overrideOptions,
-    })
-    return { ast, ir, code, helpers, preamble }
+    return {
+      ir,
+      ...generate(ir, {
+        ...options,
+        ...overrideOptions,
+      }),
+    }
   }
 }

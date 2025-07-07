@@ -86,6 +86,7 @@ export function compile(
 
 export type CompilerOptions = HackOptions<BaseCompilerOptions> & {
   source?: string
+  templates?: string[]
 }
 export type TransformPreset = [
   NodeTransform[],

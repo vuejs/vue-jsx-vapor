@@ -54,7 +54,9 @@ export type StructuralDirectiveTransform = (
   context: TransformContext,
 ) => void | (() => void)
 
-export type TransformOptions = HackOptions<BaseTransformOptions>
+export type TransformOptions = HackOptions<BaseTransformOptions> & {
+  templates?: string[]
+}
 const defaultOptions = {
   filename: '',
   hoistStatic: false,
@@ -62,6 +64,7 @@ const defaultOptions = {
   cacheHandlers: false,
   nodeTransforms: [],
   directiveTransforms: {},
+  templates: [],
   transformHoist: null,
   isBuiltInComponent: NOOP,
   isCustomElement: NOOP,
@@ -151,10 +154,10 @@ export class TransformContext<
   }
 
   pushTemplate(content: string) {
-    const existing = this.ir.template.indexOf(content)
+    const existing = this.ir.templates.indexOf(content)
     if (existing !== -1) return existing
-    this.ir.template.push(content)
-    return this.ir.template.length - 1
+    this.ir.templates.push(content)
+    return this.ir.templates.length - 1
   }
 
   registerTemplate() {
@@ -214,7 +217,7 @@ export function transform(
     type: IRNodeTypes.ROOT,
     node,
     source: node.source,
-    template: [],
+    templates: options.templates || [],
     component: new Set(),
     directive: new Set(),
     block: newBlock(node),

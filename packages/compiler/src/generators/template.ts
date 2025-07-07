@@ -8,15 +8,14 @@ export function genTemplates(
   templates: string[],
   rootIndex: number | undefined,
   { helper }: CodegenContext,
-): string {
-  return templates
-    .map(
-      (template, i) =>
-        `const t${i} = ${helper('template')}(${JSON.stringify(
+): string[] {
+  return templates.map((template, i) =>
+    template.startsWith('_template')
+      ? template
+      : `${helper('template')}(${JSON.stringify(
           template,
-        )}${i === rootIndex ? ', true' : ''})\n`,
-    )
-    .join('')
+        )}${i === rootIndex ? ', true' : ''})`,
+  )
 }
 
 export function genSelf(

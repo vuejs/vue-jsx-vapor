@@ -1,0 +1,26 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`transform > transform multiple components 1`] = `
+"import { template as _template } from 'vue';
+const t0 = _template("<div></div>", true),
+  t1 = t0,
+  t2 = t1;
+const A = defineComponent(() => {
+  defineVaporComponent(() => (() => {
+    const n0 = t0();
+    return n0;
+  })());
+  return () => <div />;
+});
+const B = defineVaporComponent(() => {
+  const C = defineComponent(() => <div />);
+  const D = (() => {
+    const n0 = t1();
+    return n0;
+  })();
+  return (() => {
+    const n0 = t2();
+    return n0;
+  })();
+});"
+`;

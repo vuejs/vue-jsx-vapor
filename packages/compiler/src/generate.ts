@@ -5,7 +5,6 @@ import { setTemplateRefIdent } from './generators/templateRef'
 import {
   buildCodeFragment,
   codeFragmentToString,
-  genCall,
   INDENT_END,
   INDENT_START,
   NEWLINE,
@@ -20,7 +19,9 @@ import type {
 export type CodegenOptions = Omit<
   BaseCodegenOptions,
   'optimizeImports' | 'inline' | 'bindingMetadata' | 'prefixIdentifiers'
->
+> & {
+  templates?: string[]
+}
 
 export class CodegenContext {
   options: Required<CodegenOptions>
@@ -84,6 +85,7 @@ export class CodegenContext {
       ssr: false,
       isTS: false,
       inSSR: false,
+      templates: [],
       expressionPlugins: [],
     }
     this.options = extend(defaultOptions, options)
@@ -91,9 +93,12 @@ export class CodegenContext {
   }
 }
 
-export interface VaporCodegenResult extends BaseCodegenResult {
+export interface VaporCodegenResult
+  extends Omit<BaseCodegenResult, 'preamble'> {
   ast: RootIRNode
   helpers: Set<string>
+  templates: string[]
+  delegates: Set<string>
 }
 
 // IR -> JS codegen
@@ -115,37 +120,19 @@ export function generate(
   push(...genBlockContent(ir.block, context, true))
   push(INDENT_END, NEWLINE)
 
-  const delegates = genDelegates(context)
-  const templates = genTemplates(ir.template, ir.rootTemplateIndex, context)
-  const imports = genHelperImports(context)
-  const preamble = imports + templates + delegates
+  if (context.delegates.size) {
+    context.helper('delegateEvents')
+  }
+  const templates = genTemplates(ir.templates, ir.rootTemplateIndex, context)
 
   const [code, map] = codeFragmentToString(frag, context)
 
   return {
     code,
     ast: ir,
-    preamble,
     map: map && map.toJSON(),
     helpers,
+    templates,
+    delegates: context.delegates,
   }
-}
-
-function genDelegates({ delegates, helper }: CodegenContext) {
-  return delegates.size
-    ? `${genCall(
-        helper('delegateEvents'),
-        ...Array.from(delegates).map((v) => `"${v}"`),
-      ).join('')}\n`
-    : ''
-}
-
-function genHelperImports({ helpers, options }: CodegenContext) {
-  let imports = ''
-  if (helpers.size) {
-    imports += `import { ${[...helpers]
-      .map((h) => `${h} as _${h}`)
-      .join(', ')} } from '${options.runtimeModuleName}';\n`
-  }
-  return imports
 }

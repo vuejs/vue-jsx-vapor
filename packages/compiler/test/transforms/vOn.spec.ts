@@ -258,7 +258,9 @@ describe('v-on', () => {
   })
 
   test('should transform click.right', () => {
-    const { code, ir, preamble } = compileWithVOn(`<div onClick_right={test}/>`)
+    const { code, ir, delegates } = compileWithVOn(
+      `<div onClick_right={test}/>`,
+    )
     expect(ir.block.operation).toMatchObject([
       {
         type: IRNodeTypes.SET_EVENT,
@@ -273,11 +275,11 @@ describe('v-on', () => {
     ])
 
     expect(code).toMatchSnapshot()
-    expect(preamble).contains('"contextmenu"')
+    expect(delegates).includes('contextmenu')
   })
 
   test('should transform click.middle', () => {
-    const { code, ir, preamble } = compileWithVOn(
+    const { code, ir, delegates } = compileWithVOn(
       `<div onClick_middle={test}/>`,
     )
     expect(ir.block.operation).toMatchObject([
@@ -294,16 +296,16 @@ describe('v-on', () => {
     ])
 
     expect(code).matchSnapshot()
-    expect(preamble).contains('"mouseup"')
+    expect(delegates).includes('mouseup')
   })
 
   test('should delegate event', () => {
-    const { code, ir, helpers, preamble } = compileWithVOn(
+    const { code, ir, helpers, delegates } = compileWithVOn(
       `<div onClick={test}/>`,
     )
 
     expect(code).matchSnapshot()
-    expect(preamble).contains('_delegateEvents("click")')
+    expect(delegates).contains('click')
     expect(helpers).contains('delegateEvents')
     expect(ir.block.operation).toMatchObject([
       {
