@@ -14,8 +14,7 @@ export type Options = {
   filename: string
   importSet: Set<string>
   delegateEventSet: Set<string>
-  preambleMap: Map<string, string>
-  preambleIndex: number
+  templates: string[]
   file: BabelFile
   roots: {
     node: JSXElement | JSXFragment
@@ -43,8 +42,7 @@ export default (): {
         enter: (path, state) => {
           state.importSet = new Set<string>()
           state.delegateEventSet = new Set<string>()
-          state.preambleMap = new Map<string, string>()
-          state.preambleIndex = 0
+          state.templates = []
           state.roots = []
           const collectRoot: VisitNodeFunction<
             Node,
@@ -78,20 +76,24 @@ export default (): {
           })
         },
         exit: (path, state) => {
-          const { delegateEventSet, importSet, preambleMap } = state
+          const { delegateEventSet, importSet, templates } = state
 
           const statements: string[] = []
           if (delegateEventSet.size) {
             statements.unshift(
-              `_delegateEvents(${Array.from(delegateEventSet).join(', ')});`,
+              `_delegateEvents("${Array.from(delegateEventSet).join('", "')}");`,
             )
           }
 
-          if (preambleMap.size) {
-            let preambleResult = ''
-            for (const [value, key] of preambleMap) {
-              preambleResult += `const ${key} = ${value}\n`
-            }
+          if (templates.length) {
+            let preambleResult = 'const '
+            const definedTemplates: Record<string, string> = {}
+            templates.forEach((template, index) => {
+              preambleResult += `t${index} = ${
+                definedTemplates[template] || template
+              }${templates.length - 1 === index ? ';' : ','}\n`
+              definedTemplates[template] = `t${index}`
+            })
             statements.unshift(preambleResult)
           }
 

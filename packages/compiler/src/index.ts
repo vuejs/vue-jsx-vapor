@@ -1,10 +1,11 @@
-export {
-  compile,
-  generate,
-  type CompilerOptions,
-  type TransformPreset,
-} from './compile'
+export { compile, type CompilerOptions, type TransformPreset } from './compile'
 export * from './transform'
+export {
+  CodegenContext,
+  generate,
+  type CodegenOptions,
+  type VaporCodegenResult,
+} from './generate'
 
 export * from './ir'
 
