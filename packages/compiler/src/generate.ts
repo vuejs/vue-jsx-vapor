@@ -26,7 +26,7 @@ type CustomGenOperation = (
 
 export type CodegenOptions = Omit<
   BaseCodegenOptions,
-  'optimizeImports' | 'inline'
+  'optimizeImports' | 'inline' | 'bindingMetadata'
 > & {
   customGenOperation?: CustomGenOperation | null
 }
@@ -94,7 +94,6 @@ export class CodegenContext {
       ssr: false,
       isTS: false,
       inSSR: false,
-      bindingMetadata: {},
       expressionPlugins: [],
       customGenOperation: null,
     }

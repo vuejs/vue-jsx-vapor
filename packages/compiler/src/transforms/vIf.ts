@@ -49,9 +49,7 @@ export function processIf(
         id,
         condition: dir.exp!,
         positive: branch,
-        once:
-          context.inVOnce ||
-          isConstantNode(attribute.value!, context.options.bindingMetadata),
+        once: context.inVOnce || isConstantNode(attribute.value!, {}),
       }
     }
   } else {

@@ -7,7 +7,7 @@ import {
   type CompilerCompatOptions,
   type SimpleExpressionNode,
 } from '@vue/compiler-dom'
-import { EMPTY_OBJ, extend, isArray, isString, NOOP } from '@vue/shared'
+import { extend, isArray, isString, NOOP } from '@vue/shared'
 import {
   DynamicFlag,
   IRNodeTypes,
@@ -72,7 +72,6 @@ const defaultOptions = {
   ssr: false,
   inSSR: false,
   ssrCssVars: ``,
-  bindingMetadata: EMPTY_OBJ,
   isTS: false,
   onError: defaultOnError,
   onWarn: defaultOnWarn,
@@ -87,7 +86,10 @@ export class TransformContext<
 
   block: BlockIRNode
   options: Required<
-    Omit<TransformOptions, 'filename' | 'inline' | keyof CompilerCompatOptions>
+    Omit<
+      TransformOptions,
+      'filename' | 'inline' | 'bindingMetadata' | keyof CompilerCompatOptions
+    >
   >
 
   template: string = ''

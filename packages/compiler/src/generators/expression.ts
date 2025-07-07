@@ -1,7 +1,5 @@
 import {
   advancePositionWithClone,
-  BindingTypes,
-  isInDestructureAssignment,
   isStaticProperty,
   NewlineType,
   TS_NODE_TYPES,
@@ -9,7 +7,7 @@ import {
   type SimpleExpressionNode,
   type SourceLocation,
 } from '@vue/compiler-dom'
-import { genPropsAccessExp, isString } from '@vue/shared'
+import { isString } from '@vue/shared'
 import { isConstantExpression } from '../utils'
 import type { CodegenContext } from '../generate'
 import { buildCodeFragment, type CodeFragment } from './utils'
@@ -91,7 +89,6 @@ export function genExpression(
             hasMemberExpression ? undefined : assignment,
             id,
             parent,
-            parentStack,
           ),
         )
 
@@ -116,11 +113,9 @@ function genIdentifier(
   assignment?: string,
   id?: Identifier,
   parent?: Node,
-  parentStack?: Node[],
 ): CodeFragment[] {
-  const { options, helper, identifiers } = context
-  const { bindingMetadata } = options
-  let name: string | undefined = raw
+  const { identifiers } = context
+  const name: string | undefined = raw
 
   const idMap = identifiers[raw]
   if (idMap && idMap.length) {
@@ -144,53 +139,10 @@ function genIdentifier(
     prefix = `${raw}: `
   }
 
-  const type = bindingMetadata && bindingMetadata[raw]
-  switch (type) {
-    case BindingTypes.SETUP_LET:
-      name = raw = assignment
-        ? `_isRef(${raw}) ? (${raw}.value = ${assignment}) : (${raw} = ${assignment})`
-        : unref()
-      break
-    case BindingTypes.SETUP_REF:
-      name = raw = withAssignment(`${raw}.value`)
-      break
-    case BindingTypes.SETUP_MAYBE_REF: {
-      // ({ x } = y)
-      const isDestructureAssignment =
-        parent && isInDestructureAssignment(parent, parentStack || [])
-      // x = y
-      const isAssignmentLVal =
-        parent && parent.type === 'AssignmentExpression' && parent.left === id
-      // x++
-      const isUpdateArg =
-        parent && parent.type === 'UpdateExpression' && parent.argument === id
-      // const binding that may or may not be ref
-      // if it's not a ref, then assignments don't make sense -
-      // so we ignore the non-ref assignment case and generate code
-      // that assumes the value to be a ref for more efficiency
-      raw =
-        isAssignmentLVal || isUpdateArg || isDestructureAssignment
-          ? (name = `${raw}.value`)
-          : assignment
-            ? `${helper('isRef')}(${raw}) ? (${raw}.value = ${assignment}) : null`
-            : unref()
-      break
-    }
-    case BindingTypes.PROPS:
-      raw = genPropsAccessExp(raw)
-      break
-    case BindingTypes.PROPS_ALIASED:
-      raw = genPropsAccessExp(bindingMetadata.__propsAliases![raw])
-      break
-    default:
-      raw = withAssignment(raw)
-  }
+  raw = withAssignment(raw)
   return [prefix, [raw, NewlineType.None, loc, name]]
 
   function withAssignment(s: string) {
     return assignment ? `${s} = ${assignment}` : s
-  }
-  function unref() {
-    return `${helper('unref')}(${raw})`
   }
 }

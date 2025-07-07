@@ -1,5 +1,4 @@
 import {
-  BindingTypes,
   isFnExpression,
   isMemberExpression,
   type SimpleExpressionNode,
@@ -122,7 +121,7 @@ export function genEventHandler(
     if (isMemberExpression(value, context.options)) {
       // e.g. @click="foo.bar"
       handlerExp = genExpression(value, context)
-      if (!isConstantBinding(value, context) && !extraWrap) {
+      if (!extraWrap) {
         // non constant, wrap with invocation as `e => foo.bar(e)`
         // when passing as component handler, access is always dynamic so we
         // can skip this
@@ -178,16 +177,4 @@ function genWithKeys(
   keys: string[],
 ): CodeFragment[] {
   return genCall(context.helper('withKeys'), handler, JSON.stringify(keys))
-}
-
-function isConstantBinding(
-  value: SimpleExpressionNode,
-  context: CodegenContext,
-) {
-  if (value.ast === null) {
-    const bindingType = context.options.bindingMetadata[value.content]
-    if (bindingType === BindingTypes.SETUP_CONST) {
-      return true
-    }
-  }
 }
