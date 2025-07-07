@@ -181,7 +181,7 @@ function transformNativeElement(
   }
 
   if (singleRoot) {
-    context.ir.rootTemplateIndex = context.ir.templates.length
+    context.ir.rootTemplateIndex = context.ir.template.length
   }
 
   if (

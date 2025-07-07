@@ -64,7 +64,7 @@ export interface RootIRNode {
   type: IRNodeTypes.ROOT
   node: RootNode
   source: string
-  templates: string[]
+  template: string[]
   rootTemplateIndex?: number
   component: Set<string>
   directive: Set<string>

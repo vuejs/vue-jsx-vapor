@@ -12,7 +12,7 @@ const compileWithVShow = makeCompile({
 
 describe('compiler: v-show transform', () => {
   test('simple expression', () => {
-    const { code } = compileWithVShow(`<div v-show={foo}/>`)
+    const { code } = compileWithVShow(`<div v-show="foo"/>`)
     expect(code).toMatchSnapshot()
   })
 

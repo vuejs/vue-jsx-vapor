@@ -1,9 +1,8 @@
 import { NodeTypes } from '@vue/compiler-dom'
 
+import { IRDynamicPropsKind, IRNodeTypes } from '@vue/compiler-vapor'
 import { describe, expect, test } from 'vitest'
 import {
-  IRDynamicPropsKind,
-  IRNodeTypes,
   transformChildren,
   transformElement,
   transformText,
@@ -37,22 +36,32 @@ describe('compiler: children transform', () => {
   test('comments', () => {
     const { code } = compileWithElementTransform(
       '<>{/*foo*/}<div>{/*bar*/}</div></>',
+      {
+        inline: false,
+      },
     )
     expect(code).toMatchInlineSnapshot(`
-      "
+      "import { template as _template } from 'vue';
+      const t0 = _template("<div></div>")
+
+      export function render(_ctx) {
         const n1 = t0()
         return n1
-      "
+      }"
     `)
   })
 
   test('fragment', () => {
-    const { code } = compileWithElementTransform('<>{foo}</>')
+    const { code } = compileWithElementTransform('<>{foo}</>', {
+      inline: false,
+    })
     expect(code).toMatchInlineSnapshot(`
-      "
-        const n0 = _createNodes(() => (foo))
+      "import { createNodes as _createNodes } from 'vue';
+
+      export function render(_ctx) {
+        const n0 = _createNodes(() => (_ctx.foo))
         return n0
-      "
+      }"
     `)
   })
 

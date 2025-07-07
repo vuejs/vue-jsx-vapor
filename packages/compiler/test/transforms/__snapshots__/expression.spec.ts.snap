@@ -1,14 +1,18 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`compiler: expression > conditional expression 1`] = `
-"
-  const n0 = _createIf(() => (ok), () => {
+"import { child as _child, setNodes as _setNodes, createNodes as _createNodes, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<span> </span>")
+const t1 = _template("<div>fail</div>")
+
+export function render(_ctx) {
+  const n0 = _createIf(() => (_ctx.ok), () => {
     const n2 = t0()
     const x2 = _child(n2)
-    _setNodes(x2, () => (msg))
+    _setNodes(x2, () => (_ctx.msg))
     return n2
   }, () => {
-    const n4 = _createIf(() => (fail), () => {
+    const n4 = _createIf(() => (_ctx.fail), () => {
       const n6 = t1()
       return n6
     }, () => {
@@ -18,18 +22,22 @@ exports[`compiler: expression > conditional expression 1`] = `
     return n4
   })
   return n0
-"
+}"
 `;
 
 exports[`compiler: expression > conditional expression 2`] = `
-"
-  const n0 = _createIf(() => (ok), () => {
+"import { child as _child, setNodes as _setNodes, createNodes as _createNodes, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<span> </span>")
+const t1 = _template("<div>fail</div>")
+
+export function render(_ctx) {
+  const n0 = _createIf(() => (_ctx.ok), () => {
     const n2 = t0()
     const x2 = _child(n2)
-    _setNodes(x2, () => (msg))
+    _setNodes(x2, () => (_ctx.msg))
     return n2
   }, () => {
-    const n4 = _createIf(() => (fail), () => {
+    const n4 = _createIf(() => (_ctx.fail), () => {
       const n6 = t1()
       return n6
     }, () => {
@@ -39,7 +47,7 @@ exports[`compiler: expression > conditional expression 2`] = `
     return n4
   })
   return n0
-"
+}"
 `;
 
 exports[`compiler: expression > conditional expression with v-once 1`] = `

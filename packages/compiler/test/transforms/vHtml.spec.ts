@@ -52,7 +52,7 @@ describe('v-html', () => {
 
   test('should raise error and ignore children when v-html is present', () => {
     const onError = vi.fn()
-    const { ir, helpers, templates } = compileWithVHtml(
+    const { ir, helpers, preamble } = compileWithVHtml(
       `<div v-html={test.value}>hello</div>`,
       {
         onError,
@@ -62,7 +62,7 @@ describe('v-html', () => {
     expect(helpers).contains('setHtml')
 
     // children should have been removed
-    expect(ir.templates).toEqual(['<div></div>'])
+    expect(ir.template).toEqual(['<div></div>'])
 
     expect(ir.block.operation).toMatchObject([])
     expect(ir.block.effect).toMatchObject([
@@ -93,7 +93,7 @@ describe('v-html', () => {
     ])
 
     // children should have been removed
-    expect(templates).includes('_template("<div></div>", true)')
+    expect(preamble).contains('template("<div></div>", true)')
   })
 
   test('should raise error if has no expression', () => {

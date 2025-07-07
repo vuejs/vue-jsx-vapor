@@ -25,7 +25,9 @@ describe('compile', () => {
 
   describe('expression parsing', () => {
     test('interpolation', () => {
-      const { code } = compile(`<>{ a + b }</>`)
+      const { code } = compile(`<>{ a + b }</>`, {
+        inline: true,
+      })
       expect(code).toMatchSnapshot()
       expect(code).contains('a + b')
     })

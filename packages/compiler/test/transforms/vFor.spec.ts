@@ -34,7 +34,7 @@ describe('compiler: v-for', () => {
     expect(code).toMatchSnapshot()
 
     expect(helpers).contains('createFor')
-    expect(ir.templates).toEqual(['<div> </div>'])
+    expect(ir.template).toEqual(['<div> </div>'])
     const op = ir.block.dynamic.children[0].operation
     expect(op).toMatchObject({
       type: IRNodeTypes.FOR,
@@ -84,7 +84,7 @@ describe('compiler: v-for', () => {
       `_createFor(() => (_for_item0.value), (_for_item1) => {`,
     )
     expect(code).contains(`_for_item1.value+_for_item0.value`)
-    expect(ir.templates).toEqual(['<span> </span>', '<div></div>'])
+    expect(ir.template).toEqual(['<span> </span>', '<div></div>'])
     const op = ir.block.dynamic.children[0].operation
     expect(op).toMatchObject({
       type: IRNodeTypes.FOR,

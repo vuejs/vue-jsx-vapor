@@ -37,7 +37,9 @@ describe('compiler: element transform', () => {
   })
 
   test('resolve namespaced component from setup bindings (inline const)', () => {
-    const { code, helpers } = compileWithElementTransform(`<Foo.Example/>`)
+    const { code, helpers } = compileWithElementTransform(`<Foo.Example/>`, {
+      inline: true,
+    })
     expect(code).toMatchInlineSnapshot(`
       "
         const n0 = _createComponent(Foo.Example, null, null, true)

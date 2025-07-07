@@ -43,8 +43,7 @@
     "@babel/parser": "catalog:",
     "@babel/types": "catalog:",
     "@vue/compiler-dom": "catalog:",
-    "@vue/shared": "catalog:",
-    "ast-kit": "^2.1.1",
-    "source-map-js": "catalog:"
+    "@vue/compiler-vapor": "catalog:",
+    "@vue/shared": "catalog:"
   }
 }

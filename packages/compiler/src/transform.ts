@@ -7,7 +7,7 @@ import {
   type CompilerCompatOptions,
   type SimpleExpressionNode,
 } from '@vue/compiler-dom'
-import { extend, isArray, isString, NOOP } from '@vue/shared'
+import { EMPTY_OBJ, extend, isArray, isString, NOOP } from '@vue/shared'
 import {
   DynamicFlag,
   IRNodeTypes,
@@ -54,17 +54,15 @@ export type StructuralDirectiveTransform = (
   context: TransformContext,
 ) => void | (() => void)
 
-export type TransformOptions = HackOptions<BaseTransformOptions> & {
-  templates?: string[]
-}
+export type TransformOptions = HackOptions<BaseTransformOptions>
 const defaultOptions = {
   filename: '',
+  prefixIdentifiers: false,
   hoistStatic: false,
   hmr: false,
   cacheHandlers: false,
   nodeTransforms: [],
   directiveTransforms: {},
-  templates: [],
   transformHoist: null,
   isBuiltInComponent: NOOP,
   isCustomElement: NOOP,
@@ -74,6 +72,8 @@ const defaultOptions = {
   ssr: false,
   inSSR: false,
   ssrCssVars: ``,
+  bindingMetadata: EMPTY_OBJ,
+  inline: false,
   isTS: false,
   onError: defaultOnError,
   onWarn: defaultOnWarn,
@@ -88,14 +88,7 @@ export class TransformContext<
 
   block: BlockIRNode
   options: Required<
-    Omit<
-      TransformOptions,
-      | 'filename'
-      | 'inline'
-      | 'bindingMetadata'
-      | 'prefixIdentifiers'
-      | keyof CompilerCompatOptions
-    >
+    Omit<TransformOptions, 'filename' | keyof CompilerCompatOptions>
   >
 
   template: string = ''
@@ -154,10 +147,10 @@ export class TransformContext<
   }
 
   pushTemplate(content: string) {
-    const existing = this.ir.templates.indexOf(content)
+    const existing = this.ir.template.indexOf(content)
     if (existing !== -1) return existing
-    this.ir.templates.push(content)
-    return this.ir.templates.length - 1
+    this.ir.template.push(content)
+    return this.ir.template.length - 1
   }
 
   registerTemplate() {
@@ -217,7 +210,7 @@ export function transform(
     type: IRNodeTypes.ROOT,
     node,
     source: node.source,
-    templates: options.templates || [],
+    template: [],
     component: new Set(),
     directive: new Set(),
     block: newBlock(node),

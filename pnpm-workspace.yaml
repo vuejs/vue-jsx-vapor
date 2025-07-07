@@ -22,6 +22,7 @@ catalog:
 
   '@vue/compiler-dom': https://pkg.pr.new/@vue/compiler-dom@51677cd
   '@vue/compiler-sfc': https://pkg.pr.new/@vue/compiler-sfc@51677cd
+  '@vue/compiler-vapor': https://pkg.pr.new/@vue/compiler-vapor@51677cd
   '@vue/shared': https://pkg.pr.new/@vue/shared@51677cd
 
   '@vue-macros/common': *vue-macros
@@ -32,7 +33,6 @@ catalog:
   '@ts-macro/tsc': *ts-macro
   '@types/hash-sum': ^1.0.2
   hash-sum: ^2.0.0
-  source-map-js: ^1.2.1
   ts-macro: *ts-macro
   unplugin: ^2.3.5
   unplugin-utils: ^0.2.4

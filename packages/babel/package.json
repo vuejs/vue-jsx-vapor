@@ -46,7 +46,7 @@
     "@babel/traverse": "catalog:",
     "@babel/types": "catalog:",
     "@vue-jsx-vapor/compiler": "workspace:*",
-    "source-map-js": "catalog:"
+    "source-map-js": "^1.2.1"
   },
   "devDependencies": {
     "@types/babel__core": "catalog:",

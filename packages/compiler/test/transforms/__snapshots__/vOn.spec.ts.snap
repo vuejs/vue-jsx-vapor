@@ -57,11 +57,15 @@ exports[`v-on > event modifier 1`] = `
 `;
 
 exports[`v-on > should delegate event 1`] = `
-"
+"import { delegateEvents as _delegateEvents, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+_delegateEvents("click")
+
+export function render(_ctx) {
   const n0 = t0()
-  n0.$evtclick = e => test(e)
+  n0.$evtclick = e => _ctx.test(e)
   return n0
-"
+}"
 `;
 
 exports[`v-on > should not wrap keys guard if no key modifier is present 1`] = `
@@ -72,7 +76,7 @@ exports[`v-on > should not wrap keys guard if no key modifier is present 1`] = `
 "
 `;
 
-exports[`v-on > should support multiple modifiers and event options 1`] = `
+exports[`v-on > should support multiple modifiers and event options w/ prefixIdentifiers: true 1`] = `
 "
   const n0 = t0()
   _on(n0, "click", _withModifiers(e => test(e), ["stop","prevent"]), {
@@ -84,28 +88,40 @@ exports[`v-on > should support multiple modifiers and event options 1`] = `
 `;
 
 exports[`v-on > should transform click.middle 1`] = `
-"
+"import { withModifiers as _withModifiers, delegateEvents as _delegateEvents, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+_delegateEvents("mouseup")
+
+export function render(_ctx) {
   const n0 = t0()
-  n0.$evtmouseup = _withModifiers(e => test(e), ["middle"])
+  n0.$evtmouseup = _withModifiers(e => _ctx.test(e), ["middle"])
   return n0
-"
+}"
 `;
 
 exports[`v-on > should transform click.right 1`] = `
-"
+"import { withModifiers as _withModifiers, delegateEvents as _delegateEvents, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+_delegateEvents("contextmenu")
+
+export function render(_ctx) {
   const n0 = t0()
-  n0.$evtcontextmenu = _withModifiers(e => test(e), ["right"])
+  n0.$evtcontextmenu = _withModifiers(e => _ctx.test(e), ["right"])
   return n0
-"
+}"
 `;
 
 exports[`v-on > should use delegate helper when have multiple events of same name 1`] = `
-"
+"import { delegate as _delegate, withModifiers as _withModifiers, delegateEvents as _delegateEvents, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+_delegateEvents("click")
+
+export function render(_ctx) {
   const n0 = t0()
-  _delegate(n0, "click", e => test(e))
-  _delegate(n0, "click", _withModifiers(e => test(e), ["stop"]))
+  _delegate(n0, "click", e => _ctx.test(e))
+  _delegate(n0, "click", _withModifiers(e => _ctx.test(e), ["stop"]))
   return n0
-"
+}"
 `;
 
 exports[`v-on > should wrap keys guard for keyboard events or dynamic events 1`] = `
