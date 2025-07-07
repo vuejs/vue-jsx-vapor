@@ -172,6 +172,7 @@ export function resolveExpression(
       : parseExpression(`(${source})`, {
           plugins: context.options.expressionPlugins,
         }),
+    // isStatic ? undefined : node,
   )
 }
 

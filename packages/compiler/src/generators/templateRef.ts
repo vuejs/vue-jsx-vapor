@@ -24,20 +24,3 @@ export function genSetTemplateRef(
 export function genDeclareOldRef(oper: DeclareOldRefIRNode): CodeFragment[] {
   return [NEWLINE, `let r${oper.id}`]
 }
-
-// function genRefValue(value: SimpleExpressionNode, context: CodegenContext) {
-//   // in inline mode there is no setupState object, so we can't use string
-//   // keys to set the ref. Instead, we need to transform it to pass the
-//   // actual ref instead.
-//   if (!__BROWSER__ && value && context.options.inline) {
-//     const binding = context.options.bindingMetadata[value.content]
-//     if (
-//       binding === BindingTypes.SETUP_LET ||
-//       binding === BindingTypes.SETUP_REF ||
-//       binding === BindingTypes.SETUP_MAYBE_REF
-//     ) {
-//       return [value.content]
-//     }
-//   }
-//   return
-// }

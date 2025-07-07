@@ -9,7 +9,7 @@ import {
   type SimpleExpressionNode,
   type SourceLocation,
 } from '@vue/compiler-dom'
-import { genPropsAccessExp, isGloballyAllowed, isString } from '@vue/shared'
+import { genPropsAccessExp, isString } from '@vue/shared'
 import { isConstantExpression } from '../utils'
 import type { CodegenContext } from '../generate'
 import { buildCodeFragment, type CodeFragment } from './utils'
@@ -119,7 +119,7 @@ function genIdentifier(
   parentStack?: Node[],
 ): CodeFragment[] {
   const { options, helper, identifiers } = context
-  const { inline, bindingMetadata } = options
+  const { bindingMetadata } = options
   let name: string | undefined = raw
 
   const idMap = identifiers[raw]
@@ -145,56 +145,45 @@ function genIdentifier(
   }
 
   const type = bindingMetadata && bindingMetadata[raw]
-  if (inline) {
-    switch (type) {
-      case BindingTypes.SETUP_LET:
-        name = raw = assignment
-          ? `_isRef(${raw}) ? (${raw}.value = ${assignment}) : (${raw} = ${assignment})`
-          : unref()
-        break
-      case BindingTypes.SETUP_REF:
-        name = raw = withAssignment(`${raw}.value`)
-        break
-      case BindingTypes.SETUP_MAYBE_REF: {
-        // ({ x } = y)
-        const isDestructureAssignment =
-          parent && isInDestructureAssignment(parent, parentStack || [])
-        // x = y
-        const isAssignmentLVal =
-          parent && parent.type === 'AssignmentExpression' && parent.left === id
-        // x++
-        const isUpdateArg =
-          parent && parent.type === 'UpdateExpression' && parent.argument === id
-        // const binding that may or may not be ref
-        // if it's not a ref, then assignments don't make sense -
-        // so we ignore the non-ref assignment case and generate code
-        // that assumes the value to be a ref for more efficiency
-        raw =
-          isAssignmentLVal || isUpdateArg || isDestructureAssignment
-            ? (name = `${raw}.value`)
-            : assignment
-              ? `${helper('isRef')}(${raw}) ? (${raw}.value = ${assignment}) : null`
-              : unref()
-        break
-      }
-      case BindingTypes.PROPS:
-        raw = genPropsAccessExp(raw)
-        break
-      case BindingTypes.PROPS_ALIASED:
-        raw = genPropsAccessExp(bindingMetadata.__propsAliases![raw])
-        break
-      default:
-        raw = withAssignment(raw)
+  switch (type) {
+    case BindingTypes.SETUP_LET:
+      name = raw = assignment
+        ? `_isRef(${raw}) ? (${raw}.value = ${assignment}) : (${raw} = ${assignment})`
+        : unref()
+      break
+    case BindingTypes.SETUP_REF:
+      name = raw = withAssignment(`${raw}.value`)
+      break
+    case BindingTypes.SETUP_MAYBE_REF: {
+      // ({ x } = y)
+      const isDestructureAssignment =
+        parent && isInDestructureAssignment(parent, parentStack || [])
+      // x = y
+      const isAssignmentLVal =
+        parent && parent.type === 'AssignmentExpression' && parent.left === id
+      // x++
+      const isUpdateArg =
+        parent && parent.type === 'UpdateExpression' && parent.argument === id
+      // const binding that may or may not be ref
+      // if it's not a ref, then assignments don't make sense -
+      // so we ignore the non-ref assignment case and generate code
+      // that assumes the value to be a ref for more efficiency
+      raw =
+        isAssignmentLVal || isUpdateArg || isDestructureAssignment
+          ? (name = `${raw}.value`)
+          : assignment
+            ? `${helper('isRef')}(${raw}) ? (${raw}.value = ${assignment}) : null`
+            : unref()
+      break
     }
-  } else {
-    if (canPrefix(raw)) {
-      if (type === BindingTypes.PROPS_ALIASED) {
-        raw = `$props['${bindingMetadata.__propsAliases![raw]}']`
-      } else {
-        raw = `${type === BindingTypes.PROPS ? '$props' : '_ctx'}.${raw}`
-      }
-    }
-    raw = withAssignment(raw)
+    case BindingTypes.PROPS:
+      raw = genPropsAccessExp(raw)
+      break
+    case BindingTypes.PROPS_ALIASED:
+      raw = genPropsAccessExp(bindingMetadata.__propsAliases![raw])
+      break
+    default:
+      raw = withAssignment(raw)
   }
   return [prefix, [raw, NewlineType.None, loc, name]]
 
@@ -204,21 +193,4 @@ function genIdentifier(
   function unref() {
     return `${helper('unref')}(${raw})`
   }
-}
-
-function canPrefix(name: string) {
-  // skip whitelisted globals
-  if (isGloballyAllowed(name)) {
-    return false
-  }
-  if (
-    // special case for webpack compilation
-    name === 'require' ||
-    name === '$props' ||
-    name === '$emit' ||
-    name === '$attrs' ||
-    name === '$slots'
-  )
-    return false
-  return true
 }

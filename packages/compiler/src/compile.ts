@@ -32,7 +32,6 @@ export function compile(
   options: CompilerOptions = {},
 ): VaporCodegenResult {
   const resolvedOptions = extend({}, options, {
-    inline: true,
     prefixIdentifiers: false,
     expressionPlugins: options.expressionPlugins || ['jsx'],
   })

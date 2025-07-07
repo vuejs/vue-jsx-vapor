@@ -260,9 +260,7 @@ describe('v-on', () => {
   })
 
   test('should transform click.right', () => {
-    const { code, ir } = compileWithVOn(`<div onClick_right={test}/>`, {
-      inline: false,
-    })
+    const { code, ir, preamble } = compileWithVOn(`<div onClick_right={test}/>`)
     expect(ir.block.operation).toMatchObject([
       {
         type: IRNodeTypes.SET_EVENT,
@@ -277,13 +275,13 @@ describe('v-on', () => {
     ])
 
     expect(code).toMatchSnapshot()
-    expect(code).contains('"contextmenu"')
+    expect(preamble).contains('"contextmenu"')
   })
 
   test('should transform click.middle', () => {
-    const { code, ir } = compileWithVOn(`<div onClick_middle={test}/>`, {
-      inline: false,
-    })
+    const { code, ir, preamble } = compileWithVOn(
+      `<div onClick_middle={test}/>`,
+    )
     expect(ir.block.operation).toMatchObject([
       {
         type: IRNodeTypes.SET_EVENT,
@@ -298,16 +296,16 @@ describe('v-on', () => {
     ])
 
     expect(code).matchSnapshot()
-    expect(code).contains('"mouseup"')
+    expect(preamble).contains('"mouseup"')
   })
 
   test('should delegate event', () => {
-    const { code, ir, helpers } = compileWithVOn(`<div onClick={test}/>`, {
-      inline: false,
-    })
+    const { code, ir, helpers, preamble } = compileWithVOn(
+      `<div onClick={test}/>`,
+    )
 
     expect(code).matchSnapshot()
-    expect(code).contains('_delegateEvents("click")')
+    expect(preamble).contains('_delegateEvents("click")')
     expect(helpers).contains('delegateEvents')
     expect(ir.block.operation).toMatchObject([
       {
@@ -320,13 +318,12 @@ describe('v-on', () => {
   test('should use delegate helper when have multiple events of same name', () => {
     const { code, helpers } = compileWithVOn(
       `<div onClick={test} onClick_stop={test} />`,
-      { inline: false },
     )
     expect(helpers).contains('delegate')
     expect(code).toMatchSnapshot()
-    expect(code).contains('_delegate(n0, "click", e => _ctx.test(e))')
+    expect(code).contains('_delegate(n0, "click", e => test(e))')
     expect(code).contains(
-      '_delegate(n0, "click", _withModifiers(e => _ctx.test(e), ["stop"]))',
+      '_delegate(n0, "click", _withModifiers(e => test(e), ["stop"]))',
     )
   })
 

@@ -73,7 +73,6 @@ const defaultOptions = {
   inSSR: false,
   ssrCssVars: ``,
   bindingMetadata: EMPTY_OBJ,
-  inline: false,
   isTS: false,
   onError: defaultOnError,
   onWarn: defaultOnWarn,
@@ -88,7 +87,7 @@ export class TransformContext<
 
   block: BlockIRNode
   options: Required<
-    Omit<TransformOptions, 'filename' | keyof CompilerCompatOptions>
+    Omit<TransformOptions, 'filename' | 'inline' | keyof CompilerCompatOptions>
   >
 
   template: string = ''

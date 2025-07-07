@@ -3,7 +3,7 @@
 exports[`compiler: v-show transform > simple expression 1`] = `
 "
   const n0 = t0()
-  _applyVShow(n0, () => ("foo"))
+  _applyVShow(n0, () => (foo))
   return n0
 "
 `;

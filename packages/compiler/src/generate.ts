@@ -24,7 +24,10 @@ type CustomGenOperation = (
   context: CodegenContext,
 ) => CodeFragment[] | void
 
-export type CodegenOptions = Omit<BaseCodegenOptions, 'optimizeImports'> & {
+export type CodegenOptions = Omit<
+  BaseCodegenOptions,
+  'optimizeImports' | 'inline'
+> & {
   customGenOperation?: CustomGenOperation | null
 }
 
@@ -91,7 +94,6 @@ export class CodegenContext {
       ssr: false,
       isTS: false,
       inSSR: false,
-      inline: false,
       bindingMetadata: {},
       expressionPlugins: [],
       customGenOperation: null,
@@ -114,21 +116,6 @@ export function generate(
   const [frag, push] = buildCodeFragment()
   const context = new CodegenContext(ir, options)
   const { helpers } = context
-  const { inline, bindingMetadata } = options
-  const functionName = 'render'
-
-  const args = ['_ctx']
-  if (bindingMetadata && !inline) {
-    // binding optimization args
-    args.push('$props', '$emit', '$attrs', '$slots')
-  }
-  const signature = (
-    options.isTS ? args.map((arg) => `${arg}: any`) : args
-  ).join(', ')
-
-  if (!inline) {
-    push(NEWLINE, `export function ${functionName}(${signature}) {`)
-  }
 
   push(INDENT_START)
   if (ir.hasTemplateRef) {
@@ -140,24 +127,17 @@ export function generate(
   push(...genBlockContent(ir.block, context, true))
   push(INDENT_END, NEWLINE)
 
-  if (!inline) {
-    push('}')
-  }
-
   const delegates = genDelegates(context)
   const templates = genTemplates(ir.template, ir.rootTemplateIndex, context)
   const imports = genHelperImports(context)
   const preamble = imports + templates + delegates
 
   const newlineCount = [...preamble].filter((c) => c === '\n').length
-  if (newlineCount && !inline) {
+  if (newlineCount) {
     frag.unshift(...new Array<CodeFragment>(newlineCount).fill(LF))
   }
 
-  let [code, map] = codeFragmentToString(frag, context)
-  if (!inline) {
-    code = preamble + code
-  }
+  const [code, map] = codeFragmentToString(frag, context)
 
   return {
     code,

@@ -23,7 +23,6 @@ describe('compiler: expression', () => {
   test('conditional expression', () => {
     const { code, helpers, ir } = compileWithVIf(
       `<>{ok? <span>{msg}</span> : fail ? <div>fail</div>  : null }</>`,
-      { inline: false },
     )
 
     expect(code).toMatchSnapshot()

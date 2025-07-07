@@ -37,32 +37,22 @@ describe('compiler: children transform', () => {
   test('comments', () => {
     const { code } = compileWithElementTransform(
       '<>{/*foo*/}<div>{/*bar*/}</div></>',
-      {
-        inline: false,
-      },
     )
     expect(code).toMatchInlineSnapshot(`
-      "import { template as _template } from 'vue';
-      const t0 = _template("<div></div>")
-
-      export function render(_ctx) {
+      "
         const n1 = t0()
         return n1
-      }"
+      "
     `)
   })
 
   test('fragment', () => {
-    const { code } = compileWithElementTransform('<>{foo}</>', {
-      inline: false,
-    })
+    const { code } = compileWithElementTransform('<>{foo}</>')
     expect(code).toMatchInlineSnapshot(`
-      "import { createNodes as _createNodes } from 'vue';
-
-      export function render(_ctx) {
-        const n0 = _createNodes(() => (_ctx.foo))
+      "
+        const n0 = _createNodes(() => (foo))
         return n0
-      }"
+      "
     `)
   })
 
