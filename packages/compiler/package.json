@@ -43,7 +43,7 @@
     "@babel/parser": "catalog:",
     "@babel/types": "catalog:",
     "@vue/compiler-dom": "catalog:",
-    "@vue/compiler-vapor": "catalog:",
-    "@vue/shared": "catalog:"
+    "@vue/shared": "catalog:",
+    "source-map-js": "catalog:"
   }
 }

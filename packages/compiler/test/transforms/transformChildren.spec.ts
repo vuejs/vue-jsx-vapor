@@ -1,8 +1,9 @@
 import { NodeTypes } from '@vue/compiler-dom'
 
-import { IRDynamicPropsKind, IRNodeTypes } from '@vue/compiler-vapor'
 import { describe, expect, test } from 'vitest'
 import {
+  IRDynamicPropsKind,
+  IRNodeTypes,
   transformChildren,
   transformElement,
   transformText,

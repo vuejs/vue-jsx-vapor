@@ -57,15 +57,15 @@ catalogs:
     '@vue/compiler-sfc':
       specifier: https://pkg.pr.new/@vue/compiler-sfc@51677cd
       version: 3.5.17
-    '@vue/compiler-vapor':
-      specifier: https://pkg.pr.new/@vue/compiler-vapor@51677cd
-      version: 3.5.13
     '@vue/shared':
       specifier: https://pkg.pr.new/@vue/shared@51677cd
       version: 3.5.17
     hash-sum:
       specifier: ^2.0.0
       version: 2.0.0
+    source-map-js:
+      specifier: ^1.2.1
+      version: 1.2.1
     unplugin:
       specifier: ^2.3.5
       version: 2.3.5
@@ -170,7 +170,7 @@ importers:
         specifier: workspace:*
         version: link:../compiler
       source-map-js:
-        specifier: ^1.2.1
+        specifier: 'catalog:'
         version: 1.2.1
     devDependencies:
       '@types/babel__core':
@@ -197,12 +197,12 @@ importers:
       '@vue/compiler-dom':
         specifier: 'catalog:'
         version: https://pkg.pr.new/@vue/compiler-dom@51677cd
-      '@vue/compiler-vapor':
-        specifier: 'catalog:'
-        version: https://pkg.pr.new/@vue/compiler-vapor@51677cd
       '@vue/shared':
         specifier: 'catalog:'
         version: https://pkg.pr.new/@vue/shared@51677cd
+      source-map-js:
+        specifier: 'catalog:'
+        version: 1.2.1
 
   packages/eslint:
     dependencies:
@@ -2202,10 +2202,6 @@ packages:
   '@vue/compiler-ssr@https://pkg.pr.new/vuejs/core/@vue/compiler-ssr@51677cd':
     resolution: {tarball: https://pkg.pr.new/vuejs/core/@vue/compiler-ssr@51677cd}
     version: 3.5.17
-
-  '@vue/compiler-vapor@https://pkg.pr.new/@vue/compiler-vapor@51677cd':
-    resolution: {tarball: https://pkg.pr.new/@vue/compiler-vapor@51677cd}
-    version: 3.5.13
 
   '@vue/compiler-vapor@https://pkg.pr.new/vuejs/core/@vue/compiler-vapor@51677cd':
     resolution: {tarball: https://pkg.pr.new/vuejs/core/@vue/compiler-vapor@51677cd}
@@ -6796,12 +6792,6 @@ snapshots:
     dependencies:
       '@vue/compiler-dom': https://pkg.pr.new/vuejs/core/@vue/compiler-dom@51677cd
       '@vue/shared': https://pkg.pr.new/vuejs/core/@vue/shared@51677cd
-
-  '@vue/compiler-vapor@https://pkg.pr.new/@vue/compiler-vapor@51677cd':
-    dependencies:
-      '@vue/compiler-dom': https://pkg.pr.new/vuejs/core/@vue/compiler-dom@51677cd
-      '@vue/shared': https://pkg.pr.new/vuejs/core/@vue/shared@51677cd
-      source-map-js: 1.2.1
 
   '@vue/compiler-vapor@https://pkg.pr.new/vuejs/core/@vue/compiler-vapor@51677cd':
     dependencies:
