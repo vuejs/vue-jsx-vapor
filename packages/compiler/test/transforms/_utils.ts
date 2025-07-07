@@ -29,12 +29,10 @@ export function makeCompile(options: CompilerOptions = {}) {
     }
     const ir = transform(ast, {
       expressionPlugins: ['typescript', 'jsx'],
-      prefixIdentifiers: false,
       ...options,
       ...overrideOptions,
     }) as any
     const { code, helpers, preamble } = generate(ir, {
-      prefixIdentifiers: false,
       ...options,
       ...overrideOptions,
     })

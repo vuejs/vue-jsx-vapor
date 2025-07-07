@@ -72,7 +72,7 @@ exports[`v-on > should not wrap keys guard if no key modifier is present 1`] = `
 "
 `;
 
-exports[`v-on > should support multiple modifiers and event options w/ prefixIdentifiers: true 1`] = `
+exports[`v-on > should support multiple modifiers and event options 1`] = `
 "
   const n0 = t0()
   _on(n0, "click", _withModifiers(e => test(e), ["stop","prevent"]), {

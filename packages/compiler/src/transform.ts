@@ -57,7 +57,6 @@ export type StructuralDirectiveTransform = (
 export type TransformOptions = HackOptions<BaseTransformOptions>
 const defaultOptions = {
   filename: '',
-  prefixIdentifiers: false,
   hoistStatic: false,
   hmr: false,
   cacheHandlers: false,
@@ -88,7 +87,11 @@ export class TransformContext<
   options: Required<
     Omit<
       TransformOptions,
-      'filename' | 'inline' | 'bindingMetadata' | keyof CompilerCompatOptions
+      | 'filename'
+      | 'inline'
+      | 'bindingMetadata'
+      | 'prefixIdentifiers'
+      | keyof CompilerCompatOptions
     >
   >
 

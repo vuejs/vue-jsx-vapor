@@ -108,7 +108,7 @@ describe('v-on', () => {
     expect(onError).not.toHaveBeenCalled()
   })
 
-  test('should support multiple modifiers and event options w/ prefixIdentifiers: true', () => {
+  test('should support multiple modifiers and event options', () => {
     const { code, ir, helpers } = compileWithVOn(
       `<div onClick_stop_prevent_capture_once={test}/>`,
     )
@@ -140,7 +140,7 @@ describe('v-on', () => {
     )
   })
 
-  test('should support multiple events and modifiers options w/ prefixIdentifiers: true', () => {
+  test('should support multiple events and modifiers options', () => {
     const { code, ir } = compileWithVOn(
       `<div onClick_stop={test} onKeyup_enter={test} />`,
     )
@@ -241,9 +241,7 @@ describe('v-on', () => {
   })
 
   test('should wrap keys guard for static key event w/ left/right modifiers', () => {
-    const { code, ir } = compileWithVOn(`<div onKeyup_left={test}/>`, {
-      prefixIdentifiers: true,
-    })
+    const { code, ir } = compileWithVOn(`<div onKeyup_left={test}/>`)
 
     expect(ir.block.operation).toMatchObject([
       {

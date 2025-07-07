@@ -9,7 +9,6 @@ import {
   INDENT_END,
   INDENT_START,
   NEWLINE,
-  type CodeFragment,
 } from './generators/utils'
 import type { BlockIRNode, RootIRNode } from './ir'
 import type {
@@ -18,17 +17,10 @@ import type {
   SimpleExpressionNode,
 } from '@vue/compiler-dom'
 
-type CustomGenOperation = (
-  opers: any,
-  context: CodegenContext,
-) => CodeFragment[] | void
-
 export type CodegenOptions = Omit<
   BaseCodegenOptions,
-  'optimizeImports' | 'inline' | 'bindingMetadata'
-> & {
-  customGenOperation?: CustomGenOperation | null
-}
+  'optimizeImports' | 'inline' | 'bindingMetadata' | 'prefixIdentifiers'
+>
 
 export class CodegenContext {
   options: Required<CodegenOptions>
@@ -83,7 +75,6 @@ export class CodegenContext {
   ) {
     const defaultOptions: Required<CodegenOptions> = {
       mode: 'module',
-      prefixIdentifiers: true,
       sourceMap: false,
       filename: `template.vue.html`,
       scopeId: null,
@@ -94,7 +85,6 @@ export class CodegenContext {
       isTS: false,
       inSSR: false,
       expressionPlugins: [],
-      customGenOperation: null,
     }
     this.options = extend(defaultOptions, options)
     this.block = ir.block
