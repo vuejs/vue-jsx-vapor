@@ -1,3 +1,12 @@
+# [2.5.0](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.8...v2.5.0) (2025-07-07)
+
+
+### Features
+
+* add generator ([#9](https://github.com/vuejs/vue-jsx-vapor/issues/9)) ([88aea39](https://github.com/vuejs/vue-jsx-vapor/commit/88aea3989c8c99a6888901bfa91993736ff93683))
+
+
+
 ## [2.4.8](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.7...v2.4.8) (2025-07-05)
 
 
