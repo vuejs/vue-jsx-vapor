@@ -53,11 +53,11 @@ export default defineConfig({
 
 Due to `vue-jsx-vapor`'s support for all Vue directives and most Vue macros, the [ts-macro](https://github.com/ts-macro/ts-macro) VSCode plugin is required to enable TypeScript support when using the `vue-jsx-vapor/volar` plugin.
 
-After installing the `ts-macro` VSCode plugin, it automatically loads `vue-jsx-vapor/volar` by analyzing vite.config.ts and shared vueJsxVapor options, eliminating the need to configure tsm.config.ts.
+After installing the `ts-macro` VSCode plugin, it automatically loads `vue-jsx-vapor/volar` by analyzing vite.config.ts and shared vueJsxVapor options, eliminating the need to configure ts-macro.config.ts.
 
 ::: code-group
 
-```ts [tsm.config.ts]
+```ts [ts-macro.config.ts]
 import vueJsxVapor from 'vue-jsx-vapor/volar'
 
 export default {

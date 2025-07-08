@@ -27,7 +27,7 @@ export default defineConfig({
 })
 ```
 
-```ts {6} [tsm.config.ts]
+```ts {6} [ts-macro.config.ts]
 import vueJsxVapor from 'vue-jsx-vapor/volar'
 
 export default {
