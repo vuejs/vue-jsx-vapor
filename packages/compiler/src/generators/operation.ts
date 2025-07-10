@@ -106,6 +106,7 @@ export function genOperation(
 export function genEffects(
   effects: IREffect[],
   context: CodegenContext,
+  genExtraFrag?: () => CodeFragment[],
 ): CodeFragment[] {
   const { helper } = context
   const [frag, push, unshift] = buildCodeFragment()
@@ -129,6 +130,10 @@ export function genEffects(
   if (effects.length) {
     unshift(NEWLINE, `${helper('renderEffect')}(() => `)
     push(`)`)
+  }
+
+  if (genExtraFrag) {
+    push(...context.withId(genExtraFrag, {}))
   }
 
   return frag

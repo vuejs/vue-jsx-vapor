@@ -1,15 +1,31 @@
 import { parseExpression } from '@babel/parser'
 import {
+  isNodesEquivalent,
+  type Expression,
+  type Identifier,
+  type Node,
+} from '@babel/types'
+import {
   createSimpleExpression,
+  isStaticNode,
   walkIdentifiers,
   type SimpleExpressionNode,
 } from '@vue/compiler-dom'
+import { extend, isGloballyAllowed } from '@vue/shared'
+import { walkAST } from 'ast-kit'
 import type { CodegenContext } from '../generate'
-import type { ForIRNode } from '../ir'
-import { genBlock } from './block'
+import type { BlockIRNode, ForIRNode, IREffect } from '../ir'
+import { genBlockContent } from './block'
 import { genExpression } from './expression'
-import { genCall, genMulti, NEWLINE, type CodeFragment } from './utils'
-import type { Identifier } from '@babel/types'
+import { genOperation } from './operation'
+import {
+  genCall,
+  genMulti,
+  INDENT_END,
+  INDENT_START,
+  NEWLINE,
+  type CodeFragment,
+} from './utils'
 
 /**
  * Flags to optimize vapor `createFor` runtime behavior, shared between the
@@ -98,7 +114,60 @@ export function genFor(
     idMap[indexVar] = null
   }
 
-  const blockFn = context.withId(() => genBlock(render, context, args), idMap)
+  const { selectorPatterns, keyOnlyBindingPatterns } = matchPatterns(
+    render,
+    keyProp,
+    idMap,
+  )
+  const patternFrag: CodeFragment[] = []
+
+  for (const [i, { selector }] of selectorPatterns.entries()) {
+    const selectorName = `_selector${id}_${i}`
+    patternFrag.push(
+      NEWLINE,
+      `const ${selectorName} = `,
+      ...genCall(`n${id}.useSelector`, [
+        `() => `,
+        ...genExpression(selector, context),
+      ]),
+    )
+  }
+
+  const blockFn = context.withId(() => {
+    const frag: CodeFragment[] = []
+    frag.push('(', ...args, ') => {', INDENT_START)
+    if (selectorPatterns.length || keyOnlyBindingPatterns.length) {
+      frag.push(
+        ...genBlockContent(render, context, false, () => {
+          const patternFrag: CodeFragment[] = []
+
+          for (const [i, { effect }] of selectorPatterns.entries()) {
+            patternFrag.push(
+              NEWLINE,
+              `_selector${id}_${i}(() => {`,
+              INDENT_START,
+            )
+            for (const oper of effect.operations) {
+              patternFrag.push(...genOperation(oper, context))
+            }
+            patternFrag.push(INDENT_END, NEWLINE, `})`)
+          }
+
+          for (const { effect } of keyOnlyBindingPatterns) {
+            for (const oper of effect.operations) {
+              patternFrag.push(...genOperation(oper, context))
+            }
+          }
+
+          return patternFrag
+        }),
+      )
+    } else {
+      frag.push(...genBlockContent(render, context))
+    }
+    frag.push(INDENT_END, NEWLINE, '}')
+    return frag
+  }, idMap)
   exitScope()
 
   let flags = 0
@@ -123,6 +192,7 @@ export function genFor(
       flags ? String(flags) : undefined,
       // todo: hydrationNode
     ),
+    ...patternFrag,
   ]
 
   // construct a id -> accessor path map.
@@ -250,4 +320,230 @@ export function genFor(
     idToPathMap.forEach((_, id) => (idMap[id] = null))
     return idMap
   }
+}
+
+function matchPatterns(
+  render: BlockIRNode,
+  keyProp: SimpleExpressionNode | undefined,
+  idMap: Record<string, string | SimpleExpressionNode | null>,
+) {
+  const selectorPatterns: NonNullable<
+    ReturnType<typeof matchSelectorPattern>
+  >[] = []
+  const keyOnlyBindingPatterns: NonNullable<
+    ReturnType<typeof matchKeyOnlyBindingPattern>
+  >[] = []
+
+  render.effect = render.effect.filter((effect) => {
+    if (keyProp !== undefined) {
+      const selector = matchSelectorPattern(effect, keyProp.ast, idMap)
+      if (selector) {
+        selectorPatterns.push(selector)
+        return false
+      }
+      const keyOnly = matchKeyOnlyBindingPattern(effect, keyProp.ast)
+      if (keyOnly) {
+        keyOnlyBindingPatterns.push(keyOnly)
+        return false
+      }
+    }
+
+    return true
+  })
+
+  return {
+    keyOnlyBindingPatterns,
+    selectorPatterns,
+  }
+}
+
+function matchKeyOnlyBindingPattern(
+  effect: IREffect,
+  keyAst: any,
+):
+  | {
+      effect: IREffect
+    }
+  | undefined {
+  // TODO: expressions can be multiple?
+  if (effect.expressions.length === 1) {
+    const ast = effect.expressions[0].ast
+    if (
+      typeof ast === 'object' &&
+      ast !== null &&
+      isKeyOnlyBinding(ast, keyAst)
+    ) {
+      return { effect }
+    }
+  }
+}
+
+function matchSelectorPattern(
+  effect: IREffect,
+  keyAst: any,
+  idMap: Record<string, string | SimpleExpressionNode | null>,
+):
+  | {
+      effect: IREffect
+      selector: SimpleExpressionNode
+    }
+  | undefined {
+  // TODO: expressions can be multiple?
+  if (effect.expressions.length === 1) {
+    const ast = effect.expressions[0].ast
+    const offset = effect.expressions[0].loc.start.offset
+    if (typeof ast === 'object' && ast) {
+      const matcheds: [key: Expression, selector: Expression][] = []
+
+      walkAST(ast, {
+        enter(node) {
+          if (
+            typeof node === 'object' &&
+            node &&
+            node.type === 'BinaryExpression' &&
+            node.operator === '===' &&
+            node.left.type !== 'PrivateName'
+          ) {
+            const { left, right } = node
+            for (const [a, b] of [
+              [left, right],
+              [right, left],
+            ]) {
+              const aIsKey = isKeyOnlyBinding(a, keyAst)
+              const bIsKey = isKeyOnlyBinding(b, keyAst)
+              const bVars = analyzeVariableScopes(b, idMap)
+              if (aIsKey && !bIsKey && !bVars.locals.length) {
+                matcheds.push([a, b])
+              }
+            }
+          }
+        },
+      })
+
+      if (matcheds.length === 1) {
+        const [key, selector] = matcheds[0]
+        const content = effect.expressions[0].content
+
+        let hasExtraId = false
+        const parentStackMap = new Map<Identifier, Node[]>()
+        const parentStack: Node[] = []
+        walkIdentifiers(
+          ast,
+          (id) => {
+            if (id.start !== key.start && id.start !== selector.start) {
+              hasExtraId = true
+            }
+            parentStackMap.set(id, parentStack.slice())
+          },
+          false,
+          parentStack,
+        )
+
+        if (!hasExtraId) {
+          const name = content.slice(
+            selector.start! - offset,
+            selector.end! - offset,
+          )
+          return {
+            effect,
+            // @ts-expect-error
+            selector: {
+              content: name,
+              ast: extend({}, selector, {
+                start: 1,
+                end: name.length + 1,
+              }),
+              loc: selector.loc as any,
+              isStatic: false,
+            },
+          }
+        }
+      }
+    }
+
+    const content = effect.expressions[0].content
+    if (
+      typeof ast === 'object' &&
+      ast &&
+      ast.type === 'ConditionalExpression' &&
+      ast.test.type === 'BinaryExpression' &&
+      ast.test.operator === '===' &&
+      ast.test.left.type !== 'PrivateName' &&
+      isStaticNode(ast.consequent) &&
+      isStaticNode(ast.alternate)
+    ) {
+      const left = ast.test.left
+      const right = ast.test.right
+      for (const [a, b] of [
+        [left, right],
+        [right, left],
+      ]) {
+        const aIsKey = isKeyOnlyBinding(a, keyAst)
+        const bIsKey = isKeyOnlyBinding(b, keyAst)
+        const bVars = analyzeVariableScopes(b, idMap)
+        if (aIsKey && !bIsKey && !bVars.locals.length) {
+          return {
+            effect,
+            // @ts-expect-error
+            selector: {
+              content: content.slice(b.start! - offset, b.end! - offset),
+              ast: b,
+              loc: b.loc as any,
+              isStatic: false,
+            },
+          }
+        }
+      }
+    }
+  }
+}
+
+function analyzeVariableScopes(
+  ast: Node,
+  idMap: Record<string, string | SimpleExpressionNode | null>,
+) {
+  const globals: string[] = []
+  const locals: string[] = []
+
+  const ids: Identifier[] = []
+  const parentStackMap = new Map<Identifier, Node[]>()
+  const parentStack: Node[] = []
+  walkIdentifiers(
+    ast,
+    (id) => {
+      ids.push(id)
+      parentStackMap.set(id, parentStack.slice())
+    },
+    false,
+    parentStack,
+  )
+
+  for (const id of ids) {
+    if (isGloballyAllowed(id.name)) {
+      continue
+    }
+    if (idMap[id.name]) {
+      locals.push(id.name)
+    } else {
+      globals.push(id.name)
+    }
+  }
+
+  return { globals, locals }
+}
+
+function isKeyOnlyBinding(expr: Node, keyAst: any) {
+  let only = true
+  walkAST(expr, {
+    enter(node) {
+      if (isNodesEquivalent(node, keyAst)) {
+        this.skip()
+        return
+      }
+      if (node.type === 'Identifier') {
+        only = false
+      }
+    },
+  })
+  return only
 }

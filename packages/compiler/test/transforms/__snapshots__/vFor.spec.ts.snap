@@ -37,6 +37,18 @@ exports[`compiler: v-for > basic v-for 1`] = `
 "
 `;
 
+exports[`compiler: v-for > key only binding pattern 1`] = `
+"
+  const n0 = _createFor(() => (rows), (_for_item0) => {
+    const n2 = t0()
+    const x2 = _child(n2)
+    _setNodes(x2, () => (_for_item0.value.id + _for_item0.value.id))
+    return n2
+  }, (row) => (row.id))
+  return n0
+"
+`;
+
 exports[`compiler: v-for > multi effect 1`] = `
 "
   const n0 = _createFor(() => (items), (_for_item0, _for_key0) => {
@@ -100,6 +112,60 @@ exports[`compiler: v-for > object value, key and index 1`] = `
     _setNodes(x2, () => (id), () => (_for_item0.value), () => (_for_index0.value))
     return n2
   }, (value, key, index) => (id))
+  return n0
+"
+`;
+
+exports[`compiler: v-for > selector pattern 1`] = `
+"
+  const n0 = _createFor(() => (rows), (_for_item0) => {
+    const n2 = t0()
+    const x2 = _child(n2)
+    _selector0_0(() => {
+      _setText(x2, _toDisplayString(selected === _for_item0.value.id ? 'danger' : ''))
+    })
+    return n2
+  }, (row) => (row.id))
+  const _selector0_0 = n0.useSelector(() => selected)
+  return n0
+"
+`;
+
+exports[`compiler: v-for > selector pattern 2`] = `
+"
+  const n0 = _createFor(() => (rows), (_for_item0) => {
+    const n2 = t0()
+    _selector0_0(() => {
+      _setClass(n2, selected === _for_item0.value.id ? 'danger' : '')
+    })
+    return n2
+  }, (row) => (row.id))
+  const _selector0_0 = n0.useSelector(() => selected)
+  return n0
+"
+`;
+
+exports[`compiler: v-for > selector pattern 3`] = `
+"
+  const n0 = _createFor(() => (rows), (_for_item0) => {
+    const n2 = t0()
+    _renderEffect(() => _setClass(n2, _for_item0.value.label === _for_item0.value.id ? 'danger' : ''))
+    return n2
+  }, (row) => (row.id))
+  return n0
+"
+`;
+
+exports[`compiler: v-for > selector pattern 4`] = `
+"
+  const n0 = _createFor(() => (rows), (_for_item0) => {
+    const n2 = t0()
+    _selector0_0(() => {
+      _setClass(n2, { danger: _for_item0.value.id === selected })
+    })
+    return n2
+  }, (row) => (row.id))
+  const _selector0_0 = n0.useSelector(() => selected)
   return n0
 "
 `;

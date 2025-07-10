@@ -8,6 +8,7 @@ import {
   transformVBind,
   transformVFor,
   transformVOn,
+  transformVText,
   type ForIRNode,
 } from '../../src'
 import { makeCompile } from './_utils'
@@ -22,6 +23,7 @@ const compileWithVFor = makeCompile({
   directiveTransforms: {
     bind: transformVBind,
     on: transformVOn,
+    text: transformVText,
   },
 })
 
@@ -65,6 +67,72 @@ describe('compiler: v-for', () => {
       children: [{ id: 0 }],
     })
     expect(ir.block.effect).toEqual([])
+  })
+
+  test('key only binding pattern', () => {
+    expect(
+      compileWithVFor(
+        `
+          <tr
+            v-for={row in rows}
+            key={row.id}
+          >
+            { row.id + row.id }
+          </tr>
+      `,
+      ).code,
+    ).matchSnapshot()
+  })
+
+  test('selector pattern', () => {
+    expect(
+      compileWithVFor(
+        `
+          <tr
+            v-for={row in rows}
+            key={row.id}
+            v-text={selected === row.id ? 'danger' : ''}
+          ></tr>
+      `,
+      ).code,
+    ).matchSnapshot()
+
+    expect(
+      compileWithVFor(
+        `
+          <tr
+            v-for={row in rows}
+            key={row.id}
+            class={selected === row.id ? 'danger' : ''}
+          ></tr>
+      `,
+      ).code,
+    ).matchSnapshot()
+
+    // Should not be optimized because row.label is not from parent scope
+    expect(
+      compileWithVFor(
+        `
+          <tr
+            v-for={row in rows}
+            key={row.id}
+            class={row.label === row.id ? 'danger' : ''}
+          ></tr>
+      `,
+      ).code,
+    ).matchSnapshot()
+
+    expect(
+      compileWithVFor(
+        `
+          <tr
+            v-for={row in rows}
+            key={row.id}
+            class={{ danger: row.id === selected }}
+          ></tr>
+      `,
+      ).code,
+    ).matchSnapshot()
   })
 
   test('multi effect', () => {
