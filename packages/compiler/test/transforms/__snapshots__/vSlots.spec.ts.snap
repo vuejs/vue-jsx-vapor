@@ -2,11 +2,11 @@
 
 exports[`compiler: transform v-slots > basic 1`] = `
 "
-  const n0 = _createComponent(Comp, null, {
+  const n1 = _createComponent(Comp, null, {
     $: [
       { default: ({ foo })=> <>{ foo + bar }</> }
     ]
   }, true)
-  return n0
+  return n1
 "
 `;
