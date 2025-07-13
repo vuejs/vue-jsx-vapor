@@ -1,5 +1,4 @@
 import {
-  // detectVueVersion,
   REGEX_NODE_MODULES,
   REGEX_SETUP_SFC,
   REGEX_SRC_FILE,
@@ -28,8 +27,6 @@ export type OptionsResolved = MarkRequired<Options, 'include' | 'version'> & {
 }
 
 export function resolveOptions(options: Options): OptionsResolved {
-  // waiting for vue@3.6 release
-  // const version = options.version || detectVueVersion()
   const version = options.version || 3.6
   return {
     include: [REGEX_SRC_FILE],

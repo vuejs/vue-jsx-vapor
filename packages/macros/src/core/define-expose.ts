@@ -8,6 +8,6 @@ export function transformDefineExpose(
   s.overwriteNode(node.callee, ';')
   s.appendRight(
     node.arguments[0]?.start || node.end! - 1,
-    `${importHelperFn(s, 0, 'getCurrentInstance')}(true).exposed = `,
+    `${importHelperFn(s, 0, 'getCurrentInstance', undefined, 'vue-jsx-vapor')}().exposed = `,
   )
 }
