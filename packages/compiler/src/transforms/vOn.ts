@@ -24,10 +24,11 @@ const delegatedEvents = /*#__PURE__*/ makeMap(
 
 export const transformVOn: DirectiveTransform = (dir, node, context) => {
   const { name, loc, value } = dir
-  if (name.type === 'JSXNamespacedName') return
+  if (!name) return
   const isComponent = isJSXComponent(node)
 
-  const [nameString, ...modifiers] = name.name
+  const [nameString, ...modifiers] = context.ir.source
+    .slice(name.start!, name.end!)
     .replace(/^on([A-Z])/, (_, $1) => $1.toLowerCase())
     .split('_')
 
