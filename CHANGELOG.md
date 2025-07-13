@@ -1,3 +1,20 @@
+## [2.5.1](https://github.com/vuejs/vue-jsx-vapor/compare/v2.5.0...v2.5.1) (2025-07-13)
+
+
+### Bug Fixes
+
+* **compiler:** remove compiler error for v-slots ([033d62f](https://github.com/vuejs/vue-jsx-vapor/commit/033d62fcbc36ae2474792e6fe5f7a698495d00df))
+* **compiler:** use underscores instead of colons for cached name ([0ffd1c6](https://github.com/vuejs/vue-jsx-vapor/commit/0ffd1c68339cdb1a935f91ee781b1ebabaf4c981))
+
+
+### Features
+
+* **compiler:** generate more efficient runtime code for specific interpolation patterns ([3c22e74](https://github.com/vuejs/vue-jsx-vapor/commit/3c22e749fca4a863fe3f0c004924ad972f6c00e3))
+* **compiler:** support JSXNamespacedName for v-model ([941fb83](https://github.com/vuejs/vue-jsx-vapor/commit/941fb83933c8240bdaf8d8995b4a6a291b7965e9))
+* **vue-jsx-vapor:** add getCurrentInstance ([067f018](https://github.com/vuejs/vue-jsx-vapor/commit/067f018817afcebb98ec6199dd1aba5ff7458609))
+
+
+
 # [2.5.0](https://github.com/vuejs/vue-jsx-vapor/compare/v2.4.8...v2.5.0) (2025-07-07)
 
 
