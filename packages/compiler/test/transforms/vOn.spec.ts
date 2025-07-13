@@ -327,6 +327,14 @@ describe('v-on', () => {
     )
   })
 
+  test('namespace event with Component', () => {
+    const { code } = compileWithVOn(`<Comp onUpdate:modelValue={() => {}} />`)
+    expect(code).toMatchSnapshot()
+    expect(code).contains(
+      '_createComponent(Comp, { "onUpdate:modelValue": () => _on_update_modelValue }, null, true)',
+    )
+  })
+
   test('expression with type', () => {
     const { code } = compileWithVOn(`<div onClick={handleClick as any} />`)
     expect(code).toMatchInlineSnapshot(`

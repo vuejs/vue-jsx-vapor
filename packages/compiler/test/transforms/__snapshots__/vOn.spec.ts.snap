@@ -56,6 +56,14 @@ exports[`v-on > event modifier 1`] = `
 "
 `;
 
+exports[`v-on > namespace event with Component 1`] = `
+"
+  const _on_update_modelValue = () => {}
+  const n0 = _createComponent(Comp, { "onUpdate:modelValue": () => _on_update_modelValue }, null, true)
+  return n0
+"
+`;
+
 exports[`v-on > should delegate event 1`] = `
 "
   const n0 = t0()

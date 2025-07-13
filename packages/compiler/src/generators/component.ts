@@ -126,7 +126,10 @@ function processInlineHandlers(
         const isMemberExp = isMemberExpression(value, context.options)
         // cache inline handlers (fn expression or inline statement)
         if (!isMemberExp) {
-          const name = getUniqueHandlerName(context, `_on_${prop.key.content}`)
+          const name = getUniqueHandlerName(
+            context,
+            `_on_${prop.key.content.replace(':', '_')}`,
+          )
           handlers.push({ name, value })
           ids[name] = null
           // replace the original prop value with the handler name
