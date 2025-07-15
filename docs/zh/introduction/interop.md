@@ -1,6 +1,8 @@
 # 互操作性
 
-`vue-jsx-vapor` 支持 Virtual DOM 和 Vapor DOM 混合使用。将 `interop` 设置为 `true` 后，`vue-jsx-vapor` 将只转换 `defineVaporComponent` 中的 JSX。
+`vue-jsx-vapor` 支持 Virtual DOM 和 Vapor DOM 混合使用。将 `interop` 设置为 `true` 后，
+在 `defineVaporComponent` 中定义的 JSX 会被编译为 Vapor DOM, \
+在 `defineVaporComponent` 外定义的 JSX 会被编译为 Virtual DOM。
 
 ## 在 Virtual DOM 中使用 Vapor
 

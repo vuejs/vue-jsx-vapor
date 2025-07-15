@@ -19,7 +19,7 @@ Because JSX doesn't support `[]` keyword, use `$` instead.
 ## Modifiers
 
 Modifiers are special postfixes denoted by a `_`, which indicate that a directive should be bound in some special way.
-Because JSX doesn't support `.` keyword, we use `_` instead.
+Because JSX doesn't support `.` keyword, use `_` instead.
 
 ```tsx
 <form onSubmit_prevent>

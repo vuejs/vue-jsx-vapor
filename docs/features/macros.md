@@ -1,6 +1,6 @@
 # Macros
 
-A collection of macros. They are need to muanually enabled by set `macros` to `true`.
+A collection of macros for JSX. They are need to manually enabled by set `macros` to `true`.
 
 |     Directive     |        Vue         |       Volar        |
 | :---------------: | :----------------: | :----------------: |

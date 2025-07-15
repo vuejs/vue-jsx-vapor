@@ -1,6 +1,6 @@
 # Interop
 
-`vue-jsx-vapor` support virtual-dom and vapor-dom co-usage. After set interop to `true`, vue-jsx-vapor will be only convert in `defineVaporComponent`'s JSX.
+`vue-jsx-vapor` supports Virtual DOM and Vapor DOM co-usage. After setting interop to `true`, JSX within `defineVaporComponent` will be compiled to Vapor DOM, while JSX outside `defineVaporComponent` will be compiled to `Virtual DOM `.
 
 ## Vapor in Virtual DOM
 

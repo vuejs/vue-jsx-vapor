@@ -10,11 +10,13 @@ import { useRef } from 'vue-jsx-vapor'
 // or
 // import { shallowRef as useRef } from 'vue'
 
-export const Comp = defineComponent({
-  setup() {
-    return { foo: 1 }
-  },
-})
+export const Comp = () => {
+  defineExpose({
+    foo: 1
+  })
+
+  return <div />
+}
 
 export default defineComponent(() => {
   const comp = useRef()
@@ -22,9 +24,9 @@ export default defineComponent(() => {
   //           ^?
 
   return (
-    <>
+    <div>
       <Comp ref={comp} />
-    </>
+    </div>
   )
 })
 ```

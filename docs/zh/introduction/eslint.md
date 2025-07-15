@@ -1,6 +1,6 @@
 # ESLint
 
-这是一个为 `vue-jsx-vapor` 提供的 ESLint 插件，用于自动修复代码。
+用于给 `vue-jsx-vapor` 自动格式化代码的 ESLint 插件。
 
 ## 安装
 

@@ -5,7 +5,7 @@ layout: home
 hero:
   name: "Vue JSX Vapor"
   text: "类型安全，高性能，更舒适的开发体验"
-  tagline: 支持 Vue 的 Vapor 模式、所有内置指令和大部分宏。
+  tagline: Vue JSX 的 Vapor 模式。
   image:
     src: /logo.svg
     alt: Vue JSX Vapor
