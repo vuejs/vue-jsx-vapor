@@ -9,7 +9,6 @@
 ::: code-group
 
 ```ts [vite.config.ts]
-import vueJsx from '@vitejs/plugin-vue-jsx'
 import { defineConfig } from 'vite'
 import vueJsxVapor from 'vue-jsx-vapor/vite'
 
@@ -19,7 +18,6 @@ export default defineConfig({
       macros: true,
       interop: true,
     }),
-    vueJsx(),
   ],
 })
 ```
@@ -68,7 +66,6 @@ export default defineComponent(() => {
 ::: code-group
 
 ```ts [vite.config.ts]
-import vueJsx from '@vitejs/plugin-vue-jsx'
 import { defineConfig } from 'vite'
 import vueJsxVapor from 'vue-jsx-vapor/vite'
 
@@ -78,7 +75,6 @@ export default defineConfig({
       macros: true,
       interop: true,
     }),
-    vueJsx(),
   ],
 })
 ```
