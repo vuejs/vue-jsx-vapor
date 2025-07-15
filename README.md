@@ -11,7 +11,7 @@ Vapor Mode of Vue JSX.
 - ✨ Macros: Support most macros of Vue, Friendly to JSX.
 - 🌈 Hot Module Replacement: Support functional components or defined by defineComponent.
 - 🦾 Type Safe: Provide Volar plugin support by install TS Macro (VSCode plugin).
-- ⚙️ ESLint: Provide an ESLint plugin for vue-jsx-vapor to automatically fix code.
+- ⚙️ ESLint: Provide an ESLint plugin for vue-jsx-vapor to automatically format code.
 
 ## Installation
 

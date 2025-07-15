@@ -5,7 +5,7 @@ layout: home
 hero:
   name: "Vue JSX Vapor"
   text: "Type-safe, Improve DX, High Performance"
-  tagline: Vapor Mode of Vue JSX.
+  tagline: Vapor Mode of Vue JSX
   image:
     src: /logo.svg
     alt: Vue JSX Vapor
@@ -35,6 +35,6 @@ features:
     details: Support functional components or defined by defineComponent.
   - icon: ⚙️
     title: ESLint
-    details: Provide an ESLint plugin for vue-jsx-vapor to automatically fix code.
+    details: Provide an ESLint plugin for vue-jsx-vapor to automatically format code.
 ---
 

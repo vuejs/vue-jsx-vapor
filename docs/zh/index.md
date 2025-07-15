@@ -4,8 +4,8 @@ layout: home
 
 hero:
   name: "Vue JSX Vapor"
-  text: "类型安全，高性能，更舒适的开发体验"
-  tagline: Vue JSX 的 Vapor 模式。
+  text: "类型安全、高性能、更舒适的开发体验"
+  tagline: Vue JSX 的 Vapor 模式
   image:
     src: /logo.svg
     alt: Vue JSX Vapor
@@ -35,5 +35,5 @@ features:
     details: 支持函数式组件或由 defineComponent 定义的组件。
   - icon: ⚙️
     title: ESLint
-    details: 提供 ESLint 插件为 vue-jsx-vapor 自动修复代码。
+    details: 提供 ESLint 插件为 vue-jsx-vapor 自动格式化代码。
 ---
