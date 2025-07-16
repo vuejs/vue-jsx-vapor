@@ -1,10 +1,12 @@
-# Interop
+# 互操作性
 
-`vue-jsx-vapor` supports Virtual DOM and Vapor DOM co-usage. After setting interop to `true`, JSX within `defineVaporComponent` will be compiled to Vapor DOM, while JSX outside `defineVaporComponent` will be compiled to `Virtual DOM `.
+`vue-jsx-vapor` 支持 Virtual DOM 和 Vapor DOM 混合使用。将 `interop` 设置为 `true` 后，
+在 `defineVaporComponent` 中定义的 JSX 会被编译为 Vapor DOM, \
+在 `defineVaporComponent` 外定义的 JSX 会被编译为 Virtual DOM。
 
-## Vapor in Virtual DOM
+## 在 Virtual DOM 中使用 Vapor
 
-[Playground](https://repl.zmjs.dev/vuejs/vapor-in-virtual-dom)
+[演练场](https://repl.zmjs.dev/vuejs/vapor-in-virtual-dom)
 
 ::: code-group
 
@@ -59,9 +61,9 @@ export default defineComponent(() => {
 
 :::
 
-## Virtual DOM in Vapor
+## 在 Vapor 中使用 Virtual DOM
 
-[Playground](https://repl.zmjs.dev/vuejs/virtual-dom-in-vapor)
+[演练场](https://repl.zmjs.dev/vuejs/virtual-dom-in-vapor)
 
 ::: code-group
 

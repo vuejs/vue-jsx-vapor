@@ -1,8 +1,8 @@
-# Directives
+# 指令
 
-Vue built-in directives for JSX.
+用于 JSX 的 Vue 内置指令。
 
-|           Directive           |        Vue         |       Volar        |
+|           指令           |        Vue         |       Volar        |
 | :---------------------------: | :----------------: | :----------------: |
 | `v-if`, `v-else-if`, `v-else` | :white_check_mark: | :white_check_mark: |
 |      `v-slot`, `v-slots`      | :white_check_mark: | :white_check_mark: |
@@ -11,15 +11,15 @@ Vue built-in directives for JSX.
 |      `v-html`, `v-text`       | :white_check_mark: |         /          |
 |           `v-once`            | :white_check_mark: |         /          |
 
-## Dynamic Arguments
+## 动态参数
 
-It is also possible to use a variable in a directive argument.
-Because JSX doesn't support `[]` keyword, use `$` instead.
+也可以在指令参数中使用变量。
+因为 JSX 不支持 `[]` 关键字，所以使用 `$` 代替。
 
-## Modifiers
+## 修饰符
 
-Modifiers are special postfixes denoted by a `_`, which indicate that a directive should be bound in some special way.
-Because JSX doesn't support `.` keyword, use `_` instead.
+修饰符是以 `_` 表示的特殊后缀，表示指令应以某种特殊方式绑定。
+因为 JSX 不支持 `.` 关键字，所以用 `_` 代替。
 
 ```tsx
 <form onSubmit_prevent>
@@ -77,7 +77,7 @@ const Comp = () => {
 // ---cut-end---
 export default () => (
   <Comp>
-    default slot
+    默认插槽
     <template v-slot:slot={{ bar }}>
       //              ^|
       {bar}
@@ -99,7 +99,7 @@ const Comp = () => {
 export default () => (
   <Comp
     v-slots={{
-      default: () => <>default slot</>,
+      default: () => <>默认插槽</>,
       slot: ({ bar }) => <>{bar}</>,
     }}
   />

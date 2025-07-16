@@ -8,6 +8,67 @@ export default defineConfig({
   title: 'Vue JSX Vapor',
   description: 'Vue JSX Vapor',
   head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }]],
+  locales: {
+    root: {
+      label: 'English',
+      lang: 'en',
+    },
+    zh: {
+      label: '简体中文',
+      lang: 'zh-CN',
+      link: '/zh/',
+      themeConfig: {
+        nav: [
+          { text: '首页', link: '/zh/' },
+          { text: '特性', link: '/zh/features/directives' },
+          {
+            text: 'Playground',
+            link: 'https://repl.zmjs.dev/vuejs/vue-jsx-vapor',
+          },
+        ],
+        sidebar: [
+          {
+            text: '介绍',
+            items: [
+              {
+                text: '快速开始',
+                link: `/zh/introduction/getting-started`,
+              },
+              {
+                text: '互操作性',
+                link: `/zh/introduction/interop`,
+              },
+              {
+                text: '迁移',
+                link: `/zh/introduction/migration`,
+              },
+              {
+                text: 'ESLint',
+                link: `/zh/introduction/eslint`,
+              },
+            ],
+          },
+          {
+            text: '特性',
+            items: [
+              {
+                text: '指令',
+                link: '/zh/features/directives',
+              },
+              {
+                text: '宏',
+                link: '/zh/features/macros',
+              },
+              {
+                text: 'useRef',
+                link: '/zh/features/use-ref',
+              },
+            ],
+          },
+        ],
+      },
+    },
+  },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: '/logo.svg',

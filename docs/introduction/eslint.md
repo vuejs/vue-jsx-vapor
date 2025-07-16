@@ -1,6 +1,6 @@
 # ESLint
 
-This is an ESLint plugin for `vue-jsx-vapor` to automatically fix code.
+An ESLint plugin for `vue-jsx-vapor` to automatically format code.
 
 ## Install
 

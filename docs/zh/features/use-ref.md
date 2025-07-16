@@ -1,18 +1,18 @@
 # useRef
 
-Automatically infer type for `useRef`. It's an alias of `shallowRef`.
+自动为 `useRef` 推断类型。它是 `shallowRef` 的别名。
 
-## Basic Usage
+## 基本用法
 
 ```tsx twoslash
 import { defineComponent } from 'vue'
 import { useRef } from 'vue-jsx-vapor'
-// or
+// 或者
 // import { shallowRef as useRef } from 'vue'
 
 export const Comp = () => {
   defineExpose({
-    foo: 1
+    foo: 1,
   })
 
   return <div />

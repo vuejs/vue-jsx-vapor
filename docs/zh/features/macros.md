@@ -1,8 +1,8 @@
-# Macros
+# 宏
 
-A collection of macros for JSX. They are need to manually enabled by set `macros` to `true`.
+为 JSX 设计的一系列宏。需要通过将 `macros` 设置为 `true` 来手动启用。
 
-|     Directive     |        Vue         |       Volar        |
+|     宏     |        Vue         |       Volar        |
 | :---------------: | :----------------: | :----------------: |
 | `defineComponent` | :white_check_mark: | :white_check_mark: |
 |   `defineModel`   | :white_check_mark: | :white_check_mark: |
@@ -10,7 +10,7 @@ A collection of macros for JSX. They are need to manually enabled by set `macros
 |  `defineExpose`   | :white_check_mark: | :white_check_mark: |
 |   `defineStyle`   | :white_check_mark: | :white_check_mark: |
 
-## Setup
+## 配置
 
 ::: code-group
 
@@ -43,8 +43,8 @@ export default {
 
 ## defineComponent
 
-- Support `await` keyword.
-- Automatically collects used props to the defineComponent's props option.
+- 支持 `await` 关键字。
+- 自动收集使用到的 props 到 `defineComponent` 的 `props` 选项中。
 
 ```tsx twoslash
 import { defineComponent, nextTick, Suspense, useAttrs } from 'vue'
@@ -53,7 +53,7 @@ const Comp = defineComponent(
   async (props: {
     foo?: string
     bar?: string
-    // ^ unused prop will be as a fallthrough attribute.
+    // ^ 未使用的 prop 将作为 fallthrough attribute。
   }) => {
     await nextTick()
     const attrs = useAttrs()
@@ -72,7 +72,7 @@ export default () => (
 )
 ```
 
-::: details Compiled Code
+::: details 编译后代码
 
 ```tsx
 import { defineComponent, useAttrs, withAsyncContext } from 'vue'
@@ -95,9 +95,9 @@ defineComponent(
 
 :::
 
-- The destructured props will be automatically restructured.
-- If the prop's default value ends with `!`, the prop will be inferred as required.
-- If a rest prop is defined, it will be converted to `useAttrs()`, and the `inheritAttrs` option will default to `false`.
+- 解构的 props 将被自动重构。
+- 如果 prop 的默认值以 `!` 结尾，则该 prop 将被推断为必需的。
+- 如果定义了 rest prop，它将被转换为 `useAttrs()`，并且 `inheritAttrs` 选项将默认为 `false`。
 
 ```tsx twoslash
 // @errors: 2322
@@ -116,7 +116,7 @@ const Comp = defineComponent(
 export default () => <Comp<string> foo={1} bar="bar" />
 ```
 
-::: details Compiled Code
+::: details 编译后代码
 
 ```tsx
 import { defineComponent } from 'vue'
@@ -139,9 +139,9 @@ defineComponent(
 
 ## defineModel
 
-- Doesn't support hyphenated model names.
-- Will be inferred as a required prop when the expression ends with `!`.
-- The modified model's value can be read synchronously, without needing to `await nextTick()`. [Related issue](https://github.com/vuejs/core/issues/11080)
+- 不支持带连字符的 model 名称。
+- 当表达式以 `!` 结尾时，将被推断为必需的 prop。
+- 修改后的 model 值可以同步读取，无需 `await nextTick()`。[相关 issue](https://github.com/vuejs/core/issues/11080)
 
 ```tsx twoslash
 import { ref } from 'vue'
@@ -159,7 +159,7 @@ export default () => {
 }
 ```
 
-::: details Compiled Code
+::: details 编译后代码
 
 ```tsx
 import { ref } from 'vue'
@@ -179,7 +179,7 @@ function Comp(_props: {
 
 ## defineSlots
 
-- If using generics to define slots, all slots will be optional.
+- 如果使用泛型定义插槽，所有插槽都将是可选的。
 
 ```tsx twoslash
 const slots = defineSlots<{
@@ -190,7 +190,7 @@ slots.default?.()
 //           ^ optional
 ```
 
-- Support default slots (Recommended).
+- 支持默认插槽（推荐）。
 
 ```tsx twoslash
 function Comp<const T>() {
@@ -221,7 +221,7 @@ export default () => (
 
 ## defineExpose
 
-Just like in Vue SFC.
+与在 Vue SFC 中一样。
 
 ```tsx twoslash
 import { useRef } from 'vue-jsx-vapor'
@@ -243,7 +243,7 @@ export default () => {
 }
 ```
 
-::: details Compiled Code
+::: details 编译后代码
 
 ```tsx
 import { currentInstance } from 'vue'
@@ -269,9 +269,9 @@ declare function defineStyle(
 ): void
 ```
 
-- Support CSS-variable and JS-variable binding.
-- Support defining multiple style macros in a file.
-- Support CSS pre-processors: `css`, `scss`, `sass`, `less`, `stylus`, `postcss`.
+- 支持 CSS 变量和 JS 变量绑定。
+- 支持在文件中定义多个样式宏。
+- 支持 CSS 预处理器：`css`、`scss`、`sass`、`less`、`stylus`、`postcss`。
 
 ```ts
 defineStyle.scss(`...`)
@@ -279,9 +279,9 @@ defineStyle.stylus(`...`)
 // ...
 ```
 
-- Support scoped mode.
-  - If defined at the top level of the file, the scoped option defaults to `false`.
-  - If defined within a function, the scoped option defaults to `true`.
+- 支持作用域模式。
+  - 如果在文件顶层定义，`scoped` 选项默认为 `false`。
+  - 如果在函数内部定义，`scoped` 选项默认为 `true`。
 
 ```tsx twoslash
 function Comp({ color = 'red' }) {
@@ -304,7 +304,7 @@ defineStyle(`
 `)
 ```
 
-- Support `css modules`, if the macro is an assignment expression.
+- 支持 `css modules`，如果宏是赋值表达式。
 
 ```tsx twoslash
 export default () => {
