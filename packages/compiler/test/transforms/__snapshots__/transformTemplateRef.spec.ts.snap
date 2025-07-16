@@ -18,7 +18,7 @@ exports[`compiler: template ref transform > ref + v-for 1`] = `
     let r2
     _renderEffect(() => r2 = _setTemplateRef(n2, foo, r2, true))
     return n2
-  }, null, 4)
+  }, undefined, 4)
   return n0
 "
 `;

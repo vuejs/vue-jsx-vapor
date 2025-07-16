@@ -119,18 +119,26 @@ export function genFor(
     keyProp,
     idMap,
   )
-  const patternFrag: CodeFragment[] = []
+  const selectorDeclarations: CodeFragment[] = []
+  const selectorSetup: CodeFragment[] = []
 
   for (const [i, { selector }] of selectorPatterns.entries()) {
     const selectorName = `_selector${id}_${i}`
-    patternFrag.push(
+    selectorDeclarations.push(`let ${selectorName}`, NEWLINE)
+    if (i === 0) {
+      selectorSetup.push(`({ createSelector }) => {`, INDENT_START)
+    }
+    selectorSetup.push(
       NEWLINE,
-      `const ${selectorName} = `,
-      ...genCall(`n${id}.useSelector`, [
+      `${selectorName} = `,
+      ...genCall(`createSelector`, [
         `() => `,
         ...genExpression(selector, context),
       ]),
     )
+    if (i === selectorPatterns.length - 1) {
+      selectorSetup.push(INDENT_END, NEWLINE, '}')
+    }
   }
 
   const blockFn = context.withId(() => {
@@ -183,16 +191,17 @@ export function genFor(
 
   return [
     NEWLINE,
+    ...selectorDeclarations,
     `const n${id} = `,
     ...genCall(
-      helper('createFor'),
+      [helper('createFor'), 'undefined'],
       sourceExpr,
       blockFn,
       genCallback(keyProp),
       flags ? String(flags) : undefined,
+      selectorSetup.length ? selectorSetup : undefined,
       // todo: hydrationNode
     ),
-    ...patternFrag,
   ]
 
   // construct a id -> accessor path map.

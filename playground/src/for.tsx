@@ -19,6 +19,7 @@ export default () => {
     </>
   )
 
+  const selected = ref(0)
   return (
     <div>
       <input v-model_number={count.value} />
@@ -31,9 +32,25 @@ export default () => {
 
         <fieldset>
           <legend>v-for</legend>
-          <div v-for={(_, index) in count.value}>{index}</div>
+          <div
+            v-for={
+              (i, index) in
+              Array.from({ length: count.value }).map((_, id) => ({ id }))
+            }
+            key={i.id}
+            class={{ 'text-red': i.id === selected.value }}
+            onClick={() => (selected.value = i.id)}
+          >
+            {i.id}
+          </div>
         </fieldset>
       </div>
     </div>
   )
 }
+
+defineStyle(`
+  .text-red {
+    color: red;
+  }
+`)
