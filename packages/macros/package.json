@@ -138,7 +138,7 @@
     "@vue-macros/common": "catalog:",
     "@vue/compiler-sfc": "catalog:",
     "hash-sum": "catalog:",
-    "ts-macro": "^0.2.7",
+    "ts-macro": "catalog:",
     "unplugin": "catalog:"
   },
   "devDependencies": {
