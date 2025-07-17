@@ -1,13 +1,11 @@
 import { parse } from '@babel/parser'
-import _traverse, { type VisitNodeFunction } from '@babel/traverse'
 import { compile } from '@vue-jsx-vapor/compiler'
+import { walkAST } from 'ast-kit'
 import { SourceMapConsumer } from 'source-map-js'
 import { isJSXElement } from './utils'
 import type { Options } from '.'
-import type { JSXElement, JSXFragment } from '@babel/types'
-
-// @ts-ignore
-const traverse = (_traverse.default || _traverse) as typeof _traverse
+import type { VisitNodeFunction } from '@babel/traverse'
+import type { JSXElement, JSXFragment, Node } from '@babel/types'
 
 export const transformJSX: VisitNodeFunction<
   Options,
@@ -39,15 +37,19 @@ export const transformJSX: VisitNodeFunction<
 
   if (map) {
     const consumer = new SourceMapConsumer(map)
-    traverse(ast, {
-      Identifier({ node: id }) {
-        if (!id.loc) return
-        const originalLoc = consumer.originalPositionFor(id.loc.start)
-        if (originalLoc.column) {
-          id.loc.start.line = originalLoc.line
-          id.loc.start.column = originalLoc.column
-          id.loc.end.line = originalLoc.line
-          id.loc.end.column = originalLoc.column + id.name.length
+    walkAST<Node>(ast, {
+      enter(id) {
+        if (
+          (id.type === 'Identifier' || id.type === 'JSXIdentifier') &&
+          id.loc
+        ) {
+          const originalLoc = consumer.originalPositionFor(id.loc.start)
+          if (originalLoc.column) {
+            id.loc.start.line = originalLoc.line
+            id.loc.start.column = originalLoc.column
+            id.loc.end.line = originalLoc.line
+            id.loc.end.column = originalLoc.column + id.name.length
+          }
         }
       },
     })

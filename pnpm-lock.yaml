@@ -60,6 +60,9 @@ catalogs:
     '@vue/shared':
       specifier: https://pkg.pr.new/@vue/shared@13642
       version: 3.6.0-alpha.1
+    ast-kit:
+      specifier: ^2.1.1
+      version: 2.1.1
     hash-sum:
       specifier: ^2.0.0
       version: 2.0.0
@@ -162,19 +165,22 @@ importers:
       '@babel/plugin-syntax-jsx':
         specifier: 'catalog:'
         version: 7.27.1(@babel/core@7.28.0)
-      '@babel/traverse':
-        specifier: 'catalog:'
-        version: 7.28.0
       '@babel/types':
         specifier: 'catalog:'
         version: 7.28.0
       '@vue-jsx-vapor/compiler':
         specifier: workspace:*
         version: link:../compiler
+      ast-kit:
+        specifier: 'catalog:'
+        version: 2.1.1
       source-map-js:
         specifier: 'catalog:'
         version: 1.2.1
     devDependencies:
+      '@babel/traverse':
+        specifier: 'catalog:'
+        version: 7.28.0
       '@types/babel__core':
         specifier: 'catalog:'
         version: 7.20.5
@@ -203,7 +209,7 @@ importers:
         specifier: 'catalog:'
         version: https://pkg.pr.new/@vue/shared@13642
       ast-kit:
-        specifier: ^2.1.1
+        specifier: 'catalog:'
         version: 2.1.1
       source-map-js:
         specifier: 'catalog:'
@@ -2565,10 +2571,6 @@ packages:
   assertion-error@2.0.1:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
     engines: {node: '>=12'}
-
-  ast-kit@2.1.0:
-    resolution: {integrity: sha512-ROM2LlXbZBZVk97crfw8PGDOBzzsJvN2uJCmwswvPUNyfH14eg90mSN3xNqsri1JS1G9cz0VzeDUhxJkTrr4Ew==}
-    engines: {node: '>=20.18.0'}
 
   ast-kit@2.1.1:
     resolution: {integrity: sha512-mfh6a7gKXE8pDlxTvqIc/syH/P3RkzbOF6LeHdcKztLEzYe6IMsRCL7N8vI7hqTGWNxpkCuuRTpT21xNWqhRtQ==}
@@ -7165,11 +7167,6 @@ snapshots:
 
   assertion-error@2.0.1: {}
 
-  ast-kit@2.1.0:
-    dependencies:
-      '@babel/parser': 7.27.7
-      pathe: 2.0.3
-
   ast-kit@2.1.1:
     dependencies:
       '@babel/parser': 7.28.0
@@ -9095,7 +9092,7 @@ snapshots:
       '@babel/generator': 7.27.5
       '@babel/parser': 7.27.7
       '@babel/types': 7.27.7
-      ast-kit: 2.1.0
+      ast-kit: 2.1.1
       birpc: 2.4.0
       debug: 4.4.1
       dts-resolver: 2.1.1(oxc-resolver@11.3.0)

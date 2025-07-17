@@ -43,12 +43,13 @@
     "@babel/core": "catalog:",
     "@babel/parser": "catalog:",
     "@babel/plugin-syntax-jsx": "catalog:",
-    "@babel/traverse": "catalog:",
     "@babel/types": "catalog:",
     "@vue-jsx-vapor/compiler": "workspace:*",
+    "ast-kit": "catalog:",
     "source-map-js": "catalog:"
   },
   "devDependencies": {
+    "@babel/traverse": "catalog:",
     "@types/babel__core": "catalog:",
     "@types/babel__generator": "^7.27.0",
     "@types/babel__template": "^7.4.4",
