@@ -20,9 +20,9 @@ catalog:
   '@nuxt/kit': ^3.17.6
   '@nuxt/schema': ^3.17.6
 
-  '@vue/compiler-dom': https://pkg.pr.new/@vue/compiler-dom@13642
-  '@vue/compiler-sfc': https://pkg.pr.new/@vue/compiler-sfc@13642
-  '@vue/shared': https://pkg.pr.new/@vue/shared@13642
+  '@vue/compiler-dom': https://pkg.pr.new/@vue/compiler-dom@5771104
+  '@vue/compiler-sfc': https://pkg.pr.new/@vue/compiler-sfc@5771104
+  '@vue/shared': https://pkg.pr.new/@vue/shared@5771104
 
   '@vue-macros/common': *vue-macros
   '@vue-macros/define-render': *vue-macros
@@ -40,4 +40,4 @@ catalog:
   unplugin-utils: ^0.2.4
   vite: ^7.0.5
   vitest: ^3.2.4
-  vue: https://pkg.pr.new/vue@13642
+  vue: https://pkg.pr.new/vue@5771104

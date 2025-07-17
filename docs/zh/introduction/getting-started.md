@@ -25,7 +25,7 @@
 pnpm add vue-jsx-vapor
 
 # 运行时
-pnpm add https://pkg.pr.new/vue@13642
+pnpm add https://pkg.pr.new/vue@5771104
 ```
 
 Vue Vapor 运行时尚未发布，因此我们使用 [pkg.pr.new](https://github.com/stackblitz-labs/pkg.pr.new) 进行安装。
