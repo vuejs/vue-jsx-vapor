@@ -31,12 +31,12 @@ catalog:
 
   '@ts-macro/tsc': *ts-macro
   '@types/hash-sum': ^1.0.2
+  ast-kit: ^2.1.1
   hash-sum: ^2.0.0
   source-map-js: ^1.2.1
   ts-macro: *ts-macro
   unplugin: ^2.3.5
   unplugin-utils: ^0.2.4
-  ast-kit: ^2.1.1
   vite: ^7.0.2
   vitest: ^3.2.4
   vue: https://pkg.pr.new/vue@13642
