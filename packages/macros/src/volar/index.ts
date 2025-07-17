@@ -1,5 +1,5 @@
 import { HELPER_PREFIX, type Overwrite } from '@vue-macros/common'
-import { replaceRange, type TsmVirtualCode } from 'ts-macro'
+import { getText, type TsmVirtualCode } from 'ts-macro'
 import type { OptionsResolved } from '../options'
 import { transformDefineComponent } from './define-component'
 
@@ -40,7 +40,7 @@ function getMacro(
   if (!node) return
 
   if (ts.isVariableStatement(node)) {
-    return ts.forEachChild(node.declarationList, (decl) => getExpression(decl))
+    return node.declarationList.forEachChild((decl) => getExpression(decl))
   } else {
     return getExpression(node)
   }
@@ -164,16 +164,14 @@ export function getRootMap(options: TransformOptions): RootMap {
             }
 
             if (!hasRequired && isRequired) {
-              replaceRange(
-                codes,
+              codes.replaceRange(
                 modelOptions.end - 1,
                 modelOptions.end - 1,
                 `${!modelOptions.properties.hasTrailingComma && modelOptions.properties.length ? ',' : ''} required: true`,
               )
             }
           } else if (isRequired) {
-            replaceRange(
-              codes,
+            codes.replaceRange(
               expression.arguments.end,
               expression.arguments.end,
               `${!expression.arguments.hasTrailingComma && expression.arguments.length ? ',' : ''} { required: true }`,
@@ -189,19 +187,17 @@ export function getRootMap(options: TransformOptions): RootMap {
           )
           if (expression.typeArguments?.[1]) {
             defineModel.push(
-              `${modelName}Modifiers?: Partial<Record<${expression.typeArguments[1].getText(ast)}, boolean>>`,
+              `${modelName}Modifiers?: Partial<Record<${getText(expression.typeArguments[1], ast, ts)}, boolean>>`,
             )
           }
           if (ts.isVariableStatement(node))
-            replaceRange(
-              codes,
+            codes.replaceRange(
               initializer.getStart(ast),
               initializer.getStart(ast),
               `// @ts-ignore\n${id};\nlet ${id} = `,
             )
         } else if (options.defineSlots.alias.includes(macroName)) {
-          replaceRange(
-            codes,
+          codes.replaceRange(
             expression.getStart(ast),
             expression.getStart(ast),
             `// @ts-ignore\n${HELPER_PREFIX}slots;\nconst ${HELPER_PREFIX}slots = `,
@@ -209,8 +205,7 @@ export function getRootMap(options: TransformOptions): RootMap {
           rootMap.get(root)!.defineSlots =
             `Partial<typeof ${HELPER_PREFIX}slots>`
         } else if (options.defineExpose.alias.includes(macroName)) {
-          replaceRange(
-            codes,
+          codes.replaceRange(
             expression.getStart(ast),
             expression.getStart(ast),
             `// @ts-ignore\n${HELPER_PREFIX}exposed;\nconst ${HELPER_PREFIX}exposed = `,
@@ -220,14 +215,14 @@ export function getRootMap(options: TransformOptions): RootMap {
       }
     }
 
-    ts.forEachChild(node, (child) => {
+    node.forEachChild((child) => {
       parents.unshift(node)
       walk(child, parents)
       parents.shift()
     })
   }
 
-  ts.forEachChild(ast, (node) => walk(node, []))
+  ast.forEachChild((node) => walk(node, []))
   return rootMap
 }
 

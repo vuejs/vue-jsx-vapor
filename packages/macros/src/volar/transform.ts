@@ -1,5 +1,4 @@
 import { HELPER_PREFIX } from '@vue-macros/common'
-import { replaceRange } from 'ts-macro'
 import { transformDefineStyle } from './define-style'
 import type { RootMap, TransformOptions } from '.'
 
@@ -21,14 +20,13 @@ export function transformJsxMacros(
       (modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword,
     )
     if (asyncModifier && macros.defineComponent)
-      replaceRange(codes, asyncModifier.pos, asyncModifier.end)
+      codes.replaceRange(asyncModifier.pos, asyncModifier.end)
     const result = `({}) as __VLS_PickNotAny<typeof ${HELPER_PREFIX}ctx.render, {}> & { __ctx: typeof ${HELPER_PREFIX}ctx }`
 
     const propsType = root.parameters[0]?.type
-      ? String(root.parameters[0].type.getText(ast))
+      ? root.parameters[0].type.getText(ast)
       : '{}'
-    replaceRange(
-      codes,
+    codes.replaceRange(
       root.parameters.pos,
       root.parameters.pos,
       ts.isArrowFunction(root) && root.parameters.pos === root.pos ? '(' : '',
@@ -40,24 +38,18 @@ export function transformJsxMacros(
       `${HELPER_PREFIX}setup = (${asyncModifier ? 'async' : ''}(`,
     )
     if (ts.isArrowFunction(root)) {
-      replaceRange(
-        codes,
+      codes.replaceRange(
         root.end,
         root.end,
         `))${root.pos === root.parameters.pos ? ')' : ''} => `,
         result,
       )
     } else {
-      replaceRange(
-        codes,
-        root.body.getStart(ast),
-        root.body.getStart(ast),
-        '=>',
-      )
-      replaceRange(codes, root.end, root.end, `)){ return `, result, '}')
+      codes.replaceRange(root.body.getStart(ast), root.body.getStart(ast), '=>')
+      codes.replaceRange(root.end, root.end, `)){ return `, result, '}')
     }
 
-    ts.forEachChild(root.body, (node) => {
+    root.body.forEachChild((node) => {
       if (ts.isReturnStatement(node) && node.expression) {
         const props = [...(macros.defineModel ?? [])]
         const elements =
@@ -68,12 +60,11 @@ export function transformJsxMacros(
             : []
         for (const element of elements) {
           if (ts.isIdentifier(element.name)) {
-            const isRequired = ts.forEachChild(
-              element,
+            const isRequired = element.forEachChild(
               function isNonNullExpression(node): boolean {
                 return (
                   ts.isNonNullExpression(node) ||
-                  !!ts.forEachChild(node, isNonNullExpression)
+                  !!node.forEachChild(isNonNullExpression)
                 )
               },
             )
@@ -89,15 +80,13 @@ export function transformJsxMacros(
           (ts.isArrowFunction(node.expression) ||
             ts.isFunctionExpression(node.expression)) &&
           macros.defineComponent
-        replaceRange(
-          codes,
+        codes.replaceRange(
           node.getStart(ast),
           node.expression.getStart(ast),
           `const ${HELPER_PREFIX}render = `,
           shouldWrapByCall ? '(' : '',
         )
-        replaceRange(
-          codes,
+        codes.replaceRange(
           node.expression.end,
           node.expression.end,
           shouldWrapByCall ? ')()' : '',

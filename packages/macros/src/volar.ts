@@ -1,4 +1,4 @@
-import { createFilter } from '@vue-macros/common'
+import { createFilter, REGEX_VUE_SFC } from '@vue-macros/common'
 import { createPlugin, type PluginReturn } from 'ts-macro'
 import { resolveOptions, type Options } from './options'
 import { getGlobalTypes, getRootMap, transformJsxMacros } from './volar/index'
@@ -6,6 +6,7 @@ import { getGlobalTypes, getRootMap, transformJsxMacros } from './volar/index'
 const plugin: PluginReturn<Options | undefined> = createPlugin(
   ({ ts }, userOptions = {}) => {
     const resolvedOptions = resolveOptions(userOptions!)
+    ;(resolvedOptions.include as any[]).push(REGEX_VUE_SFC)
     const filter = createFilter(resolvedOptions)
 
     return {
@@ -29,3 +30,4 @@ const plugin: PluginReturn<Options | undefined> = createPlugin(
   },
 )
 export default plugin
+export { plugin as 'module.exports' }

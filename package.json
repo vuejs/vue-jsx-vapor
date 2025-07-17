@@ -53,8 +53,7 @@
   },
   "pnpm": {
     "overrides": {
-      "estree-walker": "2.0.2",
-      "ts-macro": "catalog:"
+      "estree-walker": "2.0.2"
     }
   }
 }

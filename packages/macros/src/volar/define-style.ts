@@ -1,4 +1,4 @@
-import { allCodeFeatures, replaceRange, type Code } from 'ts-macro'
+import { allCodeFeatures, type Code } from 'ts-macro'
 import type { DefineStyle, TransformOptions } from '.'
 
 export function transformDefineStyle(
@@ -13,8 +13,7 @@ export function transformDefineStyle(
     !expression.typeArguments &&
     ts.isTemplateLiteral(expression.arguments[0])
   ) {
-    replaceRange(
-      codes,
+    codes.replaceRange(
       expression.arguments.pos - 1,
       expression.arguments.pos - 1,
       `<{`,

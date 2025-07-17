@@ -5,7 +5,7 @@ import { createPlugin, type PluginReturn } from 'ts-macro'
 import type { Options } from './options'
 
 const plugin: PluginReturn<Options | undefined, true> = createPlugin(
-  (ctx, options) => {
+  (ctx, options = ctx.vueCompilerOptions['vue-jsx-vapor']) => {
     return [
       jsxDirective()(ctx),
       options?.ref === false
@@ -21,3 +21,4 @@ const plugin: PluginReturn<Options | undefined, true> = createPlugin(
 )
 
 export default plugin
+export { plugin as 'module.exports' }

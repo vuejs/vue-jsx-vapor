@@ -1,4 +1,3 @@
-import { allCodeFeatures, replaceRange } from 'ts-macro'
 import type { TransformOptions } from '.'
 
 export function transformDefineComponent(
@@ -8,23 +7,18 @@ export function transformDefineComponent(
 ): void {
   const { codes, ast, ts } = options
 
-  replaceRange(codes, node.arguments[0].end, node.end - 1)
+  codes.replaceRange(node.arguments[0].end, node.end - 1)
 
   const componentOptions = node.arguments[1]
-  replaceRange(
-    codes,
+  codes.replaceRange(
     node.getStart(ast),
     node.expression.end + 1,
     ts.isExpressionStatement(parent) ? ';' : '',
     '(',
-    [node.expression.getText(ast), node.getStart(ast), allCodeFeatures],
-    '(() => ({}) as any, ',
+    [node.expression.getText(ast), node.getStart(ast)],
+    '(() => ({}) as any,',
     componentOptions
-      ? [
-          componentOptions.getText(ast),
-          componentOptions.getStart(ast),
-          allCodeFeatures,
-        ]
+      ? [componentOptions.getText(ast), componentOptions.getStart(ast)]
       : '',
     '), ',
   )

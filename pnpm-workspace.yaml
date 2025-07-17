@@ -5,8 +5,8 @@ packages:
 
 defines:
   - &babel ^7.28.0
-  - &vue-macros ^3.0.0-beta.15
-  - &ts-macro ^0.1.35
+  - &vue-macros ^3.0.0-beta.16
+  - &ts-macro ^0.2.7
 
 catalog:
   '@babel/core': *babel
