@@ -69,9 +69,6 @@ catalogs:
     source-map-js:
       specifier: ^1.2.1
       version: 1.2.1
-    ts-macro:
-      specifier: ^0.2.7
-      version: 0.2.7
     unplugin:
       specifier: ^2.3.5
       version: 2.3.5
@@ -90,6 +87,7 @@ catalogs:
 
 overrides:
   estree-walker: 2.0.2
+  ts-macro: ^0.2.7
 
 importers:
 
@@ -316,7 +314,7 @@ importers:
         specifier: ^3
         version: 3.29.5
       ts-macro:
-        specifier: 'catalog:'
+        specifier: ^0.2.7
         version: 0.2.7
       unplugin:
         specifier: 'catalog:'
@@ -4495,12 +4493,6 @@ packages:
     peerDependencies:
       typescript: '>=4.0.0'
 
-  ts-macro@0.1.31:
-    resolution: {integrity: sha512-sTc/vSZTp7pcH1URyjIMk2HfeAm/OvOhok3a81kQtr1N84uTxD8nANspZX1YKGKJgN1h95k9zLk67B4I+KJy0g==}
-
-  ts-macro@0.1.35:
-    resolution: {integrity: sha512-cMPJUCH8VsH9s9FANjL1r/SrkV2T6CKBjgWqgP2XGiS+y/zBBwmw0C3C31M4LqrLEjb8djgUMDV18vQ4Dr+/mg==}
-
   ts-macro@0.2.7:
     resolution: {integrity: sha512-rHZfWbnWT6rPYWPAFU4517G9kt8pKXjzaqjNfDFsI7sV8MLxx1RA66uyavplR6c9yEN6WjtD962kGNZOhKL4TA==}
 
@@ -6253,7 +6245,7 @@ snapshots:
       '@volar/typescript': 2.4.14
       jiti: 2.4.2
       rollup-utils: 0.0.5(rollup@4.45.1)
-      ts-macro: 0.1.31
+      ts-macro: 0.2.7
       vscode-uri: 3.1.0
     transitivePeerDependencies:
       - rollup
@@ -6280,7 +6272,7 @@ snapshots:
     dependencies:
       '@ts-macro/language-plugin': 0.1.31(rollup@4.45.1)
       '@volar/language-core': 2.4.14
-      ts-macro: 0.1.35
+      ts-macro: 0.2.7
       twoslash: 0.3.1(typescript@5.8.3)
       twoslash-protocol: 0.3.1
       typescript: 5.8.3
@@ -9452,14 +9444,6 @@ snapshots:
     dependencies:
       picomatch: 4.0.2
       typescript: 5.8.3
-
-  ts-macro@0.1.31:
-    dependencies:
-      muggle-string: 0.4.1
-
-  ts-macro@0.1.35:
-    dependencies:
-      muggle-string: 0.4.1
 
   ts-macro@0.2.7:
     dependencies:
