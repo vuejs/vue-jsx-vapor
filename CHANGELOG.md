@@ -1,3 +1,19 @@
+## [2.5.2](https://github.com/vuejs/vue-jsx-vapor/compare/v2.5.1...v2.5.2) (2025-07-17)
+
+
+### Bug Fixes
+
+* **ts-macro:** prevent useSelector undefined error ([1800b44](https://github.com/vuejs/vue-jsx-vapor/commit/1800b444bfeb3378151e1e66f842652a6c20b3e8))
+* **vue-jsx-vapor:** generate correct HMR ([27179f6](https://github.com/vuejs/vue-jsx-vapor/commit/27179f6491bbcd2e64628e868a8d7090c8f07eb4))
+
+
+### Features
+
+* **macros:** support vue sfc ([0106c80](https://github.com/vuejs/vue-jsx-vapor/commit/0106c80a515851f7ec8e87d76999bc91a17ea4a7))
+* **vue-jsx-vapor:** support vue sfc ([c24d3c7](https://github.com/vuejs/vue-jsx-vapor/commit/c24d3c73b6195b57c3b49ecd663ab3dfa0ae5e0a))
+
+
+
 ## [2.5.1](https://github.com/vuejs/vue-jsx-vapor/compare/v2.5.0...v2.5.1) (2025-07-13)
 
 
