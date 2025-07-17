@@ -1,9 +1,4 @@
-import {
-  createSimpleExpression,
-  isMemberExpression,
-  toValidAssetId,
-  type SimpleExpressionNode,
-} from '@vue/compiler-dom'
+import { createSimpleExpression, toValidAssetId } from '@vue/compiler-dom'
 import { camelize, extend, isArray } from '@vue/shared'
 import { walkIdentifiers } from 'ast-kit'
 import {
@@ -48,21 +43,11 @@ export function genCreateComponent(
 
   const tag = genTag()
   const { root, props, slots, once } = operation
+  const rawProps = genRawProps(props, context)
   const rawSlots = genRawSlots(slots, context)
-  const [ids, handlers] = processInlineHandlers(props, context)
-  const rawProps = context.withId(() => genRawProps(props, context), ids)
-
-  const inlineHandlers: CodeFragment[] = handlers.reduce<CodeFragment[]>(
-    (acc, { name, value }) => {
-      const handler = genEventHandler(context, value, undefined, false)
-      return [...acc, `const ${name} = `, ...handler, NEWLINE]
-    },
-    [],
-  )
 
   return [
     NEWLINE,
-    ...inlineHandlers,
     `const n${operation.id} = `,
     ...genCall(
       operation.dynamic && !operation.dynamic.isStatic
@@ -98,47 +83,6 @@ export function genCreateComponent(
       )
     }
   }
-}
-
-function getUniqueHandlerName(context: CodegenContext, name: string): string {
-  const { seenInlineHandlerNames } = context
-  const count = seenInlineHandlerNames[name] || 0
-  seenInlineHandlerNames[name] = count + 1
-  return count === 0 ? name : `${name}${count}`
-}
-
-type InlineHandler = {
-  name: string
-  value: SimpleExpressionNode
-}
-
-function processInlineHandlers(
-  props: IRProps[],
-  context: CodegenContext,
-): [Record<string, null>, InlineHandler[]] {
-  const ids: Record<string, null> = Object.create(null)
-  const handlers: InlineHandler[] = []
-  const staticProps = props[0]
-  if (isArray(staticProps)) {
-    for (const prop of staticProps) {
-      if (!prop.handler) continue
-      prop.values.forEach((value, i) => {
-        const isMemberExp = isMemberExpression(value, context.options)
-        // cache inline handlers (fn expression or inline statement)
-        if (!isMemberExp) {
-          const name = getUniqueHandlerName(
-            context,
-            `_on_${prop.key.content.replace(':', '_')}`,
-          )
-          handlers.push({ name, value })
-          ids[name] = null
-          // replace the original prop value with the handler name
-          prop.values[i] = extend({ ast: null }, createSimpleExpression(name))
-        }
-      })
-    }
-  }
-  return [ids, handlers]
 }
 
 export function genRawProps(

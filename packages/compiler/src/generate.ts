@@ -38,8 +38,6 @@ export class CodegenContext {
   identifiers: Record<string, (string | SimpleExpressionNode)[]> =
     Object.create(null)
 
-  seenInlineHandlerNames: Record<string, number> = Object.create(null)
-
   block: BlockIRNode
   withId<T>(
     fn: () => T,

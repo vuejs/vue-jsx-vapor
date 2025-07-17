@@ -331,7 +331,7 @@ describe('v-on', () => {
     const { code } = compileWithVOn(`<Comp onUpdate:modelValue={() => {}} />`)
     expect(code).toMatchSnapshot()
     expect(code).contains(
-      '_createComponent(Comp, { "onUpdate:modelValue": () => _on_update_modelValue }, null, true)',
+      '_createComponent(Comp, { "onUpdate:modelValue": () => () => {} }, null, true)',
     )
   })
 
