@@ -12,9 +12,17 @@ export function transformVueJsxVapor(
   options?: Options,
   needSourceMap = false,
 ) {
+  const params = new URLSearchParams(id)
+  const vapor = params.get('vapor')
   return transformSync(code, {
     plugins: [
-      [jsx, { compile: options?.compile, interop: options?.interop }],
+      [
+        jsx,
+        {
+          compile: options?.compile,
+          interop: vapor ? false : options?.interop,
+        },
+      ],
       ...(id.endsWith('.tsx')
         ? [[babelTypescript, { isTSX: true, allowExtensions: true }]]
         : []),

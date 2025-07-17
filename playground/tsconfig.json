@@ -8,7 +8,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "types": ["vite/client"],
+    "types": ["vite/client", "@vue-macros/define-render/macros-global.d.ts"],
     "strict": true,
     "strictNullChecks": true,
     "esModuleInterop": true

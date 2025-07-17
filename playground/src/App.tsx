@@ -1,5 +1,6 @@
 import { defineVaporComponent, ref, type Ref } from 'vue'
 import { useRef } from 'vue-jsx-vapor'
+import VueComp from './Comp.vue'
 import Count2 from './count'
 import For from './for'
 import Html from './html'
@@ -25,7 +26,7 @@ export default defineVaporComponent(() => {
   return (
     <>
       <fieldset>
-        <legend>Component</legend>
+        <VueComp />
         <input
           value_prop={count.value}
           onInput={(e) => (count.value = e.currentTarget.value)}

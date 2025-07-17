@@ -5,7 +5,7 @@ packages:
 
 defines:
   - &babel ^7.28.0
-  - &vue-macros ^3.0.0-beta.16
+  - &vue-macros ^3.0.0-beta.17
   - &ts-macro ^0.2.7
 
 catalog:
@@ -27,6 +27,7 @@ catalog:
   '@vue-macros/common': *vue-macros
   '@vue-macros/jsx-directive': *vue-macros
   '@vue-macros/test-utils': *vue-macros
+  '@vue-macros/define-render': *vue-macros
   '@vue-macros/volar': *vue-macros
 
   '@ts-macro/tsc': *ts-macro
@@ -37,6 +38,6 @@ catalog:
   ts-macro: *ts-macro
   unplugin: ^2.3.5
   unplugin-utils: ^0.2.4
-  vite: ^7.0.2
+  vite: ^7.0.5
   vitest: ^3.2.4
   vue: https://pkg.pr.new/vue@13642
