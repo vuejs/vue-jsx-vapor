@@ -1,6 +1,8 @@
 import {
   createComponent as _createComponent,
+  createComponentWithFallback as _createComponentWithFallback,
   EffectScope,
+  Fragment,
   insert,
   isFragment,
   isVaporComponent,
@@ -12,21 +14,57 @@ import {
   VaporFragment,
   type Block,
   type GenericComponentInstance,
+  type VaporComponent,
 } from 'vue'
 
 import * as Vue from 'vue'
+
+export function isBlock(val: NonNullable<unknown>): val is Block {
+  return (
+    val instanceof Node ||
+    Array.isArray(val) ||
+    isVaporComponent(val) ||
+    isFragment(val)
+  )
+}
 
 export function getCurrentInstance(): GenericComponentInstance | null {
   // @ts-ignore
   return Vue.currentInstance || Vue.getCurrentInstance()
 }
 
-export { shallowRef as useRef } from 'vue'
-
-export const createComponent: typeof _createComponent = (...args) => {
-  typeof args[0] === 'function' && (args[0].__vapor = true)
-  return _createComponent(...args)
+const createProxyComponent = (
+  createComponent:
+    | typeof _createComponent
+    | typeof _createComponentWithFallback,
+  type: VaporComponent | typeof Fragment,
+  props: any,
+  ...args: any[]
+) => {
+  if (type === Fragment) {
+    type = (_, { slots }) => slots.default()
+    props = null
+  }
+  // @ts-ignore
+  if (Vue.currentInstance && Vue.currentInstance.appContext.vapor) {
+    typeof type === 'function' && ((type as VaporComponent).__vapor = true)
+  }
+  return createComponent(type as VaporComponent, props, ...args)
 }
+
+type Tail<T extends any[]> = T extends [any, ...infer R] ? R : never
+
+export const createComponent = (
+  type: VaporComponent | typeof Fragment,
+  ...args: Tail<Parameters<typeof _createComponent>>
+) => {
+  return createProxyComponent(_createComponent, type, ...args)
+}
+
+export const createComponentWithFallback = (
+  type: VaporComponent | typeof Fragment,
+  ...args: Tail<Parameters<typeof _createComponentWithFallback>>
+) => createProxyComponent(_createComponentWithFallback, type, ...args)
 
 /**
  * Returns the props of the current component instance.
