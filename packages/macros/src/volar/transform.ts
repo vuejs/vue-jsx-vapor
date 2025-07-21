@@ -11,7 +11,7 @@ export function transformJsxMacros(
   let defineStyleIndex = 0
   for (const [root, macros] of rootMap) {
     macros.defineStyle?.forEach((defaultStyle) =>
-      transformDefineStyle(defaultStyle, defineStyleIndex++, options),
+      transformDefineStyle(defaultStyle, defineStyleIndex++, root, options),
     )
 
     if (!root?.body) continue

@@ -1,9 +1,10 @@
 import { allCodeFeatures, type Code } from 'ts-macro'
-import type { DefineStyle, TransformOptions } from '.'
+import type { DefineStyle, RootKey, TransformOptions } from '.'
 
 export function transformDefineStyle(
   { expression, isCssModules }: DefineStyle,
   index: number,
+  root: RootKey,
   options: TransformOptions,
 ): void {
   const { ts, codes, ast } = options
@@ -34,6 +35,17 @@ export function transformDefineStyle(
       ),
       '\n}>',
     )
+  } else if (root?.body) {
+    const returnNode = root.body.forEachChild((node) =>
+      ts.isReturnStatement(node) ? node : undefined,
+    )
+    if (returnNode) {
+      codes.replaceRange(expression.getStart(ast), expression.getEnd())
+      codes.replaceRange(returnNode!.pos, returnNode!.pos, ';', [
+        expression.getText(ast),
+        expression.getStart(ast),
+      ])
+    }
   }
 
   addEmbeddedCode(expression, index, options)

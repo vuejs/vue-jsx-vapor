@@ -24,13 +24,13 @@ export type JsxMacros = {
   defineStyle?: DefineStyle[]
   defineComponent?: true
 }
-export type RootMap = Map<
+
+export type RootKey =
   | import('typescript').ArrowFunction
   | import('typescript').FunctionExpression
   | import('typescript').FunctionDeclaration
-  | undefined,
-  JsxMacros
->
+  | undefined
+export type RootMap = Map<RootKey, JsxMacros>
 
 function getMacro(
   node: import('typescript').Node | undefined,
