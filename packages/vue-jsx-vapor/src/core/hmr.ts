@@ -111,11 +111,7 @@ export function injectHMRAndSSR(
           `\n${local}.__hmrId = "${id}";` +
           `\n__VUE_HMR_RUNTIME__.createRecord("${id}", ${local});`
         callbackCode += `
-    if (typeof mod['${exported}'] === 'function') {
-      __VUE_HMR_RUNTIME__.rerender(mod['${exported}'].__hmrId, mod['${exported}']);
-    } else {
-      __VUE_HMR_RUNTIME__.reload(mod['${exported}'].__hmrId, mod['${exported}']);
-    };`
+    __VUE_HMR_RUNTIME__[typeof mod['${exported}'] === 'function' ? 'rerender' : 'reload'](mod['${exported}'].__hmrId, mod['${exported}']);`
       }
 
       code += `
