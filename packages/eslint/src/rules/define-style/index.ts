@@ -54,8 +54,6 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
               arg.range[0] + 1,
               arg.range[1] - 1,
             )
-            //   .replaceAll('${', '--')
-            // arg.quasis[0].value.raw.replaceAll('${', '-')
 
             let formattedCss = ''
             try {
