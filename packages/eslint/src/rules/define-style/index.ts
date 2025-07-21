@@ -49,11 +49,33 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
           const arg = node.arguments[0]
 
           if (arg?.type === 'TemplateLiteral') {
-            const cssRaw = arg.quasis[0].value.raw
+            let index = 0
+            const cssRaw = context.sourceCode.text.slice(
+              arg.range[0] + 1,
+              arg.range[1] - 1,
+            )
+            //   .replaceAll('${', '--')
+            // arg.quasis[0].value.raw.replaceAll('${', '-')
 
             let formattedCss = ''
             try {
-              formattedCss = prettier.format(cssRaw, { parser, tabWidth })
+              formattedCss = prettier
+                .format(
+                  arg.quasis
+                    .map(
+                      (i) =>
+                        i.value.raw +
+                        (arg.expressions[index]
+                          ? `-MACROS_START-${context.sourceCode.text.slice(
+                              ...arg.expressions[index++].range,
+                            )}-MACROS_END-`
+                          : ''),
+                    )
+                    .join(''),
+                  { parser, tabWidth },
+                )
+                .replaceAll('-MACROS_START-', '${')
+                .replaceAll('-MACROS_END-', '}')
             } catch {
               return context.report({
                 node: arg,
