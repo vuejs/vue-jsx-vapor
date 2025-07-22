@@ -23,8 +23,8 @@ const plugin: PluginReturn<Options | undefined> = createPlugin(
         const rootMap = getRootMap(options)
         if (rootMap.size) {
           transformJsxMacros(rootMap, options)
-          codes.push(getGlobalTypes(options))
         }
+        codes.push(getGlobalTypes(rootMap, options))
       },
     }
   },

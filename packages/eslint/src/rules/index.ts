@@ -1,4 +1,4 @@
-import defineStyle from './define-style'
+import _defineStyle from './define-style'
 import jsxSortProps from './jsx-sort-props'
 import type { DefineStyleRuleOptions } from './define-style/types'
 import type { JsxSortPropsRuleOptions } from './jsx-sort-props/types'
@@ -6,7 +6,7 @@ import type { Linter } from 'eslint'
 
 const ruleOptions = {
   'jsx-sort-props': jsxSortProps,
-  'define-style': defineStyle,
+  'define-style': _defineStyle,
 }
 
 export interface RuleOptions {

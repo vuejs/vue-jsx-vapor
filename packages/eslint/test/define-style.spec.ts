@@ -1,11 +1,11 @@
 import { createRuleTester } from 'eslint-vitest-rule-tester'
 import { describe, expect, it } from 'vitest'
-import defineStyle from '../src/rules/define-style'
+import _defineStyle from '../src/rules/define-style'
 
 describe('define-style', () => {
   const { invalid } = createRuleTester({
     name: 'define-style',
-    rule: defineStyle,
+    rule: _defineStyle,
   })
 
   it('basic', async () => {

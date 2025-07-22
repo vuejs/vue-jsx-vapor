@@ -14,7 +14,8 @@ export function transformJsxMacros(
       transformDefineStyle(defaultStyle, defineStyleIndex++, root, options),
     )
 
-    if (!root?.body) continue
+    if (!root?.body || (Object.keys(macros).length === 1 && macros.defineStyle))
+      continue
 
     const asyncModifier = root.modifiers?.find(
       (modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword,
