@@ -37,6 +37,20 @@ exports[`compiler: v-for > basic v-for 1`] = `
 "
 `;
 
+exports[`compiler: v-for > fast-remove flag 1`] = `
+"
+  const n3 = t1()
+  _setInsertionState(n3)
+  const n0 = _createFor(() => (i), (_for_item0) => {
+    const n2 = t0()
+    const x2 = _child(n2)
+    _setNodes(x2, () => (_for_item0.value+i))
+    return n2
+  }, undefined, 1)
+  return n3
+"
+`;
+
 exports[`compiler: v-for > key only binding pattern 1`] = `
 "
   const n0 = _createFor(() => (rows), (_for_item0) => {

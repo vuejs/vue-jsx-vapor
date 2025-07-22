@@ -366,4 +366,17 @@ describe('compiler: v-for', () => {
       index: undefined,
     })
   })
+  test('fast-remove flag', () => {
+    const { code, ir } = compileWithVFor(
+      `<div>
+        <span v-for={j in i}>{ j+i }</span>
+      </div>`,
+    )
+
+    const op = ir.block.dynamic.children[0].children[1].operation
+    expect(op).toMatchObject({
+      onlyChild: true,
+    })
+    expect(code).toMatchSnapshot()
+  })
 })

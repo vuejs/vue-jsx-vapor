@@ -12,6 +12,7 @@ import {
 import {
   findProp,
   isConstant,
+  isEmptyText,
   isJSXComponent,
   propToExpression,
   resolveExpression,
@@ -58,7 +59,7 @@ export function processFor(
     const isOnlyChild =
       parent &&
       parent.block.node !== parent.node &&
-      parent.node.children.length === 1
+      parent.node.children.filter((child) => !isEmptyText(child)).length === 1
 
     context.dynamic.operation = {
       type: IRNodeTypes.FOR,
