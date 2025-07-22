@@ -2,7 +2,6 @@ import {
   createCompilerError,
   createSimpleExpression,
   ErrorCodes,
-  isConstantNode,
 } from '@vue/compiler-dom'
 import { DynamicFlag, IRNodeTypes } from '../ir'
 import {
@@ -10,7 +9,12 @@ import {
   type NodeTransform,
   type TransformContext,
 } from '../transform'
-import { isEmptyText, resolveDirective, resolveLocation } from '../utils'
+import {
+  isConstant,
+  isEmptyText,
+  resolveDirective,
+  resolveLocation,
+} from '../utils'
 import { createBranch } from './utils'
 import type { JSXAttribute, JSXElement } from '@babel/types'
 
@@ -49,7 +53,7 @@ export function processIf(
         id,
         condition: dir.exp!,
         positive: branch,
-        once: context.inVOnce || isConstantNode(attribute.value!, {}),
+        once: context.inVOnce || isConstant(attribute.value!),
       }
     }
   } else {

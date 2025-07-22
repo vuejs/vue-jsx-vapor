@@ -1,19 +1,7 @@
 import { parseExpression } from '@babel/parser'
 import {
-  isLiteral,
-  type BigIntLiteral,
-  type Expression,
-  type JSXAttribute,
-  type JSXElement,
-  type JSXFragment,
-  type JSXText,
-  type Node,
-  type NumericLiteral,
-  type SourceLocation,
-  type StringLiteral,
-} from '@babel/types'
-import {
   createSimpleExpression,
+  isConstantNode,
   isLiteralWhitelisted,
   NodeTypes,
   unwrapTSNode,
@@ -24,6 +12,18 @@ import { isGloballyAllowed, isHTMLTag, isString, isSVGTag } from '@vue/shared'
 import { EMPTY_EXPRESSION } from './transforms/utils'
 import type { VaporDirectiveNode } from './ir'
 import type { TransformContext } from './transform'
+import type {
+  BigIntLiteral,
+  Expression,
+  JSXAttribute,
+  JSXElement,
+  JSXFragment,
+  JSXText,
+  Node,
+  NumericLiteral,
+  SourceLocation,
+  StringLiteral,
+} from '@babel/types'
 
 export function propToExpression(
   prop: JSXAttribute,
@@ -68,24 +68,7 @@ export const isConstant = (node: Node | null | undefined): boolean => {
   if (node.type === 'Identifier') {
     return node.name === 'undefined' || isGloballyAllowed(node.name)
   }
-  if (['JSXElement', 'JSXFragment', 'NullLiteral'].includes(node.type)) {
-    return true
-  }
-  if (node.type === 'ArrayExpression') {
-    const { elements } = node
-    return elements.every((element) => element && isConstant(element))
-  }
-  if (node.type === 'ObjectExpression') {
-    return node.properties.every((property) =>
-      isConstant((property as any).value),
-    )
-  }
-  if (
-    node.type === 'TemplateLiteral' ? !node.expressions.length : isLiteral(node)
-  ) {
-    return true
-  }
-  return false
+  return isConstantNode(node, {})
 }
 
 const EMPTY_TEXT_REGEX =

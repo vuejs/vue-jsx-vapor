@@ -150,4 +150,14 @@ describe('compiler: children transform', () => {
     expect(code).contains(`const n0 = _nthChild(n1, 2)`)
     expect(code).toMatchSnapshot()
   })
+
+  test('JSXComponent in JSXExpressionContainer', () => {
+    const { code } = compileWithElementTransform(
+      `<div>
+        {<Comp />}
+      </div>`,
+    )
+    expect(code).contains(`_setNodes(x0, () => (<Comp />))`)
+    expect(code).toMatchSnapshot()
+  })
 })

@@ -1,5 +1,14 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`compiler: children transform > JSXComponent in JSXExpressionContainer 1`] = `
+"
+  const n0 = t0()
+  const x0 = _child(n0)
+  _setNodes(x0, () => (<Comp />))
+  return n0
+"
+`;
+
 exports[`compiler: children transform > efficient find 1`] = `
 "
   const n1 = t0()

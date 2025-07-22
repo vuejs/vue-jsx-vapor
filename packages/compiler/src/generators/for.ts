@@ -7,12 +7,12 @@ import {
 } from '@babel/types'
 import {
   createSimpleExpression,
-  isStaticNode,
   walkIdentifiers,
   type SimpleExpressionNode,
 } from '@vue/compiler-dom'
 import { extend, isGloballyAllowed } from '@vue/shared'
 import { walkAST } from 'ast-kit'
+import { isConstant } from '../utils'
 import type { CodegenContext } from '../generate'
 import type { BlockIRNode, ForIRNode, IREffect } from '../ir'
 import { genBlockContent } from './block'
@@ -478,8 +478,8 @@ function matchSelectorPattern(
       ast.test.type === 'BinaryExpression' &&
       ast.test.operator === '===' &&
       ast.test.left.type !== 'PrivateName' &&
-      isStaticNode(ast.consequent) &&
-      isStaticNode(ast.alternate)
+      isConstant(ast.consequent) &&
+      isConstant(ast.alternate)
     ) {
       const left = ast.test.left
       const right = ast.test.right

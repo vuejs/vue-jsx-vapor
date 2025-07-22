@@ -1,7 +1,6 @@
 import {
   defaultOnError,
   defaultOnWarn,
-  isConstantNode,
   type TransformOptions as BaseTransformOptions,
   type CommentNode,
   type CompilerCompatOptions,
@@ -21,7 +20,13 @@ import {
   type SetEventIRNode,
 } from './ir'
 import { newBlock, newDynamic } from './transforms/utils'
-import { findProp, getText, isConstantExpression, isTemplate } from './utils'
+import {
+  findProp,
+  getText,
+  isConstant,
+  isConstantExpression,
+  isTemplate,
+} from './utils'
 import type { JSXAttribute, JSXElement, JSXFragment } from '@babel/types'
 
 export type NodeTransform = (
@@ -177,7 +182,7 @@ export class TransformContext<
     if (
       this.inVOnce ||
       expressions.length === 0 ||
-      expressions.every((e) => e.ast && isConstantNode(e.ast, {}))
+      expressions.every((e) => e.ast && isConstant(e.ast))
     ) {
       return this.registerOperation(operations, getOperationIndex)
     }

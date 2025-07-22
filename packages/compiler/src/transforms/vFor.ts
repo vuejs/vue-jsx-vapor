@@ -1,7 +1,6 @@
 import {
   createCompilerError,
   ErrorCodes,
-  isConstantNode,
   type SimpleExpressionNode,
 } from '@vue/compiler-dom'
 import { DynamicFlag, IRNodeTypes } from '../ir'
@@ -12,6 +11,7 @@ import {
 } from '../transform'
 import {
   findProp,
+  isConstant,
   isJSXComponent,
   propToExpression,
   resolveExpression,
@@ -69,7 +69,7 @@ export function processFor(
       index,
       keyProp: keyProperty,
       render,
-      once: context.inVOnce || !!(source.ast && isConstantNode(source.ast, {})),
+      once: context.inVOnce || !!(source.ast && isConstant(source.ast)),
       component: isComponent,
       onlyChild: !!isOnlyChild,
     }
