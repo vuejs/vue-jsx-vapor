@@ -1,3 +1,16 @@
+## [2.5.3](https://github.com/vuejs/vue-jsx-vapor/compare/v2.5.2...v2.5.3) (2025-07-22)
+
+
+### Features
+
+* **compiler:** add fast-remove flag ([4e549e1](https://github.com/vuejs/vue-jsx-vapor/commit/4e549e193bd12826001a15a7c95103f0cd4f900e))
+* **compiler:** support JSXComponent in JSXExpressionContainer ([c69e8ca](https://github.com/vuejs/vue-jsx-vapor/commit/c69e8ca1f879e2e37d4f43f5d0ea73b071222955))
+* **eslint:** support template literal interpolation for define-style ([5be5080](https://github.com/vuejs/vue-jsx-vapor/commit/5be5080d47558c000f4d6ba39673ad93856fb2d8))
+* **macros/volar:** allow define styles after the ReturnStatement ([255479b](https://github.com/vuejs/vue-jsx-vapor/commit/255479b00fc004474468fde554bbd7649066137a))
+* **vue-jsx-vapor:** support h and Fragment ([c4e0bbe](https://github.com/vuejs/vue-jsx-vapor/commit/c4e0bbe114d903f2c9a8e240ed324bfd3b2bbc5a))
+
+
+
 ## [2.5.2](https://github.com/vuejs/vue-jsx-vapor/compare/v2.5.1...v2.5.2) (2025-07-17)
 
 
