@@ -97,7 +97,7 @@ export function transformJsxMacros(
           )
         }
       }
-    } else {
+    } else if (macros.defineModel?.length) {
       s.appendRight(getParamsStart(root, s.original), propsName)
     }
 

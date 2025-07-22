@@ -53,7 +53,7 @@ export function transformDefineComponent(
       s.overwrite(
         root.params[0].start!,
         root.params[0].end!,
-        `${HELPER_PREFIX}props`,
+        root.params.length > 1 ? `${HELPER_PREFIX}props` : '',
       )
     } else if (root.params[0].type === 'ObjectPattern') {
       const restructuredProps = root.params[0]
