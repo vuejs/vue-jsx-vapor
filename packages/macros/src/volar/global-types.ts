@@ -13,10 +13,10 @@ export function getGlobalTypes(
           `declare const ${alias}: { <T>(...args: ${HELPER_PREFIX}StyleArgs): T; scss: <T>(...args: ${HELPER_PREFIX}StyleArgs)=> T; sass: <T>(...args: ${HELPER_PREFIX}StyleArgs)=> T; stylus: <T>(...args: ${HELPER_PREFIX}StyleArgs)=> T; less: <T>(...args: ${HELPER_PREFIX}StyleArgs)=> T; postcss: <T>(...args: ${HELPER_PREFIX}StyleArgs)=> T };`,
       )
       .join('\n')
-    defineStyle += `type ${HELPER_PREFIX}StyleArgs = [style: string, options?: { scoped?: boolean }];`
+    defineStyle += `\ntype ${HELPER_PREFIX}StyleArgs = [style: string, options?: { scoped?: boolean }];`
   }
   if (!rootMap.size) {
-    return defineStyle
+    return `\n${defineStyle}`
   }
 
   const defineSlots = options.defineSlots.alias
