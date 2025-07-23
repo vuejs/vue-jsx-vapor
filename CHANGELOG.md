@@ -1,3 +1,7 @@
+## [2.5.4-beta.1](https://github.com/vuejs/vue-jsx-vapor/compare/v2.5.3...v2.5.4-beta.1) (2025-07-23)
+
+
+
 ## [2.5.3](https://github.com/vuejs/vue-jsx-vapor/compare/v2.5.2...v2.5.3) (2025-07-22)
 
 
