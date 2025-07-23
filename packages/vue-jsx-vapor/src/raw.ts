@@ -1,9 +1,8 @@
 import macros from '@vue-jsx-vapor/macros/raw'
 import { transformJsxDirective } from '@vue-macros/jsx-directive/api'
-import { createFilter, normalizePath } from 'unplugin-utils'
+import { createFilter } from 'unplugin-utils'
 import { transformVueJsxVapor } from './core'
 import { injectHMRAndSSR } from './core/hmr'
-import runtimeCode from './core/runtime?raw'
 import { ssrRegisterHelperCode, ssrRegisterHelperId } from './core/ssr'
 import { transformVueJsx } from './core/vue-jsx'
 import type { Options } from './options'
@@ -46,15 +45,12 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
       },
       resolveId(id) {
         if (id === ssrRegisterHelperId) return id
-        if (normalizePath(id) === 'vue-jsx-vapor/runtime') return id
       },
       loadInclude(id) {
         if (id === ssrRegisterHelperId) return true
-        return normalizePath(id) === 'vue-jsx-vapor/runtime'
       },
       load(id) {
         if (id === ssrRegisterHelperId) return ssrRegisterHelperCode
-        if (normalizePath(id) === 'vue-jsx-vapor/runtime') return runtimeCode
       },
       transformInclude,
       transform(code, id, opt?: { ssr?: boolean }) {

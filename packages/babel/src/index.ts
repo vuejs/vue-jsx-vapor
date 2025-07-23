@@ -108,7 +108,7 @@ export default (): {
             statements.unshift(
               `import { ${helpers
                 .map((i) => `${i} as _${i}`)
-                .join(', ')} } from 'vue-jsx-vapor/runtime';\n`,
+                .join(', ')} } from 'vue-jsx-vapor';\n`,
             )
           }
 

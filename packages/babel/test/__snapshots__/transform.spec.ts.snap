@@ -2,7 +2,7 @@
 
 exports[`transform > transform multiple components 1`] = `
 "import { child as _child, delegateEvents as _delegateEvents, template as _template, createIf as _createIf } from 'vue';
-import { setNodes as _setNodes } from 'vue-jsx-vapor/runtime';
+import { setNodes as _setNodes } from 'vue-jsx-vapor';
 const t0 = _template("<div> </div>", true),
   t1 = _template("<div>Hello</div>"),
   t2 = _template("<div>World</div>");
