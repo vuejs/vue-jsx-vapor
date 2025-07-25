@@ -55,6 +55,8 @@ type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N
 
 type RawProps = Record<string, any>
 
+type ResolveProps<T> = T extends null | undefined ? T : () => T | T
+
 // The following is a series of overloads for providing props validation of
 // manually written render functions.
 
@@ -65,7 +67,7 @@ export function h<K extends keyof HTMLElementTagNameMap>(
 ): Block
 export function h<K extends keyof HTMLElementTagNameMap>(
   type: K,
-  props?: (RawProps & HTMLElementEventHandler) | null,
+  props?: ResolveProps<RawProps & HTMLElementEventHandler> | null,
   children?: RawChildren | RawSlots,
 ): Block
 
@@ -73,7 +75,7 @@ export function h<K extends keyof HTMLElementTagNameMap>(
 export function h(type: string, children?: RawChildren): Block
 export function h(
   type: string,
-  props?: RawProps | null,
+  props?: ResolveProps<RawProps> | null,
   children?: RawChildren | RawSlots,
 ): Block
 
@@ -92,7 +94,7 @@ export function h(
 export function h(type: typeof Fragment, children?: NodeArrayChildren): Block
 export function h(
   type: typeof Fragment,
-  props?: { key?: PropertyKey; ref?: VNodeRef } | null,
+  props?: ResolveProps<{ key?: PropertyKey; ref?: VNodeRef }> | null,
   children?: NodeArrayChildren,
 ): Block
 
@@ -107,7 +109,7 @@ export function h(
 export function h(type: typeof Suspense, children?: RawChildren): Block
 export function h(
   type: typeof Suspense,
-  props?: (RawProps & SuspenseProps) | null,
+  props?: ResolveProps<RawProps & SuspenseProps> | null,
   children?: RawChildren | RawSlots,
 ): Block
 
@@ -119,7 +121,7 @@ export function h<
   S extends Record<string, any> = any,
 >(
   type: FunctionalComponent<P, E, S>,
-  props?: (RawProps & P) | ({} extends P ? null : never),
+  props?: ResolveProps<(RawProps & P) | ({} extends P ? null : never)>,
   children?: RawChildren | IfAny<S, RawSlots, S>,
 ): Block
 
@@ -142,7 +144,7 @@ export function h<P>(
     | ComponentOptions<P>
     | Constructor<P>
     | DefineComponent<P>,
-  props?: (RawProps & P) | ({} extends P ? null : never),
+  props?: ResolveProps<(RawProps & P) | ({} extends P ? null : never)>,
   children?: RawChildren | RawSlots,
 ): Block
 
@@ -150,8 +152,9 @@ export function h(type: any, propsOrChildren?: any, children?: any) {
   const l = arguments.length
   if (l === 2) {
     if (
-      typeof propsOrChildren === 'object' &&
-      !Array.isArray(propsOrChildren)
+      (typeof propsOrChildren === 'object' &&
+        !Array.isArray(propsOrChildren)) ||
+      typeof propsOrChildren === 'function'
     ) {
       // single block without props
       if (isBlock(propsOrChildren)) {
@@ -161,10 +164,7 @@ export function h(type: any, propsOrChildren?: any, children?: any) {
       }
 
       // props without children
-      return createComponentWithFallback(
-        type,
-        propsOrChildren ? { $: [() => propsOrChildren] } : null,
-      )
+      return createComponentWithFallback(type, resolveProps(propsOrChildren))
     } else {
       // omit props
       return createComponentWithFallback(type, null, {
@@ -177,7 +177,7 @@ export function h(type: any, propsOrChildren?: any, children?: any) {
     }
     return createComponentWithFallback(
       type,
-      propsOrChildren ? { $: [() => propsOrChildren] } : null,
+      resolveProps(propsOrChildren),
       children
         ? typeof children === 'object' && !Array.isArray(children)
           ? children
@@ -187,4 +187,25 @@ export function h(type: any, propsOrChildren?: any, children?: any) {
         : undefined,
     )
   }
+}
+
+function resolveProps(
+  props?: Record<string, any> | (() => Record<string, any>),
+) {
+  if (props) {
+    if (typeof props === 'function') {
+      return { $: [props] }
+    }
+    const resolvedProps: Record<string, any> = {}
+    // eslint-disable-next-line no-restricted-syntax
+    for (const key in props) {
+      if (typeof props[key] === 'function' || key === '$') {
+        resolvedProps[key] = props[key]
+      } else {
+        resolvedProps[key] = () => props[key]
+      }
+    }
+    return resolvedProps
+  }
+  return null
 }
