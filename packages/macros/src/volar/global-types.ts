@@ -1,4 +1,3 @@
-import { HELPER_PREFIX } from '@vue-macros/common'
 import type { RootMap, TransformOptions } from '.'
 
 export function getGlobalTypes(
@@ -10,10 +9,10 @@ export function getGlobalTypes(
     defineStyle = options.defineStyle.alias
       .map(
         (alias) =>
-          `declare const ${alias}: { <T>(...args: ${HELPER_PREFIX}StyleArgs): T; scss: <T>(...args: ${HELPER_PREFIX}StyleArgs)=> T; sass: <T>(...args: ${HELPER_PREFIX}StyleArgs)=> T; stylus: <T>(...args: ${HELPER_PREFIX}StyleArgs)=> T; less: <T>(...args: ${HELPER_PREFIX}StyleArgs)=> T; postcss: <T>(...args: ${HELPER_PREFIX}StyleArgs)=> T };`,
+          `declare const ${alias}: { <T>(...args: __StyleArgs): T; scss: <T>(...args: __StyleArgs)=> T; sass: <T>(...args: __StyleArgs)=> T; stylus: <T>(...args: __StyleArgs)=> T; less: <T>(...args: __StyleArgs)=> T; postcss: <T>(...args: __StyleArgs)=> T };`,
       )
       .join('\n')
-    defineStyle += `\ntype ${HELPER_PREFIX}StyleArgs = [style: string, options?: { scoped?: boolean }];`
+    defineStyle += `\ntype __StyleArgs = [style: string, options?: { scoped?: boolean }];`
   }
   if (!rootMap.size) {
     return `\n${defineStyle}`
@@ -47,7 +46,5 @@ ${VueMacros ? `declare const { ${VueMacros} }: typeof import('vue');` : ''}
 ${defineSlots}
 ${defineExpose}
 ${defineStyle}
-// @ts-ignore
-type __VLS_IsAny<T> = 0 extends 1 & T ? true : false; type __VLS_PickNotAny<A, B> = __VLS_IsAny<A> extends true ? B : A;
 `
 }

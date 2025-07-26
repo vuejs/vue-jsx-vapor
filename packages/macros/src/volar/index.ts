@@ -1,7 +1,7 @@
-import { HELPER_PREFIX, type Overwrite } from '@vue-macros/common'
 import { getText, type TsmVirtualCode } from 'ts-macro'
 import type { OptionsResolved } from '../options'
 import { transformDefineComponent } from './define-component'
+import type { Overwrite } from '@vue-macros/common'
 
 export { transformJsxMacros } from './transform'
 export { getGlobalTypes } from './global-types'
@@ -178,7 +178,7 @@ export function getRootMap(options: TransformOptions): RootMap {
             )
           }
 
-          const id = toValidAssetId(modelName, `${HELPER_PREFIX}model`)
+          const id = toValidAssetId(modelName, `__model`)
           const typeString = `import('vue').UnwrapRef<typeof ${id}>`
           const defineModel = (rootMap.get(root)!.defineModel ??= [])
           defineModel.push(
@@ -200,17 +200,16 @@ export function getRootMap(options: TransformOptions): RootMap {
           codes.replaceRange(
             expression.getStart(ast),
             expression.getStart(ast),
-            `// @ts-ignore\n${HELPER_PREFIX}slots;\nconst ${HELPER_PREFIX}slots = `,
+            `// @ts-ignore\n__slots;\nconst __slots = `,
           )
-          rootMap.get(root)!.defineSlots =
-            `Partial<typeof ${HELPER_PREFIX}slots>`
+          rootMap.get(root)!.defineSlots = `Partial<typeof __slots>`
         } else if (options.defineExpose.alias.includes(macroName)) {
           codes.replaceRange(
             expression.getStart(ast),
             expression.getStart(ast),
-            `// @ts-ignore\n${HELPER_PREFIX}exposed;\nconst ${HELPER_PREFIX}exposed = `,
+            `// @ts-ignore\n__exposed;\nconst __exposed = `,
           )
-          rootMap.get(root)!.defineExpose = `typeof ${HELPER_PREFIX}exposed`
+          rootMap.get(root)!.defineExpose = `typeof __exposed`
         }
       }
     }

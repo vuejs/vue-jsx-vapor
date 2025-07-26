@@ -1,4 +1,3 @@
-import { HELPER_PREFIX } from '@vue-macros/common'
 import { transformDefineStyle } from './define-style'
 import type { RootMap, TransformOptions } from '.'
 
@@ -22,7 +21,7 @@ export function transformJsxMacros(
     )
     if (asyncModifier && macros.defineComponent)
       codes.replaceRange(asyncModifier.pos, asyncModifier.end)
-    const result = `({}) as __VLS_PickNotAny<typeof ${HELPER_PREFIX}ctx.render, {}> & { __ctx: typeof ${HELPER_PREFIX}ctx }`
+    const result = `__ctx.render`
 
     const propsType = root.parameters[0]?.type
       ? root.parameters[0].type.getText(ast)
@@ -31,12 +30,10 @@ export function transformJsxMacros(
       root.parameters.pos,
       root.parameters.pos,
       ts.isArrowFunction(root) && root.parameters.pos === root.pos ? '(' : '',
-      `${HELPER_PREFIX}props: typeof ${HELPER_PREFIX}ctx.props & ${propsType}, `,
-      `${HELPER_PREFIX}placeholder?: {}, `,
-      `${HELPER_PREFIX}ctx = {} as Awaited<ReturnType<typeof ${
-        HELPER_PREFIX
-      }setup>>, `,
-      `${HELPER_PREFIX}setup = (${asyncModifier ? 'async' : ''}(`,
+      `__props: typeof __ctx.props & ${propsType}, `,
+      `__context?: typeof __ctx.context, `,
+      `__ctx = {} as Awaited<ReturnType<typeof __fn>>, `,
+      `__fn = (${asyncModifier ? 'async' : ''}(`,
     )
     if (ts.isArrowFunction(root)) {
       codes.replaceRange(
@@ -84,7 +81,7 @@ export function transformJsxMacros(
         codes.replaceRange(
           node.getStart(ast),
           node.expression.getStart(ast),
-          `const ${HELPER_PREFIX}render = `,
+          `const __render = `,
           shouldWrapByCall ? '(' : '',
         )
         codes.replaceRange(
@@ -92,11 +89,14 @@ export function transformJsxMacros(
           node.expression.end,
           shouldWrapByCall ? ')()' : '',
           `
-return {
-  props: {} as {${props.join(', ')}},
-  slots: {} as ${macros.defineSlots ?? '{}'},
-  expose: (exposed: import('vue').ShallowUnwrapRef<${macros.defineExpose ?? '{}'}>) => {},
-  render: ${HELPER_PREFIX}render,
+return {} as {
+  props: {${props.join(', ')}},
+  context: {
+    slots?: ${macros.defineSlots ?? '{}'},
+    expose?: (exposed: import('vue').ShallowUnwrapRef<${macros.defineExpose ?? '{}'}>) => void,
+    attrs?: Record<string, any>
+  },
+  render: typeof __render
 }`,
         )
       }
