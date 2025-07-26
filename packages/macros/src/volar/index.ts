@@ -190,12 +190,11 @@ export function getRootMap(options: TransformOptions): RootMap {
               `${modelName}Modifiers?: Partial<Record<${getText(expression.typeArguments[1], ast, ts)}, boolean>>`,
             )
           }
-          if (ts.isVariableStatement(node))
-            codes.replaceRange(
-              initializer.getStart(ast),
-              initializer.getStart(ast),
-              `// @ts-ignore\n${id};\nlet ${id} = `,
-            )
+          codes.replaceRange(
+            initializer.getStart(ast),
+            initializer.getStart(ast),
+            `// @ts-ignore\n${id};\nlet ${id} = `,
+          )
         } else if (options.defineSlots.alias.includes(macroName)) {
           codes.replaceRange(
             expression.getStart(ast),
