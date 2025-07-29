@@ -43,7 +43,7 @@
     "@prettier/sync": "^0.6.1"
   },
   "devDependencies": {
-    "@typescript-eslint/utils": "^8.35.1",
+    "@typescript-eslint/utils": "^8.38.0",
     "eslint-vitest-rule-tester": "^2.2.0"
   }
 }
