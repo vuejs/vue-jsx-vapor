@@ -104,13 +104,11 @@
     },
     "./jsx-runtime": {
       "types": "./jsx-runtime/index.d.ts",
-      "jsx-vapor-dev": "./src/jsx-runtime.ts",
       "require": "./jsx-runtime/index.cjs",
       "default": "./jsx-runtime/index.js"
     },
     "./jsx-dev-runtime": {
       "types": "./jsx-runtime/index.d.ts",
-      "jsx-vapor-dev": "./src/jsx-runtime.ts",
       "require": "./jsx-runtime/index.cjs",
       "default": "./jsx-runtime/index.js"
     },
@@ -147,7 +145,7 @@
     "esbuild": "*",
     "rollup": "^3",
     "vite": ">=3",
-    "vue": "^3.6.0",
+    "vue": "^3.6.0-alpha.2",
     "webpack": "^4 || ^5"
   },
   "peerDependenciesMeta": {
@@ -176,6 +174,7 @@
     "@vue-jsx-vapor/babel": "workspace:*",
     "@vue-jsx-vapor/compiler": "workspace:*",
     "@vue-jsx-vapor/macros": "workspace:*",
+    "@vue-jsx-vapor/runtime": "workspace:*",
     "@vue-macros/jsx-directive": "catalog:",
     "@vue-macros/volar": "catalog:",
     "@vue/babel-plugin-jsx": "^1.4.0",
@@ -186,11 +185,7 @@
     "unplugin-utils": "catalog:"
   },
   "devDependencies": {
-    "@nuxt/kit": "catalog:",
-    "@nuxt/schema": "catalog:",
     "@types/babel__core": "catalog:",
-    "@types/hash-sum": "catalog:",
-    "csstype": "^3.1.3",
-    "vue": "catalog:"
+    "@types/hash-sum": "catalog:"
   }
 }

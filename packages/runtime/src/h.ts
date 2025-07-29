@@ -1,41 +1,22 @@
 /* eslint-disable prefer-rest-params */
-import {
-  createTextNode,
-  type Block,
-  type Component,
-  type ComponentOptions,
-  type ConcreteComponent,
-  type DefineComponent,
-  type EmitsOptions,
-  type Fragment,
-  type FunctionalComponent,
-  type RawSlots,
-  type Suspense,
-  type SuspenseProps,
-  type Teleport,
-  type TeleportProps,
-  type VNodeRef,
+import { isBlock, type NodeArrayChildren, type NodeChild } from './block'
+import { createComponentWithFallback } from './component'
+import type {
+  Block,
+  Component,
+  ComponentOptions,
+  ConcreteComponent,
+  DefineComponent,
+  EmitsOptions,
+  Fragment,
+  FunctionalComponent,
+  RawSlots,
+  Suspense,
+  SuspenseProps,
+  Teleport,
+  TeleportProps,
+  VNodeRef,
 } from 'vue'
-import { createComponentWithFallback, isBlock } from './runtime'
-
-type NodeChildAtom = Block | string | number | boolean | null | undefined | void
-
-type NodeArrayChildren = Array<NodeArrayChildren | NodeChildAtom>
-
-type RawChildren = NodeChildAtom | NodeArrayChildren
-
-function normalizeNode(node: RawChildren): Block {
-  if (node == null || typeof node === 'boolean') {
-    return []
-  } else if (Array.isArray(node) && node.length) {
-    return node.map(normalizeNode)
-  } else if (isBlock(node)) {
-    return node
-  } else {
-    // strings and numbers
-    return createTextNode(String(node))
-  }
-}
 
 // fake constructor type returned from `defineComponent`
 interface Constructor<P = any> {
@@ -63,20 +44,20 @@ type ResolveProps<T> = T extends null | undefined ? T : () => T | T
 // element
 export function h<K extends keyof HTMLElementTagNameMap>(
   type: K,
-  children?: RawChildren,
+  children?: NodeChild,
 ): Block
 export function h<K extends keyof HTMLElementTagNameMap>(
   type: K,
   props?: ResolveProps<RawProps & HTMLElementEventHandler> | null,
-  children?: RawChildren | RawSlots,
+  children?: NodeChild | RawSlots,
 ): Block
 
 // custom element
-export function h(type: string, children?: RawChildren): Block
+export function h(type: string, children?: NodeChild): Block
 export function h(
   type: string,
   props?: ResolveProps<RawProps> | null,
-  children?: RawChildren | RawSlots,
+  children?: NodeChild | RawSlots,
 ): Block
 
 // text/comment
@@ -102,19 +83,19 @@ export function h(
 export function h(
   type: typeof Teleport,
   props: RawProps & TeleportProps,
-  children: RawChildren | RawSlots,
+  children: NodeChild | RawSlots,
 ): Block
 
 // suspense
-export function h(type: typeof Suspense, children?: RawChildren): Block
+export function h(type: typeof Suspense, children?: NodeChild): Block
 export function h(
   type: typeof Suspense,
   props?: ResolveProps<RawProps & SuspenseProps> | null,
-  children?: RawChildren | RawSlots,
+  children?: NodeChild | RawSlots,
 ): Block
 
 // functional component
-export function h(type: FunctionalComponent, children?: RawChildren): Block
+export function h(type: FunctionalComponent, children?: NodeChild): Block
 export function h<
   P,
   E extends EmitsOptions = {},
@@ -122,7 +103,7 @@ export function h<
 >(
   type: FunctionalComponent<P, E, S>,
   props?: ResolveProps<(RawProps & P) | ({} extends P ? null : never)>,
-  children?: RawChildren | IfAny<S, RawSlots, S>,
+  children?: NodeChild | IfAny<S, RawSlots, S>,
 ): Block
 
 // catch all types
@@ -134,7 +115,7 @@ export function h(
     | ComponentOptions
     | Constructor
     | DefineComponent,
-  children?: RawChildren,
+  children?: NodeChild,
 ): Block
 export function h<P>(
   type:
@@ -145,7 +126,7 @@ export function h<P>(
     | Constructor<P>
     | DefineComponent<P>,
   props?: ResolveProps<(RawProps & P) | ({} extends P ? null : never)>,
-  children?: RawChildren | RawSlots,
+  children?: NodeChild | RawSlots,
 ): Block
 
 export function h(type: any, propsOrChildren?: any, children?: any) {
@@ -159,7 +140,7 @@ export function h(type: any, propsOrChildren?: any, children?: any) {
       // single block without props
       if (isBlock(propsOrChildren)) {
         return createComponentWithFallback(type, null, {
-          default: () => normalizeNode(propsOrChildren),
+          default: () => propsOrChildren,
         })
       }
 
@@ -168,7 +149,7 @@ export function h(type: any, propsOrChildren?: any, children?: any) {
     } else {
       // omit props
       return createComponentWithFallback(type, null, {
-        default: () => normalizeNode(propsOrChildren),
+        default: () => propsOrChildren,
       })
     }
   } else {
@@ -182,7 +163,7 @@ export function h(type: any, propsOrChildren?: any, children?: any) {
         ? typeof children === 'object' && !Array.isArray(children)
           ? children
           : {
-              default: () => normalizeNode(children),
+              default: () => children,
             }
         : undefined,
     )

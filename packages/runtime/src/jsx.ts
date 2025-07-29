@@ -46,6 +46,8 @@ export interface CSSProperties
 type Booleanish = boolean | 'true' | 'false'
 type Numberish = number | string
 
+interface HTMLWebViewElement extends HTMLElement {}
+
 // All the WAI-ARIA 1.1 attributes from https://www.w3.org/TR/wai-aria-1.1/
 export interface AriaAttributes {
   /** Identifies the currently active element when DOM focus is on a composite widget, textbox, group, or application. */
@@ -1656,4 +1658,3 @@ export interface TransitionEvent<T = Element>
 export type TransitionEventHandler<T = Element> = EventHandler<
   TransitionEvent<T>
 >
-

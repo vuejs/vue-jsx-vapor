@@ -5,7 +5,7 @@ packages:
 
 defines:
   - &babel ^7.28.0
-  - &vue-macros ^3.0.0-beta.17
+  - &vue-macros ^3.0.0-beta.19
   - &ts-macro ^0.2.7
   - &vue 3.6.0-alpha.2
 

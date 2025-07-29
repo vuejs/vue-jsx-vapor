@@ -1,106 +1,13 @@
 import {
-  createComponent as _createComponent,
-  createComponentWithFallback as _createComponentWithFallback,
   EffectScope,
-  Fragment,
   insert,
   isFragment,
   isVaporComponent,
-  proxyRefs,
   remove,
   renderEffect,
-  toRefs,
-  useAttrs,
   VaporFragment,
   type Block,
-  type GenericComponentInstance,
-  type VaporComponent,
 } from 'vue'
-
-import * as Vue from 'vue'
-
-export function isBlock(val: NonNullable<unknown>): val is Block {
-  return (
-    val instanceof Node ||
-    Array.isArray(val) ||
-    isVaporComponent(val) ||
-    isFragment(val)
-  )
-}
-
-export function getCurrentInstance(): GenericComponentInstance | null {
-  // @ts-ignore
-  return Vue.currentInstance || Vue.getCurrentInstance()
-}
-
-const createProxyComponent = (
-  createComponent:
-    | typeof _createComponent
-    | typeof _createComponentWithFallback,
-  type: VaporComponent | typeof Fragment,
-  props: any,
-  ...args: any[]
-) => {
-  if (type === Fragment) {
-    type = (_, { slots }) => slots.default()
-    props = null
-  }
-  // @ts-ignore
-  if (Vue.currentInstance && Vue.currentInstance.appContext.vapor) {
-    typeof type === 'function' && ((type as VaporComponent).__vapor = true)
-  }
-  return createComponent(type as VaporComponent, props, ...args)
-}
-
-type Tail<T extends any[]> = T extends [any, ...infer R] ? R : never
-
-export const createComponent = (
-  type: VaporComponent | typeof Fragment,
-  ...args: Tail<Parameters<typeof _createComponent>>
-) => {
-  return createProxyComponent(_createComponent, type, ...args)
-}
-
-export const createComponentWithFallback = (
-  type: VaporComponent | typeof Fragment,
-  ...args: Tail<Parameters<typeof _createComponentWithFallback>>
-) => createProxyComponent(_createComponentWithFallback, type, ...args)
-
-/**
- * Returns the props of the current component instance.
- *
- * @example
- * ```tsx
- * import { useProps } from 'vue-jsx-vapor'
- *
- * defineComponent(({ foo = '' })=>{
- *   const props = useProps() // { foo: '' }
- * })
- * ```
- */
-export function useProps() {
-  const i = getCurrentInstance()
-  return i!.props
-}
-
-/**
- * Returns the merged props and attrs of the current component.\
- * Equivalent to `useProps()` + `useAttrs()`.
- *
- * @example
- * ```tsx
- * import { useFullProps } from 'vue-jsx-vapor'
- *
- * defineComponent((props) => {
- *   const fullProps = useFullProps() // = useAttrs() + useProps()
- * })
- */
-export function useFullProps() {
-  return proxyRefs({
-    ...toRefs(useProps()),
-    ...toRefs(useAttrs()),
-  })
-}
 
 function createFragment(
   nodes: Block,
