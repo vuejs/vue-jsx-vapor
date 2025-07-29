@@ -1,3 +1,20 @@
+# [2.6.0](https://github.com/vuejs/vue-jsx-vapor/compare/v2.5.4-beta.1...v2.6.0) (2025-07-29)
+
+
+### Bug Fixes
+
+* **macros:** allow VariableStatement for defineModel ([9769f27](https://github.com/vuejs/vue-jsx-vapor/commit/9769f271d4de2734f0e0e14a8532e24bbefe1e21))
+* **macros:** prevent return defineComponent for generic component ([dc64b7f](https://github.com/vuejs/vue-jsx-vapor/commit/dc64b7f172dfdef8e4dd5ed86d6f10bd776e58e9))
+* **macros:** return DefineComponent type for defineComponent ([5803b5e](https://github.com/vuejs/vue-jsx-vapor/commit/5803b5ee29500b28350bb44883cf83d21122a5c8))
+
+
+### Features
+
+* introduce @vue-jsx-vapor/runtime ([27add9e](https://github.com/vuejs/vue-jsx-vapor/commit/27add9e4938c854a337598adae37ecfa0caa1ccb))
+* **vue-jsx-vapor:** support functional props for h ([4fb5d61](https://github.com/vuejs/vue-jsx-vapor/commit/4fb5d616d4fd6f143c6482b22e1267211d3892f1))
+
+
+
 ## [2.5.4-beta.1](https://github.com/vuejs/vue-jsx-vapor/compare/v2.5.3...v2.5.4-beta.1) (2025-07-23)
 
 
