@@ -185,6 +185,8 @@
     "unplugin-utils": "catalog:"
   },
   "devDependencies": {
+    "@nuxt/kit": "catalog:",
+    "@nuxt/schema": "catalog:",
     "@types/babel__core": "catalog:",
     "@types/hash-sum": "catalog:"
   }
