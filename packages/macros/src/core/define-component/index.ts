@@ -15,7 +15,7 @@ import {
 import type { Macros } from '..'
 import { transformAwait } from './await'
 import { transformReturn } from './return'
-import type { Node, ObjectExpression } from '@babel/types'
+import type { Node } from '@babel/types'
 
 export function transformDefineComponent(
   root: FunctionalNode,
@@ -118,31 +118,13 @@ export function transformDefineComponent(
     .map(([key, value]) => `'${key}': ${value}`)
     .join(', \n')
   if (propsString) {
-    const argument = macros.defineComponent.arguments[1]
-    if (!argument) {
-      s.appendRight(
-        root.end!,
-        `, {${hasRestProp ? 'inheritAttrs: false,' : ''} props: {\n${propsString}\n} }`,
-      )
-    } else if (argument.type === 'ObjectExpression') {
-      const resolvedPropsString = `{\n${propsString}\n}`
-      const prop = prependObjectExpression(
-        argument,
-        'props',
-        resolvedPropsString,
-        s,
-      )
-      if (
-        prop &&
-        prop.type === 'ObjectProperty' &&
-        prop.value.type === 'ObjectExpression'
-      ) {
-        s.appendLeft(prop.value.start!, `{...${resolvedPropsString}, ...`)
-        s.appendRight(prop.value.end!, '}')
-      }
-      if (hasRestProp) {
-        prependObjectExpression(argument, 'inheritAttrs', 'false', s)
-      }
+    const resolvedPropsString = `${hasRestProp ? 'inheritAttrs: false, ' : ''}props: {\n${propsString}\n}`
+    const compOptions = macros.defineComponent.arguments[1]
+    if (!compOptions) {
+      s.appendRight(root.end!, `, { ${resolvedPropsString} }`)
+    } else if (compOptions.type === 'ObjectExpression') {
+      s.appendLeft(compOptions.start!, `{ ${resolvedPropsString}, ...`)
+      s.appendRight(compOptions.end!, ' }')
     }
   }
 
@@ -150,24 +132,6 @@ export function transformDefineComponent(
   if (autoReturnFunction) {
     transformReturn(root, s)
   }
-}
-
-function prependObjectExpression(
-  argument: ObjectExpression,
-  name: string,
-  value: string,
-  s: MagicStringAST,
-) {
-  const prop = argument.properties?.find(
-    (prop) =>
-      prop.type === 'ObjectProperty' &&
-      prop.key.type === 'Identifier' &&
-      prop.key.name === name,
-  )
-  if (!prop) {
-    s.appendRight(argument.start! + 1, `${name}: ${value},`)
-  }
-  return prop
 }
 
 function getWalkedIds(root: FunctionalNode, propsName: string) {

@@ -1,9 +1,9 @@
 
-import { defineComponent, unref } from 'vue'
+import { defineVaporComponent, unref } from 'vue'
 
 const $ = unref
 
-export const Comp = defineComponent(({ bar }: { bar: string }) => {
+export const Comp = defineVaporComponent(({ bar }: { bar: string }) => {
   const foo = defineModel<string, 'm1' | 'm2'>('foo', { default: bar })
   return <div>{foo.value}</div>
 })

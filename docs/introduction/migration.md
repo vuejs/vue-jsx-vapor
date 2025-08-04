@@ -57,13 +57,13 @@ export default () => {
   - Usage
 
     ```tsx
-    import { defineComponent, ref } from 'vue'
+    import { defineVaporComponent, ref } from 'vue'
 
-    const Comp = defineComponent(({ foo }) => {
+    const Comp = defineVaporComponent(({ foo }) => {
       return <>{foo}</>
     })
     // Will be convert to:
-    const Comp = defineComponent((_props) => {
+    const Comp = defineVaporComponent((_props) => {
       return <>{_props.foo}</>
     }, { props: ['foo'] })
 
@@ -119,9 +119,9 @@ const double = computed(() => foo * 2)
 console.log({ double: double.value }, [double.value])
 ```
 
-### defineComponent
+### defineVaporComponent
 
-Use `defineComponent` macro to support destructuring props.
+Use `defineVaporComponent` macro to support destructuring props.
 
 ```tsx
 // before
@@ -130,7 +130,7 @@ const Comp = ({ count = 1 }) => {
 }
 
 // after
-const Comp = defineComponent(({ count = 1 }) => {
+const Comp = defineVaporComponent(({ count = 1 }) => {
   return <div>{count}</div>
 })
 ```

@@ -5,7 +5,7 @@
 ## 基本用法
 
 ```tsx twoslash
-import { defineComponent } from 'vue'
+import { defineVaporComponent } from 'vue'
 import { useRef } from 'vue-jsx-vapor'
 // 或者
 // import { shallowRef as useRef } from 'vue'
@@ -18,7 +18,7 @@ export const Comp = () => {
   return <div />
 }
 
-export default defineComponent(() => {
+export default defineVaporComponent(() => {
   const comp = useRef()
   comp.value?.foo
   //           ^?

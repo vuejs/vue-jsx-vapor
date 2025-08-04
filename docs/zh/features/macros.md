@@ -41,7 +41,46 @@ export default {
 
 :::
 
+
+::: details 作为单独的插件安装
+
+我们也发布了一个单独的插件，可以给 虚拟DOM 的项目使用。
+
+```bash
+pnpm add @vue-jsx-vapor/macros -D
+```
+
+配置:
+
+```ts
+// vite.config.ts
+import jsxMacros from '@vue-jsx-vapor/macros/vite'
+
+export default {
+  plugins: [
+    jsxMacros()
+  ]
+}
+```
+
+:::
+
 ## defineComponent
+
+### 选项
+
+```ts
+VueJsxVapor({
+  defineComponent: {
+    /**
+     * @default ['defineComponent','defineVaporComponent']
+     *
+     * 可以通过把 alias 设为空数组来禁用 defineComponent 宏.
+     */
+    alias: []
+  }
+})
+```
 
 - 支持 `await` 关键字。
 - 自动收集使用到的 props 到 `defineComponent` 的 `props` 选项中。
@@ -57,7 +96,7 @@ const Comp = defineComponent(
   }) => {
     await nextTick()
     const attrs = useAttrs()
-    return (
+    return () => (
       <div>
         <span {...attrs}>{props.foo}</span>
       </div>
@@ -101,9 +140,9 @@ defineComponent(
 
 ```tsx twoslash
 // @errors: 2322
-import { defineComponent } from 'vue'
+import { defineVaporComponent } from 'vue'
 
-const Comp = defineComponent(
+const Comp = defineVaporComponent(
   <T,>({ foo = undefined as T, bar = ''!, ...attrs }) => {
     return (
       <div>
@@ -119,9 +158,9 @@ export default () => <Comp<string> foo={1} bar="bar" />
 ::: details 编译后代码
 
 ```tsx
-import { defineComponent } from 'vue'
+import { defineVaporComponent } from 'vue'
 import { createPropsDefaultProxy } from '/vue-macros/jsx-macros/with-defaults'
-defineComponent(
+defineVaporComponent(
   (_props) => {
     const props = createPropsDefaultProxy(_props, { bar: '' })
     const attrs = useAttrs()

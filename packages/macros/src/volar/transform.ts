@@ -21,7 +21,10 @@ export function transformJsxMacros(
     )
     if (asyncModifier && macros.defineComponent)
       codes.replaceRange(asyncModifier.pos, asyncModifier.end)
-    const result = `__ctx.render`
+    const result =
+      macros.defineComponent && root.typeParameters?.length
+        ? '({}) as JSX.Element'
+        : '__ctx.render'
 
     const propsType = root.parameters[0]?.type
       ? root.parameters[0].type.getText(ast)
@@ -74,20 +77,21 @@ export function transformJsxMacros(
           }
         }
 
-        const shouldWrapByCall =
-          (ts.isArrowFunction(node.expression) ||
-            ts.isFunctionExpression(node.expression)) &&
-          macros.defineComponent
         codes.replaceRange(
           node.getStart(ast),
           node.expression.getStart(ast),
-          `const __render = `,
-          shouldWrapByCall ? '(' : '',
+          `const __render`,
+          macros.defineComponent
+            ? macros.defineComponent?.expression.getText(ast) ===
+              'defineVaporComponent'
+              ? ': import("vue-jsx-vapor").NodeChild'
+              : ': () => import("vue").VNodeChild'
+            : '',
+          ` = `,
         )
         codes.replaceRange(
           node.expression.end,
           node.expression.end,
-          shouldWrapByCall ? ')()' : '',
           `
 return {} as {
   props: {${props.join(', ')}},

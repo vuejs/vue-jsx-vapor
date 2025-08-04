@@ -22,7 +22,7 @@ export type JsxMacros = {
   defineSlots?: string
   defineExpose?: string
   defineStyle?: DefineStyle[]
-  defineComponent?: true
+  defineComponent?: import('typescript').CallExpression
 }
 
 export type RootKey =
@@ -120,7 +120,7 @@ export function getRootMap(options: TransformOptions): RootMap {
     ) {
       if (!rootMap.has(root)) rootMap.set(root, {})
       if (!rootMap.get(root)!.defineComponent) {
-        rootMap.get(root)!.defineComponent = true
+        rootMap.get(root)!.defineComponent = parents[2]
         transformDefineComponent(parents[2], parents[3], options)
       }
     }

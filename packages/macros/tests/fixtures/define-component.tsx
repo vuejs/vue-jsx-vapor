@@ -1,8 +1,8 @@
-import { defineComponent, nextTick, unref } from 'vue'
+import { defineComponent, defineVaporComponent, nextTick, unref } from 'vue'
 
 const $ = unref
 
-const Comp = defineComponent(
+const Comp = defineVaporComponent(
   ({ bar = 'bar'! as string, Comp, ...attrs }: { bar: string; baz: 'baz', Comp: any }) => {
     defineModel()
     const foo = $(
@@ -21,7 +21,7 @@ const Comp = defineComponent(
   { name: 'Comp', props: { Comp: Object } },
 )
 
-const Comp1 = defineComponent((props: { bar: 'bar'; 'onUpdate:bar': any, comp: any }) => {
+const Comp1 = defineVaporComponent((props: { bar: 'bar'; 'onUpdate:bar': any, comp: any }) => {
   const foo = defineModel('foo')
   return <div>
       {[foo.value, props['bar'], props['onUpdate:bar']]}
@@ -38,7 +38,7 @@ const Comp2 = defineComponent(async () => {
 })
 
 const foo = () => {}
-defineComponent(({
+defineVaporComponent(({
   a = 0,
   b = 'b',
   c = true,

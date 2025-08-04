@@ -57,13 +57,13 @@ export default () => {
   - 用法
 
     ```tsx
-    import { defineComponent, ref } from 'vue'
+    import { defineVaporComponent, ref } from 'vue'
 
-    const Comp = defineComponent(({ foo }) => {
+    const Comp = defineVaporComponent(({ foo }) => {
       return <>{foo}</>
     })
     // 将被转换为：
-    const Comp = defineComponent((_props) => {
+    const Comp = defineVaporComponent((_props) => {
       return <>{_props.foo}</>
     }, { props: ['foo'] })
 
@@ -130,7 +130,7 @@ const Comp = ({ count = 1 }) => {
 }
 
 // 转换后
-const Comp = defineComponent(({ count = 1 }) => {
+const Comp = defineVaporComponent(({ count = 1 }) => {
   return <div>{count}</div>
 })
 ```

@@ -9,6 +9,7 @@ export function transformDefineComponent(
   const { codes, ast, ts } = options
 
   const [comp, compOptions] = node.arguments
+  const isVapor = node.expression.getText(ast) === 'defineVaporComponent'
 
   codes.replaceRange(comp.end, node.end - 1)
 
@@ -23,23 +24,36 @@ const __setup = `,
   const result =
     (ts.isArrowFunction(comp) || ts.isFunctionExpression(comp)) &&
     comp.typeParameters?.length
-      ? ['__setup']
+      ? ['\nreturn __setup']
       : ([
-          [node.expression.getText(ast), node.expression.getStart(ast)],
-          `({
-    __typeProps: {} as Parameters<typeof __setup>[0],
-    ...{} as Parameters<typeof __setup>[1] extends { slots?: infer S, expose?: infer E } | undefined ? {
-      setup: E extends (exposed: infer Exposed) => any ? () => Exposed : never,
-      slots: S extends Record<string, any> ? import('vue').SlotsType<S> : never
-    } : {},`,
-          ...(compOptions
-            ? [
-                '\n    ...',
-                [compOptions.getText(ast), compOptions.getStart(ast)],
-              ]
-            : []),
           `
-  })`,
+  type __Props = Parameters<typeof __setup>[0]
+  type __Slots = Parameters<typeof __setup>[1] extends { slots?: infer Slots } | undefined ? Slots : {}
+  type __Exposed = Parameters<typeof __setup>[1] extends { expose?: (exposed: infer Exposed) => any } | undefined ? Exposed : {}`,
+          '\n  const __component = ',
+          [node.expression.getText(ast), node.expression.getStart(ast)],
+          `({`,
+          isVapor
+            ? ''
+            : `...{} as {
+    setup: () => __Exposed,
+    slots: import('vue').SlotsType<__Slots>
+  },`,
+          ...(compOptions
+            ? ['...', [compOptions.getText(ast), compOptions.getStart(ast)]]
+            : []),
+          `})
+  type __Instance = {${isVapor ? '\n/** @deprecated This is only a type when used in Vapor Instances. */' : ''}
+    $props: __Props
+  } & (typeof __component extends new (...args: any) => any ? InstanceType<typeof __component> : typeof __component)
+  return {} as {
+    new (props: __Props): __Instance,
+    setup: (props: __Props, ctx?: {
+      attrs?: Record<string, any>
+      slots?: __Slots,
+      expose?: (exposed: keyof __Exposed extends never ? __Instance : __Exposed) => any
+    }) => {},
+  }`,
         ] as Code[])
-  codes.replaceRange(node.end, node.end, '\n  return ', ...result, `\n})()`)
+  codes.replaceRange(node.end, node.end, ...result, `\n})()`)
 }

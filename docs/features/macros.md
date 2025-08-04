@@ -41,7 +41,45 @@ export default {
 
 :::
 
+::: details Install as a standalone plugin
+
+We have also released a standalone plugin that can be used in virtual DOM projects.
+
+```bash
+pnpm add @vue-jsx-vapor/macros -D
+```
+
+配置:
+
+```ts
+// vite.config.ts
+import jsxMacros from '@vue-jsx-vapor/macros/vite'
+
+export default {
+  plugins: [
+    jsxMacros()
+  ]
+}
+```
+
+:::
+
 ## defineComponent
+
+### Options
+
+```ts
+VueJsxVapor({
+  defineComponent: {
+    /**
+     * @default ['defineComponent','defineVaporComponent']
+     *
+     * You can set alias to an empty array to disable defineComponent macro.
+     */
+    alias: []
+  }
+})
+```
 
 - Support `await` keyword.
 - Automatically collects used props to the defineComponent's props option.
@@ -57,7 +95,7 @@ const Comp = defineComponent(
   }) => {
     await nextTick()
     const attrs = useAttrs()
-    return (
+    return () => (
       <div>
         <span {...attrs}>{props.foo}</span>
       </div>
@@ -101,9 +139,9 @@ defineComponent(
 
 ```tsx twoslash
 // @errors: 2322
-import { defineComponent } from 'vue'
+import { defineVaporComponent } from 'vue'
 
-const Comp = defineComponent(
+const Comp = defineVaporComponent(
   <T,>({ foo = undefined as T, bar = ''!, ...attrs }) => {
     return (
       <div>
@@ -119,9 +157,9 @@ export default () => <Comp<string> foo={1} bar="bar" />
 ::: details Compiled Code
 
 ```tsx
-import { defineComponent } from 'vue'
+import { defineVaporComponent } from 'vue'
 import { createPropsDefaultProxy } from '/vue-macros/jsx-macros/with-defaults'
-defineComponent(
+defineVaporComponent(
   (_props) => {
     const props = createPropsDefaultProxy(_props, { bar: '' })
     const attrs = useAttrs()

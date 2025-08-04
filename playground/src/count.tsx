@@ -1,6 +1,6 @@
-import { computed, defineComponent } from 'vue'
+import { computed, defineVaporComponent } from 'vue'
 
-export default defineComponent(({ value = '' }) => {
+export default defineVaporComponent(({ value = '' }) => {
   defineExpose({
     double: computed(() => +value * 2),
   })

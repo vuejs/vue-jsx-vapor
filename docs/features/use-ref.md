@@ -5,7 +5,7 @@ Automatically infer type for `useRef`. It's an alias of `shallowRef`.
 ## Basic Usage
 
 ```tsx twoslash
-import { defineComponent } from 'vue'
+import { defineVaporComponent } from 'vue'
 import { useRef } from 'vue-jsx-vapor'
 // or
 // import { shallowRef as useRef } from 'vue'
@@ -18,7 +18,7 @@ export const Comp = () => {
   return <div />
 }
 
-export default defineComponent(() => {
+export default defineVaporComponent(() => {
   const comp = useRef()
   comp.value?.foo
   //           ^?
