@@ -1,3 +1,12 @@
+## [2.6.1](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.0...v2.6.1) (2025-08-05)
+
+
+### Bug Fixes
+
+* **macros:** correct types for defineComponent and defineVaporComponent ([8a79bdb](https://github.com/vuejs/vue-jsx-vapor/commit/8a79bdbbbe5252f325c27ee22f69bfcd4e398bc9))
+
+
+
 # [2.6.0](https://github.com/vuejs/vue-jsx-vapor/compare/v2.5.4-beta.1...v2.6.0) (2025-07-29)
 
 
