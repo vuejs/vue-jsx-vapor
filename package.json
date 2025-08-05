@@ -1,6 +1,6 @@
 {
   "version": "2.6.0",
-  "packageManager": "pnpm@10.13.1",
+  "packageManager": "pnpm@10.14.0",
   "description": "Vue JSX Vapor",
   "type": "module",
   "keywords": [
@@ -38,15 +38,15 @@
     "docs:build": "pnpm run -C ./docs build"
   },
   "devDependencies": {
-    "@sxzz/eslint-config": "^7.0.4",
+    "@sxzz/eslint-config": "^7.1.2",
     "@ts-macro/tsc": "catalog:",
     "@types/node": "^22.17.0",
-    "bumpp": "^10.2.1",
+    "bumpp": "^10.2.2",
     "conventional-changelog-cli": "^5.0.0",
-    "eslint": "^9.30.1",
+    "eslint": "^9.32.0",
     "tsdown": "^0.12.9",
-    "typescript": "^5.8.3",
-    "unplugin-raw": "^0.5.0",
+    "typescript": "^5.9.2",
+    "unplugin-raw": "^0.5.1",
     "vite": "catalog:",
     "vitest": "catalog:",
     "vue-jsx-vapor": "workspace:*"
