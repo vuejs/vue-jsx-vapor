@@ -60,9 +60,16 @@ export type StructuralDirectiveTransform = (
 ) => void | (() => void)
 
 export type TransformOptions = HackOptions<BaseTransformOptions> & {
+  source?: string
   templates?: string[]
+  /**
+   * Compile JSX Component to createComponentWithFallback.
+   * @default false
+   */
+  withFallback?: boolean
 }
 const defaultOptions = {
+  source: '',
   filename: '',
   hoistStatic: false,
   hmr: false,
@@ -80,6 +87,7 @@ const defaultOptions = {
   inSSR: false,
   ssrCssVars: ``,
   isTS: false,
+  withFallback: false,
   onError: defaultOnError,
   onWarn: defaultOnWarn,
 }

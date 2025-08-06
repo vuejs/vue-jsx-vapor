@@ -7,6 +7,14 @@ exports[`compiler: element transform > Fragment should not mark as single root 1
 "
 `;
 
+exports[`compiler: element transform > component with fallback 1`] = `
+"
+  const _component_foo_bar = _resolveComponent("foo-bar")
+  const n0 = _createComponentWithFallback(_component_foo_bar, null, null, true)
+  return n0
+"
+`;
+
 exports[`compiler: element transform > generate single root component 1`] = `
 "
   const n0 = _createComponent(Comp, null, null, true)

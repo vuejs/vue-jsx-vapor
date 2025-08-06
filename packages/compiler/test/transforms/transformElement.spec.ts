@@ -81,4 +81,12 @@ describe('compiler: element transform', () => {
     expect(code).toMatchSnapshot()
     expect(code).contains('_createComponent(Comp)')
   })
+
+  test('component with fallback', () => {
+    const { code } = compileWithElementTransform(`<foo-bar />`)
+    expect(code).toMatchSnapshot()
+    expect(code).contains(
+      '_createComponentWithFallback(_component_foo_bar, null, null, true)',
+    )
+  })
 })

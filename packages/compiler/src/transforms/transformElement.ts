@@ -87,21 +87,20 @@ function transformComponentElement(
   singleRoot: boolean,
   context: TransformContext<JSXElement>,
 ) {
-  let asset = true
+  let asset = context.options.withFallback
 
-  const fromSetup = tag
-  if (fromSetup) {
-    tag = fromSetup
-    asset = false
-  }
   const dotIndex = tag.indexOf('.')
   if (dotIndex > 0) {
     const ns = tag.slice(0, dotIndex)
     if (ns) {
       tag = ns + tag.slice(dotIndex)
-      asset = false
     }
   }
+
+  if (tag.includes('-')) {
+    asset = true
+  }
+
   if (asset) {
     context.component.add(tag)
   }

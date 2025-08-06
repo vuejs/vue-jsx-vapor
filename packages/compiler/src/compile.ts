@@ -6,6 +6,7 @@ import {
   transform,
   type DirectiveTransform,
   type NodeTransform,
+  type TransformOptions,
 } from './transform'
 import { transformChildren } from './transforms/transformChildren'
 import { transformElement } from './transforms/transformElement'
@@ -84,10 +85,8 @@ export function compile(
   return generate(ir, resolvedOptions)
 }
 
-export type CompilerOptions = HackOptions<BaseCompilerOptions> & {
-  source?: string
-  templates?: string[]
-}
+export type CompilerOptions = HackOptions<BaseCompilerOptions> &
+  TransformOptions
 export type TransformPreset = [
   NodeTransform[],
   Record<string, DirectiveTransform>,
