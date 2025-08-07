@@ -97,13 +97,16 @@ export default (): {
             statements.unshift(preambleResult)
           }
 
-          const helpers = ['setNodes', 'createNodes', 'createComponent'].filter(
-            (helper) => {
-              const result = importSet.has(helper)
-              result && importSet.delete(helper)
-              return result
-            },
-          )
+          const helpers = [
+            'setNodes',
+            'createNodes',
+            'createComponent',
+            'createComponentWithFallback',
+          ].filter((helper) => {
+            const result = importSet.has(helper)
+            result && importSet.delete(helper)
+            return result
+          })
           if (helpers.length) {
             statements.unshift(
               `import { ${helpers
