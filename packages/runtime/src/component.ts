@@ -19,7 +19,26 @@ export const createComponent = (
 export const createComponentWithFallback = (
   type: VaporComponent | typeof Fragment,
   ...args: Tail<Parameters<typeof _createComponentWithFallback>>
-) => createProxyComponent(_createComponentWithFallback, type, ...args)
+) => {
+  const slots = args[1]
+  if (
+    typeof type === 'string' &&
+    slots &&
+    slots.default &&
+    typeof slots.default === 'function'
+  ) {
+    const defaultSlot = slots.default
+    slots.default = () => {
+      return createProxyComponent(
+        _createComponentWithFallback,
+        defaultSlot,
+        null,
+        null,
+      )
+    }
+  }
+  return createProxyComponent(_createComponentWithFallback, type, ...args)
+}
 
 const createProxyComponent = (
   createComponent:
