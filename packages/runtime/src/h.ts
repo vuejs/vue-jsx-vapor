@@ -36,7 +36,7 @@ type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N
 
 type RawProps = Record<string, any>
 
-type ResolveProps<T> = T extends null | undefined ? T : () => T | T
+type ResolveProps<T> = T extends null | undefined ? T : (() => T) | T
 
 // The following is a series of overloads for providing props validation of
 // manually written render functions.
