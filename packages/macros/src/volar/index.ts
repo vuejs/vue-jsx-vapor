@@ -58,6 +58,7 @@ function getMacro(
       if (expression) {
         return {
           expression,
+          variableDeclaration: decl,
           initializer: decl.initializer,
           isRequired: ts.isNonNullExpression(initializer),
         }
@@ -127,7 +128,7 @@ export function getRootMap(options: TransformOptions): RootMap {
 
     const macro = getMacro(node, ts, options)
     if (macro) {
-      const { expression, initializer } = macro
+      const { expression, initializer, variableDeclaration } = macro
       let isRequired = macro.isRequired
       if (!rootMap.has(root)) rootMap.set(root, {})
       const macroName = expression.expression.getText(ast)
@@ -193,20 +194,23 @@ export function getRootMap(options: TransformOptions): RootMap {
           codes.replaceRange(
             initializer.getStart(ast),
             initializer.getStart(ast),
-            `// @ts-ignore\n${id};\nlet ${id} = `,
+            variableDeclaration ? `// @ts-ignore\n${id};\n` : '',
+            `let ${id} = `,
           )
         } else if (options.defineSlots.alias.includes(macroName)) {
           codes.replaceRange(
             expression.getStart(ast),
             expression.getStart(ast),
-            `// @ts-ignore\n__slots;\nconst __slots = `,
+            variableDeclaration ? '// @ts-ignore\n__slots;\n' : '',
+            `const __slots = `,
           )
           rootMap.get(root)!.defineSlots = `Partial<typeof __slots>`
         } else if (options.defineExpose.alias.includes(macroName)) {
           codes.replaceRange(
             expression.getStart(ast),
             expression.getStart(ast),
-            `// @ts-ignore\n__exposed;\nconst __exposed = `,
+            variableDeclaration ? '// @ts-ignore\n__exposed;\n' : '',
+            `const __exposed = `,
           )
           rootMap.get(root)!.defineExpose = `typeof __exposed`
         }
