@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "ESNext",
     "jsx": "preserve",
-    "jsxFactory": "h",
     "jsxImportSource": "vue-jsx-vapor",
     "lib": ["esnext", "DOM"],
     "useDefineForClassFields": false,
@@ -16,6 +15,5 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["packages"],
-  "exclude": ["**/dist", "eslint.config.ts", "playground"]
+  "include": ["packages"]
 }
