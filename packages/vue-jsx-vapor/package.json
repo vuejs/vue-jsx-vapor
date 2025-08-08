@@ -1,6 +1,6 @@
 {
   "name": "vue-jsx-vapor",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "description": "Convert Vue JSX to Vapor",
   "type": "module",
   "keywords": [

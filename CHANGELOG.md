@@ -1,3 +1,20 @@
+## [2.6.2](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.1...v2.6.2) (2025-08-08)
+
+
+### Bug Fixes
+
+* **babel:** import createComponentWithFallback from vue-jsx-vapor ([0c5b966](https://github.com/vuejs/vue-jsx-vapor/commit/0c5b96608e61a13fdf8f9d9e14df5bca8ffc7a1e))
+* **runtime:** correct props type for h ([443945b](https://github.com/vuejs/vue-jsx-vapor/commit/443945bbc01446fcdd025385aa05880d59441052))
+* **runtime:** normalizeNode slots for createComponentWithFallback ([2f8e6fc](https://github.com/vuejs/vue-jsx-vapor/commit/2f8e6fcfca11cce4b098eac15a083beebd37674d))
+
+
+### Features
+
+* **compiler:** add withFallback option to compile components to createComponentWithFallback ([0c2d470](https://github.com/vuejs/vue-jsx-vapor/commit/0c2d4703e88028867846b50cbcccc1763d982c82))
+* **macros:** add verification feature for return keyword ([65c6a5e](https://github.com/vuejs/vue-jsx-vapor/commit/65c6a5ef30b3bc56790f598a89b05cff36cb0093))
+
+
+
 ## [2.6.1](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.0...v2.6.1) (2025-08-05)
 
 
