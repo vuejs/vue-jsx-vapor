@@ -43,10 +43,13 @@ const __setup = `,
             ? ['...', [compOptions.getText(ast), compOptions.getStart(ast)]]
             : []),
           `})
-  type __Instance = {${isVapor ? '\n/** @deprecated This is only a type when used in Vapor Instances. */' : ''}
+  type __Instance = (typeof __component extends new (...args: any) => any ? InstanceType<typeof __component> : typeof __component) & {${isVapor ? '\n/** @deprecated This is only a type when used in Vapor Instances. */' : ''}
     $props: __Props
-  } & (typeof __component extends new (...args: any) => any ? InstanceType<typeof __component> : typeof __component)
+  }
   return {} as {
+    __isFragment?: never
+    __isTeleport?: never
+    __isSuspense?: never
     new (props: __Props): __Instance,
     setup: (props: __Props, ctx?: {
       attrs?: Record<string, any>
