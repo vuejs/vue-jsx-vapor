@@ -80,7 +80,8 @@ export function transformJsxMacros(
         codes.replaceRange(
           node.getStart(ast),
           node.expression.getStart(ast),
-          `const __render`,
+          'const ',
+          [`__render`, node.getStart(ast), { verification: true }],
           macros.defineComponent
             ? macros.defineComponent?.expression.getText(ast) ===
               'defineVaporComponent'
