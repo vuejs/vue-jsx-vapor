@@ -1,7 +1,7 @@
 {
   "name": "vue-jsx-vapor",
   "version": "2.6.2",
-  "description": "Convert Vue JSX to Vapor",
+  "description": "Vapor Mode of Vue JSX",
   "type": "module",
   "keywords": [
     "unplugin",
