@@ -7,8 +7,7 @@ export function isConditionalExpression(path: NodePath<Node> | null): boolean {
     (path?.type === 'LogicalExpression' ||
       path.type === 'ConditionalExpression') &&
     (path.parent.type === 'JSXExpressionContainer' ||
-      (path.parent.type === 'ConditionalExpression' &&
-        isConditionalExpression(path.parentPath)))
+      isConditionalExpression(path.parentPath))
   )
 }
 
