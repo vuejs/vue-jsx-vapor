@@ -177,7 +177,7 @@
     "@vue-jsx-vapor/runtime": "workspace:*",
     "@vue-macros/jsx-directive": "catalog:",
     "@vue-macros/volar": "catalog:",
-    "@vue/babel-plugin-jsx": "^1.4.0",
+    "@vue/babel-plugin-jsx": "^1.5.0",
     "@vue/shared": "catalog:",
     "hash-sum": "catalog:",
     "pathe": "^2.0.3",

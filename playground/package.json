@@ -13,7 +13,7 @@
     "vite": "catalog:",
     "vite-hyper-config": "^0.7.1",
     "vite-node": "^3.2.4",
-    "vite-plugin-inspect": "^11.3.2",
+    "vite-plugin-inspect": "^11.3.3",
     "vue": "catalog:",
     "vue-jsx-vapor": "workspace:*"
   }

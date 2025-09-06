@@ -1,15 +1,14 @@
 //#region rolldown:runtime
-var __create = Object.create
-var __defProp = Object.defineProperty
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor
-var __getOwnPropNames = Object.getOwnPropertyNames
-var __getProtoOf = Object.getPrototypeOf
-var __hasOwnProp = Object.prototype.hasOwnProperty
-var __copyProps = (to, from, except, desc) => {
+const __create = Object.create
+const __defProp = Object.defineProperty
+const __getOwnPropDesc = Object.getOwnPropertyDescriptor
+const __getOwnPropNames = Object.getOwnPropertyNames
+const __getProtoOf = Object.getPrototypeOf
+const __hasOwnProp = Object.prototype.hasOwnProperty
+const __copyProps = (to, from, except, desc) => {
   if ((from && typeof from === 'object') || typeof from === 'function')
     for (
-      // eslint-disable-next-line vars-on-top
-      var keys = __getOwnPropNames(from), i = 0, n = keys.length, key;
+      let keys = __getOwnPropNames(from), i = 0, n = keys.length, key;
       i < n;
       i++
     ) {
@@ -22,7 +21,7 @@ var __copyProps = (to, from, except, desc) => {
     }
   return to
 }
-var __toESM = (mod, isNodeMode, target) => (
+const __toESM = (mod, isNodeMode, target) => (
   (target = mod != null ? __create(__getProtoOf(mod)) : {}),
   __copyProps(
     isNodeMode || !mod || !mod.__esModule
@@ -39,7 +38,7 @@ const vue = __toESM(require('vue'))
 const vue_jsx_vapor = __toESM(require('vue-jsx-vapor'))
 
 function jsx(type, props, key) {
-  const { children, ['v-slots']: vSlots } = props
+  const { children, 'v-slots': vSlots } = props
   delete props.children
   delete props['v-slots']
   if (arguments.length > 2) props.key = key

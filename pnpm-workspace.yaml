@@ -4,9 +4,9 @@ packages:
   - docs
 
 defines:
-  - &babel ^7.28.0
+  - &babel ^7.28.4
   - &vue-macros ^3.0.0-beta.23
-  - &ts-macro ^0.3.2
+  - &ts-macro ^0.3.4
   - &vue 3.6.0-alpha.2
 
 catalog:
@@ -18,8 +18,8 @@ catalog:
   '@babel/types': *babel
   '@types/babel__core': ^7.20.5
 
-  '@nuxt/kit': ^3.18.1
-  '@nuxt/schema': ^3.18.1
+  '@nuxt/kit': ^3.19.1
+  '@nuxt/schema': ^3.19.1
 
   '@vue/compiler-dom': *vue
   '@vue/compiler-sfc': *vue
@@ -33,12 +33,12 @@ catalog:
 
   '@ts-macro/tsc': *ts-macro
   '@types/hash-sum': ^1.0.2
-  ast-kit: ^2.1.1
+  ast-kit: ^2.1.2
   hash-sum: ^2.0.0
   source-map-js: ^1.2.1
   ts-macro: *ts-macro
-  unplugin: ^2.3.5
-  unplugin-utils: ^0.2.4
-  vite: ^7.0.6
+  unplugin: ^2.3.10
+  unplugin-utils: ^0.2.5
+  vite: ^7.1.4
   vitest: ^3.2.4
   vue: *vue
