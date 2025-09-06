@@ -1,3 +1,12 @@
+## [2.6.4](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.3...v2.6.4) (2025-09-06)
+
+
+### Bug Fixes
+
+* **volar/jsx-element:** return VaporInstance for functional component ([3b14249](https://github.com/vuejs/vue-jsx-vapor/commit/3b142496a05993f85d1f41a8824a4ab22affa0fd))
+
+
+
 ## [2.6.3](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.2...v2.6.3) (2025-09-06)
 
 
