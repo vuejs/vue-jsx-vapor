@@ -1,6 +1,6 @@
 {
   "name": "@vue-jsx-vapor/compiler",
-  "version": "2.6.4",
+  "version": "2.6.5",
   "description": "Vue JSX Vapor Compiler",
   "type": "module",
   "keywords": [
