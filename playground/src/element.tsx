@@ -9,7 +9,7 @@ const Comp = () => {
   return A
 }
 const comp = <Comp />
-comp === ({} as HTMLAnchorElement)
+comp.block.href
 
 const VaporComp = defineVaporComponent((props: { id: number }) => {
   defineSlots({

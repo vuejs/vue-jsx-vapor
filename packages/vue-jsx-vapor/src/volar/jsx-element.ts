@@ -57,8 +57,9 @@ type __InferJsxElement<T> = T extends keyof HTMLElementTagNameMap
   ? HTMLElementTagNameMap[T]
   : T extends keyof SVGElementTagNameMap
     ? SVGElementTagNameMap[T]
-    : T extends (...args: any[]) => any
-      ? ReturnType<T>
+    : T extends (props: infer Props, ctx: { slots: infer Slots, expose: (exposed: infer Exposed) => void, attrs: any, emit: any }) => infer TypeBlock
+      // @ts-ignore
+      ? import('vue-jsx-vapor').VaporComponentInstance<Props, {}, Slots, Exposed, TypeBlock>
       : T extends { new (...args: any[]): infer Instance }
         ? Instance extends { $: any }
           ? import('vue').VNode
