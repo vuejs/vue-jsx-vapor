@@ -1,3 +1,17 @@
+## [2.6.3](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.2...v2.6.3) (2025-09-06)
+
+
+### Bug Fixes
+
+* **compiler:** adjust children generation order for hydration ([128eb21](https://github.com/vuejs/vue-jsx-vapor/commit/128eb213879dc5279d36edc79f74d578c3b3d31c))
+
+
+### Features
+
+* **volar:** introduce jsx-element ([264c7be](https://github.com/vuejs/vue-jsx-vapor/commit/264c7be9cf98d11d70d3015f20bc86b31fe3aca6))
+
+
+
 ## [2.6.2](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.1...v2.6.2) (2025-08-08)
 
 
