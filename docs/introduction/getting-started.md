@@ -49,6 +49,19 @@ export default defineConfig({
 
 ## Typescript
 
+### Configure `tsconfig.json`
+```json
+{
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "vue-jsx-vapor",
+    // ...
+  }
+}
+```
+
+### Volar plugin
+
 Since `vue-jsx-vapor` supports Vue directives and Vue macros, so need to install the [TS Macro](https://marketplace.visualstudio.com/items?itemName=zhiyuanzmj.vscode-ts-macro) VSCode plugin to load the `vue-jsx-vapor/volar` plugin for type support.
 
 The `TS Macro` VSCode plugin will automatically loads the `vue-jsx-vapor/volar` by analyzing `vite.config.ts` and shares the user configuration of the `vue-jsx-vapor/vite` plugin, without the need to manually configure `ts-macro.config.ts`.

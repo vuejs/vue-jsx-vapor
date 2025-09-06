@@ -49,6 +49,19 @@ export default defineConfig({
 
 ## Typescript
 
+### 配置 `tsconfig.json`
+```json
+{
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "vue-jsx-vapor",
+    // ...
+  }
+}
+```
+
+### Volar 插件
+
 由于 `vue-jsx-vapor` 支持 Vue 指令和 Vue 宏，所以需要安装 [TS Macro](https://marketplace.visualstudio.com/items?itemName=zhiyuanzmj.vscode-ts-macro) 的 VSCode 插件来加载 `vue-jsx-vapor/volar` 插件, 以获得类型支持。
 
 `TS Macro` 的 VSCode 会通过分析 `vite.config.ts` 来自动加载 `vue-jsx-vapor/volar` 插件并共享 `vue-jsx-vapor/vite` 插件的用户配置，无需手动配置 `ts-macro.config.ts`。
