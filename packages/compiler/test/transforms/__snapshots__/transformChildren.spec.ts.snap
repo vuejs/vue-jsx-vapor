@@ -23,10 +23,10 @@ exports[`compiler: children transform > efficient traversal 1`] = `
 "
   const n3 = t0()
   const p0 = _next(_child(n3))
-  const p1 = _next(p0)
-  const p2 = _next(p1)
   const n0 = _child(p0)
+  const p1 = _next(p0)
   const n1 = _child(p1)
+  const p2 = _next(p1)
   const n2 = _child(p2)
   const x0 = _child(n0)
   _setNodes(x0, () => ({ msg: msg }))
