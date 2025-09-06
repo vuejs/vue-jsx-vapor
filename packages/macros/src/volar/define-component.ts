@@ -27,35 +27,27 @@ const __setup = `,
       ? ['\nreturn __setup']
       : ([
           `
-  type __Props = Parameters<typeof __setup>[0]
-  type __Slots = Parameters<typeof __setup>[1] extends { slots?: infer Slots } | undefined ? Slots : {}
-  type __Exposed = Parameters<typeof __setup>[1] extends { expose?: (exposed: infer Exposed) => any } | undefined ? Exposed : {}`,
+  type __Setup = typeof __setup
+  type __Props = Parameters<__Setup>[0]
+  type __Slots = Parameters<__Setup>[1] extends { slots?: infer Slots } | undefined ? Slots : {}
+  type __Exposed = Parameters<__Setup>[1] extends { expose?: (exposed: infer Exposed) => any } | undefined ? Exposed : {}`,
           '\n  const __component = ',
-          [node.expression.getText(ast), node.expression.getStart(ast)],
-          `({`,
           isVapor
-            ? ''
-            : `...{} as {
-    setup: () => __Exposed,
-    slots: import('vue').SlotsType<__Slots>
+            ? `// @ts-ignore\n(defineVaporComponent,await import('vue-jsx-vapor')).`
+            : '',
+          [node.expression.getText(ast), node.expression.getStart(ast)],
+          `({\n`,
+          `...{} as {
+    setup: (props: __Props) => __Exposed,
+    render: () => ReturnType<__Setup>
+    slots: ${isVapor ? '__Slots' : `import('vue').SlotsType<__Slots>`} 
   },`,
           ...(compOptions
             ? ['...', [compOptions.getText(ast), compOptions.getStart(ast)]]
             : []),
           `})
-  type __Instance = (typeof __component extends new (...args: any) => any ? InstanceType<typeof __component> : typeof __component) & {${isVapor ? '\n/** @deprecated This is only a type when used in Vapor Instances. */' : ''}
-    $props: __Props
-  }
-  return {} as {
-    __isFragment?: never
-    __isTeleport?: never
-    __isSuspense?: never
-    new (props: __Props): __Instance,
-    setup: (props: __Props, ctx?: {
-      attrs?: Record<string, any>
-      slots?: __Slots,
-      expose?: (exposed: keyof __Exposed extends never ? __Instance : __Exposed) => any
-    }) => {},
+  return {} as Omit<typeof __component, 'constructor'> & {
+    new (props?: __Props): InstanceType<typeof __component> & {${isVapor ? '\n/** @deprecated This is only a type when used in Vapor Instances. */\n$props: __Props' : ''}},
   }`,
         ] as Code[])
   codes.replaceRange(node.end, node.end, ...result, `\n})()`)

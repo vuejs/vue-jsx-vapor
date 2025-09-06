@@ -26,7 +26,7 @@
   },
   "scripts": {
     "dev": "pnpm run --filter=\"./packages/*\" --parallel dev",
-    "build": "pnpm run --filter=\"./packages/*\" build",
+    "build": "pnpm run --filter=\"./packages/*\" --parallel build",
     "typecheck": "tsmc --noEmit",
     "lint": "eslint .",
     "play": "npm -C playground run dev",

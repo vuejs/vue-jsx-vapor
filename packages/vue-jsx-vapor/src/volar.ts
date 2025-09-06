@@ -2,6 +2,7 @@ import jsxMacros from '@vue-jsx-vapor/macros/volar'
 import jsxDirective from '@vue-macros/volar/jsx-directive'
 import jsxRef from '@vue-macros/volar/jsx-ref'
 import { createPlugin, type PluginReturn } from 'ts-macro'
+import jsxElement from './volar/jsx-element'
 import type { Options } from './options'
 
 const plugin: PluginReturn<Options | undefined, true> = createPlugin(
@@ -16,6 +17,7 @@ const plugin: PluginReturn<Options | undefined, true> = createPlugin(
         : options?.macros
           ? jsxMacros(options.macros === true ? undefined : options.macros)(ctx)
           : [],
+      options?.interop ? [] : jsxElement()(ctx),
     ].flat()
   },
 )

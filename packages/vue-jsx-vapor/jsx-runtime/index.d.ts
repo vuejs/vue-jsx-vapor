@@ -4,7 +4,7 @@ import type { h, NativeElements, ReservedProps } from 'vue-jsx-vapor'
 declare function jsx(type: any, props: any, key: any): ReturnType<typeof h>
 declare global {
   namespace JSX {
-    type Element = Block & VNode
+    type Element = VNode | Block | Element[]
     interface ElementAttributesProperty {
       $props
     }

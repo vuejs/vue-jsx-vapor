@@ -81,14 +81,14 @@ export function transformJsxMacros(
           node.getStart(ast),
           node.expression.getStart(ast),
           'const ',
-          [`__render`, node.getStart(ast), { verification: true }],
+          [`__render`, node.getStart(ast) - 1, { verification: true }],
           macros.defineComponent
             ? macros.defineComponent?.expression.getText(ast) ===
               'defineVaporComponent'
-              ? ': import("vue-jsx-vapor").NodeChild'
-              : ': () => import("vue").VNodeChild'
+              ? ''
+              : ': () => JSX.Element'
             : '',
-          ` = `,
+          ' = ',
         )
         codes.replaceRange(
           node.expression.end,
@@ -96,10 +96,12 @@ export function transformJsxMacros(
           `
 return {} as {
   props: {${props.join(', ')}},
-  context: {
-    slots?: ${macros.defineSlots ?? '{}'},
-    expose?: (exposed: import('vue').ShallowUnwrapRef<${macros.defineExpose ?? '{}'}>) => void,
-    attrs?: Record<string, any>
+  context: ${
+    root.parameters[1]?.type ? root.parameters[1].type.getText(ast) : '{}'
+  } & {
+    slots: ${macros.defineSlots ?? '{}'},
+    expose: (exposed: ${macros.defineExpose ?? '{}'}) => void,
+    attrs: Record<string, any>
   },
   render: typeof __render
 }`,
