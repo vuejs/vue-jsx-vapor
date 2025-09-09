@@ -8,6 +8,7 @@ export default [
       'import/no-default-export',
       'unicorn/no-new-array',
       'unicorn/prefer-dom-node-remove',
+      'unused-imports/no-unused-imports',
     )
     .append([
       {
