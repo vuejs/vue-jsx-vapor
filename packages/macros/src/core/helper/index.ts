@@ -1,4 +1,4 @@
-export const helperPrefix = 'vue-jsx-vapor/macros' as const
+export const helperPrefix = '/vue-jsx-vapor/macros' as const
 
 export const useModelHelperId = `${helperPrefix}/use-model`
 export { default as useModelHelperCode } from './use-model?raw'
