@@ -49,7 +49,7 @@ const createProxyComponent = (
   ...args: any[]
 ) => {
   if (type === Fragment) {
-    type = (_, { slots }) => slots.default()
+    type = (_, { slots }) => (slots.default ? slots.default() : [])
     props = null
   }
 
