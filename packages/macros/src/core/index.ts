@@ -53,7 +53,9 @@ export function transformJsxMacros(
   options: OptionsResolved,
 ): CodeTransform | undefined {
   const s = new MagicStringAST(code)
-  const ast = babelParse(s.original, getLang(id))
+  const lang = getLang(id)
+  if (lang === 'dts') return
+  const ast = babelParse(s.original, lang)
   const rootMap = getRootMap(ast, s, options)
 
   let defineStyleIndex = 0
