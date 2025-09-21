@@ -3,7 +3,7 @@
 exports[`defineComponent autoReturnFunction fixtures > ./fixtures/define-component.tsx 1`] = `
 "
 import { useAttrs as __MACROS_useAttrs } from "vue";
-import { useModel as __MACROS_useModel } from "vue-jsx-vapor/macros/use-model";
+import { useModel as __MACROS_useModel } from "/vue-jsx-vapor/macros/use-model";
 import { useFullProps as __MACROS_useFullProps } from "vue-jsx-vapor";
 import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, defineVaporComponent, nextTick, unref } from 'vue'
 
@@ -104,7 +104,7 @@ defineVaporComponent((__MACROS_props) => {
 exports[`fixtures > ./fixtures/define-component.tsx 1`] = `
 "
 import { useAttrs as __MACROS_useAttrs } from "vue";
-import { useModel as __MACROS_useModel } from "vue-jsx-vapor/macros/use-model";
+import { useModel as __MACROS_useModel } from "/vue-jsx-vapor/macros/use-model";
 import { useFullProps as __MACROS_useFullProps } from "vue-jsx-vapor";
 import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, defineVaporComponent, nextTick, unref } from 'vue'
 
@@ -229,7 +229,7 @@ export const Comp2 = ({ foo, ...__MACROS_props }: any) => {
 
 exports[`fixtures > ./fixtures/define-model.tsx 1`] = `
 "
-import { useModel as __MACROS_useModel } from "vue-jsx-vapor/macros/use-model";
+import { useModel as __MACROS_useModel } from "/vue-jsx-vapor/macros/use-model";
 import { defineVaporComponent, unref } from 'vue'
 
 const $ = unref
@@ -274,8 +274,8 @@ export default function () {
 `;
 
 exports[`fixtures > ./fixtures/define-style.tsx 1`] = `
-"import "vue-jsx-vapor/macros/define-style/0?scopeId=4e9d5cd0&scoped=true&lang.css";import style1 from "vue-jsx-vapor/macros/define-style/1?scopeId=13f8dd3a&scoped=true&lang.module.scss";
-import { useSlots as __MACROS_useSlots } from "vue";import "vue-jsx-vapor/macros/define-style/2?scopeId=63a7910c&scoped=false&lang.scss";import { defineComponent, ref } from 'vue'
+"import "/vue-jsx-vapor/macros/define-style/0?scopeId=4e9d5cd0&scoped=true&lang.css";import style1 from "/vue-jsx-vapor/macros/define-style/1?scopeId=13f8dd3a&scoped=true&lang.module.scss";
+import { useSlots as __MACROS_useSlots } from "vue";import "/vue-jsx-vapor/macros/define-style/2?scopeId=63a7910c&scoped=false&lang.scss";import { defineComponent, ref } from 'vue'
 
 export const Comp = () => {
   const color = ref('red')

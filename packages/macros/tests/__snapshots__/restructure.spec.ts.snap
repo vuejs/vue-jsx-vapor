@@ -11,7 +11,7 @@ exports[`transform > reconstruct 1`] = `
 
 exports[`transform > reconstruct AssignmentPattern 1`] = `
 "
-import { createPropsDefaultProxy as __MACROS_createPropsDefaultProxy } from "vue-jsx-vapor/macros/with-defaults";function App(__MACROS_props){
+import { createPropsDefaultProxy as __MACROS_createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";function App(__MACROS_props){
 __MACROS_props = __MACROS_createPropsDefaultProxy(__MACROS_props, {'.foo.foo': 1, '.bar[0]': 2});
         return <>{[__MACROS_props.foo.foo, __MACROS_props.bar[0]]}</>
       }"
@@ -26,7 +26,7 @@ exports[`transform > reconstruct arrowFunctionExpression 1`] = `
 exports[`transform > reconstruct default-prop 1`] = `
 "
 import { createPropsRestProxy as __MACROS_createPropsRestProxy } from "vue";
-import { createPropsDefaultProxy as __MACROS_createPropsDefaultProxy } from "vue-jsx-vapor/macros/with-defaults";function App(__MACROS_props, __MACROS_props1){
+import { createPropsDefaultProxy as __MACROS_createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";function App(__MACROS_props, __MACROS_props1){
 const rest = __MACROS_createPropsRestProxy(__MACROS_props, ['foo', 'baz']);
 __MACROS_props = __MACROS_createPropsDefaultProxy(__MACROS_props, {'.foo': 'bar'});
 __MACROS_props1 = __MACROS_createPropsDefaultProxy(__MACROS_props1, {'[0]': 'foo'});
@@ -37,7 +37,7 @@ __MACROS_props1 = __MACROS_createPropsDefaultProxy(__MACROS_props1, {'[0]': 'foo
 exports[`transform > reconstruct rest-prop 1`] = `
 "
 import { createPropsRestProxy as __MACROS_createPropsRestProxy } from "vue";
-import { createPropsDefaultProxy as __MACROS_createPropsDefaultProxy } from "vue-jsx-vapor/macros/with-defaults";function App(__MACROS_props){
+import { createPropsDefaultProxy as __MACROS_createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";function App(__MACROS_props){
 const rest = __MACROS_createPropsRestProxy(__MACROS_props, ['foo', 'bar']);
 __MACROS_props = __MACROS_createPropsDefaultProxy(__MACROS_props, {'.bar': 1});
         return <>{[__MACROS_props.foo, __MACROS_props.bar, rest]}</>
