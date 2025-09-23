@@ -22,9 +22,7 @@ export function transformJsxMacros(
     if (asyncModifier && macros.defineComponent)
       codes.replaceRange(asyncModifier.pos, asyncModifier.end)
     const result =
-      macros.defineComponent && root.typeParameters?.length
-        ? '({}) as JSX.Element'
-        : '__ctx.render'
+      '({}) as typeof __ctx.render & { __ctx?: { props: typeof __ctx.props } & typeof __ctx.context }'
 
     const propsType = root.parameters[0]?.type
       ? root.parameters[0].type.getText(ast)
@@ -97,10 +95,10 @@ export function transformJsxMacros(
 return {} as {
   props: {${props.join(', ')}},
   context: ${
-    root.parameters[1]?.type ? root.parameters[1].type.getText(ast) : '{}'
-  } & {
+    root.parameters[1]?.type ? `${root.parameters[1].type.getText(ast)} & ` : ''
+  }{
     slots: ${macros.defineSlots ?? '{}'},
-    expose: (exposed: ${macros.defineExpose ?? '{}'}) => void,
+    expose: (exposed: ${macros.defineExpose ?? 'Record<string, any>'}) => void,
     attrs: Record<string, any>
   },
   render: typeof __render

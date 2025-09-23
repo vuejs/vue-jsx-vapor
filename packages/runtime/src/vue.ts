@@ -91,7 +91,7 @@ export declare class VaporComponentInstance<
   expose: (<T extends Record<string, any> = Exposed>(exposed: T) => void) &
     string[]
   exposed: Exposed | null
-  exposeProxy: ShallowUnwrapRef<Exposed> | null
+  exposeProxy: Prettify<ShallowUnwrapRef<Exposed>> | null
   refs: TypeRefs
   provides: Record<string, any>
   ids: [string, number, number]
