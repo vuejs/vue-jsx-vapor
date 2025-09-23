@@ -1,3 +1,21 @@
+## [2.6.6](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.4...v2.6.6) (2025-09-23)
+
+
+### Bug Fixes
+
+* **macros:** add placeholder after removed params ([e7b81c1](https://github.com/vuejs/vue-jsx-vapor/commit/e7b81c12d0c5a62225bc79921f4571f001b75daa))
+* **macros:** prevent handle dts files ([a34b23c](https://github.com/vuejs/vue-jsx-vapor/commit/a34b23c589e28a151236715255ecda7f2268857c))
+* **runtime:** correct expose types for VaporComponentInstance ([ebe60a6](https://github.com/vuejs/vue-jsx-vapor/commit/ebe60a690a4a45cc1d7dc017e7a750dc29c604c1))
+* **runtime:** handle undefined default slot for Fragment ([8a349d1](https://github.com/vuejs/vue-jsx-vapor/commit/8a349d173b7969e16b41a96c257a014b34c57f11))
+
+
+### Features
+
+* **macros:** add "/" prefix for helper-id ([341d18c](https://github.com/vuejs/vue-jsx-vapor/commit/341d18c35c442ffa5e962dd088a99f7b63705bdd))
+* **macros:** support generic components ([ff75eb7](https://github.com/vuejs/vue-jsx-vapor/commit/ff75eb794b3352734498fbb32e3a943beab9fb1c))
+
+
+
 ## [2.6.4](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.3...v2.6.4) (2025-09-06)
 
 
