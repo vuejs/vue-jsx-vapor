@@ -1,3 +1,4 @@
+import { escapeHtml } from '@vue/shared'
 import {
   DynamicFlag,
   IRNodeTypes,
@@ -88,7 +89,7 @@ export const transformText: NodeTransform = (node, context) => {
   } else if (node.type === 'JSXText') {
     const value = resolveJSXText(node)
     if (value) {
-      context.template += value
+      context.template += escapeHtml(value)
     } else {
       context.dynamic.flags |= DynamicFlag.NON_TEMPLATE
     }
@@ -136,7 +137,7 @@ function processTextContainer(children: TextLike[], context: TransformContext) {
   const values = createTextLikeExpressions(children, context)
   const literals = values.map(getLiteralExpressionValue)
   if (literals.every((l) => l != null)) {
-    context.childrenTemplate = literals.map((l) => String(l))
+    context.childrenTemplate = literals.map((l) => escapeHtml(String(l)))
   } else {
     context.childrenTemplate = [' ']
     context.registerOperation({
