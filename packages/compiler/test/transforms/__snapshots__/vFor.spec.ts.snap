@@ -201,3 +201,27 @@ exports[`compiler: v-for > v-for aliases w/ complex expressions 1`] = `
   return n0
 "
 `;
+
+exports[`compiler: v-for > v-for on component 1`] = `
+"
+  const n0 = _createFor(() => (list), (_for_item0) => {
+    const n3 = _createComponent(Comp)
+    const n2 = _child(n3)
+    _setNodes(n2, () => (_for_item0.value))
+    return [n2, n3]
+  }, undefined, 2)
+  return n0
+"
+`;
+
+exports[`compiler: v-for > v-for on template with single component child 1`] = `
+"
+  const n0 = _createFor(() => (list), (_for_item0) => {
+    const n3 = _createComponent(Comp)
+    const n2 = _child(n3)
+    _setNodes(n2, () => (_for_item0.value))
+    return [n2, n3]
+  }, undefined, 2)
+  return n0
+"
+`;

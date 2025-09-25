@@ -45,7 +45,10 @@ export function processFor(
 
   const keyProp = findProp(node, 'key')
   const keyProperty = keyProp && propToExpression(keyProp, context)
-  const isComponent = isJSXComponent(node)
+  const isComponent =
+    isJSXComponent(node) ||
+    // template v-for with a single component child
+    isTemplateWithSingleComponent(node)
   const id = context.reference()
   context.dynamic.flags |= DynamicFlag.NON_TEMPLATE | DynamicFlag.INSERT
   const [render, exitBlock] = createBranch(node, context, true)
@@ -116,4 +119,11 @@ export function getForParseResult(
     key,
     source,
   }
+}
+
+function isTemplateWithSingleComponent(node: JSXElement): boolean {
+  const nonCommentChildren = node.children.filter((c) => !isEmptyText(c))
+  return (
+    nonCommentChildren.length === 1 && isJSXComponent(nonCommentChildren[0])
+  )
 }
