@@ -3,7 +3,6 @@ import {
   DynamicFlag,
   IRNodeTypes,
   type BlockIRNode,
-  type HackOptions,
   type IRDynamicInfo,
   type IRSlots,
   type OperationNode,
@@ -22,7 +21,7 @@ import {
   type CompilerError,
   type SimpleExpressionNode,
 } from './utils'
-import type { ParserPlugin } from '@babel/parser'
+import type { CodegenOptions } from './generate'
 import type { JSXAttribute, JSXElement, JSXFragment } from '@babel/types'
 
 export type NodeTransform = (
@@ -55,21 +54,14 @@ export type StructuralDirectiveTransform = (
   context: TransformContext,
 ) => void | (() => void)
 
-export type TransformOptions = HackOptions<{
+export type TransformOptions = CodegenOptions & {
   source?: string
-  templates?: string[]
   /**
    * Whether to compile components to createComponentWithFallback.
    * @default false
    */
   withFallback?: boolean
   onError?: (error: CompilerError) => void
-  /**
-   * A list of parser plugins to enable for `@babel/parser`, which is used to
-   * parse expressions in bindings and interpolations.
-   * https://babeljs.io/docs/en/next/babel-parser#plugins
-   */
-  expressionPlugins?: ParserPlugin[]
   /**
    * An array of node transforms to be applied to every AST node.
    */
@@ -93,9 +85,10 @@ export type TransformOptions = HackOptions<{
    * @default 'index.jsx'
    */
   filename?: string
-}>
+}
 const defaultOptions: Required<TransformOptions> = {
   source: '',
+  sourceMap: false,
   filename: 'index.jsx',
   nodeTransforms: [],
   directiveTransforms: {},

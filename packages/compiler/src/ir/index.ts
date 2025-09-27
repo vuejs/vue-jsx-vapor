@@ -1,9 +1,7 @@
-import type { DirectiveTransform, NodeTransform } from '../transform'
 import type { SimpleExpressionNode } from '../utils'
 
 import type { IRProp, IRProps, IRSlots } from './component'
 import type { JSXFragment, Node, SourceLocation } from '@babel/types'
-import type { Prettify } from '@vue/shared'
 
 export * from './component'
 
@@ -283,19 +281,6 @@ export interface IREffect {
   expressions: SimpleExpressionNode[]
   operations: OperationNode[]
 }
-
-type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> &
-  Pick<U, Extract<keyof U, keyof T>>
-
-export type HackOptions<T> = Prettify<
-  Overwrite<
-    T,
-    {
-      nodeTransforms?: NodeTransform[]
-      directiveTransforms?: Record<string, DirectiveTransform | undefined>
-    }
-  >
->
 
 export type InsertionStateTypes =
   | IfIRNode
