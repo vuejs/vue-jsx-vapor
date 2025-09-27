@@ -1,20 +1,57 @@
-import {
-  advancePositionWithMutation,
-  locStub,
-  NewlineType,
-  type CodegenSourceMapGenerator,
-  type Position,
-  type SourceLocation,
-} from '@vue/compiler-dom'
 import { isArray, isString } from '@vue/shared'
 import { SourceMapGenerator } from 'source-map-js'
 import type { CodegenContext } from '../generate'
-
-export { genExpression } from './expression'
+import type { SourceLocation } from '@babel/types'
 
 export const NEWLINE: unique symbol = Symbol(`newline`)
 export const INDENT_START: unique symbol = Symbol(`indent start`)
 export const INDENT_END: unique symbol = Symbol(`indent end`)
+
+export enum NewlineType {
+  /** Start with `\n` */
+  Start = 0,
+  /** Ends with `\n` */
+  End = -1,
+  /** No `\n` included */
+  None = -2,
+  /** Don't know, calc it */
+  Unknown = -3,
+}
+
+interface CodegenSourceMapGenerator {
+  setSourceContent: (sourceFile: string, sourceContent: string) => void
+  toJSON: () => RawSourceMap
+  _sources: Set<string>
+  _names: Set<string>
+  _mappings: {
+    add: (mapping: MappingItem) => void
+  }
+}
+
+interface RawSourceMap {
+  file?: string
+  sourceRoot?: string
+  version: string
+  sources: string[]
+  names: string[]
+  sourcesContent?: string[]
+  mappings: string
+}
+
+interface MappingItem {
+  source: string
+  generatedLine: number
+  generatedColumn: number
+  originalLine: number
+  originalColumn: number
+  name: string | null
+}
+
+interface Position {
+  line: number
+  column: number
+  index: number
+}
 
 type FalsyValue = false | null | undefined
 export type CodeFragment =
@@ -22,7 +59,12 @@ export type CodeFragment =
   | typeof INDENT_START
   | typeof INDENT_END
   | string
-  | [code: string, newlineIndex?: number, loc?: SourceLocation, name?: string]
+  | [
+      code: string,
+      newlineIndex?: number,
+      loc?: SourceLocation | null,
+      name?: string,
+    ]
   | FalsyValue
 export type CodeFragments = Exclude<CodeFragment, any[]> | CodeFragment[]
 
@@ -114,7 +156,7 @@ export function codeFragmentToString(
   }
 
   let codegen = ''
-  const pos = { line: 1, column: 1, offset: 0 }
+  const pos = { line: 1, column: 0, index: 0 }
   let indentLevel = 0
 
   for (let frag of code) {
@@ -142,7 +184,7 @@ export function codeFragmentToString(
         advancePositionWithMutation(pos, code)
       } else {
         // fast paths
-        pos.offset += code.length
+        pos.index += code.length
         if (newlineIndex === NewlineType.None) {
           pos.column += code.length
         } else {
@@ -154,7 +196,7 @@ export function codeFragmentToString(
           pos.column = code.length - newlineIndex
         }
       }
-      if (loc && loc !== locStub) {
+      if (loc) {
         addMapping(loc.end)
       }
     }
@@ -170,11 +212,51 @@ export function codeFragmentToString(
     if (name !== null && !_names.has(name)) _names.add(name)
     _mappings.add({
       originalLine: loc.line,
-      originalColumn: loc.column - 1, // source-map column is 0 based
+      originalColumn: loc.column,
       generatedLine: pos.line,
-      generatedColumn: pos.column - 1,
+      generatedColumn: pos.column,
       source: filename,
       name,
     })
   }
+}
+
+export function advancePositionWithMutation(
+  pos: Position,
+  source: string,
+  numberOfCharacters: number = source.length,
+): Position {
+  let linesCount = 0
+  let lastNewLinePos = -1
+  for (let i = 0; i < numberOfCharacters; i++) {
+    if (source.charCodeAt(i) === 10 /* newline char code */) {
+      linesCount++
+      lastNewLinePos = i
+    }
+  }
+
+  pos.index += numberOfCharacters
+  pos.line += linesCount
+  pos.column =
+    lastNewLinePos === -1
+      ? pos.column + numberOfCharacters
+      : numberOfCharacters - lastNewLinePos
+
+  return pos
+}
+
+export function advancePositionWithClone(
+  pos: Position,
+  source: string,
+  numberOfCharacters: number = source.length,
+): Position {
+  return advancePositionWithMutation(
+    {
+      index: pos.index,
+      line: pos.line,
+      column: pos.column,
+    },
+    source,
+    numberOfCharacters,
+  )
 }

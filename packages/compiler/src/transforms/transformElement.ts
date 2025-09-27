@@ -1,8 +1,3 @@
-import {
-  createSimpleExpression,
-  isValidHTMLNesting,
-  type SimpleExpressionNode,
-} from '@vue/compiler-dom'
 import { extend, isBuiltInDirective, isVoidTag, makeMap } from '@vue/shared'
 import {
   DynamicFlag,
@@ -14,10 +9,13 @@ import {
   type IRPropsStatic,
 } from '../ir'
 import {
+  createSimpleExpression,
   isJSXComponent,
   isTemplate,
+  isValidHTMLNesting,
   resolveExpression,
   resolveSimpleExpression,
+  type SimpleExpressionNode,
 } from '../utils'
 import type {
   DirectiveTransformResult,
@@ -128,12 +126,9 @@ function transformNativeElement(
   getEffectIndex: () => number,
   getOperationIndex: () => number,
 ) {
-  const { scopeId } = context.options
-
   let template = ''
 
   template += `<${tag}`
-  if (scopeId) template += ` ${scopeId}`
 
   const dynamicProps: string[] = []
   if (propsResult[0] /* dynamic props */) {

@@ -1,6 +1,5 @@
-import { createDOMCompilerError, DOMErrorCodes } from '@vue/compiler-dom'
 import { IRNodeTypes } from '../ir'
-import { resolveDirective } from '../utils'
+import { createCompilerError, ErrorCodes, resolveDirective } from '../utils'
 import type { DirectiveTransform } from '../transform'
 
 export const transformVShow: DirectiveTransform = (_dir, node, context) => {
@@ -8,7 +7,7 @@ export const transformVShow: DirectiveTransform = (_dir, node, context) => {
   const { exp, loc } = dir
   if (!exp) {
     context.options.onError(
-      createDOMCompilerError(DOMErrorCodes.X_V_SHOW_NO_EXPRESSION, loc),
+      createCompilerError(ErrorCodes.X_V_SHOW_NO_EXPRESSION, loc as any),
     )
     return
   }

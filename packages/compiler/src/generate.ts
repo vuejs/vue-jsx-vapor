@@ -8,18 +8,34 @@ import {
   INDENT_END,
   INDENT_START,
   NEWLINE,
-} from './generators/utils'
+} from './utils/generate'
 import type { BlockIRNode, RootIRNode } from './ir'
-import type {
-  CodegenOptions as BaseCodegenOptions,
-  BaseCodegenResult,
-  SimpleExpressionNode,
-} from '@vue/compiler-dom'
+import type { SimpleExpressionNode } from './utils'
+import type { ParserPlugin } from '@babel/parser'
+import type { RawSourceMap } from 'source-map-js'
 
-export type CodegenOptions = Omit<
-  BaseCodegenOptions,
-  'optimizeImports' | 'inline' | 'bindingMetadata' | 'prefixIdentifiers'
-> & {
+export type CodegenOptions = {
+  /**
+   * Generate source map?
+   * @default false
+   */
+  sourceMap?: boolean
+  /**
+   * Filename for source map generation.
+   * Also used for self-recursive reference in templates
+   * @default 'index.jsx'
+   */
+  filename?: string
+  /**
+   * Indicates that transforms and codegen should try to output valid TS code
+   */
+  isTS?: boolean
+  /**
+   * A list of parser plugins to enable for `@babel/parser`, which is used to
+   * parse expressions in bindings and interpolations.
+   * https://babeljs.io/docs/en/next/babel-parser#plugins
+   */
+  expressionPlugins?: ParserPlugin[]
   templates?: string[]
 }
 
@@ -73,30 +89,24 @@ export class CodegenContext {
     options: CodegenOptions,
   ) {
     const defaultOptions: Required<CodegenOptions> = {
-      mode: 'module',
       sourceMap: false,
-      filename: `template.vue.html`,
-      scopeId: null,
-      runtimeGlobalName: `Vue`,
-      runtimeModuleName: `vue`,
-      ssrRuntimeModuleName: 'vue/server-renderer',
-      ssr: false,
+      filename: `index.jsx`,
       isTS: false,
-      inSSR: false,
+      expressionPlugins: ['jsx'],
       templates: [],
-      expressionPlugins: [],
     }
     this.options = extend(defaultOptions, options)
     this.block = ir.block
   }
 }
 
-export interface VaporCodegenResult
-  extends Omit<BaseCodegenResult, 'preamble'> {
+export interface VaporCodegenResult {
   ast: RootIRNode
   helpers: Set<string>
   templates: string[]
   delegates: Set<string>
+  code: string
+  map?: RawSourceMap
 }
 
 // IR -> JS codegen

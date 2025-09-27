@@ -1,6 +1,7 @@
+import { genCall, NEWLINE, type CodeFragment } from '../utils'
 import type { CodegenContext } from '../generate'
 import type { DeclareOldRefIRNode, SetTemplateRefIRNode } from '../ir'
-import { genCall, genExpression, NEWLINE, type CodeFragment } from './utils'
+import { genExpression } from './expression'
 
 export const setTemplateRefIdent = `_setTemplateRef`
 

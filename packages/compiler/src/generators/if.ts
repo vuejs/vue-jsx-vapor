@@ -1,8 +1,13 @@
 import { IRNodeTypes, type IfIRNode } from '../ir'
+import {
+  buildCodeFragment,
+  genCall,
+  NEWLINE,
+  type CodeFragment,
+} from '../utils'
 import type { CodegenContext } from '../generate'
 import { genBlock } from './block'
 import { genExpression } from './expression'
-import { buildCodeFragment, genCall, NEWLINE, type CodeFragment } from './utils'
 
 export function genIf(
   oper: IfIRNode,

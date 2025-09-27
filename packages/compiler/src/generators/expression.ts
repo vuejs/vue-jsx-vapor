@@ -1,24 +1,28 @@
+import { isString } from '@vue/shared'
+import { walkIdentifiers } from 'ast-kit'
 import {
   advancePositionWithClone,
+  buildCodeFragment,
+  isConstantExpression,
   isStaticProperty,
   NewlineType,
   TS_NODE_TYPES,
+  type CodeFragment,
   type SimpleExpressionNode,
-  type SourceLocation,
-} from '@vue/compiler-dom'
-import { isString } from '@vue/shared'
-import { walkIdentifiers } from 'ast-kit'
-import { isConstantExpression } from '../utils'
+} from '../utils'
 import type { CodegenContext } from '../generate'
-import { buildCodeFragment, type CodeFragment } from './utils'
-import type { Identifier, Node } from '@babel/types'
+import type { Identifier, Node, SourceLocation } from '@babel/types'
 
 export function genExpression(
   node: SimpleExpressionNode,
   context: CodegenContext,
   assignment?: string,
+  needWrap = false,
 ): CodeFragment[] {
-  const { content, ast, isStatic, loc } = node
+  let { content, ast, isStatic, loc } = node
+  if (needWrap) {
+    content = `() => (${content})`
+  }
 
   if (isStatic) {
     return [[JSON.stringify(content), NewlineType.None, loc]]
@@ -55,8 +59,7 @@ export function genExpression(
   if (ids.length) {
     const [frag, push] = buildCodeFragment()
     const isTSNode = ast && TS_NODE_TYPES.includes(ast.type)
-    const offset =
-      (ast?.start ? ast.start - 1 : 0) - ((ast as any)._offset || 0)
+    const offset = (ast?.start ? ast.start - 1 : 0) - (needWrap ? 7 : 0)
     ids
       .sort((a, b) => a.start! - b.start!)
       .forEach((id, i) => {
@@ -87,9 +90,10 @@ export function genExpression(
             source,
             context,
             {
-              start: advancePositionWithClone(node.loc.start, source, start),
-              end: advancePositionWithClone(node.loc.start, source, end),
-              source,
+              start: advancePositionWithClone(node.loc!.start, source, start),
+              end: advancePositionWithClone(node.loc!.start, source, end),
+              filename: '',
+              identifierName: undefined,
             },
             hasMemberExpression ? undefined : assignment,
             parent,
@@ -113,7 +117,7 @@ export function genExpression(
 function genIdentifier(
   raw: string,
   context: CodegenContext,
-  loc?: SourceLocation,
+  loc?: SourceLocation | null,
   assignment?: string,
   parent?: Node,
 ): CodeFragment[] {

@@ -9,6 +9,7 @@ import {
   findProp,
   getLiteralExpressionValue,
   isEmptyText,
+  isFragmentNode,
   isJSXComponent,
   isTemplate,
   resolveExpression,
@@ -19,7 +20,6 @@ import {
   processConditionalExpression,
   processLogicalExpression,
 } from './expression'
-import { isFragmentNode } from './utils'
 import type { JSXExpressionContainer, JSXText, Node } from '@babel/types'
 
 type TextLike = JSXText | JSXExpressionContainer
@@ -121,6 +121,7 @@ function processInterpolation(context: TransformContext) {
     context.registerOperation({
       type: IRNodeTypes.CREATE_NODES,
       id,
+      once: context.inVOnce,
       values,
     })
   } else {
@@ -128,6 +129,7 @@ function processInterpolation(context: TransformContext) {
     context.registerOperation({
       type: IRNodeTypes.SET_NODES,
       element: id,
+      once: context.inVOnce,
       values,
     })
   }
@@ -147,6 +149,7 @@ function processTextContainer(children: TextLike[], context: TransformContext) {
     context.registerOperation({
       type: IRNodeTypes.SET_NODES,
       element: context.reference(),
+      once: context.inVOnce,
       values,
       // indicates this node is generated, so prefix should be "x" instead of "n"
       generated: true,
@@ -162,7 +165,7 @@ function createTextLikeExpressions(
   for (const node of nodes) {
     markNonTemplate(node, context)
     if (isEmptyText(node)) continue
-    values.push(resolveExpression(node, context, !context.inVOnce))
+    values.push(resolveExpression(node, context))
   }
   return values
 }

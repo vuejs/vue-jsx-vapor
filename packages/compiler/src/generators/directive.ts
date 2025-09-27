@@ -1,20 +1,18 @@
-import {
-  createSimpleExpression,
-  isSimpleIdentifier,
-  toValidAssetId,
-} from '@vue/compiler-dom'
 import { extend } from '@vue/shared'
 import { IRNodeTypes, type DirectiveIRNode, type OperationNode } from '../ir'
-import type { CodegenContext } from '../generate'
-import { genExpression } from './expression'
 import {
+  createSimpleExpression,
   DELIMITERS_ARRAY,
   genCall,
   genMulti,
+  isSimpleIdentifier,
   NEWLINE,
+  toValidAssetId,
   type CodeFragment,
   type CodeFragmentDelimiters,
-} from './utils'
+} from '../utils'
+import type { CodegenContext } from '../generate'
+import { genExpression } from './expression'
 import { genVModel } from './vModel'
 import { genVShow } from './vShow'
 

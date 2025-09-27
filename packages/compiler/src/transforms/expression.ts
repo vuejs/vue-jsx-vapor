@@ -1,7 +1,6 @@
 import { DynamicFlag, IRNodeTypes, type OperationNode } from '../ir'
 import { transformNode, type TransformContext } from '../transform'
-import { isConstant, resolveExpression } from '../utils'
-import { createBranch } from './utils'
+import { createBranch, isConstantNode, resolveExpression } from '../utils'
 import type { ConditionalExpression, LogicalExpression } from '@babel/types'
 
 export function processConditionalExpression(
@@ -19,7 +18,7 @@ export function processConditionalExpression(
     id,
     condition,
     positive: branch,
-    once: context.inVOnce || isConstant(test),
+    once: context.inVOnce || isConstantNode(test),
   }
 
   return [

@@ -1,6 +1,6 @@
 import type { DirectiveTransformResult } from '../transform'
+import type { SimpleExpressionNode } from '../utils'
 import type { BlockIRNode, IRFor } from './index'
-import type { SimpleExpressionNode } from '@vue/compiler-dom'
 
 // props
 export interface IRProp extends Omit<DirectiveTransformResult, 'value'> {

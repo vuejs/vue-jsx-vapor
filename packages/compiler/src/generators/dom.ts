@@ -1,6 +1,6 @@
+import { genCall, NEWLINE, type CodeFragment } from '../utils'
 import type { CodegenContext } from '../generate'
 import type { InsertNodeIRNode, PrependNodeIRNode } from '../ir'
-import { genCall, NEWLINE, type CodeFragment } from './utils'
 
 export function genInsertNode(
   { parent, elements, anchor }: InsertNodeIRNode,

@@ -1,8 +1,3 @@
-import {
-  createCompilerError,
-  ErrorCodes,
-  type SimpleExpressionNode,
-} from '@vue/compiler-dom'
 import { DynamicFlag, IRNodeTypes } from '../ir'
 import {
   createStructuralDirectiveTransform,
@@ -10,16 +5,18 @@ import {
   type TransformContext,
 } from '../transform'
 import {
+  createBranch,
+  createCompilerError,
+  ErrorCodes,
   findProp,
-  isConstant,
+  isConstantNode,
   isEmptyText,
   isJSXComponent,
   propToExpression,
   resolveExpression,
   resolveExpressionWithFn,
-  resolveLocation,
+  type SimpleExpressionNode,
 } from '../utils'
-import { createBranch } from './utils'
 import type { JSXAttribute, JSXElement } from '@babel/types'
 
 export const transformVFor: NodeTransform = createStructuralDirectiveTransform(
@@ -37,7 +34,7 @@ export function processFor(
     context.options.onError(
       createCompilerError(
         ErrorCodes.X_V_FOR_MALFORMED_EXPRESSION,
-        resolveLocation(dir.loc, context),
+        dir.loc as any,
       ),
     )
     return
@@ -73,7 +70,7 @@ export function processFor(
       index,
       keyProp: keyProperty,
       render,
-      once: context.inVOnce || !!(source.ast && isConstant(source.ast)),
+      once: context.inVOnce || !!(source.ast && isConstantNode(source.ast)),
       component: isComponent,
       onlyChild: !!isOnlyChild,
     }
@@ -106,10 +103,7 @@ export function getForParseResult(
     }
   } else {
     context.options.onError(
-      createCompilerError(
-        ErrorCodes.X_V_FOR_NO_EXPRESSION,
-        resolveLocation(dir.loc, context),
-      ),
+      createCompilerError(ErrorCodes.X_V_FOR_NO_EXPRESSION, dir.loc as any),
     )
   }
 

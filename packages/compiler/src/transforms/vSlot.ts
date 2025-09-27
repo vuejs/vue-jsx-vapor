@@ -1,11 +1,7 @@
 import {
-  createCompilerError,
-  ErrorCodes,
-  type SimpleExpressionNode,
-} from '@vue/compiler-dom'
-import {
   DynamicFlag,
   IRSlotType,
+  type DirectiveNode,
   type IRFor,
   type IRSlotDynamic,
   type IRSlotDynamicBasic,
@@ -13,19 +9,19 @@ import {
   type IRSlots,
   type IRSlotsStatic,
   type SlotBlockIRNode,
-  type VaporDirectiveNode,
 } from '../ir'
 import {
+  createCompilerError,
+  ErrorCodes,
   findProp,
   isEmptyText,
   isJSXComponent,
   isTemplate,
+  newBlock,
   resolveDirective,
-  resolveLocation,
-  resolveSimpleExpressionNode,
+  type SimpleExpressionNode,
 } from '../utils'
 import type { NodeTransform, TransformContext } from '../transform'
-import { newBlock } from './utils'
 import { getForParseResult } from './vFor'
 import type { JSXElement } from '@babel/types'
 
@@ -53,10 +49,7 @@ export const transformVSlot: NodeTransform = (node, context) => {
     return transformTemplateSlot(node, resolvedDirective, context)
   } else if (!isComponent && dir) {
     context.options.onError(
-      createCompilerError(
-        ErrorCodes.X_V_SLOT_MISPLACED,
-        resolveLocation(dir.loc, context),
-      ),
+      createCompilerError(ErrorCodes.X_V_SLOT_MISPLACED, dir.loc as any),
     )
   }
 }
@@ -64,7 +57,7 @@ export const transformVSlot: NodeTransform = (node, context) => {
 // <Foo v-slot:default>
 function transformComponentSlot(
   node: JSXElement,
-  dir: VaporDirectiveNode | undefined,
+  dir: DirectiveNode | undefined,
   context: TransformContext,
 ) {
   const { children } = node
@@ -85,7 +78,10 @@ function transformComponentSlot(
     if (dir && hasOtherSlots) {
       // already has on-component slot - this is incorrect usage.
       context.options.onError(
-        createCompilerError(ErrorCodes.X_V_SLOT_MIXED_SLOT_USAGE, dir.loc),
+        createCompilerError(
+          ErrorCodes.X_V_SLOT_MIXED_SLOT_USAGE,
+          dir.loc as any,
+        ),
       )
       return
     }
@@ -95,7 +91,7 @@ function transformComponentSlot(
         context.options.onError(
           createCompilerError(
             ErrorCodes.X_V_SLOT_EXTRANEOUS_DEFAULT_SLOT_CHILDREN,
-            resolveLocation(nonSlotTemplateChildren[0].loc, context),
+            nonSlotTemplateChildren[0].loc as any,
           ),
         )
       } else {
@@ -112,12 +108,12 @@ const elseIfRE = /^v-else(-if)?$/
 // <template v-slot:foo>
 function transformTemplateSlot(
   node: JSXElement,
-  dir: VaporDirectiveNode,
+  dir: DirectiveNode,
   context: TransformContext,
 ) {
   context.dynamic.flags |= DynamicFlag.NON_TEMPLATE
 
-  const arg = dir.arg && resolveSimpleExpressionNode(dir.arg)
+  const arg = dir.arg
   const vFor = findProp(node, 'v-for')
   const vIf = findProp(node, 'v-if')
   const vElse = findProp(node, elseIfRE)
@@ -128,7 +124,10 @@ function transformTemplateSlot(
     const slotName = arg ? arg.isStatic && arg.content : 'default'
     if (slotName && hasStaticSlot(slots, slotName)) {
       context.options.onError(
-        createCompilerError(ErrorCodes.X_V_SLOT_DUPLICATE_SLOT_NAMES, dir.loc),
+        createCompilerError(
+          ErrorCodes.X_V_SLOT_DUPLICATE_SLOT_NAMES,
+          dir.loc as any,
+        ),
       )
     } else {
       registerSlot(slots, arg, block)
@@ -173,7 +172,10 @@ function transformTemplateSlot(
       ifNode.negative = negative
     } else {
       context.options.onError(
-        createCompilerError(ErrorCodes.X_V_ELSE_NO_ADJACENT_IF, vElseDir.loc),
+        createCompilerError(
+          ErrorCodes.X_V_ELSE_NO_ADJACENT_IF,
+          vElseDir.loc as any,
+        ),
       )
     }
   } else if (vFor) {
@@ -234,7 +236,7 @@ function hasStaticSlot(slots: IRSlots[], name: string) {
 
 function createSlotBlock(
   slotNode: JSXElement,
-  dir: VaporDirectiveNode | undefined,
+  dir: DirectiveNode | undefined,
   context: TransformContext,
 ): [SlotBlockIRNode, () => void] {
   const block: SlotBlockIRNode = newBlock(slotNode)

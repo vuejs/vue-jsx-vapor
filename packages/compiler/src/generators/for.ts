@@ -5,27 +5,24 @@ import {
   type Identifier,
   type Node,
 } from '@babel/types'
+import { extend, isGloballyAllowed } from '@vue/shared'
+import { walkAST, walkIdentifiers } from 'ast-kit'
 import {
   createSimpleExpression,
-  walkIdentifiers,
+  genCall,
+  genMulti,
+  INDENT_END,
+  INDENT_START,
+  isConstantNode,
+  NEWLINE,
+  type CodeFragment,
   type SimpleExpressionNode,
-} from '@vue/compiler-dom'
-import { extend, isGloballyAllowed } from '@vue/shared'
-import { walkAST } from 'ast-kit'
-import { isConstant } from '../utils'
+} from '../utils'
 import type { CodegenContext } from '../generate'
 import type { BlockIRNode, ForIRNode, IREffect } from '../ir'
 import { genBlockContent } from './block'
 import { genExpression } from './expression'
 import { genOperation } from './operation'
-import {
-  genCall,
-  genMulti,
-  INDENT_END,
-  INDENT_START,
-  NEWLINE,
-  type CodeFragment,
-} from './utils'
 
 /**
  * Flags to optimize vapor `createFor` runtime behavior, shared between the
@@ -88,9 +85,8 @@ export function genFor(
       }
       if (pathInfo.dynamic) {
         const node = (idMap[id] = createSimpleExpression(path))
-        const plugins = context.options.expressionPlugins
         node.ast = parseExpression(`(${path})`, {
-          plugins: plugins ? [...plugins, 'typescript'] : ['typescript'],
+          plugins: context.options.expressionPlugins,
         })
       } else {
         idMap[id] = path
@@ -400,7 +396,7 @@ function matchSelectorPattern(
   // TODO: expressions can be multiple?
   if (effect.expressions.length === 1) {
     const ast = effect.expressions[0].ast
-    const offset = effect.expressions[0].loc.start.offset
+    const offset = effect.expressions[0].loc!.start.index
     if (typeof ast === 'object' && ast) {
       const matcheds: [key: Expression, selector: Expression][] = []
 
@@ -455,14 +451,13 @@ function matchSelectorPattern(
           )
           return {
             effect,
-            // @ts-expect-error
             selector: {
               content: name,
               ast: extend({}, selector, {
                 start: 1,
                 end: name.length + 1,
               }),
-              loc: selector.loc as any,
+              loc: selector.loc,
               isStatic: false,
             },
           }
@@ -478,8 +473,8 @@ function matchSelectorPattern(
       ast.test.type === 'BinaryExpression' &&
       ast.test.operator === '===' &&
       ast.test.left.type !== 'PrivateName' &&
-      isConstant(ast.consequent) &&
-      isConstant(ast.alternate)
+      isConstantNode(ast.consequent) &&
+      isConstantNode(ast.alternate)
     ) {
       const left = ast.test.left
       const right = ast.test.right
@@ -493,11 +488,10 @@ function matchSelectorPattern(
         if (aIsKey && !bIsKey && !bVars.locals.length) {
           return {
             effect,
-            // @ts-expect-error
             selector: {
               content: content.slice(b.start! - offset, b.end! - offset),
               ast: b,
-              loc: b.loc as any,
+              loc: b.loc,
               isStatic: false,
             },
           }

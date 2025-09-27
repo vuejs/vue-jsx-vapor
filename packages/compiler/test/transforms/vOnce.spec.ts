@@ -1,4 +1,3 @@
-import { NodeTypes } from '@vue/compiler-dom'
 import { describe, expect, test } from 'vitest'
 import { IRNodeTypes } from '../../src'
 import { getBaseTransformPreset } from '../../src/compile'
@@ -27,7 +26,6 @@ describe('compiler: v-once', () => {
         element: 0,
         values: [
           {
-            type: NodeTypes.SIMPLE_EXPRESSION,
             content: 'msg',
             isStatic: false,
           },
@@ -38,13 +36,11 @@ describe('compiler: v-once', () => {
         type: IRNodeTypes.SET_PROP,
         prop: {
           key: {
-            type: NodeTypes.SIMPLE_EXPRESSION,
             content: 'class',
             isStatic: true,
           },
           values: [
             {
-              type: NodeTypes.SIMPLE_EXPRESSION,
               content: 'clz',
               isStatic: false,
             },
@@ -66,13 +62,11 @@ describe('compiler: v-once', () => {
         element: 0,
         prop: {
           key: {
-            type: NodeTypes.SIMPLE_EXPRESSION,
             content: 'id',
             isStatic: true,
           },
           values: [
             {
-              type: NodeTypes.SIMPLE_EXPRESSION,
               content: 'foo',
               isStatic: false,
             },
@@ -96,13 +90,11 @@ describe('compiler: v-once', () => {
         prop: {
           runtimeCamelize: false,
           key: {
-            type: NodeTypes.SIMPLE_EXPRESSION,
             content: 'id',
             isStatic: true,
           },
           values: [
             {
-              type: NodeTypes.SIMPLE_EXPRESSION,
               content: 'foo',
               isStatic: false,
             },
@@ -136,8 +128,6 @@ describe('compiler: v-once', () => {
     expect(ir.block.operation).lengthOf(0)
   })
 
-  test.todo('with hoistStatic: true')
-
   test('with v-if', () => {
     const { ir, code } = compileWithOnce(`<div v-if={expr} v-once />`)
     expect(code).toMatchSnapshot()
@@ -149,7 +139,6 @@ describe('compiler: v-once', () => {
       id: 0,
       once: true,
       condition: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'expr',
         isStatic: false,
       },
@@ -175,7 +164,6 @@ describe('compiler: v-once', () => {
       id: 0,
       once: true,
       condition: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'expr',
         isStatic: false,
       },

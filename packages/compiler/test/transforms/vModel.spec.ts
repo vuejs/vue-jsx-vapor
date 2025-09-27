@@ -1,4 +1,3 @@
-import { DOMErrorCodes, ErrorCodes } from '@vue/compiler-dom'
 import { describe, expect, test, vi } from 'vitest'
 import {
   IRNodeTypes,
@@ -6,6 +5,7 @@ import {
   transformElement,
   transformVModel,
 } from '../../src'
+import { ErrorCodes } from '../../src/utils'
 import { makeCompile } from './_utils'
 
 const compileWithVModel = makeCompile({
@@ -100,7 +100,7 @@ describe('compiler: vModel transform', () => {
       expect(onError).toHaveBeenCalledTimes(1)
       expect(onError).toHaveBeenCalledWith(
         expect.objectContaining({
-          code: DOMErrorCodes.X_V_MODEL_ON_INVALID_ELEMENT,
+          code: ErrorCodes.X_V_MODEL_ON_INVALID_ELEMENT,
         }),
       )
     })
@@ -112,7 +112,7 @@ describe('compiler: vModel transform', () => {
       expect(onError).toHaveBeenCalledTimes(1)
       expect(onError).toHaveBeenCalledWith(
         expect.objectContaining({
-          code: DOMErrorCodes.X_V_MODEL_ARG_ON_ELEMENT,
+          code: ErrorCodes.X_V_MODEL_ARG_ON_ELEMENT,
         }),
       )
     })
@@ -135,7 +135,7 @@ describe('compiler: vModel transform', () => {
       })
       expect(onError).toHaveBeenCalledWith(
         expect.objectContaining({
-          code: DOMErrorCodes.X_V_MODEL_ON_FILE_INPUT_ELEMENT,
+          code: ErrorCodes.X_V_MODEL_ON_FILE_INPUT_ELEMENT,
         }),
       )
     })
@@ -147,7 +147,7 @@ describe('compiler: vModel transform', () => {
       })
       expect(onError).toHaveBeenCalledWith(
         expect.objectContaining({
-          code: DOMErrorCodes.X_V_MODEL_UNNECESSARY_VALUE,
+          code: ErrorCodes.X_V_MODEL_UNNECESSARY_VALUE,
         }),
       )
     })

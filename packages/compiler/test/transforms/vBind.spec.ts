@@ -1,4 +1,3 @@
-import { NodeTypes } from '@vue/compiler-dom'
 import { describe, expect, test } from 'vitest'
 import {
   DynamicFlag,
@@ -38,7 +37,6 @@ describe('compiler v-bind', () => {
     expect(ir.block.effect[0]).toMatchObject({
       expressions: [
         {
-          type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'id',
           isStatic: false,
         },
@@ -49,30 +47,26 @@ describe('compiler v-bind', () => {
           element: 0,
           prop: {
             key: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
               content: 'id',
               isStatic: true,
               loc: {
-                start: { line: 1, column: 6, offset: 5 },
-                end: { line: 1, column: 8, offset: 7 },
-                source: 'id',
+                start: { line: 1, column: 5, index: 5 },
+                end: { line: 1, column: 7, index: 7 },
               },
             },
             values: [
               {
-                type: NodeTypes.SIMPLE_EXPRESSION,
                 content: 'id',
                 isStatic: false,
                 loc: {
-                  source: 'id',
-                  start: { line: 1, column: 10, offset: 9 },
-                  end: { line: 1, column: 12, offset: 11 },
+                  start: { line: 1, column: 9, index: 9 },
+                  end: { line: 1, column: 11, index: 11 },
                 },
               },
             ],
             loc: {
-              start: { column: 5, line: 1, index: 5 },
-              end: { column: 12, line: 1, index: 12 },
+              start: { line: 1, column: 5, index: 5 },
+              end: { line: 1, column: 12, index: 12 },
             },
             runtimeCamelize: false,
           },
@@ -94,8 +88,8 @@ describe('compiler v-bind', () => {
           content: `id`,
           isStatic: true,
           loc: {
-            start: { line: 1, column: 6, offset: 5 },
-            end: { line: 1, column: 8, offset: 7 },
+            start: { line: 1, column: 5, index: 5 },
+            end: { line: 1, column: 7, index: 7 },
           },
         },
         values: [
@@ -103,8 +97,8 @@ describe('compiler v-bind', () => {
             content: `true`,
             isStatic: false,
             loc: {
-              start: { line: 1, column: 1, offset: 0 },
-              end: { line: 1, column: 1, offset: 0 },
+              start: { line: 1, column: 0, index: 0 },
+              end: { line: 1, column: 0, index: 0 },
             },
           },
         ],
@@ -148,13 +142,11 @@ describe('compiler v-bind', () => {
         [
           {
             key: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
               content: 'id',
               isStatic: false,
             },
             values: [
               {
-                type: NodeTypes.SIMPLE_EXPRESSION,
                 content: 'id',
                 isStatic: false,
               },
@@ -162,13 +154,11 @@ describe('compiler v-bind', () => {
           },
           {
             key: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
               content: 'title',
               isStatic: false,
             },
             values: [
               {
-                type: NodeTypes.SIMPLE_EXPRESSION,
                 content: 'title',
                 isStatic: false,
               },
@@ -194,13 +184,11 @@ describe('compiler v-bind', () => {
         [
           {
             key: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
               content: 'id',
               isStatic: false,
             },
             values: [
               {
-                type: NodeTypes.SIMPLE_EXPRESSION,
                 content: 'id',
                 isStatic: false,
               },
@@ -208,13 +196,11 @@ describe('compiler v-bind', () => {
           },
           {
             key: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
               content: 'foo',
               isStatic: true,
             },
             values: [
               {
-                type: NodeTypes.SIMPLE_EXPRESSION,
                 content: 'bar',
                 isStatic: true,
               },
@@ -222,7 +208,6 @@ describe('compiler v-bind', () => {
           },
           {
             key: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
               content: 'checked',
               isStatic: true,
             },

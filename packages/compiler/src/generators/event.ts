@@ -1,23 +1,21 @@
 import {
-  isFnExpression,
-  isMemberExpression,
-  type SimpleExpressionNode,
-} from '@vue/compiler-dom'
-import {
   IRNodeTypes,
   type OperationNode,
   type SetDynamicEventsIRNode,
   type SetEventIRNode,
 } from '../ir'
-import type { CodegenContext } from '../generate'
-import { genExpression } from './expression'
 import {
   DELIMITERS_OBJECT_NEWLINE,
   genCall,
   genMulti,
+  isFnExpression,
+  isMemberExpression,
   NEWLINE,
   type CodeFragment,
-} from './utils'
+  type SimpleExpressionNode,
+} from '../utils'
+import type { CodegenContext } from '../generate'
+import { genExpression } from './expression'
 
 export function genSetEvent(
   oper: SetEventIRNode,
@@ -118,7 +116,7 @@ export function genEventHandler(
   if (value && value.content.trim()) {
     // Determine how the handler should be wrapped so it always reference the
     // latest value when invoked.
-    if (isMemberExpression(value, context.options)) {
+    if (isMemberExpression(value)) {
       // e.g. @click="foo.bar"
       handlerExp = genExpression(value, context)
       if (!extraWrap) {
@@ -127,7 +125,7 @@ export function genEventHandler(
         // can skip this
         handlerExp = [`e => `, ...handlerExp, `(e)`]
       }
-    } else if (isFnExpression(value, context.options)) {
+    } else if (isFnExpression(value)) {
       // Fn expression: @click="e => foo(e)"
       // no need to wrap in this case
       handlerExp = genExpression(value, context)

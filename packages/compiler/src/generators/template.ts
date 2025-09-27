@@ -1,8 +1,13 @@
 import { DynamicFlag, type IRDynamicInfo } from '../ir'
+import {
+  buildCodeFragment,
+  genCall,
+  NEWLINE,
+  type CodeFragment,
+} from '../utils'
 import type { CodegenContext } from '../generate'
 import { genDirectivesForElement } from './directive'
 import { genOperationWithInsertionState } from './operation'
-import { buildCodeFragment, genCall, NEWLINE, type CodeFragment } from './utils'
 
 export function genTemplates(
   templates: string[],

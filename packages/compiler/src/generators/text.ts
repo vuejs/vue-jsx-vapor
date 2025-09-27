@@ -1,4 +1,11 @@
-import { getLiteralExpressionValue } from '../utils'
+import {
+  genCall,
+  getLiteralExpressionValue,
+  isConstantNode,
+  NEWLINE,
+  type CodeFragment,
+  type SimpleExpressionNode,
+} from '../utils'
 import type { CodegenContext } from '../generate'
 import type {
   CreateNodesIRNode,
@@ -7,8 +14,6 @@ import type {
   SetTextIRNode,
 } from '../ir'
 import { genExpression } from './expression'
-import { genCall, NEWLINE, type CodeFragment } from './utils'
-import type { SimpleExpressionNode } from '@vue/compiler-dom'
 
 export function genSetText(
   oper: SetTextIRNode,
@@ -16,7 +21,7 @@ export function genSetText(
 ): CodeFragment[] {
   const { helper } = context
   const { element, values, generated } = oper
-  const texts = combineValues(values, context, true)
+  const texts = combineValues(values, context, true, true)
   return [
     NEWLINE,
     ...genCall(helper('setText'), `${generated ? 'x' : 'n'}${element}`, texts),
@@ -38,13 +43,13 @@ export function genSetNodes(
   context: CodegenContext,
 ): CodeFragment[] {
   const { helper } = context
-  const { element, values, generated } = oper
+  const { element, values, generated, once } = oper
   return [
     NEWLINE,
     ...genCall(
       helper('setNodes'),
       `${generated ? 'x' : 'n'}${element}`,
-      combineValues(values, context),
+      combineValues(values, context, once),
     ),
   ]
 }
@@ -54,21 +59,36 @@ export function genCreateNodes(
   context: CodegenContext,
 ): CodeFragment[] {
   const { helper } = context
-  const { id, values } = oper
+  const { id, values, once } = oper
   return [
     NEWLINE,
     `const n${id} = `,
-    ...genCall(helper('createNodes'), values && combineValues(values, context)),
+    ...genCall(
+      helper('createNodes'),
+      values && combineValues(values, context, once),
+    ),
   ]
 }
 
 function combineValues(
   values: SimpleExpressionNode[],
   context: CodegenContext,
+  once: boolean,
   setText?: boolean,
 ): CodeFragment[] {
   return values.flatMap((value, i) => {
-    let exp = genExpression(value, context)
+    const { content, isStatic, ast } = value
+    let exp = genExpression(
+      value,
+      context,
+      undefined,
+      !once &&
+        !setText &&
+        !!content &&
+        !isStatic &&
+        !!ast &&
+        !isConstantNode(ast),
+    )
     if (setText && getLiteralExpressionValue(value) == null) {
       // dynamic, wrap with toDisplayString
       exp = genCall(context.helper('toDisplayString'), exp)

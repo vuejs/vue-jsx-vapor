@@ -1,19 +1,16 @@
+import { extend, isString, makeMap } from '@vue/shared'
+import { IRNodeTypes, type KeyOverride, type SetEventIRNode } from '../ir'
 import {
   createCompilerError,
   createSimpleExpression,
+  EMPTY_EXPRESSION,
   ErrorCodes,
-  resolveModifiers,
-} from '@vue/compiler-dom'
-import { extend, makeMap } from '@vue/shared'
-import { IRNodeTypes, type KeyOverride, type SetEventIRNode } from '../ir'
-import {
   isJSXComponent,
   resolveExpression,
-  resolveLocation,
   resolveSimpleExpression,
+  type SimpleExpressionNode,
 } from '../utils'
 import type { DirectiveTransform } from '../transform'
-import { EMPTY_EXPRESSION } from './utils'
 
 const delegatedEvents = /*#__PURE__*/ makeMap(
   'beforeinput,click,dblclick,contextmenu,focusin,focusout,input,keydown,' +
@@ -34,10 +31,7 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
 
   if (!value && !modifiers.length) {
     context.options.onError(
-      createCompilerError(
-        ErrorCodes.X_V_ON_NO_EXPRESSION,
-        resolveLocation(loc, context),
-      ),
+      createCompilerError(ErrorCodes.X_V_ON_NO_EXPRESSION, loc),
     )
   }
 
@@ -48,8 +42,6 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
     resolveModifiers(
       arg.isStatic ? `on${nameString}` : arg,
       modifiers.map((modifier) => createSimpleExpression(modifier)),
-      null,
-      resolveLocation(loc, context),
     )
 
   let keyOverride: KeyOverride | undefined
@@ -111,4 +103,66 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
   }
 
   context.registerEffect([arg], operation)
+}
+
+const isEventOptionModifier = /*@__PURE__*/ makeMap(`passive,once,capture`)
+const isNonKeyModifier = /*@__PURE__*/ makeMap(
+  // event propagation management
+  `stop,prevent,self,` +
+    // system modifiers + exact
+    `ctrl,shift,alt,meta,exact,` +
+    // mouse
+    `middle`,
+)
+// left & right could be mouse or key modifiers based on event type
+const maybeKeyModifier = /*@__PURE__*/ makeMap('left,right')
+const isKeyboardEvent = /*@__PURE__*/ makeMap(`onkeyup,onkeydown,onkeypress`)
+
+export const resolveModifiers = (
+  key: SimpleExpressionNode | string,
+  modifiers: SimpleExpressionNode[],
+): {
+  keyModifiers: string[]
+  nonKeyModifiers: string[]
+  eventOptionModifiers: string[]
+} => {
+  const keyModifiers = []
+  const nonKeyModifiers = []
+  const eventOptionModifiers = []
+
+  for (const modifier_ of modifiers) {
+    const modifier = modifier_.content
+
+    if (isEventOptionModifier(modifier)) {
+      // eventOptionModifiers: modifiers for addEventListener() options,
+      // e.g. .passive & .capture
+      eventOptionModifiers.push(modifier)
+    } else {
+      const keyString = isString(key) ? key : key.isStatic ? key.content : null
+
+      // runtimeModifiers: modifiers that needs runtime guards
+      if (maybeKeyModifier(modifier)) {
+        if (keyString) {
+          if (isKeyboardEvent(keyString.toLowerCase())) {
+            keyModifiers.push(modifier)
+          } else {
+            nonKeyModifiers.push(modifier)
+          }
+        } else {
+          keyModifiers.push(modifier)
+          nonKeyModifiers.push(modifier)
+        }
+      } else if (isNonKeyModifier(modifier)) {
+        nonKeyModifiers.push(modifier)
+      } else {
+        keyModifiers.push(modifier)
+      }
+    }
+  }
+
+  return {
+    keyModifiers,
+    nonKeyModifiers,
+    eventOptionModifiers,
+  }
 }

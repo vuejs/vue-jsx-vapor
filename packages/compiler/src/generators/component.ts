@@ -1,4 +1,3 @@
-import { createSimpleExpression, toValidAssetId } from '@vue/compiler-dom'
 import { camelize, extend, isArray } from '@vue/shared'
 import { walkIdentifiers } from 'ast-kit'
 import {
@@ -16,13 +15,8 @@ import {
   type IRSlotsStatic,
   type SlotBlockIRNode,
 } from '../ir'
-import type { CodegenContext } from '../generate'
-import { genBlock } from './block'
-import { genDirectiveModifiers, genDirectivesForElement } from './directive'
-import { genEventHandler } from './event'
-import { genExpression } from './expression'
-import { genPropKey, genPropValue } from './prop'
 import {
+  createSimpleExpression,
   DELIMITERS_ARRAY_NEWLINE,
   DELIMITERS_OBJECT,
   DELIMITERS_OBJECT_NEWLINE,
@@ -31,8 +25,15 @@ import {
   INDENT_END,
   INDENT_START,
   NEWLINE,
+  toValidAssetId,
   type CodeFragment,
-} from './utils'
+} from '../utils'
+import type { CodegenContext } from '../generate'
+import { genBlock } from './block'
+import { genDirectiveModifiers, genDirectivesForElement } from './directive'
+import { genEventHandler } from './event'
+import { genExpression } from './expression'
+import { genPropKey, genPropValue } from './prop'
 import { genModelHandler } from './vModel'
 
 export function genCreateComponent(

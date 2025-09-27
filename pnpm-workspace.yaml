@@ -21,7 +21,6 @@ catalog:
   '@nuxt/kit': ^3.19.2
   '@nuxt/schema': ^3.19.2
 
-  '@vue/compiler-dom': *vue
   '@vue/compiler-sfc': *vue
   '@vue/shared': *vue
 

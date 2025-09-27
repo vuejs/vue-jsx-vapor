@@ -1,4 +1,3 @@
-import { DOMErrorCodes, NodeTypes } from '@vue/compiler-dom'
 import { describe, expect, test, vi } from 'vitest'
 import {
   IRNodeTypes,
@@ -6,6 +5,7 @@ import {
   transformElement,
   transformVHtml,
 } from '../../src'
+import { ErrorCodes } from '../../src/utils'
 import { makeCompile } from './_utils'
 
 const compileWithVHtml = makeCompile({
@@ -28,7 +28,6 @@ describe('v-html', () => {
       {
         expressions: [
           {
-            type: NodeTypes.SIMPLE_EXPRESSION,
             content: 'code.value',
             isStatic: false,
           },
@@ -38,7 +37,6 @@ describe('v-html', () => {
             type: IRNodeTypes.SET_HTML,
             element: 0,
             value: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
               content: 'code.value',
               isStatic: false,
             },
@@ -69,7 +67,6 @@ describe('v-html', () => {
       {
         expressions: [
           {
-            type: NodeTypes.SIMPLE_EXPRESSION,
             content: 'test.value',
             isStatic: false,
           },
@@ -79,7 +76,6 @@ describe('v-html', () => {
             type: IRNodeTypes.SET_HTML,
             element: 0,
             value: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
               content: 'test.value',
               isStatic: false,
             },
@@ -89,7 +85,7 @@ describe('v-html', () => {
     ])
 
     expect(onError.mock.calls).toMatchObject([
-      [{ code: DOMErrorCodes.X_V_HTML_WITH_CHILDREN }],
+      [{ code: ErrorCodes.X_V_HTML_WITH_CHILDREN }],
     ])
 
     // children should have been removed
@@ -103,7 +99,7 @@ describe('v-html', () => {
     })
     expect(code).matchSnapshot()
     expect(onError.mock.calls).toMatchObject([
-      [{ code: DOMErrorCodes.X_V_HTML_NO_EXPRESSION }],
+      [{ code: ErrorCodes.X_V_HTML_NO_EXPRESSION }],
     ])
   })
 })

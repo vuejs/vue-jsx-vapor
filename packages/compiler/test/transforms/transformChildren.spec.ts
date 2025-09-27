@@ -1,5 +1,3 @@
-import { NodeTypes } from '@vue/compiler-dom'
-
 import { describe, expect, test } from 'vitest'
 import {
   IRDynamicPropsKind,
@@ -101,7 +99,6 @@ describe('compiler: children transform', () => {
       {
         expressions: [
           {
-            type: NodeTypes.SIMPLE_EXPRESSION,
             content: 'obj',
             isStatic: false,
           },
@@ -114,7 +111,6 @@ describe('compiler: children transform', () => {
               {
                 kind: IRDynamicPropsKind.EXPRESSION,
                 value: {
-                  type: NodeTypes.SIMPLE_EXPRESSION,
                   content: 'obj',
                   isStatic: false,
                 },

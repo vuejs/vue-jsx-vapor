@@ -1,18 +1,13 @@
-import {
-  createCompilerError,
-  createDOMCompilerError,
-  createSimpleExpression,
-  DOMErrorCodes,
-  ErrorCodes,
-  isMemberExpression,
-} from '@vue/compiler-dom'
 import { IRNodeTypes, type DirectiveIRNode } from '../ir'
 import {
+  createCompilerError,
+  createSimpleExpression,
+  ErrorCodes,
   findProp,
   getText,
   isJSXComponent,
+  isMemberExpression,
   resolveDirective,
-  resolveLocation,
 } from '../utils'
 import type { DirectiveTransform } from '../transform'
 import type { JSXElement } from '@babel/types'
@@ -28,9 +23,12 @@ export const transformVModel: DirectiveTransform = (_dir, node, context) => {
   }
 
   const expString = exp.content
-  if (!expString.trim() || !isMemberExpression(exp, context.options)) {
+  if (!expString.trim() || !isMemberExpression(exp)) {
     context.options.onError(
-      createCompilerError(ErrorCodes.X_V_MODEL_MALFORMED_EXPRESSION, exp.loc),
+      createCompilerError(
+        ErrorCodes.X_V_MODEL_MALFORMED_EXPRESSION,
+        exp.loc as any,
+      ),
     )
     return
   }
@@ -47,10 +45,7 @@ export const transformVModel: DirectiveTransform = (_dir, node, context) => {
 
   if (dir.arg)
     context.options.onError(
-      createDOMCompilerError(
-        DOMErrorCodes.X_V_MODEL_ARG_ON_ELEMENT,
-        dir.arg.loc,
-      ),
+      createCompilerError(ErrorCodes.X_V_MODEL_ARG_ON_ELEMENT, dir.arg.loc),
     )
   const tag = getText(node.openingElement.name, context)
   const isCustomElement = context.options.isCustomElement(tag)
@@ -79,8 +74,8 @@ export const transformVModel: DirectiveTransform = (_dir, node, context) => {
             case 'file':
               modelType = undefined
               context.options.onError(
-                createDOMCompilerError(
-                  DOMErrorCodes.X_V_MODEL_ON_FILE_INPUT_ELEMENT,
+                createCompilerError(
+                  ErrorCodes.X_V_MODEL_ON_FILE_INPUT_ELEMENT,
                   dir.loc,
                 ),
               )
@@ -107,10 +102,7 @@ export const transformVModel: DirectiveTransform = (_dir, node, context) => {
     }
   } else {
     context.options.onError(
-      createDOMCompilerError(
-        DOMErrorCodes.X_V_MODEL_ON_INVALID_ELEMENT,
-        dir.loc,
-      ),
+      createCompilerError(ErrorCodes.X_V_MODEL_ON_INVALID_ELEMENT, dir.loc),
     )
   }
 
@@ -128,10 +120,7 @@ export const transformVModel: DirectiveTransform = (_dir, node, context) => {
     const value = findProp(node, 'value')
     if (value && value.value?.type !== 'StringLiteral') {
       context.options.onError(
-        createDOMCompilerError(
-          DOMErrorCodes.X_V_MODEL_UNNECESSARY_VALUE,
-          resolveLocation(value.loc, context),
-        ),
+        createCompilerError(ErrorCodes.X_V_MODEL_UNNECESSARY_VALUE, value.loc),
       )
     }
   }

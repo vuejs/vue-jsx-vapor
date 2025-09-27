@@ -1,8 +1,3 @@
-import { toValidAssetId } from '@vue/compiler-dom'
-import type { CodegenContext } from '../generate'
-import type { BlockIRNode } from '../ir'
-import { genEffects, genOperations } from './operation'
-import { genChildren, genSelf } from './template'
 import {
   buildCodeFragment,
   DELIMITERS_ARRAY,
@@ -11,8 +6,13 @@ import {
   INDENT_END,
   INDENT_START,
   NEWLINE,
+  toValidAssetId,
   type CodeFragment,
-} from './utils'
+} from '../utils'
+import type { CodegenContext } from '../generate'
+import type { BlockIRNode } from '../ir'
+import { genEffects, genOperations } from './operation'
+import { genChildren, genSelf } from './template'
 
 export function genBlock(
   oper: BlockIRNode,

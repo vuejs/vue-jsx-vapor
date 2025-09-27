@@ -1,4 +1,3 @@
-import { ErrorCodes, NodeTypes } from '@vue/compiler-dom'
 import { describe, expect, test, vi } from 'vitest'
 import {
   IRNodeTypes,
@@ -8,6 +7,7 @@ import {
   transformVBind,
   transformVOn,
 } from '../../src'
+import { ErrorCodes } from '../../src/utils'
 import { makeCompile } from './_utils'
 
 const compileWithVOn = makeCompile({
@@ -38,12 +38,10 @@ describe('v-on', () => {
         type: IRNodeTypes.SET_EVENT,
         element: 0,
         key: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'click',
           isStatic: true,
         },
         value: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'handleClick',
           isStatic: false,
         },
@@ -92,11 +90,11 @@ describe('v-on', () => {
       loc: {
         start: {
           line: 1,
-          column: 6,
+          column: 5,
         },
         end: {
           line: 1,
-          column: 13,
+          column: 12,
         },
       },
     })
@@ -119,7 +117,6 @@ describe('v-on', () => {
       {
         type: IRNodeTypes.SET_EVENT,
         value: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'test',
           isStatic: false,
         },
@@ -149,12 +146,10 @@ describe('v-on', () => {
       {
         type: IRNodeTypes.SET_EVENT,
         key: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'click',
           isStatic: true,
         },
         value: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'test',
           isStatic: false,
         },
@@ -167,12 +162,10 @@ describe('v-on', () => {
       {
         type: IRNodeTypes.SET_EVENT,
         key: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'keyup',
           isStatic: true,
         },
         value: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'test',
           isStatic: false,
         },
@@ -208,12 +201,10 @@ describe('v-on', () => {
         type: IRNodeTypes.SET_EVENT,
         element: 0,
         key: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'keydown',
           isStatic: true,
         },
         value: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'test',
           isStatic: false,
         },
@@ -265,7 +256,6 @@ describe('v-on', () => {
       {
         type: IRNodeTypes.SET_EVENT,
         key: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'contextmenu',
           isStatic: true,
         },
@@ -286,7 +276,6 @@ describe('v-on', () => {
       {
         type: IRNodeTypes.SET_EVENT,
         key: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'mouseup',
           isStatic: true,
         },

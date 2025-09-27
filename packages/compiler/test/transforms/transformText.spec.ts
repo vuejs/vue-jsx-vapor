@@ -1,5 +1,4 @@
 // TODO: add tests for this transform
-import { NodeTypes } from '@vue/compiler-dom'
 import { describe, expect, it } from 'vitest'
 import {
   IRNodeTypes,
@@ -32,7 +31,6 @@ describe('compiler: text transform', () => {
         type: IRNodeTypes.CREATE_NODES,
         values: [
           {
-            type: NodeTypes.SIMPLE_EXPRESSION,
             content: 'hello world',
             isStatic: true,
           },
@@ -50,8 +48,7 @@ describe('compiler: text transform', () => {
         type: IRNodeTypes.CREATE_NODES,
         values: [
           {
-            type: NodeTypes.SIMPLE_EXPRESSION,
-            content: '() => (msg)',
+            content: 'msg',
             isStatic: false,
           },
         ],

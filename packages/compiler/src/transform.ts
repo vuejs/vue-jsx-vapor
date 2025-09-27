@@ -1,11 +1,3 @@
-import {
-  defaultOnError,
-  defaultOnWarn,
-  type TransformOptions as BaseTransformOptions,
-  type CommentNode,
-  type CompilerCompatOptions,
-  type SimpleExpressionNode,
-} from '@vue/compiler-dom'
 import { extend, isArray, isString, NOOP } from '@vue/shared'
 import {
   DynamicFlag,
@@ -19,14 +11,18 @@ import {
   type RootNode,
   type SetEventIRNode,
 } from './ir'
-import { newBlock, newDynamic } from './transforms/utils'
 import {
   findProp,
   getText,
-  isConstant,
   isConstantExpression,
+  isConstantNode,
   isTemplate,
+  newBlock,
+  newDynamic,
+  type CompilerError,
+  type SimpleExpressionNode,
 } from './utils'
+import type { ParserPlugin } from '@babel/parser'
 import type { JSXAttribute, JSXElement, JSXFragment } from '@babel/types'
 
 export type NodeTransform = (
@@ -59,37 +55,58 @@ export type StructuralDirectiveTransform = (
   context: TransformContext,
 ) => void | (() => void)
 
-export type TransformOptions = HackOptions<BaseTransformOptions> & {
+export type TransformOptions = HackOptions<{
   source?: string
   templates?: string[]
   /**
-   * Compile JSX Component to createComponentWithFallback.
+   * Whether to compile components to createComponentWithFallback.
    * @default false
    */
   withFallback?: boolean
-}
-const defaultOptions = {
+  onError?: (error: CompilerError) => void
+  /**
+   * A list of parser plugins to enable for `@babel/parser`, which is used to
+   * parse expressions in bindings and interpolations.
+   * https://babeljs.io/docs/en/next/babel-parser#plugins
+   */
+  expressionPlugins?: ParserPlugin[]
+  /**
+   * An array of node transforms to be applied to every AST node.
+   */
+  nodeTransforms?: NodeTransform[]
+  /**
+   * An object of { name: transform } to be applied to every directive attribute
+   * node found on element nodes.
+   */
+  directiveTransforms?: Record<string, DirectiveTransform | undefined>
+  /**
+   * Indicates that transforms and codegen should try to output valid TS code
+   */
+  isTS?: boolean
+  /**
+   * Separate option for end users to extend the native elements list
+   */
+  isCustomElement?: (tag: string) => boolean | void
+  /**
+   * Filename for source map generation.
+   * Also used for self-recursive reference in templates
+   * @default 'index.jsx'
+   */
+  filename?: string
+}>
+const defaultOptions: Required<TransformOptions> = {
   source: '',
-  filename: '',
-  hoistStatic: false,
-  hmr: false,
-  cacheHandlers: false,
+  filename: 'index.jsx',
   nodeTransforms: [],
   directiveTransforms: {},
   templates: [],
-  transformHoist: null,
-  isBuiltInComponent: NOOP,
   isCustomElement: NOOP,
   expressionPlugins: [],
-  scopeId: null,
-  slotted: true,
-  ssr: false,
-  inSSR: false,
-  ssrCssVars: ``,
   isTS: false,
   withFallback: false,
-  onError: defaultOnError,
-  onWarn: defaultOnWarn,
+  onError: (error: CompilerError) => {
+    throw error
+  },
 }
 
 export class TransformContext<
@@ -100,16 +117,7 @@ export class TransformContext<
   index: number = 0
 
   block: BlockIRNode
-  options: Required<
-    Omit<
-      TransformOptions,
-      | 'filename'
-      | 'inline'
-      | 'bindingMetadata'
-      | 'prefixIdentifiers'
-      | keyof CompilerCompatOptions
-    >
-  >
+  options: Required<TransformOptions>
 
   template: string = ''
   childrenTemplate: (string | null)[] = []
@@ -118,7 +126,6 @@ export class TransformContext<
   inVOnce: boolean = false
   inVFor: number = 0
 
-  comment: CommentNode[] = []
   component: Set<string>
   directive: Set<string>
 
@@ -190,7 +197,7 @@ export class TransformContext<
     if (
       this.inVOnce ||
       expressions.length === 0 ||
-      expressions.every((e) => e.ast && isConstant(e.ast))
+      expressions.every((e) => e.ast && isConstantNode(e.ast))
     ) {
       return this.registerOperation(operations, getOperationIndex)
     }

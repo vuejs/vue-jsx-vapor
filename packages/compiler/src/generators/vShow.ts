@@ -1,7 +1,7 @@
+import { genCall, NEWLINE, type CodeFragment } from '../utils'
 import type { CodegenContext } from '../generate'
 import type { DirectiveIRNode } from '../ir'
 import { genExpression } from './expression'
-import { genCall, NEWLINE, type CodeFragment } from './utils'
 
 export function genVShow(
   oper: DirectiveIRNode,

@@ -1,4 +1,3 @@
-import { ErrorCodes, NodeTypes } from '@vue/compiler-dom'
 import { describe, expect, test, vi } from 'vitest'
 import {
   IRNodeTypes,
@@ -12,6 +11,7 @@ import {
   transformVOn,
   transformVSlot,
 } from '../../src'
+import { ErrorCodes } from '../../src/utils'
 import { makeCompile } from './_utils'
 
 const compileWithSlots = makeCompile({
@@ -82,7 +82,6 @@ describe('compiler: transform slot', () => {
             default: {
               type: IRNodeTypes.BLOCK,
               props: {
-                type: NodeTypes.SIMPLE_EXPRESSION,
                 content: '{ foo }',
                 ast: {
                   type: 'ArrowFunctionExpression',
@@ -116,7 +115,6 @@ describe('compiler: transform slot', () => {
             named: {
               type: IRNodeTypes.BLOCK,
               props: {
-                type: NodeTypes.SIMPLE_EXPRESSION,
                 content: '{ foo }',
               },
             },
@@ -142,14 +140,12 @@ describe('compiler: transform slot', () => {
       slots: [
         {
           name: {
-            type: NodeTypes.SIMPLE_EXPRESSION,
             content: 'named',
             isStatic: false,
           },
           fn: {
             type: IRNodeTypes.BLOCK,
             props: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
               content: '{ foo }',
             },
           },
@@ -252,7 +248,6 @@ describe('compiler: transform slot', () => {
             default: {
               type: IRNodeTypes.BLOCK,
               props: {
-                type: NodeTypes.SIMPLE_EXPRESSION,
                 content: '{ foo }',
               },
             },
@@ -273,7 +268,6 @@ describe('compiler: transform slot', () => {
             default: {
               type: IRNodeTypes.BLOCK,
               props: {
-                type: NodeTypes.SIMPLE_EXPRESSION,
                 content: '{ bar }',
               },
             },
@@ -298,7 +292,6 @@ describe('compiler: transform slot', () => {
       slots: [
         {
           name: {
-            type: NodeTypes.SIMPLE_EXPRESSION,
             content: 'name',
             isStatic: false,
           },
@@ -342,7 +335,6 @@ describe('compiler: transform slot', () => {
       slots: [
         {
           name: {
-            type: NodeTypes.SIMPLE_EXPRESSION,
             content: 'item',
             isStatic: false,
           },
@@ -432,14 +424,14 @@ describe('compiler: transform slot', () => {
         code: ErrorCodes.X_V_SLOT_EXTRANEOUS_DEFAULT_SLOT_CHILDREN,
         loc: {
           start: {
-            offset: index,
+            index,
             line: 1,
-            column: index + 1,
+            column: index,
           },
           end: {
-            offset: index + 3,
+            index: index + 3,
             line: 1,
-            column: index + 4,
+            column: index + 3,
           },
         },
       })
@@ -454,14 +446,14 @@ describe('compiler: transform slot', () => {
         code: ErrorCodes.X_V_SLOT_DUPLICATE_SLOT_NAMES,
         loc: {
           start: {
-            offset: index,
+            index,
             line: 1,
-            column: index + 1,
+            column: index,
           },
           end: {
-            offset: index + 10,
+            index: index + 10,
             line: 1,
-            column: index + 11,
+            column: index + 10,
           },
         },
       })
@@ -476,14 +468,14 @@ describe('compiler: transform slot', () => {
         code: ErrorCodes.X_V_SLOT_MIXED_SLOT_USAGE,
         loc: {
           start: {
-            offset: index,
+            index,
             line: 1,
-            column: index + 1,
+            column: index,
           },
           end: {
-            offset: index + 12,
+            index: index + 12,
             line: 1,
-            column: index + 13,
+            column: index + 12,
           },
         },
       })
@@ -498,14 +490,14 @@ describe('compiler: transform slot', () => {
         code: ErrorCodes.X_V_SLOT_MISPLACED,
         loc: {
           start: {
-            offset: index,
+            index,
             line: 1,
-            column: index + 1,
+            column: index,
           },
           end: {
-            offset: index + 6,
+            index: index + 6,
             line: 1,
-            column: index + 7,
+            column: index + 6,
           },
         },
       })

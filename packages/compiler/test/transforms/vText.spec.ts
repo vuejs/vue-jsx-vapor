@@ -1,4 +1,3 @@
-import { DOMErrorCodes, NodeTypes } from '@vue/compiler-dom'
 import { describe, expect, test, vi } from 'vitest'
 import {
   IRNodeTypes,
@@ -6,6 +5,7 @@ import {
   transformElement,
   transformVText,
 } from '../../src'
+import { ErrorCodes } from '../../src/utils'
 import { makeCompile } from './_utils'
 
 const compileWithVText = makeCompile({
@@ -33,7 +33,6 @@ describe('v-text', () => {
       {
         expressions: [
           {
-            type: NodeTypes.SIMPLE_EXPRESSION,
             content: 'str.value',
             isStatic: false,
           },
@@ -44,7 +43,6 @@ describe('v-text', () => {
             element: 0,
             values: [
               {
-                type: NodeTypes.SIMPLE_EXPRESSION,
                 content: 'str.value',
                 isStatic: false,
               },
@@ -66,7 +64,7 @@ describe('v-text', () => {
       },
     )
     expect(onError.mock.calls).toMatchObject([
-      [{ code: DOMErrorCodes.X_V_TEXT_WITH_CHILDREN }],
+      [{ code: ErrorCodes.X_V_TEXT_WITH_CHILDREN }],
     ])
 
     // children should have been removed
@@ -76,7 +74,6 @@ describe('v-text', () => {
       {
         expressions: [
           {
-            type: NodeTypes.SIMPLE_EXPRESSION,
             content: 'test',
             isStatic: false,
           },
@@ -87,7 +84,6 @@ describe('v-text', () => {
             element: 0,
             values: [
               {
-                type: NodeTypes.SIMPLE_EXPRESSION,
                 content: 'test',
                 isStatic: false,
               },
@@ -107,7 +103,7 @@ describe('v-text', () => {
     const { code } = compileWithVText(`<div v-text></div>`, { onError })
     expect(code).matchSnapshot()
     expect(onError.mock.calls).toMatchObject([
-      [{ code: DOMErrorCodes.X_V_TEXT_NO_EXPRESSION }],
+      [{ code: ErrorCodes.X_V_TEXT_NO_EXPRESSION }],
     ])
   })
 })

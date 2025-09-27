@@ -40,8 +40,8 @@ describe('compiler: template ref transform', () => {
         content: 'foo',
         isStatic: true,
         loc: {
-          start: { line: 1, column: 10, offset: 9 },
-          end: { line: 1, column: 15, offset: 14 },
+          start: { line: 1, column: 9, index: 9 },
+          end: { line: 1, column: 14, index: 14 },
         },
       },
     })

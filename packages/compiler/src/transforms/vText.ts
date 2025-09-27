@@ -1,21 +1,20 @@
-import { createDOMCompilerError, DOMErrorCodes } from '@vue/compiler-dom'
 import { escapeHtml, isVoidTag } from '@vue/shared'
 import { IRNodeTypes } from '../ir'
 import {
+  createCompilerError,
+  EMPTY_EXPRESSION,
+  ErrorCodes,
   getLiteralExpressionValue,
   getText,
   resolveExpression,
-  resolveLocation,
 } from '../utils'
 import type { DirectiveTransform } from '../transform'
-import { EMPTY_EXPRESSION } from './utils'
 
 export const transformVText: DirectiveTransform = (dir, node, context) => {
   let exp
-  const loc = resolveLocation(dir.loc, context)
   if (!dir.value) {
     context.options.onError(
-      createDOMCompilerError(DOMErrorCodes.X_V_TEXT_NO_EXPRESSION, loc),
+      createCompilerError(ErrorCodes.X_V_TEXT_NO_EXPRESSION, dir.loc),
     )
     exp = EMPTY_EXPRESSION
   } else {
@@ -23,7 +22,7 @@ export const transformVText: DirectiveTransform = (dir, node, context) => {
   }
   if (node.children.length) {
     context.options.onError(
-      createDOMCompilerError(DOMErrorCodes.X_V_TEXT_WITH_CHILDREN, loc),
+      createCompilerError(ErrorCodes.X_V_TEXT_WITH_CHILDREN, dir.loc as any),
     )
     context.childrenTemplate.length = 0
   }

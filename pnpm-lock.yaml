@@ -54,9 +54,6 @@ catalogs:
     '@vue-macros/volar':
       specifier: ^3.0.1
       version: 3.0.1
-    '@vue/compiler-dom':
-      specifier: 3.6.0-alpha.2
-      version: 3.6.0-alpha.2
     '@vue/compiler-sfc':
       specifier: 3.6.0-alpha.2
       version: 3.6.0-alpha.2
@@ -203,9 +200,6 @@ importers:
       '@babel/types':
         specifier: 'catalog:'
         version: 7.28.4
-      '@vue/compiler-dom':
-        specifier: 'catalog:'
-        version: 3.6.0-alpha.2
       '@vue/shared':
         specifier: 'catalog:'
         version: 3.6.0-alpha.2

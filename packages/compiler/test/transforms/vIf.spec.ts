@@ -1,4 +1,3 @@
-import { NodeTypes } from '@vue/compiler-dom'
 import { describe, expect, test } from 'vitest'
 import {
   IRNodeTypes,
@@ -36,7 +35,6 @@ describe('compiler: v-if', () => {
       type: IRNodeTypes.IF,
       id: 0,
       condition: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'ok',
         isStatic: false,
       },
@@ -72,7 +70,6 @@ describe('compiler: v-if', () => {
             values: [
               {
                 content: 'msg',
-                type: NodeTypes.SIMPLE_EXPRESSION,
                 isStatic: false,
               },
             ],
@@ -115,7 +112,6 @@ describe('compiler: v-if', () => {
       type: IRNodeTypes.IF,
       id: 0,
       condition: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'ok',
         isStatic: false,
       },
@@ -147,7 +143,6 @@ describe('compiler: v-if', () => {
       type: IRNodeTypes.IF,
       id: 0,
       condition: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'ok',
         isStatic: false,
       },
@@ -160,7 +155,6 @@ describe('compiler: v-if', () => {
       negative: {
         type: IRNodeTypes.IF,
         condition: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'orNot',
           isStatic: false,
         },

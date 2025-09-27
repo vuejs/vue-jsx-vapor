@@ -5,6 +5,14 @@ import {
   type IREffect,
   type OperationNode,
 } from '../ir'
+import {
+  buildCodeFragment,
+  genCall,
+  INDENT_END,
+  INDENT_START,
+  NEWLINE,
+  type CodeFragment,
+} from '../utils'
 import type { CodegenContext } from '../generate'
 import { genCreateComponent } from './component'
 import { genBuiltinDirective } from './directive'
@@ -21,14 +29,6 @@ import {
   genSetNodes,
   genSetText,
 } from './text'
-import {
-  buildCodeFragment,
-  genCall,
-  INDENT_END,
-  INDENT_START,
-  NEWLINE,
-  type CodeFragment,
-} from './utils'
 
 export function genOperations(
   opers: OperationNode[],

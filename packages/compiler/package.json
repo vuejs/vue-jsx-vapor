@@ -42,7 +42,6 @@
   "dependencies": {
     "@babel/parser": "catalog:",
     "@babel/types": "catalog:",
-    "@vue/compiler-dom": "catalog:",
     "@vue/shared": "catalog:",
     "ast-kit": "catalog:",
     "source-map-js": "catalog:"

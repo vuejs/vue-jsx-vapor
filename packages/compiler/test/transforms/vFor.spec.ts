@@ -1,4 +1,3 @@
-import { NodeTypes } from '@vue/compiler-dom'
 import { describe, expect, test } from 'vitest'
 import {
   IRNodeTypes,
@@ -42,11 +41,9 @@ describe('compiler: v-for', () => {
       type: IRNodeTypes.FOR,
       id: 0,
       source: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'items',
       },
       value: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'item',
       },
       key: undefined,
@@ -58,7 +55,6 @@ describe('compiler: v-for', () => {
         },
       },
       keyProp: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'item.id',
       },
     })
@@ -191,19 +187,15 @@ describe('compiler: v-for', () => {
     expect(op).toMatchObject({
       type: IRNodeTypes.FOR,
       source: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'items',
       },
       value: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'value',
       },
       key: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'key',
       },
       index: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'index',
       },
     })
@@ -218,11 +210,9 @@ describe('compiler: v-for', () => {
     expect(op).toMatchObject({
       type: IRNodeTypes.FOR,
       source: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'items',
       },
       value: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: '{ id, value }',
         ast: {
           type: 'ArrowFunctionExpression',
@@ -248,11 +238,9 @@ describe('compiler: v-for', () => {
     expect(op).toMatchObject({
       type: IRNodeTypes.FOR,
       source: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'list',
       },
       value: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: '{ id, ...other }',
         ast: {
           type: 'ArrowFunctionExpression',
@@ -264,7 +252,6 @@ describe('compiler: v-for', () => {
         },
       },
       key: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'index',
       },
       index: undefined,
@@ -280,11 +267,9 @@ describe('compiler: v-for', () => {
     expect(op).toMatchObject({
       type: IRNodeTypes.FOR,
       source: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'list',
       },
       value: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: '[id, other]',
         ast: {
           type: 'ArrowFunctionExpression',
@@ -296,7 +281,6 @@ describe('compiler: v-for', () => {
         },
       },
       key: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'index',
       },
       index: undefined,
@@ -313,11 +297,9 @@ describe('compiler: v-for', () => {
     expect(op).toMatchObject({
       type: IRNodeTypes.FOR,
       source: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'list',
       },
       value: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: '[id, ...other]',
         ast: {
           type: 'ArrowFunctionExpression',
@@ -329,7 +311,6 @@ describe('compiler: v-for', () => {
         },
       },
       key: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'index',
       },
       index: undefined,
@@ -347,11 +328,9 @@ describe('compiler: v-for', () => {
     expect(op).toMatchObject({
       type: IRNodeTypes.FOR,
       source: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: 'list',
       },
       value: {
-        type: NodeTypes.SIMPLE_EXPRESSION,
         content: '{ foo, baz: [qux] }',
         ast: {
           type: 'ArrowFunctionExpression',

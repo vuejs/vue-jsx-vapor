@@ -1,9 +1,4 @@
 import {
-  isSimpleIdentifier,
-  NewlineType,
-  type SimpleExpressionNode,
-} from '@vue/compiler-dom'
-import {
   canSetValueDirectly,
   capitalize,
   isSVGTag,
@@ -16,16 +11,19 @@ import {
   type SetDynamicPropsIRNode,
   type SetPropIRNode,
 } from '../ir'
-import type { CodegenContext } from '../generate'
-import { genExpression } from './expression'
 import {
   DELIMITERS_ARRAY,
   DELIMITERS_OBJECT,
   genCall,
   genMulti,
+  isSimpleIdentifier,
   NEWLINE,
+  NewlineType,
   type CodeFragment,
-} from './utils'
+  type SimpleExpressionNode,
+} from '../utils'
+import type { CodegenContext } from '../generate'
+import { genExpression } from './expression'
 
 export type HelperConfig = {
   name: string
