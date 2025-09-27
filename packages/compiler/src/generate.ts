@@ -27,10 +27,6 @@ export type CodegenOptions = {
    */
   filename?: string
   /**
-   * Indicates that transforms and codegen should try to output valid TS code
-   */
-  isTS?: boolean
-  /**
    * A list of parser plugins to enable for `@babel/parser`, which is used to
    * parse expressions in bindings and interpolations.
    * https://babeljs.io/docs/en/next/babel-parser#plugins
@@ -91,7 +87,6 @@ export class CodegenContext {
     const defaultOptions: Required<CodegenOptions> = {
       sourceMap: false,
       filename: `index.jsx`,
-      isTS: false,
       expressionPlugins: ['jsx'],
       templates: [],
     }

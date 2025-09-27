@@ -28,17 +28,11 @@ export function genExpression(
     return [[JSON.stringify(content), NewlineType.None, loc]]
   }
 
-  if (
-    !node.content.trim() ||
-    // there was a parsing error
-    ast === false ||
-    isConstantExpression(node)
-  ) {
+  if (!node.content.trim() || isConstantExpression(node)) {
     return [[content, NewlineType.None, loc], assignment && ` = ${assignment}`]
   }
 
-  // the expression is a simple identifier
-  if (ast === null) {
+  if (!ast) {
     return genIdentifier(content, context, loc, assignment)
   }
 

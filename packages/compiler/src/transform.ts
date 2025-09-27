@@ -61,7 +61,10 @@ export type TransformOptions = CodegenOptions & {
    * @default false
    */
   withFallback?: boolean
-  onError?: (error: CompilerError) => void
+  /**
+   * Indicates that transforms and codegen should try to output valid TS code
+   */
+  isTS?: boolean
   /**
    * An array of node transforms to be applied to every AST node.
    */
@@ -72,19 +75,10 @@ export type TransformOptions = CodegenOptions & {
    */
   directiveTransforms?: Record<string, DirectiveTransform | undefined>
   /**
-   * Indicates that transforms and codegen should try to output valid TS code
-   */
-  isTS?: boolean
-  /**
    * Separate option for end users to extend the native elements list
    */
   isCustomElement?: (tag: string) => boolean | void
-  /**
-   * Filename for source map generation.
-   * Also used for self-recursive reference in templates
-   * @default 'index.jsx'
-   */
-  filename?: string
+  onError?: (error: CompilerError) => void
 }
 const defaultOptions: Required<TransformOptions> = {
   source: '',

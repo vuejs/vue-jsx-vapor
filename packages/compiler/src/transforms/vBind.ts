@@ -1,5 +1,5 @@
 import { camelize, extend } from '@vue/shared'
-import { resolveExpression, resolveSimpleExpression } from '../utils'
+import { createSimpleExpression, resolveExpression } from '../utils'
 import type { DirectiveTransform } from '../transform'
 import { isReservedProp } from './transformElement'
 
@@ -10,7 +10,7 @@ export const transformVBind: DirectiveTransform = (dir, node, context) => {
   const [nameString, ...modifiers] = name.name.split('_')
 
   const exp = resolveExpression(value, context)
-  let arg = resolveSimpleExpression(nameString, true, dir.name.loc)
+  let arg = createSimpleExpression(nameString, true, dir.name)
 
   if (arg.isStatic && isReservedProp(arg.content)) return
 

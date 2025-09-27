@@ -1,22 +1,15 @@
 import { parseExpression } from '@babel/parser'
 import { isGloballyAllowed, makeMap } from '@vue/shared'
 import type { TransformContext } from '../transform'
-import { unwrapTSNode } from './ast'
+import { getTextLikeValue, unwrapTSNode } from './ast'
 import { getText, resolveJSXText } from './text'
-import type {
-  BigIntLiteral,
-  JSXAttribute,
-  Node,
-  NumericLiteral,
-  SourceLocation,
-  StringLiteral,
-} from '@babel/types'
+import type { JSXAttribute, Node, SourceLocation } from '@babel/types'
 
 export interface SimpleExpressionNode {
   content: string
   isStatic: boolean
   loc: SourceLocation | null | undefined
-  ast?: Node | null | false
+  ast?: Node
 }
 
 export const locStub: SourceLocation = {
@@ -28,12 +21,13 @@ export const locStub: SourceLocation = {
 export function createSimpleExpression(
   content: string,
   isStatic: boolean = false,
-  loc: SourceLocation | null = locStub,
+  ast?: Node,
 ): SimpleExpressionNode {
   return {
-    loc,
+    loc: ast ? ast.loc : locStub,
     content,
     isStatic,
+    ast,
   }
 }
 
@@ -51,17 +45,9 @@ export function getLiteralExpressionValue(
   exp: SimpleExpressionNode,
 ): number | string | boolean | null {
   if (exp.ast) {
-    if (
-      ['StringLiteral', 'NumericLiteral', 'BigIntLiteral'].includes(
-        exp.ast.type,
-      )
-    ) {
-      return (exp.ast as StringLiteral | NumericLiteral | BigIntLiteral).value
-    } else if (
-      exp.ast.type === 'TemplateLiteral' &&
-      exp.ast.expressions.length === 0
-    ) {
-      return exp.ast.quasis[0].value.cooked!
+    const res = getTextLikeValue(exp.ast)
+    if (res != null) {
+      return res
     }
   }
   return exp.isStatic ? exp.content : null
@@ -93,29 +79,16 @@ export function resolveExpression(
             : node.type === 'Identifier'
               ? node.name
               : context.ir.source.slice(node.start!, node.end!)
-  const location = node.loc
-  return resolveSimpleExpression(source, isStatic, location, node)
+  return createSimpleExpression(source, isStatic, node)
 }
 
-export function resolveSimpleExpression(
-  source: string,
-  isStatic: boolean,
-  location?: SourceLocation | null,
-  ast?: false | Node | null,
-) {
-  const result = createSimpleExpression(source, isStatic, location)
-  result.ast = ast ?? null
-  return result
-}
-
-export function resolveExpressionWithFn(node: Node, context: TransformContext) {
+export function createExpressionWithFn(node: Node, context: TransformContext) {
   const text = getText(node, context)
   return node.type === 'Identifier'
-    ? resolveSimpleExpression(text, false, node.loc)
-    : resolveSimpleExpression(
+    ? createSimpleExpression(text, false, node)
+    : createSimpleExpression(
         text,
         false,
-        node.loc,
         parseExpression(`(${text})=>{}`, {
           plugins: context.options.expressionPlugins,
         }),

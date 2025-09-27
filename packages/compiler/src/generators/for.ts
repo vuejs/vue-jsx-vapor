@@ -214,7 +214,7 @@ export function genFor(
     >()
     if (value) {
       rawValue = value && value.content
-      if (value.ast) {
+      if (value.ast && value.ast.type !== 'Identifier') {
         walkIdentifiers(
           value.ast,
           (id, _, parentStack, ___, isLocal) => {

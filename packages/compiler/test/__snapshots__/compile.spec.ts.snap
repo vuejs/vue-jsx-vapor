@@ -26,6 +26,20 @@ exports[`compile > execution order > basic 1`] = `
 "
 `;
 
+exports[`compile > execution order > with v-once 1`] = `
+"
+  const n3 = t0()
+  const n0 = _child(n3)
+  const n1 = _next(n0)
+  const n2 = _nthChild(n3, 3)
+  const x0 = _child(n0)
+  _setNodes(x0, foo)
+  _setNodes(n1, () => (bar))
+  _setNodes(n2, () => (baz))
+  return n3
+"
+`;
+
 exports[`compile > expression parsing > interpolation 1`] = `
 "
   const n0 = _createNodes(() => (a + b))

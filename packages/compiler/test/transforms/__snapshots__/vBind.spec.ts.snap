@@ -34,8 +34,9 @@ exports[`compiler v-bind > no expression 1`] = `
 
 exports[`compiler v-bind > number value 1`] = `
 "
-  const n0 = _createComponent(Comp, { depth: () => (0) }, null, true)
-  return n0
+  const n0 = t0()
+  const n1 = _createComponent(Comp, { depth: () => (0) })
+  return [n0, n1]
 "
 `;
 
@@ -46,9 +47,6 @@ exports[`compiler v-bind > with constant value 1`] = `
   _setProp(n0, "b", 1 > 2)
   _setProp(n0, "c", 1 + 2)
   _setProp(n0, "d", 1 ? 2 : 3)
-  _setProp(n0, "e", 2)
-  _setProp(n0, "f", \`foo1\`)
-  _setProp(n0, "g", 1)
   _setProp(n0, "i", true)
   _setProp(n0, "j", null)
   _setProp(n0, "l", { foo: 1 })

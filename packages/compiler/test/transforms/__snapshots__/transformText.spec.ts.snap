@@ -13,3 +13,10 @@ exports[`compiler: text transform > no consecutive text 1`] = `
   return n0
 "
 `;
+
+exports[`compiler: text transform > text like 1`] = `
+"
+  const n0 = t0()
+  return n0
+"
+`;

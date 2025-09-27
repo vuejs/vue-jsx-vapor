@@ -191,3 +191,17 @@ export const isStaticProperty = (node?: Node): node is ObjectProperty =>
 const nonIdentifierRE = /^$|^\d|[^$\w\u00A0-\uFFFF]/
 export const isSimpleIdentifier = (name: string): boolean =>
   !nonIdentifierRE.test(name)
+
+export function getTextLikeValue(node: Node, excludeNumber?: boolean) {
+  node = node.type === 'JSXExpressionContainer' ? node.expression : node
+  if (node.type === 'StringLiteral') {
+    return node.value
+  } else if (
+    !excludeNumber &&
+    (node.type === 'NumericLiteral' || node.type === 'BigIntLiteral')
+  ) {
+    return String(node.value)
+  } else if (node.type === 'TemplateLiteral' && node.expressions.length === 0) {
+    return node.quasis[0].value.cooked!
+  }
+}

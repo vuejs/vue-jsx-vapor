@@ -89,4 +89,10 @@ describe('compiler: element transform', () => {
       '_createComponentWithFallback(_component_foo_bar, null, null, true)',
     )
   })
+
+  test('number value', () => {
+    const { code } = compileWithElementTransform(`<div foo={1} />`)
+    expect(code).toMatchSnapshot()
+    expect(code).not.contains('_setProp(n0, "foo", 1)')
+  })
 })

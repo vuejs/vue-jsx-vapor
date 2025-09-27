@@ -48,9 +48,5 @@ export function genModelHandler(
   exp: SimpleExpressionNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  return [
-    `${context.options.isTS ? `(_value: any)` : `_value`} => (`,
-    ...genExpression(exp, context, '_value'),
-    ')',
-  ]
+  return ['_value => (', ...genExpression(exp, context, '_value'), ')']
 }

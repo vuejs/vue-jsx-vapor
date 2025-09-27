@@ -1,6 +1,7 @@
 import { isArray, isString } from '@vue/shared'
 import { SourceMapGenerator } from 'source-map-js'
 import type { CodegenContext } from '../generate'
+import { locStub } from './expression'
 import type { SourceLocation } from '@babel/types'
 
 export const NEWLINE: unique symbol = Symbol(`newline`)
@@ -196,7 +197,7 @@ export function codeFragmentToString(
           pos.column = code.length - newlineIndex
         }
       }
-      if (loc) {
+      if (loc && loc !== locStub) {
         addMapping(loc.end)
       }
     }
@@ -214,7 +215,7 @@ export function codeFragmentToString(
       originalLine: loc.line,
       originalColumn: loc.column,
       generatedLine: pos.line,
-      generatedColumn: pos.column,
+      generatedColumn: pos.column - 1,
       source: filename,
       name,
     })

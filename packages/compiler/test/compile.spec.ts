@@ -59,26 +59,18 @@ describe('compile', () => {
       )
     })
     test('with v-once', () => {
-      const { code, templates } = compile(
+      const { code } = compile(
         `<div>
-        1{/**/}2
+          <span v-once>{ foo }</span>
+          { bar }<br/>
+          { baz }
         </div>`,
       )
-      expect(templates).toMatchInlineSnapshot(`
-        [
-          "_template("<div>12</div>", true)",
-        ]
-      `)
-      expect(code).toMatchInlineSnapshot(`
-        "
-          const n0 = t0()
-          return n0
-        "
-      `)
-      //     expect(code).contains(
-      //       `_setNodes(n1, () => (bar))
-      // _setNodes(n2, () => (baz))`,
-      //     )
+      expect(code).matchSnapshot()
+      expect(code).contains(
+        `_setNodes(n1, () => (bar))
+  _setNodes(n2, () => (baz))`,
+      )
     })
   })
 })

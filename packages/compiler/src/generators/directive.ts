@@ -1,4 +1,3 @@
-import { extend } from '@vue/shared'
 import { IRNodeTypes, type DirectiveIRNode, type OperationNode } from '../ir'
 import {
   createSimpleExpression,
@@ -65,10 +64,7 @@ function genCustomDirectives(
   }: DirectiveIRNode): CodeFragment[] {
     const directiveVar = asset
       ? toValidAssetId(name, 'directive')
-      : genExpression(
-          extend(createSimpleExpression(name, false), { ast: null }),
-          context,
-        )
+      : genExpression(createSimpleExpression(name), context)
     const value = dir.exp && ['() => ', ...genExpression(dir.exp, context)]
     const argument = dir.arg && genExpression(dir.arg, context)
     const modifiers = !!dir.modifiers.length && [

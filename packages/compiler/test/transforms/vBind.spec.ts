@@ -544,8 +544,10 @@ describe('compiler v-bind', () => {
   })
 
   test('number value', () => {
-    const { code } = compileWithVBind(`<Comp depth={0} />`)
-    expect(code).matchSnapshot()
+    const { code } = compileWithVBind(
+      `<><div depth={0} /><Comp depth={0} /></>`,
+    )
+    expect(code).toMatchSnapshot()
     expect(code).contains('{ depth: () => (0) }')
   })
 })

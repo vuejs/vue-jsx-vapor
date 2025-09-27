@@ -12,7 +12,7 @@ import {
 import { makeCompile } from './_utils'
 
 const compileWithTextTransform = makeCompile({
-  nodeTransforms: [transformElement, transformChildren, transformText],
+  nodeTransforms: [transformElement, transformText, transformChildren],
   directiveTransforms: {
     bind: transformVBind,
     on: transformVOn,
@@ -61,5 +61,11 @@ describe('compiler: text transform', () => {
     const { ir } = compileWithTextTransform('<code>&lt;script&gt;</code>')
     expect(ir.templates[0]).toContain('<code>&lt;script&gt;</code>')
     expect(ir.templates[0]).not.toContain('<code><script></code>')
+  })
+
+  it('text like', () => {
+    const { ir, code } = compileWithTextTransform('<div>{`foo`}{1}{1n}</div>')
+    expect(code).toMatchSnapshot()
+    expect(ir.templates[0]).not.toContain('setNodes')
   })
 })

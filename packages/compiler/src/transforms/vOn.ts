@@ -7,7 +7,6 @@ import {
   ErrorCodes,
   isJSXComponent,
   resolveExpression,
-  resolveSimpleExpression,
   type SimpleExpressionNode,
 } from '../utils'
 import type { DirectiveTransform } from '../transform'
@@ -35,7 +34,7 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
     )
   }
 
-  let arg = resolveSimpleExpression(nameString, true, dir.name.loc)
+  let arg = createSimpleExpression(nameString, true, dir.name)
   const exp = resolveExpression(dir.value, context)
 
   const { keyModifiers, nonKeyModifiers, eventOptionModifiers } =

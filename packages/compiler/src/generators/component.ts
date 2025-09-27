@@ -1,4 +1,4 @@
-import { camelize, extend, isArray } from '@vue/shared'
+import { camelize, isArray } from '@vue/shared'
 import { walkIdentifiers } from 'ast-kit'
 import {
   IRDynamicPropsKind,
@@ -78,10 +78,7 @@ export function genCreateComponent(
     } else if (operation.asset) {
       return toValidAssetId(operation.tag, 'component')
     } else {
-      return genExpression(
-        extend(createSimpleExpression(operation.tag, false), { ast: null }),
-        context,
-      )
+      return genExpression(createSimpleExpression(operation.tag), context)
     }
   }
 }

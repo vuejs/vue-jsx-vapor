@@ -32,8 +32,11 @@ export function processIf(
     context.options.onError(
       createCompilerError(ErrorCodes.X_V_IF_NO_EXPRESSION, dir.loc),
     )
-    const loc = dir.exp ? dir.exp.loc : node.loc
-    dir.exp = createSimpleExpression(`true`, false, loc)
+    dir.exp = createSimpleExpression(
+      `true`,
+      false,
+      dir.exp ? dir.exp.ast : node,
+    )
   }
 
   context.dynamic.flags |= DynamicFlag.NON_TEMPLATE

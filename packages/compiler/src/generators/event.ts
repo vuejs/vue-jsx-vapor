@@ -131,18 +131,11 @@ export function genEventHandler(
       handlerExp = genExpression(value, context)
     } else {
       // inline statement
-      // @click="foo($event)" ---> $event => foo($event)
-      const referencesEvent = value.content.includes('$event')
       const hasMultipleStatements = value.content.includes(`;`)
-      const expr = referencesEvent
-        ? context.withId(() => genExpression(value, context), {
-            $event: null,
-          })
-        : genExpression(value, context)
       handlerExp = [
-        referencesEvent ? '$event => ' : '() => ',
+        '() => ',
         hasMultipleStatements ? '{' : '(',
-        ...expr,
+        ...genExpression(value, context),
         hasMultipleStatements ? '}' : ')',
       ]
     }
