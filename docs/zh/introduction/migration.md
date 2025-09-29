@@ -2,10 +2,11 @@
 
 ## 从 `vue-jsx` 迁移
 
-1. 不支持使用连字符的 prop 名称和组件名称。
-2. `v-model` 不支持数组表达式，请改用 `v-model:$name$_trim={foo}`。
-3. 不支持 `v-models` 指令。
-4. 解构 props：
+1. 使用 `defineVaporComponent` 替代 `defineComponent` 来定义 Vapor 组件。`defineVaporComponent` 的 setup 函数现在可以直接返回 JSX 表达式，无需再返回一个函数。
+2. 不支持使用连字符的 prop 名称和组件名称。
+3. `v-model` 不支持数组表达式，请改用 `v-model:$name$_trim={foo}`。
+4. 不支持 `v-models` 指令。
+5. 解构 props：
 
 > [!CAUTION]
 > ❌ 在函数式组件中解构 props 会导致响应性丢失。
@@ -36,7 +37,7 @@ export default () => {
 }
 ```
 
-2. ✅ 将 `macros` 选项设置为 `true`，然后使用 `defineComponent` 宏进行包装。
+2. ✅ 将 `macros` 选项设置为 `true`，然后使用 `defineVaporComponent` 宏进行包装。
 
   - 配置
 
@@ -119,9 +120,9 @@ const double = computed(() => foo * 2)
 console.log({ double: double.value }, [double.value])
 ```
 
-### defineComponent
+### defineVaporComponent
 
-使用 `defineComponent` 宏来支持解构 props。
+使用 `defineVaporComponent` 宏来支持解构 props。
 
 ```tsx
 // 转换前

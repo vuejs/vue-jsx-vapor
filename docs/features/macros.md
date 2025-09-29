@@ -2,14 +2,6 @@
 
 A collection of macros for JSX. They are need to manually enabled by set `macros` to `true`.
 
-|     Directive     |        Vue         |       Volar        |
-| :---------------: | :----------------: | :----------------: |
-| `defineComponent` | :white_check_mark: | :white_check_mark: |
-|   `defineModel`   | :white_check_mark: | :white_check_mark: |
-|   `defineSlots`   | :white_check_mark: | :white_check_mark: |
-|  `defineExpose`   | :white_check_mark: | :white_check_mark: |
-|   `defineStyle`   | :white_check_mark: | :white_check_mark: |
-
 ## Setup
 
 ::: code-group
@@ -64,7 +56,9 @@ export default {
 
 :::
 
-## defineComponent
+## defineComponent | defineVaporComponent
+
+`defineComponent` is used to define Virtual DOM components, and `defineVaporComponent` is used to define Vapor components.
 
 ### Options
 
@@ -82,12 +76,12 @@ VueJsxVapor({
 ```
 
 - Support `await` keyword.
-- Automatically collects used props to the defineComponent's props option.
+- Automatically collects used props to the defineVaporComponent's props option.
 
 ```tsx twoslash
-import { defineComponent, nextTick, Suspense, useAttrs } from 'vue'
+import { defineVaporComponent, nextTick, Suspense, useAttrs } from 'vue'
 
-const Comp = defineComponent(
+const Comp = defineVaporComponent(
   async (props: {
     foo?: string
     bar?: string
@@ -113,8 +107,8 @@ export default () => (
 ::: details Compiled Code
 
 ```tsx
-import { defineComponent, useAttrs, withAsyncContext } from 'vue'
-defineComponent(
+import { defineVaporComponent, useAttrs, withAsyncContext } from 'vue'
+defineVaporComponent(
   async (props) => {
     let __temp, __restore
     ;([__temp, __restore] = withAsyncContext(() => nextTick())),

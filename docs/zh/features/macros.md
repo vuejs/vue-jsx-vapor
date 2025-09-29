@@ -2,14 +2,6 @@
 
 为 JSX 设计的一系列宏。需要通过将 `macros` 设置为 `true` 来手动启用。
 
-|     宏     |        Vue         |       Volar        |
-| :---------------: | :----------------: | :----------------: |
-| `defineComponent` | :white_check_mark: | :white_check_mark: |
-|   `defineModel`   | :white_check_mark: | :white_check_mark: |
-|   `defineSlots`   | :white_check_mark: | :white_check_mark: |
-|  `defineExpose`   | :white_check_mark: | :white_check_mark: |
-|   `defineStyle`   | :white_check_mark: | :white_check_mark: |
-
 ## 配置
 
 ::: code-group
@@ -65,7 +57,9 @@ export default {
 
 :::
 
-## defineComponent
+## defineComponent | defineVaporComponent
+
+`defineComponent` 用于定义虚拟 DOM 组件，`defineVaporComponent` 用于定义 Vapor 组件
 
 ### 选项
 
@@ -83,12 +77,12 @@ VueJsxVapor({
 ```
 
 - 支持 `await` 关键字。
-- 自动收集使用到的 props 到 `defineComponent` 的 `props` 选项中。
+- 自动收集使用到的 props 到 `defineVaporComponent` 的 `props` 选项中。
 
 ```tsx twoslash
-import { defineComponent, nextTick, Suspense, useAttrs } from 'vue'
+import { defineVaporComponent, nextTick, Suspense, useAttrs } from 'vue'
 
-const Comp = defineComponent(
+const Comp = defineVaporComponent(
   async (props: {
     foo?: string
     bar?: string
@@ -114,8 +108,8 @@ export default () => (
 ::: details 编译后代码
 
 ```tsx
-import { defineComponent, useAttrs, withAsyncContext } from 'vue'
-defineComponent(
+import { defineVaporComponent, useAttrs, withAsyncContext } from 'vue'
+defineVaporComponent(
   async (props) => {
     let __temp, __restore
     ;([__temp, __restore] = withAsyncContext(() => nextTick())),

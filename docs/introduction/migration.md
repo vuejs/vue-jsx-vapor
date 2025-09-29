@@ -2,10 +2,11 @@
 
 ## Migration from `vue-jsx`
 
-1. Don't support hyphenated prop name and hyphenated component name.
-2. `v-model` don't support Array Expression, use `v-model:$name$_trim={foo}` instead.
-3. Don't support `v-models` directive.
-4. Destructing props:
+1. Use `defineVaporComponent` instead of `defineComponent` to define Vapor components. The setup function of `defineVaporComponent` now returns a JSX expression directly—there is no need to return a function anymore.
+2. Don't support hyphenated prop name and hyphenated component name.
+3. `v-model` don't support Array Expression, use `v-model:$name$_trim={foo}` instead.
+4. Don't support `v-models` directive.
+5. Destructing props:
 
 > [!CAUTION]
 > ❌ The destructuring of props in a functional component will cause loss of reactivity.
@@ -36,7 +37,7 @@ export default () => {
 }
 ```
 
-2. ✅ Set the macros option to true, then use the `defineComponent` macro for wrapping.
+2. ✅ Set the macros option to true, then use the `defineVaporComponent` macro for wrapping.
 
   - Setup
 

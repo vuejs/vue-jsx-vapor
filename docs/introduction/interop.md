@@ -15,7 +15,6 @@ import vueJsxVapor from 'vue-jsx-vapor/vite'
 export default defineConfig({
   plugins: [
     vueJsxVapor({
-      macros: true,
       interop: true,
     }),
   ],
