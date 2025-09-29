@@ -43,7 +43,7 @@ export function isConstantExpression(exp: SimpleExpressionNode) {
 
 export function getLiteralExpressionValue(
   exp: SimpleExpressionNode,
-): number | string | boolean | null {
+): string | null {
   if (exp.ast) {
     const res = getTextLikeValue(exp.ast)
     if (res != null) {

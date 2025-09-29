@@ -139,7 +139,7 @@ function processTextContainer(children: TextLike[], context: TransformContext) {
   const values = createTextLikeExpressions(children, context)
   const literals = values.map(getLiteralExpressionValue)
   if (literals.every((l) => l != null)) {
-    context.childrenTemplate = literals.map((l) => escapeHtml(String(l)))
+    context.childrenTemplate = literals
   } else {
     context.childrenTemplate = [' ']
     context.registerOperation({

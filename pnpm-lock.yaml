@@ -197,9 +197,6 @@ importers:
       '@babel/parser':
         specifier: 'catalog:'
         version: 7.28.4
-      '@babel/types':
-        specifier: 'catalog:'
-        version: 7.28.4
       '@vue/shared':
         specifier: 'catalog:'
         version: 3.6.0-alpha.2
@@ -209,6 +206,10 @@ importers:
       source-map-js:
         specifier: 'catalog:'
         version: 1.2.1
+    devDependencies:
+      '@babel/types':
+        specifier: 'catalog:'
+        version: 7.28.4
 
   packages/eslint:
     dependencies:
