@@ -1,3 +1,3 @@
-import { config } from '../../tsdown.config'
+import { config } from '../../tsdown.config.js'
 
 export default config()
