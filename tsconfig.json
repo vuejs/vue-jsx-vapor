@@ -10,8 +10,10 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "types": ["vite/client"],
+    "allowImportingTsExtensions": true,
     "strict": true,
     "strictNullChecks": true,
+    "noEmit": true,
     "esModuleInterop": true,
     "skipLibCheck": true
   },
