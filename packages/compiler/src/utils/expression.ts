@@ -82,19 +82,6 @@ export function resolveExpression(
   return createSimpleExpression(source, isStatic, node)
 }
 
-export function createExpressionWithFn(node: Node, context: TransformContext) {
-  const text = getText(node, context)
-  return node.type === 'Identifier'
-    ? createSimpleExpression(text, false, node)
-    : createSimpleExpression(
-        text,
-        false,
-        parseExpression(`(${text})=>{}`, {
-          plugins: context.options.expressionPlugins,
-        }),
-      )
-}
-
 export function propToExpression(
   prop: JSXAttribute,
   context: TransformContext,

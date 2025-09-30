@@ -31,9 +31,7 @@ export const transformVSlot: NodeTransform = (node, context) => {
   const { children } = node
 
   const dir = findProp(node, 'v-slot')
-  const resolvedDirective = dir
-    ? resolveDirective(dir, context, true)
-    : undefined
+  const resolvedDirective = dir ? resolveDirective(dir, context) : undefined
   const { parent } = context
 
   const isComponent = isJSXComponent(node)

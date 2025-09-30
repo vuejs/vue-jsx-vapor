@@ -346,8 +346,8 @@ function genSlotBlockWithProps(oper: SlotBlockIRNode, context: CodegenContext) {
       propsName = `_slotProps${depth}`
       walkIdentifiers(
         props.ast,
-        (id, _, __, ___, isLocal) => {
-          if (isLocal) idsOfProps.add(id.name)
+        (id, _, __, isReference, isLocal) => {
+          if (isReference && !isLocal) idsOfProps.add(id.name)
         },
         true,
       )

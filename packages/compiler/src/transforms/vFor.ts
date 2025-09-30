@@ -7,7 +7,6 @@ import {
 import {
   createBranch,
   createCompilerError,
-  createExpressionWithFn,
   ErrorCodes,
   findProp,
   isConstantNode,
@@ -92,12 +91,11 @@ export function getForParseResult(
     ) {
       if (dir.value.expression.left.type === 'SequenceExpression') {
         const expressions = dir.value.expression.left.expressions
-        value =
-          expressions[0] && createExpressionWithFn(expressions[0], context)
+        value = expressions[0] && resolveExpression(expressions[0], context)
         key = expressions[1] && resolveExpression(expressions[1], context)
         index = expressions[2] && resolveExpression(expressions[2], context)
       } else {
-        value = createExpressionWithFn(dir.value.expression.left, context)
+        value = resolveExpression(dir.value.expression.left, context)
       }
       source = resolveExpression(dir.value.expression.right, context)
     }

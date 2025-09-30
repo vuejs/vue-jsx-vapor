@@ -1,10 +1,6 @@
 import type { DirectiveNode } from '../ir'
 import type { TransformContext } from '../transform'
-import {
-  createExpressionWithFn,
-  createSimpleExpression,
-  resolveExpression,
-} from './expression'
+import { createSimpleExpression, resolveExpression } from './expression'
 import { getText } from './text'
 import type { JSXAttribute } from '@babel/types'
 
@@ -12,7 +8,6 @@ const namespaceRE = /^(?:\$([\w-]+)\$)?([\w-]+)?/
 export function resolveDirective(
   node: JSXAttribute,
   context: TransformContext,
-  withFn = false,
 ): DirectiveNode {
   const { value, name } = node
   let nameString =
@@ -49,11 +44,7 @@ export function resolveDirective(
       : undefined
     : createSimpleExpression(nameString, true, name)
 
-  const exp = value
-    ? withFn && value.type === 'JSXExpressionContainer'
-      ? createExpressionWithFn(value.expression, context)
-      : resolveExpression(value, context)
-    : undefined
+  const exp = value ? resolveExpression(value, context) : undefined
 
   return {
     name: isDirective ? nameString.slice(2) : 'bind',

@@ -83,10 +83,7 @@ describe('compiler: transform slot', () => {
               type: IRNodeTypes.BLOCK,
               props: {
                 content: '{ foo }',
-                ast: {
-                  type: 'ArrowFunctionExpression',
-                  params: [{ type: 'ObjectPattern' }],
-                },
+                ast: { type: 'ObjectExpression' },
               },
             },
           },

@@ -213,8 +213,8 @@ export function genFor(
       if (value.ast && value.ast.type !== 'Identifier') {
         walkIdentifiers(
           value.ast,
-          (id, _, parentStack, ___, isLocal) => {
-            if (isLocal) {
+          (id, _, parentStack, isReference, isLocal) => {
+            if (isReference && !isLocal) {
               let path = ''
               let isDynamic = false
               let helper
@@ -239,16 +239,16 @@ export function genFor(
                     // non-computed, can only be identifier
                     path += `.${(parent.key as Identifier).name}`
                   }
-                } else if (parent.type === 'ArrayPattern') {
+                } else if (parent.type === 'ArrayExpression') {
                   const index = parent.elements.indexOf(child as any)
-                  if (child.type === 'RestElement') {
+                  if (child.type === 'SpreadElement') {
                     path += `.slice(${index})`
                   } else {
                     path += `[${index}]`
                   }
                 } else if (
-                  parent.type === 'ObjectPattern' &&
-                  child.type === 'RestElement'
+                  parent.type === 'ObjectExpression' &&
+                  child.type === 'SpreadElement'
                 ) {
                   helper = context.helper('getRestElement')
                   helperArgs = `[${parent.properties
@@ -267,20 +267,6 @@ export function genFor(
                       }
                     })
                     .join(', ')}]`
-                }
-
-                // default value
-                if (
-                  child.type === 'AssignmentPattern' &&
-                  (parent.type === 'ObjectProperty' ||
-                    parent.type === 'ArrayPattern')
-                ) {
-                  isDynamic = true
-                  helper = context.helper('getDefaultValue')
-                  helperArgs = value.content.slice(
-                    child.right.start! - 1,
-                    child.right.end! - 1,
-                  )
                 }
               }
               map.set(id.name, { path, dynamic: isDynamic, helper, helperArgs })

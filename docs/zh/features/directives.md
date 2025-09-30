@@ -60,6 +60,9 @@ export default () => (
 
 ## `v-slot`, `v-slots`
 
+> [!WARNING]
+> 由于无法为带有默认值的指令表达式（例如 `v-slot={({ foo = '' })}`）生成正确的 AST，因此不支持默认值。
+
 ::: code-group
 
 ```tsx [v-slot] twoslash

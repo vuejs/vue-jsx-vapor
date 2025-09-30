@@ -195,7 +195,7 @@ exports[`compiler: v-for > v-for aliases w/ complex expressions 1`] = `
   const n0 = _createFor(() => (list), (_for_item0) => {
     const n2 = t0()
     const x2 = _child(n2)
-    _setNodes(x2, () => (_for_item0.value.foo + bar + baz + _for_item0.value.baz[0] + quux))
+    _setNodes(x2, () => (_for_item0.value.foo + baz + _for_item0.value.baz[0]))
     return n2
   })
   return n0
