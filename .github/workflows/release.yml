@@ -42,5 +42,9 @@ jobs:
       - name: Build
         run: nr build
 
+      - name: Update npm
+        run: npm install -g npm@latest
+        if: ${{ inputs.publish }}
+
       - name: Publish to NPM
         run: pnpm -r publish --access public --no-git-checks
