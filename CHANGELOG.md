@@ -1,3 +1,13 @@
+## [2.6.7](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.6...v2.6.7) (2025-09-30)
+
+
+### Bug Fixes
+
+* **compiler:** escape html for safer template output ([d02e238](https://github.com/vuejs/vue-jsx-vapor/commit/d02e238ca77788d0b616ab60365d55609ca3aa5c))
+* **compiler:** treat template v-for with single component child as component ([f657781](https://github.com/vuejs/vue-jsx-vapor/commit/f657781117713914adce7156d272b80132afb382))
+
+
+
 ## [2.6.6](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.4...v2.6.6) (2025-09-23)
 
 
