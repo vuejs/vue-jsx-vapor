@@ -9,7 +9,7 @@ export interface ModuleOptions extends Options {}
 export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: 'nuxt-vue-jsx-vapor',
-    configKey: 'unpluginStarter',
+    configKey: 'jsxVapor',
   },
   setup(options) {
     addVitePlugin(() => vite(options))
