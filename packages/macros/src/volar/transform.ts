@@ -75,17 +75,14 @@ export function transformJsxMacros(
           }
         }
 
+        const isDefineComponent =
+          macros.defineComponent?.expression.getText(ast) === 'defineComponent'
         codes.replaceRange(
           node.getStart(ast),
           node.expression.getStart(ast),
           'const ',
           [`__render`, node.getStart(ast) - 1, { verification: true }],
-          macros.defineComponent
-            ? macros.defineComponent?.expression.getText(ast) ===
-              'defineVaporComponent'
-              ? ''
-              : ': () => JSX.Element'
-            : '',
+          isDefineComponent ? ': () => JSX.Element' : '',
           ' = ',
         )
         codes.replaceRange(
@@ -101,7 +98,7 @@ return {} as {
     expose: (exposed: ${macros.defineExpose ?? 'Record<string, any>'}) => void,
     attrs: Record<string, any>
   },
-  render: typeof __render
+  render: ${isDefineComponent ? `ReturnType<` : ''}typeof __render${isDefineComponent ? '>' : ''}
 }`,
         )
       }

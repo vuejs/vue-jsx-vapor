@@ -1,4 +1,4 @@
-import { defineComponent, defineVaporComponent, nextTick, unref } from 'vue'
+import { defineComponent, defineVaporComponent, nextTick, unref, VaporComponentInstance, VNode } from 'vue'
 
 const $ = unref
 
@@ -63,3 +63,13 @@ defineVaporComponent(({
     </>
   )
 })
+
+// #21
+const Comp3 = defineComponent(<T,>()=>{
+  return () => <div>123</div>
+})
+;<Comp3 /> == ({} as VNode)
+const Comp4 = defineVaporComponent(<T,>() => {
+  return <div>123</div>
+})
+;<Comp4 /> == ({} as VaporComponentInstance)
