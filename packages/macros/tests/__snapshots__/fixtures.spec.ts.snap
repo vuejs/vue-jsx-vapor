@@ -5,7 +5,7 @@ exports[`defineComponent autoReturnFunction fixtures > ./fixtures/define-compone
 import { useAttrs as __MACROS_useAttrs } from "vue";
 import { useModel as __MACROS_useModel } from "/vue-jsx-vapor/macros/use-model";
 import { useFullProps as __MACROS_useFullProps } from "vue-jsx-vapor";
-import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, defineVaporComponent, nextTick, unref } from 'vue'
+import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, defineVaporComponent, nextTick, unref, VaporComponentInstance, VNode } from 'vue'
 
 const $ = unref
 
@@ -98,7 +98,17 @@ defineVaporComponent((__MACROS_props) => {
 'g': { default: foo, skipFactory: true }, 
 'h': { default: null }, 
 'i': { required: true, default: undefined }
-} })"
+} })
+
+// #21
+const Comp3 = defineComponent(<T,>()=>{
+  return () => <div>123</div>
+})
+;<Comp3 /> == ({} as VNode)
+const Comp4 = defineVaporComponent(<T,>() => {
+  return () => <div>123</div>
+})
+;<Comp4 /> == ({} as VaporComponentInstance)"
 `;
 
 exports[`fixtures > ./fixtures/define-component.tsx 1`] = `
@@ -106,7 +116,7 @@ exports[`fixtures > ./fixtures/define-component.tsx 1`] = `
 import { useAttrs as __MACROS_useAttrs } from "vue";
 import { useModel as __MACROS_useModel } from "/vue-jsx-vapor/macros/use-model";
 import { useFullProps as __MACROS_useFullProps } from "vue-jsx-vapor";
-import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, defineVaporComponent, nextTick, unref } from 'vue'
+import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import { defineComponent, defineVaporComponent, nextTick, unref, VaporComponentInstance, VNode } from 'vue'
 
 const $ = unref
 
@@ -199,7 +209,17 @@ defineVaporComponent((__MACROS_props) => {
 'g': { default: foo, skipFactory: true }, 
 'h': { default: null }, 
 'i': { required: true, default: undefined }
-} })"
+} })
+
+// #21
+const Comp3 = defineComponent(<T,>()=>{
+  return () => <div>123</div>
+})
+;<Comp3 /> == ({} as VNode)
+const Comp4 = defineVaporComponent(<T,>() => {
+  return <div>123</div>
+})
+;<Comp4 /> == ({} as VaporComponentInstance)"
 `;
 
 exports[`fixtures > ./fixtures/define-expose.tsx 1`] = `
