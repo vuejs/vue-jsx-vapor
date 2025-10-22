@@ -1,3 +1,12 @@
+## [2.6.8](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.7...v2.6.8) (2025-10-22)
+
+
+### Bug Fixes
+
+* **macros:** return VNode for generic defineComponent ([3bd71f8](https://github.com/vuejs/vue-jsx-vapor/commit/3bd71f8d5e69c7e6353fc570ffeee2ed6e5a6b8a)), closes [#21](https://github.com/vuejs/vue-jsx-vapor/issues/21)
+
+
+
 ## [2.6.7](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.6...v2.6.7) (2025-09-30)
 
 
