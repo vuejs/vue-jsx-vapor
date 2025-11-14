@@ -341,7 +341,8 @@ function genSlotBlockWithProps(oper: SlotBlockIRNode, context: CodegenContext) {
 
   if (props) {
     rawProps = props.content
-    if ((isDestructureAssignment = !!props.ast)) {
+    if (props.ast?.type === 'ObjectExpression') {
+      isDestructureAssignment = true
       ;[depth, exitScope] = context.enterScope()
       propsName = `_slotProps${depth}`
       walkIdentifiers(
