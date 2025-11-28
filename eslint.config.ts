@@ -2,6 +2,9 @@ import { sxzz } from '@sxzz/eslint-config'
 import vueJsxVapor from './packages/eslint/src/index'
 
 export default [
+  {
+    ignores: ['**/wasi-worker**', '**/compiler-rs.wasi**'],
+  },
   ...(await sxzz()
     .removeRules(
       'unicorn/filename-case',

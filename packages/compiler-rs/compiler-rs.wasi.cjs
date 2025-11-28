@@ -21,7 +21,7 @@ const __wasi = new __nodeWASI({
   env: process.env,
   preopens: {
     [__rootDir]: __rootDir,
-  },
+  }
 })
 
 const __emnapiContext = __emnapiGetDefaultContext()
@@ -33,36 +33,22 @@ const __sharedMemory = new WebAssembly.Memory({
 })
 
 let __wasmFilePath = __nodePath.join(__dirname, 'compiler-rs.wasm32-wasi.wasm')
-const __wasmDebugFilePath = __nodePath.join(
-  __dirname,
-  'compiler-rs.wasm32-wasi.debug.wasm',
-)
+const __wasmDebugFilePath = __nodePath.join(__dirname, 'compiler-rs.wasm32-wasi.debug.wasm')
 
 if (__nodeFs.existsSync(__wasmDebugFilePath)) {
   __wasmFilePath = __wasmDebugFilePath
 } else if (!__nodeFs.existsSync(__wasmFilePath)) {
   try {
-    __wasmFilePath = __nodePath.resolve(
-      '@vue-jsx-vapor/compiler-rs-wasm32-wasi',
-    )
+    __wasmFilePath = __nodePath.resolve('@vue-jsx-vapor/compiler-rs-wasm32-wasi')
   } catch {
-    throw new Error(
-      'Cannot find compiler-rs.wasm32-wasi.wasm file, and @vue-jsx-vapor/compiler-rs-wasm32-wasi package is not installed.',
-    )
+    throw new Error('Cannot find compiler-rs.wasm32-wasi.wasm file, and @vue-jsx-vapor/compiler-rs-wasm32-wasi package is not installed.')
   }
 }
 
-const {
-  instance: __napiInstance,
-  module: __wasiModule,
-  napiModule: __napiModule,
-} = __emnapiInstantiateNapiModuleSync(__nodeFs.readFileSync(__wasmFilePath), {
+const { instance: __napiInstance, module: __wasiModule, napiModule: __napiModule } = __emnapiInstantiateNapiModuleSync(__nodeFs.readFileSync(__wasmFilePath), {
   context: __emnapiContext,
-  asyncWorkPoolSize: (function () {
-    const threadsSizeFromEnv = Number(
-      process.env.NAPI_RS_ASYNC_WORK_POOL_SIZE ??
-        process.env.UV_THREADPOOL_SIZE,
-    )
+  asyncWorkPoolSize: (function() {
+    const threadsSizeFromEnv = Number(process.env.NAPI_RS_ASYNC_WORK_POOL_SIZE ?? process.env.UV_THREADPOOL_SIZE)
     // NaN > 0 is false
     if (threadsSizeFromEnv > 0) {
       return threadsSizeFromEnv
@@ -86,21 +72,21 @@ const {
     // According to https://github.com/nodejs/node/blob/19e0d472728c79d418b74bddff588bea70a403d0/lib/internal/worker.js#L415,
     // a worker is consist of two handles: kPublicPort and kHandle.
     {
-      const kPublicPort = Object.getOwnPropertySymbols(worker).find((s) =>
-        s.toString().includes('kPublicPort'),
-      )
+      const kPublicPort = Object.getOwnPropertySymbols(worker).find(s =>
+        s.toString().includes("kPublicPort")
+      );
       if (kPublicPort) {
-        worker[kPublicPort].ref = () => {}
+        worker[kPublicPort].ref = () => {};
       }
 
-      const kHandle = Object.getOwnPropertySymbols(worker).find((s) =>
-        s.toString().includes('kHandle'),
-      )
+      const kHandle = Object.getOwnPropertySymbols(worker).find(s =>
+        s.toString().includes("kHandle")
+      );
       if (kHandle) {
-        worker[kHandle].ref = () => {}
+        worker[kHandle].ref = () => {};
       }
 
-      worker.unref()
+      worker.unref();
     }
     return worker
   },

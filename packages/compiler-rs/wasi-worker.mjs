@@ -1,41 +1,36 @@
-import fs from 'node:fs'
-import { createRequire } from 'node:module'
-import { parse } from 'node:path'
-import process from 'node:process'
-import { WASI } from 'node:wasi'
-import { parentPort, Worker } from 'node:worker_threads'
+import fs from "node:fs";
+import { createRequire } from "node:module";
+import { parse } from "node:path";
+import { WASI } from "node:wasi";
+import { parentPort, Worker } from "node:worker_threads";
 
-const require = createRequire(import.meta.url)
+const require = createRequire(import.meta.url);
 
-const {
-  instantiateNapiModuleSync,
-  MessageHandler,
-  getDefaultContext,
-} = require('@napi-rs/wasm-runtime')
+const { instantiateNapiModuleSync, MessageHandler, getDefaultContext } = require("@napi-rs/wasm-runtime");
 
 if (parentPort) {
-  parentPort.on('message', (data) => {
-    globalThis.onmessage({ data })
-  })
+  parentPort.on("message", (data) => {
+    globalThis.onmessage({ data });
+  });
 }
 
 Object.assign(globalThis, {
   self: globalThis,
   require,
   Worker,
-  importScripts(f) {
-    ;(0, eval)(`${fs.readFileSync(f, 'utf8')}//# sourceURL=${f}`)
+  importScripts: function (f) {
+    ;(0, eval)(fs.readFileSync(f, "utf8") + "//# sourceURL=" + f);
   },
-  postMessage(msg) {
+  postMessage: function (msg) {
     if (parentPort) {
-      parentPort.postMessage(msg)
+      parentPort.postMessage(msg);
     }
   },
-})
+});
 
-const emnapiContext = getDefaultContext()
+const emnapiContext = getDefaultContext();
 
-const __rootDir = parse(process.cwd()).root
+const __rootDir = parse(process.cwd()).root;
 
 const handler = new MessageHandler({
   onLoad({ wasmModule, wasmMemory }) {
@@ -45,7 +40,7 @@ const handler = new MessageHandler({
       preopens: {
         [__rootDir]: __rootDir,
       },
-    })
+    });
 
     return instantiateNapiModuleSync(wasmModule, {
       childThread: true,
@@ -56,14 +51,13 @@ const handler = new MessageHandler({
           ...importObject.env,
           ...importObject.napi,
           ...importObject.emnapi,
-          memory: wasmMemory,
-        }
+          memory: wasmMemory
+        };
       },
-    })
+    });
   },
-})
+});
 
-// eslint-disable-next-line unicorn/prefer-add-event-listener
 globalThis.onmessage = function (e) {
-  handler.handle(e)
-}
+  handler.handle(e);
+};

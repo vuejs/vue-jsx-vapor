@@ -1,20 +1,19 @@
-/* eslint-disable */
-/* prettier-ignore */
-
 import {
+  createOnMessage as __wasmCreateOnMessageForFsProxy,
   getDefaultContext as __emnapiGetDefaultContext,
   instantiateNapiModuleSync as __emnapiInstantiateNapiModuleSync,
   WASI as __WASI,
-  createOnMessage as __wasmCreateOnMessageForFsProxy,
 } from '@napi-rs/wasm-runtime'
+
+
 
 const __wasi = new __WASI({
   version: 'preview1',
 })
 
-const __wasmUrl = new URL('./compiler-rs.wasm32-wasi.wasm', import.meta.url)
-  .href
+const __wasmUrl = new URL('./compiler-rs.wasm32-wasi.wasm', import.meta.url).href
 const __emnapiContext = __emnapiGetDefaultContext()
+
 
 const __sharedMemory = new WebAssembly.Memory({
   initial: 4000,
@@ -33,12 +32,9 @@ const {
   asyncWorkPoolSize: 4,
   wasi: __wasi,
   onCreateWorker() {
-    const worker = new Worker(
-      new URL('./wasi-worker-browser.mjs', import.meta.url),
-      {
-        type: 'module',
-      },
-    )
+    const worker = new Worker(new URL('./wasi-worker-browser.mjs', import.meta.url), {
+      type: 'module',
+    })
 
     return worker
   },

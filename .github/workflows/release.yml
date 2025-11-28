@@ -416,8 +416,8 @@ jobs:
             npm publish --access public
             cd ../../
             pnpm install --no-frozen-lockfile
-            pnpm run --filter="!compiler-rs" --parallel build
-            pnpm publish --filter="!compiler-rs" --access public --no-git-checks
+            pnpm run --filter="./packages/*" --filter="!compiler-rs" --parallel build
+            pnpm publish --filter="./packages/*" --filter="!compiler-rs" --access public --no-git-checks
           else
             echo "Not a release, skipping publish"
           fi
