@@ -1,3 +1,12 @@
+# [2.7.0](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.8...v2.7.0) (2025-11-28)
+
+
+### Bug Fixes
+
+* **compiler:** prevent transforming v-slot with non-ObjectExpression ([73be347](https://github.com/vuejs/vue-jsx-vapor/commit/73be34759e7e9b05b84a6eadcb3f6faf080b827d))
+
+
+
 ## [2.6.8](https://github.com/vuejs/vue-jsx-vapor/compare/v2.6.7...v2.6.8) (2025-10-22)
 
 
