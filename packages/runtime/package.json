@@ -1,6 +1,6 @@
 {
   "name": "@vue-jsx-vapor/runtime",
-  "version": "2.7.1",
+  "version": "2.7.2",
   "description": "Vue JSX Vapor Runtime",
   "type": "module",
   "keywords": [
