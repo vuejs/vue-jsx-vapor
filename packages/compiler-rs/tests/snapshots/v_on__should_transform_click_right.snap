@@ -1,0 +1,12 @@
+---
+source: tests/v_on.rs
+expression: code
+---
+_delegateEvents("contextmenu");
+import { delegateEvents as _delegateEvents, template as _template, withModifiers as _withModifiers } from "vue";
+const t0 = _template("<div></div>", true);
+(() => {
+  const n0 = t0();
+  n0.$evtcontextmenu = _withModifiers(test, ["right"]);
+  return n0;
+})();

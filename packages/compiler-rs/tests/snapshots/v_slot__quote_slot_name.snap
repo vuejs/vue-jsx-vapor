@@ -1,0 +1,11 @@
+---
+source: tests/v_slot.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+(() => {
+  const n3 = _createComponent(Comp, null, { "nav-bar-title-before": () => {
+    return null;
+  } }, true);
+  return n3;
+})();

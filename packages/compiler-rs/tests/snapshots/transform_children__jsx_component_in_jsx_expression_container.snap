@@ -1,0 +1,16 @@
+---
+source: tests/transform_children.rs
+expression: code
+---
+import { setNodes as _setNodes, createComponent as _createComponent } from "vue-jsx-vapor";
+import { child as _child, template as _template } from "vue";
+const t0 = _template("<div> </div>", true);
+(() => {
+  const n0 = t0();
+  const x0 = _child(n0);
+  _setNodes(x0, () => (() => {
+    const n0 = _createComponent(Comp, null, null, true);
+    return n0;
+  })());
+  return n0;
+})();

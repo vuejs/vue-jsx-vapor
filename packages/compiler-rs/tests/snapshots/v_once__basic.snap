@@ -1,0 +1,15 @@
+---
+source: tests/v_once.rs
+expression: code
+---
+import { setNodes as _setNodes } from "vue-jsx-vapor";
+import { child as _child, next as _next, setClass as _setClass, template as _template } from "vue";
+const t0 = _template("<div> <span></span></div>", true);
+(() => {
+  const n2 = t0();
+  const n0 = _child(n2);
+  const n1 = _next(n0);
+  _setNodes(n0, msg);
+  _setClass(n1, clz);
+  return n2;
+})();

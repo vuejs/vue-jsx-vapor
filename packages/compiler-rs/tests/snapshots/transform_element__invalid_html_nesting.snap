@@ -1,0 +1,17 @@
+---
+source: tests/transform_element.rs
+expression: code
+---
+import { template as _template } from "vue";
+const t0 = _template("<div>123</div>");
+const t1 = _template("<p></p>");
+const t2 = _template("<form></form>");
+(() => {
+  const n1 = t1();
+  const n0 = t0();
+  const n4 = t2();
+  const n3 = t2();
+  insert(n0, n1);
+  insert(n3, n4);
+  return [n1, n4];
+})();

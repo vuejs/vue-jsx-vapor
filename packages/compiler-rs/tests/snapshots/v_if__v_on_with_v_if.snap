@@ -1,0 +1,14 @@
+---
+source: tests/v_if.rs
+expression: code
+---
+import { createIf as _createIf, renderEffect as _renderEffect, setDynamicEvents as _setDynamicEvents, template as _template } from "vue";
+const t0 = _template("<button>w/ v-if</button>");
+(() => {
+  const n0 = _createIf(() => true, () => {
+    const n2 = t0();
+    _renderEffect(() => _setDynamicEvents(n2, { click: clickEvent }));
+    return n2;
+  }, null, true);
+  return n0;
+})();

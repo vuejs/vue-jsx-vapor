@@ -1,0 +1,24 @@
+---
+source: tests/hmr.rs
+expression: code
+---
+const Comp = () => {};
+function Comp1() {}
+export { Comp, Comp1 };
+export function Comp2() {}
+const __default__ = function() {};
+export default __default__;
+Comp.__hmrId = "8ed58763ca2bbfd5";
+__VUE_HMR_RUNTIME__.createRecord("8ed58763ca2bbfd5", Comp);
+Comp1.__hmrId = "f144a08cc37ed966";
+__VUE_HMR_RUNTIME__.createRecord("f144a08cc37ed966", Comp1);
+Comp2.__hmrId = "c36ea49ad2d3847e";
+__VUE_HMR_RUNTIME__.createRecord("c36ea49ad2d3847e", Comp2);
+__default__.__hmrId = "52164bac249078a3";
+__VUE_HMR_RUNTIME__.createRecord("52164bac249078a3", __default__);
+if (import.meta.hot) import.meta.hot.accept((mod) => {
+  __VUE_HMR_RUNTIME__[typeof mod.Comp === "function" ? "rerender" : "reload"](mod.Comp.__hmrId, mod.Comp);
+  __VUE_HMR_RUNTIME__[typeof mod.Comp1 === "function" ? "rerender" : "reload"](mod.Comp1.__hmrId, mod.Comp1);
+  __VUE_HMR_RUNTIME__[typeof mod.Comp2 === "function" ? "rerender" : "reload"](mod.Comp2.__hmrId, mod.Comp2);
+  __VUE_HMR_RUNTIME__[typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default);
+});

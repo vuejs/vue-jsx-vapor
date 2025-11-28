@@ -1,0 +1,11 @@
+---
+source: tests/v_slot_test.rs
+expression: result.code
+---
+(() => {
+  const n1 = _createComponent(Comp, null, { named: (_slotProps0) => {
+    const n0 = _createNodes(() => ({ foo: _slotProps0.foo }));
+    return n0;
+  } }, true);
+  return n1;
+})();

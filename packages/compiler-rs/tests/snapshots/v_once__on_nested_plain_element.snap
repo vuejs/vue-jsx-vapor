@@ -1,0 +1,12 @@
+---
+source: tests/v_once.rs
+expression: code
+---
+import { child as _child, setProp as _setProp, template as _template } from "vue";
+const t0 = _template("<div><div></div></div>", true);
+(() => {
+  const n1 = t0();
+  const n0 = _child(n1);
+  _setProp(n0, "id", foo);
+  return n1;
+})();

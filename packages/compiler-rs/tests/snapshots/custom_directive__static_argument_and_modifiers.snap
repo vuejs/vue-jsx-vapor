@@ -1,0 +1,16 @@
+---
+source: tests/custom_directive.rs
+expression: code
+---
+import { template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+const t0 = _template("<div></div>", true);
+(() => {
+  const n0 = t0();
+  _withVaporDirectives(n0, [[
+    vExample,
+    () => msg,
+    "foo",
+    { bar: true }
+  ]]);
+  return n0;
+})();

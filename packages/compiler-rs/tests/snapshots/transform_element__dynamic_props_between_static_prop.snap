@@ -1,0 +1,15 @@
+---
+source: tests/transform_element.rs
+expression: code
+---
+import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
+const t0 = _template("<div></div>", true);
+(() => {
+  const n0 = t0();
+  _renderEffect(() => _setDynamicProps(n0, [
+    { id: "foo" },
+    obj,
+    { class: "bar" }
+  ], true));
+  return n0;
+})();

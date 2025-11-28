@@ -1,0 +1,20 @@
+---
+source: tests/v_for.rs
+expression: code
+---
+import { child as _child, createFor as _createFor, setText as _setText, template as _template, toDisplayString as _toDisplayString } from "vue";
+const t0 = _template("<tr> </tr>");
+(() => {
+  let _selector0_0;
+  const n0 = _createFor(() => rows, (_for_item0) => {
+    const n2 = t0();
+    const x2 = _child(n2);
+    _selector0_0(() => {
+      _setText(x2, _toDisplayString(selected === _for_item0.value.id ? "danger" : ""));
+    });
+    return n2;
+  }, (row) => row.id, void 0, ({ createSelector }) => {
+    _selector0_0 = createSelector(() => selected);
+  });
+  return n0;
+})();

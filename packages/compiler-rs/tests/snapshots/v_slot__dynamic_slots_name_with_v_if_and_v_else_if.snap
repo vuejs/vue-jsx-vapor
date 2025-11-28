@@ -1,0 +1,38 @@
+---
+source: tests/v_slot.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { template as _template } from "vue";
+const t0 = _template("condition slot");
+const t1 = _template("another condition");
+const t2 = _template("other condition");
+const t3 = _template("else condition");
+(() => {
+  const n13 = _createComponent(Comp, null, { $: [() => condition ? {
+    name: "condition",
+    fn: () => {
+      const n1 = t0();
+      return n1;
+    }
+  } : anotherCondition ? {
+    name: "condition",
+    fn: (_slotProps0) => {
+      const n4 = t1();
+      return n4;
+    }
+  } : otherCondition ? {
+    name: "condition",
+    fn: () => {
+      const n7 = t2();
+      return n7;
+    }
+  } : {
+    name: "condition",
+    fn: () => {
+      const n10 = t3();
+      return n10;
+    }
+  }] }, true);
+  return n13;
+})();

@@ -1,0 +1,26 @@
+---
+source: tests/custom_directive.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+const t0 = _template("<div></div>");
+(() => {
+  const n0 = _createComponent(Comp, null, { default: () => {
+    const n2 = _createIf(() => true, () => {
+      const n5 = t0();
+      _setInsertionState(n5);
+      const n4 = _createComponent(Bar);
+      _withVaporDirectives(n4, [[
+        vHello,
+        void 0,
+        void 0,
+        { world: true }
+      ]]);
+      return n5;
+    }, null, true);
+    return n2;
+  } }, true);
+  _withVaporDirectives(n0, [[vTest]]);
+  return n0;
+})();

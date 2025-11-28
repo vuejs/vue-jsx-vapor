@@ -57,6 +57,11 @@ const createProxyComponent = (
   if (typeof type === 'function') {
     type = new Proxy(type, {
       apply(target, ctx, args) {
+        // @ts-ignore
+        if (typeof target.__setup === 'function') {
+          // @ts-ignore
+          target.__setup.apply(ctx, args)
+        }
         return normalizeNode(Reflect.apply(target, ctx, args))
       },
       get(target, p, receiver) {

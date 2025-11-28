@@ -1,0 +1,17 @@
+---
+source: tests/transform_children.rs
+expression: code
+---
+import { child as _child, createIf as _createIf, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
+const t0 = _template("<div></div>");
+const t1 = _template("<div><div></div><!><div></div></div>", true);
+(() => {
+  const n4 = t1();
+  const n3 = _next(_child(n4));
+  _setInsertionState(n4, n3);
+  const n0 = _createIf(() => 1, () => {
+    const n2 = t0();
+    return n2;
+  }, null, true);
+  return n4;
+})();

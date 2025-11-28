@@ -1,0 +1,27 @@
+---
+source: tests/v_for.rs
+expression: code
+---
+import { setNodes as _setNodes } from "vue-jsx-vapor";
+import { child as _child, createFor as _createFor, renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
+const t0 = _template("<div> </div>");
+(() => {
+  const n0 = _createFor(() => items, (_for_item0, _for_key0) => {
+    const n2 = t0();
+    const x2 = _child(n2);
+    _setNodes(x2, () => ((item) => {
+      let index = 1;
+      return [item, index];
+    })(_for_item0.value), () => (() => {
+      switch (_for_item0.value) {
+        case _for_key0.value: {
+          let item = "";
+          return `${[item, _for_key0.value]}`;
+        }
+      }
+    })());
+    _renderEffect(() => _setProp(n2, "id", _for_key0.value));
+    return n2;
+  });
+  return n0;
+})();

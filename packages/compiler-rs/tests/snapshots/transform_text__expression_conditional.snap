@@ -1,0 +1,23 @@
+---
+source: tests/transform_text.rs
+expression: code
+---
+import { setNodes as _setNodes, createNodes as _createNodes } from "vue-jsx-vapor";
+import { child as _child, createIf as _createIf, template as _template } from "vue";
+const t0 = _template("<span> </span>");
+const t1 = _template("<div>fail</div>");
+(() => {
+  const n0 = _createIf(() => ok, () => {
+    const n2 = t0();
+    const x2 = _child(n2);
+    _setNodes(x2, () => msg);
+    return n2;
+  }, () => _createIf(() => fail, () => {
+    const n4 = t1();
+    return n4;
+  }, () => {
+    const n6 = _createNodes(null);
+    return n6;
+  }));
+  return n0;
+})();

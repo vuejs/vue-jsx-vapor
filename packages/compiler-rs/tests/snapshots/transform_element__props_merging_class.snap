@@ -1,0 +1,11 @@
+---
+source: tests/transform_element.rs
+expression: code
+---
+import { renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
+const t0 = _template("<div></div>", true);
+(() => {
+  const n0 = t0();
+  _renderEffect(() => _setClass(n0, ["foo", { bar: isBar }]));
+  return n0;
+})();

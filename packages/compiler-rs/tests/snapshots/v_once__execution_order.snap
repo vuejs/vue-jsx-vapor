@@ -1,0 +1,22 @@
+---
+source: tests/v_once.rs
+expression: code
+---
+import { setNodes as _setNodes } from "vue-jsx-vapor";
+import { child as _child, next as _next, nthChild as _nthChild, setProp as _setProp, template as _template } from "vue";
+const t0 = _template("<div><span> </span> <br> <div> </div></div>", true);
+(() => {
+  const n4 = t0();
+  const n0 = _child(n4);
+  const n1 = _next(n0);
+  const n2 = _nthChild(n4, 3);
+  const n3 = _next(n2);
+  const x0 = _child(n0);
+  _setNodes(x0, foo);
+  _setNodes(n1, () => bar);
+  _setNodes(n2, () => baz);
+  _setProp(n3, "foo", true);
+  const x3 = _child(n3);
+  _setNodes(x3, () => foo);
+  return n4;
+})();

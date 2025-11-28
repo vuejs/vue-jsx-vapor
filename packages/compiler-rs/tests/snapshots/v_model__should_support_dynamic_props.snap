@@ -1,0 +1,12 @@
+---
+source: tests/v_model.rs
+expression: code
+---
+import { applyDynamicModel as _applyDynamicModel, renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
+const t0 = _template("<input>", true);
+(() => {
+  const n0 = t0();
+  _applyDynamicModel(n0, () => model, (_value) => model = _value);
+  _renderEffect(() => _setDynamicProps(n0, [obj], true));
+  return n0;
+})();

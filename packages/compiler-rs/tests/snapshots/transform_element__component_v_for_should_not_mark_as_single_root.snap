@@ -1,0 +1,13 @@
+---
+source: tests/transform_element.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { createFor as _createFor } from "vue";
+(() => {
+  const n0 = _createFor(() => items, (_for_item0) => {
+    const n2 = _createComponent(Comp);
+    return n2;
+  }, (item) => item, 2);
+  return n0;
+})();

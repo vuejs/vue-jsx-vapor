@@ -1,0 +1,18 @@
+---
+source: tests/v_for.rs
+expression: code
+---
+_delegateEvents("click");
+import { setNodes as _setNodes } from "vue-jsx-vapor";
+import { child as _child, createFor as _createFor, delegateEvents as _delegateEvents, template as _template } from "vue";
+const t0 = _template("<div> </div>");
+(() => {
+  const n0 = _createFor(() => items, (_for_item0) => {
+    const n2 = t0();
+    n2.$evtclick = () => remove(_for_item0.value);
+    const x2 = _child(n2);
+    _setNodes(x2, () => _for_item0.value);
+    return n2;
+  }, (item) => item.id);
+  return n0;
+})();

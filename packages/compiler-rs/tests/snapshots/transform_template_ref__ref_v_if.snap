@@ -1,0 +1,16 @@
+---
+source: tests/transform_template_ref.rs
+expression: code
+---
+import { createIf as _createIf, createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
+const t0 = _template("<div></div>");
+(() => {
+  const _setTemplateRef = _createTemplateRefSetter();
+  const n0 = _createIf(() => true, () => {
+    const n2 = t0();
+    let r2;
+    _renderEffect(() => r2 = _setTemplateRef(n2, foo, r2));
+    return n2;
+  }, null, true);
+  return n0;
+})();

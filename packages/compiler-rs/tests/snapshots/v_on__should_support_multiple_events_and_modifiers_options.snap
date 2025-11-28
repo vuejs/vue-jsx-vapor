@@ -1,0 +1,13 @@
+---
+source: tests/v_on.rs
+expression: code
+---
+_delegateEvents("click", "keyup");
+import { delegateEvents as _delegateEvents, template as _template, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
+const t0 = _template("<div></div>", true);
+(() => {
+  const n0 = t0();
+  n0.$evtclick = _withModifiers(test, ["stop"]);
+  n0.$evtkeyup = _withKeys(test, ["enter"]);
+  return n0;
+})();

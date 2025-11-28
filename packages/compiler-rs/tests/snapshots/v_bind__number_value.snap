@@ -1,0 +1,12 @@
+---
+source: tests/v_bind.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { template as _template } from "vue";
+const t0 = _template("<div depth=\"0\"></div>");
+(() => {
+  const n1 = t0();
+  const n3 = _createComponent(Comp, { depth: () => 0 });
+  return [n1, n3];
+})();

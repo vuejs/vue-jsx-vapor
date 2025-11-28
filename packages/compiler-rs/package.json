@@ -1,0 +1,70 @@
+{
+  "name": "@vue-jsx-vapor/compiler-rs",
+  "version": "2.6.13",
+  "packageManager": "pnpm@10.17.1",
+  "description": "Template project for writing node package with napi-rs",
+  "keywords": [
+    "napi-rs",
+    "NAPI",
+    "N-API",
+    "Rust",
+    "node-addon",
+    "node-addon-api"
+  ],
+  "license": "MIT",
+  "repository": {
+    "url": "git+ssh://git@github.com/zhiyuanzmj/compiler-rs.git",
+    "type": "git"
+  },
+  "files": [
+    "browser.js",
+    "index.d.ts",
+    "index.js"
+  ],
+  "main": "index.js",
+  "types": "index.d.ts",
+  "browser": "browser.js",
+  "napi": {
+    "binaryName": "compiler-rs",
+    "targets": [
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-unknown-linux-gnu",
+      "x86_64-pc-windows-msvc",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "i686-pc-windows-msvc",
+      "armv7-unknown-linux-gnueabihf",
+      "aarch64-linux-android",
+      "x86_64-unknown-freebsd",
+      "aarch64-unknown-linux-musl",
+      "aarch64-pc-windows-msvc",
+      "armv7-linux-androideabi",
+      "wasm32-wasi-preview1-threads"
+    ]
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "dev": "nodemon -w src -e rs -x 'napi build --platform'",
+    "format": "taplo format",
+    "prepublishOnly": "napi prepublish -t npm",
+    "version": "napi version",
+    "bench": "cargo bench --no-default-features",
+    "test": "cargo test --no-default-features -- --nocapture",
+    "test-watch": "nodemon -w src -e rs -x 'cargo test --no-default-features -- --nocapture'",
+    "flamegraph": "CARGO_PROFILE_RELEASE_STRIP=false CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --bench bench --no-default-features"
+  },
+  "devDependencies": {
+    "@emnapi/core": "^1.5.0",
+    "@emnapi/runtime": "^1.5.0",
+    "@napi-rs/cli": "^3.2.0",
+    "@napi-rs/wasm-runtime": "^1.0.4",
+    "@taplo/cli": "^0.7.0",
+    "emnapi": "^1.5.0"
+  }
+}

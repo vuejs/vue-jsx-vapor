@@ -1,0 +1,11 @@
+---
+source: tests/hmr.rs
+expression: code
+---
+const __default__ = () => {};
+export default __default__;
+__default__.__hmrId = "52164bac249078a3";
+__VUE_HMR_RUNTIME__.createRecord("52164bac249078a3", __default__);
+if (import.meta.hot) import.meta.hot.accept((mod) => {
+  __VUE_HMR_RUNTIME__[typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default);
+});

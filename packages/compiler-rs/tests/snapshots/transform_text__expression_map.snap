@@ -1,0 +1,30 @@
+---
+source: tests/transform_text.rs
+expression: code
+---
+import { setNodes as _setNodes, createNodes as _createNodes } from "vue-jsx-vapor";
+import { child as _child, template as _template } from "vue";
+const t0 = _template("<div>1</div>", true);
+const t1 = _template("<span> </span>", true);
+const t2 = _template("<br>", true);
+(() => {
+  const n0 = _createNodes(() => Array.from({ length: count.value }).map((_, index) => {
+    if (index > 1) {
+      return (() => {
+        const n0 = t0();
+        return n0;
+      })();
+    } else {
+      return [(() => {
+        const n0 = t1();
+        const x0 = _child(n0);
+        _setNodes(x0, "(", () => index, ") lt 1");
+        return n0;
+      })(), (() => {
+        const n0 = t2();
+        return n0;
+      })()];
+    }
+  }));
+  return n0;
+})();

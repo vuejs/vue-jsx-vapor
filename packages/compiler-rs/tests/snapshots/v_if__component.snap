@@ -1,0 +1,13 @@
+---
+source: tests/v_if.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { createIf as _createIf } from "vue";
+(() => {
+  const n0 = _createIf(() => foo, () => {
+    const n2 = _createComponent(Comp);
+    return n2;
+  });
+  return n0;
+})();

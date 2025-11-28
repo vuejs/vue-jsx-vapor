@@ -1,0 +1,19 @@
+---
+source: tests/v_model.rs
+expression: code
+---
+import { applyTextModel as _applyTextModel, template as _template } from "vue";
+const t0 = _template("<input>");
+(() => {
+  const n0 = t0();
+  const n1 = t0();
+  const n2 = t0();
+  _applyTextModel(n0, () => setupRef.child, (_value) => setupRef.child = _value);
+  _applyTextModel(n1, () => setupLet.child, (_value) => setupLet.child = _value);
+  _applyTextModel(n2, () => setupMaybeRef.child, (_value) => setupMaybeRef.child = _value);
+  return [
+    n0,
+    n1,
+    n2
+  ];
+})();

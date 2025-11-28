@@ -1,0 +1,11 @@
+---
+source: tests/v_model.rs
+expression: code
+---
+import { applyTextModel as _applyTextModel, template as _template } from "vue";
+const t0 = _template("<input>", true);
+(() => {
+  const n0 = t0();
+  _applyTextModel(n0, () => model, (_value) => model = _value);
+  return n0;
+})();

@@ -1,0 +1,18 @@
+---
+source: tests/v_for.rs
+expression: code
+---
+import { setNodes as _setNodes, createComponent as _createComponent } from "vue-jsx-vapor";
+import { createFor as _createFor, template as _template } from "vue";
+const t0 = _template(" ");
+(() => {
+  const n0 = _createFor(() => list, (_for_item0) => {
+    const n3 = _createComponent(Comp, null, { default: () => {
+      const n2 = t0();
+      _setNodes(n2, () => _for_item0.value);
+      return n2;
+    } });
+    return n3;
+  }, void 0, 2);
+  return n0;
+})();

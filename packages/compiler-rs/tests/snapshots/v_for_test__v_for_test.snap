@@ -1,0 +1,18 @@
+---
+source: tests/v_for_test.rs
+expression: result.code
+---
+(() => {
+  let _selector0_0;
+  const n0 = _createFor(() => rows, (_for_item0) => {
+    const n2 = t0();
+    const x2 = _child(n2);
+    _selector0_0(() => {
+      _setText(x2, _toDisplayString(selected === _for_item0.value.id ? "danger" : ""));
+    });
+    return n2;
+  }, (row) => row.id, void 0, ({ createSelector }) => {
+    _selector0_0 = createSelector(() => selected);
+  });
+  return n0;
+})();

@@ -1,0 +1,12 @@
+---
+source: tests/transform_template_ref.rs
+expression: code
+---
+import { createTemplateRefSetter as _createTemplateRefSetter, template as _template } from "vue";
+const t0 = _template("<div></div>", true);
+(() => {
+  const _setTemplateRef = _createTemplateRefSetter();
+  const n0 = t0();
+  _setTemplateRef(n0, "foo");
+  return n0;
+})();

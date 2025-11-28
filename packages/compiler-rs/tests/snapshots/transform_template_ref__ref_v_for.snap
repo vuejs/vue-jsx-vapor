@@ -1,0 +1,20 @@
+---
+source: tests/transform_template_ref.rs
+expression: code
+---
+import { createFor as _createFor, createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
+const t0 = _template("<div></div>");
+(() => {
+  const _setTemplateRef = _createTemplateRefSetter();
+  const n0 = _createFor(() => [
+    1,
+    2,
+    3
+  ], (_for_item0) => {
+    const n2 = t0();
+    let r2;
+    _renderEffect(() => r2 = _setTemplateRef(n2, foo, r2, true));
+    return n2;
+  }, void 0, 4);
+  return n0;
+})();

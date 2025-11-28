@@ -1,0 +1,15 @@
+---
+source: tests/hmr.rs
+expression: code
+---
+export const Comp = defineComponent(() => {});
+const __default__ = defineVaporComponent(() => {});
+export default __default__;
+Comp.__hmrId = "8ed58763ca2bbfd5";
+__VUE_HMR_RUNTIME__.createRecord("8ed58763ca2bbfd5", Comp);
+__default__.__hmrId = "52164bac249078a3";
+__VUE_HMR_RUNTIME__.createRecord("52164bac249078a3", __default__);
+if (import.meta.hot) import.meta.hot.accept((mod) => {
+  __VUE_HMR_RUNTIME__[typeof mod.Comp === "function" ? "rerender" : "reload"](mod.Comp.__hmrId, mod.Comp);
+  __VUE_HMR_RUNTIME__[typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default);
+});

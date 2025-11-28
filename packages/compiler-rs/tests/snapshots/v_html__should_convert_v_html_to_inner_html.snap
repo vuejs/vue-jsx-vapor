@@ -1,0 +1,11 @@
+---
+source: tests/v_html.rs
+expression: code
+---
+import { renderEffect as _renderEffect, setHtml as _setHtml, template as _template } from "vue";
+const t0 = _template("<div></div>", true);
+(() => {
+  const n0 = t0();
+  _renderEffect(() => _setHtml(n0, code.value));
+  return n0;
+})();

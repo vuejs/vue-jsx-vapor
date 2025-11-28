@@ -1,0 +1,12 @@
+---
+source: tests/v_slot.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+(() => {
+  const n1 = _createComponent(A, null, { default: () => {
+    const n0 = _createComponent(B);
+    return n0;
+  } }, true);
+  return n1;
+})();

@@ -1,8 +1,8 @@
 import macros from '@vue-jsx-vapor/macros/raw'
 import { transformJsxDirective } from '@vue-macros/jsx-directive/api'
-import { createFilter } from 'unplugin-utils'
+import { relative } from 'pathe'
+import { createFilter, normalizePath } from 'unplugin-utils'
 import { transformVueJsxVapor } from './core'
-import { injectHMRAndSSR } from './core/hmr'
 import { ssrRegisterHelperCode, ssrRegisterHelperId } from './core/ssr'
 import { transformVueJsx } from './core/vue-jsx'
 import type { Options } from './options'
@@ -15,18 +15,20 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
   )
   let root = ''
   let needHMR = false
-  let needSourceMap = options.sourceMap || false
+  let needSourceMap = false
+  // options.sourceMap || false
   return [
     {
+      enforce: 'pre',
       name: 'vue-jsx-vapor',
       vite: {
         config(config) {
           return {
             // only apply esbuild to ts files
             // since we are handling jsx and tsx now
-            esbuild: {
-              include: /\.ts$/,
-            },
+            // esbuild: {
+            //   include: /\.ts$/,
+            // },
             define: {
               __VUE_OPTIONS_API__: config.define?.__VUE_OPTIONS_API__ ?? true,
               __VUE_PROD_DEVTOOLS__:
@@ -54,13 +56,18 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
       },
       transformInclude,
       transform(code, id, opt?: { ssr?: boolean }) {
-        const result = transformVueJsxVapor(code, id, options, needSourceMap)
+        const result = transformVueJsxVapor(
+          code,
+          opt?.ssr ? normalizePath(relative(root, id)) : id,
+          options,
+          needSourceMap,
+          needHMR,
+          opt?.ssr,
+        )
         if (result?.code) {
-          ;(needHMR || opt?.ssr) &&
-            injectHMRAndSSR(result, id, { ssr: opt?.ssr, root })
           return {
             code: result.code,
-            map: result.map,
+            map: result.map ? JSON.parse(result.map) : null,
           }
         }
       },

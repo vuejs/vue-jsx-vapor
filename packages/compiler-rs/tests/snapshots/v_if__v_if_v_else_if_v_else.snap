@@ -1,0 +1,21 @@
+---
+source: tests/v_if.rs
+expression: code
+---
+import { createIf as _createIf, template as _template } from "vue";
+const t0 = _template("<div></div>");
+const t1 = _template("<p></p>");
+const t2 = _template("fine");
+(() => {
+  const n0 = _createIf(() => ok, () => {
+    const n2 = t0();
+    return n2;
+  }, () => _createIf(() => orNot, () => {
+    const n4 = t1();
+    return n4;
+  }, () => {
+    const n7 = t2();
+    return n7;
+  }));
+  return n0;
+})();

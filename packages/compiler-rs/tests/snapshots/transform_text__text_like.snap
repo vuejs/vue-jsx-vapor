@@ -1,0 +1,10 @@
+---
+source: tests/transform_text.rs
+expression: code
+---
+import { template as _template } from "vue";
+const t0 = _template("<div>2foo111</div>", true);
+(() => {
+  const n0 = t0();
+  return n0;
+})();

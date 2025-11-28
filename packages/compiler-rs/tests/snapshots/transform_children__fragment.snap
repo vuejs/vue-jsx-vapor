@@ -1,0 +1,9 @@
+---
+source: tests/transform_children.rs
+expression: code
+---
+import { createNodes as _createNodes } from "vue-jsx-vapor";
+(() => {
+  const n0 = _createNodes(() => foo);
+  return n0;
+})();

@@ -1,0 +1,16 @@
+---
+source: tests/v_model.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { createFor as _createFor } from "vue";
+(() => {
+  const n0 = _createFor(() => list, (_for_item0) => {
+    const n2 = _createComponent(Comp, { $: [() => ({
+      [_for_item0.value.arg]: foo,
+      ["onUpdate:" + _for_item0.value.arg]: () => (_value) => foo = _value
+    })] });
+    return n2;
+  }, void 0, 2);
+  return n0;
+})();

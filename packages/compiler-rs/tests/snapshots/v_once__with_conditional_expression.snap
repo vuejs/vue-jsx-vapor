@@ -1,0 +1,23 @@
+---
+source: tests/v_once.rs
+expression: code
+---
+import { setNodes as _setNodes } from "vue-jsx-vapor";
+import { child as _child, createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
+const t0 = _template("<span> </span>");
+const t1 = _template("<div>fail</div>");
+const t2 = _template("<div></div>", true);
+(() => {
+  const n5 = t2();
+  _setInsertionState(n5);
+  const n0 = _createIf(() => ok, () => {
+    const n2 = t0();
+    const x2 = _child(n2);
+    _setNodes(x2, msg);
+    return n2;
+  }, () => {
+    const n4 = t1();
+    return n4;
+  }, true);
+  return n5;
+})();

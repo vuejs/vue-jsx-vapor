@@ -1,0 +1,16 @@
+---
+source: tests/v_slot.rs
+expression: code
+---
+import { createNodes as _createNodes, createComponent as _createComponent } from "vue-jsx-vapor";
+(() => {
+  const n11 = _createComponent(Comp, null, { default: (_slotProps0) => {
+    const n5 = _createComponent(Inner, null, { default: (_slotProps1) => {
+      const n3 = _createNodes(() => _slotProps0.foo + _slotProps1.bar + baz);
+      return n3;
+    } });
+    const n7 = _createNodes(() => _slotProps0.foo + bar + baz);
+    return [n5, n7];
+  } }, true);
+  return n11;
+})();

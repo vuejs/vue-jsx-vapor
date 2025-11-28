@@ -1,0 +1,21 @@
+---
+source: tests/transform_template_ref.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
+const t0 = _template("<div></div>");
+(() => {
+  const _setTemplateRef = _createTemplateRefSetter();
+  const n3 = _createComponent(Comp, null, { default: (_slotProps0) => {
+    const n1 = t0();
+    let r1;
+    _renderEffect(() => r1 = _setTemplateRef(n1, (bar) => {
+      foo.value = bar;
+      ({baz: _slotProps0.baz, bar: _slotProps0.baz} = bar);
+      console.log(foo.value, _slotProps0.baz);
+    }, r1));
+    return n1;
+  } }, true);
+  return n3;
+})();

@@ -1,0 +1,23 @@
+---
+source: tests/v_slot.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { template as _template } from "vue";
+const t0 = _template("foo");
+const t1 = _template("bar");
+const t2 = _template("<span></span>");
+(() => {
+  const n6 = _createComponent(Comp, null, {
+    one: () => {
+      const n1 = t0();
+      return n1;
+    },
+    default: () => {
+      const n3 = t1();
+      const n4 = t2();
+      return [n3, n4];
+    }
+  }, true);
+  return n6;
+})();

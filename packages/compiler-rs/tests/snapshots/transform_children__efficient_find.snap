@@ -1,0 +1,14 @@
+---
+source: tests/transform_children.rs
+expression: code
+---
+import { setNodes as _setNodes } from "vue-jsx-vapor";
+import { child as _child, nthChild as _nthChild, template as _template } from "vue";
+const t0 = _template("<div><div>x</div><div>x</div><div> </div></div>", true);
+(() => {
+  const n1 = t0();
+  const n0 = _nthChild(n1, 2);
+  const x0 = _child(n0);
+  _setNodes(x0, () => msg);
+  return n1;
+})();

@@ -1,0 +1,13 @@
+{
+  "type": "module",
+  "scripts": {
+    "bench": "node ./bench.js"
+  },
+  "devDependencies": {
+    "@babel/core": "catalog:",
+    "@vue-jsx-vapor/babel": "2.6.8",
+    "@vue-jsx-vapor/compiler-rs": "workspace:*",
+    "@vue/babel-plugin-jsx": "^1.5.0",
+    "tinybench": "^5.0.1"
+  }
+}

@@ -1,0 +1,9 @@
+---
+source: tests/transform_element.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+(() => {
+  const n0 = _createComponent(Comp, null, null, true);
+  return n0;
+})();

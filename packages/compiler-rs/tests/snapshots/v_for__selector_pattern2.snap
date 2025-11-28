@@ -1,0 +1,19 @@
+---
+source: tests/v_for.rs
+expression: code
+---
+import { createFor as _createFor, setClass as _setClass, template as _template } from "vue";
+const t0 = _template("<tr></tr>");
+(() => {
+  let _selector0_0;
+  const n0 = _createFor(() => rows, (_for_item0) => {
+    const n2 = t0();
+    _selector0_0(() => {
+      _setClass(n2, selected === _for_item0.value.id ? "danger" : "");
+    });
+    return n2;
+  }, (row) => row.id, void 0, ({ createSelector }) => {
+    _selector0_0 = createSelector(() => selected);
+  });
+  return n0;
+})();

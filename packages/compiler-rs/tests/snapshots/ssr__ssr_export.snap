@@ -1,0 +1,8 @@
+---
+source: tests/ssr.rs
+expression: code
+---
+import { ssrRegisterHelper } from "/__vue-jsx-ssr-register-helper";
+const __moduleId = "index.jsx";
+export const foo = () => {};
+ssrRegisterHelper(foo, __moduleId);

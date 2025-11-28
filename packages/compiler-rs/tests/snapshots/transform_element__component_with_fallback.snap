@@ -1,0 +1,11 @@
+---
+source: tests/transform_element.rs
+expression: code
+---
+import { createComponentWithFallback as _createComponentWithFallback } from "vue-jsx-vapor";
+import { resolveComponent as _resolveComponent } from "vue";
+(() => {
+  const _component_foo_bar = _resolveComponent("foo-bar");
+  const n0 = _createComponentWithFallback(_component_foo_bar, null, null, true);
+  return n0;
+})();

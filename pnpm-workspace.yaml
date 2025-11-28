@@ -2,6 +2,7 @@ packages:
   - packages/*
   - playground
   - docs
+  - benchmark
 
 defines:
   - &babel ^7.28.4

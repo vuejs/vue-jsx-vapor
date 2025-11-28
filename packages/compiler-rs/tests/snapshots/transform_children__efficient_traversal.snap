@@ -1,0 +1,23 @@
+---
+source: tests/transform_children.rs
+expression: code
+---
+import { setNodes as _setNodes } from "vue-jsx-vapor";
+import { child as _child, next as _next, template as _template } from "vue";
+const t0 = _template("<div><div>x</div><div><span> </span></div><div><span> </span></div><div><span> </span></div></div>", true);
+(() => {
+  const n3 = t0();
+  const p0 = _next(_child(n3));
+  const p1 = _next(p0);
+  const p2 = _next(p1);
+  const n2 = _child(p2);
+  const n1 = _child(p1);
+  const n0 = _child(p0);
+  const x0 = _child(n0);
+  _setNodes(x0, () => ({ msg }));
+  const x1 = _child(n1);
+  _setNodes(x1, () => ({ msg }));
+  const x2 = _child(n2);
+  _setNodes(x2, () => ({ msg }));
+  return n3;
+})();

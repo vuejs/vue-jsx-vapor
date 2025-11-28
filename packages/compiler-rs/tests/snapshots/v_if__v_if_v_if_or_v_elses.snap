@@ -1,0 +1,26 @@
+---
+source: tests/v_if.rs
+expression: code
+---
+import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
+const t0 = _template("<span>foo</span>");
+const t1 = _template("<span>bar</span>");
+const t2 = _template("<span>baz</span>");
+const t3 = _template("<div></div>", true);
+(() => {
+  const n8 = t3();
+  _setInsertionState(n8);
+  const n0 = _createIf(() => "foo", () => {
+    const n2 = t0();
+    return n2;
+  });
+  _setInsertionState(n8);
+  const n3 = _createIf(() => "bar", () => {
+    const n5 = t1();
+    return n5;
+  }, () => {
+    const n7 = t2();
+    return n7;
+  });
+  return n8;
+})();

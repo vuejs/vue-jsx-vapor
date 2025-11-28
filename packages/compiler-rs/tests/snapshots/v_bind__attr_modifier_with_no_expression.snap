@@ -1,0 +1,11 @@
+---
+source: tests/v_bind.rs
+expression: code
+---
+import { setAttr as _setAttr, template as _template } from "vue";
+const t0 = _template("<div></div>", true);
+(() => {
+  const n0 = t0();
+  _setAttr(n0, "foo-bar", true);
+  return n0;
+})();

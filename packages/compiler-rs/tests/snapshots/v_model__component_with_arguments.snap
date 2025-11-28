@@ -1,0 +1,12 @@
+---
+source: tests/v_model.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+(() => {
+  const n0 = _createComponent(Comp, {
+    bar: () => foo,
+    "onUpdate:bar": () => (_value) => foo = _value
+  }, null, true);
+  return n0;
+})();

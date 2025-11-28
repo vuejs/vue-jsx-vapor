@@ -1,0 +1,13 @@
+---
+source: tests/v_once.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { setInsertionState as _setInsertionState, template as _template } from "vue";
+const t0 = _template("<div></div>", true);
+(() => {
+  const n1 = t0();
+  _setInsertionState(n1);
+  const n0 = _createComponent(Comp, { id: () => foo }, null, null, true);
+  return n1;
+})();

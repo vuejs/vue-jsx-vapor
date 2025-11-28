@@ -1,0 +1,11 @@
+---
+source: tests/hmr.rs
+expression: code
+---
+export const Comp = defineComponent(() => {});
+const __default__ = defineVaporComponent(() => {});
+export default __default__;
+if (import.meta.hot) import.meta.hot.accept((mod) => {
+  __VUE_HMR_RUNTIME__[typeof mod.Comp === "function" ? "rerender" : "reload"](mod.Comp.__hmrId, mod.Comp);
+  __VUE_HMR_RUNTIME__[typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default);
+});

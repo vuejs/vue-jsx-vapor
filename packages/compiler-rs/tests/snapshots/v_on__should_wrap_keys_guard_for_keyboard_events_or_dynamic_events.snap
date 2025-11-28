@@ -1,0 +1,11 @@
+---
+source: tests/v_on.rs
+expression: code
+---
+import { on as _on, template as _template, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
+const t0 = _template("<div></div>", true);
+(() => {
+  const n0 = t0();
+  _on(n0, "keydown", _withKeys(_withModifiers(test, ["stop", "ctrl"]), ["a"]), { capture: true });
+  return n0;
+})();

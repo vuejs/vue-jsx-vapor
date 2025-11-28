@@ -1,0 +1,28 @@
+---
+source: tests/text_test.rs
+expression: result.code
+---
+(() => {
+  const n9 = t1();
+  _setInsertionState(n9);
+  const n0 = _createIf(() => count.value === 1, () => {
+    const n2 = t0();
+    const x2 = _child(n2);
+    _setNodes(x2, () => count.value);
+    return n2;
+  }, () => _createIf(() => count.value === 2, () => {
+    const n4 = _createComponent(Foo);
+    return n4;
+  }, () => _createIf(() => count.value >= 3, () => {
+    const n6 = t0();
+    const x6 = _child(n6);
+    _setNodes(x6, "lg 3: ", () => count.value);
+    return n6;
+  }, () => {
+    const n8 = t0();
+    const x8 = _child(n8);
+    _setNodes(x8, "lt 0: ", () => count.value);
+    return n8;
+  })));
+  return n9;
+})();

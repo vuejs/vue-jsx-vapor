@@ -1,0 +1,24 @@
+---
+source: tests/transform_children.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { child as _child, createIf as _createIf, next as _next, nthChild as _nthChild, renderEffect as _renderEffect, setInsertionState as _setInsertionState, setProp as _setProp, template as _template } from "vue";
+const t0 = _template("<div></div>");
+const t1 = _template("<div><div></div><!><div></div><!><div><button></button></div></div>", true);
+(() => {
+  const n6 = t1();
+  const n5 = _next(_child(n6));
+  const n7 = _nthChild(n6, 3);
+  const p0 = _next(n7);
+  const n4 = _child(p0);
+  _setInsertionState(n6, n5);
+  const n0 = _createComponent(Comp);
+  _setInsertionState(n6, n7);
+  const n1 = _createIf(() => true, () => {
+    const n3 = t0();
+    return n3;
+  }, null, true);
+  _renderEffect(() => _setProp(n4, "disabled", foo));
+  return n6;
+})();

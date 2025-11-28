@@ -1,0 +1,19 @@
+---
+source: tests/v_for.rs
+expression: code
+---
+import { setNodes as _setNodes } from "vue-jsx-vapor";
+import { child as _child, createFor as _createFor, setInsertionState as _setInsertionState, template as _template } from "vue";
+const t0 = _template("<span> </span>");
+const t1 = _template("<div></div>", true);
+(() => {
+  const n3 = t1();
+  _setInsertionState(n3);
+  const n0 = _createFor(() => i, (_for_item0) => {
+    const n2 = t0();
+    const x2 = _child(n2);
+    _setNodes(x2, () => _for_item0.value + i);
+    return n2;
+  }, void 0, 1);
+  return n3;
+})();

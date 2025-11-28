@@ -1,0 +1,10 @@
+---
+source: tests/transform_element.rs
+expression: code
+---
+import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { toHandlers as _toHandlers } from "vue";
+(() => {
+  const n0 = _createComponent(Foo, { $: [() => _toHandlers(obj)] }, null, true);
+  return n0;
+})();

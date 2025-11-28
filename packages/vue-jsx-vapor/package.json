@@ -171,8 +171,7 @@
   "dependencies": {
     "@babel/core": "catalog:",
     "@babel/plugin-transform-typescript": "catalog:",
-    "@vue-jsx-vapor/babel": "workspace:*",
-    "@vue-jsx-vapor/compiler": "workspace:*",
+    "@vue-jsx-vapor/compiler-rs": "workspace:*",
     "@vue-jsx-vapor/macros": "workspace:*",
     "@vue-jsx-vapor/runtime": "workspace:*",
     "@vue-macros/jsx-directive": "catalog:",
