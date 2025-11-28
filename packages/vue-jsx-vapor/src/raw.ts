@@ -18,6 +18,11 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
   let needSourceMap = false
   // options.sourceMap || false
   return [
+    ...(options.macros === false
+      ? []
+      : options.macros
+        ? [macros(options.macros === true ? undefined : options.macros)]
+        : []),
     {
       enforce: 'pre',
       name: 'vue-jsx-vapor',
@@ -94,11 +99,6 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
         }
       },
     },
-    ...(options.macros === false
-      ? []
-      : options.macros
-        ? [macros(options.macros === true ? undefined : options.macros)]
-        : []),
   ]
 }
 export default plugin
