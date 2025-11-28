@@ -13,7 +13,7 @@
   ],
   "license": "MIT",
   "repository": {
-    "url": "git+ssh://git@github.com/zhiyuanzmj/compiler-rs.git",
+    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git",
     "type": "git"
   },
   "files": [
