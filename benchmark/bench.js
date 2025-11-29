@@ -69,7 +69,7 @@ console.time('@vue-jsx-vapor/compiler-rs + oxc-parser    ')
 rsTransform(source)
 console.timeEnd('@vue-jsx-vapor/compiler-rs + oxc-parser    ')
 
-bench.add('vue-jsx + babel-parser', () => {
+bench.add('vue-jsx     + babel-parser', () => {
   vueJsxTransform(source)
 })
 
