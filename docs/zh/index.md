@@ -30,9 +30,9 @@ features:
   - icon: ⚡️
     title: 高性能
     details: 拥有与 Vue Vapor 同等的性能！
-  - icon: 🌈
-    title: 热模块替换
-    details: 支持函数式组件或由 defineComponent 定义的组件。
+  - icon: 🦀
+    title: Rust 编译器
+    details: 基于 Oxc，相比于 Babel 插件 性能提升了20倍。
   - icon: ⚙️
     title: ESLint
     details: 提供 ESLint 插件为 vue-jsx-vapor 自动格式化代码。
