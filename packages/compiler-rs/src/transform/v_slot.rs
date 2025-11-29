@@ -1,3 +1,5 @@
+use std::mem;
+
 use indexmap::IndexMap;
 use napi::{Either, bindgen_prelude::Either4};
 use oxc_ast::ast::{JSXChild, JSXElement};
@@ -84,10 +86,11 @@ fn transform_component_slot<'a>(
     })
     .count();
 
-  let exit_block = create_slot_block(exp, context, context_block, false);
+  let context_block = context_block as *mut BlockIRNode;
+  let exit_block = create_slot_block(exp, context, unsafe { &mut *context_block });
 
   Box::new(move || {
-    let mut slots = context.slots.take();
+    let mut slots = mem::take(&mut unsafe { &mut *context_block }.slots);
 
     let block = exit_block();
     let has_other_slots = !slots.is_empty();
@@ -105,10 +108,10 @@ fn transform_component_slot<'a>(
         );
       } else {
         register_slot(&mut slots, arg, block);
-        *context.slots.borrow_mut() = slots;
+        unsafe { &mut *context_block }.slots = slots;
       }
     } else if has_other_slots {
-      *context.slots.borrow_mut() = slots
+      unsafe { &mut *context_block }.slots = slots
     }
   })
 }
@@ -120,11 +123,12 @@ fn transform_template_slot<'a>(
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Box<dyn FnOnce() + 'a> {
+  let _context_block = context_block as *mut BlockIRNode;
   let dynamic = &mut context_block.dynamic;
   dynamic.flags |= DynamicFlag::NonTemplate as i32;
 
   let DirectiveNode { arg, exp, .. } = dir;
-  let exit_block = create_slot_block(exp, context, context_block, true);
+  let exit_block = create_slot_block(exp, context, context_block);
 
   let v_for = find_prop_mut(unsafe { &mut *node }, Either::A(String::from("v-for")));
   let for_parse_result = if let Some(v_for) = v_for {
@@ -141,7 +145,7 @@ fn transform_template_slot<'a>(
   let v_else_dir = v_else.map(|v_else| resolve_directive(v_else, context));
 
   Box::new(move || {
-    let slots = &mut context.slots.borrow_mut();
+    let slots = &mut unsafe { &mut *_context_block }.slots;
     let block = exit_block();
     if v_if_dir.is_none() && v_else_dir.is_none() && for_parse_result.is_none() {
       let slot_name = if let Some(arg) = &arg {
@@ -268,10 +272,9 @@ fn create_slot_block<'a>(
   props: Option<SimpleExpressionNode<'a>>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  exclude_slots: bool,
 ) -> Box<dyn FnOnce() -> BlockIRNode<'a> + 'a> {
   let mut block = BlockIRNode::new();
   block.props = props;
 
-  (context.enter_block(context_block, block, false, exclude_slots)) as _
+  (context.enter_block(context_block, block, false)) as _
 }

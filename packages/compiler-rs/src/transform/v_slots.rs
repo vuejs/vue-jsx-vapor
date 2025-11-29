@@ -17,7 +17,7 @@ use crate::{
 pub unsafe fn transform_v_slots<'a>(
   context_node: *mut ContextNode<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut BlockIRNode<'a>,
+  context_block: &'a mut BlockIRNode<'a>,
   _: &'a mut ContextNode<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let Either::B(JSXChild::Element(node)) = (unsafe { &mut *context_node }) else {
@@ -41,7 +41,7 @@ pub unsafe fn transform_v_slots<'a>(
       let slots =
         SimpleExpressionNode::new(Either3::A(value.expression.to_expression_mut()), context);
       Some(Box::new(move || {
-        *context.slots.borrow_mut() = vec![Either4::D(IRSlotsExpression {
+        context_block.slots = vec![Either4::D(IRSlotsExpression {
           slot_type: IRSlotType::EXPRESSION,
           slots,
         })];

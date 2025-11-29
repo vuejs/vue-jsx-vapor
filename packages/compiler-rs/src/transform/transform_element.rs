@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, mem, rc::Rc};
 
 use napi::{
   Either,
@@ -239,7 +239,7 @@ pub fn transform_component_element<'a>(
     },
     asset,
     root: single_root && *context.in_v_for.borrow() == 0,
-    slots: context.slots.take(),
+    slots: mem::take(&mut context_block.slots),
     once: *context.in_v_once.borrow(),
     parent: None,
     anchor: None,

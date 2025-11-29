@@ -31,12 +31,9 @@ use crate::compile::Template;
 use crate::generate::CodegenContext;
 use crate::traverse::jsx::JsxTraverse;
 use crate::{
-  ir::{
-    component::IRSlots,
-    index::{
-      BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, Modifiers, OperationNode, RootIRNode,
-      RootNode, SimpleExpressionNode,
-    },
+  ir::index::{
+    BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, Modifiers, OperationNode, RootIRNode,
+    RootNode, SimpleExpressionNode,
   },
   transform::{
     transform_children::transform_children, transform_element::transform_element,
@@ -125,8 +122,6 @@ pub struct TransformContext<'a> {
   pub in_v_once: RefCell<bool>,
   pub in_v_for: RefCell<i32>,
 
-  pub slots: RefCell<Vec<IRSlots<'a>>>,
-
   pub seen: Rc<RefCell<HashSet<u32>>>,
 
   global_id: RefCell<i32>,
@@ -146,7 +141,6 @@ impl<'a> TransformContext<'a> {
       children_template: RefCell::new(Vec::new()),
       in_v_once: RefCell::new(false),
       in_v_for: RefCell::new(0),
-      slots: RefCell::new(Vec::new()),
       seen: Rc::new(RefCell::new(HashSet::new())),
       global_id: RefCell::new(0),
       node: RefCell::new(Either::A(RootNode::new(allocator))),
@@ -164,7 +158,6 @@ impl<'a> TransformContext<'a> {
     *self.block.borrow_mut() = mem::take(&mut ir.block);
     *self.ir.borrow_mut() = ir;
     *self.index.borrow_mut() = 0;
-    *self.slots.borrow_mut() = vec![];
     *self.template.borrow_mut() = String::new();
     *self.children_template.borrow_mut() = vec![];
     *self.in_v_once.borrow_mut() = false;
@@ -280,18 +273,12 @@ impl<'a> TransformContext<'a> {
     context_block: &'a mut BlockIRNode<'a>,
     ir: BlockIRNode<'a>,
     is_v_for: bool,
-    exclude_slots: bool,
   ) -> Box<dyn FnOnce() -> BlockIRNode<'a> + 'a> {
     let block = mem::take(&mut *context_block);
     let template = mem::take(&mut *self.template.borrow_mut());
     let children_template = mem::take(&mut *self.children_template.borrow_mut());
-    let mut slots = None;
 
     *context_block = ir;
-    if !exclude_slots {
-      slots = Some(mem::take(&mut *self.slots.borrow_mut()));
-    }
-
     if is_v_for {
       *self.in_v_for.borrow_mut() += 1;
     }
@@ -303,9 +290,6 @@ impl<'a> TransformContext<'a> {
       *context_block = block;
       *self.template.borrow_mut() = template;
       *self.children_template.borrow_mut() = children_template;
-      if !exclude_slots && let Some(slots) = slots {
-        *self.slots.borrow_mut() = slots;
-      }
       if is_v_for {
         *self.in_v_for.borrow_mut() -= 1;
       }
@@ -363,7 +347,6 @@ impl<'a> TransformContext<'a> {
       unsafe { &mut *_context_block },
       block,
       is_v_for.unwrap_or(false),
-      false,
     );
     self.reference(&mut context_block.dynamic);
     exit_block

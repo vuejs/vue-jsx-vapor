@@ -70,6 +70,7 @@ pub struct BlockIRNode<'a> {
   pub effect: Vec<IREffect<'a>>,
   pub operation: Vec<OperationNode<'a>>,
   pub returns: Vec<i32>,
+  pub slots: Vec<IRSlots<'a>>,
   pub props: Option<SimpleExpressionNode<'a>>,
 }
 impl<'a> BlockIRNode<'a> {
@@ -80,6 +81,7 @@ impl<'a> BlockIRNode<'a> {
       effect: Vec::new(),
       operation: Vec::new(),
       returns: Vec::new(),
+      slots: Vec::new(),
       props: None,
     }
   }

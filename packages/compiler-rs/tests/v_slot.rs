@@ -35,6 +35,23 @@ fn on_component_named_slot() {
 }
 
 #[test]
+fn on_component_named_slot_multiple() {
+  let code = transform(
+    "<Comp>
+      <template v-slot:left>
+        foo
+      </template>
+      <template v-slot:right>
+        <Comp v-slot:left>foo</Comp>
+      </template>
+    </Comp>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code);
+}
+
+#[test]
 fn on_component_dynamically_named_slot() {
   let code = transform("<Comp v-slot:$named$={{ foo }}>{ foo + bar }</Comp>", None).code;
   assert_snapshot!(code);
