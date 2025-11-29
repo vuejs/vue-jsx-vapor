@@ -1,3 +1,13 @@
+## [2.7.4](https://github.com/vuejs/vue-jsx-vapor/compare/v2.7.3...v2.7.4) (2025-11-29)
+
+
+### Bug Fixes
+
+* **compiler-rs:** move context.slots to block.slots for nested slots ([717a6ac](https://github.com/vuejs/vue-jsx-vapor/commit/717a6ace4c078a2e134bc62ba01f496fee03f695))
+* **vue-jsx-vapor:** move macros before compiler-rs ([7332859](https://github.com/vuejs/vue-jsx-vapor/commit/7332859fd69c05d4a80d50527465cfbc2dfb2d33))
+
+
+
 ## [2.7.3](https://github.com/vuejs/vue-jsx-vapor/compare/v2.7.2...v2.7.3) (2025-11-28)
 
 
