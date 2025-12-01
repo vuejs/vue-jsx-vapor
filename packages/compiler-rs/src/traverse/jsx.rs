@@ -56,15 +56,20 @@ impl<'a, 'ctx: 'a> Traverse<'a, ()> for JsxTraverse<'a, 'ctx> {
       return;
     }
     if self.context.options.interop {
+      let mut has_define_vapor_component = false;
       for node in ctx.ancestors() {
         if let Ancestor::CallExpressionArguments(node) = node {
           let name = node.callee().span().source_text(self.source_text);
           if name == "defineVaporComponent" {
+            has_define_vapor_component = true;
             break;
           } else if name == "defineComponent" {
             return;
           }
         }
+      }
+      if !has_define_vapor_component {
+        return;
       }
     }
     self.roots.push(node as *mut Expression);
