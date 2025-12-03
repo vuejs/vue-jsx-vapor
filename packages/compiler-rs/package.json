@@ -54,9 +54,9 @@
     "format": "taplo format",
     "prepublishOnly": "napi prepublish -t npm",
     "version": "napi version",
-    "bench": "cargo bench --no-default-features",
-    "test": "cargo test --no-default-features -- --nocapture",
-    "test-watch": "nodemon -w src -e rs -x 'cargo test --no-default-features -- --nocapture'",
+    "bench": "cargo bench --no-default-features -- --nocapture",
+    "test": "cargo test",
+    "test-watch": "nodemon -w src -e rs -x 'cargo test'",
     "flamegraph": "CARGO_PROFILE_RELEASE_STRIP=false CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --bench bench --no-default-features"
   },
   "devDependencies": {

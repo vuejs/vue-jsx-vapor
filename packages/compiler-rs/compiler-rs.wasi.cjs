@@ -108,6 +108,5 @@ const { instance: __napiInstance, module: __wasiModule, napiModule: __napiModule
   },
 })
 module.exports = __napiModule.exports
-module.exports.compile = __napiModule.exports.compile
 module.exports.ErrorCodes = __napiModule.exports.ErrorCodes
 module.exports.transform = __napiModule.exports.transform

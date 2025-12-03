@@ -1,505 +1,253 @@
-use napi::{Either, Env};
-use napi_derive::napi;
+use std::mem;
+
+use common::options::{RootJsx, TransformOptions};
 use oxc_allocator::{Allocator, TakeIn};
-use oxc_ast::ast::{
-  Expression, JSXChild, JSXClosingFragment, JSXExpressionContainer, JSXFragment, JSXOpeningFragment,
-};
-use oxc_codegen::{Codegen, CodegenReturn, IndentChar};
-use oxc_parser::Parser;
-use oxc_span::{SPAN, SourceType, Span};
-use std::collections::BTreeSet;
-use std::path::PathBuf;
-use std::{cell::RefCell, collections::HashSet, mem, rc::Rc};
-pub mod transform_children;
-pub mod transform_element;
-pub mod transform_template_ref;
-pub mod transform_text;
-pub mod v_bind;
-pub mod v_for;
-pub mod v_html;
-pub mod v_if;
-pub mod v_model;
-pub mod v_on;
-mod v_once;
-pub mod v_show;
-pub mod v_slot;
-pub mod v_slots;
-pub mod v_text;
-
-use crate::compile::CompilerOptions;
-use crate::compile::Template;
-use crate::generate::CodegenContext;
-use crate::traverse::jsx::JsxTraverse;
-use crate::{
-  ir::index::{
-    BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, Modifiers, OperationNode, RootIRNode,
-    RootNode, SimpleExpressionNode,
-  },
-  transform::{
-    transform_children::transform_children, transform_element::transform_element,
-    transform_template_ref::transform_template_ref, transform_text::transform_text,
-    v_for::transform_v_for, v_if::transform_v_if, v_once::transform_v_once,
-    v_slot::transform_v_slot, v_slots::transform_v_slots,
-  },
-  utils::{
-    check::{is_constant_node, is_template},
-    error::ErrorCodes,
+use oxc_ast::{
+  NONE,
+  ast::{
+    Argument, BindingPatternKind, Expression, ImportOrExportKind, Program, Statement,
+    VariableDeclarationKind,
   },
 };
+use oxc_semantic::SemanticBuilder;
+use oxc_span::{GetSpan, SPAN};
+use oxc_traverse::{Ancestor, Traverse, TraverseCtx, traverse_mut};
+use vapor::transform::TransformContext;
 
-pub struct TransformOptions<'a> {
-  pub templates: RefCell<Vec<Template>>,
-  pub helpers: RefCell<BTreeSet<String>>,
-  pub delegates: RefCell<BTreeSet<String>>,
-  pub with_fallback: bool,
-  pub is_custom_element: Box<dyn Fn(String) -> bool + 'a>,
-  pub on_error: Box<dyn Fn(ErrorCodes, Span) + 'a>,
-  pub source_map: bool,
-  pub filename: &'a str,
-  pub source_type: SourceType,
-  pub interop: bool,
-  pub hmr: bool,
-  pub ssr: bool,
-}
-impl<'a> Default for TransformOptions<'a> {
-  fn default() -> Self {
-    TransformOptions {
-      filename: "index.jsx",
-      source_type: SourceType::jsx(),
-      templates: RefCell::new(vec![]),
-      helpers: RefCell::new(BTreeSet::new()),
-      delegates: RefCell::new(BTreeSet::new()),
-      source_map: false,
-      with_fallback: false,
-      is_custom_element: Box::new(|_| false),
-      on_error: Box::new(|_, _| {}),
-      interop: false,
-      hmr: false,
-      ssr: false,
-    }
-  }
+use crate::hmr_or_ssr::HmrOrSsrTransform;
+
+pub struct Transform<'a> {
+  allocator: &'a Allocator,
+  source_text: &'a str,
+  roots: Vec<RootJsx<'a>>,
+  options: &'a TransformOptions<'a>,
 }
 
-pub struct DirectiveTransformResult<'a> {
-  pub key: SimpleExpressionNode<'a>,
-  pub value: SimpleExpressionNode<'a>,
-  pub modifier: Option<String>,
-  pub runtime_camelize: Option<bool>,
-  pub handler: Option<bool>,
-  pub handler_modifiers: Option<Modifiers>,
-  pub model: Option<bool>,
-  pub model_modifiers: Option<Vec<String>>,
-}
-
-impl<'a> DirectiveTransformResult<'a> {
-  pub fn new(key: SimpleExpressionNode<'a>, value: SimpleExpressionNode<'a>) -> Self {
-    DirectiveTransformResult {
-      key,
-      value,
-      modifier: None,
-      runtime_camelize: None,
-      handler: None,
-      handler_modifiers: None,
-      model: None,
-      model_modifiers: None,
-    }
-  }
-}
-
-pub type ContextNode<'a> = Either<RootNode<'a>, JSXChild<'a>>;
-type GetIndex<'a> = Option<Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>>;
-
-pub struct TransformContext<'a> {
-  pub allocator: &'a Allocator,
-  pub index: RefCell<i32>,
-
-  pub block: RefCell<BlockIRNode<'a>>,
-  pub options: &'a TransformOptions<'a>,
-
-  pub template: RefCell<String>,
-  pub children_template: RefCell<Vec<String>>,
-
-  pub in_v_once: RefCell<bool>,
-  pub in_v_for: RefCell<i32>,
-
-  pub seen: Rc<RefCell<HashSet<u32>>>,
-
-  global_id: RefCell<i32>,
-
-  pub ir: Rc<RefCell<RootIRNode<'a>>>,
-  pub node: RefCell<ContextNode<'a>>,
-
-  pub parent_dynamic: RefCell<IRDynamicInfo<'a>>,
-}
-
-impl<'a> TransformContext<'a> {
+impl<'a> Transform<'a> {
   pub fn new(allocator: &'a Allocator, options: &'a TransformOptions<'a>) -> Self {
-    TransformContext {
+    *options.on_enter_expression.borrow_mut() = Some(Box::new(|node, ctx| unsafe {
+      if !matches!(
+        &*node,
+        Expression::JSXElement(_) | Expression::JSXFragment(_)
+      ) {
+        return None;
+      }
+      if options.interop {
+        let mut has_define_vapor_component = false;
+        for ancestor in ctx.ancestors() {
+          if let Ancestor::CallExpressionArguments(ancestor) = ancestor
+            && let Expression::Identifier(name) = ancestor.callee()
+          {
+            if name.name == "defineVaporComponent" {
+              has_define_vapor_component = true;
+              break;
+            } else if name.name == "defineComponent" {
+              return Some((node, true));
+            }
+          }
+        }
+        if !has_define_vapor_component {
+          return Some((node, true));
+        }
+      }
+      Some((node, false))
+    }));
+
+    *options.on_exit_program.borrow_mut() = Some(Box::new(|mut roots, source| unsafe {
+      for root in roots.drain(..) {
+        if root.vdom {
+          *root.node_ref = root.node;
+        } else {
+          let transform_context: *mut TransformContext =
+            &mut TransformContext::new(allocator, options);
+          let source_text = &source[..root.node.span().end as usize];
+          *root.node_ref = (&*transform_context).transform(root.node, source_text);
+        }
+      }
+    }));
+
+    Self {
       allocator,
-      index: RefCell::new(0),
-      template: RefCell::new(String::new()),
-      children_template: RefCell::new(Vec::new()),
-      in_v_once: RefCell::new(false),
-      in_v_for: RefCell::new(0),
-      seen: Rc::new(RefCell::new(HashSet::new())),
-      global_id: RefCell::new(0),
-      node: RefCell::new(Either::A(RootNode::new(allocator))),
-      parent_dynamic: RefCell::new(IRDynamicInfo::new()),
-      ir: Rc::new(RefCell::new(RootIRNode::new(""))),
-      block: RefCell::new(BlockIRNode::new()),
+      source_text: "",
+      roots: vec![],
       options,
     }
   }
 
-  pub fn transform(&'a self, expression: Expression<'a>, source: &'a str) -> Expression<'a> {
+  pub fn traverse(mut self, program: &mut Program<'a>) {
     let allocator = self.allocator;
-    let mut ir = RootIRNode::new(source);
-    *self.node.borrow_mut() = Either::A(RootNode::from(allocator, expression));
-    *self.block.borrow_mut() = mem::take(&mut ir.block);
-    *self.ir.borrow_mut() = ir;
-    *self.index.borrow_mut() = 0;
-    *self.template.borrow_mut() = String::new();
-    *self.children_template.borrow_mut() = vec![];
-    *self.in_v_once.borrow_mut() = false;
-    *self.in_v_for.borrow_mut() = 0;
-    *self.parent_dynamic.borrow_mut() = IRDynamicInfo::new();
-    self.transform_node(None, None);
-    let generate_context: *const CodegenContext = &CodegenContext::new(self);
-    (unsafe { &*generate_context }).generate()
-  }
 
-  pub fn increase_id(&self) -> i32 {
-    let current = *self.global_id.borrow();
-    *self.global_id.borrow_mut() += 1;
-    current
-  }
+    self.source_text = program.source_text;
 
-  pub fn reference(&self, dynamic: &mut IRDynamicInfo) -> i32 {
-    if let Some(id) = dynamic.id {
-      return id;
-    }
-    dynamic.flags |= DynamicFlag::Referenced as i32;
-    let id = self.increase_id();
-    dynamic.id = Some(id);
-    id
-  }
-
-  pub fn is_operation(&self, expressions: Vec<&SimpleExpressionNode>) -> bool {
-    if self.in_v_once.borrow().eq(&true) {
-      return true;
-    }
-    let expressions: Vec<&SimpleExpressionNode> = expressions
-      .into_iter()
-      .filter(|exp| !exp.is_constant_expression())
-      .collect();
-    if expressions.is_empty() {
-      return true;
-    }
-    expressions
-      .iter()
-      .all(|exp| is_constant_node(&exp.ast.as_deref()))
-  }
-
-  pub fn register_effect(
-    &self,
-    context_block: &mut BlockIRNode<'a>,
-    is_operation: bool,
-    operation: OperationNode<'a>,
-    get_effect_index: GetIndex<'a>,
-    get_operation_index: GetIndex<'a>,
-  ) {
-    if is_operation {
-      return self.register_operation(context_block, operation, get_operation_index);
-    }
-
-    let index = if let Some(get_effect_index) = get_effect_index {
-      get_effect_index.borrow_mut()() as usize
-    } else {
-      context_block.effect.len()
-    };
-    context_block.effect.insert(
-      index,
-      IREffect {
-        expressions: vec![],
-        operations: vec![operation],
-      },
+    traverse_mut(
+      &mut self,
+      allocator,
+      program,
+      SemanticBuilder::new()
+        .build(program)
+        .semantic
+        .into_scoping(),
+      (),
     );
   }
+}
 
-  pub fn register_operation(
-    &self,
-    context_block: &mut BlockIRNode<'a>,
-    operation: OperationNode<'a>,
-    get_operation_index: GetIndex<'a>,
+impl<'a> Traverse<'a, ()> for Transform<'a> {
+  fn enter_expression(
+    &mut self,
+    node: &mut Expression<'a>,
+    ctx: &mut oxc_traverse::TraverseCtx<'a, ()>,
   ) {
-    let index = if let Some(get_operation_index) = get_operation_index {
-      get_operation_index.borrow_mut()() as usize
-    } else {
-      context_block.operation.len()
-    };
-    context_block.operation.insert(index, operation);
-  }
-
-  pub fn push_template(&self, content: String) -> i32 {
-    let ir = self.ir.borrow_mut();
-    let root_template_index = ir.root_template_index;
-    let len = self.options.templates.borrow().len();
-    let root = root_template_index.map(|i| i.eq(&len)).unwrap_or(false);
-    let existing = self
-      .options
-      .templates
-      .borrow()
-      .iter()
-      .position(|i| i.0.eq(&content) && i.1.eq(&root));
-    if let Some(existing) = existing {
-      return existing as i32;
-    }
-    self.options.templates.borrow_mut().push((content, root));
-    len as i32
-  }
-
-  pub fn register_template(&self, dynamic: &mut IRDynamicInfo) -> i32 {
-    let template = self.template.borrow();
-    if template.is_empty() {
-      return -1;
-    }
-    let id = self.push_template(template.clone());
-    dynamic.template = Some(id);
-    id
-  }
-
-  pub fn enter_block(
-    self: &'a TransformContext<'a>,
-    context_block: &'a mut BlockIRNode<'a>,
-    ir: BlockIRNode<'a>,
-    is_v_for: bool,
-  ) -> Box<dyn FnOnce() -> BlockIRNode<'a> + 'a> {
-    let block = mem::take(&mut *context_block);
-    let template = mem::take(&mut *self.template.borrow_mut());
-    let children_template = mem::take(&mut *self.children_template.borrow_mut());
-
-    *context_block = ir;
-    if is_v_for {
-      *self.in_v_for.borrow_mut() += 1;
-    }
-
-    (Box::new(move || {
-      // exit
-      self.register_template(&mut context_block.dynamic);
-      let return_block = mem::take(context_block);
-      *context_block = block;
-      *self.template.borrow_mut() = template;
-      *self.children_template.borrow_mut() = children_template;
-      if is_v_for {
-        *self.in_v_for.borrow_mut() -= 1;
-      }
-      return_block
-    }) as Box<dyn FnOnce() -> BlockIRNode<'a>>) as _
-  }
-
-  pub fn wrap_fragment(&self, mut node: Expression<'a>) -> JSXChild<'a> {
-    if let Expression::JSXFragment(node) = node {
-      JSXChild::Fragment(node)
-    } else if let Expression::JSXElement(node) = &mut node
-      && is_template(node)
+    if let Some(on_enter_expression) = self.options.on_enter_expression.borrow().as_ref()
+      && let Some((node_ref, vdom)) = on_enter_expression(node, ctx)
     {
-      JSXChild::Element(oxc_allocator::Box::new_in(
-        node.take_in(self.allocator),
-        self.allocator,
-      ))
-    } else {
-      JSXChild::Fragment(oxc_allocator::Box::new_in(
-        JSXFragment {
-          span: SPAN,
-          opening_fragment: JSXOpeningFragment { span: SPAN },
-          closing_fragment: JSXClosingFragment { span: SPAN },
-          children: oxc_allocator::Vec::from_array_in(
-            [match node {
-              Expression::JSXElement(node) => JSXChild::Element(node),
-              Expression::JSXFragment(node) => JSXChild::Fragment(node),
-              _ => JSXChild::ExpressionContainer(oxc_allocator::Box::new_in(
-                JSXExpressionContainer {
-                  span: SPAN,
-                  expression: node.into(),
-                },
-                self.allocator,
-              )),
-            }],
-            self.allocator,
+      self.roots.push(RootJsx {
+        node_ref,
+        node: unsafe { &mut *node_ref }.take_in(self.allocator),
+        vdom,
+      });
+    }
+  }
+  fn exit_program(&mut self, program: &mut Program<'a>, ctx: &mut TraverseCtx<'a, ()>) {
+    if self.options.ssr || self.options.hmr {
+      HmrOrSsrTransform::new(self.options).exit_program(program, ctx);
+    }
+
+    if let Some(on_exit_program) = self.options.on_exit_program.borrow().as_ref() {
+      on_exit_program(mem::take(&mut self.roots), self.source_text);
+    }
+
+    let ast = &ctx.ast;
+    let mut statements = vec![];
+    let delegates = self.options.delegates.take();
+    if !delegates.is_empty() {
+      statements.push(ast.statement_expression(
+        SPAN,
+        ast.expression_call(
+          SPAN,
+          ast.expression_identifier(SPAN, ast.atom("_delegateEvents")),
+          NONE,
+          oxc_allocator::Vec::from_iter_in(
+            delegates.iter().map(|delegate| {
+              Argument::StringLiteral(ctx.alloc(ast.string_literal(SPAN, ast.atom(delegate), None)))
+            }),
+            ast.allocator,
           ),
-        },
-        self.allocator,
-      ))
+          false,
+        ),
+      ));
     }
-  }
 
-  pub fn create_block(
-    &'a self,
-    context_node: &mut ContextNode<'a>,
-    context_block: &'a mut BlockIRNode<'a>,
-    node: Expression<'a>,
-    is_v_for: Option<bool>,
-  ) -> Box<dyn FnOnce() -> BlockIRNode<'a> + 'a> {
-    let block = BlockIRNode::new();
-    *context_node = Either::B(self.wrap_fragment(node));
-    let _context_block = context_block as *mut BlockIRNode;
-    let exit_block = self.enter_block(
-      unsafe { &mut *_context_block },
-      block,
-      is_v_for.unwrap_or(false),
-    );
-    self.reference(&mut context_block.dynamic);
-    exit_block
-  }
-
-  pub fn create(
-    self: &TransformContext<'a>,
-    node: JSXChild<'a>,
-    index: i32,
-    block: &mut BlockIRNode<'a>,
-  ) -> impl FnOnce() {
-    self.node.replace(Either::B(node));
-    let index = self.index.replace(index);
-    let in_v_once = *self.in_v_once.borrow();
-    let template = self.template.replace(String::new());
-    self.children_template.take();
-    mem::take(&mut block.dynamic);
-
-    move || {
-      self.index.replace(index);
-      self.in_v_once.replace(in_v_once);
-      self.template.replace(template);
-      self.index.replace(index);
-    }
-  }
-
-  pub fn transform_node(
-    self: &TransformContext<'a>,
-    context_block: Option<&'a mut BlockIRNode<'a>>,
-    parent_node: Option<&mut ContextNode<'a>>,
-  ) {
-    unsafe {
-      let context_block = if let Some(context_block) = context_block {
-        context_block
-      } else {
-        &mut self.block.borrow_mut()
-      };
-
-      let block = context_block as *mut BlockIRNode;
-      let mut exit_fns = vec![];
-
-      let is_root = matches!(&*self.node.borrow(), Either::A(_));
-      if !is_root {
-        let context = self as *const TransformContext;
-        let node = &mut *self.node.borrow_mut() as *mut _;
-        let parent_node = parent_node.unwrap() as *mut ContextNode;
-        for node_transform in [
-          transform_v_once,
-          transform_v_if,
-          transform_v_for,
-          transform_template_ref,
-          transform_element,
-          transform_text,
-          transform_v_slots,
-          transform_v_slot,
-        ] {
-          let on_exit = node_transform(node, &*context, &mut *block, &mut *parent_node);
-          if let Some(on_exit) = on_exit {
-            exit_fns.push(on_exit);
-          }
+    let mut helpers = self.options.helpers.take();
+    if !helpers.is_empty() {
+      let jsx_helpers = vec![
+        "setNodes",
+        "useVdomCache",
+        "createNodes",
+        "createComponent",
+        "createComponentWithFallback",
+      ]
+      .into_iter()
+      .filter(|helper| {
+        if helpers.contains(*helper) {
+          helpers.remove(*helper);
+          true
+        } else {
+          false
         }
+      })
+      .collect::<Vec<_>>();
+      if !jsx_helpers.is_empty() {
+        statements.push(Statement::ImportDeclaration(ast.alloc_import_declaration(
+          SPAN,
+          Some(ast.vec_from_iter(jsx_helpers.into_iter().map(|helper| {
+            ast.import_declaration_specifier_import_specifier(
+              SPAN,
+              ast.module_export_name_identifier_name(SPAN, ast.atom(helper)),
+              ast.binding_identifier(SPAN, ast.atom(format!("_{}", helper).as_str())),
+              ImportOrExportKind::Value,
+            )
+          }))),
+          ast.string_literal(SPAN, ast.atom("vue-jsx-vapor"), None),
+          None,
+          NONE,
+          ImportOrExportKind::Value,
+        )))
       }
 
-      transform_children(
-        &mut self.node.replace(Either::A(RootNode::new(self.allocator))),
-        self,
-        &mut *block,
-      );
-
-      let mut i = exit_fns.len();
-      while i > 0 {
-        i -= 1;
-        let on_exit = exit_fns.pop().unwrap();
-        on_exit();
-      }
-
-      if is_root {
-        self.register_template(&mut context_block.dynamic);
+      if !helpers.is_empty() {
+        statements.push(Statement::ImportDeclaration(ast.alloc_import_declaration(
+          SPAN,
+          Some(ast.vec_from_iter(helpers.iter().map(|helper| {
+            ast.import_declaration_specifier_import_specifier(
+              SPAN,
+              ast.module_export_name_identifier_name(SPAN, ast.atom(helper)),
+              ast.binding_identifier(SPAN, ast.atom(format!("_{}", helper).as_str())),
+              ImportOrExportKind::Value,
+            )
+          }))),
+          ast.string_literal(SPAN, ast.atom("vue"), None),
+          None,
+          NONE,
+          ImportOrExportKind::Value,
+        )))
       }
     }
+
+    let templates = self.options.templates.take();
+    let template_len = templates.len();
+    if template_len > 0 {
+      let template_statements = templates
+        .iter()
+        .enumerate()
+        .map(|(index, template)| {
+          let template_literal =
+            Argument::StringLiteral(ast.alloc_string_literal(SPAN, ast.atom(&template.0), None));
+
+          Statement::VariableDeclaration(ast.alloc_variable_declaration(
+            SPAN,
+            VariableDeclarationKind::Const,
+            ast.vec1(ast.variable_declarator(
+              SPAN,
+              VariableDeclarationKind::Const,
+              ast.binding_pattern(
+                BindingPatternKind::BindingIdentifier(
+                  ast.alloc_binding_identifier(SPAN, ast.atom(&format!("t{index}"))),
+                ),
+                NONE,
+                false,
+              ),
+              Some(ast.expression_call(
+                SPAN,
+                ast.expression_identifier(SPAN, ast.atom("_template")),
+                NONE,
+                if template.1 {
+                  ast.vec_from_array([
+                    template_literal,
+                    Argument::BooleanLiteral(ast.alloc_boolean_literal(SPAN, template.1)),
+                  ])
+                } else {
+                  oxc_allocator::Vec::from_array_in([template_literal], ast.allocator)
+                },
+                false,
+              )),
+              false,
+            )),
+            false,
+          ))
+        })
+        .collect::<Vec<_>>();
+      statements.extend(template_statements);
+    }
+
+    if !statements.is_empty() {
+      // Insert statements before the first non-import statement.
+      let index = program
+        .body
+        .iter()
+        .position(|stmt| !matches!(stmt, Statement::ImportDeclaration(_)))
+        .unwrap_or(program.body.len());
+      program.body.splice(index..index, statements);
+    }
   }
-}
-
-#[cfg(feature = "napi")]
-#[napi(object)]
-pub struct TransformReturn {
-  pub code: String,
-  pub map: Option<String>,
-}
-
-#[cfg(feature = "napi")]
-#[napi]
-pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) -> TransformReturn {
-  use crate::utils::error::ErrorCodes;
-  let options = options.unwrap_or_default();
-  let filename = &options.filename.unwrap_or("index.jsx".to_string());
-  let CodegenReturn { code, map, .. } = transform(
-    &source,
-    Some(TransformOptions {
-      filename,
-      source_type: SourceType::from_path(filename).unwrap(),
-      templates: RefCell::new(vec![]),
-      helpers: RefCell::new(BTreeSet::new()),
-      delegates: RefCell::new(BTreeSet::new()),
-      source_map: options.source_map.unwrap_or(false),
-      with_fallback: options.with_fallback.unwrap_or(false),
-      interop: options.interop.unwrap_or(false),
-      hmr: options.hmr.unwrap_or(false),
-      ssr: options.ssr.unwrap_or(false),
-      is_custom_element: if let Some(is_custom_element) = options.is_custom_element {
-        Box::new(move |tag: String| is_custom_element.call(tag).unwrap())
-          as Box<dyn Fn(String) -> bool>
-      } else {
-        Box::new(|_: String| false) as Box<dyn Fn(String) -> bool>
-      },
-      on_error: if let Some(on_error) = options.on_error {
-        use crate::utils::error::create_compiler_error;
-
-        Box::new(move |code: ErrorCodes, span: Span| {
-          let compiler_error = create_compiler_error(&env, code, span).unwrap();
-          on_error.call(compiler_error).unwrap();
-        }) as Box<dyn Fn(ErrorCodes, Span)>
-      } else {
-        Box::new(|_: ErrorCodes, _: Span| {}) as Box<dyn Fn(ErrorCodes, Span)>
-      },
-    }),
-  );
-  TransformReturn {
-    code,
-    map: map.map(|m| m.to_json_string()),
-  }
-}
-
-pub fn transform(source: &str, options: Option<TransformOptions>) -> CodegenReturn {
-  use oxc_codegen::CodegenOptions;
-  let options = options.unwrap_or_default();
-  let filename = options.filename;
-  let source_map = options.source_map;
-  let source_type = options.source_type;
-  let allocator = Allocator::default();
-  let mut program = Parser::new(&allocator, source, source_type).parse().program;
-  let context = TransformContext::new(&allocator, &options);
-  JsxTraverse::new(&allocator, &context).traverse(&mut program);
-  Codegen::new()
-    .with_options(CodegenOptions {
-      source_map_path: if source_map {
-        Some(PathBuf::from(&filename))
-      } else {
-        None
-      },
-      indent_width: 2,
-      indent_char: IndentChar::Space,
-      ..CodegenOptions::default()
-    })
-    .build(&program)
 }

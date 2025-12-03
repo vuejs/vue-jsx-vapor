@@ -1,4 +1,4 @@
-use compiler_rs::transform::transform;
+use compiler_rs::transform;
 use criterion::{Criterion, criterion_group, criterion_main};
 
 fn bench_compile(b: &mut Criterion) {

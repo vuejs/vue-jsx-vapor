@@ -572,6 +572,5 @@ if (!nativeBinding) {
 }
 
 module.exports = nativeBinding
-module.exports.compile = nativeBinding.compile
 module.exports.ErrorCodes = nativeBinding.ErrorCodes
 module.exports.transform = nativeBinding.transform

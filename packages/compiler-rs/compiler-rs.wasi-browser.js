@@ -56,6 +56,5 @@ const {
   },
 })
 export default __napiModule.exports
-export const compile = __napiModule.exports.compile
 export const ErrorCodes = __napiModule.exports.ErrorCodes
 export const transform = __napiModule.exports.transform
