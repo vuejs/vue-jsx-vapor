@@ -1,3 +1,12 @@
+## [3.0.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.0.0...v3.0.1) (2025-12-03)
+
+
+### Bug Fixes
+
+* **compiler-rs:** prevent compiler functional component to vapor when ([2e30262](https://github.com/vuejs/vue-jsx-vapor/commit/2e302628c301aa3706e25737cf6470e1b61becff))
+
+
+
 # [3.0.0](https://github.com/vuejs/vue-jsx-vapor/compare/v2.7.4...v3.0.0) (2025-11-29)
 
 
