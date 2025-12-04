@@ -48,6 +48,7 @@ oxc_codegen = { workspace = true }
 
 common = { workspace = true }
 vapor = { workspace = true }
+vdom = { workspace = true }
 
 [dev-dependencies]
 insta = "1.43.2"

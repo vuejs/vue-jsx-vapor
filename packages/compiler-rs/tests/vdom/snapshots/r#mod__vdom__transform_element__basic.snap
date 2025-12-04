@@ -1,0 +1,11 @@
+---
+source: tests/vdom/transform_element.rs
+expression: code
+---
+import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+import { openBlock as _openBlock } from "vue";
+const t0 = _template("<div></div>", true);
+(() => {
+  const _cache = _useVdomCache();
+  _openBlock();
+})();

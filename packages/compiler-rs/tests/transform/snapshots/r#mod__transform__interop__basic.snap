@@ -2,27 +2,33 @@
 source: tests/transform/interop.rs
 expression: code
 ---
-import { createNodes as _createNodes } from "vue-jsx-vapor";
-import { template as _template } from "vue";
+import { useVdomCache as _useVdomCache, createNodes as _createNodes } from "vue-jsx-vapor";
+import { openBlock as _openBlock, template as _template } from "vue";
 const t0 = _template("<span></span>", true);
-const t1 = _template("<div></div>");
-const t2 = _template("<div></div>", true);
+const t1 = _template("<div></div>", true);
+const t2 = _template("<div></div>");
 const A = defineComponent(() => {
   defineVaporComponent(() => (() => {
     const n0 = t0();
     return n0;
   })());
-  return () => <div />;
+  return () => (() => {
+    const _cache = _useVdomCache();
+    _openBlock();
+  })();
 });
 const B = defineVaporComponent(() => {
-  const C = defineComponent(() => <div />);
+  const C = defineComponent(() => (() => {
+    const _cache = _useVdomCache();
+    _openBlock();
+  })());
   const D = (() => {
-    const n2 = t1();
+    const n2 = t2();
     const n0 = _createNodes(() => foo, " ");
     return [n0, n2];
   })();
   return (() => {
-    const n0 = t2();
+    const n0 = t1();
     return n0;
   })();
 });

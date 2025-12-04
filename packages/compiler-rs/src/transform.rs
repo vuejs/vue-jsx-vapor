@@ -12,7 +12,6 @@ use oxc_ast::{
 use oxc_semantic::SemanticBuilder;
 use oxc_span::{GetSpan, SPAN};
 use oxc_traverse::{Ancestor, Traverse, TraverseCtx, traverse_mut};
-use vapor::transform::TransformContext;
 
 use crate::hmr_or_ssr::HmrOrSsrTransform;
 
@@ -56,8 +55,13 @@ impl<'a> Transform<'a> {
     *options.on_exit_program.borrow_mut() = Some(Box::new(|mut roots, source| unsafe {
       for root in roots.drain(..) {
         if root.vdom {
-          *root.node_ref = root.node;
+          use vdom::transform::TransformContext;
+          let transform_context: *mut TransformContext =
+            &mut TransformContext::new(allocator, options);
+          let source_text = &source[..root.node.span().end as usize];
+          *root.node_ref = (&*transform_context).transform(root.node, source_text);
         } else {
+          use vapor::transform::TransformContext;
           let transform_context: *mut TransformContext =
             &mut TransformContext::new(allocator, options);
           let source_text = &source[..root.node.span().end as usize];
