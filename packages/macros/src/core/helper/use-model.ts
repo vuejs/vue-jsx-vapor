@@ -5,6 +5,9 @@ type DefineModelOptions<T = Record<string, any>> = {
   get?: (v: T) => any
   set?: (v: T) => any
 }
+
+const EMPTY_OBJ = {}
+
 export function useModel<
   M extends PropertyKey,
   T extends Record<string, any>,
@@ -17,11 +20,14 @@ export function useModel(
 ): any {
   const res = customRef((track, trigger) => {
     let localValue: any = options && options.default
-    let prevEmittedValue: any
+    let prevSetValue = EMPTY_OBJ
 
     watchSyncEffect(() => {
-      const propValue = props[name]
-      if (!Object.is(prevEmittedValue, propValue)) {
+      let propValue = props[name]
+      if (propValue === undefined) {
+        propValue = options && options.default
+      }
+      if (!Object.is(localValue, propValue)) {
         localValue = propValue
         trigger()
       }
@@ -34,15 +40,18 @@ export function useModel(
       },
 
       set(value) {
-        if (Object.is(value, localValue)) return
-        localValue = value
+        const emittedValue = options.set ? options.set(value) : value
+        if (
+          Object.is(emittedValue, localValue) &&
+          (prevSetValue === EMPTY_OBJ || Object.is(value, prevSetValue))
+        )
+          return
+        localValue = emittedValue
         trigger()
-        const emittedValue = (prevEmittedValue = options.set
-          ? options.set(value)
-          : value)
         for (const emit of [props[`onUpdate:${name}`]].flat()) {
           if (typeof emit === 'function') emit(emittedValue)
         }
+        prevSetValue = value
       },
     }
   })
