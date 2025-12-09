@@ -1,3 +1,12 @@
+## [3.0.2](https://github.com/vuejs/vue-jsx-vapor/compare/v3.0.1...v3.0.2) (2025-12-09)
+
+
+### Bug Fixes
+
+* **macros:** sync localValue with prop changes for defineModel ([95d2d89](https://github.com/vuejs/vue-jsx-vapor/commit/95d2d89e8410fb246f2da98e53f72e37f4b0fdea))
+
+
+
 ## [3.0.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.0.0...v3.0.1) (2025-12-03)
 
 
