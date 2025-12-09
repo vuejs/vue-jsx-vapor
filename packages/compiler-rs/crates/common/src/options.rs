@@ -21,6 +21,7 @@ pub struct TransformOptions<'a> {
   pub templates: RefCell<Vec<(String, bool)>>,
   pub helpers: RefCell<BTreeSet<String>>,
   pub delegates: RefCell<BTreeSet<String>>,
+  pub hoists: RefCell<Vec<Expression<'a>>>,
   pub with_fallback: bool,
   pub is_custom_element: Box<dyn Fn(String) -> bool + 'a>,
   pub on_error: Box<dyn Fn(ErrorCodes, Span) + 'a>,
@@ -31,9 +32,18 @@ pub struct TransformOptions<'a> {
   pub source_type: SourceType,
   pub interop: bool,
   pub hmr: bool,
-  pub ssr: bool,
+  pub ssr: RefCell<bool>,
   pub in_v_for: RefCell<i32>,
   pub in_v_once: RefCell<bool>,
+  /**
+   * Indicates whether the compiler generates code for SSR,
+   * it is always true when generating code for SSR,
+   * regardless of whether we are generating code for SSR's fallback branch,
+   * this means that when the compiler generates code for SSR's fallback branch:
+   *  - context.ssr = false
+   *  - context.inSSR = true
+   */
+  pub in_ssr: bool,
 }
 
 impl<'a> Default for TransformOptions<'a> {
@@ -44,17 +54,19 @@ impl<'a> Default for TransformOptions<'a> {
       templates: RefCell::new(vec![]),
       helpers: RefCell::new(BTreeSet::new()),
       delegates: RefCell::new(BTreeSet::new()),
+      hoists: RefCell::new(vec![]),
       source_map: false,
       with_fallback: false,
       is_custom_element: Box::new(|_| false),
       on_error: Box::new(|_, _| {}),
       interop: false,
       hmr: false,
-      ssr: false,
+      ssr: RefCell::new(false),
       on_exit_program: RefCell::new(None),
       on_enter_expression: RefCell::new(None),
       in_v_for: RefCell::new(0),
       in_v_once: RefCell::new(false),
+      in_ssr: false,
     }
   }
 }

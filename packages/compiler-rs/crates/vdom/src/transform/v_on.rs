@@ -88,20 +88,21 @@ pub fn transform_v_on<'a>(
   }
 
   if is_component {
-    return Some(DirectiveTransformResult {
-      key: arg,
-      value: exp.unwrap_or_default(),
-      handler: Some(true),
-      handler_modifiers: Some(Modifiers {
-        keys: key_modifiers,
-        non_keys: non_key_modifiers,
-        options: event_option_modifiers,
-      }),
-      model: None,
-      model_modifiers: None,
-      modifier: None,
-      runtime_camelize: None,
-    });
+    return None;
+    // return Some(DirectiveTransformResult {
+    //   key: arg,
+    //   value: exp.unwrap_or_default(),
+    //   handler: Some(true),
+    //   handler_modifiers: Some(Modifiers {
+    //     keys: key_modifiers,
+    //     non_keys: non_key_modifiers,
+    //     options: event_option_modifiers,
+    //   }),
+    //   model: None,
+    //   model_modifiers: None,
+    //   modifier: None,
+    //   runtime_camelize: None,
+    // });
   }
 
   // Only delegate if:

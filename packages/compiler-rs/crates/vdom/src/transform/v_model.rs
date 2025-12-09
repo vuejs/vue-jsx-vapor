@@ -37,31 +37,32 @@ pub fn transform_v_model<'a>(
 
   let is_component = is_jsx_component(node);
   if is_component {
-    return Some(DirectiveTransformResult {
-      key: if let Some(arg) = dir.arg {
-        arg
-      } else {
-        SimpleExpressionNode {
-          content: "modelValue".to_string(),
-          is_static: true,
-          loc: SPAN,
-          ast: None,
-        }
-      },
-      value: dir.exp.unwrap(),
-      model: Some(true),
-      model_modifiers: Some(
-        dir
-          .modifiers
-          .iter()
-          .map(|m| m.content.to_string())
-          .collect(),
-      ),
-      handler: None,
-      handler_modifiers: None,
-      modifier: None,
-      runtime_camelize: None,
-    });
+    return None;
+    // return Some(DirectiveTransformResult {
+    //   key: if let Some(arg) = dir.arg {
+    //     arg
+    //   } else {
+    //     SimpleExpressionNode {
+    //       content: "modelValue".to_string(),
+    //       is_static: true,
+    //       loc: SPAN,
+    //       ast: None,
+    //     }
+    //   },
+    //   value: dir.exp.unwrap(),
+    //   model: Some(true),
+    //   model_modifiers: Some(
+    //     dir
+    //       .modifiers
+    //       .iter()
+    //       .map(|m| m.content.to_string())
+    //       .collect(),
+    //   ),
+    //   handler: None,
+    //   handler_modifiers: None,
+    //   modifier: None,
+    //   runtime_camelize: None,
+    // });
   }
 
   if dir.arg.is_some() {

@@ -409,11 +409,12 @@ pub fn gen_for<'a>(
         ast.function_body(
           SPAN,
           ast.vec(),
-          if !effect_patterns.is_empty() || !key_only_binding_patterns.is_empty() {
-            gen_block_content(Some(render), context, context_block)
-          } else {
-            gen_block_content(Some(render), context, context_block)
-          },
+          ast.vec(),
+          // if !effect_patterns.is_empty() || !key_only_binding_patterns.is_empty() {
+          //   gen_block_content(Some(render), context, context_block)
+          // } else {
+          //   gen_block_content(Some(render), context, context_block)
+          // },
         ),
       )
     },

@@ -113,11 +113,11 @@ pub fn to_valid_asset_id(name: &str, _type: &str) -> String {
   format!("_{_type}_{name}")
 }
 
-pub fn get_text_like_value(node: &Expression, exclude_number: Option<bool>) -> Option<String> {
+pub fn get_text_like_value(node: &Expression, exclude_number: bool) -> Option<String> {
   let node = node.without_parentheses().get_inner_expression();
   if let Expression::StringLiteral(node) = node {
     return Some(node.value.to_string());
-  } else if !exclude_number.unwrap_or(false) && node.is_number_literal() {
+  } else if !exclude_number && node.is_number_literal() {
     if let Expression::NumericLiteral(node) = node {
       return Some(node.value.to_string());
     } else if let Expression::BigIntLiteral(node) = node {
@@ -128,11 +128,26 @@ pub fn get_text_like_value(node: &Expression, exclude_number: Option<bool>) -> O
     for i in 0..node.quasis.len() {
       result += node.quasis[i].value.cooked.unwrap().as_ref();
       if let Some(expression) = node.expressions.get(i) {
-        let expression_value = get_text_like_value(expression, None)?;
+        let expression_value = get_text_like_value(expression, false)?;
         result += &expression_value;
       }
     }
     return Some(result);
   }
   None
+}
+
+pub fn is_text_like(node: &JSXChild) -> bool {
+  if let JSXChild::ExpressionContainer(node) = node {
+    !matches!(
+      node
+        .expression
+        .to_expression()
+        .without_parentheses()
+        .get_inner_expression(),
+      Expression::ConditionalExpression(_) | Expression::LogicalExpression(_)
+    )
+  } else {
+    matches!(node, JSXChild::Text(_))
+  }
 }

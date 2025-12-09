@@ -9,7 +9,7 @@ use crate::{
     component::{IRSlotType, IRSlotsExpression},
     index::BlockIRNode,
   },
-  transform::{ContextNode, TransformContext},
+  transform::TransformContext,
 };
 use common::{
   check::is_jsx_component, directive::find_prop_mut, error::ErrorCodes,
@@ -18,12 +18,12 @@ use common::{
 
 /// # SAFETY
 pub unsafe fn transform_v_slots<'a>(
-  context_node: *mut ContextNode<'a>,
+  context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  _: &'a mut ContextNode<'a>,
+  _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
-  let Either::B(JSXChild::Element(node)) = (unsafe { &mut *context_node }) else {
+  let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
 

@@ -1,256 +1,205 @@
-use std::{cell::RefCell, mem, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, mem, rc::Rc};
 
 use napi::{
   Either,
   bindgen_prelude::{Either3, Either16},
 };
-use oxc_ast::ast::{
-  JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement,
-  JSXElementName,
+use oxc_allocator::{CloneIn, TakeIn};
+use oxc_ast::{
+  AstBuilder, NONE,
+  ast::{
+    ArrayExpression, ArrayExpressionElement, CallExpression, Expression, JSXAttribute,
+    JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement, JSXElementName,
+    ObjectProperty, ObjectPropertyKind, PropertyKey, PropertyKind,
+  },
 };
-use oxc_span::SPAN;
+use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
-  ir::{
-    component::{IRProp, IRProps, IRPropsDynamicExpression, IRPropsStatic},
-    index::{
-      BlockIRNode, CreateComponentIRNode, DirectiveIRNode, DynamicFlag, SetDynamicEventsIRNode,
-      SetDynamicPropsIRNode, SetPropIRNode,
-    },
+  ast::{ConstantTypes, NodeTypes, VNodeCall},
+  ir::index::{
+    BlockIRNode, CreateComponentIRNode, DirectiveIRNode, DynamicFlag, RootNode,
+    SetDynamicPropsIRNode, SetPropIRNode,
   },
   transform::{
-    ContextNode, DirectiveTransformResult, TransformContext, v_bind::transform_v_bind,
-    v_html::transform_v_html, v_model::transform_v_model, v_on::transform_v_on,
-    v_show::transform_v_show, v_text::transform_v_text,
+    DirectiveTransformResult, TransformContext, cache_static::get_constant_type,
+    v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
+    v_on::transform_v_on, v_show::transform_v_show, v_text::transform_v_text,
   },
 };
 
 use common::{
-  check::{is_build_in_directive, is_jsx_component, is_template, is_void_tag},
-  directive::resolve_directive,
+  check::{
+    is_built_in_directive, is_directive, is_event, is_jsx_component, is_reserved_prop, is_template,
+    is_void_tag,
+  },
+  directive::{DirectiveNode, resolve_directive},
   dom::is_valid_html_nesting,
   error::ErrorCodes,
-  expression::SimpleExpressionNode,
-  text::{camelize, get_tag_name, get_text_like_value},
+  expression::{SimpleExpressionNode, jsx_attribute_value_to_expression},
+  patch_flag::PatchFlags,
+  text::{camelize, get_tag_name, is_empty_text, resolve_jsx_text, to_valid_asset_id},
 };
 
-static RESERVED_PROP: [&str; 5] = ["", "key", "ref", "ref_for", "ref_key"];
-pub fn is_reserved_prop(name: &str) -> bool {
-  RESERVED_PROP.contains(&name)
-}
-
-pub fn is_event(s: &str) -> bool {
-  s.starts_with("on")
-    && s
-      .chars()
-      .nth(2)
-      .map(|c| c.is_ascii_uppercase())
-      .unwrap_or(false)
-}
-
-pub fn is_directive(s: &str) -> bool {
-  s.starts_with("v-")
-    && s
-      .chars()
-      .nth(2)
-      .map(|c| c.is_ascii_lowercase())
-      .unwrap_or(false)
-}
-
 /// # SAFETY
+/// generate a JavaScript AST for this element's codegen
 pub unsafe fn transform_element<'a>(
-  context_node: *mut ContextNode<'a>,
+  context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut ContextNode<'a>,
+  parent_node: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
-  let Either::B(JSXChild::Element(node)) = (unsafe { &mut *context_node }) else {
+  let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
   if is_template(node) {
     return None;
   }
-  let mut effect_index = context_block.effect.len() as i32;
-  let get_effect_index = Rc::new(RefCell::new(Box::new(move || {
-    let current = effect_index;
-    effect_index += 1;
-    current
-  }) as Box<dyn FnMut() -> i32>));
-  let mut operation_index = context_block.operation.len() as i32;
-  let get_operation_index = Rc::new(RefCell::new(Box::new(move || {
-    let current = operation_index;
-    operation_index += 1;
-    current
-  }) as Box<dyn FnMut() -> i32>));
 
-  let tag = get_tag_name(&node.opening_element.name, context.ir.borrow().source);
+  let ast = &context.ast;
+
   let is_component = is_jsx_component(node);
+
+  // The goal of the transform is to create a codegenNode implementing the
+  // VNodeCall interface.
+  let mut vnode_tag = get_tag_name(&node.opening_element.name, context.ir.borrow().source);
+  if is_component && (context.options.with_fallback || vnode_tag.contains("-")) {
+    context.helper("resolveComponent");
+    context.components.borrow_mut().insert(vnode_tag.clone());
+    vnode_tag = to_valid_asset_id(&vnode_tag, "component");
+  }
+
+  let mut should_use_block = RootNode::is_single_root(parent_node)
+    || vnode_tag == "Teleport"
+    || vnode_tag == "Suspense"
+    || (!is_component &&
+    // <svg> and <foreignObject> must be forced into blocks so that block
+    // updates inside get proper isSVG flag at runtime. (#639, #643)
+    // This is technically web-specific, but splitting the logic out of core
+    // leads to too much unnecessary complexity.
+    (vnode_tag == "svg" || vnode_tag =="foreignObject" || vnode_tag =="math"));
+
   let _context_block = context_block as *mut BlockIRNode;
-  let props_result = build_props(
-    node,
+  let _node = node as *mut oxc_allocator::Box<JSXElement>;
+  let props_build_result = build_props(
+    unsafe { &mut *_node },
     context,
     unsafe { &mut *_context_block },
     is_component,
-    Rc::clone(&get_effect_index),
-    Rc::clone(&get_operation_index),
   );
 
-  let single_root = matches!(parent_node, Either::A(parent_node) if parent_node.is_single_root);
+  let vnode_props = props_build_result.props;
+  let mut vnode_children = None;
+  let mut patch_flag = props_build_result.patch_flag;
+  let dynamic_prop_names = props_build_result.dynamic_prop_names;
+  let vnode_directives = props_build_result.directives;
+  if props_build_result.should_use_block {
+    should_use_block = true;
+  }
 
+  // perform the work on exit, after all child expressions have been
+  // processed and merged.
   Some(Box::new(move || {
-    if is_component {
-      transform_component_element(tag, props_result, single_root, context, context_block);
-    } else {
-      transform_native_element(
-        tag,
-        props_result,
-        single_root,
-        context,
-        context_block,
-        parent_node,
-        Rc::clone(&get_effect_index),
-        Rc::clone(&get_operation_index),
-      );
-    }
-  }))
-}
-
-#[allow(clippy::too_many_arguments)]
-pub fn transform_native_element<'a>(
-  tag: String,
-  props_result: PropsResult<'a>,
-  single_root: bool,
-  context: &'a TransformContext<'a>,
-  context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut ContextNode<'a>,
-  get_effect_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
-  get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
-) {
-  let mut template = format!("<{tag}");
-
-  let mut dynamic_props = vec![];
-
-  match props_result.props {
-    Either::A(props) => {
-      let element = context.reference(&mut context_block.dynamic);
-      /* dynamic props */
-      context.register_effect(
-        context_block,
-        false,
-        Either16::E(SetDynamicPropsIRNode {
-          set_dynamic_props: true,
-          props,
-          element,
-          root: single_root,
-        }),
-        Some(get_effect_index),
-        Some(get_operation_index),
-      )
-    }
-    Either::B(props) => {
-      for prop in props {
-        let key = &prop.key;
-        let values = &prop.values;
-        if key.is_static && values.len() == 1 && values[0].is_static {
-          template += &format!(" {}", key.content);
-          if !values[0].content.is_empty() {
-            template += &format!("=\"{}\"", values[0].content);
-          }
-        } else {
-          dynamic_props.push(key.content.clone());
-
-          let element = context.reference(&mut context_block.dynamic);
-          context.register_effect(
-            context_block,
-            context.is_operation(values.iter().collect::<Vec<&SimpleExpressionNode>>()),
-            Either16::D(SetPropIRNode {
-              set_prop: true,
-              prop,
-              element,
-              tag: tag.clone(),
-              root: single_root,
-            }),
-            Some(Rc::clone(&get_effect_index)),
-            Some(Rc::clone(&get_operation_index)),
+    // children
+    let children = &mut node
+      .children
+      .iter_mut()
+      .filter(|child| !is_empty_text(child))
+      .collect::<Vec<_>>();
+    if !children.is_empty() {
+      if vnode_tag == "KeepAlive" || vnode_tag == "keep-alive" {
+        // Although a built-in component, we compile KeepAlive with raw children
+        // instead of slot functions so that it can be used inside Transition
+        // or other Transition-wrapping HOCs.
+        // To ensure correct updates with block optimizations, we need to:
+        // 1. Force keep-alive into a block. This avoids its children being
+        //    collected by a parent block.
+        should_use_block = true;
+        // 2. Force keep-alive to always be updated, since it uses raw children.
+        patch_flag |= PatchFlags::DynamicSlots as i32;
+        if children.len() > 1 {
+          context.options.on_error.as_ref()(
+            ErrorCodes::KeepAliveInvalidChildren,
+            Span::new(
+              children.first().unwrap().span().start,
+              children.last().unwrap().span().end,
+            ),
           );
         }
       }
+
+      let should_build_as_slots = is_component
+      && vnode_tag != "Teleport" // Teleport is not a real component and has dedicated runtime handling
+      && (vnode_tag != "KeepAlive" || vnode_tag != "keep-alive"); // explained above.
+
+      vnode_children = Some(
+        // if should_build_as_slots {
+        // TODO
+        // const { slots, hasDynamicSlots } = buildSlots(node, context)
+        // vnodeChildren = slots
+        // if (hasDynamicSlots) {
+        //   patchFlag |= PatchFlags.DYNAMIC_SLOTS
+        // }
+        // } else
+        if children.len() == 1 && vnode_tag != "Teleport" {
+          let child = children.get_mut(0).unwrap();
+          // check for dynamic text children
+          let has_dynamic_text_child = child.is_expression_container();
+          // pass directly if the only child is a text node
+          // (plain / interpolation / expression)
+          if has_dynamic_text_child || matches!(child, JSXChild::Text(_)) {
+            Either3::A(*child as *mut _)
+          } else {
+            Either3::B(&mut node.children as *mut _)
+          }
+        } else {
+          Either3::B(&mut node.children as *mut _)
+        },
+      );
     }
-  }
 
-  template += &format!(">{}", context.children_template.borrow().join(""));
-  // TODO remove unnecessary close tag, e.g. if it's the last element of the template
-  if !is_void_tag(&tag) {
-    template += &format!("</{}>", tag)
-  }
+    // patchFlag & dynamicPropNames
+    let vnode_dynamic_props = if !dynamic_prop_names.is_empty() {
+      Some(ast.expression_array(
+        SPAN,
+        ast.vec_from_iter(dynamic_prop_names.into_iter().map(|name| {
+          ast
+            .expression_string_literal(SPAN, ast.atom(&name), None)
+            .into()
+        })),
+      ))
+    } else {
+      None
+    };
 
-  if single_root {
-    let ir = &mut context.ir.borrow_mut();
-    ir.root_template_index = Some(context.options.templates.borrow().len())
-  }
-
-  if let Either::B(JSXChild::Element(parent_node)) = parent_node
-    && let JSXElementName::Identifier(name) = &parent_node.opening_element.name
-    && !is_valid_html_nesting(&name.name, &tag)
-  {
-    let dynamic = &mut context_block.dynamic;
-    context.reference(dynamic);
-    dynamic.template = Some(context.push_template(template));
-    dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
-  } else {
-    *context.template.borrow_mut() = format!("{}{}", context.template.borrow(), template);
-  }
-}
-
-pub fn transform_component_element<'a>(
-  mut tag: String,
-  props_result: PropsResult<'a>,
-  single_root: bool,
-  context: &'a TransformContext<'a>,
-  context_block: &mut BlockIRNode<'a>,
-) {
-  let mut asset = context.options.with_fallback;
-
-  if let Some(dot_index) = tag.find('.') {
-    let ns = tag[0..dot_index].to_string();
-    if !ns.is_empty() {
-      tag = ns + &tag[dot_index..];
-    }
-  }
-
-  if tag.contains("-") {
-    asset = true
-  }
-
-  if asset {
-    let component = &mut context.ir.borrow_mut().component;
-    component.insert(tag.clone());
-  }
-
-  let dynamic = &mut context_block.dynamic;
-  dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
-
-  dynamic.operation = Some(Box::new(Either16::N(CreateComponentIRNode {
-    create_component: true,
-    id: context.reference(dynamic),
-    tag,
-    props: match props_result.props {
-      Either::A(props) => props,
-      Either::B(props) => vec![Either3::A(props)],
-    },
-    asset,
-    root: single_root && *context.in_v_for.borrow() == 0,
-    slots: mem::take(&mut context_block.slots),
-    once: *context.in_v_once.borrow(),
-    parent: None,
-    anchor: None,
-    dynamic: None,
-  })));
+    let vnode_call = VNodeCall {
+      tag: vnode_tag,
+      props: vnode_props,
+      children: vnode_children,
+      patch_flag: if patch_flag == 0 {
+        None
+      } else {
+        Some(patch_flag)
+      },
+      dynamic_props: vnode_dynamic_props,
+      directives: vnode_directives,
+      is_block: should_use_block,
+      disable_tracking: false,
+      is_component,
+    };
+    context
+      .codegen_map
+      .borrow_mut()
+      .insert(node.span, NodeTypes::VNodeCall(vnode_call));
+  }))
 }
 
 pub struct PropsResult<'a> {
-  pub dynamic: bool,
-  pub props: Either<Vec<IRProps<'a>>, IRPropsStatic<'a>>,
+  pub props: Option<Expression<'a>>,
+  pub directives: Option<ArrayExpression<'a>>,
+  pub patch_flag: i32,
+  pub dynamic_prop_names: Vec<String>,
+  pub should_use_block: bool,
 }
 
 pub fn build_props<'a>(
@@ -258,260 +207,528 @@ pub fn build_props<'a>(
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   is_component: bool,
-  get_effect_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
-  get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
 ) -> PropsResult<'a> {
-  let node = node as *mut JSXElement;
-  let props = &mut (unsafe { &mut *node }).opening_element.attributes;
+  let ast = &context.ast;
+  let _node = node as *mut JSXElement;
+  let props = &mut (unsafe { &mut *_node }).opening_element.attributes;
   if props.is_empty() {
     return PropsResult {
-      dynamic: false,
-      props: Either::B(vec![]),
+      props: None,
+      directives: None,
+      patch_flag: 0,
+      dynamic_prop_names: vec![],
+      should_use_block: false,
     };
   }
 
-  let mut dynamic_args: Vec<IRProps> = vec![];
-  let mut results: Vec<DirectiveTransformResult> = vec![];
+  let mut properties: oxc_allocator::Vec<ObjectPropertyKind> = ast.vec();
+  let mut merge_args: oxc_allocator::Vec<Expression> = ast.vec();
+  let mut runtime_directives: Vec<DirectiveNode> = vec![];
+  let has_children = !node.children.is_empty();
+  let mut should_use_block = false;
+  let directive_import_map: HashMap<Span, String> = HashMap::new();
 
+  // patchFlag analysis
+  let mut patch_flag = 0;
+  let mut has_ref = false;
+  let mut has_class_binding = false;
+  let mut has_style_binding = false;
+  let mut has_hydration_event_binding = false;
+  let mut has_dynamic_keys = false;
+  let mut has_vnode_hook = false;
+  let mut dynamic_prop_names = vec![];
+
+  // mark template ref on v-for
+  let ref_v_for_marker = || -> Option<ObjectPropertyKind> {
+    if *context.in_v_for.borrow() > 0 {
+      Some(ast.object_property_kind_object_property(
+        SPAN,
+        PropertyKind::Init,
+        ast.property_key_static_identifier(SPAN, "ref_for"),
+        ast.expression_boolean_literal(SPAN, true),
+        false,
+        false,
+        false,
+      ))
+    } else {
+      None
+    }
+  };
+
+  let _has_ref = &mut has_ref as *mut _;
+  let mut analyze_patch_flag = |prop: &ObjectPropertyKind| {
+    let ObjectPropertyKind::ObjectProperty(prop) = prop else {
+      return;
+    };
+    let ObjectProperty { key, computed, .. } = prop.as_ref();
+    let mut value = &prop.value;
+    if !computed {
+      let name = key.name().map(|name| name.to_string()).unwrap_or_default();
+      let is_event_handler = is_event(&name);
+      if is_event_handler && !is_component &&
+      // omit the flag for click handlers because hydration gives click
+      // dedicated fast path.
+      name.to_lowercase() != "onclick" &&
+      // omit v-model handlers
+      name != "onUpdate:modelValue" &&
+      // omit onVnodeXXX hooks
+      !is_reserved_prop(&name)
+      {
+        has_hydration_event_binding = true
+      }
+
+      if is_event_handler && is_reserved_prop(&name) {
+        has_vnode_hook = true
+      }
+
+      if is_event_handler
+        && let Expression::CallExpression(call_expr) = value
+        && let Some(arg) = call_expr.arguments.get(0)
+      {
+        // handler wrapped with internal helper e.g. withModifiers(fn)
+        // extract the actual expression
+        value = arg.to_expression();
+      }
+
+      // TODO
+      // if (
+      //   value.type === NodeTypes.JS_CACHE_EXPRESSION ||
+      //   ((value.type === NodeTypes.SIMPLE_EXPRESSION ||
+      //     value.type === NodeTypes.COMPOUND_EXPRESSION) &&
+      //     getConstantType(value, context) > 0)
+      // ) {
+      //   // skip if the prop is a cached handler or has constant value
+      //   return
+      // }
+      if (get_constant_type(Either::B(value), context) as i32) > 0 {
+        // skip if the prop is a cached handler or has constant values
+        return;
+      }
+
+      if name == "ref" {
+        *unsafe { &mut *_has_ref } = true;
+      } else if name == "class" {
+        has_class_binding = true;
+      } else if name == "style" {
+        has_style_binding = true;
+      } else if name != "key" && !dynamic_prop_names.contains(&name) {
+        dynamic_prop_names.push(name.clone());
+      }
+
+      // treat the dynamic class and style binding of the component as dynamic props
+      if is_component && (name == "class" || name == "style") && !dynamic_prop_names.contains(&name)
+      {
+        dynamic_prop_names.push(name);
+      }
+    } else {
+      has_dynamic_keys = true
+    }
+  };
+
+  let properties = &mut properties;
   for prop in props {
+    // static attribute
     match prop {
-      JSXAttributeItem::SpreadAttribute(prop) => {
-        let value =
-          SimpleExpressionNode::new(Either3::A(&mut prop.argument), context.ir.borrow().source);
-        if !results.is_empty() {
-          dynamic_args.push(Either3::A(dedupe_properties(results)));
-          results = vec![];
-        }
-        dynamic_args.push(Either3::C(IRPropsDynamicExpression {
-          value,
-          handler: None,
-        }));
-        continue;
-      }
       JSXAttributeItem::Attribute(prop) => {
-        let span = prop.span;
-        if prop.name.get_identifier().name.eq("v-on") {
-          // v-on={obj}
-          if let Some(prop_value) = &mut prop.value {
-            let value =
-              SimpleExpressionNode::new(Either3::C(prop_value), context.ir.borrow().source);
-            if is_component {
-              if !results.is_empty() {
-                dynamic_args.push(Either3::A(dedupe_properties(results)));
-                results = vec![];
+        let ast = &context.ast;
+        let name = match &prop.name {
+          JSXAttributeName::Identifier(name) => name.name.as_str(),
+          JSXAttributeName::NamespacedName(name) => name.namespace.name.as_str(),
+        }
+        .split("_")
+        .collect::<Vec<&str>>()[0];
+        if !is_directive(name)
+          && !is_event(name)
+          && matches!(prop.value, Some(JSXAttributeValue::StringLiteral(_)))
+        {
+          if name == "ref" {
+            has_ref = prop
+              .value
+              .as_ref()
+              .map(|value| matches!(value, JSXAttributeValue::StringLiteral(_)))
+              .unwrap_or_default();
+            if let Some(marker) = ref_v_for_marker() {
+              properties.push(marker)
+            };
+          }
+        }
+
+        let mut dir_name = if is_event(name) {
+          "on".to_string()
+        } else if is_directive(name) {
+          name[2..].to_string()
+        } else {
+          "bind".to_string()
+        };
+
+        if dir_name == "on" {
+          // skip v-on in SSR compilation
+          if *context.options.ssr.borrow() {
+            continue;
+          }
+
+          if prop.name.as_identifier().is_some() {
+            if let Some(value) = &mut prop.value {
+              // v-on={obj} -> toHandlers(obj)
+              if !properties.is_empty() {
+                merge_args
+                  .push(ast.expression_object(node.span, dedupe_properties(properties, ast)));
               }
-              dynamic_args.push(Either3::C(IRPropsDynamicExpression {
-                value,
-                handler: Some(true),
-              }))
+              merge_args.push(jsx_attribute_value_to_expression(value, ast.allocator));
             } else {
+              context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, prop.span);
+            }
+            continue;
+          }
+        }
+
+        if let Some(DirectiveTransformResult {
+          props,
+          need_runtime,
+        }) = match dir_name.as_str() {
+          "bind" => {
+            // #938: elements with dynamic keys should be forced into blocks
+            if name == "key" {
+              should_use_block = true
+            }
+            // force hydration for prop with .prop modifier
+            if name.split("_").any(|n| n == "prop") {
+              patch_flag |= PatchFlags::NeedHydration as i32;
+            }
+            transform_v_bind(prop, node, context, context_block)
+          }
+          "on" => {
+            // inline before-update hooks need to force block so that it is invoked
+            // before children
+            if has_children && name == "onVue:before-update" {
+              should_use_block = true;
+            }
+
+            None
+            // return transform_v_on(prop, node, context, context_block),
+          }
+          // "model" => return transform_v_model(prop, node, context, context_block),
+          // "show" => return transform_v_show(prop, node, context, context_block),
+          // "html" => return transform_v_html(prop, node, context, context_block),
+          // "text" => return transform_v_text(prop, node, context, context_block),
+          _ => {
+            if !is_built_in_directive(&dir_name) {
+              let with_fallback = context.options.with_fallback;
+              if with_fallback {
+                let directive = &mut context.ir.borrow_mut().directive;
+                directive.insert(dir_name.clone());
+              } else {
+                dir_name = camelize(&format!("v-{dir_name}"))
+              };
+
               let element = context.reference(&mut context_block.dynamic);
-              context.register_effect(
-                context_block,
-                context.is_operation(vec![&value]),
-                Either16::F(SetDynamicEventsIRNode {
-                  set_dynamic_events: true,
-                  element,
-                  value,
-                }),
-                Some(Rc::clone(&get_effect_index)),
-                Some(Rc::clone(&get_operation_index)),
-              );
+              // context.register_operation(
+              //   context_block,
+              //   Either16::M(DirectiveIRNode {
+              //     directive: true,
+              //     element,
+              //     dir: resolve_directive(prop, context.ir.borrow().source),
+              //     name: dir_name,
+              //     asset: Some(with_fallback),
+              //     builtin: None,
+              //     model_type: None,
+              //   }),
+              //   None,
+              // )
             }
-          } else {
-            context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, span);
+            None
           }
-          continue;
-        }
-
-        let context_block = context_block as *mut BlockIRNode;
-        if let Some(prop) = transform_prop(
-          prop,
-          unsafe { &mut *node },
-          is_component,
-          context,
-          unsafe { &mut *context_block },
-          Rc::clone(&get_operation_index),
-        ) {
-          if is_component && !prop.key.is_static {
-            // v-model:&name&="value"
-            if !results.is_empty() {
-              dynamic_args.push(Either3::A(dedupe_properties(results)));
-              results = vec![];
-            }
-            dynamic_args.push(Either3::B(IRProp {
-              key: prop.key,
-              modifier: prop.modifier,
-              runtime_camelize: prop.runtime_camelize,
-              handler: prop.handler,
-              handler_modifiers: prop.handler_modifiers,
-              model: prop.model,
-              model_modifiers: prop.model_modifiers,
-              values: vec![prop.value],
-              dynamic: true,
-            }));
-          } else {
-            // other static props
-            results.push(prop)
+        } {
+          if !*context.options.ssr.borrow() {
+            props.iter().for_each(|p| analyze_patch_flag(p));
           }
+          properties.extend(props);
+        };
+      }
+      JSXAttributeItem::SpreadAttribute(prop) => {
+        // #10696 in case a {...obj} object contains ref
+        if let Some(marker) = ref_v_for_marker() {
+          properties.push(marker)
+        };
+        if !properties.is_empty() {
+          merge_args.push(ast.expression_object(node.span, dedupe_properties(properties, ast)));
         }
+        merge_args.push(prop.argument.take_in(ast.allocator));
       }
     }
   }
 
-  // has dynamic key or {...obj}
-  if !dynamic_args.is_empty() || results.iter().any(|prop| !prop.key.is_static) {
-    // take rest of props as dynamic props
-    if !results.is_empty() {
-      dynamic_args.push(Either3::A(dedupe_properties(results)));
+  // has {...object} or v-on={object}, wrap with mergeProps
+  let mut props_expression = if !merge_args.is_empty() {
+    // close up any not-yet-merged props
+    if !properties.is_empty() {
+      merge_args.push(ast.expression_object(node.span, dedupe_properties(properties, ast)));
     }
-    return PropsResult {
-      dynamic: true,
-      props: Either::A(dynamic_args),
-    };
-  }
-
-  PropsResult {
-    dynamic: false,
-    props: Either::B(dedupe_properties(results)),
-  }
-}
-
-pub fn transform_prop<'a>(
-  prop: &'a mut JSXAttribute<'a>,
-  node: &'a mut JSXElement<'a>,
-  is_component: bool,
-  context: &'a TransformContext<'a>,
-  context_block: &'a mut BlockIRNode<'a>,
-  get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
-) -> Option<DirectiveTransformResult<'a>> {
-  let name = match &prop.name {
-    JSXAttributeName::Identifier(name) => name.name.as_str(),
-    JSXAttributeName::NamespacedName(name) => name.namespace.name.as_str(),
-  }
-  .split("_")
-  .collect::<Vec<&str>>()[0];
-  let value = if let Some(value) = &prop.value {
-    match value {
-      JSXAttributeValue::ExpressionContainer(value) => {
-        get_text_like_value(value.expression.to_expression(), Some(is_component))
-      }
-      JSXAttributeValue::StringLiteral(value) => Some(value.value.to_string()),
-      _ => None,
+    if merge_args.len() > 1 {
+      Some(ast.expression_call(
+        node.span,
+        ast.expression_identifier(SPAN, ast.atom(&context.helper("mergeProps"))),
+        NONE,
+        ast.vec_from_iter(merge_args.into_iter().map(|arg| arg.into())),
+        false,
+      ))
+    } else {
+      // no need for a mergeProps call
+      Some(merge_args.remove(0))
     }
+  } else if !properties.is_empty() {
+    Some(ast.expression_object(node.span, dedupe_properties(properties, ast)))
   } else {
     None
   };
-  if !is_directive(name) && !is_event(name) && (prop.value.is_none() || value.is_some()) {
-    if is_reserved_prop(name) {
-      return None;
-    }
-    return Some(DirectiveTransformResult::new(
-      SimpleExpressionNode {
-        content: name.to_string(),
-        is_static: true,
-        ast: None,
-        loc: SPAN,
-      },
-      if let Some(value) = value {
-        SimpleExpressionNode {
-          content: value,
-          is_static: true,
-          ast: None,
-          loc: SPAN,
-        }
-      } else {
-        SimpleExpressionNode {
-          content: "true".to_string(),
-          is_static: false,
-          ast: None,
-          loc: SPAN,
-        }
-      },
-    ));
-  }
 
-  let mut name = if is_event(name) {
-    "on".to_string()
-  } else if is_directive(name) {
-    name[2..].to_string()
+  // patchFlag analysis
+  if has_dynamic_keys {
+    patch_flag |= PatchFlags::FullProps as i32;
   } else {
-    "bind".to_string()
-  };
-
-  match name.as_str() {
-    "bind" => return transform_v_bind(prop, node, context, context_block),
-    "on" => return transform_v_on(prop, node, context, context_block),
-    "model" => return transform_v_model(prop, node, context, context_block),
-    "show" => return transform_v_show(prop, node, context, context_block),
-    "html" => return transform_v_html(prop, node, context, context_block),
-    "text" => return transform_v_text(prop, node, context, context_block),
-    _ => (),
-  };
-
-  if !is_build_in_directive(&name) {
-    let with_fallback = context.options.with_fallback;
-    if with_fallback {
-      let directive = &mut context.ir.borrow_mut().directive;
-      directive.insert(name.clone());
-    } else {
-      name = camelize(&format!("v-{name}"))
-    };
-
-    let element = context.reference(&mut context_block.dynamic);
-    context.register_operation(
-      context_block,
-      Either16::M(DirectiveIRNode {
-        directive: true,
-        element,
-        dir: resolve_directive(prop, context.ir.borrow().source),
-        name,
-        asset: Some(with_fallback),
-        builtin: None,
-        model_type: None,
-      }),
-      Some(Rc::clone(&get_operation_index)),
-    )
+    if has_class_binding && !is_component {
+      patch_flag |= PatchFlags::Class as i32;
+    }
+    if has_style_binding && !is_component {
+      patch_flag |= PatchFlags::Style as i32;
+    }
+    if !dynamic_prop_names.is_empty() {
+      patch_flag |= PatchFlags::Props as i32;
+    }
+    if has_hydration_event_binding {
+      patch_flag |= PatchFlags::NeedHydration as i32;
+    }
   }
-  None
+  if !should_use_block
+    && (patch_flag == 0 || patch_flag == PatchFlags::NeedHydration as i32)
+    && (has_ref || has_vnode_hook || !runtime_directives.is_empty())
+  {
+    patch_flag |= PatchFlags::NeedPatch as i32;
+  }
+
+  // pre-normalize props, SSR is skipped for now
+  if !context.options.in_ssr
+    && let Some(props_expression) = &mut props_expression
+  {
+    match props_expression {
+      Expression::ObjectExpression(object_expression) => {
+        // means that there is no v-bind,
+        // but still need to deal with dynamic key binding
+        let mut class_prop = None;
+        let mut style_prop = None;
+        let mut has_dynamic_key = false;
+
+        for property in &mut object_expression.properties {
+          if let ObjectPropertyKind::ObjectProperty(property) = property {
+            let key = &property.key;
+            let name = key.name().map(|n| n.to_string()).unwrap_or(String::new());
+            if !property.computed {
+              if name == "class" {
+                class_prop = Some(property);
+              } else if name == "style" {
+                style_prop = Some(property);
+              }
+            } else if !is_event(&name) {
+              has_dynamic_key = true;
+            }
+          }
+        }
+
+        // no dynamic key
+        if !has_dynamic_key {
+          if let Some(class_prop) = class_prop
+            && matches!(class_prop.value, Expression::StringLiteral(_))
+          {
+            class_prop.value = ast.expression_call(
+              SPAN,
+              ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeClass"))),
+              NONE,
+              ast.vec1(class_prop.value.take_in(ast.allocator).into()),
+              false,
+            )
+          }
+          if let Some(style_prop) = style_prop
+            // the static style is compiled into an object,
+            // so use `hasStyleBinding` to ensure that it is a dynamic style binding
+            && (has_style_binding || matches!(style_prop.value, Expression::ArrayExpression(_)))
+          {
+            style_prop.value = ast.expression_call(
+              SPAN,
+              ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeStyle"))),
+              NONE,
+              ast.vec1(style_prop.value.take_in(ast.allocator).into()),
+              false,
+            )
+          }
+        } else {
+          // dynamic key binding, wrap with `normalizeProps`
+          *props_expression = ast.expression_call(
+            SPAN,
+            ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeProps"))),
+            NONE,
+            ast.vec1(props_expression.take_in(ast.allocator).into()),
+            false,
+          )
+        }
+      }
+      // mergeProps call, do nothing
+      Expression::CallExpression(_) => (),
+      // single v-bind
+      _ => {
+        *props_expression = ast.expression_call(
+          SPAN,
+          ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeProps"))),
+          NONE,
+          ast.vec1(
+            ast
+              .expression_call(
+                SPAN,
+                ast.expression_identifier(SPAN, ast.atom(&context.helper("guardReactiveProps"))),
+                NONE,
+                ast.vec1(props_expression.take_in(ast.allocator).into()),
+                false,
+              )
+              .into(),
+          ),
+          false,
+        )
+      }
+    }
+  }
+
+  let directives = if !runtime_directives.is_empty() {
+    Some(ast.array_expression(
+      SPAN,
+      ast.vec_from_iter(runtime_directives.into_iter().map(|dir| {
+        let loc = dir.loc;
+        build_directive_args(dir, context, directive_import_map.get(&loc)).into()
+      })),
+    ))
+  } else {
+    None
+  };
+
+  PropsResult {
+    props: props_expression,
+    directives,
+    patch_flag,
+    dynamic_prop_names,
+    should_use_block,
+  }
 }
 
 // Dedupe props in an object literal.
 // Literal duplicated attributes would have been warned during the parse phase,
 // however, it's possible to encounter duplicated `onXXX` handlers with different
 // modifiers. We also need to merge static and dynamic class / style attributes.
-pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> {
-  let mut deduped = vec![];
+pub fn dedupe_properties<'a>(
+  properties: &mut oxc_allocator::Vec<'a, ObjectPropertyKind<'a>>,
+  ast: &'a AstBuilder<'a>,
+) -> oxc_allocator::Vec<'a, ObjectPropertyKind<'a>> {
+  let mut deduped = ast.vec();
 
-  for result in results {
-    let prop = IRProp {
-      key: result.key,
-      modifier: result.modifier,
-      runtime_camelize: result.runtime_camelize,
-      handler: result.handler,
-      handler_modifiers: result.handler_modifiers,
-      model: result.model,
-      model_modifiers: result.model_modifiers,
-      values: vec![result.value],
-      dynamic: false,
-    };
-    // dynamic keys are always allowed
-    if !prop.key.is_static {
-      deduped.push(prop);
-      continue;
-    }
-    let name = prop.key.content.as_str();
-    let existing = deduped.iter_mut().find(|i| i.key.content == name);
-    if let Some(existing) = existing {
-      if name == "style" || name == "class" {
-        for value in prop.values {
-          existing.values.push(value)
+  for mut property in properties.drain(..) {
+    match &mut property {
+      // dynamic keys are always allowed
+      ObjectPropertyKind::SpreadProperty(_) => deduped.push(property),
+      ObjectPropertyKind::ObjectProperty(prop) => {
+        if prop.computed {
+          deduped.push(property);
+        } else if let Some(name) = prop.key.name() {
+          let name = name.to_string();
+          if let Some(existing) = deduped.iter_mut().find(|i| match i {
+            ObjectPropertyKind::ObjectProperty(i) => i
+              .key
+              .name()
+              .map(|key_name| key_name.eq(name.as_str()))
+              .unwrap_or_default(),
+            ObjectPropertyKind::SpreadProperty(_) => false,
+          }) && let ObjectPropertyKind::ObjectProperty(existing) = existing
+          {
+            if name == "style" || name == "class" || is_event(&name) {
+              if let Expression::ArrayExpression(value) = &mut existing.value {
+                value
+                  .elements
+                  .push(prop.value.take_in(ast.allocator).into());
+              } else {
+                existing.value = ast.expression_array(
+                  existing.span(),
+                  ast.vec_from_array([
+                    existing.value.take_in(ast.allocator).into(),
+                    prop.value.take_in(ast.allocator).into(),
+                  ]),
+                )
+              }
+            }
+            // unexpected duplicate, should have emitted error during parse
+          } else {
+            deduped.push(property.take_in(ast.allocator));
+          };
         }
       }
-    // unexpected duplicate, should have emitted error during parse
-    } else {
-      deduped.push(prop);
     }
   }
+
   deduped
+}
+
+pub fn build_directive_args<'a>(
+  dir: DirectiveNode<'a>,
+  context: &'a TransformContext<'a>,
+  runtime: Option<&String>,
+) -> Expression<'a> {
+  let ast = &context.ast;
+  let mut dir_args = ast.vec();
+  if let Some(runtime) = runtime {
+    // built-in directive with runtime
+    // dir_args.push(context.helper(&runtime));
+  } else {
+    // inject statement for resolving directive
+    context.helper("resolveDirective");
+    dir_args
+      .push(ast.expression_identifier(SPAN, ast.atom(&to_valid_asset_id(&dir.name, "directive"))));
+    context.ir.borrow_mut().directive.insert(dir.name);
+  }
+  let exp_is_none = dir.exp.is_none();
+  if let Some(exp) = dir.exp
+    && let Some(node) = exp.ast
+  {
+    dir_args.push(node.take_in(ast.allocator));
+  }
+  let arg_is_none = dir.arg.is_none();
+  if let Some(arg) = dir.arg {
+    if arg_is_none {
+      dir_args.push(ast.expression_identifier(SPAN, "void 0"))
+    }
+    if let Some(arg_ast) = arg.ast {
+      dir_args.push(arg_ast.take_in(ast.allocator))
+    }
+  }
+  if !dir.modifiers.is_empty() {
+    if arg_is_none {
+      if exp_is_none {
+        dir_args.push(ast.expression_identifier(SPAN, "void 0"));
+      }
+      dir_args.push(ast.expression_identifier(SPAN, "void 0"));
+    }
+    dir_args.push(ast.expression_object(
+      dir.loc,
+      ast.vec_from_iter(dir.modifiers.into_iter().map(|modifier| {
+        ast.object_property_kind_object_property(
+          modifier.loc,
+          PropertyKind::Init,
+          ast.property_key_static_identifier(SPAN, ast.atom(&modifier.content)),
+          ast.expression_boolean_literal(SPAN, true),
+          false,
+          false,
+          false,
+        )
+      })),
+    ))
+  }
+
+  ast.expression_array(
+    dir.loc,
+    ast.vec_from_iter(dir_args.into_iter().map(|arg| arg.into())),
+  )
 }

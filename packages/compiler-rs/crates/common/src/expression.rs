@@ -1,5 +1,6 @@
 use napi::bindgen_prelude::Either3;
 
+use oxc_allocator::{Allocator, TakeIn};
 use oxc_ast::ast::{Expression, JSXAttributeValue, JSXChild};
 use oxc_span::{GetSpan, SPAN, Span};
 use phf::phf_set;
@@ -108,7 +109,7 @@ impl<'a> SimpleExpressionNode<'a> {
 
   pub fn get_literal_expression_value(&self) -> Option<String> {
     if let Some(ast) = &self.ast
-      && let Some(res) = get_text_like_value(ast, None)
+      && let Some(res) = get_text_like_value(ast, false)
     {
       return Some(res);
     }
@@ -156,4 +157,18 @@ static GLOBALLY_ALLOWED: phf::Set<&'static str> = phf_set! {
 };
 pub fn is_globally_allowed(key: &str) -> bool {
   GLOBALLY_ALLOWED.contains(key)
+}
+
+pub fn jsx_attribute_value_to_expression<'a>(
+  value: &mut JSXAttributeValue<'a>,
+  allocator: &'a Allocator,
+) -> Expression<'a> {
+  match value.take_in(allocator) {
+    JSXAttributeValue::Element(value) => Expression::JSXElement(value),
+    JSXAttributeValue::Fragment(value) => Expression::JSXFragment(value),
+    JSXAttributeValue::StringLiteral(value) => Expression::StringLiteral(value),
+    JSXAttributeValue::ExpressionContainer(mut value) => {
+      value.expression.to_expression_mut().take_in(allocator)
+    }
+  }
 }

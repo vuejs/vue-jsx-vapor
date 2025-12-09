@@ -22,15 +22,16 @@ use common::{options::TransformOptions, text::to_valid_asset_id};
 use oxc_ast::{
   AstBuilder, NONE,
   ast::{
-    Argument, BindingPatternKind, Expression, FormalParameterKind, Statement,
+    Argument, BindingPatternKind, Expression, FormalParameterKind, JSXChild, Statement,
     VariableDeclarationKind,
   },
 };
-use oxc_span::SPAN;
+use oxc_span::{SPAN, Span};
 
 use crate::{
+  ast::NodeTypes,
   generate::block::gen_block_content,
-  ir::index::{BlockIRNode, RootIRNode},
+  ir::index::{BlockIRNode, RootIRNode, RootNode},
   transform::TransformContext,
 };
 
@@ -41,6 +42,8 @@ pub struct CodegenContext<'a> {
   pub block: RefCell<BlockIRNode<'a>>,
   pub scope_level: RefCell<i32>,
   pub ast: AstBuilder<'a>,
+  pub root_node: JSXChild<'a>,
+  pub codegen_map: HashMap<Span, NodeTypes<'a>>,
 }
 
 impl<'a> CodegenContext<'a> {
@@ -55,6 +58,8 @@ impl<'a> CodegenContext<'a> {
       identifiers: RefCell::new(HashMap::new()),
       block: RefCell::new(block),
       scope_level: RefCell::new(0),
+      root_node: context.root_node.replace(RootNode::new(context.allocator)),
+      codegen_map: context.codegen_map.take(),
       ir,
       ast,
     }
@@ -114,7 +119,8 @@ impl<'a> CodegenContext<'a> {
   }
 
   // IR -> JS codegen
-  pub fn generate(self: &'a CodegenContext<'a>) -> Expression<'a> {
+  pub fn generate(self: &'a mut CodegenContext<'a>) -> Expression<'a> {
+    let context = self as *mut CodegenContext;
     let ast = &self.ast;
     let mut statements = ast.vec();
 
@@ -210,7 +216,7 @@ impl<'a> CodegenContext<'a> {
     }
 
     let context_block = &mut *self.block.borrow_mut() as *mut BlockIRNode;
-    statements.extend(gen_block_content(None, self, unsafe {
+    statements.extend(gen_block_content(None, unsafe { &mut *context }, unsafe {
       &mut *context_block
     }));
 

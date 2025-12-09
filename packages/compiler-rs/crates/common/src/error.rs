@@ -18,6 +18,7 @@ pub enum ErrorCodes {
   VSlotMisplaced = 40,
   VModelNoExpression = 41,
   VModelMalformedExpression = 42,
+  KeepAliveInvalidChildren = 46,
   VHtmlNoExpression = 53,
   VHtmlWithChildren = 54,
   VTextNoExpression = 55,

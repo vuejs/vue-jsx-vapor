@@ -122,11 +122,6 @@ impl<'a> TransformContext<'a> {
     self.transform_node(None, None);
     let generate_context: *const CodegenContext = &CodegenContext::new(self);
     (unsafe { &*generate_context }).generate()
-
-    // if *self.vdom.borrow() {
-    //   (unsafe { &*generate_context }).generate_vdom()
-    // } else {
-    // }
   }
 
   pub fn increase_id(&self) -> i32 {

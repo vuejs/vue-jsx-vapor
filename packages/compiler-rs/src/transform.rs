@@ -113,7 +113,7 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
     }
   }
   fn exit_program(&mut self, program: &mut Program<'a>, ctx: &mut TraverseCtx<'a, ()>) {
-    if self.options.ssr || self.options.hmr {
+    if self.options.in_ssr || self.options.hmr {
       HmrOrSsrTransform::new(self.options).exit_program(program, ctx);
     }
 
@@ -242,6 +242,30 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
         })
         .collect::<Vec<_>>();
       statements.extend(template_statements);
+    }
+
+    for (i, exp) in self.options.hoists.borrow_mut().drain(..).enumerate() {
+      statements.push(Statement::VariableDeclaration(
+        ast.alloc_variable_declaration(
+          SPAN,
+          VariableDeclarationKind::Const,
+          ast.vec1(ast.variable_declarator(
+            SPAN,
+            VariableDeclarationKind::Const,
+            ast.binding_pattern(
+              ast.binding_pattern_kind_binding_identifier(
+                SPAN,
+                ast.atom(&format!("_hoisted_{}", i + 1)),
+              ),
+              NONE,
+              false,
+            ),
+            Some(exp),
+            false,
+          )),
+          false,
+        ),
+      ))
     }
 
     if !statements.is_empty() {

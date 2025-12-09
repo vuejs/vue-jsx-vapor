@@ -210,7 +210,7 @@ impl<'a> Traverse<'a, ()> for HmrOrSsrTransform<'a> {
         );
       }
 
-      if self.options.ssr {
+      if self.options.in_ssr {
         program.body.insert(
           0,
           Statement::VariableDeclaration(ast.alloc_variable_declaration(

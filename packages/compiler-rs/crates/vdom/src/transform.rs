@@ -1,12 +1,18 @@
 use common::expression::SimpleExpressionNode;
 pub use common::options::TransformOptions;
 use napi::Either;
-use oxc_allocator::{Allocator, TakeIn};
+use oxc_allocator::{Allocator, CloneIn, TakeIn};
 use oxc_ast::ast::{
-  Expression, JSXChild, JSXClosingFragment, JSXExpressionContainer, JSXFragment, JSXOpeningFragment,
+  ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, JSXChild,
+  JSXClosingFragment, JSXExpressionContainer, JSXFragment, JSXOpeningFragment, LogicalOperator,
+  ObjectProperty, ObjectPropertyKind, Statement, VariableDeclarationKind,
 };
-use oxc_span::SPAN;
+use oxc_ast::{AstBuilder, NONE};
+use oxc_span::{GetSpan, SPAN, Span};
+use std::collections::HashMap;
+use std::task::Context;
 use std::{cell::RefCell, collections::HashSet, mem, rc::Rc};
+pub mod cache_static;
 pub mod transform_children;
 pub mod transform_element;
 pub mod transform_template_ref;
@@ -23,7 +29,9 @@ pub mod v_slot;
 pub mod v_slots;
 pub mod v_text;
 
+use crate::ast::{CacheExpression, ConstantTypes, NodeTypes};
 use crate::generate::CodegenContext;
+use crate::transform::cache_static::cache_static;
 use crate::{
   ir::index::{
     BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, Modifiers, OperationNode, RootIRNode,
@@ -40,32 +48,11 @@ use crate::{
 use common::check::{is_constant_node, is_template};
 
 pub struct DirectiveTransformResult<'a> {
-  pub key: SimpleExpressionNode<'a>,
-  pub value: SimpleExpressionNode<'a>,
-  pub modifier: Option<String>,
-  pub runtime_camelize: Option<bool>,
-  pub handler: Option<bool>,
-  pub handler_modifiers: Option<Modifiers>,
-  pub model: Option<bool>,
-  pub model_modifiers: Option<Vec<String>>,
+  pub props: Vec<ObjectPropertyKind<'a>>,
+  pub need_runtime: Option<String>,
 }
 
-impl<'a> DirectiveTransformResult<'a> {
-  pub fn new(key: SimpleExpressionNode<'a>, value: SimpleExpressionNode<'a>) -> Self {
-    DirectiveTransformResult {
-      key,
-      value,
-      modifier: None,
-      runtime_camelize: None,
-      handler: None,
-      handler_modifiers: None,
-      model: None,
-      model_modifiers: None,
-    }
-  }
-}
-
-pub type ContextNode<'a> = Either<RootNode<'a>, JSXChild<'a>>;
+// pub type ContextNode<'a> = Either<RootNode<'a>, JSXChild<'a>>;
 type GetIndex<'a> = Option<Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>>;
 
 pub struct TransformContext<'a> {
@@ -80,17 +67,24 @@ pub struct TransformContext<'a> {
 
   pub in_v_once: RefCell<bool>,
   pub in_v_for: RefCell<i32>,
+  pub in_v_slot: RefCell<i32>,
 
   pub seen: Rc<RefCell<HashSet<u32>>>,
 
   global_id: RefCell<i32>,
 
   pub ir: Rc<RefCell<RootIRNode<'a>>>,
-  pub node: RefCell<ContextNode<'a>>,
+  pub root_node: RefCell<JSXChild<'a>>,
 
   pub parent_dynamic: RefCell<IRDynamicInfo<'a>>,
 
   pub vdom: RefCell<bool>,
+  pub ast: AstBuilder<'a>,
+  pub constant_cache: RefCell<HashMap<Span, ConstantTypes>>,
+  pub codegen_map: RefCell<HashMap<Span, NodeTypes<'a>>>,
+  pub cache_index: RefCell<usize>,
+  pub components: RefCell<HashSet<String>>,
+  pub directives: RefCell<HashSet<String>>,
 }
 
 impl<'a> TransformContext<'a> {
@@ -102,13 +96,20 @@ impl<'a> TransformContext<'a> {
       children_template: RefCell::new(Vec::new()),
       in_v_once: RefCell::new(*options.in_v_once.borrow()),
       in_v_for: RefCell::new(*options.in_v_for.borrow()),
+      in_v_slot: RefCell::new(0),
       seen: Rc::new(RefCell::new(HashSet::new())),
       global_id: RefCell::new(0),
-      node: RefCell::new(Either::A(RootNode::new(allocator))),
+      root_node: RefCell::new(RootNode::new(allocator)),
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
       ir: Rc::new(RefCell::new(RootIRNode::new(""))),
       block: RefCell::new(BlockIRNode::new()),
       vdom: RefCell::new(false),
+      ast: AstBuilder::new(allocator),
+      constant_cache: RefCell::new(HashMap::new()),
+      codegen_map: RefCell::new(HashMap::new()),
+      cache_index: RefCell::new(0),
+      components: RefCell::new(HashSet::new()),
+      directives: RefCell::new(HashSet::new()),
       options,
     }
   }
@@ -116,17 +117,76 @@ impl<'a> TransformContext<'a> {
   pub fn transform(&'a self, expression: Expression<'a>, source: &'a str) -> Expression<'a> {
     let allocator = self.allocator;
     let ir = RootIRNode::new(source);
-    *self.node.borrow_mut() = Either::A(RootNode::from(allocator, expression));
+    *self.root_node.borrow_mut() = RootNode::from(allocator, expression);
     *self.block.borrow_mut() = BlockIRNode::new();
     *self.ir.borrow_mut() = ir;
-    self.transform_node(None, None);
-    let generate_context: *const CodegenContext = &CodegenContext::new(self);
-    (unsafe { &*generate_context }).generate()
+    self.transform_node(self.root_node.as_ptr(), None, None);
+    self.generate()
+  }
 
-    // if *self.vdom.borrow() {
-    //   (unsafe { &*generate_context }).generate_vdom()
-    // } else {
-    // }
+  pub fn helper(&self, name: &str) -> String {
+    self.options.helpers.borrow_mut().insert(name.to_string());
+    format!("_{name}")
+  }
+
+  pub fn remove_helper(&self, name: &str) {
+    self.options.helpers.borrow_mut().remove(name);
+  }
+
+  pub fn hoist(&self, exp: &mut Expression<'a>) -> Expression<'a> {
+    let span = exp.span();
+    self
+      .options
+      .hoists
+      .borrow_mut()
+      .push(exp.take_in(self.allocator));
+    self.ast.expression_identifier(
+      span,
+      self
+        .ast
+        .atom(&format!("_hoisted_{}", self.options.hoists.borrow().len())),
+    )
+  }
+
+  pub fn cache(
+    &self,
+    value: Expression<'a>,
+    is_v_node: bool,
+    in_v_once: bool,
+    need_array_spread: bool,
+  ) -> Expression<'a> {
+    let ast = &self.ast;
+    let cache = ast.alloc_static_member_expression(
+      SPAN,
+      ast.expression_identifier(SPAN, ast.atom("_cache")),
+      ast.identifier_name(SPAN, ast.atom(&self.cache_index.borrow().to_string())),
+      false,
+    );
+    let exp = ast.expression_logical(
+      SPAN,
+      Expression::StaticMemberExpression(cache.clone_in(ast.allocator)),
+      LogicalOperator::Or,
+      ast.expression_parenthesized(
+        SPAN,
+        ast.expression_assignment(
+          SPAN,
+          AssignmentOperator::Assign,
+          AssignmentTarget::StaticMemberExpression(cache),
+          value,
+        ),
+      ),
+    );
+    *self.cache_index.borrow_mut() += 1;
+    if need_array_spread {
+      ast.expression_array(
+        SPAN,
+        ast.vec1(ArrayExpressionElement::SpreadElement(
+          ast.alloc_spread_element(SPAN, exp),
+        )),
+      )
+    } else {
+      exp
+    }
   }
 
   pub fn increase_id(&self) -> i32 {
@@ -296,13 +356,13 @@ impl<'a> TransformContext<'a> {
 
   pub fn create_block(
     &'a self,
-    context_node: &mut ContextNode<'a>,
+    context_node: &mut JSXChild<'a>,
     context_block: &'a mut BlockIRNode<'a>,
     node: Expression<'a>,
     is_v_for: Option<bool>,
   ) -> Box<dyn FnOnce() -> BlockIRNode<'a> + 'a> {
     let block = BlockIRNode::new();
-    *context_node = Either::B(self.wrap_fragment(node));
+    *context_node = self.wrap_fragment(node);
     let _context_block = context_block as *mut BlockIRNode;
     let exit_block = self.enter_block(
       unsafe { &mut *_context_block },
@@ -315,11 +375,12 @@ impl<'a> TransformContext<'a> {
 
   pub fn create(
     self: &TransformContext<'a>,
+    context_node: &mut JSXChild<'a>,
     node: JSXChild<'a>,
     index: i32,
     block: &mut BlockIRNode<'a>,
   ) -> impl FnOnce() {
-    self.node.replace(Either::B(node));
+    *context_node = node;
     let index = self.index.replace(index);
     let in_v_once = *self.in_v_once.borrow();
     let template = self.template.replace(String::new());
@@ -336,8 +397,9 @@ impl<'a> TransformContext<'a> {
 
   pub fn transform_node(
     self: &TransformContext<'a>,
+    node: *mut JSXChild<'a>,
     context_block: Option<&'a mut BlockIRNode<'a>>,
-    parent_node: Option<&mut ContextNode<'a>>,
+    parent_node: Option<&mut JSXChild<'a>>,
   ) {
     unsafe {
       let context_block = if let Some(context_block) = context_block {
@@ -349,20 +411,19 @@ impl<'a> TransformContext<'a> {
       let block = context_block as *mut BlockIRNode;
       let mut exit_fns = vec![];
 
-      let is_root = matches!(&*self.node.borrow(), Either::A(_));
+      let is_root = RootNode::is_root(&*node);
       if !is_root {
         let context = self as *const TransformContext;
-        let node = &mut *self.node.borrow_mut() as *mut _;
-        let parent_node = parent_node.unwrap() as *mut ContextNode;
+        let parent_node = parent_node.unwrap() as *mut JSXChild;
         for node_transform in [
-          transform_v_once,
-          transform_v_if,
-          transform_v_for,
-          transform_template_ref,
+          // transform_v_once,
+          // transform_v_if,
+          // transform_v_for,
+          // transform_template_ref,
           transform_element,
+          // transform_v_slots,
+          // transform_v_slot,
           transform_text,
-          transform_v_slots,
-          transform_v_slot,
         ] {
           let on_exit = node_transform(node, &*context, &mut *block, &mut *parent_node);
           if let Some(on_exit) = on_exit {
@@ -371,11 +432,9 @@ impl<'a> TransformContext<'a> {
         }
       }
 
-      transform_children(
-        &mut self.node.replace(Either::A(RootNode::new(self.allocator))),
-        self,
-        &mut *block,
-      );
+      // if is_root {
+      transform_children(&mut *node, self, &mut *block);
+      // }
 
       let mut i = exit_fns.len();
       while i > 0 {
@@ -386,6 +445,7 @@ impl<'a> TransformContext<'a> {
 
       if is_root {
         self.register_template(&mut context_block.dynamic);
+        cache_static(&mut *node, self);
       }
     }
   }

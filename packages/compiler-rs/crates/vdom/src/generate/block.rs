@@ -1,10 +1,12 @@
+use std::mem;
+
 use oxc_ast::{
   NONE,
-  ast::{Expression, FormalParameter, FormalParameterKind, Statement},
+  ast::{Expression, FormalParameter, FormalParameterKind, JSXChild, Statement},
 };
-use oxc_span::SPAN;
+use oxc_span::{GetSpan, SPAN};
 
-use crate::{generate::CodegenContext, ir::index::BlockIRNode};
+use crate::{ast::NodeTypes, generate::CodegenContext, ir::index::BlockIRNode};
 
 pub fn gen_block<'a>(
   oper: BlockIRNode<'a>,
@@ -23,46 +25,42 @@ pub fn gen_block<'a>(
     ast.alloc_function_body(
       SPAN,
       ast.vec(),
-      gen_block_content(Some(oper), context, context_block),
+      ast.vec(),
+      // gen_block_content(Some(oper), context, context_block),
     ),
   )
 }
 
 pub fn gen_block_content<'a>(
   block: Option<BlockIRNode<'a>>,
-  context: &'a CodegenContext<'a>,
+  context: &'a mut CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> oxc_allocator::Vec<'a, Statement<'a>> {
-  let ast = &context.ast;
-  let mut statements = ast.vec();
-  let mut reset_block = None;
-  let context_block = context_block as *mut BlockIRNode;
-  if let Some(block) = block {
-    reset_block = Some(context.enter_block(block, unsafe { &mut *context_block }));
-  }
+  unsafe {
+    let context = context as *mut CodegenContext;
+    let ast = (&*context).ast;
+    let codegen_map = &mut (*context).codegen_map;
+    let mut statements = ast.vec();
+    // let mut reset_block = None;
+    // let context_block = context_block as *mut BlockIRNode;
+    // if let Some(block) = block {
+    //   reset_block = Some(context.enter_block(block, unsafe { &mut *context_block }));
+    // }
 
-  statements.push(ast.statement_expression(
-    SPAN,
-    ast.expression_parenthesized(
-      SPAN,
-      ast.expression_sequence(
-        SPAN,
-        ast.vec_from_array([
-          ast.expression_call(
-            SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&context.helper("openBlock"))),
-            NONE,
-            ast.vec(),
-            false,
-          ),
-          // gen_self,
-        ]),
-      ),
-    ),
-  ));
+    // if let JSXChild::Fragment(node) = &mut (*context).root_node {
+    //   for child in &node.children {
+    //     if let Some(NodeTypes::VNodeCall(vnode_call)) = codegen_map.remove(&child.span()) {
+    //       statements
+    //         .push(ast.statement_return(SPAN, Some(gen_vnode_call(vnode_call, &mut *context))));
+    //     }
+    //   }
+    // }
 
-  if let Some(reset_block) = reset_block {
-    reset_block();
+    // statements.push(ast.statement_return(SPAN, argument))
+
+    // if let Some(reset_block) = reset_block {
+    //   reset_block();
+    // }
+    statements
   }
-  statements
 }

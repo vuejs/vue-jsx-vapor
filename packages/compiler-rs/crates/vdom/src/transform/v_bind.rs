@@ -1,19 +1,25 @@
-use common::{expression::SimpleExpressionNode, text::camelize};
-use napi::bindgen_prelude::Either3;
-use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement};
-use oxc_span::SPAN;
+use common::{
+  check::is_reserved_prop, expression::jsx_attribute_value_to_expression, text::camelize,
+};
+use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement, PropertyKind};
+use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   ir::index::BlockIRNode,
-  transform::{DirectiveTransformResult, TransformContext, transform_element::is_reserved_prop},
+  transform::{DirectiveTransformResult, TransformContext},
 };
 
+// v-bind without arg is handled directly in ./transformElement.ts due to its affecting
+// codegen for the entire props object. This transform here is only for v-bind
+// *with* args.
 pub fn transform_v_bind<'a>(
   dir: &'a mut JSXAttribute<'a>,
   _: &JSXElement,
   context: &'a TransformContext<'a>,
   _: &mut BlockIRNode,
 ) -> Option<DirectiveTransformResult<'a>> {
+  let ast = &context.ast;
+
   let name_string = match &dir.name {
     JSXAttributeName::Identifier(name) => &name.name.to_string(),
     JSXAttributeName::NamespacedName(_) => return None,
@@ -22,47 +28,39 @@ pub fn transform_v_bind<'a>(
   let modifiers = name_splited[1..].to_vec();
   let name_string = name_splited[0].to_string();
 
-  let exp = if let Some(value) = &mut dir.value {
-    SimpleExpressionNode::new(Either3::C(value), context.ir.borrow().source)
-  } else {
-    SimpleExpressionNode {
-      content: String::from("true"),
-      is_static: false,
-      loc: SPAN,
-      ast: None,
-    }
-  };
-
-  let mut arg = SimpleExpressionNode {
-    content: name_string,
-    is_static: true,
-    loc: SPAN,
-    ast: None,
-  };
-  if is_reserved_prop(&arg.content) {
+  let mut arg = name_string;
+  if is_reserved_prop(&arg) {
     return None;
   }
 
   if modifiers.contains(&"camel") {
-    arg.content = camelize(&arg.content)
+    arg = camelize(&arg)
   }
 
-  let modifier = if modifiers.contains(&"prop") {
-    Some(String::from("."))
-  } else if modifiers.contains(&"attr") {
-    Some(String::from("^"))
+  if !context.options.in_ssr {
+    if modifiers.contains(&"prop") {
+      arg = format!(".{}", arg);
+    } else if modifiers.contains(&"attr") {
+      arg = format!("^{}", arg);
+    }
+  };
+
+  let value = if let Some(value) = &mut dir.value {
+    jsx_attribute_value_to_expression(value, ast.allocator)
   } else {
-    None
+    ast.expression_boolean_literal(SPAN, true)
   };
 
   Some(DirectiveTransformResult {
-    key: arg,
-    value: exp,
-    runtime_camelize: Some(false),
-    modifier,
-    handler: None,
-    handler_modifiers: None,
-    model: None,
-    model_modifiers: None,
+    props: vec![ast.object_property_kind_object_property(
+      SPAN,
+      PropertyKind::Init,
+      ast.property_key_static_identifier(dir.name.span(), ast.atom(&arg)),
+      value,
+      false,
+      false,
+      false,
+    )],
+    need_runtime: None,
   })
 }

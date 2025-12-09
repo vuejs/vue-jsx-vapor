@@ -12,4 +12,5 @@ oxc_traverse = { workspace = true }
 
 napi = { workspace = true }
 indexmap = { workspace = true }
+phf = { workspace = true }
 common = { workspace = true }
