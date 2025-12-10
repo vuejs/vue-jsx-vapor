@@ -1,5 +1,6 @@
 use napi::bindgen_prelude::Either3;
 use oxc_ast::ast::{ArrayExpression, Expression, JSXChild};
+use oxc_span::Span;
 
 #[derive(Debug)]
 pub enum NodeTypes<'a> {
@@ -22,6 +23,7 @@ pub struct VNodeCall<'a> {
   pub is_block: bool,
   pub disable_tracking: bool,
   pub is_component: bool,
+  pub loc: Span,
 }
 
 #[derive(Debug)]
@@ -49,6 +51,13 @@ impl<'a> CacheExpression<'a> {
       need_array_spread: false,
     }
   }
+}
+
+pub struct ForNode<'a> {
+  pub source: Option<Expression<'a>>,
+  pub value: Option<Expression<'a>>,
+  pub key: Option<Expression<'a>>,
+  pub index: Option<Expression<'a>>,
 }
 
 /**

@@ -227,6 +227,7 @@ impl<'a> TransformContext<'a> {
       is_block,
       disable_tracking,
       is_component,
+      ..
     } = node;
 
     if let Some(directives) = directives {}

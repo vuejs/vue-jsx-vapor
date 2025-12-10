@@ -10,6 +10,7 @@ export declare const enum ErrorCodes {
   VElseNoAdjacentIf = 30,
   VForNoExpression = 31,
   VForMalformedExpression = 32,
+  VForTemplateKeyPlacement = 33,
   VOnNoExpression = 35,
   VSlotMixedSlotUsage = 37,
   VSlotDuplicateSlotNames = 38,

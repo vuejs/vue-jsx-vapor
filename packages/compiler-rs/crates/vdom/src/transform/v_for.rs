@@ -1,21 +1,26 @@
-use napi::{
-  Either,
-  bindgen_prelude::{Either3, Either16},
+use napi::{Either, bindgen_prelude::Either3};
+use oxc_allocator::{CloneIn, TakeIn};
+use oxc_ast::{
+  NONE,
+  ast::{
+    BinaryExpression, BindingPatternKind, Expression, FormalParameterKind, JSXAttribute,
+    JSXAttributeValue, JSXChild, JSXElement, ObjectPropertyKind, PropertyKind,
+  },
 };
-use oxc_allocator::TakeIn;
-use oxc_ast::ast::{
-  BinaryExpression, Expression, JSXAttribute, JSXAttributeValue, JSXChild, JSXElement,
-};
+use oxc_parser::Parser;
+use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
-  ir::index::{BlockIRNode, DynamicFlag, ForIRNode, IRFor, RootNode},
-  transform::TransformContext,
+  ast::{ConstantTypes, ForNode, NodeTypes, VNodeCall},
+  ir::index::BlockIRNode,
+  transform::{TransformContext, cache_static::get_constant_type, utils::inject_prop},
 };
 use common::{
-  check::{is_constant_node, is_jsx_component, is_template},
+  check::is_template,
   directive::{find_prop, find_prop_mut},
   error::ErrorCodes,
-  expression::SimpleExpressionNode,
+  expression::jsx_attribute_value_to_expression,
+  patch_flag::PatchFlags,
   text::is_empty_text,
 };
 
@@ -23,8 +28,8 @@ use common::{
 pub unsafe fn transform_v_for<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut JSXChild<'a>,
+  _: &'a mut BlockIRNode<'a>,
+  _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
@@ -44,7 +49,7 @@ pub unsafe fn transform_v_for<'a>(
   }
   seen.insert(span.start);
 
-  let IRFor {
+  let ForNode {
     value,
     index,
     key,
@@ -56,89 +61,300 @@ pub unsafe fn transform_v_for<'a>(
     return None;
   };
 
-  let key_prop = if let Some(key_prop) =
+  let ast = &context.ast;
+
+  // bookkeeping
+  *context.in_v_for.borrow_mut() += 1;
+
+  let is_template = is_template(unsafe { &*node });
+  let memo = if let Some(memo_prop) =
+    find_prop_mut(unsafe { &mut *node }, Either::A("memo".to_string()))
+    && let Some(value) = &mut memo_prop.value
+  {
+    Some(jsx_attribute_value_to_expression(
+      value.take_in(context.allocator),
+      context.allocator,
+    ))
+  } else {
+    None
+  };
+  let key_property = if let Some(key_prop) =
     find_prop_mut(unsafe { &mut *node }, Either::A("key".to_string()))
     && let Some(value) = &mut key_prop.value
   {
-    Some(SimpleExpressionNode::new(
-      Either3::C(value),
-      context.ir.borrow().source,
+    Some(ast.object_property(
+      SPAN,
+      PropertyKind::Init,
+      ast.property_key_static_identifier(SPAN, ast.atom("key")),
+      jsx_attribute_value_to_expression(value.clone_in(context.allocator), context.allocator),
+      false,
+      false,
+      false,
     ))
   } else {
     None
   };
 
-  let component =
-    is_jsx_component(unsafe { &*node }) || is_template_with_single_component(unsafe { &*node });
-  let dynamic = &mut context_block.dynamic;
-  let id = context.reference(dynamic);
-  dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
-  let block = context_block as *mut BlockIRNode;
-  let exit_block = context.create_block(
-    unsafe { &mut *context_node },
-    unsafe { &mut *block },
-    Expression::JSXElement(oxc_allocator::Box::new_in(
-      unsafe { &mut *node }.take_in(context.allocator),
-      context.allocator,
-    )),
-    Some(true),
-  );
-
-  // if v-for is the only child of a parent element, it can go the fast path
-  // when the entire list is emptied
-  let mut only_child = false;
-  if let JSXChild::Element(parent_node) = parent_node
-    && !is_jsx_component(parent_node)
-  {
-    let index = *context.index.borrow() as usize;
-    for (i, child) in parent_node.children.iter().enumerate() {
-      let child = if index == i {
-        if RootNode::is_root(unsafe { &mut *context_node }) {
-          child
-        } else {
-          unsafe { &mut *context_node }
-        }
-      } else {
-        child
-      };
-      if !is_empty_text(child) {
-        if only_child {
-          only_child = false;
-          break;
-        }
-        only_child = true;
-      }
-    }
+  let is_stable_fragment =
+    (get_constant_type(Either::B(&source), context) as i32) > ConstantTypes::NotConstant as i32;
+  let fragment_flag = if is_stable_fragment {
+    PatchFlags::StableFragment
+  } else if key_property.is_some() {
+    PatchFlags::KeyedFragment
+  } else {
+    PatchFlags::UnkeyedFragment
   };
 
-  Some(Box::new(move || {
-    let block = exit_block();
+  // create the loop render function expression now, and add the
+  // iterator on exit after all children have been traversed
+  let mut render_exp = ast.call_expression(
+    SPAN,
+    ast.expression_identifier(SPAN, ast.atom(&context.helper("renderList"))),
+    NONE,
+    ast.vec1(source.into()),
+    false,
+  );
 
-    context_block.dynamic.operation = Some(Box::new(Either16::B(ForIRNode {
-      id,
-      value,
-      key,
-      index,
-      key_prop,
-      render: block,
-      once: *context.in_v_once.borrow() || is_constant_node(&source.ast.as_deref()),
-      source,
-      component,
-      only_child,
-      parent: None,
-      anchor: None,
-    })));
+  let node_span = unsafe { &*node }.span;
+  let fragment_span = Span::new(node_span.end, node_span.start);
+  *unsafe { &mut *context_node } = context.wrap_fragment(
+    Expression::JSXElement(unsafe { &mut *node }.take_in_box(context.allocator)),
+    fragment_span,
+  );
+  context.codegen_map.borrow_mut().insert(
+    fragment_span,
+    NodeTypes::VNodeCall(VNodeCall {
+      tag: context.helper("Fragment"),
+      props: None,
+      children: None,
+      patch_flag: Some(fragment_flag as i32),
+      dynamic_props: None,
+      directives: None,
+      is_block: true,
+      disable_tracking: !is_stable_fragment,
+      is_component: false,
+      loc: node_span,
+    }),
+  );
+
+  Some(Box::new(move || {
+    *context.in_v_for.borrow_mut() -= 1;
+    // finish the codegen now that all children have been traversed
+    let children = &mut unsafe { &mut *node }
+      .children
+      .iter()
+      .filter(|child| !is_empty_text(child))
+      .collect::<Vec<_>>();
+
+    // check <template v-for> key placement
+    if is_template {
+      children.iter().any(|c| {
+        if let JSXChild::Element(c) = c
+          && let Some(key) = find_prop(c, Either::A(String::from("key")))
+        {
+          context.options.on_error.as_ref()(ErrorCodes::VForTemplateKeyPlacement, key.span);
+          true
+        } else {
+          false
+        }
+      });
+    }
+
+    let need_fragment_wrapper = children.len() != 1 || !matches!(children[0], JSXChild::Element(_));
+
+    let child_block = if need_fragment_wrapper {
+      // <template v-for="..."> with text or multi-elements
+      // should generate a fragment block for each loop
+      VNodeCall {
+        tag: context.helper("Fragment"),
+        props: key_property.map(|key_property| {
+          ast.expression_object(
+            SPAN,
+            ast.vec1(ObjectPropertyKind::ObjectProperty(ast.alloc(key_property))),
+          )
+        }),
+        children: Some(Either3::B(&mut unsafe { &mut *node }.children)),
+        patch_flag: Some(PatchFlags::StableFragment as i32),
+        dynamic_props: None,
+        directives: None,
+        is_block: true,
+        disable_tracking: false,
+        is_component: false,
+        loc: SPAN,
+      }
+    } else {
+      // Normal element v-for. Directly use the child's codegenNode
+      // but mark it as a block.
+      let NodeTypes::VNodeCall(mut child_block) = context
+        .codegen_map
+        .borrow_mut()
+        .remove(&children[0].span())
+        .unwrap()
+      else {
+        unreachable!()
+      };
+      if is_template && let Some(key_property) = key_property {
+        inject_prop(&mut child_block, key_property, context);
+      }
+      child_block.is_block = !is_stable_fragment;
+      child_block
+    };
+
+    render_exp.arguments.push(
+      ast
+        .expression_arrow_function(
+          SPAN,
+          true,
+          false,
+          NONE,
+          ast.formal_parameters(
+            SPAN,
+            FormalParameterKind::ArrowFormalParameters,
+            ast.vec_from_iter(
+              [
+                if let Some(value) = value {
+                  if let Expression::Identifier(value) = value {
+                    Some(ast.formal_parameter(
+                      SPAN,
+                      ast.vec(),
+                      ast.binding_pattern(
+                        BindingPatternKind::BindingIdentifier(
+                          ast.alloc_binding_identifier(value.span, value.name),
+                        ),
+                        NONE,
+                        false,
+                      ),
+                      None,
+                      false,
+                      false,
+                    ))
+                  } else {
+                    let span = value.without_parentheses().span();
+                    if let Ok(Expression::ArrowFunctionExpression(mut exp)) = Parser::new(
+                      context.allocator,
+                      ast
+                        .atom(&format!(
+                          "/*{}*/({})=>{{}}",
+                          ".".repeat(span.start as usize - 5),
+                          span.source_text(context.ir.borrow().source)
+                        ))
+                        .as_str(),
+                      context.options.source_type,
+                    )
+                    .parse_expression()
+                    {
+                      let a = exp.params.items[0].take_in(context.allocator);
+                      Some(a)
+                    } else {
+                      None
+                    }
+                  }
+                } else if key.is_some() || index.is_some() {
+                  Some(ast.formal_parameter(
+                    SPAN,
+                    ast.vec(),
+                    ast.binding_pattern(
+                      BindingPatternKind::BindingIdentifier(
+                        ast.alloc_binding_identifier(SPAN, "_"),
+                      ),
+                      NONE,
+                      false,
+                    ),
+                    None,
+                    false,
+                    false,
+                  ))
+                } else {
+                  None
+                },
+                if let Some(Expression::Identifier(key)) = key {
+                  Some(ast.formal_parameter(
+                    SPAN,
+                    ast.vec(),
+                    ast.binding_pattern(
+                      BindingPatternKind::BindingIdentifier(
+                        ast.alloc_binding_identifier(key.span, key.name),
+                      ),
+                      NONE,
+                      false,
+                    ),
+                    None,
+                    false,
+                    false,
+                  ))
+                } else if index.is_some() {
+                  Some(ast.formal_parameter(
+                    SPAN,
+                    ast.vec(),
+                    ast.binding_pattern(
+                      BindingPatternKind::BindingIdentifier(
+                        ast.alloc_binding_identifier(SPAN, "__"),
+                      ),
+                      NONE,
+                      false,
+                    ),
+                    None,
+                    false,
+                    false,
+                  ))
+                } else {
+                  None
+                },
+                if let Some(Expression::Identifier(index)) = index {
+                  Some(ast.formal_parameter(
+                    SPAN,
+                    ast.vec(),
+                    ast.binding_pattern(
+                      BindingPatternKind::BindingIdentifier(
+                        ast.alloc_binding_identifier(index.span, index.name),
+                      ),
+                      NONE,
+                      false,
+                    ),
+                    None,
+                    false,
+                    false,
+                  ))
+                } else {
+                  None
+                },
+              ]
+              .into_iter()
+              .flatten(),
+            ),
+            NONE,
+          ),
+          NONE,
+          ast.function_body(
+            SPAN,
+            ast.vec(),
+            ast.vec1(ast.statement_expression(
+              SPAN,
+              context.gen_vnode_call(child_block, &mut context.codegen_map.borrow_mut()),
+            )),
+          ),
+        )
+        .into(),
+    );
+
+    if let Some(NodeTypes::VNodeCall(fragment_codegen)) =
+      context.codegen_map.borrow_mut().get_mut(&fragment_span)
+    {
+      fragment_codegen.children = Some(Either3::C(Expression::CallExpression(
+        ast.alloc(render_exp),
+      )));
+    };
   }))
 }
 
 pub fn get_for_parse_result<'a>(
   dir: &'a mut JSXAttribute<'a>,
   context: &'a TransformContext<'a>,
-) -> Option<IRFor<'a>> {
-  let mut value: Option<SimpleExpressionNode> = None;
-  let mut index: Option<SimpleExpressionNode> = None;
-  let mut key: Option<SimpleExpressionNode> = None;
-  let mut source: Option<SimpleExpressionNode> = None;
+) -> Option<ForNode<'a>> {
+  let mut value = None;
+  let mut index = None;
+  let mut key = None;
+  let mut source = None;
   if let Some(dir_value) = &mut dir.value {
     let expression = if let JSXAttributeValue::ExpressionContainer(dir_value) = dir_value {
       Some(
@@ -163,43 +379,26 @@ pub fn get_for_parse_result<'a>(
         let expressions = &mut left.expressions as *mut oxc_allocator::Vec<Expression>;
         value = unsafe { &mut *expressions }
           .get_mut(0)
-          .map(|e| SimpleExpressionNode::new(Either3::A(e), context.ir.borrow().source));
+          .map(|e| e.take_in(context.allocator));
         key = unsafe { &mut *expressions }
           .get_mut(1)
-          .map(|e| SimpleExpressionNode::new(Either3::A(e), context.ir.borrow().source));
+          .map(|e| e.take_in(context.allocator));
         index = unsafe { &mut *expressions }
           .get_mut(2)
-          .map(|e| SimpleExpressionNode::new(Either3::A(e), context.ir.borrow().source));
+          .map(|e| e.take_in(context.allocator));
       } else {
-        value = Some(SimpleExpressionNode::new(
-          Either3::A(left),
-          context.ir.borrow().source,
-        ));
+        value = Some(left.take_in(context.allocator));
       };
-      source = Some(SimpleExpressionNode::new(
-        Either3::A(&mut unsafe { &mut *expression }.right),
-        context.ir.borrow().source,
-      ));
+      source = Some(unsafe { &mut *expression }.right.take_in(context.allocator));
     }
   } else {
     context.options.on_error.as_ref()(ErrorCodes::VForNoExpression, dir.span);
     return None;
   }
-  Some(IRFor {
+  Some(ForNode {
     value,
     index,
     key,
     source,
   })
-}
-
-fn is_template_with_single_component<'a>(node: &'a JSXElement<'a>) -> bool {
-  let non_comment_children = node
-    .children
-    .iter()
-    .filter(|c| !is_empty_text(c))
-    .collect::<Vec<_>>();
-
-  non_comment_children.len() == 1
-    && matches!(non_comment_children[0],JSXChild::Element(child)if is_jsx_component(child))
 }

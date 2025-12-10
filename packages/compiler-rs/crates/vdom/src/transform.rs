@@ -1,22 +1,21 @@
 use common::expression::SimpleExpressionNode;
 pub use common::options::TransformOptions;
-use napi::Either;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
+use oxc_ast::AstBuilder;
 use oxc_ast::ast::{
   ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, JSXChild,
   JSXClosingFragment, JSXExpressionContainer, JSXFragment, JSXOpeningFragment, LogicalOperator,
-  ObjectProperty, ObjectPropertyKind, Statement, VariableDeclarationKind,
+  ObjectPropertyKind,
 };
-use oxc_ast::{AstBuilder, NONE};
 use oxc_span::{GetSpan, SPAN, Span};
 use std::collections::HashMap;
-use std::task::Context;
 use std::{cell::RefCell, collections::HashSet, mem, rc::Rc};
 pub mod cache_static;
 pub mod transform_children;
 pub mod transform_element;
 pub mod transform_template_ref;
 pub mod transform_text;
+pub mod utils;
 pub mod v_bind;
 pub mod v_for;
 pub mod v_html;
@@ -29,13 +28,11 @@ pub mod v_slot;
 pub mod v_slots;
 pub mod v_text;
 
-use crate::ast::{CacheExpression, ConstantTypes, NodeTypes};
-use crate::generate::CodegenContext;
+use crate::ast::{ConstantTypes, NodeTypes};
 use crate::transform::cache_static::cache_static;
 use crate::{
   ir::index::{
-    BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, Modifiers, OperationNode, RootIRNode,
-    RootNode,
+    BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, OperationNode, RootIRNode, RootNode,
   },
   transform::{
     transform_children::transform_children, transform_element::transform_element,
@@ -318,20 +315,25 @@ impl<'a> TransformContext<'a> {
     }) as Box<dyn FnOnce() -> BlockIRNode<'a>>) as _
   }
 
-  pub fn wrap_fragment(&self, mut node: Expression<'a>) -> JSXChild<'a> {
+  pub fn wrap_fragment(&self, mut node: Expression<'a>, span: Span) -> JSXChild<'a> {
     if let Expression::JSXFragment(node) = node {
       JSXChild::Fragment(node)
     } else if let Expression::JSXElement(node) = &mut node
       && is_template(node)
     {
-      JSXChild::Element(oxc_allocator::Box::new_in(
-        node.take_in(self.allocator),
+      JSXChild::Fragment(oxc_allocator::Box::new_in(
+        JSXFragment {
+          span,
+          opening_fragment: JSXOpeningFragment { span: SPAN },
+          closing_fragment: JSXClosingFragment { span: SPAN },
+          children: node.children.take_in(self.allocator),
+        },
         self.allocator,
       ))
     } else {
       JSXChild::Fragment(oxc_allocator::Box::new_in(
         JSXFragment {
-          span: SPAN,
+          span,
           opening_fragment: JSXOpeningFragment { span: SPAN },
           closing_fragment: JSXClosingFragment { span: SPAN },
           children: oxc_allocator::Vec::from_array_in(
@@ -362,7 +364,7 @@ impl<'a> TransformContext<'a> {
     is_v_for: Option<bool>,
   ) -> Box<dyn FnOnce() -> BlockIRNode<'a> + 'a> {
     let block = BlockIRNode::new();
-    *context_node = self.wrap_fragment(node);
+    *context_node = self.wrap_fragment(node, SPAN);
     let _context_block = context_block as *mut BlockIRNode;
     let exit_block = self.enter_block(
       unsafe { &mut *_context_block },
@@ -418,7 +420,7 @@ impl<'a> TransformContext<'a> {
         for node_transform in [
           // transform_v_once,
           // transform_v_if,
-          // transform_v_for,
+          transform_v_for,
           // transform_template_ref,
           transform_element,
           // transform_v_slots,

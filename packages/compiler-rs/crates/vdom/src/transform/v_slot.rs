@@ -197,12 +197,12 @@ fn transform_template_slot<'a>(
     } else if let Some(for_parse_result) = for_parse_result
       && for_parse_result.source.is_some()
     {
-      slots.push(Either4::B(IRSlotDynamicBasic {
-        slot_type: IRSlotType::DYNAMIC,
-        name: arg.unwrap(),
-        _fn: block,
-        _loop: Some(for_parse_result),
-      }))
+      // slots.push(Either4::B(IRSlotDynamicBasic {
+      //   slot_type: IRSlotType::DYNAMIC,
+      //   name: arg.unwrap(),
+      //   _fn: block,
+      //   _loop: Some(for_parse_result),
+      // }))
     }
   })
 }

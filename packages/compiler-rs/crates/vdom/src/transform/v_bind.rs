@@ -1,6 +1,5 @@
-use common::{
-  check::is_reserved_prop, expression::jsx_attribute_value_to_expression, text::camelize,
-};
+use common::{expression::jsx_attribute_value_to_expression, text::camelize};
+use oxc_allocator::TakeIn;
 use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement, PropertyKind};
 use oxc_span::{GetSpan, SPAN};
 
@@ -29,9 +28,6 @@ pub fn transform_v_bind<'a>(
   let name_string = name_splited[0].to_string();
 
   let mut arg = name_string;
-  if is_reserved_prop(&arg) {
-    return None;
-  }
 
   if modifiers.contains(&"camel") {
     arg = camelize(&arg)
@@ -46,7 +42,7 @@ pub fn transform_v_bind<'a>(
   };
 
   let value = if let Some(value) = &mut dir.value {
-    jsx_attribute_value_to_expression(value, ast.allocator)
+    jsx_attribute_value_to_expression(value.take_in(context.allocator), ast.allocator)
   } else {
     ast.expression_boolean_literal(SPAN, true)
   };

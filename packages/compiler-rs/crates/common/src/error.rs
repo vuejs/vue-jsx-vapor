@@ -11,6 +11,7 @@ pub enum ErrorCodes {
   VElseNoAdjacentIf = 30,
   VForNoExpression = 31,
   VForMalformedExpression = 32,
+  VForTemplateKeyPlacement = 33,
   VOnNoExpression = 35,
   VSlotMixedSlotUsage = 37,
   VSlotDuplicateSlotNames = 38,
@@ -45,6 +46,10 @@ pub static ERROR_MESSAGES: LazyLock<HashMap<ErrorCodes, &str>> = LazyLock::new(|
     (
       ErrorCodes::VForMalformedExpression,
       "v-for has invalid expression.",
+    ),
+    (
+      ErrorCodes::VForTemplateKeyPlacement,
+      "<template v-for> key should be placed on the <template> tag.",
     ),
     (ErrorCodes::VOnNoExpression, "v-on is missing expression."),
     (

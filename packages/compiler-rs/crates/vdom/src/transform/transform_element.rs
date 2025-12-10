@@ -186,6 +186,7 @@ pub unsafe fn transform_element<'a>(
       is_block: should_use_block,
       disable_tracking: false,
       is_component,
+      loc: SPAN,
     };
     context
       .codegen_map
@@ -374,7 +375,10 @@ pub fn build_props<'a>(
                 merge_args
                   .push(ast.expression_object(node.span, dedupe_properties(properties, ast)));
               }
-              merge_args.push(jsx_attribute_value_to_expression(value, ast.allocator));
+              merge_args.push(jsx_attribute_value_to_expression(
+                value.take_in(context.allocator),
+                ast.allocator,
+              ));
             } else {
               context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, prop.span);
             }
