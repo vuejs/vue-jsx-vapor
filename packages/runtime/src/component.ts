@@ -54,7 +54,7 @@ const createProxyComponent = (
   }
 
   const i = getCurrentInstance()
-  // @ts-ignore
+  // @ts-ignore #24
   if (!type.__proxyed) {
     if (typeof type === 'function') {
       type = new Proxy(type, {
@@ -80,9 +80,9 @@ const createProxyComponent = (
         },
       })
     }
+    // @ts-ignore
+    type.__proxyed = true
   }
-  // @ts-ignore
-  type.__proxyed = true
 
   return createComponent(type as VaporComponent, props, ...args)
 }
