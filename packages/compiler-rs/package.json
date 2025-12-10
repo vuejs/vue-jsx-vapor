@@ -1,6 +1,6 @@
 {
   "name": "@vue-jsx-vapor/compiler-rs",
-  "version": "3.0.2",
+  "version": "3.0.4",
   "packageManager": "pnpm@10.17.1",
   "description": "Template project for writing node package with napi-rs",
   "keywords": [
