@@ -1,3 +1,12 @@
+## [3.0.3](https://github.com/vuejs/vue-jsx-vapor/compare/v3.0.2...v3.0.3) (2025-12-10)
+
+
+### Bug Fixes
+
+* **runtime:** prevent proxy setup fn multiple ([84cd14b](https://github.com/vuejs/vue-jsx-vapor/commit/84cd14bd1419c2a3f8839866e51fdbd0704e8acb)), closes [#24](https://github.com/vuejs/vue-jsx-vapor/issues/24)
+
+
+
 ## [3.0.2](https://github.com/vuejs/vue-jsx-vapor/compare/v3.0.1...v3.0.2) (2025-12-09)
 
 
