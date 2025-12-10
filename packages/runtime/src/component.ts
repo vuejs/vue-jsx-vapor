@@ -76,7 +76,7 @@ const createProxyComponent = (
     } else if (type.__vapor && type.setup) {
       type.setup = new Proxy(type.setup, {
         apply(target, ctx, args) {
-          return Reflect.apply(target, ctx, args)
+          return normalizeNode(Reflect.apply(target, ctx, args))
         },
       })
     }
