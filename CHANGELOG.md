@@ -1,3 +1,12 @@
+## [3.0.4](https://github.com/vuejs/vue-jsx-vapor/compare/v3.0.3...v3.0.4) (2025-12-10)
+
+
+### Features
+
+* normalize setup-fn result ([8fa28ad](https://github.com/vuejs/vue-jsx-vapor/commit/8fa28add84e4d47dd68e1ebe9eac7fb2ec832d4a))
+
+
+
 ## [3.0.3](https://github.com/vuejs/vue-jsx-vapor/compare/v3.0.2...v3.0.3) (2025-12-10)
 
 
