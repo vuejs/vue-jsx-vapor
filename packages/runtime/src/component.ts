@@ -54,30 +54,35 @@ const createProxyComponent = (
   }
 
   const i = getCurrentInstance()
-  if (typeof type === 'function') {
-    type = new Proxy(type, {
-      apply(target, ctx, args) {
-        // @ts-ignore
-        if (typeof target.__setup === 'function') {
+  // @ts-ignore
+  if (!type.__proxyed) {
+    if (typeof type === 'function') {
+      type = new Proxy(type, {
+        apply(target, ctx, args) {
           // @ts-ignore
-          target.__setup.apply(ctx, args)
-        }
-        return normalizeNode(Reflect.apply(target, ctx, args))
-      },
-      get(target, p, receiver) {
-        if ((i && (i.appContext as any)).vapor && p === '__vapor') {
-          return true
-        }
-        return Reflect.get(target, p, receiver)
-      },
-    })
-  } else if (type.__vapor && type.setup) {
-    type.setup = new Proxy(type.setup, {
-      apply(target, ctx, args) {
-        return normalizeNode(Reflect.apply(target, ctx, args))
-      },
-    })
+          if (typeof target.__setup === 'function') {
+            // @ts-ignore
+            target.__setup.apply(ctx, args)
+          }
+          return normalizeNode(Reflect.apply(target, ctx, args))
+        },
+        get(target, p, receiver) {
+          if ((i && (i.appContext as any)).vapor && p === '__vapor') {
+            return true
+          }
+          return Reflect.get(target, p, receiver)
+        },
+      })
+    } else if (type.__vapor && type.setup) {
+      type.setup = new Proxy(type.setup, {
+        apply(target, ctx, args) {
+          return Reflect.apply(target, ctx, args)
+        },
+      })
+    }
   }
+  // @ts-ignore
+  type.__proxyed = true
 
   return createComponent(type as VaporComponent, props, ...args)
 }
