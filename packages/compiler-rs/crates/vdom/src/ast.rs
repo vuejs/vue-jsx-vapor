@@ -23,6 +23,10 @@ pub struct VNodeCall<'a> {
   pub is_block: bool,
   pub disable_tracking: bool,
   pub is_component: bool,
+  /// Some(true): v-for with single child
+  /// Some(false):  v-for with multiple children
+  /// None: not v-for
+  pub is_for: Option<bool>,
   pub loc: Span,
 }
 

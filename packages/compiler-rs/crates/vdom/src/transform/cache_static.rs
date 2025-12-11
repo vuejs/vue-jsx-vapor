@@ -154,6 +154,24 @@ fn walk<'a>(
       if is_component {
         *context.in_v_slot.borrow_mut() -= 1;
       }
+    } else if let JSXChild::Fragment(child) = unsafe { &*_child } {
+      let (in_for, single_child) = {
+        let codegen_map = context.codegen_map.borrow();
+        if let Some(NodeTypes::VNodeCall(for_codegen)) = codegen_map.get(&child.span)
+          && let Some(single_child) = for_codegen.is_for
+        {
+          (true, single_child)
+        } else {
+          (false, false)
+        }
+      };
+      walk(
+        unsafe { &mut *_child },
+        Some(unsafe { &mut *_node }),
+        context,
+        single_child,
+        in_for,
+      )
     }
   }
 

@@ -133,6 +133,7 @@ pub unsafe fn transform_v_for<'a>(
       is_block: true,
       disable_tracking: !is_stable_fragment,
       is_component: false,
+      is_for: Some(true),
       loc: node_span,
     }),
   );
@@ -143,25 +144,21 @@ pub unsafe fn transform_v_for<'a>(
     let children = &mut unsafe { &mut *node }
       .children
       .iter()
-      .filter(|child| !is_empty_text(child))
-      .collect::<Vec<_>>();
-
-    // check <template v-for> key placement
-    if is_template {
-      children.iter().any(|c| {
-        if let JSXChild::Element(c) = c
-          && let Some(key) = find_prop(c, Either::A(String::from("key")))
+      .filter(|child| {
+        // check <template v-for> key placement
+        if is_template
+          && let JSXChild::Element(child) = child
+          && let Some(key) = find_prop(child, Either::A(String::from("key")))
         {
           context.options.on_error.as_ref()(ErrorCodes::VForTemplateKeyPlacement, key.span);
           true
         } else {
-          false
+          !is_empty_text(child)
         }
-      });
-    }
+      })
+      .collect::<Vec<_>>();
 
     let need_fragment_wrapper = children.len() != 1 || !matches!(children[0], JSXChild::Element(_));
-
     let child_block = if need_fragment_wrapper {
       // <template v-for="..."> with text or multi-elements
       // should generate a fragment block for each loop
@@ -180,6 +177,7 @@ pub unsafe fn transform_v_for<'a>(
         is_block: true,
         disable_tracking: false,
         is_component: false,
+        is_for: None,
         loc: SPAN,
       }
     } else {
@@ -340,6 +338,9 @@ pub unsafe fn transform_v_for<'a>(
     if let Some(NodeTypes::VNodeCall(fragment_codegen)) =
       context.codegen_map.borrow_mut().get_mut(&fragment_span)
     {
+      if need_fragment_wrapper {
+        fragment_codegen.is_for = Some(false);
+      }
       fragment_codegen.children = Some(Either3::C(Expression::CallExpression(
         ast.alloc(render_exp),
       )));
