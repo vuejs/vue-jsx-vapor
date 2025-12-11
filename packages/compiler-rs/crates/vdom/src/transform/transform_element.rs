@@ -186,6 +186,7 @@ pub unsafe fn transform_element<'a>(
       is_block: should_use_block,
       disable_tracking: false,
       is_component,
+      is_for: None,
       loc: SPAN,
     };
     context
@@ -399,7 +400,7 @@ pub fn build_props<'a>(
             if name.split("_").any(|n| n == "prop") {
               patch_flag |= PatchFlags::NeedHydration as i32;
             }
-            transform_v_bind(prop, node, context, context_block)
+            transform_v_bind(prop, node, context)
           }
           "on" => {
             // inline before-update hooks need to force block so that it is invoked
@@ -413,7 +414,7 @@ pub fn build_props<'a>(
           }
           // "model" => return transform_v_model(prop, node, context, context_block),
           // "show" => return transform_v_show(prop, node, context, context_block),
-          // "html" => return transform_v_html(prop, node, context, context_block),
+          "html" => transform_v_html(prop, node, context),
           // "text" => return transform_v_text(prop, node, context, context_block),
           _ => {
             if !is_built_in_directive(&dir_name) {

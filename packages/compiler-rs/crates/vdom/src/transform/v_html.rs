@@ -1,23 +1,20 @@
-use common::{error::ErrorCodes, expression::SimpleExpressionNode};
-use napi::bindgen_prelude::{Either3, Either16};
-use oxc_ast::ast::{JSXAttribute, JSXElement};
+use common::{error::ErrorCodes, expression::jsx_attribute_value_to_expression};
+use oxc_allocator::TakeIn;
+use oxc_ast::ast::{JSXAttribute, JSXElement, PropertyKind};
+use oxc_span::{GetSpan, SPAN};
 
-use crate::{
-  ir::index::{BlockIRNode, SetHtmlIRNode},
-  transform::{DirectiveTransformResult, TransformContext},
-};
+use crate::transform::{DirectiveTransformResult, TransformContext};
 
 pub fn transform_v_html<'a>(
   dir: &'a mut JSXAttribute<'a>,
   node: &JSXElement,
   context: &'a TransformContext<'a>,
-  context_block: &'a mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let exp = if let Some(value) = &mut dir.value {
-    SimpleExpressionNode::new(Either3::C(value), context.ir.borrow().source)
+    jsx_attribute_value_to_expression(value.take_in(context.allocator), context.allocator)
   } else {
     context.options.on_error.as_ref()(ErrorCodes::VHtmlNoExpression, dir.span);
-    SimpleExpressionNode::default()
+    return None;
   };
 
   if !node.children.is_empty() {
@@ -25,17 +22,17 @@ pub fn transform_v_html<'a>(
     return None;
   }
 
-  let element = context.reference(&mut context_block.dynamic);
-  context.register_effect(
-    context_block,
-    context.is_operation(vec![&exp]),
-    Either16::I(SetHtmlIRNode {
-      set_html: true,
-      element,
-      value: exp,
-    }),
-    None,
-    None,
-  );
-  None
+  let ast = &context.ast;
+  Some(DirectiveTransformResult {
+    props: vec![ast.object_property_kind_object_property(
+      SPAN,
+      PropertyKind::Init,
+      ast.property_key_static_identifier(dir.span(), "innerHTML"),
+      exp,
+      false,
+      false,
+      false,
+    )],
+    need_runtime: None,
+  })
 }

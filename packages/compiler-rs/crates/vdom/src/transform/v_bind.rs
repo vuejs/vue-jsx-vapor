@@ -3,10 +3,7 @@ use oxc_allocator::TakeIn;
 use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement, PropertyKind};
 use oxc_span::{GetSpan, SPAN};
 
-use crate::{
-  ir::index::BlockIRNode,
-  transform::{DirectiveTransformResult, TransformContext},
-};
+use crate::transform::{DirectiveTransformResult, TransformContext};
 
 // v-bind without arg is handled directly in ./transformElement.ts due to its affecting
 // codegen for the entire props object. This transform here is only for v-bind
@@ -15,7 +12,6 @@ pub fn transform_v_bind<'a>(
   dir: &'a mut JSXAttribute<'a>,
   _: &JSXElement,
   context: &'a TransformContext<'a>,
-  _: &mut BlockIRNode,
 ) -> Option<DirectiveTransformResult<'a>> {
   let ast = &context.ast;
 
