@@ -76,42 +76,40 @@ pub fn inject_prop<'a>(
             .properties
             .insert(0, ObjectPropertyKind::ObjectProperty(ast.alloc(prop)));
         }
+      } else if props
+        .callee
+        .span()
+        .source_text(source_text)
+        .eq("toHandlers")
+      {
+        // #2366
+        props_with_injection = Some(
+          ast.expression_call(
+            SPAN,
+            ast.expression_identifier(SPAN, ast.atom(&context.helper("mergeProps"))),
+            NONE,
+            ast.vec_from_array([
+              ast
+                .expression_object(
+                  SPAN,
+                  ast.vec1(ObjectPropertyKind::ObjectProperty(ast.alloc(prop))),
+                )
+                .into(),
+              Expression::CallExpression(props.take_in_box(context.allocator)).into(),
+            ]),
+            false,
+          ),
+        )
       } else {
-        if props
-          .callee
-          .span()
-          .source_text(source_text)
-          .eq("toHandlers")
-        {
-          // #2366
-          props_with_injection = Some(
-            ast.expression_call(
+        props.arguments.insert(
+          0,
+          ast
+            .expression_object(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&context.helper("mergeProps"))),
-              NONE,
-              ast.vec_from_array([
-                ast
-                  .expression_object(
-                    SPAN,
-                    ast.vec1(ObjectPropertyKind::ObjectProperty(ast.alloc(prop))),
-                  )
-                  .into(),
-                Expression::CallExpression(props.take_in_box(context.allocator)).into(),
-              ]),
-              false,
-            ),
-          )
-        } else {
-          props.arguments.insert(
-            0,
-            ast
-              .expression_object(
-                SPAN,
-                ast.vec1(ObjectPropertyKind::ObjectProperty(ast.alloc(prop))),
-              )
-              .into(),
-          )
-        }
+              ast.vec1(ObjectPropertyKind::ObjectProperty(ast.alloc(prop))),
+            )
+            .into(),
+        )
       }
       if props_with_injection.is_none() {
         props_with_injection = Some(Expression::CallExpression(

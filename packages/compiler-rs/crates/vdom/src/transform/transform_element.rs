@@ -1,44 +1,40 @@
-use std::{cell::RefCell, collections::HashMap, mem, rc::Rc};
+use std::collections::HashMap;
 
 use napi::{
   Either,
-  bindgen_prelude::{Either3, Either16},
+  bindgen_prelude::Either3,
 };
-use oxc_allocator::{CloneIn, TakeIn};
+use oxc_allocator::TakeIn;
 use oxc_ast::{
   AstBuilder, NONE,
   ast::{
-    ArrayExpression, ArrayExpressionElement, CallExpression, Expression, JSXAttribute,
-    JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement, JSXElementName,
-    ObjectProperty, ObjectPropertyKind, PropertyKey, PropertyKind,
+    ArrayExpression, Expression,
+    JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement,
+    ObjectProperty, ObjectPropertyKind, PropertyKind,
   },
 };
 use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
-  ast::{ConstantTypes, NodeTypes, VNodeCall},
+  ast::{NodeTypes, VNodeCall},
   ir::index::{
-    BlockIRNode, CreateComponentIRNode, DirectiveIRNode, DynamicFlag, RootNode,
-    SetDynamicPropsIRNode, SetPropIRNode,
+    BlockIRNode, RootNode,
   },
   transform::{
     DirectiveTransformResult, TransformContext, cache_static::get_constant_type,
-    v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
-    v_on::transform_v_on, v_show::transform_v_show, v_text::transform_v_text,
+    v_bind::transform_v_bind, v_html::transform_v_html,
   },
 };
 
 use common::{
   check::{
     is_built_in_directive, is_directive, is_event, is_jsx_component, is_reserved_prop, is_template,
-    is_void_tag,
   },
-  directive::{DirectiveNode, resolve_directive},
-  dom::is_valid_html_nesting,
+  directive::DirectiveNode,
   error::ErrorCodes,
-  expression::{SimpleExpressionNode, jsx_attribute_value_to_expression},
+  expression::jsx_attribute_value_to_expression,
   patch_flag::PatchFlags,
-  text::{camelize, get_tag_name, is_empty_text, resolve_jsx_text, to_valid_asset_id},
+  text::{camelize, get_tag_name, is_empty_text, to_valid_asset_id},
 };
 
 /// # SAFETY
@@ -226,7 +222,7 @@ pub fn build_props<'a>(
 
   let mut properties: oxc_allocator::Vec<ObjectPropertyKind> = ast.vec();
   let mut merge_args: oxc_allocator::Vec<Expression> = ast.vec();
-  let mut runtime_directives: Vec<DirectiveNode> = vec![];
+  let runtime_directives: Vec<DirectiveNode> = vec![];
   let has_children = !node.children.is_empty();
   let mut should_use_block = false;
   let directive_import_map: HashMap<Span, String> = HashMap::new();
@@ -286,7 +282,7 @@ pub fn build_props<'a>(
 
       if is_event_handler
         && let Expression::CallExpression(call_expr) = value
-        && let Some(arg) = call_expr.arguments.get(0)
+        && let Some(arg) = call_expr.arguments.first()
       {
         // handler wrapped with internal helper e.g. withModifiers(fn)
         // extract the actual expression
@@ -343,8 +339,7 @@ pub fn build_props<'a>(
         if !is_directive(name)
           && !is_event(name)
           && matches!(prop.value, Some(JSXAttributeValue::StringLiteral(_)))
-        {
-          if name == "ref" {
+          && name == "ref" {
             has_ref = prop
               .value
               .as_ref()
@@ -354,7 +349,6 @@ pub fn build_props<'a>(
               properties.push(marker)
             };
           }
-        }
 
         let mut dir_name = if is_event(name) {
           "on".to_string()
@@ -446,7 +440,7 @@ pub fn build_props<'a>(
           }
         } {
           if !*context.options.ssr.borrow() {
-            props.iter().for_each(|p| analyze_patch_flag(p));
+            props.iter().for_each(&mut analyze_patch_flag);
           }
           properties.extend(props);
         };

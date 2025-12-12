@@ -2,7 +2,6 @@ use napi::{Either, bindgen_prelude::Either16};
 use oxc_ast::ast::{
   JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElement,
 };
-use oxc_span::SPAN;
 
 use crate::{
   ir::index::{BlockIRNode, DirectiveIRNode},

@@ -36,9 +36,7 @@ use crate::{
   },
   transform::{
     transform_children::transform_children, transform_element::transform_element,
-    transform_template_ref::transform_template_ref, transform_text::transform_text,
-    v_for::transform_v_for, v_if::transform_v_if, v_once::transform_v_once,
-    v_slot::transform_v_slot, v_slots::transform_v_slots,
+    transform_text::transform_text, v_for::transform_v_for, v_if::transform_v_if,
   },
 };
 

@@ -175,7 +175,7 @@ pub unsafe fn transform_v_if<'a>(
 
   // Exit callback. Complete the codegenNode when all children have been
   // transformed.
-  return Some(Box::new(move || {
+  Some(Box::new(move || {
     let codegen_map = context.codegen_map.as_ptr();
     if dir_name == "v-if" {
       if let Some(NodeTypes::VNodeCall(fragment_codegen)) =
@@ -203,7 +203,7 @@ pub unsafe fn transform_v_if<'a>(
       parent_condition.alternate =
         create_codegen_node_for_branch(branch, key - 1, unsafe { &mut *codegen_map }, context);
     }
-  }));
+  }))
 }
 
 fn create_codegen_node_for_branch<'a>(
@@ -264,7 +264,7 @@ pub fn create_children_codegen_node<'a>(
   // Change createVNode to createBlock.
   vnode_call.is_block = true;
   inject_prop(&mut vnode_call, key_property, context);
-  return context.gen_vnode_call(vnode_call, codegen_map);
+  context.gen_vnode_call(vnode_call, codegen_map)
 }
 
 fn get_parent_condition<'a>(

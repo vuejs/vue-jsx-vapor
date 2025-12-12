@@ -1,12 +1,11 @@
-use std::mem;
 
 use oxc_ast::{
   NONE,
-  ast::{Expression, FormalParameter, FormalParameterKind, JSXChild, Statement},
+  ast::{Expression, FormalParameter, FormalParameterKind, Statement},
 };
-use oxc_span::{GetSpan, SPAN};
+use oxc_span::SPAN;
 
-use crate::{ast::NodeTypes, generate::CodegenContext, ir::index::BlockIRNode};
+use crate::{generate::CodegenContext, ir::index::BlockIRNode};
 
 pub fn gen_block<'a>(
   oper: BlockIRNode<'a>,
@@ -40,7 +39,7 @@ pub fn gen_block_content<'a>(
     let context = context as *mut CodegenContext;
     let ast = (&*context).ast;
     let codegen_map = &mut (*context).codegen_map;
-    let mut statements = ast.vec();
+    
     // let mut reset_block = None;
     // let context_block = context_block as *mut BlockIRNode;
     // if let Some(block) = block {
@@ -61,6 +60,6 @@ pub fn gen_block_content<'a>(
     // if let Some(reset_block) = reset_block {
     //   reset_block();
     // }
-    statements
+    ast.vec()
   }
 }

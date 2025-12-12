@@ -7,7 +7,7 @@ use oxc_ast::{
 use oxc_span::{GetSpan, SPAN};
 
 use crate::{
-  ast::{ConstantTypes, NodeTypes, TextCallNode},
+  ast::{ConstantTypes, NodeTypes},
   ir::index::BlockIRNode,
   transform::{TransformContext, cache_static::get_constant_type},
 };

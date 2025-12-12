@@ -1,7 +1,7 @@
 use common::expression::jsx_attribute_value_to_expression;
 use napi::bindgen_prelude::Either3;
 use oxc_allocator::TakeIn;
-use oxc_ast::ast::{ArrayExpression, Expression, JSXAttribute, JSXChild, JSXElement};
+use oxc_ast::ast::{ArrayExpression, Expression, JSXAttribute, JSXChild};
 use oxc_span::Span;
 
 use crate::transform::TransformContext;

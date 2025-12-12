@@ -120,7 +120,7 @@ impl<'a> TransformContext<'a> {
       ))
     }
 
-    if let JSXChild::Fragment(node) = &mut *(*self).root_node.borrow_mut() {
+    if let JSXChild::Fragment(node) = &mut *self.root_node.borrow_mut() {
       let codegen_map = &mut self.codegen_map.borrow_mut();
       for child in &node.children {
         if let Some(NodeTypes::VNodeCall(vnode_call)) = codegen_map.remove(&child.span()) {
@@ -172,14 +172,10 @@ impl<'a> TransformContext<'a> {
       Either3::B(children) => ast.expression_array(
         SPAN,
         ast.vec_from_iter(unsafe { &mut *children }.into_iter().filter_map(|child| {
-          if is_empty_text(&child) {
-            return None;
+          if is_empty_text(child) {
+            None
           } else {
-            if let Some(node) = self.gen_node(child.take_in(self.allocator), codegen_map) {
-              Some(node.into())
-            } else {
-              None
-            }
+            self.gen_node(child.take_in(self.allocator), codegen_map).map(|node| node.into())
           }
         })),
       ),
@@ -277,11 +273,7 @@ impl<'a> TransformContext<'a> {
           } else {
             None
           },
-          if let Some(dynamic_props) = dynamic_props {
-            Some(dynamic_props.into())
-          } else {
-            None
-          },
+          dynamic_props.map(|dynamic_props| dynamic_props.into()),
         ]
         .into_iter()
         .flatten(),

@@ -96,11 +96,9 @@ fn walk<'a>(
             true
           } && get_generated_props_constant_type(child, context) as i32
             >= ConstantTypes::CanCache as i32
-          {
-            if let Some(props) = &mut codegen.props {
+            && let Some(props) = &mut codegen.props {
               codegen.props = Some(context.hoist(props))
             };
-          }
 
           if let Some(dynamic_props) = codegen.dynamic_props.as_mut() {
             codegen.dynamic_props = Some(context.hoist(dynamic_props))
@@ -154,8 +152,8 @@ fn walk<'a>(
     } else if let JSXChild::Fragment(child) = unsafe { &*_child } {
       let codegen_map = context.codegen_map.borrow();
       let codegen = codegen_map.get(&child.span);
-      if let Some(NodeTypes::VNodeCall(codegen)) = codegen {
-        if let Some(single_child) = codegen.v_for {
+      if let Some(NodeTypes::VNodeCall(codegen)) = codegen
+        && let Some(single_child) = codegen.v_for {
           drop(codegen_map);
           // Do not hoist v-for single child because it has to be a block
           walk(
@@ -165,7 +163,6 @@ fn walk<'a>(
             single_child,
           )
         }
-      }
     }
   }
 
@@ -353,10 +350,10 @@ pub fn get_constant_type<'a>(
             return ConstantTypes::NotConstant;
           }
         }
-        return ConstantTypes::NotConstant;
+        ConstantTypes::NotConstant
       }
       JSXChild::ExpressionContainer(node) => {
-        if let Some(_) = get_text_like_value(node.expression.to_expression(), false) {
+        if get_text_like_value(node.expression.to_expression(), false).is_some() {
           ConstantTypes::CanSkipPatch
         } else {
           ConstantTypes::NotConstant
@@ -366,7 +363,7 @@ pub fn get_constant_type<'a>(
       _ => ConstantTypes::NotConstant,
     },
     Either::B(node) => {
-      if let Some(_) = get_text_like_value(node, false) {
+      if get_text_like_value(node, false).is_some() {
         ConstantTypes::CanSkipPatch
       } else {
         ConstantTypes::NotConstant
@@ -382,8 +379,7 @@ fn get_generated_props_constant_type<'a>(
   let mut return_type = ConstantTypes::CanStringify;
   if let Some(NodeTypes::VNodeCall(codegen)) =
     (unsafe { &*context.codegen_map.as_ptr() }).get(&node.span)
-  {
-    if let Some(props) = &codegen.props
+    && let Some(props) = &codegen.props
       && let Expression::ObjectExpression(props) = props
     {
       for prop in props.properties.iter() {
@@ -400,6 +396,5 @@ fn get_generated_props_constant_type<'a>(
         }
       }
     }
-  }
   return_type
 }

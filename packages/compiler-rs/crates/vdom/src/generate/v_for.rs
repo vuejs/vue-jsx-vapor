@@ -22,7 +22,7 @@ use oxc_traverse::{
 };
 
 use crate::{
-  generate::{CodegenContext, block::gen_block_content, expression::gen_expression},
+  generate::{CodegenContext, expression::gen_expression},
   ir::index::{BlockIRNode, ForIRNode, IREffect},
 };
 
