@@ -163,21 +163,23 @@ impl<'a> TransformContext<'a> {
     let ast = &self.ast;
 
     match children {
-      Either3::A(children) => self.gen_node(
-        unsafe { &mut *children }.take_in(ast.allocator),
-        codegen_map,
-      ),
+      Either3::A(children) => self
+        .gen_node(
+          unsafe { &mut *children }.take_in(ast.allocator),
+          codegen_map,
+        )
+        .unwrap(),
       Either3::B(children) => ast.expression_array(
         SPAN,
         ast.vec_from_iter(unsafe { &mut *children }.into_iter().filter_map(|child| {
           if is_empty_text(&child) {
             return None;
           } else {
-            Some(
-              self
-                .gen_node(child.take_in(self.allocator), codegen_map)
-                .into(),
-            )
+            if let Some(node) = self.gen_node(child.take_in(self.allocator), codegen_map) {
+              Some(node.into())
+            } else {
+              None
+            }
           }
         })),
       ),
@@ -189,23 +191,23 @@ impl<'a> TransformContext<'a> {
     &self,
     node: JSXChild<'a>,
     codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
-  ) -> Expression<'a> {
+  ) -> Option<Expression<'a>> {
     let ast = &self.ast;
     if let Some(codegen) = codegen_map.remove(&node.span()) {
-      match codegen {
+      Some(match codegen {
         NodeTypes::VNodeCall(codegen) => self.gen_vnode_call(codegen, codegen_map),
         NodeTypes::TextCallNode(codegen) => codegen,
         NodeTypes::CacheExpression(codegen) => codegen,
-      }
+      })
     } else {
       match node {
         JSXChild::Text(node) => {
-          ast.expression_string_literal(node.span, ast.atom(&resolve_jsx_text(&node)), None)
+          Some(ast.expression_string_literal(node.span, ast.atom(&resolve_jsx_text(&node)), None))
         }
         JSXChild::ExpressionContainer(mut node) => {
-          node.expression.to_expression_mut().take_in(self.allocator)
+          Some(node.expression.to_expression_mut().take_in(self.allocator))
         }
-        _ => ast.expression_null_literal(SPAN),
+        _ => None,
       }
     }
   }

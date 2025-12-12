@@ -23,7 +23,6 @@ pub fn cache_static<'a>(root: &'a mut JSXChild<'a>, context: &TransformContext<'
     // Root node is unfortunately non-hoistable due to potential parent
     // fallthrough attributes.
     get_single_element_root(root).is_some(),
-    false,
   );
 }
 
@@ -47,11 +46,10 @@ pub fn get_single_element_root<'a>(
 }
 
 fn walk<'a>(
-  node: &'a mut JSXChild<'a>,
+  node: &mut JSXChild<'a>,
   parent: Option<&'a mut JSXChild<'a>>,
   context: &TransformContext<'a>,
   do_not_hoist_node: bool,
-  in_for: bool,
 ) {
   let _node = node as *mut _;
   let children = match node {
@@ -149,29 +147,25 @@ fn walk<'a>(
         Some(unsafe { &mut *_node }),
         context,
         false,
-        in_for,
       );
       if is_component {
         *context.in_v_slot.borrow_mut() -= 1;
       }
     } else if let JSXChild::Fragment(child) = unsafe { &*_child } {
-      let (in_for, single_child) = {
-        let codegen_map = context.codegen_map.borrow();
-        if let Some(NodeTypes::VNodeCall(for_codegen)) = codegen_map.get(&child.span)
-          && let Some(single_child) = for_codegen.is_for
-        {
-          (true, single_child)
-        } else {
-          (false, false)
+      let codegen_map = context.codegen_map.borrow();
+      let codegen = codegen_map.get(&child.span);
+      if let Some(NodeTypes::VNodeCall(codegen)) = codegen {
+        if let Some(single_child) = codegen.v_for {
+          drop(codegen_map);
+          // Do not hoist v-for single child because it has to be a block
+          walk(
+            unsafe { &mut *_child },
+            Some(unsafe { &mut *_node }),
+            context,
+            single_child,
+          )
         }
-      };
-      walk(
-        unsafe { &mut *_child },
-        Some(unsafe { &mut *_node }),
-        context,
-        single_child,
-        in_for,
-      )
+      }
     }
   }
 
@@ -247,6 +241,9 @@ pub fn get_constant_type<'a>(
           let NodeTypes::VNodeCall(codegen) = codegen else {
             return ConstantTypes::NotConstant;
           };
+          if codegen.v_for.is_some() || codegen.v_if.is_some() {
+            return ConstantTypes::NotConstant;
+          }
           let tag = node.opening_element.name.to_string();
           if codegen.is_block && tag != "svg" && tag != "foreignObject" && tag != "math" {
             return ConstantTypes::NotConstant;
@@ -336,11 +333,6 @@ pub fn get_constant_type<'a>(
                 }
               }
 
-              context.remove_helper("openBlock");
-              context.remove_helper(&get_vnode_block_helper(
-                context.options.in_ssr,
-                is_jsx_component(node),
-              ));
               codegen.is_block = false;
               context.helper(&get_vnode_block_helper(
                 context.options.in_ssr,

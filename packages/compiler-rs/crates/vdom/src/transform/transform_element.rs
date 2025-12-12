@@ -186,7 +186,8 @@ pub unsafe fn transform_element<'a>(
       is_block: should_use_block,
       disable_tracking: false,
       is_component,
-      is_for: None,
+      v_for: None,
+      v_if: None,
       loc: SPAN,
     };
     context

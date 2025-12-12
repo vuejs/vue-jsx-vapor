@@ -1,26 +1,32 @@
-use napi::{Either, bindgen_prelude::Either16};
+use std::collections::HashMap;
+
+use napi::{Either, bindgen_prelude::Either3};
 use oxc_allocator::TakeIn;
-use oxc_ast::ast::{Expression, JSXChild, JSXElement};
-use oxc_span::SPAN;
+use oxc_ast::{
+  NONE,
+  ast::{ConditionalExpression, Expression, JSXChild, JSXElement, NumberBase, PropertyKind},
+};
+use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
-  ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, IfIRNode},
-  transform::TransformContext,
+  ast::{IfBranchNode, NodeTypes, VNodeCall},
+  ir::index::BlockIRNode,
+  transform::{TransformContext, cache_static::cache_static, utils::inject_prop},
 };
 
 use common::{
-  check::{is_constant_node, is_template},
-  directive::{find_prop, find_prop_mut, resolve_directive},
+  check::is_template,
+  directive::{find_prop, find_prop_mut},
   error::ErrorCodes,
-  expression::SimpleExpressionNode,
+  text::is_empty_text,
 };
 
 /// # SAFETY
 pub unsafe fn transform_v_if<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  context_block: &'a mut BlockIRNode<'a>,
-  _: &'a mut JSXChild<'a>,
+  _: &'a mut BlockIRNode<'a>,
+  parent_node: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
@@ -45,111 +51,237 @@ pub unsafe fn transform_v_if<'a>(
   }
   seen.insert(start);
 
-  let mut dir = resolve_directive(dir, context.ir.borrow().source);
-  if dir.name != "else"
-    && (dir.exp.is_none() || dir.exp.as_ref().unwrap().content.trim().is_empty())
-  {
-    context.options.on_error.as_ref()(ErrorCodes::VIfNoExpression, dir.loc);
-    dir.exp = Some(SimpleExpressionNode {
-      content: "true".to_string(),
-      is_static: false,
-      loc: SPAN,
-      ast: None,
-    });
+  let ast = &context.ast;
+
+  let dir_name = dir.name.get_identifier().name;
+  if dir_name != "v-else" && dir.value.is_none() {
+    context.options.on_error.as_ref()(ErrorCodes::VIfNoExpression, dir.span);
+    dir.value = Some(ast.jsx_attribute_value_expression_container(
+      SPAN,
+      ast.expression_boolean_literal(SPAN, true).into(),
+    ));
   }
 
-  let dynamic = &mut context_block.dynamic;
-  dynamic.flags |= DynamicFlag::NonTemplate as i32;
+  let node_span = unsafe { &*node }.span;
+  let mut fragment_span = SPAN;
+  let mut last_if_node: Option<*mut VNodeCall> = None;
 
-  if dir.name == "if" {
-    let id = context.reference(dynamic);
-    dynamic.flags |= DynamicFlag::Insert as i32;
-    let block = context_block as *mut BlockIRNode;
-    let exit_block = context.create_block(
-      unsafe { &mut *context_node },
-      unsafe { &mut *block },
-      Expression::JSXElement(oxc_allocator::Box::new_in(
-        unsafe { &mut *node }.take_in(context.allocator),
-        context.allocator,
-      )),
-      None,
+  if dir_name == "v-if" {
+    fragment_span = Span::new(node_span.end, node_span.start);
+    *unsafe { &mut *context_node } = context.wrap_fragment(
+      Expression::JSXElement(unsafe { &mut *node }.take_in_box(context.allocator)),
+      fragment_span,
     );
-    return Some(Box::new(move || {
-      let block = exit_block();
+    let branch = if let JSXChild::Fragment(node) = unsafe { &mut *context_node }
+      && let Some(child) = node.children.get_mut(0)
+      && let JSXChild::Element(_) = child
+    {
+      Some(IfBranchNode::new(child, dir, context))
+    } else {
+      None
+    }
+    .unwrap();
+    context.codegen_map.borrow_mut().insert(
+      fragment_span,
+      NodeTypes::VNodeCall(VNodeCall {
+        tag: context.helper("Fragment"),
+        props: None,
+        children: None,
+        patch_flag: None,
+        dynamic_props: None,
+        directives: None,
+        is_block: true,
+        disable_tracking: false,
+        is_component: false,
+        v_for: None,
+        v_if: Some(vec![branch]),
+        loc: node_span,
+      }),
+    );
+  } else {
+    let siblings = match parent_node {
+      JSXChild::Element(node) => Some(&node.children),
+      JSXChild::Fragment(node) => Some(&node.children),
+      _ => None,
+    };
+    if let Some(siblings) = siblings
+      && let Some(index) = siblings.iter().position(|s| s.span().eq(&node_span))
+    {
+      for sibling in siblings[..index].iter().rev() {
+        if is_empty_text(sibling) {
+          continue;
+        }
 
-      context_block.dynamic.operation = Some(Box::new(Either16::A(IfIRNode {
-        id,
-        positive: block,
-        once: *context.in_v_once.borrow()
-          || is_constant_node(&dir.exp.as_ref().unwrap().ast.as_deref()),
-        condition: dir.exp.unwrap(),
-        negative: None,
-        anchor: None,
-        parent: None,
-      })));
-    }));
+        if let Some(NodeTypes::VNodeCall(sibling)) =
+          context.codegen_map.borrow_mut().get_mut(&sibling.span())
+          && let Some(_) = sibling.v_if
+        {
+          last_if_node = Some(sibling as *mut _);
+          break;
+        }
+      }
+    }
+
+    // Check if v-else was followed by v-else-if or there are two adjacent v-else
+    if let Some(last_if_node) = last_if_node
+      && let Some(branchs) = &mut unsafe { &mut *last_if_node }.v_if
+      && let Some(branch) = &branchs.last()
+      && branch.condition.is_some()
+    {
+      let fragment_span = Span::new(node_span.end, node_span.start);
+      *unsafe { &mut *context_node } = context.wrap_fragment(
+        Expression::JSXElement(unsafe { &mut *node }.take_in_box(context.allocator)),
+        fragment_span,
+      );
+      let branch = if let JSXChild::Fragment(node) = unsafe { &mut *context_node }
+        && let Some(child) = node.children.get_mut(0)
+        && let JSXChild::Element(_) = child
+      {
+        Some(IfBranchNode::new(child, dir, context))
+      } else {
+        None
+      }
+      .unwrap();
+      branchs.push(branch);
+    } else {
+      context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, unsafe { &*node }.span);
+      return None;
+    }
   }
 
-  let siblings = &mut context.parent_dynamic.borrow_mut().children;
-  let mut last_if_node = None;
-  if !siblings.is_empty() {
-    let mut i = siblings.len();
-    while i > 0 {
-      i -= 1;
-      let sibling = siblings.get_mut(i).unwrap() as *mut IRDynamicInfo;
-      if let Some(operation) = (unsafe { &mut *sibling }).operation.as_mut()
-        && let Either16::A(operation) = operation.as_mut()
-      {
-        last_if_node = Some(operation);
+  // #1587: We need to dynamically increment the key based on the current
+  // node's sibling nodes, since chained v-if/else branches are
+  // rendered at the same depth
+  let siblings = match parent_node {
+    JSXChild::Element(node) => Some(&node.children),
+    JSXChild::Fragment(node) => Some(&node.children),
+    _ => None,
+  };
+  let mut key = 0;
+  if let Some(siblings) = siblings {
+    for sibling in siblings {
+      let sibling_span = sibling.span();
+      if sibling_span.eq(&fragment_span) {
         break;
+      }
+      if let Some(NodeTypes::VNodeCall(vnode_call)) =
+        context.codegen_map.borrow().get(&sibling_span)
+        && let Some(branchs) = &vnode_call.v_if
+      {
+        key += branchs.len();
       }
     }
   }
 
-  // check if IfNode is the last operation and get the root IfNode
-  let Some(mut last_if_node) = last_if_node else {
-    context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, unsafe { &*node }.span);
-    return None;
-  };
-
-  let mut last_if_node_ptr = last_if_node as *mut IfIRNode;
-  while let Some(negative) = (unsafe { &mut *last_if_node_ptr }).negative.as_mut()
-    && let Either::B(negative) = negative.as_mut()
-  {
-    last_if_node_ptr = negative as *mut IfIRNode;
-  }
-  last_if_node = unsafe { &mut *last_if_node_ptr };
-
-  // Check if v-else was followed by v-else-if
-  if dir.name == "else-if" && last_if_node.negative.is_some() {
-    context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, dir.loc);
-  };
-
-  let exit_block = context.create_block(
-    unsafe { &mut *context_node },
-    context_block,
-    Expression::JSXElement(oxc_allocator::Box::new_in(
-      unsafe { &mut *node }.take_in(context.allocator),
-      context.allocator,
-    )),
-    None,
-  );
-
-  Some(Box::new(move || {
-    let block = exit_block();
-    if dir.name == "else" {
-      last_if_node.negative = Some(Box::new(Either::A(block)));
-    } else {
-      last_if_node.negative = Some(Box::new(Either::B(IfIRNode {
-        id: -1,
-        positive: block,
-        once: *context.in_v_once.borrow()
-          || is_constant_node(&dir.exp.as_ref().unwrap().ast.as_deref()),
-        condition: dir.exp.unwrap(),
-        parent: None,
-        anchor: None,
-        negative: None,
-      })))
+  // Exit callback. Complete the codegenNode when all children have been
+  // transformed.
+  return Some(Box::new(move || {
+    let codegen_map = context.codegen_map.as_ptr();
+    if dir_name == "v-if" {
+      if let Some(NodeTypes::VNodeCall(fragment_codegen)) =
+        unsafe { &mut *codegen_map }.get_mut(&fragment_span)
+        && let Some(branchs) = &mut fragment_codegen.v_if
+      {
+        let branch = &mut branchs[0];
+        cache_static(unsafe { &mut *branch.node }, context);
+        fragment_codegen.children = Some(Either3::C(create_codegen_node_for_branch(
+          branch,
+          key,
+          unsafe { &mut *codegen_map },
+          context,
+        )));
+      }
+    } else if let Some(if_node) = last_if_node
+      && let if_node = unsafe { &mut *if_node }
+      && let Some(Either3::C(children)) = &mut if_node.children
+      && let Some(branchs) = if_node.v_if.as_mut()
+    {
+      let branch = branchs.last_mut().unwrap();
+      cache_static(unsafe { &mut *branch.node }, context);
+      // attach this branch's codegen node to the v-if root.
+      let parent_condition = unsafe { &mut *get_parent_condition(children).unwrap() };
+      parent_condition.alternate =
+        create_codegen_node_for_branch(branch, key - 1, unsafe { &mut *codegen_map }, context);
     }
-  }))
+  }));
+}
+
+fn create_codegen_node_for_branch<'a>(
+  branch: &mut IfBranchNode<'a>,
+  key_index: usize,
+  codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
+  context: &TransformContext<'a>,
+) -> Expression<'a> {
+  let ast = &context.ast;
+  if let Some(condition) = &mut branch.condition {
+    ast.expression_conditional(
+      SPAN,
+      condition.take_in(context.allocator),
+      create_children_codegen_node(branch, key_index, codegen_map, context),
+      // make sure to pass in asBlock: true so that the comment node call
+      // closes the current block.
+      ast.expression_call(
+        SPAN,
+        ast.expression_identifier(SPAN, ast.atom(&context.helper("createCommentVNode"))),
+        NONE,
+        ast.vec_from_array([
+          ast.expression_string_literal(SPAN, "", None).into(),
+          ast.expression_boolean_literal(SPAN, true).into(),
+        ]),
+        false,
+      ),
+    )
+  } else {
+    create_children_codegen_node(branch, key_index, codegen_map, context)
+  }
+}
+
+pub fn create_children_codegen_node<'a>(
+  branch: &mut IfBranchNode<'a>,
+  key_index: usize,
+  codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
+  context: &TransformContext<'a>,
+) -> Expression<'a> {
+  let ast = &context.ast;
+  let key_property = ast.object_property(
+    SPAN,
+    PropertyKind::Init,
+    ast.property_key_static_identifier(SPAN, "key"),
+    ast.expression_numeric_literal(SPAN, key_index as f64, None, NumberBase::Hex),
+    false,
+    false,
+    false,
+  );
+  let ret = if let Some(NodeTypes::VNodeCall(codegent_node)) =
+    codegen_map.remove(&unsafe { &*branch.node }.span())
+  {
+    Some(codegent_node)
+  } else {
+    None
+  }
+  .unwrap();
+  let mut vnode_call = ret;
+  // Change createVNode to createBlock.
+  vnode_call.is_block = true;
+  inject_prop(&mut vnode_call, key_property, context);
+  return context.gen_vnode_call(vnode_call, codegen_map);
+}
+
+fn get_parent_condition<'a>(
+  mut node: &mut Expression<'a>,
+) -> Option<*mut oxc_allocator::Box<'a, ConditionalExpression<'a>>> {
+  let mut ret = None;
+  loop {
+    if let Expression::ConditionalExpression(exp) = node {
+      ret = Some(exp as *mut _);
+      if let Expression::ConditionalExpression(alternate) = &mut exp.alternate {
+        ret = Some(alternate as *mut _);
+        node = &mut exp.alternate
+      } else {
+        return ret;
+      }
+    } else {
+      return ret;
+    }
+  }
 }

@@ -1,6 +1,10 @@
+use common::expression::jsx_attribute_value_to_expression;
 use napi::bindgen_prelude::Either3;
-use oxc_ast::ast::{ArrayExpression, Expression, JSXChild};
+use oxc_allocator::TakeIn;
+use oxc_ast::ast::{ArrayExpression, Expression, JSXAttribute, JSXChild, JSXElement};
 use oxc_span::Span;
+
+use crate::transform::TransformContext;
 
 #[derive(Debug)]
 pub enum NodeTypes<'a> {
@@ -12,7 +16,7 @@ pub enum NodeTypes<'a> {
 pub type VNodeCallChildren<'a> =
   Either3<*mut JSXChild<'a>, *mut oxc_allocator::Vec<'a, JSXChild<'a>>, Expression<'a>>;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct VNodeCall<'a> {
   pub tag: String,
   pub props: Option<Expression<'a>>,
@@ -26,8 +30,34 @@ pub struct VNodeCall<'a> {
   /// Some(true): v-for with single child
   /// Some(false):  v-for with multiple children
   /// None: not v-for
-  pub is_for: Option<bool>,
+  pub v_for: Option<bool>,
+  pub v_if: Option<Vec<IfBranchNode<'a>>>,
   pub loc: Span,
+}
+
+#[derive(Debug)]
+pub struct IfBranchNode<'a> {
+  pub condition: Option<Expression<'a>>,
+  pub node: *mut JSXChild<'a>,
+}
+
+impl<'a> IfBranchNode<'a> {
+  pub fn new(
+    node: &mut JSXChild<'a>,
+    dir: &mut JSXAttribute<'a>,
+    context: &TransformContext<'a>,
+  ) -> Self {
+    Self {
+      condition: if dir.name.get_identifier().name == "v-else" {
+        None
+      } else {
+        dir.value.as_mut().map(|value| {
+          jsx_attribute_value_to_expression(value.take_in(context.allocator), context.allocator)
+        })
+      },
+      node,
+    }
+  }
 }
 
 #[derive(Debug)]

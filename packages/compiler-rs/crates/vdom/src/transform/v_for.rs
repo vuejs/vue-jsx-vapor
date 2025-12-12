@@ -133,7 +133,8 @@ pub unsafe fn transform_v_for<'a>(
       is_block: true,
       disable_tracking: !is_stable_fragment,
       is_component: false,
-      is_for: Some(true),
+      v_for: Some(true),
+      v_if: None,
       loc: node_span,
     }),
   );
@@ -177,7 +178,8 @@ pub unsafe fn transform_v_for<'a>(
         is_block: true,
         disable_tracking: false,
         is_component: false,
-        is_for: None,
+        v_for: None,
+        v_if: None,
         loc: SPAN,
       }
     } else {
@@ -339,7 +341,7 @@ pub unsafe fn transform_v_for<'a>(
       context.codegen_map.borrow_mut().get_mut(&fragment_span)
     {
       if need_fragment_wrapper {
-        fragment_codegen.is_for = Some(false);
+        fragment_codegen.v_for = Some(false);
       }
       fragment_codegen.children = Some(Either3::C(Expression::CallExpression(
         ast.alloc(render_exp),

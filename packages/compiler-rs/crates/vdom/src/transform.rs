@@ -1,12 +1,12 @@
 use common::expression::SimpleExpressionNode;
 pub use common::options::TransformOptions;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
-use oxc_ast::AstBuilder;
 use oxc_ast::ast::{
   ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, JSXChild,
   JSXClosingFragment, JSXExpressionContainer, JSXFragment, JSXOpeningFragment, LogicalOperator,
   ObjectPropertyKind,
 };
+use oxc_ast::{AstBuilder, NONE};
 use oxc_span::{GetSpan, SPAN, Span};
 use std::collections::HashMap;
 use std::{cell::RefCell, collections::HashSet, mem, rc::Rc};
@@ -124,10 +124,6 @@ impl<'a> TransformContext<'a> {
   pub fn helper(&self, name: &str) -> String {
     self.options.helpers.borrow_mut().insert(name.to_string());
     format!("_{name}")
-  }
-
-  pub fn remove_helper(&self, name: &str) {
-    self.options.helpers.borrow_mut().remove(name);
   }
 
   pub fn hoist(&self, exp: &mut Expression<'a>) -> Expression<'a> {
@@ -316,20 +312,34 @@ impl<'a> TransformContext<'a> {
   }
 
   pub fn wrap_fragment(&self, mut node: Expression<'a>, span: Span) -> JSXChild<'a> {
+    let ast = self.ast;
     if let Expression::JSXFragment(node) = node {
       JSXChild::Fragment(node)
     } else if let Expression::JSXElement(node) = &mut node
       && is_template(node)
     {
-      JSXChild::Fragment(oxc_allocator::Box::new_in(
-        JSXFragment {
-          span,
-          opening_fragment: JSXOpeningFragment { span: SPAN },
-          closing_fragment: JSXClosingFragment { span: SPAN },
-          children: node.children.take_in(self.allocator),
-        },
-        self.allocator,
-      ))
+      let name = ast.jsx_element_name_identifier(node.span, ast.atom(&self.helper("Fragment")));
+      ast.jsx_child_fragment(
+        span,
+        ast.jsx_opening_fragment(SPAN),
+        ast.vec1(
+          ast.jsx_child_element(
+            SPAN,
+            ast.jsx_opening_element(
+              node.opening_element.span,
+              name.clone_in(ast.allocator),
+              NONE,
+              ast.vec(),
+            ),
+            node.children.take_in(self.allocator),
+            node
+              .closing_element
+              .take()
+              .map(|e| ast.jsx_closing_element(e.span, name)),
+          ),
+        ),
+        ast.jsx_closing_fragment(SPAN),
+      )
     } else {
       JSXChild::Fragment(oxc_allocator::Box::new_in(
         JSXFragment {
@@ -419,7 +429,7 @@ impl<'a> TransformContext<'a> {
         let parent_node = parent_node.unwrap() as *mut JSXChild;
         for node_transform in [
           // transform_v_once,
-          // transform_v_if,
+          transform_v_if,
           transform_v_for,
           // transform_template_ref,
           transform_element,

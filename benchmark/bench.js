@@ -103,6 +103,6 @@ bench.add('react            + oxc', () => {
   oxcTransformSync('index.jsx', source)
 })
 
-// await bench.run()
+await bench.run()
 
-// console.table(bench.table())
+console.table(bench.table())

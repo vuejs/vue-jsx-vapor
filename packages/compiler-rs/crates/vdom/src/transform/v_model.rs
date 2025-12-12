@@ -12,7 +12,6 @@ use common::{
   check::{is_jsx_component, is_member_expression},
   directive::{find_prop, resolve_directive},
   error::ErrorCodes,
-  expression::SimpleExpressionNode,
   text::get_tag_name,
 };
 
