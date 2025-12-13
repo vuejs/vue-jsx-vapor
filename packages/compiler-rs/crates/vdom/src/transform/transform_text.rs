@@ -32,7 +32,7 @@ pub unsafe fn transform_text<'a>(
 
   Some(Box::new(move || {
     let mut children = match unsafe { &mut *context_node } {
-      JSXChild::Element(node) if !is_jsx_component(node) => &mut node.children,
+      JSXChild::Element(node) => &mut node.children,
       JSXChild::Fragment(node) => &mut node.children,
       _ => return,
     }

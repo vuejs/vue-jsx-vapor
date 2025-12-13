@@ -30,6 +30,7 @@ pub mod v_text;
 
 use crate::ast::{ConstantTypes, NodeTypes};
 use crate::transform::cache_static::cache_static;
+use crate::transform::v_slot::track_slot_scopes;
 use crate::{
   ir::index::{
     BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, OperationNode, RootIRNode, RootNode,
@@ -432,7 +433,7 @@ impl<'a> TransformContext<'a> {
           // transform_template_ref,
           transform_element,
           // transform_v_slots,
-          // transform_v_slot,
+          track_slot_scopes,
           transform_text,
         ] {
           let on_exit = node_transform(node, &*context, &mut *block, &mut *parent_node);

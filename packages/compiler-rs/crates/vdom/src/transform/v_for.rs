@@ -3,11 +3,10 @@ use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   NONE,
   ast::{
-    BinaryExpression, BindingPatternKind, Expression, FormalParameterKind, JSXAttribute,
-    JSXAttributeValue, JSXChild, JSXElement, ObjectPropertyKind, PropertyKind,
+    BinaryExpression, BindingPatternKind, Expression, FormalParameterKind, FormalParameters,
+    JSXAttribute, JSXAttributeValue, JSXChild, JSXElement, ObjectPropertyKind, PropertyKind,
   },
 };
-use oxc_parser::Parser;
 use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
@@ -19,7 +18,7 @@ use common::{
   check::is_template,
   directive::{find_prop, find_prop_mut},
   error::ErrorCodes,
-  expression::jsx_attribute_value_to_expression,
+  expression::{expression_to_params, jsx_attribute_value_to_expression},
   patch_flag::PatchFlags,
   text::is_empty_text,
 };
@@ -51,8 +50,8 @@ pub unsafe fn transform_v_for<'a>(
 
   let ForNode {
     value,
-    index,
     key,
+    index,
     source,
   } = get_for_parse_result(dir, context)?;
 
@@ -207,123 +206,7 @@ pub unsafe fn transform_v_for<'a>(
           true,
           false,
           NONE,
-          ast.formal_parameters(
-            SPAN,
-            FormalParameterKind::ArrowFormalParameters,
-            ast.vec_from_iter(
-              [
-                if let Some(value) = value {
-                  if let Expression::Identifier(value) = value {
-                    Some(ast.formal_parameter(
-                      SPAN,
-                      ast.vec(),
-                      ast.binding_pattern(
-                        BindingPatternKind::BindingIdentifier(
-                          ast.alloc_binding_identifier(value.span, value.name),
-                        ),
-                        NONE,
-                        false,
-                      ),
-                      None,
-                      false,
-                      false,
-                    ))
-                  } else {
-                    let span = value.without_parentheses().span();
-                    if let Ok(Expression::ArrowFunctionExpression(mut exp)) = Parser::new(
-                      context.allocator,
-                      ast
-                        .atom(&format!(
-                          "/*{}*/({})=>{{}}",
-                          ".".repeat(span.start as usize - 5),
-                          span.source_text(context.ir.borrow().source)
-                        ))
-                        .as_str(),
-                      context.options.source_type,
-                    )
-                    .parse_expression()
-                    {
-                      let a = exp.params.items[0].take_in(context.allocator);
-                      Some(a)
-                    } else {
-                      None
-                    }
-                  }
-                } else if key.is_some() || index.is_some() {
-                  Some(ast.formal_parameter(
-                    SPAN,
-                    ast.vec(),
-                    ast.binding_pattern(
-                      BindingPatternKind::BindingIdentifier(
-                        ast.alloc_binding_identifier(SPAN, "_"),
-                      ),
-                      NONE,
-                      false,
-                    ),
-                    None,
-                    false,
-                    false,
-                  ))
-                } else {
-                  None
-                },
-                if let Some(Expression::Identifier(key)) = key {
-                  Some(ast.formal_parameter(
-                    SPAN,
-                    ast.vec(),
-                    ast.binding_pattern(
-                      BindingPatternKind::BindingIdentifier(
-                        ast.alloc_binding_identifier(key.span, key.name),
-                      ),
-                      NONE,
-                      false,
-                    ),
-                    None,
-                    false,
-                    false,
-                  ))
-                } else if index.is_some() {
-                  Some(ast.formal_parameter(
-                    SPAN,
-                    ast.vec(),
-                    ast.binding_pattern(
-                      BindingPatternKind::BindingIdentifier(
-                        ast.alloc_binding_identifier(SPAN, "__"),
-                      ),
-                      NONE,
-                      false,
-                    ),
-                    None,
-                    false,
-                    false,
-                  ))
-                } else {
-                  None
-                },
-                if let Some(Expression::Identifier(index)) = index {
-                  Some(ast.formal_parameter(
-                    SPAN,
-                    ast.vec(),
-                    ast.binding_pattern(
-                      BindingPatternKind::BindingIdentifier(
-                        ast.alloc_binding_identifier(index.span, index.name),
-                      ),
-                      NONE,
-                      false,
-                    ),
-                    None,
-                    false,
-                    false,
-                  ))
-                } else {
-                  None
-                },
-              ]
-              .into_iter()
-              .flatten(),
-            ),
-            NONE,
-          ),
+          create_for_loop_params(value, key, index, context),
           NONE,
           ast.function_body(
             SPAN,
@@ -404,4 +287,113 @@ pub fn get_for_parse_result<'a>(
     key,
     source,
   })
+}
+
+pub fn create_for_loop_params<'a>(
+  value: Option<Expression<'a>>,
+  key: Option<Expression<'a>>,
+  index: Option<Expression<'a>>,
+  context: &TransformContext<'a>,
+) -> FormalParameters<'a> {
+  let ast = &context.ast;
+  ast.formal_parameters(
+    SPAN,
+    FormalParameterKind::ArrowFormalParameters,
+    ast.vec_from_iter(
+      [
+        if let Some(value) = value {
+          if let Expression::Identifier(value) = value {
+            Some(ast.formal_parameter(
+              SPAN,
+              ast.vec(),
+              ast.binding_pattern(
+                BindingPatternKind::BindingIdentifier(
+                  ast.alloc_binding_identifier(value.span, value.name),
+                ),
+                NONE,
+                false,
+              ),
+              None,
+              false,
+              false,
+            ))
+          } else {
+            expression_to_params(
+              &value,
+              context.ir.borrow().source,
+              context.allocator,
+              context.options.source_type,
+            )
+          }
+        } else if key.is_some() || index.is_some() {
+          Some(ast.formal_parameter(
+            SPAN,
+            ast.vec(),
+            ast.binding_pattern(
+              BindingPatternKind::BindingIdentifier(ast.alloc_binding_identifier(SPAN, "_")),
+              NONE,
+              false,
+            ),
+            None,
+            false,
+            false,
+          ))
+        } else {
+          None
+        },
+        if let Some(Expression::Identifier(key)) = key {
+          Some(ast.formal_parameter(
+            SPAN,
+            ast.vec(),
+            ast.binding_pattern(
+              BindingPatternKind::BindingIdentifier(
+                ast.alloc_binding_identifier(key.span, key.name),
+              ),
+              NONE,
+              false,
+            ),
+            None,
+            false,
+            false,
+          ))
+        } else if index.is_some() {
+          Some(ast.formal_parameter(
+            SPAN,
+            ast.vec(),
+            ast.binding_pattern(
+              BindingPatternKind::BindingIdentifier(ast.alloc_binding_identifier(SPAN, "__")),
+              NONE,
+              false,
+            ),
+            None,
+            false,
+            false,
+          ))
+        } else {
+          None
+        },
+        if let Some(Expression::Identifier(index)) = index {
+          Some(ast.formal_parameter(
+            SPAN,
+            ast.vec(),
+            ast.binding_pattern(
+              BindingPatternKind::BindingIdentifier(
+                ast.alloc_binding_identifier(index.span, index.name),
+              ),
+              NONE,
+              false,
+            ),
+            None,
+            false,
+            false,
+          ))
+        } else {
+          None
+        },
+      ]
+      .into_iter()
+      .flatten(),
+    ),
+    NONE,
+  )
 }

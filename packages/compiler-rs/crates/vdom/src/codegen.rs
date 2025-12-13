@@ -175,7 +175,9 @@ impl<'a> TransformContext<'a> {
           if is_empty_text(child) {
             None
           } else {
-            self.gen_node(child.take_in(self.allocator), codegen_map).map(|node| node.into())
+            self
+              .gen_node(child.take_in(self.allocator), codegen_map)
+              .map(|node| node.into())
           }
         })),
       ),

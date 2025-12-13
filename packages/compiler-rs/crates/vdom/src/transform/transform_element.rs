@@ -1,28 +1,22 @@
 use std::collections::HashMap;
 
-use napi::{
-  Either,
-  bindgen_prelude::Either3,
-};
+use napi::{Either, bindgen_prelude::Either3};
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   AstBuilder, NONE,
   ast::{
-    ArrayExpression, Expression,
-    JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement,
-    ObjectProperty, ObjectPropertyKind, PropertyKind,
+    ArrayExpression, Expression, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild,
+    JSXElement, ObjectProperty, ObjectPropertyKind, PropertyKind,
   },
 };
 use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ast::{NodeTypes, VNodeCall},
-  ir::index::{
-    BlockIRNode, RootNode,
-  },
+  ir::index::{BlockIRNode, RootNode},
   transform::{
     DirectiveTransformResult, TransformContext, cache_static::get_constant_type,
-    v_bind::transform_v_bind, v_html::transform_v_html,
+    v_bind::transform_v_bind, v_html::transform_v_html, v_slot::build_slots,
   },
 };
 
@@ -97,6 +91,7 @@ pub unsafe fn transform_element<'a>(
   // processed and merged.
   Some(Box::new(move || {
     // children
+    let node_span = node.span;
     let children = &mut node
       .children
       .iter_mut()
@@ -128,30 +123,26 @@ pub unsafe fn transform_element<'a>(
       && vnode_tag != "Teleport" // Teleport is not a real component and has dedicated runtime handling
       && (vnode_tag != "KeepAlive" || vnode_tag != "keep-alive"); // explained above.
 
-      vnode_children = Some(
-        // if should_build_as_slots {
-        // TODO
-        // const { slots, hasDynamicSlots } = buildSlots(node, context)
-        // vnodeChildren = slots
-        // if (hasDynamicSlots) {
-        //   patchFlag |= PatchFlags.DYNAMIC_SLOTS
-        // }
-        // } else
-        if children.len() == 1 && vnode_tag != "Teleport" {
-          let child = children.get_mut(0).unwrap();
-          // check for dynamic text children
-          let has_dynamic_text_child = child.is_expression_container();
-          // pass directly if the only child is a text node
-          // (plain / interpolation / expression)
-          if has_dynamic_text_child || matches!(child, JSXChild::Text(_)) {
-            Either3::A(*child as *mut _)
-          } else {
-            Either3::B(&mut node.children as *mut _)
-          }
+      vnode_children = Some(if should_build_as_slots {
+        let (slots, has_dynamic_slots) = build_slots(node, context);
+        if has_dynamic_slots {
+          patch_flag |= PatchFlags::DynamicSlots as i32
+        }
+        Either3::C(slots)
+      } else if children.len() == 1 && vnode_tag != "Teleport" {
+        let child = children.get_mut(0).unwrap();
+        // check for dynamic text children
+        let has_dynamic_text_child = child.is_expression_container();
+        // pass directly if the only child is a text node
+        // (plain / interpolation / expression)
+        if has_dynamic_text_child || matches!(child, JSXChild::Text(_)) {
+          Either3::A(*child as *mut _)
         } else {
           Either3::B(&mut node.children as *mut _)
-        },
-      );
+        }
+      } else {
+        Either3::B(&mut node.children as *mut _)
+      });
     }
 
     // patchFlag & dynamicPropNames
@@ -189,7 +180,7 @@ pub unsafe fn transform_element<'a>(
     context
       .codegen_map
       .borrow_mut()
-      .insert(node.span, NodeTypes::VNodeCall(vnode_call));
+      .insert(node_span, NodeTypes::VNodeCall(vnode_call));
   }))
 }
 
@@ -339,16 +330,17 @@ pub fn build_props<'a>(
         if !is_directive(name)
           && !is_event(name)
           && matches!(prop.value, Some(JSXAttributeValue::StringLiteral(_)))
-          && name == "ref" {
-            has_ref = prop
-              .value
-              .as_ref()
-              .map(|value| matches!(value, JSXAttributeValue::StringLiteral(_)))
-              .unwrap_or_default();
-            if let Some(marker) = ref_v_for_marker() {
-              properties.push(marker)
-            };
-          }
+          && name == "ref"
+        {
+          has_ref = prop
+            .value
+            .as_ref()
+            .map(|value| matches!(value, JSXAttributeValue::StringLiteral(_)))
+            .unwrap_or_default();
+          if let Some(marker) = ref_v_for_marker() {
+            properties.push(marker)
+          };
+        }
 
         let mut dir_name = if is_event(name) {
           "on".to_string()

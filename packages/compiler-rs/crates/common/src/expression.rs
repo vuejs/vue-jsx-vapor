@@ -1,8 +1,9 @@
 use napi::bindgen_prelude::Either3;
 
-use oxc_allocator::{Allocator, TakeIn};
-use oxc_ast::ast::{Expression, JSXAttributeValue, JSXChild};
-use oxc_span::{GetSpan, SPAN, Span};
+use oxc_allocator::{Allocator, FromIn, TakeIn};
+use oxc_ast::ast::{Expression, FormalParameter, JSXAttributeValue, JSXChild};
+use oxc_parser::Parser;
+use oxc_span::{Atom, GetSpan, SPAN, SourceType, Span};
 use phf::phf_set;
 
 use crate::text::{get_text_like_value, resolve_jsx_text};
@@ -170,5 +171,33 @@ pub fn jsx_attribute_value_to_expression<'a>(
     JSXAttributeValue::ExpressionContainer(mut value) => {
       value.expression.to_expression_mut().take_in(allocator)
     }
+  }
+}
+
+pub fn expression_to_params<'a>(
+  exp: &Expression<'a>,
+  source: &str,
+  allocator: &'a Allocator,
+  source_type: SourceType,
+) -> Option<FormalParameter<'a>> {
+  let span = exp.without_parentheses().span();
+  if let Ok(Expression::ArrowFunctionExpression(mut exp)) = Parser::new(
+    allocator,
+    Atom::from_in(
+      &format!(
+        "/*{}*/({})=>{{}}",
+        ".".repeat(span.start as usize - 5),
+        span.source_text(source)
+      ),
+      allocator,
+    )
+    .as_str(),
+    source_type,
+  )
+  .parse_expression()
+  {
+    Some(exp.params.items[0].take_in(allocator))
+  } else {
+    None
   }
 }
