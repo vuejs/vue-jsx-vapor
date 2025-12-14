@@ -4,7 +4,7 @@
     "bench": "node ./bench.js"
   },
   "devDependencies": {
-    "@babel/core": "catalog:",
+    "@babel/core": "^7.28.4",
     "@vue-jsx-vapor/babel": "2.6.8",
     "@vue-jsx-vapor/compiler-rs": "workspace:*",
     "@vue/babel-plugin-jsx": "^1.5.0",

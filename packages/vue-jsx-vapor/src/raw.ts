@@ -1,10 +1,8 @@
 import macros from '@vue-jsx-vapor/macros/raw'
-import { transformJsxDirective } from '@vue-macros/jsx-directive/api'
 import { relative } from 'pathe'
 import { createFilter, normalizePath } from 'unplugin-utils'
 import { transformVueJsxVapor } from './core'
 import { ssrRegisterHelperCode, ssrRegisterHelperId } from './core/ssr'
-import { transformVueJsx } from './core/vue-jsx'
 import type { Options } from './options'
 import type { UnpluginOptions } from 'unplugin'
 
@@ -15,8 +13,7 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
   )
   let root = ''
   let needHMR = false
-  let needSourceMap = false
-  // options.sourceMap || false
+  let needSourceMap = options.sourceMap || false
   return [
     ...(options.macros === false
       ? []
@@ -74,28 +71,6 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
             code: result.code,
             map: result.map ? JSON.parse(result.map) : null,
           }
-        }
-      },
-    },
-    {
-      name: '@vue-macros/jsx-directive',
-      transformInclude,
-      transform(code, id, opt?: { ssr?: boolean }) {
-        if (options.interop || opt?.ssr) {
-          return transformJsxDirective(code, id, {
-            lib: 'vue',
-            prefix: 'v-',
-            version: 3.6,
-          })
-        }
-      },
-    },
-    {
-      name: '@vitejs/plugin-vue-jsx',
-      transformInclude,
-      transform(code, id, opt?: { ssr?: boolean }) {
-        if (options.interop || opt?.ssr) {
-          return transformVueJsx(code, id, needSourceMap)
         }
       },
     },

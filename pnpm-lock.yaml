@@ -6,15 +6,6 @@ settings:
 
 catalogs:
   default:
-    '@babel/core':
-      specifier: ^7.28.4
-      version: 7.28.4
-    '@babel/plugin-transform-typescript':
-      specifier: ^7.28.0
-      version: 7.28.0
-    '@babel/types':
-      specifier: ^7.28.4
-      version: 7.28.4
     '@nuxt/kit':
       specifier: ^3.19.2
       version: 3.19.2
@@ -24,9 +15,6 @@ catalogs:
     '@ts-macro/tsc':
       specifier: ^0.3.6
       version: 0.3.6
-    '@types/babel__core':
-      specifier: ^7.20.5
-      version: 7.20.5
     '@types/hash-sum':
       specifier: ^1.0.2
       version: 1.0.2
@@ -34,9 +22,6 @@ catalogs:
       specifier: ^3.0.1
       version: 3.0.1
     '@vue-macros/define-render':
-      specifier: ^3.0.1
-      version: 3.0.1
-    '@vue-macros/jsx-directive':
       specifier: ^3.0.1
       version: 3.0.1
     '@vue-macros/test-utils':
@@ -118,7 +103,7 @@ importers:
   benchmark:
     devDependencies:
       '@babel/core':
-        specifier: 'catalog:'
+        specifier: ^7.28.4
         version: 7.28.4
       '@vue-jsx-vapor/babel':
         specifier: 2.6.8
@@ -223,8 +208,8 @@ importers:
         version: 5.99.9(esbuild@0.25.5)
     devDependencies:
       '@babel/types':
-        specifier: 'catalog:'
-        version: 7.28.4
+        specifier: ^7.28.4
+        version: 7.28.5
       '@nuxt/kit':
         specifier: 'catalog:'
         version: 3.19.2
@@ -253,12 +238,6 @@ importers:
 
   packages/vue-jsx-vapor:
     dependencies:
-      '@babel/core':
-        specifier: 'catalog:'
-        version: 7.28.4
-      '@babel/plugin-transform-typescript':
-        specifier: 'catalog:'
-        version: 7.28.0(@babel/core@7.28.4)
       '@vue-jsx-vapor/compiler-rs':
         specifier: workspace:*
         version: link:../compiler-rs
@@ -268,24 +247,15 @@ importers:
       '@vue-jsx-vapor/runtime':
         specifier: workspace:*
         version: link:../runtime
-      '@vue-macros/jsx-directive':
-        specifier: 'catalog:'
-        version: 3.0.1(typescript@5.9.2)
       '@vue-macros/volar':
         specifier: 'catalog:'
         version: 3.0.1(typescript@5.9.2)(vue@3.6.0-alpha.2(typescript@5.9.2))
-      '@vue/babel-plugin-jsx':
-        specifier: ^1.5.0
-        version: 1.5.0(@babel/core@7.28.4)
       '@vue/shared':
         specifier: 'catalog:'
         version: 3.6.0-alpha.2
       esbuild:
         specifier: '*'
         version: 0.25.5
-      hash-sum:
-        specifier: 'catalog:'
-        version: 2.0.0
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -317,12 +287,6 @@ importers:
       '@nuxt/schema':
         specifier: 'catalog:'
         version: 3.19.2
-      '@types/babel__core':
-        specifier: 'catalog:'
-        version: 7.20.5
-      '@types/hash-sum':
-        specifier: 'catalog:'
-        version: 1.0.2
 
   playground:
     devDependencies:
@@ -2710,18 +2674,6 @@ packages:
   '@tybys/wasm-util@0.9.0':
     resolution: {integrity: sha512-6+7nlbMVX/PVDCwaIQ8nTOPveOcFLSt8GcXdx8hD0bt39uWxYT88uXzqTd4fTvqta7oeUJqudepapKNt2DYJFw==}
 
-  '@types/babel__core@7.20.5':
-    resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
-
-  '@types/babel__generator@7.27.0':
-    resolution: {integrity: sha512-ufFd2Xi92OAVPYsy+P4n7/U7e68fex0+Ee8gSG9KX7eo084CWiQ4sdxktvdl0bOPupXtVJPY19zk6EwWqUQ8lg==}
-
-  '@types/babel__template@7.4.4':
-    resolution: {integrity: sha512-h/NUaSyG5EyxBIp8YRxo4RMe2/qQgvyowRwVMzhYhBCONbW8PUsg4lkFMrhgZhUe5z3L3MiLDuvyJ/CaPa2A8A==}
-
-  '@types/babel__traverse@7.28.0':
-    resolution: {integrity: sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==}
-
   '@types/chai@5.2.2':
     resolution: {integrity: sha512-8kB30R7Hwqf40JPiKhVzodJs2Qc1ZJ5zuT3uzw5Hq/dhNCl3G3l83jfpdI1e20BP348+fV7VIL/+FxaXkqBmWg==}
 
@@ -3084,10 +3036,6 @@ packages:
     engines: {node: '>=20.19.0'}
     peerDependencies:
       vue: ^2.7.0 || ^3.0.0
-
-  '@vue-macros/jsx-directive@3.0.1':
-    resolution: {integrity: sha512-3zSokybVKxrsqIInCUrBYsFMGubSUpq8RDJK03VfBEB0BEXO5cwW0e5ddd0BHqKQzkV4VJ+5LYSJdNQbV4lYxw==}
-    engines: {node: '>=20.19.0'}
 
   '@vue-macros/short-bind@3.0.1':
     resolution: {integrity: sha512-tGTduHQD6as8F7xrOS6ie2eXq8E5xLN1WnXNts7Q+kkanvRZu++h/5tLsaOOfPdPQR+87C9mNKISzom3aKmLGg==}
@@ -7944,27 +7892,6 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@types/babel__core@7.20.5':
-    dependencies:
-      '@babel/parser': 7.28.4
-      '@babel/types': 7.28.4
-      '@types/babel__generator': 7.27.0
-      '@types/babel__template': 7.4.4
-      '@types/babel__traverse': 7.28.0
-
-  '@types/babel__generator@7.27.0':
-    dependencies:
-      '@babel/types': 7.28.5
-
-  '@types/babel__template@7.4.4':
-    dependencies:
-      '@babel/parser': 7.28.5
-      '@babel/types': 7.28.5
-
-  '@types/babel__traverse@7.28.0':
-    dependencies:
-      '@babel/types': 7.28.5
-
   '@types/chai@5.2.2':
     dependencies:
       '@types/deep-eql': 4.0.2
@@ -8355,16 +8282,6 @@ snapshots:
     transitivePeerDependencies:
       - vue
 
-  '@vue-macros/common@3.0.1(vue@3.5.21(typescript@5.9.2))':
-    dependencies:
-      '@vue/compiler-sfc': 3.5.21
-      ast-kit: 2.1.2
-      local-pkg: 1.1.2
-      magic-string-ast: 1.0.2
-      unplugin-utils: 0.3.0
-    optionalDependencies:
-      vue: 3.5.21(typescript@5.9.2)
-
   '@vue-macros/common@3.0.1(vue@3.6.0-alpha.2(typescript@5.9.2))':
     dependencies:
       '@vue/compiler-sfc': 3.5.21
@@ -8388,14 +8305,6 @@ snapshots:
       '@vue-macros/common': 3.0.1(vue@3.6.0-alpha.2(typescript@5.9.2))
       unplugin: 2.3.10
       vue: 3.6.0-alpha.2(typescript@5.9.2)
-
-  '@vue-macros/jsx-directive@3.0.1(typescript@5.9.2)':
-    dependencies:
-      '@vue-macros/common': 3.0.1(vue@3.5.21(typescript@5.9.2))
-      unplugin: 2.3.10
-      vue: 3.5.21(typescript@5.9.2)
-    transitivePeerDependencies:
-      - typescript
 
   '@vue-macros/short-bind@3.0.1(vue@3.6.0-alpha.2(typescript@5.9.2))':
     dependencies:

@@ -1,7 +1,7 @@
 {
   "name": "@vue-jsx-vapor/compiler-rs",
   "version": "3.0.4",
-  "packageManager": "pnpm@10.17.1",
+  "packageManager": "pnpm@10.25.0",
   "description": "Template project for writing node package with napi-rs",
   "keywords": [
     "napi-rs",
@@ -60,11 +60,11 @@
     "flamegraph": "CARGO_PROFILE_RELEASE_STRIP=false CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --bench bench --no-default-features"
   },
   "devDependencies": {
-    "@emnapi/core": "^1.5.0",
-    "@emnapi/runtime": "^1.5.0",
-    "@napi-rs/cli": "^3.2.0",
-    "@napi-rs/wasm-runtime": "^1.0.4",
+    "@emnapi/core": "^1.7.1",
+    "@emnapi/runtime": "^1.7.1",
+    "@napi-rs/cli": "^3.5.0",
+    "@napi-rs/wasm-runtime": "^1.1.0",
     "@taplo/cli": "^0.7.0",
-    "emnapi": "^1.5.0"
+    "emnapi": "^1.7.1"
   }
 }

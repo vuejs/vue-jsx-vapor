@@ -142,7 +142,7 @@
     "unplugin": "catalog:"
   },
   "devDependencies": {
-    "@babel/types": "catalog:",
+    "@babel/types": "^7.28.4",
     "@nuxt/kit": "catalog:",
     "@nuxt/schema": "catalog:",
     "@types/hash-sum": "catalog:",

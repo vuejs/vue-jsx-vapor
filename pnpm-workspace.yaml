@@ -5,20 +5,11 @@ packages:
   - benchmark
 
 defines:
-  - &babel ^7.28.4
   - &vue-macros ^3.0.1
   - &ts-macro ^0.3.6
   - &vue 3.6.0-alpha.2
 
 catalog:
-  '@babel/core': *babel
-  '@babel/parser': *babel
-  '@babel/plugin-syntax-jsx': ^7.27.1
-  '@babel/plugin-transform-typescript': ^7.28.0
-  '@babel/traverse': *babel
-  '@babel/types': *babel
-  '@types/babel__core': ^7.20.5
-
   '@nuxt/kit': ^3.19.2
   '@nuxt/schema': ^3.19.2
 

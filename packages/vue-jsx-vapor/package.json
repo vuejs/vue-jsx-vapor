@@ -169,16 +169,11 @@
     }
   },
   "dependencies": {
-    "@babel/core": "catalog:",
-    "@babel/plugin-transform-typescript": "catalog:",
     "@vue-jsx-vapor/compiler-rs": "workspace:*",
     "@vue-jsx-vapor/macros": "workspace:*",
     "@vue-jsx-vapor/runtime": "workspace:*",
-    "@vue-macros/jsx-directive": "catalog:",
     "@vue-macros/volar": "catalog:",
-    "@vue/babel-plugin-jsx": "^1.5.0",
     "@vue/shared": "catalog:",
-    "hash-sum": "catalog:",
     "pathe": "^2.0.3",
     "ts-macro": "catalog:",
     "unplugin": "catalog:",
@@ -186,8 +181,6 @@
   },
   "devDependencies": {
     "@nuxt/kit": "catalog:",
-    "@nuxt/schema": "catalog:",
-    "@types/babel__core": "catalog:",
-    "@types/hash-sum": "catalog:"
+    "@nuxt/schema": "catalog:"
   }
 }
