@@ -1,55 +1,55 @@
-use napi::{
-  Either,
-  bindgen_prelude::{Either3, Either4},
-};
+use napi::{Either, bindgen_prelude::Either3};
+use oxc_allocator::TakeIn;
 use oxc_ast::ast::{JSXAttributeValue, JSXChild, JSXElement};
 
-use crate::{
-  ir::{
-    component::{IRSlotType, IRSlotsExpression},
-    index::BlockIRNode,
-  },
-  transform::TransformContext,
-};
+use crate::{ast::NodeTypes, ir::index::BlockIRNode, transform::TransformContext};
 use common::{
-  check::is_jsx_component, directive::find_prop_mut, error::ErrorCodes,
-  expression::SimpleExpressionNode,
+  check::is_jsx_component, directive::find_prop_mut, error::ErrorCodes, patch_flag::PatchFlags,
 };
 
 /// # SAFETY
 pub unsafe fn transform_v_slots<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  context_block: &'a mut BlockIRNode<'a>,
+  _: &'a mut BlockIRNode<'a>,
   _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
 
+  let node_span = node.span;
   let node = node as *mut oxc_allocator::Box<'a, JSXElement<'a>>;
 
   if let Some(dir) = find_prop_mut(unsafe { &mut *node }, Either::A("v-slots".to_string())) {
     if !is_jsx_component(unsafe { &*node }) {
-      context.options.on_error.as_ref()(ErrorCodes::VSlotMisplaced, unsafe { &*node }.span);
+      context.options.on_error.as_ref()(ErrorCodes::VSlotMisplaced, node_span);
       return None;
     }
 
-    if !unsafe { &mut *node }.children.is_empty() {
-      context.options.on_error.as_ref()(ErrorCodes::VSlotMixedSlotUsage, unsafe { &*node }.span);
+    if !unsafe { &*node }.children.is_empty() {
+      context.options.on_error.as_ref()(ErrorCodes::VSlotMixedSlotUsage, node_span);
       return None;
     }
 
     if let Some(JSXAttributeValue::ExpressionContainer(value)) = &mut dir.value {
-      let slots = SimpleExpressionNode::new(
-        Either3::A(value.expression.to_expression_mut()),
-        context.ir.borrow().source,
-      );
+      let slots = value
+        .expression
+        .to_expression_mut()
+        .take_in(context.allocator);
       Some(Box::new(move || {
-        context_block.slots = vec![Either4::D(IRSlotsExpression {
-          slot_type: IRSlotType::EXPRESSION,
-          slots,
-        })];
+        if let Some(NodeTypes::VNodeCall(vnode_call)) =
+          context.codegen_map.borrow_mut().get_mut(&node_span)
+        {
+          vnode_call.children = Some(Either3::C(slots));
+          vnode_call.patch_flag = Some(
+            if let Some(patch_flag) = vnode_call.patch_flag {
+              patch_flag
+            } else {
+              0
+            } | PatchFlags::DynamicSlots as i32,
+          )
+        }
       }))
     } else {
       context.options.on_error.as_ref()(ErrorCodes::VSlotsNoExpression, dir.span);

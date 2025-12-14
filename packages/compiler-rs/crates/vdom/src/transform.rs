@@ -38,6 +38,7 @@ use crate::{
   transform::{
     transform_children::transform_children, transform_element::transform_element,
     transform_text::transform_text, v_for::transform_v_for, v_if::transform_v_if,
+    v_slots::transform_v_slots,
   },
 };
 
@@ -431,8 +432,8 @@ impl<'a> TransformContext<'a> {
           transform_v_if,
           transform_v_for,
           // transform_template_ref,
+          transform_v_slots,
           transform_element,
-          // transform_v_slots,
           track_slot_scopes,
           transform_text,
         ] {

@@ -3,3 +3,4 @@ mod v_for;
 mod v_html;
 mod v_if;
 mod v_slot;
+mod v_slots;
