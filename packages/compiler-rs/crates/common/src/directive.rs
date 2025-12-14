@@ -4,7 +4,7 @@ use oxc_span::{SPAN, Span};
 
 use crate::expression::SimpleExpressionNode;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DirectiveNode<'a> {
   // the normalized name without prefix or shorthands, e.g. "bind", "on"
   pub name: String,
@@ -16,9 +16,14 @@ pub struct DirectiveNode<'a> {
 
 pub fn resolve_directive<'a>(node: &'a mut JSXAttribute<'a>, source: &'a str) -> DirectiveNode<'a> {
   let mut arg_string = String::new();
+  let mut arg_span = SPAN;
   let mut name_string = match &node.name {
-    JSXAttributeName::Identifier(name) => name.name.to_string(),
+    JSXAttributeName::Identifier(name) => {
+      arg_span = name.span;
+      name.name.to_string()
+    }
     JSXAttributeName::NamespacedName(name) => {
+      arg_span = name.name.span;
       arg_string = name.name.name.to_string();
       name.namespace.name.to_string()
     }
@@ -69,7 +74,7 @@ pub fn resolve_directive<'a>(node: &'a mut JSXAttribute<'a>, source: &'a str) ->
         content: arg_string,
         is_static,
         ast: None,
-        loc: SPAN,
+        loc: arg_span,
       })
     } else {
       None
@@ -79,7 +84,7 @@ pub fn resolve_directive<'a>(node: &'a mut JSXAttribute<'a>, source: &'a str) ->
       content: name_string,
       is_static: true,
       ast: None,
-      loc: SPAN,
+      loc: arg_span,
     })
   } else {
     None
@@ -139,3 +144,15 @@ define_find_prop!(
   &'a mut JSXAttribute<'a>,
   iter_mut
 );
+
+pub fn get_modifier_prop_name(name: &str) -> String {
+  format!(
+    "{}Modifiers{}",
+    if name == "modelValue" || name == "model-value" {
+      "model"
+    } else {
+      name
+    },
+    if name == "model" { "$" } else { "" }
+  )
+}

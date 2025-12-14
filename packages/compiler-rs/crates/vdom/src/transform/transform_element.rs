@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use napi::{Either, bindgen_prelude::Either3};
 use oxc_allocator::TakeIn;
 use oxc_ast::{
@@ -16,7 +14,8 @@ use crate::{
   ir::index::{BlockIRNode, RootNode},
   transform::{
     DirectiveTransformResult, TransformContext, cache_static::get_constant_type,
-    v_bind::transform_v_bind, v_html::transform_v_html, v_slot::build_slots,
+    v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
+    v_slot::build_slots,
   },
 };
 
@@ -24,7 +23,7 @@ use common::{
   check::{
     is_built_in_directive, is_directive, is_event, is_jsx_component, is_reserved_prop, is_template,
   },
-  directive::DirectiveNode,
+  directive::{DirectiveNode, resolve_directive},
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
   patch_flag::PatchFlags,
@@ -216,10 +215,9 @@ pub fn build_props<'a>(
 
   let mut properties: oxc_allocator::Vec<ObjectPropertyKind> = ast.vec();
   let mut merge_args: oxc_allocator::Vec<Expression> = ast.vec();
-  let runtime_directives: Vec<DirectiveNode> = vec![];
+  let mut runtime_directives = vec![];
   let has_children = !node.children.is_empty();
   let mut should_use_block = false;
-  let directive_import_map: HashMap<Span, String> = HashMap::new();
 
   // patchFlag analysis
   let mut patch_flag = 0;
@@ -342,7 +340,7 @@ pub fn build_props<'a>(
           };
         }
 
-        let mut dir_name = if is_event(name) {
+        let dir_name = if is_event(name) {
           "on".to_string()
         } else if is_directive(name) {
           name[2..].to_string()
@@ -374,10 +372,7 @@ pub fn build_props<'a>(
           }
         }
 
-        if let Some(DirectiveTransformResult {
-          props,
-          need_runtime,
-        }) = match dir_name.as_str() {
+        if let Some(DirectiveTransformResult { props, runtime }) = match dir_name.as_str() {
           "bind" => {
             // #938: elements with dynamic keys should be forced into blocks
             if name == "key" {
@@ -399,34 +394,28 @@ pub fn build_props<'a>(
             None
             // return transform_v_on(prop, node, context, context_block),
           }
-          // "model" => return transform_v_model(prop, node, context, context_block),
+          "model" => transform_v_model(prop, node, context, context_block),
           // "show" => return transform_v_show(prop, node, context, context_block),
           "html" => transform_v_html(prop, node, context),
           // "text" => return transform_v_text(prop, node, context, context_block),
           _ => {
             if !is_built_in_directive(&dir_name) {
-              let with_fallback = context.options.with_fallback;
-              if with_fallback {
-                let directive = &mut context.ir.borrow_mut().directive;
-                directive.insert(dir_name.clone());
+              let runtime = if context.options.with_fallback {
+                // inject statement for resolving directive
+                context.helper("resolveDirective");
+                context.directives.borrow_mut().insert(dir_name.clone());
+                to_valid_asset_id(&dir_name, "directive")
               } else {
-                dir_name = camelize(&format!("v-{dir_name}"))
+                camelize(&format!("v-{dir_name}"))
               };
-
-              let element = context.reference(&mut context_block.dynamic);
-              // context.register_operation(
-              //   context_block,
-              //   Either16::M(DirectiveIRNode {
-              //     directive: true,
-              //     element,
-              //     dir: resolve_directive(prop, context.ir.borrow().source),
-              //     name: dir_name,
-              //     asset: Some(with_fallback),
-              //     builtin: None,
-              //     model_type: None,
-              //   }),
-              //   None,
-              // )
+              runtime_directives.push(
+                build_directive_args(
+                  resolve_directive(prop, context.ir.borrow().source),
+                  context,
+                  &runtime,
+                )
+                .into(),
+              );
             }
             None
           }
@@ -435,6 +424,9 @@ pub fn build_props<'a>(
             props.iter().for_each(&mut analyze_patch_flag);
           }
           properties.extend(props);
+          if let Some(runtime) = runtime {
+            runtime_directives.push(runtime.into());
+          }
         };
       }
       JSXAttributeItem::SpreadAttribute(prop) => {
@@ -589,13 +581,7 @@ pub fn build_props<'a>(
   }
 
   let directives = if !runtime_directives.is_empty() {
-    Some(ast.array_expression(
-      SPAN,
-      ast.vec_from_iter(runtime_directives.into_iter().map(|dir| {
-        let loc = dir.loc;
-        build_directive_args(dir, context, directive_import_map.get(&loc)).into()
-      })),
-    ))
+    Some(ast.array_expression(SPAN, ast.vec_from_iter(runtime_directives)))
   } else {
     None
   };
@@ -667,20 +653,12 @@ pub fn dedupe_properties<'a>(
 pub fn build_directive_args<'a>(
   dir: DirectiveNode<'a>,
   context: &'a TransformContext<'a>,
-  runtime: Option<&String>,
+  runtime: &str,
 ) -> Expression<'a> {
   let ast = &context.ast;
   let mut dir_args = ast.vec();
-  if let Some(runtime) = runtime {
-    // built-in directive with runtime
-    // dir_args.push(context.helper(&runtime));
-  } else {
-    // inject statement for resolving directive
-    context.helper("resolveDirective");
-    dir_args
-      .push(ast.expression_identifier(SPAN, ast.atom(&to_valid_asset_id(&dir.name, "directive"))));
-    context.ir.borrow_mut().directive.insert(dir.name);
-  }
+  // built-in directive with runtime
+  dir_args.push(ast.expression_identifier(SPAN, ast.atom(&runtime)));
   let exp_is_none = dir.exp.is_none();
   if let Some(exp) = dir.exp
     && let Some(node) = exp.ast

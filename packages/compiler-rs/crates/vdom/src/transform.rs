@@ -46,7 +46,7 @@ use common::check::{is_constant_node, is_template};
 
 pub struct DirectiveTransformResult<'a> {
   pub props: Vec<ObjectPropertyKind<'a>>,
-  pub need_runtime: Option<String>,
+  pub runtime: Option<Expression<'a>>,
 }
 
 // pub type ContextNode<'a> = Either<RootNode<'a>, JSXChild<'a>>;

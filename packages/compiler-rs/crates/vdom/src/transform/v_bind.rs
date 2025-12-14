@@ -59,6 +59,6 @@ pub fn transform_v_bind<'a>(
       false,
       false,
     )],
-    need_runtime: None,
+    runtime: None,
   })
 }

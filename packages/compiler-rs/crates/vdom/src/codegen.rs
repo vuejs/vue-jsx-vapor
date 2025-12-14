@@ -230,7 +230,6 @@ impl<'a> TransformContext<'a> {
       ..
     } = node;
 
-    if let Some(directives) = directives {}
     let call_helper = if is_block {
       get_vnode_block_helper(self.options.in_ssr, is_component)
     } else {
@@ -304,6 +303,20 @@ impl<'a> TransformContext<'a> {
         ),
       )
     }
+
+    if let Some(directives) = directives {
+      result = ast.expression_call(
+        SPAN,
+        ast.expression_identifier(SPAN, ast.atom(&self.helper("withDirectives"))),
+        NONE,
+        ast.vec_from_array([
+          result.into(),
+          Argument::ArrayExpression(ast.alloc(directives)),
+        ]),
+        false,
+      )
+    }
+
     result
   }
 }
