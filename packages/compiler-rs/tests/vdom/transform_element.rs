@@ -26,7 +26,7 @@ fn basic() {
     const _component_Comp = _resolveComponent("Comp");
     return _openBlock(), _createElementBlock("div", { foo }, [
       _createVNode(_component_Comp, { "^foo-bar": bar }, null, 8, ["^foo-bar"]),
-      _cache.0 || (_cache.0 = _createElementVNode("span", null, "bar", -1)),
+      _cache[0] || (_cache[0] = _createElementVNode("span", null, "bar", -1)),
       baz
     ], 8, _hoisted_1);
   })();

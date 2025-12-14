@@ -148,22 +148,22 @@ impl<'a> TransformContext<'a> {
     need_array_spread: bool,
   ) -> Expression<'a> {
     let ast = &self.ast;
-    let cache = ast.alloc_static_member_expression(
+    let cache = ast.alloc_computed_member_expression(
       SPAN,
       ast.expression_identifier(SPAN, ast.atom("_cache")),
-      ast.identifier_name(SPAN, ast.atom(&self.cache_index.borrow().to_string())),
+      ast.expression_identifier(SPAN, ast.atom(&self.cache_index.borrow().to_string())),
       false,
     );
     let exp = ast.expression_logical(
       SPAN,
-      Expression::StaticMemberExpression(cache.clone_in(ast.allocator)),
+      Expression::ComputedMemberExpression(cache.clone_in(ast.allocator)),
       LogicalOperator::Or,
       ast.expression_parenthesized(
         SPAN,
         ast.expression_assignment(
           SPAN,
           AssignmentOperator::Assign,
-          AssignmentTarget::StaticMemberExpression(cache),
+          AssignmentTarget::ComputedMemberExpression(cache),
           value,
         ),
       ),
