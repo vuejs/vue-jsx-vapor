@@ -27,10 +27,7 @@ pub struct VNodeCall<'a> {
   pub is_block: bool,
   pub disable_tracking: bool,
   pub is_component: bool,
-  /// Some(true): v-for with single child
-  /// Some(false):  v-for with multiple children
-  /// None: not v-for
-  pub v_for: Option<bool>,
+  pub v_for: bool,
   pub v_if: Option<Vec<IfBranchNode<'a>>>,
   pub loc: Span,
 }

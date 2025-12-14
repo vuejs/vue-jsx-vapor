@@ -102,7 +102,11 @@ pub unsafe fn transform_text<'a>(
         // mark dynamic text with flag so it gets patched inside a block
         if !*context.options.ssr.borrow()
           && matches!(
-            get_constant_type(Either::A(child), context,),
+            get_constant_type(
+              Either::A(child),
+              context,
+              &mut context.codegen_map.borrow_mut()
+            ),
             ConstantTypes::NotConstant
           )
         {

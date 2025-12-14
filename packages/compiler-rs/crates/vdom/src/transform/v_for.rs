@@ -94,8 +94,12 @@ pub unsafe fn transform_v_for<'a>(
     None
   };
 
-  let is_stable_fragment =
-    (get_constant_type(Either::B(&source), context) as i32) > ConstantTypes::NotConstant as i32;
+  let is_stable_fragment = (get_constant_type(
+    Either::B(&source),
+    context,
+    &mut context.codegen_map.borrow_mut(),
+  ) as i32)
+    > ConstantTypes::NotConstant as i32;
   let fragment_flag = if is_stable_fragment {
     PatchFlags::StableFragment
   } else if key_property.is_some() {
@@ -132,7 +136,7 @@ pub unsafe fn transform_v_for<'a>(
       is_block: true,
       disable_tracking: !is_stable_fragment,
       is_component: false,
-      v_for: Some(true),
+      v_for: true,
       v_if: None,
       loc: node_span,
     }),
@@ -158,46 +162,20 @@ pub unsafe fn transform_v_for<'a>(
       })
       .collect::<Vec<_>>();
 
-    let need_fragment_wrapper = children.len() != 1 || !matches!(children[0], JSXChild::Element(_));
-    let child_block = if need_fragment_wrapper {
-      // <template v-for="..."> with text or multi-elements
-      // should generate a fragment block for each loop
-      VNodeCall {
-        tag: context.helper("Fragment"),
-        props: key_property.map(|key_property| {
-          ast.expression_object(
-            SPAN,
-            ast.vec1(ObjectPropertyKind::ObjectProperty(ast.alloc(key_property))),
-          )
-        }),
-        children: Some(Either3::B(&mut unsafe { &mut *node }.children)),
-        patch_flag: Some(PatchFlags::StableFragment as i32),
-        dynamic_props: None,
-        directives: None,
-        is_block: true,
-        disable_tracking: false,
-        is_component: false,
-        v_for: None,
-        v_if: None,
-        loc: SPAN,
-      }
-    } else {
-      // Normal element v-for. Directly use the child's codegenNode
-      // but mark it as a block.
-      let NodeTypes::VNodeCall(mut child_block) = context
-        .codegen_map
-        .borrow_mut()
-        .remove(&children[0].span())
-        .unwrap()
-      else {
-        unreachable!()
-      };
-      if is_template && let Some(key_property) = key_property {
-        inject_prop(&mut child_block, key_property, context);
-      }
-      child_block.is_block = !is_stable_fragment;
-      child_block
+    // Normal element v-for. Directly use the child's codegenNode
+    // but mark it as a block.
+    let NodeTypes::VNodeCall(mut child_block) = context
+      .codegen_map
+      .borrow_mut()
+      .remove(&children[0].span())
+      .unwrap()
+    else {
+      unreachable!()
     };
+    if is_template && let Some(key_property) = key_property {
+      inject_prop(&mut child_block, key_property, context);
+    }
+    child_block.is_block = !is_stable_fragment;
 
     render_exp.arguments.push(
       ast
@@ -223,9 +201,6 @@ pub unsafe fn transform_v_for<'a>(
     if let Some(NodeTypes::VNodeCall(fragment_codegen)) =
       context.codegen_map.borrow_mut().get_mut(&fragment_span)
     {
-      if need_fragment_wrapper {
-        fragment_codegen.v_for = Some(false);
-      }
       fragment_codegen.children = Some(Either3::C(Expression::CallExpression(
         ast.alloc(render_exp),
       )));

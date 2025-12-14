@@ -93,7 +93,7 @@ pub unsafe fn transform_v_if<'a>(
         is_block: true,
         disable_tracking: false,
         is_component: false,
-        v_for: None,
+        v_for: false,
         v_if: Some(vec![branch]),
         loc: node_span,
       }),
@@ -176,19 +176,20 @@ pub unsafe fn transform_v_if<'a>(
   // Exit callback. Complete the codegenNode when all children have been
   // transformed.
   Some(Box::new(move || {
-    let codegen_map = context.codegen_map.as_ptr();
+    let codegen_map_ptr = context.codegen_map.as_ptr();
+    let codegen_map = unsafe { &mut *codegen_map_ptr };
     if dir_name == "v-if" {
       if let Some(NodeTypes::VNodeCall(fragment_codegen)) =
-        unsafe { &mut *codegen_map }.get_mut(&fragment_span)
+        unsafe { &mut *codegen_map_ptr }.get_mut(&fragment_span)
         && let Some(branchs) = &mut fragment_codegen.v_if
       {
         let branch = &mut branchs[0];
-        cache_static(unsafe { &mut *branch.node }, context);
+        cache_static(unsafe { &mut *branch.node }, context, codegen_map);
         fragment_codegen.children = Some(Either3::C(create_codegen_node_for_branch(
           branch,
           key,
-          unsafe { &mut *codegen_map },
           context,
+          codegen_map,
         )));
       }
     } else if let Some(if_node) = last_if_node
@@ -197,11 +198,11 @@ pub unsafe fn transform_v_if<'a>(
       && let Some(branchs) = if_node.v_if.as_mut()
     {
       let branch = branchs.last_mut().unwrap();
-      cache_static(unsafe { &mut *branch.node }, context);
+      cache_static(unsafe { &mut *branch.node }, context, codegen_map);
       // attach this branch's codegen node to the v-if root.
       let parent_condition = unsafe { &mut *get_parent_condition(children).unwrap() };
       parent_condition.alternate =
-        create_codegen_node_for_branch(branch, key - 1, unsafe { &mut *codegen_map }, context);
+        create_codegen_node_for_branch(branch, key - 1, context, codegen_map);
     }
   }))
 }
@@ -209,8 +210,8 @@ pub unsafe fn transform_v_if<'a>(
 fn create_codegen_node_for_branch<'a>(
   branch: &mut IfBranchNode<'a>,
   key_index: usize,
-  codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
   context: &TransformContext<'a>,
+  codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
 ) -> Expression<'a> {
   let ast = &context.ast;
   if let Some(condition) = &mut branch.condition {

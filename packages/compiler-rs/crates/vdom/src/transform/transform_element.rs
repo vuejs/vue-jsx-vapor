@@ -176,7 +176,7 @@ pub unsafe fn transform_element<'a>(
       is_block: should_use_block,
       disable_tracking: false,
       is_component,
-      v_for: None,
+      v_for: false,
       v_if: None,
       loc: SPAN,
     };
@@ -284,7 +284,12 @@ pub fn build_props<'a>(
       }
 
       if context.constant_cache.borrow().get(&value.span()).is_some()
-        || (get_constant_type(Either::B(value), context) as i32) > 0
+        || (get_constant_type(
+          Either::B(value),
+          context,
+          &mut context.codegen_map.borrow_mut(),
+        ) as i32)
+          > 0
       {
         // skip if the prop is a cached handler or has constant values
         return;

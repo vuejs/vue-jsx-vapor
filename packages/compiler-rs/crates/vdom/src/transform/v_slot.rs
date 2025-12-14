@@ -6,7 +6,7 @@ use common::{
   error::ErrorCodes,
   expression::{expression_to_params, jsx_attribute_value_to_expression},
   patch_flag::SlotFlags,
-  text::is_empty_text,
+  text::{get_tag_name, is_empty_text},
 };
 use napi::Either;
 use oxc_allocator::TakeIn;
@@ -14,7 +14,8 @@ use oxc_ast::{
   NONE,
   ast::{
     ArrayExpressionElement, ConditionalExpression, Expression, FormalParameterKind,
-    JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement, NumberBase, PropertyKind,
+    JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement, NumberBase, ObjectPropertyKind,
+    PropertyKey, PropertyKind, Statement,
   },
 };
 use oxc_span::{GetSpan, SPAN};
@@ -135,7 +136,7 @@ pub fn build_slots<'a>(
 
   // 2. Iterate through children and check for template slots
   //    <template v-slot:foo="{ prop }">
-  let mut has_tempalte_slots = false;
+  let mut has_template_slots = false;
   let mut has_named_default_slot = false;
   let mut implicit_default_children = ast.vec();
   let mut seen_slot_names = HashSet::new();
@@ -177,7 +178,7 @@ pub fn build_slots<'a>(
       break;
     }
 
-    has_tempalte_slots = true;
+    has_template_slots = true;
     // check if name is dynamic.
     let mut static_slot_name = None;
     let slot_dir = slot_dir.unwrap();
@@ -395,7 +396,7 @@ pub fn build_slots<'a>(
   }
 
   if on_component_slot.is_none() {
-    if !has_tempalte_slots {
+    if !has_template_slots {
       // implicit default slot (on component)
       slots_properties.push(ast.object_property_kind_object_property(
         SPAN,
@@ -491,7 +492,28 @@ pub fn build_slots<'a>(
     false,
     false,
   ));
-  let mut slots = ast.expression_object(SPAN, slots_properties);
+  // covert Fragment's object slots to array
+  let tag_name = get_tag_name(&node.opening_element.name, context.ir.borrow().source);
+  let mut slots = if tag_name == "Fragment" || tag_name == "_Fragment" {
+    has_dynamic_slots = false;
+    slots_properties
+      .into_iter()
+      .find_map(|prop| {
+        if let ObjectPropertyKind::ObjectProperty(mut prop) = prop
+          && let PropertyKey::StaticIdentifier(key) = &prop.key
+          && key.name == "default"
+          && let Expression::ArrowFunctionExpression(value) = &mut prop.value
+          && let Some(Statement::ExpressionStatement(stmt)) = value.body.statements.get_mut(0)
+        {
+          Some(stmt.expression.take_in(context.allocator))
+        } else {
+          None
+        }
+      })
+      .unwrap()
+  } else {
+    ast.expression_object(SPAN, slots_properties)
+  };
   if !dynamic_slots.is_empty() {
     slots = ast.expression_call(
       SPAN,

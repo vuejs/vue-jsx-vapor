@@ -456,7 +456,7 @@ impl<'a> TransformContext<'a> {
 
       if is_root {
         self.register_template(&mut context_block.dynamic);
-        cache_static(&mut *node, self);
+        cache_static(&mut *node, self, &mut self.codegen_map.borrow_mut());
       }
     }
   }
