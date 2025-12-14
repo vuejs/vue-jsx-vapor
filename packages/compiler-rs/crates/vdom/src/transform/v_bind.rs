@@ -1,4 +1,6 @@
-use common::{expression::jsx_attribute_value_to_expression, text::camelize};
+use common::{
+  check::is_simple_identifier, expression::jsx_attribute_value_to_expression, text::camelize,
+};
 use oxc_allocator::TakeIn;
 use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement, PropertyKind};
 use oxc_span::{GetSpan, SPAN};
@@ -36,6 +38,10 @@ pub fn transform_v_bind<'a>(
       arg = format!("^{}", arg);
     }
   };
+
+  if !is_simple_identifier(&arg) {
+    arg = format!("\"{}\"", arg);
+  }
 
   let value = if let Some(value) = &mut dir.value {
     jsx_attribute_value_to_expression(value.take_in(context.allocator), ast.allocator)

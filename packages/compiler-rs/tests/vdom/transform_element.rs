@@ -6,7 +6,7 @@ use insta::assert_snapshot;
 fn basic() {
   let code = transform(
     r#"export default () => <div foo={foo}>
-      <Comp bar={bar} />
+      <Comp foo-bar_attr={bar} />
       <span>bar</span>
       {baz}
     </div>"#,
@@ -25,7 +25,7 @@ fn basic() {
     const _cache = _useVdomCache();
     const _component_Comp = _resolveComponent("Comp");
     return _openBlock(), _createElementBlock("div", { foo }, [
-      _createVNode(_component_Comp, { bar }, null, 8, ["bar"]),
+      _createVNode(_component_Comp, { "^foo-bar": bar }, null, 8, ["^foo-bar"]),
       _cache.0 || (_cache.0 = _createElementVNode("span", null, "bar", -1)),
       baz
     ], 8, _hoisted_1);

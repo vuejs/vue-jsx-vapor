@@ -150,9 +150,12 @@ pub unsafe fn transform_element<'a>(
       Some(ast.expression_array(
         SPAN,
         ast.vec_from_iter(dynamic_prop_names.into_iter().map(|name| {
-          ast
-            .expression_string_literal(SPAN, ast.atom(&name), None)
-            .into()
+          if name.starts_with("\"") {
+            ast.expression_identifier(SPAN, ast.atom(&name))
+          } else {
+            ast.expression_string_literal(SPAN, ast.atom(&name), None)
+          }
+          .into()
         })),
       ))
     } else {
@@ -280,17 +283,9 @@ pub fn build_props<'a>(
         value = arg.to_expression();
       }
 
-      // TODO
-      // if (
-      //   value.type === NodeTypes.JS_CACHE_EXPRESSION ||
-      //   ((value.type === NodeTypes.SIMPLE_EXPRESSION ||
-      //     value.type === NodeTypes.COMPOUND_EXPRESSION) &&
-      //     getConstantType(value, context) > 0)
-      // ) {
-      //   // skip if the prop is a cached handler or has constant value
-      //   return
-      // }
-      if (get_constant_type(Either::B(value), context) as i32) > 0 {
+      if context.constant_cache.borrow().get(&value.span()).is_some()
+        || (get_constant_type(Either::B(value), context) as i32) > 0
+      {
         // skip if the prop is a cached handler or has constant values
         return;
       }
