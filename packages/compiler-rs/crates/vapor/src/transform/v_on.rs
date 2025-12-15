@@ -1,20 +1,14 @@
 use common::{
-  check::{
-    is_delegated_events, is_event_option_modifier, is_jsx_component, is_keyboard_event,
-    is_non_key_modifier, maybe_key_modifier,
-  },
+  check::{is_delegated_events, is_jsx_component},
+  directive::{Modifiers, resolve_modifiers},
   error::ErrorCodes,
   expression::SimpleExpressionNode,
 };
-use napi::{
-  Either,
-  bindgen_prelude::{Either3, Either16},
-};
+use napi::bindgen_prelude::{Either3, Either16};
 use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement};
-use oxc_span::SPAN;
 
 use crate::{
-  ir::index::{BlockIRNode, Modifiers, SetEventIRNode},
+  ir::index::{BlockIRNode, SetEventIRNode},
   transform::{DirectiveTransformResult, TransformContext},
 };
 
@@ -56,22 +50,7 @@ pub fn transform_v_on<'a>(
     keys: key_modifiers,
     non_keys: non_key_modifiers,
     options: event_option_modifiers,
-  } = resolve_modifiers(
-    if arg.is_static {
-      Either::B(format!("on{}", name_string))
-    } else {
-      Either::A(&arg)
-    },
-    modifiers
-      .iter()
-      .map(|modifier| SimpleExpressionNode {
-        content: modifier.to_string(),
-        is_static: false,
-        loc: SPAN,
-        ast: None,
-      })
-      .collect(),
-  );
+  } = resolve_modifiers(&arg.content, modifiers);
 
   let is_static_click = arg.is_static && arg.content.to_lowercase() == "click";
 
@@ -132,57 +111,4 @@ pub fn transform_v_on<'a>(
     None,
   );
   None
-}
-
-pub fn resolve_modifiers(
-  key: Either<&SimpleExpressionNode, String>,
-  modifiers: Vec<SimpleExpressionNode>,
-) -> Modifiers {
-  let mut key_modifiers: Vec<String> = vec![];
-  let mut non_key_modifiers: Vec<String> = vec![];
-  let mut event_option_modifiers: Vec<String> = vec![];
-
-  for modifier in modifiers {
-    let modifier = modifier.content;
-    if is_event_option_modifier(&modifier) {
-      // eventOptionModifiers: modifiers for addEventListener() options,
-      // e.g. .passive & .capture
-      event_option_modifiers.push(modifier);
-    } else {
-      let key_string = match &key {
-        Either::A(node) => {
-          if node.is_static {
-            &node.content
-          } else {
-            ""
-          }
-        }
-        Either::B(string) => string,
-      };
-
-      // runtimeModifiers: modifiers that needs runtime guards
-      if maybe_key_modifier(&modifier) {
-        if !key_string.is_empty() {
-          if is_keyboard_event(&key_string.to_lowercase()) {
-            key_modifiers.push(modifier);
-          } else {
-            non_key_modifiers.push(modifier)
-          }
-        } else {
-          key_modifiers.push(modifier.clone());
-          non_key_modifiers.push(modifier)
-        }
-      } else if is_non_key_modifier(&modifier) {
-        non_key_modifiers.push(modifier)
-      } else {
-        key_modifiers.push(modifier)
-      }
-    }
-  }
-
-  Modifiers {
-    keys: key_modifiers,
-    non_keys: non_key_modifiers,
-    options: event_option_modifiers,
-  }
 }

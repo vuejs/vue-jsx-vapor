@@ -686,7 +686,7 @@ pub fn maybe_key_modifier(modifier: &str) -> bool {
 }
 
 pub fn is_keyboard_event(key: &str) -> bool {
-  matches!(key, "onkeyup" | "onkeydown" | "onkeypress")
+  matches!(key, "keyup" | "keydown" | "keypress")
 }
 
 static RESERVED_PROP: phf::Set<&str> = phf_set!(

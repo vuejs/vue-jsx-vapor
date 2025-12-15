@@ -15,7 +15,7 @@ use crate::{
   transform::{
     DirectiveTransformResult, TransformContext, cache_static::get_constant_type,
     v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
-    v_slot::build_slots,
+    v_on::transform_v_on, v_slot::build_slots,
   },
 };
 
@@ -35,7 +35,7 @@ use common::{
 pub unsafe fn transform_element<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  context_block: &'a mut BlockIRNode<'a>,
+  _: &'a mut BlockIRNode<'a>,
   parent_node: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
@@ -68,14 +68,8 @@ pub unsafe fn transform_element<'a>(
     // leads to too much unnecessary complexity.
     (vnode_tag == "svg" || vnode_tag =="foreignObject" || vnode_tag =="math"));
 
-  let _context_block = context_block as *mut BlockIRNode;
   let _node = node as *mut oxc_allocator::Box<JSXElement>;
-  let props_build_result = build_props(
-    unsafe { &mut *_node },
-    context,
-    unsafe { &mut *_context_block },
-    is_component,
-  );
+  let props_build_result = build_props(unsafe { &mut *_node }, context, is_component);
 
   let vnode_props = props_build_result.props;
   let mut vnode_children = None;
@@ -197,7 +191,6 @@ pub struct PropsResult<'a> {
 pub fn build_props<'a>(
   node: &'a mut JSXElement<'a>,
   context: &'a TransformContext<'a>,
-  context_block: &'a mut BlockIRNode<'a>,
   is_component: bool,
 ) -> PropsResult<'a> {
   let ast = &context.ast;
@@ -354,7 +347,7 @@ pub fn build_props<'a>(
             continue;
           }
 
-          if prop.name.as_identifier().is_some() {
+          if prop.name.get_identifier().name == "v-on" {
             if let Some(value) = &mut prop.value {
               // v-on={obj} -> toHandlers(obj)
               if !properties.is_empty() {
@@ -390,11 +383,9 @@ pub fn build_props<'a>(
             if has_children && name == "onVue:before-update" {
               should_use_block = true;
             }
-
-            None
-            // return transform_v_on(prop, node, context, context_block),
+            transform_v_on(prop, context)
           }
-          "model" => transform_v_model(prop, node, context, context_block),
+          "model" => transform_v_model(prop, node, context),
           // "show" => return transform_v_show(prop, node, context, context_block),
           "html" => transform_v_html(prop, node, context),
           // "text" => return transform_v_text(prop, node, context, context_block),

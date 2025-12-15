@@ -97,6 +97,18 @@ pub fn camelize(str: &str) -> String {
     .collect()
 }
 
+pub fn capitalize(name: String) -> String {
+  if let Some(first) = name.chars().next() {
+    format!(
+      "{}{}",
+      first.to_ascii_uppercase().to_string(),
+      name[1..].to_string()
+    )
+  } else {
+    String::new()
+  }
+}
+
 pub fn to_valid_asset_id(name: &str, _type: &str) -> String {
   let name = name
     .chars()

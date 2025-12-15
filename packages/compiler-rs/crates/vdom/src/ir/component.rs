@@ -1,11 +1,11 @@
-use common::expression::SimpleExpressionNode;
+use common::{directive::Modifiers, expression::SimpleExpressionNode};
 use indexmap::IndexMap;
 use napi::{
   Either,
   bindgen_prelude::{Either3, Either4},
 };
 
-use crate::ir::index::{BlockIRNode, IRFor, Modifiers};
+use crate::ir::index::{BlockIRNode, IRFor};
 
 #[derive(Clone, Debug)]
 pub struct IRProp<'a> {

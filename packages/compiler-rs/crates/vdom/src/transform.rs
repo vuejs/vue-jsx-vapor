@@ -145,7 +145,6 @@ impl<'a> TransformContext<'a> {
     &self,
     value: Expression<'a>,
     is_v_node: bool,
-    in_v_once: bool,
     need_array_spread: bool,
   ) -> Expression<'a> {
     let ast = &self.ast;

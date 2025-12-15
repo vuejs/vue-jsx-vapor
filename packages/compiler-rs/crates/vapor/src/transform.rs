@@ -1,3 +1,4 @@
+use common::directive::Modifiers;
 use common::expression::SimpleExpressionNode;
 pub use common::options::TransformOptions;
 use napi::Either;
@@ -26,8 +27,7 @@ pub mod v_text;
 use crate::generate::CodegenContext;
 use crate::{
   ir::index::{
-    BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, Modifiers, OperationNode, RootIRNode,
-    RootNode,
+    BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, OperationNode, RootIRNode, RootNode,
   },
   transform::{
     transform_children::transform_children, transform_element::transform_element,

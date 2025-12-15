@@ -1,6 +1,9 @@
 use std::collections::HashSet;
 
-use common::{directive::DirectiveNode, text::is_empty_text};
+use common::{
+  directive::{DirectiveNode, Modifiers},
+  text::is_empty_text,
+};
 use napi::{Either, bindgen_prelude::Either16};
 use oxc_allocator::{Allocator, FromIn, TakeIn};
 use oxc_ast::ast::{Expression, JSXChild, JSXClosingFragment, JSXFragment, JSXOpeningFragment};
@@ -243,16 +246,6 @@ pub struct SetNodesIRNode<'a> {
   pub once: bool,
   pub values: Vec<SimpleExpressionNode<'a>>,
   pub generated: Option<bool>, // whether this is a generated empty text node by `processTextLikeContainer`
-}
-
-#[derive(Clone, Debug)]
-pub struct Modifiers {
-  // modifiers for addEventListener() options, e.g. .passive & .capture
-  pub options: Vec<String>,
-  // modifiers that needs runtime guards, withKeys
-  pub keys: Vec<String>,
-  // modifiers that needs runtime guards, withModifiers
-  pub non_keys: Vec<String>,
 }
 
 #[derive(Clone, Debug)]

@@ -28,7 +28,6 @@ pub fn transform_v_model<'a>(
   _dir: &'a mut JSXAttribute<'a>,
   node: &JSXElement,
   context: &'a TransformContext<'a>,
-  _: &mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let ast = &context.ast;
   let mut dir = resolve_directive(_dir, context.ir.borrow().source);
@@ -208,7 +207,7 @@ pub fn transform_v_model<'a>(
 
   // cache v-model handler if applicable (when it's not a computed member expression)
   if cacheable && !*context.in_v_once.borrow() {
-    assignment_exp = context.cache(assignment_exp, false, false, false)
+    assignment_exp = context.cache(assignment_exp, false, false)
   }
 
   if !is_component {
