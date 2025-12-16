@@ -5,7 +5,7 @@ use insta::assert_snapshot;
 #[test]
 fn v_slot_basic() {
   let code = transform(
-    r#"<Comp v-slots={slots}></Comp>"#,
+    r#"<Comp v-slots={{ default: () => <>{<span/>}</> }}></Comp>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -13,11 +13,13 @@ fn v_slot_basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
-  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _useVdomCache();
-    return _openBlock(), _createBlock(Comp, null, slots, 1024);
+    return _openBlock(), _createBlock(Comp, null, { default: () => (() => {
+      return _createVNode(_Fragment, null, [(() => {
+        return _openBlock(), _createElementBlock("span");
+      })()]);
+    })() }, 1024);
   })();
   "#);
 }

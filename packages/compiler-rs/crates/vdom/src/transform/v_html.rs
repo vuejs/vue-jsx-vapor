@@ -1,5 +1,4 @@
-use common::{error::ErrorCodes, expression::jsx_attribute_value_to_expression};
-use oxc_allocator::TakeIn;
+use common::error::ErrorCodes;
 use oxc_ast::ast::{JSXAttribute, JSXElement, PropertyKind};
 use oxc_span::{GetSpan, SPAN};
 
@@ -11,7 +10,7 @@ pub fn transform_v_html<'a>(
   context: &'a TransformContext<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let exp = if let Some(value) = &mut dir.value {
-    jsx_attribute_value_to_expression(value.take_in(context.allocator), context.allocator)
+    context.jsx_attribute_value_to_expression(value)
   } else {
     context.options.on_error.as_ref()(ErrorCodes::VHtmlNoExpression, dir.span);
     return None;

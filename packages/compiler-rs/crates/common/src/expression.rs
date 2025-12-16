@@ -160,20 +160,6 @@ pub fn is_globally_allowed(key: &str) -> bool {
   GLOBALLY_ALLOWED.contains(key)
 }
 
-pub fn jsx_attribute_value_to_expression<'a>(
-  value: JSXAttributeValue<'a>,
-  allocator: &'a Allocator,
-) -> Expression<'a> {
-  match value {
-    JSXAttributeValue::Element(value) => Expression::JSXElement(value),
-    JSXAttributeValue::Fragment(value) => Expression::JSXFragment(value),
-    JSXAttributeValue::StringLiteral(value) => Expression::StringLiteral(value),
-    JSXAttributeValue::ExpressionContainer(mut value) => {
-      value.expression.to_expression_mut().take_in(allocator)
-    }
-  }
-}
-
 pub fn expression_to_params<'a>(
   exp: &Expression<'a>,
   source: &str,

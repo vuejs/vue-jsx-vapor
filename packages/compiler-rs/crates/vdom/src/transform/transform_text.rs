@@ -15,7 +15,7 @@ use crate::{
 use common::{
   check::{is_built_in_directive, is_directive, is_jsx_component, is_template},
   patch_flag::PatchFlags,
-  text::{get_text_like_value, is_empty_text, is_text_like, resolve_jsx_text},
+  text::{get_text_like_value, is_empty_text, resolve_jsx_text},
 };
 
 /// # SAFETY
@@ -30,16 +30,16 @@ pub unsafe fn transform_text<'a>(
   let ast = &context.ast;
   let node = unsafe { &mut *context_node };
 
-  Some(Box::new(move || {
-    let mut children = match unsafe { &mut *context_node } {
-      JSXChild::Element(node) => &mut node.children,
-      JSXChild::Fragment(node) => &mut node.children,
-      _ => return,
-    }
-    .into_iter()
-    .filter(|child| !is_empty_text(child))
-    .collect::<Vec<_>>();
+  let mut children = match unsafe { &mut *context_node } {
+    JSXChild::Element(node) => &mut node.children,
+    JSXChild::Fragment(node) => &mut node.children,
+    _ => return None,
+  }
+  .into_iter()
+  .filter(|child| !is_empty_text(child))
+  .collect::<Vec<_>>();
 
+  Some(Box::new(move || {
     let has_text = children.iter().any(|child| is_text_like(child));
 
     // if this is a plain element with a single text child, leave it
@@ -87,15 +87,18 @@ pub unsafe fn transform_text<'a>(
             )
           }
         } else if let JSXChild::ExpressionContainer(child) = child {
-          if let Some(value) = get_text_like_value(child.expression.to_expression(), false) {
+          if let Some(_) = get_text_like_value(child.expression.to_expression(), false) {
             call_args.push(
               child
                 .expression
                 .to_expression_mut()
-                .take_in(ast.allocator)
+                .take_in(context.allocator)
                 .into(),
             );
           } else {
+            child.expression = context
+              .jsx_expression_to_expression(&mut child.expression)
+              .into();
             continue;
           }
         };
@@ -134,4 +137,8 @@ pub unsafe fn transform_text<'a>(
       }
     }
   }))
+}
+
+fn is_text_like(node: &JSXChild) -> bool {
+  matches!(node, JSXChild::Text(_) | JSXChild::ExpressionContainer(_))
 }

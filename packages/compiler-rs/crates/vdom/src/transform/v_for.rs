@@ -4,7 +4,7 @@ use oxc_ast::{
   NONE,
   ast::{
     BinaryExpression, BindingPatternKind, Expression, FormalParameterKind, FormalParameters,
-    JSXAttribute, JSXAttributeValue, JSXChild, JSXElement, ObjectPropertyKind, PropertyKind,
+    JSXAttribute, JSXAttributeValue, JSXChild, JSXElement, PropertyKind,
   },
 };
 use oxc_span::{GetSpan, SPAN, Span};
@@ -18,7 +18,7 @@ use common::{
   check::is_template,
   directive::{find_prop, find_prop_mut},
   error::ErrorCodes,
-  expression::{expression_to_params, jsx_attribute_value_to_expression},
+  expression::expression_to_params,
   patch_flag::PatchFlags,
   text::is_empty_text,
 };
@@ -70,10 +70,7 @@ pub unsafe fn transform_v_for<'a>(
     find_prop_mut(unsafe { &mut *node }, Either::A("memo".to_string()))
     && let Some(value) = &mut memo_prop.value
   {
-    Some(jsx_attribute_value_to_expression(
-      value.take_in(context.allocator),
-      context.allocator,
-    ))
+    Some(context.jsx_attribute_value_to_expression(value))
   } else {
     None
   };
@@ -85,7 +82,7 @@ pub unsafe fn transform_v_for<'a>(
       SPAN,
       PropertyKind::Init,
       ast.property_key_static_identifier(SPAN, ast.atom("key")),
-      jsx_attribute_value_to_expression(value.clone_in(context.allocator), context.allocator),
+      context.jsx_attribute_value_to_expression(&mut value.clone_in(context.allocator)),
       false,
       false,
       false,
@@ -135,7 +132,7 @@ pub unsafe fn transform_v_for<'a>(
       directives: None,
       is_block: true,
       disable_tracking: !is_stable_fragment,
-      is_component: false,
+      is_component: true,
       v_for: true,
       v_if: None,
       loc: node_span,

@@ -42,9 +42,9 @@ impl<'a> RootNode {
   pub fn from(allocator: &'a Allocator, expression: Expression<'a>) -> JSXChild<'a> {
     let mut is_fragment = false;
     let children = match expression {
-      Expression::JSXFragment(mut node) => {
+      Expression::JSXFragment(node) => {
         is_fragment = true;
-        node.children.take_in(allocator)
+        oxc_allocator::Vec::from_array_in([JSXChild::Fragment(node)], allocator)
       }
       Expression::JSXElement(mut node) => oxc_allocator::Vec::from_array_in(
         [JSXChild::Element(oxc_allocator::Box::new_in(

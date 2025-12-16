@@ -1,10 +1,11 @@
 use common::expression::SimpleExpressionNode;
 pub use common::options::TransformOptions;
+use common::walk::WalkIdentifiers;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
 use oxc_ast::ast::{
-  ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, JSXChild,
-  JSXClosingFragment, JSXExpressionContainer, JSXFragment, JSXOpeningFragment, LogicalOperator,
-  ObjectPropertyKind,
+  ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, JSXAttributeValue,
+  JSXChild, JSXClosingFragment, JSXExpression, JSXExpressionContainer, JSXFragment,
+  JSXOpeningFragment, LogicalOperator, ObjectPropertyKind,
 };
 use oxc_ast::{AstBuilder, NONE};
 use oxc_span::{GetSpan, SPAN, Span};
@@ -406,8 +407,41 @@ impl<'a> TransformContext<'a> {
     }
   }
 
+  pub fn jsx_attribute_value_to_expression(
+    &'a self,
+    value: &mut JSXAttributeValue<'a>,
+  ) -> Expression<'a> {
+    match value.take_in(self.allocator) {
+      JSXAttributeValue::Element(value) => Expression::JSXElement(value),
+      JSXAttributeValue::Fragment(value) => Expression::JSXFragment(value),
+      JSXAttributeValue::StringLiteral(value) => Expression::StringLiteral(value),
+      JSXAttributeValue::ExpressionContainer(mut value) => {
+        self.jsx_expression_to_expression(&mut value.expression)
+      }
+    }
+  }
+
+  pub fn jsx_expression_to_expression(&'a self, value: &mut JSXExpression<'a>) -> Expression<'a> {
+    let value = value.to_expression_mut().take_in(self.allocator);
+    if matches!(
+      value,
+      Expression::Identifier(_) | Expression::StaticMemberExpression(_)
+    ) {
+      value
+    } else {
+      WalkIdentifiers::new(
+        Box::new(|_, _, _, _, _| None),
+        &self.ast,
+        self.ir.borrow().source,
+        self.options,
+        false,
+      )
+      .traverse(value)
+    }
+  }
+
   pub fn transform_node(
-    self: &TransformContext<'a>,
+    self: &'a TransformContext<'a>,
     node: *mut JSXChild<'a>,
     context_block: Option<&'a mut BlockIRNode<'a>>,
     parent_node: Option<&mut JSXChild<'a>>,
@@ -443,9 +477,7 @@ impl<'a> TransformContext<'a> {
         }
       }
 
-      // if is_root {
       transform_children(&mut *node, self, &mut *block);
-      // }
 
       let mut i = exit_fns.len();
       while i > 0 {

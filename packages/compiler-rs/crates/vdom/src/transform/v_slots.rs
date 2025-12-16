@@ -1,5 +1,4 @@
 use napi::{Either, bindgen_prelude::Either3};
-use oxc_allocator::TakeIn;
 use oxc_ast::ast::{JSXAttributeValue, JSXChild, JSXElement};
 
 use crate::{ast::NodeTypes, ir::index::BlockIRNode, transform::TransformContext};
@@ -33,15 +32,13 @@ pub unsafe fn transform_v_slots<'a>(
     }
 
     if let Some(JSXAttributeValue::ExpressionContainer(value)) = &mut dir.value {
-      let slots = value
-        .expression
-        .to_expression_mut()
-        .take_in(context.allocator);
       Some(Box::new(move || {
         if let Some(NodeTypes::VNodeCall(vnode_call)) =
           context.codegen_map.borrow_mut().get_mut(&node_span)
         {
-          vnode_call.children = Some(Either3::C(slots));
+          vnode_call.children = Some(Either3::C(
+            context.jsx_expression_to_expression(&mut value.expression),
+          ));
           vnode_call.patch_flag = Some(
             if let Some(patch_flag) = vnode_call.patch_flag {
               patch_flag

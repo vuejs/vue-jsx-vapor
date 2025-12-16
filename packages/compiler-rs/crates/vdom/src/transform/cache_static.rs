@@ -19,7 +19,7 @@ use crate::{
 
 pub fn cache_static<'a>(
   root: &'a mut JSXChild<'a>,
-  context: &TransformContext<'a>,
+  context: &'a TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
 ) {
   walk(
@@ -55,7 +55,7 @@ pub fn get_single_element_root<'a>(
 fn walk<'a>(
   node: &mut JSXChild<'a>,
   parent: Option<&'a mut JSXChild<'a>>,
-  context: &TransformContext<'a>,
+  context: &'a TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
   do_not_hoist_node: bool,
 ) {

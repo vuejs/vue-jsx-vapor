@@ -2,7 +2,7 @@
 source: tests/transform/interop.rs
 expression: code
 ---
-import { useVdomCache as _useVdomCache, createNodes as _createNodes } from "vue-jsx-vapor";
+import { createNodes as _createNodes } from "vue-jsx-vapor";
 import { createElementBlock as _createElementBlock, openBlock as _openBlock, template as _template } from "vue";
 const t0 = _template("<span></span>", true);
 const t1 = _template("<div></div>");
@@ -13,13 +13,11 @@ const A = defineComponent(() => {
     return n0;
   })());
   return () => (() => {
-    const _cache = _useVdomCache();
     return _openBlock(), _createElementBlock("div");
   })();
 });
 const B = defineVaporComponent(() => {
   const C = defineComponent(() => (() => {
-    const _cache = _useVdomCache();
     return _openBlock(), _createElementBlock("div");
   })());
   const D = (() => {

@@ -19,34 +19,36 @@ use crate::{
 
 impl<'a> TransformContext<'a> {
   // IR -> JS codegen
-  pub fn generate(&self) -> Expression<'a> {
+  pub fn generate(&'a self) -> Expression<'a> {
     let ast = &self.ast;
     let mut statements = ast.vec();
 
-    statements.push(Statement::VariableDeclaration(
-      ast.alloc_variable_declaration(
-        SPAN,
-        VariableDeclarationKind::Const,
-        ast.vec1(ast.variable_declarator(
+    if *self.cache_index.borrow() > 0 {
+      statements.push(Statement::VariableDeclaration(
+        ast.alloc_variable_declaration(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.binding_pattern(
-            ast.binding_pattern_kind_binding_identifier(SPAN, "_cache"),
-            NONE,
-            false,
-          ),
-          Some(ast.expression_call(
+          ast.vec1(ast.variable_declarator(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&self.helper("useVdomCache"))),
-            NONE,
-            ast.vec(),
+            VariableDeclarationKind::Const,
+            ast.binding_pattern(
+              ast.binding_pattern_kind_binding_identifier(SPAN, "_cache"),
+              NONE,
+              false,
+            ),
+            Some(ast.expression_call(
+              SPAN,
+              ast.expression_identifier(SPAN, ast.atom(&self.helper("useVdomCache"))),
+              NONE,
+              ast.vec(),
+              false,
+            )),
             false,
           )),
           false,
-        )),
-        false,
-      ),
-    ));
+        ),
+      ));
+    }
 
     for name in self.components.borrow_mut().drain() {
       statements.push(Statement::VariableDeclaration(
@@ -156,7 +158,7 @@ impl<'a> TransformContext<'a> {
   }
 
   pub fn gen_node_list(
-    &self,
+    &'a self,
     children: VNodeCallChildren<'a>,
     codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
   ) -> Expression<'a> {
@@ -186,7 +188,7 @@ impl<'a> TransformContext<'a> {
   }
 
   pub fn gen_node(
-    &self,
+    &'a self,
     node: JSXChild<'a>,
     codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
   ) -> Option<Expression<'a>> {
@@ -211,11 +213,10 @@ impl<'a> TransformContext<'a> {
   }
 
   pub fn gen_vnode_call(
-    &self,
+    &'a self,
     node: VNodeCall<'a>,
     codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
   ) -> Expression<'a> {
-    // let mut_context = context as *mut TransformContext;
     let ast = &self.ast;
     let VNodeCall {
       tag,
@@ -229,6 +230,13 @@ impl<'a> TransformContext<'a> {
       is_component,
       ..
     } = node;
+
+    // skip v-if / else-if generated fragment
+    if tag.is_empty()
+      && let Some(children) = children
+    {
+      return self.gen_node_list(children, codegen_map).into();
+    }
 
     let call_helper = if is_block {
       get_vnode_block_helper(self.options.in_ssr, is_component)

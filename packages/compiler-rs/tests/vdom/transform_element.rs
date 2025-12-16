@@ -32,3 +32,49 @@ fn basic() {
   })();
   "#);
 }
+
+#[test]
+fn jsx_expression() {
+  let code = transform(
+    r#"<div>
+      foo
+      {<Foo />}
+    </div>"#,
+    Some(TransformOptions {
+      interop: true,
+      with_fallback: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createBlock as _createBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode, openBlock as _openBlock, resolveComponent as _resolveComponent } from "vue";
+  (() => {
+    const _cache = _useVdomCache();
+    return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _createTextVNode("foo", -1)), (() => {
+      const _component_Foo = _resolveComponent("Foo");
+      return _openBlock(), _createBlock(_component_Foo);
+    })()]);
+  })();
+  "#);
+}
+
+#[test]
+fn jsx_fragment() {
+  let code = transform(
+    r#"<><span /></>"#,
+    Some(TransformOptions {
+      interop: true,
+      with_fallback: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createElementVNode as _createElementVNode, createVNode as _createVNode } from "vue";
+  (() => {
+    return _createVNode(_Fragment, null, [_createElementVNode("span")]);
+  })();
+  "#)
+}

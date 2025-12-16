@@ -31,7 +31,8 @@ pub unsafe fn transform_v_if<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  if is_template(node) && find_prop(node, Either::A("v-slot".to_string())).is_some() {
+  let is_template_node = is_template(node);
+  if is_template_node && find_prop(node, Either::A("v-slot".to_string())).is_some() {
     return None;
   }
   let node = node as *mut oxc_allocator::Box<JSXElement>;
@@ -84,7 +85,11 @@ pub unsafe fn transform_v_if<'a>(
     context.codegen_map.borrow_mut().insert(
       fragment_span,
       NodeTypes::VNodeCall(VNodeCall {
-        tag: context.helper("Fragment"),
+        tag: if is_template_node {
+          context.helper("Fragment")
+        } else {
+          String::new()
+        },
         props: None,
         children: None,
         patch_flag: None,
@@ -92,7 +97,7 @@ pub unsafe fn transform_v_if<'a>(
         directives: None,
         is_block: true,
         disable_tracking: false,
-        is_component: false,
+        is_component: true,
         v_for: false,
         v_if: Some(vec![branch]),
         loc: node_span,
@@ -210,7 +215,7 @@ pub unsafe fn transform_v_if<'a>(
 fn create_codegen_node_for_branch<'a>(
   branch: &mut IfBranchNode<'a>,
   key_index: usize,
-  context: &TransformContext<'a>,
+  context: &'a TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
 ) -> Expression<'a> {
   let ast = &context.ast;
@@ -241,7 +246,7 @@ pub fn create_children_codegen_node<'a>(
   branch: &mut IfBranchNode<'a>,
   key_index: usize,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
-  context: &TransformContext<'a>,
+  context: &'a TransformContext<'a>,
 ) -> Expression<'a> {
   let ast = &context.ast;
   let key_property = ast.object_property(

@@ -4,7 +4,7 @@ use common::{
   check::{is_jsx_component, is_template},
   directive::{find_prop, find_prop_mut},
   error::ErrorCodes,
-  expression::{expression_to_params, jsx_attribute_value_to_expression},
+  expression::expression_to_params,
   patch_flag::SlotFlags,
   text::{get_tag_name, is_empty_text},
 };
@@ -249,7 +249,7 @@ pub fn build_slots<'a>(
           .expression_conditional(
             SPAN,
             if let Some(value) = v_if.value.as_mut() {
-              jsx_attribute_value_to_expression(value.take_in(context.allocator), context.allocator)
+              context.jsx_attribute_value_to_expression(value)
             } else {
               ast.expression_null_literal(SPAN)
             },
@@ -304,7 +304,7 @@ pub fn build_slots<'a>(
         ret.alternate = if let Some(value) = &mut v_else.value {
           ast.expression_conditional(
             SPAN,
-            jsx_attribute_value_to_expression(value.take_in(context.allocator), context.allocator),
+            context.jsx_attribute_value_to_expression(value),
             build_dynamic_slot(
               slot_name,
               slot_function,

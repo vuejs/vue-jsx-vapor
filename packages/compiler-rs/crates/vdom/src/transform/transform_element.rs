@@ -1,5 +1,5 @@
 use napi::{Either, bindgen_prelude::Either3};
-use oxc_allocator::TakeIn;
+use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   AstBuilder, NONE,
   ast::{
@@ -25,7 +25,6 @@ use common::{
   },
   directive::{DirectiveNode, resolve_directive},
   error::ErrorCodes,
-  expression::jsx_attribute_value_to_expression,
   patch_flag::PatchFlags,
   text::{camelize, get_tag_name, is_empty_text, to_valid_asset_id},
 };
@@ -38,6 +37,26 @@ pub unsafe fn transform_element<'a>(
   _: &'a mut BlockIRNode<'a>,
   parent_node: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
+  let ast = &context.ast;
+  // <></> => <Fragment></Fragment>
+  if let JSXChild::Fragment(node) = unsafe { &mut *context_node }
+    // skip v-if / v-for generated fragment
+    && node.span.end > node.span.start
+  {
+    let name = ast.jsx_element_name_identifier(SPAN, ast.atom(&context.helper("Fragment")));
+    *unsafe { &mut *context_node } = ast.jsx_child_element(
+      node.span,
+      ast.jsx_opening_element(
+        node.opening_fragment.span,
+        name.clone_in(context.allocator),
+        NONE,
+        ast.vec(),
+      ),
+      node.children.take_in(context.allocator),
+      Some(ast.jsx_closing_element(node.closing_fragment.span, name)),
+    )
+  };
+
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
@@ -45,14 +64,24 @@ pub unsafe fn transform_element<'a>(
     return None;
   }
 
-  let ast = &context.ast;
-
   let is_component = is_jsx_component(node);
 
   // The goal of the transform is to create a codegenNode implementing the
   // VNodeCall interface.
   let mut vnode_tag = get_tag_name(&node.opening_element.name, context.ir.borrow().source);
-  if is_component && (context.options.with_fallback || vnode_tag.contains("-")) {
+  if is_component
+    && ((context.options.with_fallback
+      && !context
+        .options
+        .helpers
+        .borrow()
+        .contains(if vnode_tag.starts_with("_") {
+          &vnode_tag[1..]
+        } else {
+          &vnode_tag
+        }))
+      || vnode_tag.contains("-"))
+  {
     context.helper("resolveComponent");
     context.components.borrow_mut().insert(vnode_tag.clone());
     vnode_tag = to_valid_asset_id(&vnode_tag, "component");
@@ -354,10 +383,7 @@ pub fn build_props<'a>(
                 merge_args
                   .push(ast.expression_object(node.span, dedupe_properties(properties, ast)));
               }
-              merge_args.push(jsx_attribute_value_to_expression(
-                value.take_in(context.allocator),
-                ast.allocator,
-              ));
+              merge_args.push(context.jsx_attribute_value_to_expression(value));
             } else {
               context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, prop.span);
             }

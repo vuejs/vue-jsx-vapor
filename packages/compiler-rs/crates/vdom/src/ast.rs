@@ -1,6 +1,4 @@
-use common::expression::jsx_attribute_value_to_expression;
 use napi::bindgen_prelude::Either3;
-use oxc_allocator::TakeIn;
 use oxc_ast::ast::{ArrayExpression, Expression, JSXAttribute, JSXChild};
 use oxc_span::Span;
 
@@ -42,15 +40,16 @@ impl<'a> IfBranchNode<'a> {
   pub fn new(
     node: &mut JSXChild<'a>,
     dir: &mut JSXAttribute<'a>,
-    context: &TransformContext<'a>,
+    context: &'a TransformContext<'a>,
   ) -> Self {
     Self {
       condition: if dir.name.get_identifier().name == "v-else" {
         None
       } else {
-        dir.value.as_mut().map(|value| {
-          jsx_attribute_value_to_expression(value.take_in(context.allocator), context.allocator)
-        })
+        dir
+          .value
+          .as_mut()
+          .map(|value| context.jsx_attribute_value_to_expression(value))
       },
       node,
     }
