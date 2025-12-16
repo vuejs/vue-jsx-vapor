@@ -5,6 +5,7 @@ import { transform as rsTransform } from '@vue-jsx-vapor/compiler-rs'
 import vueJsx from '@vue/babel-plugin-jsx'
 import { transformSync as oxcTransformSync } from 'oxc-transform'
 import { Bench } from 'tinybench'
+
 function vueJsxTransform(source) {
   transformSync(source, {
     plugins: [vueJsx],
@@ -27,46 +28,34 @@ function vueJsxVaporTransform(source) {
   })
 }
 
-const bench = new Bench()
-
 const source = `export default () => <>${`
   <Comp
     foo={foo}
     ref={foo}
+    modelValue={foo}
+    onUpdate:modelValue={e => foo = e}
     onClick={()=> alert(1)}
-    v-show={true}
-    v-model={foo}
-    v-once
-    v-slot={foo}
   >
-    <div
-      v-if={foo}
-      v-for={({item}, index) in list}
-      key={key}
-    >
-      {item}
-    </div>
-    <span v-else-if={bar}>
-      bar
-    </span>
-    <Foo v-else>
-      default
-      <template v-slot:bar={{ bar }}>
-        {bar}
-      </template>
-    </Foo>
-  </Comp>`.repeat(12)}
+    { foo
+      ? list.map(({item}, index) => <div key={index}>{item}</div>)
+      : bar
+        ? <span>{bar}</span>
+        : <Foo v-slots={{
+            default: () => <>default</>,
+            bar: ({bar}) => <>{bar}</>
+          }}/> }
+  </Comp>`.repeat(10)}
 </>`
-
-vueJsxTransform(source)
-console.time('vue-jsx           + babel  ')
-vueJsxTransform(source)
-console.timeEnd('vue-jsx           + babel  ')
 
 vueJsxVaporTransform(source)
 console.time('vue-jsx-vapor     + babel  ')
 vueJsxVaporTransform(source)
 console.timeEnd('vue-jsx-vapor     + babel  ')
+
+vueJsxTransform(source)
+console.time('vue-jsx           + babel  ')
+vueJsxTransform(source)
+console.timeEnd('vue-jsx           + babel  ')
 
 rsTransform(source, { interop: true })
 console.time('vue-jsx-vapor.rs  + oxc    ')
@@ -82,6 +71,8 @@ oxcTransformSync('index.jsx', source)
 console.time('react             + oxc    ')
 oxcTransformSync('index.jsx', source)
 console.timeEnd('react             + oxc    ')
+
+const bench = new Bench()
 
 bench.add('vue-jsx-vapor    + babel', () => {
   vueJsxVaporTransform(source)
@@ -104,5 +95,4 @@ bench.add('react            + oxc', () => {
 })
 
 await bench.run()
-
 console.table(bench.table())

@@ -28,6 +28,7 @@
     "dev": "pnpm run --filter=\"./packages/*\" --parallel dev",
     "build": "pnpm run --filter=\"./packages/*\" --parallel build",
     "bench": "pnpm run -C ./benchmark bench",
+    "bench:vue": "pnpm run -C ./benchmark bench:vue",
     "typecheck": "tsmc --noEmit",
     "lint": "eslint .",
     "play": "npm -C playground run dev",

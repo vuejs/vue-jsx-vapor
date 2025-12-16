@@ -1,7 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "bench": "node ./bench.js"
+    "bench": "node ./bench.js",
+    "bench:vue": "node ./bench-vue.js"
   },
   "devDependencies": {
     "@babel/core": "^7.28.4",
@@ -9,6 +10,7 @@
     "@vue-jsx-vapor/compiler-rs": "workspace:*",
     "@vue/babel-plugin-jsx": "^1.5.0",
     "oxc-transform": "^0.102.0",
-    "tinybench": "^5.0.1"
+    "tinybench": "^5.0.1",
+    "vue": "catalog:"
   }
 }
