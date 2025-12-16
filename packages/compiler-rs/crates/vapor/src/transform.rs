@@ -6,7 +6,7 @@ use oxc_allocator::{Allocator, TakeIn};
 use oxc_ast::ast::{
   Expression, JSXChild, JSXClosingFragment, JSXExpressionContainer, JSXFragment, JSXOpeningFragment,
 };
-use oxc_span::SPAN;
+use oxc_span::{GetSpan, SPAN};
 use std::{cell::RefCell, collections::HashSet, mem, rc::Rc};
 pub mod transform_children;
 pub mod transform_element;
@@ -275,7 +275,7 @@ impl<'a> TransformContext<'a> {
               Expression::JSXFragment(node) => JSXChild::Fragment(node),
               _ => JSXChild::ExpressionContainer(oxc_allocator::Box::new_in(
                 JSXExpressionContainer {
-                  span: SPAN,
+                  span: node.span(),
                   expression: node.into(),
                 },
                 self.allocator,

@@ -56,6 +56,12 @@ fn expression_conditional() {
 }
 
 #[test]
+fn multiple_conditional() {
+  let code = transform("<>{ok? ok : fail} {foo ? foo : <span />}</>", None).code;
+  assert_snapshot!(code);
+}
+
+#[test]
 fn expression_logical() {
   let code = transform("<>{ok && (<div>{msg}</div>)}</>", None).code;
   assert_snapshot!(code);
