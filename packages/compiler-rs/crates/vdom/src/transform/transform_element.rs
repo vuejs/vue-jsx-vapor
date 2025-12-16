@@ -15,7 +15,7 @@ use crate::{
   transform::{
     DirectiveTransformResult, TransformContext, cache_static::get_constant_type,
     v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
-    v_on::transform_v_on, v_show::transform_v_show, v_slot::build_slots,
+    v_on::transform_v_on, v_show::transform_v_show, v_slot::build_slots, v_text::transform_v_text,
   },
 };
 
@@ -414,7 +414,7 @@ pub fn build_props<'a>(
           "model" => transform_v_model(prop, node, context),
           "show" => transform_v_show(prop, context),
           "html" => transform_v_html(prop, node, context),
-          // "text" => return transform_v_text(prop, node, context, context_block),
+          "text" => transform_v_text(prop, node, context),
           _ => {
             if !is_built_in_directive(&dir_name) {
               let runtime = if context.options.with_fallback {

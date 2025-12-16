@@ -1,23 +1,25 @@
-use common::{check::is_void_tag, error::ErrorCodes, expression::SimpleExpressionNode};
-use napi::bindgen_prelude::{Either3, Either16};
-use oxc_ast::ast::{JSXAttribute, JSXElement};
+use common::{check::is_void_tag, error::ErrorCodes};
+use napi::Either;
+use oxc_ast::{
+  NONE,
+  ast::{JSXAttribute, JSXElement, PropertyKind},
+};
+use oxc_span::{GetSpan, SPAN};
 
-use crate::{
-  ir::index::{BlockIRNode, GetTextChildIRNode, SetTextIRNode},
-  transform::{DirectiveTransformResult, TransformContext},
+use crate::transform::{
+  DirectiveTransformResult, TransformContext, cache_static::get_constant_type,
 };
 
 pub fn transform_v_text<'a>(
   dir: &'a mut JSXAttribute<'a>,
   node: &JSXElement,
   context: &'a TransformContext<'a>,
-  context_block: &'a mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let exp = if let Some(value) = &mut dir.value {
-    SimpleExpressionNode::new(Either3::C(value), context.ir.borrow().source)
+    context.jsx_attribute_value_to_expression(value)
   } else {
     context.options.on_error.as_ref()(ErrorCodes::VTextNoExpression, dir.span);
-    SimpleExpressionNode::default()
+    return None;
   };
 
   if !node.children.is_empty() {
@@ -32,33 +34,33 @@ pub fn transform_v_text<'a>(
     return None;
   }
 
-  let literal = exp.get_literal_expression_value();
-  if let Some(literal) = literal {
-    *context.children_template.borrow_mut() = vec![literal];
-  } else {
-    *context.children_template.borrow_mut() = vec![" ".to_string()];
-    let parent = context.reference(&mut context_block.dynamic);
-    context.register_operation(
-      context_block,
-      Either16::P(GetTextChildIRNode {
-        get_text_child: true,
-        parent,
-      }),
-      None,
-    );
-    let element = context.reference(&mut context_block.dynamic);
-    context.register_effect(
-      context_block,
-      context.is_operation(vec![&exp]),
-      Either16::C(SetTextIRNode {
-        set_text: true,
-        values: vec![exp],
-        element,
-        generated: Some(true),
-      }),
-      None,
-      None,
-    );
-  }
-  None
+  let ast = &context.ast;
+  Some(DirectiveTransformResult {
+    props: vec![ast.object_property_kind_object_property(
+      SPAN,
+      PropertyKind::Init,
+      ast.property_key_static_identifier(dir.span(), "textContent"),
+      if get_constant_type(
+        Either::B(&exp),
+        context,
+        &mut context.codegen_map.borrow_mut(),
+      ) as i32
+        > 0
+      {
+        exp
+      } else {
+        ast.expression_call(
+          exp.span(),
+          ast.expression_identifier(SPAN, ast.atom(&context.helper("toDisplayString"))),
+          NONE,
+          ast.vec1(exp.into()),
+          false,
+        )
+      },
+      false,
+      false,
+      false,
+    )],
+    runtime: None,
+  })
 }

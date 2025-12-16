@@ -7,3 +7,4 @@ mod v_on;
 mod v_show;
 mod v_slot;
 mod v_slots;
+mod v_text;
