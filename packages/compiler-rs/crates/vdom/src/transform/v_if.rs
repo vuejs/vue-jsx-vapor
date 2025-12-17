@@ -10,7 +10,6 @@ use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ast::{IfBranchNode, NodeTypes, VNodeCall},
-  ir::index::BlockIRNode,
   transform::{TransformContext, cache_static::cache_static, utils::inject_prop},
 };
 
@@ -25,7 +24,6 @@ use common::{
 pub unsafe fn transform_v_if<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut BlockIRNode<'a>,
   parent_node: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {

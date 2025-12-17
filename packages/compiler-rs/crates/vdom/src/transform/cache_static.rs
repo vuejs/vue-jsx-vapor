@@ -54,7 +54,7 @@ pub fn get_single_element_root<'a>(
 
 fn walk<'a>(
   node: &mut JSXChild<'a>,
-  parent: Option<&'a mut JSXChild<'a>>,
+  _parent: Option<&'a mut JSXChild<'a>>,
   context: &'a TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
   do_not_hoist_node: bool,
@@ -92,25 +92,25 @@ fn walk<'a>(
           to_cache.push(unsafe { &mut *child_ptr });
           continue;
         }
-      } else if let Some(codegen) = unsafe { &mut *codegen_map_ptr }.get_mut(&child_span) {
+      } else if let Some(codegen) = unsafe { &mut *codegen_map_ptr }.get_mut(&child_span)
         // node may contain dynamic children, but its props may be eligible for
         // hoisting.
-        if let NodeTypes::VNodeCall(codegen) = codegen {
-          let flag = codegen.patch_flag;
-          if if let Some(flag) = flag {
-            flag == PatchFlags::NeedPatch as i32 || flag == PatchFlags::Text as i32
-          } else {
-            true
-          } && get_generated_props_constant_type(child, context, codegen_map) as i32
-            >= ConstantTypes::CanCache as i32
-            && let Some(props) = &mut codegen.props
-          {
-            codegen.props = Some(context.hoist(props))
-          };
+        && let NodeTypes::VNodeCall(codegen) = codegen
+      {
+        let flag = codegen.patch_flag;
+        if if let Some(flag) = flag {
+          flag == PatchFlags::NeedPatch as i32 || flag == PatchFlags::Text as i32
+        } else {
+          true
+        } && get_generated_props_constant_type(child, context, codegen_map) as i32
+          >= ConstantTypes::CanCache as i32
+          && let Some(props) = &mut codegen.props
+        {
+          codegen.props = Some(context.hoist(props))
+        };
 
-          if let Some(dynamic_props) = codegen.dynamic_props.as_mut() {
-            codegen.dynamic_props = Some(context.hoist(dynamic_props))
-          }
+        if let Some(dynamic_props) = codegen.dynamic_props.as_mut() {
+          codegen.dynamic_props = Some(context.hoist(dynamic_props))
         }
       }
     } else if let Some(codegen) = unsafe { &mut *codegen_map_ptr }.get_mut(&child_span)
@@ -178,21 +178,19 @@ fn walk<'a>(
   let mut cached_as_array = false;
   if to_cache.len() == child_len
     && let JSXChild::Element(node) = node
+    && !is_jsx_component(node)
+    && let Some(codegen) = unsafe { &mut *codegen_map_ptr }.get_mut(&node.span)
+    && let NodeTypes::VNodeCall(codegen) = codegen
+    && let Some(Either3::B(_)) = codegen.children.as_mut()
   {
-    if !is_jsx_component(node)
-      && let Some(codegen) = unsafe { &mut *codegen_map_ptr }.get_mut(&node.span)
-      && let NodeTypes::VNodeCall(codegen) = codegen
-      && let Some(Either3::B(_)) = codegen.children.as_mut()
-    {
-      // all children were hoisted - the entire children array is cacheable.
-      codegen.children = Some(Either3::C(context.cache(
-        context.gen_node_list(codegen.children.take().unwrap(), codegen_map),
-        false,
-        false,
-        true,
-      )));
-      cached_as_array = true;
-    }
+    // all children were hoisted - the entire children array is cacheable.
+    codegen.children = Some(Either3::C(context.cache(
+      context.gen_node_list(codegen.children.take().unwrap(), codegen_map),
+      false,
+      false,
+      true,
+    )));
+    cached_as_array = true;
   }
 
   if !cached_as_array {

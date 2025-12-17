@@ -19,16 +19,11 @@ pub struct DirectiveNode<'a> {
 
 pub fn resolve_directive<'a>(node: &'a mut JSXAttribute<'a>, source: &'a str) -> DirectiveNode<'a> {
   let mut arg_string = String::new();
-  let mut arg_span = SPAN;
-  let mut name_string = match &node.name {
-    JSXAttributeName::Identifier(name) => {
-      arg_span = name.span;
-      name.name.to_string()
-    }
+  let (arg_span, mut name_string) = match &node.name {
+    JSXAttributeName::Identifier(name) => (name.span, name.name.to_string()),
     JSXAttributeName::NamespacedName(name) => {
-      arg_span = name.name.span;
       arg_string = name.name.name.to_string();
-      name.namespace.name.to_string()
+      (name.name.span, name.namespace.name.to_string())
     }
   };
   let is_directive = name_string.starts_with("v-");
@@ -185,7 +180,7 @@ pub fn resolve_modifiers(key_string: &str, modifiers: Vec<&str>) -> Modifiers {
       // runtimeModifiers: modifiers that needs runtime guards
       if maybe_key_modifier(&modifier) {
         if !key_string.is_empty() {
-          if is_keyboard_event(&key_string) {
+          if is_keyboard_event(key_string) {
             key_modifiers.push(modifier);
           } else {
             non_key_modifiers.push(modifier)

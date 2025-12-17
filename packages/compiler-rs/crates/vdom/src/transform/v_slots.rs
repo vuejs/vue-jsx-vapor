@@ -1,16 +1,15 @@
 use napi::{Either, bindgen_prelude::Either3};
 use oxc_ast::ast::{JSXAttributeValue, JSXChild, JSXElement};
 
-use crate::{ast::NodeTypes, ir::index::BlockIRNode, transform::TransformContext};
+use crate::{ast::NodeTypes, transform::TransformContext};
 use common::{
-  check::is_jsx_component, directive::find_prop_mut, error::ErrorCodes, patch_flag::PatchFlags,
+  check::is_jsx_component, directive::find_prop_mut, error::ErrorCodes,
 };
 
 /// # SAFETY
 pub unsafe fn transform_v_slots<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut BlockIRNode<'a>,
   _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
@@ -39,13 +38,7 @@ pub unsafe fn transform_v_slots<'a>(
           vnode_call.children = Some(Either3::C(
             context.jsx_expression_to_expression(&mut value.expression),
           ));
-          vnode_call.patch_flag = Some(
-            if let Some(patch_flag) = vnode_call.patch_flag {
-              patch_flag
-            } else {
-              0
-            } | PatchFlags::DynamicSlots as i32,
-          )
+          vnode_call.patch_flag = Some(vnode_call.patch_flag.unwrap_or_default())
         }
       }))
     } else {

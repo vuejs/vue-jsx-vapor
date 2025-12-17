@@ -10,8 +10,7 @@ use oxc_ast::{
 use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
-  ast::{NodeTypes, VNodeCall},
-  ir::index::{BlockIRNode, RootNode},
+  ast::{NodeTypes, RootNode, VNodeCall},
   transform::{
     DirectiveTransformResult, TransformContext, cache_static::get_constant_type,
     v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
@@ -34,7 +33,6 @@ use common::{
 pub unsafe fn transform_element<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut BlockIRNode<'a>,
   parent_node: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let ast = &context.ast;
@@ -68,18 +66,16 @@ pub unsafe fn transform_element<'a>(
 
   // The goal of the transform is to create a codegenNode implementing the
   // VNodeCall interface.
-  let mut vnode_tag = get_tag_name(&node.opening_element.name, context.ir.borrow().source);
+  let mut vnode_tag = get_tag_name(&node.opening_element.name, *context.source.borrow());
   if is_component
     && ((context.options.with_fallback
-      && !context
-        .options
-        .helpers
-        .borrow()
-        .contains(if vnode_tag.starts_with("_") {
-          &vnode_tag[1..]
+      && !context.options.helpers.borrow().contains(
+        if let Some(vnode_tag) = vnode_tag.strip_prefix("_") {
+          vnode_tag
         } else {
           &vnode_tag
-        }))
+        },
+      ))
       || vnode_tag.contains("-"))
   {
     context.helper("resolveComponent");
@@ -427,7 +423,7 @@ pub fn build_props<'a>(
               };
               runtime_directives.push(
                 build_directive_args(
-                  resolve_directive(prop, context.ir.borrow().source),
+                  resolve_directive(prop, *context.source.borrow()),
                   context,
                   &runtime,
                 )
@@ -675,7 +671,7 @@ pub fn build_directive_args<'a>(
   let ast = &context.ast;
   let mut dir_args = ast.vec();
   // built-in directive with runtime
-  dir_args.push(ast.expression_identifier(SPAN, ast.atom(&runtime)));
+  dir_args.push(ast.expression_identifier(SPAN, ast.atom(runtime)));
   let exp_is_none = dir.exp.is_none();
   if let Some(exp) = dir.exp
     && let Some(node) = exp.ast

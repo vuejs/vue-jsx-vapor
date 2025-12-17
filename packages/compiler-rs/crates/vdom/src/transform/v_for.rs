@@ -12,7 +12,6 @@ use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ast::{ConstantTypes, ForNode, NodeTypes, VNodeCall},
-  ir::index::BlockIRNode,
   transform::{TransformContext, cache_static::get_constant_type, utils::inject_prop},
 };
 use common::{
@@ -28,7 +27,6 @@ use common::{
 pub unsafe fn transform_v_for<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut BlockIRNode<'a>,
   _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
@@ -425,7 +423,7 @@ pub fn create_for_loop_params<'a>(
           } else {
             expression_to_params(
               &value,
-              context.ir.borrow().source,
+              *context.source.borrow(),
               context.allocator,
               context.options.source_type,
             )

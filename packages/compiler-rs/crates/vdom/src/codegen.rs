@@ -122,8 +122,8 @@ impl<'a> TransformContext<'a> {
       ))
     }
 
-    if let JSXChild::Fragment(node) = &mut *self.root_node.borrow_mut() {
-      if let Some(child) = &node.children.first() {
+    if let JSXChild::Fragment(node) = &mut *self.root_node.borrow_mut()
+      && let Some(child) = &node.children.first() {
         let codegen_map = &mut self.codegen_map.borrow_mut();
         if let Some(codegen) = codegen_map.remove(&child.span()) {
           statements.push(ast.statement_return(
@@ -136,7 +136,6 @@ impl<'a> TransformContext<'a> {
           ))
         }
       }
-    }
 
     ast.expression_call(
       SPAN,
@@ -241,7 +240,7 @@ impl<'a> TransformContext<'a> {
     if tag.is_empty()
       && let Some(children) = children
     {
-      return self.gen_node_list(children, codegen_map).into();
+      return self.gen_node_list(children, codegen_map);
     }
 
     let call_helper = if is_block {

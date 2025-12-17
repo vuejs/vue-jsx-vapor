@@ -24,7 +24,7 @@ pub fn transform_v_on<'a>(
   let (name, name_loc) = match &dir.name {
     JSXAttributeName::Identifier(name) => (name.name.as_ref(), name.span),
     JSXAttributeName::NamespacedName(name) => {
-      (name.span.source_text(context.ir.borrow().source), name.span)
+      (name.span.source_text(*context.source.borrow()), name.span)
     }
   };
   let replaced = format!("{}{}", name[2..3].to_lowercase(), &name[3..]);
@@ -38,7 +38,7 @@ pub fn transform_v_on<'a>(
   }
 
   if event_name.starts_with("vue:") {
-    event_name = format!("vnode-{}", event_name[4..].to_string());
+    event_name = format!("vnode-{}", &event_name[4..]);
   }
 
   let mut should_cache = value.is_none() && !*context.in_v_once.borrow();

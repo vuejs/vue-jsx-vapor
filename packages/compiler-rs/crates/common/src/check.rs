@@ -703,7 +703,7 @@ static RESERVED_PROP: phf::Set<&str> = phf_set!(
   "onVnodeUnmounted",
 );
 pub fn is_reserved_prop(name: &str) -> bool {
-  RESERVED_PROP.contains(&name)
+  RESERVED_PROP.contains(name)
 }
 
 pub fn is_event(s: &str) -> bool {

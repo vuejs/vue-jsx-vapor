@@ -22,7 +22,6 @@ use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   ast::{ForNode, VNodeCallChildren},
-  ir::index::BlockIRNode,
   transform::{
     TransformContext,
     v_for::{create_for_loop_params, get_for_parse_result},
@@ -40,7 +39,6 @@ use crate::{
 pub unsafe fn track_slot_scopes<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut BlockIRNode<'a>,
   _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   unsafe {
@@ -104,7 +102,7 @@ pub fn build_slots<'a>(
             ast.vec1(
               expression_to_params(
                 value.expression.to_expression(),
-                context.ir.borrow().source,
+                *context.source.borrow(),
                 context.allocator,
                 context.options.source_type,
               )
@@ -200,7 +198,7 @@ pub fn build_slots<'a>(
     let slot_props = if let Some(JSXAttributeValue::ExpressionContainer(value)) = &slot_dir.value {
       expression_to_params(
         value.expression.to_expression(),
-        context.ir.borrow().source,
+        *context.source.borrow(),
         context.allocator,
         context.options.source_type,
       )
@@ -270,13 +268,11 @@ pub fn build_slots<'a>(
       // find adjacent v-if
       let j = i;
       let mut prev = None;
-      while j > 0 {
-        if let Some(_prev) = unsafe { &mut *_node }.children.get_mut(j)
-          && !is_empty_text(_prev)
-        {
+      for _prev in unsafe { &mut *_node }.children[..j].iter_mut().rev() {
+        if !is_empty_text(_prev) {
           prev = Some(_prev);
           break;
-        };
+        }
       }
       if let Some(JSXChild::Element(prev)) = prev
         && is_template(prev)
@@ -291,14 +287,10 @@ pub fn build_slots<'a>(
       {
         let mut ret = conditional;
         let ret_ptr = ret as *mut oxc_allocator::Box<ConditionalExpression>;
-        loop {
-          if let Expression::ConditionalExpression(alternate) =
-            &mut unsafe { &mut *ret_ptr }.alternate
-          {
-            ret = alternate
-          } else {
-            break;
-          }
+        while let Expression::ConditionalExpression(alternate) =
+          &mut unsafe { &mut *ret_ptr }.alternate
+        {
+          ret = alternate
         }
         conditional_branch_index += 1;
         ret.alternate = if let Some(value) = &mut v_else.value {
@@ -493,7 +485,7 @@ pub fn build_slots<'a>(
     false,
   ));
   // covert Fragment's object slots to array
-  let tag_name = get_tag_name(&node.opening_element.name, context.ir.borrow().source);
+  let tag_name = get_tag_name(&node.opening_element.name, *context.source.borrow());
   let mut slots = if tag_name == "Fragment" || tag_name == "_Fragment" {
     has_dynamic_slots = false;
     slots_properties

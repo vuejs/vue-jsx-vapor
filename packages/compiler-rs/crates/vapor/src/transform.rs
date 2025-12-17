@@ -89,8 +89,6 @@ pub struct TransformContext<'a> {
   pub node: RefCell<ContextNode<'a>>,
 
   pub parent_dynamic: RefCell<IRDynamicInfo<'a>>,
-
-  pub vdom: RefCell<bool>,
 }
 
 impl<'a> TransformContext<'a> {
@@ -108,7 +106,6 @@ impl<'a> TransformContext<'a> {
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
       ir: Rc::new(RefCell::new(RootIRNode::new(""))),
       block: RefCell::new(BlockIRNode::new()),
-      vdom: RefCell::new(false),
       options,
     }
   }

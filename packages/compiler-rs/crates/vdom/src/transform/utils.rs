@@ -35,7 +35,7 @@ pub fn inject_prop<'a>(
   context: &TransformContext<'a>,
 ) {
   let ast = &context.ast;
-  let source_text = context.ir.borrow().source;
+  let source_text = *context.source.borrow();
   let mut props_with_injection = None;
   // 1. mergeProps(...)
   // 2. toHandlers(...)

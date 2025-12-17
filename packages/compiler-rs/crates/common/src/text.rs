@@ -101,8 +101,8 @@ pub fn capitalize(name: String) -> String {
   if let Some(first) = name.chars().next() {
     format!(
       "{}{}",
-      first.to_ascii_uppercase().to_string(),
-      name[1..].to_string()
+      first.to_ascii_uppercase(),
+      &name[1..]
     )
   } else {
     String::new()

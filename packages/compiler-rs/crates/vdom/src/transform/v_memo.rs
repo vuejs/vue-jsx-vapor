@@ -9,13 +9,12 @@ use oxc_ast::{
 };
 use oxc_span::SPAN;
 
-use crate::{ast::NodeTypes, ir::index::BlockIRNode, transform::TransformContext};
+use crate::{ast::NodeTypes, transform::TransformContext};
 
 /// # SAFETY
 pub unsafe fn transform_v_memo<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut BlockIRNode<'a>,
   _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let node = unsafe { &mut *context_node };
@@ -31,9 +30,7 @@ pub unsafe fn transform_v_memo<'a>(
       return None;
     }
     seen.insert(dir.span.start);
-    let Some(mut value) = dir.value.take() else {
-      return None;
-    };
+    let mut value = dir.value.take()?;
     let is_component = is_jsx_component(node);
     return Some(Box::new(move || {
       let codegen_map = &mut context.codegen_map.borrow_mut();

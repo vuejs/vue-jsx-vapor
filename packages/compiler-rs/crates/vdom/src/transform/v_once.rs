@@ -2,13 +2,12 @@ use common::directive::find_prop;
 use napi::Either;
 use oxc_ast::ast::JSXChild;
 
-use crate::{ast::NodeTypes, ir::index::BlockIRNode, transform::TransformContext};
+use crate::{ast::NodeTypes, transform::TransformContext};
 
 /// # SAFETY
 pub unsafe fn transform_v_once<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut BlockIRNode<'a>,
   _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let node = unsafe { &*context_node };

@@ -27,7 +27,7 @@ pub fn transform_v_model<'a>(
   context: &'a TransformContext<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let ast = &context.ast;
-  let mut dir = resolve_directive(_dir, context.ir.borrow().source);
+  let mut dir = resolve_directive(_dir, *context.source.borrow());
   let is_component = is_jsx_component(node);
   let mut cloned_dir = if !is_component {
     Some(dir.clone())
@@ -250,7 +250,7 @@ pub fn transform_v_model<'a>(
   }
 
   let mut runtime_name = None;
-  let tag = get_tag_name(&node.opening_element.name, context.ir.borrow().source);
+  let tag = get_tag_name(&node.opening_element.name, *context.source.borrow());
   let is_custom_element = context.options.is_custom_element.as_ref()(tag.to_string());
   if matches!(tag.as_str(), "input" | "textarea" | "select") || is_custom_element {
     let mut directive_to_use = "vModelText";
@@ -312,18 +312,14 @@ pub fn transform_v_model<'a>(
     })
     .collect::<Vec<_>>();
 
-  return Some(DirectiveTransformResult {
+  Some(DirectiveTransformResult {
     props,
-    runtime: if let Some(runtime_name) = runtime_name {
-      Some(build_directive_args(
+    runtime: runtime_name.map(|runtime_name| build_directive_args(
         cloned_dir.unwrap(),
         context,
         &runtime_name,
-      ))
-    } else {
-      None
-    },
-  });
+      )),
+  })
 }
 
 fn check_duplicated_value(node: &JSXElement, context: &TransformContext) {

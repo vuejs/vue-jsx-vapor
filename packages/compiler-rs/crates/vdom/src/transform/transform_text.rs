@@ -8,7 +8,6 @@ use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   ast::{ConstantTypes, NodeTypes},
-  ir::index::BlockIRNode,
   transform::{TransformContext, cache_static::get_constant_type},
 };
 
@@ -24,7 +23,6 @@ use common::{
 pub unsafe fn transform_text<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut BlockIRNode<'a>,
   _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let ast = &context.ast;
@@ -87,7 +85,7 @@ pub unsafe fn transform_text<'a>(
             )
           }
         } else if let JSXChild::ExpressionContainer(child) = child {
-          if let Some(_) = get_text_like_value(child.expression.to_expression(), false) {
+          if get_text_like_value(child.expression.to_expression(), false).is_some() {
             call_args.push(
               child
                 .expression
