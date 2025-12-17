@@ -181,7 +181,7 @@ pub fn transform_v_on<'a>(
   }
 
   if should_cache {
-    exp = context.cache(exp, false, false)
+    exp = context.cache(exp, false, false, false)
   }
 
   Some(DirectiveTransformResult {

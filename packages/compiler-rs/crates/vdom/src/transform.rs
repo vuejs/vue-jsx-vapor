@@ -5,7 +5,7 @@ use oxc_allocator::{Allocator, CloneIn, TakeIn};
 use oxc_ast::ast::{
   ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, JSXAttributeValue,
   JSXChild, JSXClosingFragment, JSXExpression, JSXExpressionContainer, JSXFragment,
-  JSXOpeningFragment, LogicalOperator, ObjectPropertyKind,
+  JSXOpeningFragment, LogicalOperator, NumberBase, ObjectPropertyKind,
 };
 use oxc_ast::{AstBuilder, NONE};
 use oxc_span::{GetSpan, SPAN, Span};
@@ -14,7 +14,6 @@ use std::{cell::RefCell, collections::HashSet, mem, rc::Rc};
 pub mod cache_static;
 pub mod transform_children;
 pub mod transform_element;
-pub mod transform_template_ref;
 pub mod transform_text;
 pub mod utils;
 pub mod v_bind;
@@ -39,7 +38,7 @@ use crate::{
   transform::{
     transform_children::transform_children, transform_element::transform_element,
     transform_text::transform_text, v_for::transform_v_for, v_if::transform_v_if,
-    v_slots::transform_v_slots,
+    v_once::transform_v_once, v_slots::transform_v_slots,
   },
 };
 
@@ -146,28 +145,76 @@ impl<'a> TransformContext<'a> {
     &self,
     value: Expression<'a>,
     is_v_node: bool,
+    in_v_once: bool,
     need_array_spread: bool,
   ) -> Expression<'a> {
     let ast = &self.ast;
+    let index = *self.cache_index.borrow();
     let cache = ast.alloc_computed_member_expression(
       SPAN,
       ast.expression_identifier(SPAN, ast.atom("_cache")),
-      ast.expression_identifier(SPAN, ast.atom(&self.cache_index.borrow().to_string())),
+      ast.expression_identifier(SPAN, ast.atom(&index.to_string())),
       false,
     );
+    let mut assing_expression = ast.expression_parenthesized(
+      SPAN,
+      ast.expression_assignment(
+        SPAN,
+        AssignmentOperator::Assign,
+        AssignmentTarget::ComputedMemberExpression(cache.clone_in(ast.allocator)),
+        value,
+      ),
+    );
+    if is_v_node {
+      let mut arguments = ast.vec1(
+        ast
+          .expression_numeric_literal(SPAN, -1 as f64, None, NumberBase::Hex)
+          .into(),
+      );
+      if in_v_once {
+        arguments.push(ast.expression_boolean_literal(SPAN, true).into());
+      }
+      assing_expression = ast.expression_sequence(
+        SPAN,
+        ast.vec_from_array([
+          ast.expression_call(
+            SPAN,
+            ast.expression_identifier(SPAN, ast.atom(&self.helper("setBlockTracking"))),
+            NONE,
+            arguments,
+            false,
+          ),
+          ast.expression_assignment(
+            SPAN,
+            AssignmentOperator::Assign,
+            AssignmentTarget::StaticMemberExpression(ast.alloc_static_member_expression(
+              SPAN,
+              assing_expression,
+              ast.identifier_name(SPAN, "cacheIndex"),
+              false,
+            )),
+            ast.expression_numeric_literal(SPAN, index as f64, None, NumberBase::Hex),
+          ),
+          ast.expression_call(
+            SPAN,
+            ast.expression_identifier(SPAN, ast.atom(&self.helper("setBlockTracking"))),
+            NONE,
+            ast.vec1(
+              ast
+                .expression_numeric_literal(SPAN, 1 as f64, None, NumberBase::Hex)
+                .into(),
+            ),
+            false,
+          ),
+          Expression::ComputedMemberExpression(cache.clone_in(ast.allocator)),
+        ]),
+      );
+    }
     let exp = ast.expression_logical(
       SPAN,
-      Expression::ComputedMemberExpression(cache.clone_in(ast.allocator)),
+      Expression::ComputedMemberExpression(cache),
       LogicalOperator::Or,
-      ast.expression_parenthesized(
-        SPAN,
-        ast.expression_assignment(
-          SPAN,
-          AssignmentOperator::Assign,
-          AssignmentTarget::ComputedMemberExpression(cache),
-          value,
-        ),
-      ),
+      assing_expression,
     );
     *self.cache_index.borrow_mut() += 1;
     if need_array_spread {
@@ -461,10 +508,9 @@ impl<'a> TransformContext<'a> {
         let context = self as *const TransformContext;
         let parent_node = parent_node.unwrap() as *mut JSXChild;
         for node_transform in [
-          // transform_v_once,
+          transform_v_once,
           transform_v_if,
           transform_v_for,
-          // transform_template_ref,
           transform_v_slots,
           transform_element,
           track_slot_scopes,

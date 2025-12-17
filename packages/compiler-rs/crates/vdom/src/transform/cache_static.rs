@@ -188,6 +188,7 @@ fn walk<'a>(
       codegen.children = Some(Either3::C(context.cache(
         context.gen_node_list(codegen.children.take().unwrap(), codegen_map),
         false,
+        false,
         true,
       )));
       cached_as_array = true;
@@ -205,13 +206,14 @@ fn walk<'a>(
               context.gen_vnode_call(codegen, codegen_map),
               false,
               false,
+              false,
             )),
           );
         }
         NodeTypes::TextCallNode(codegen) => {
           codegen_map.insert(
             span,
-            NodeTypes::CacheExpression(context.cache(codegen, false, false)),
+            NodeTypes::CacheExpression(context.cache(codegen, false, false, false)),
           );
         }
         _ => (),

@@ -123,11 +123,17 @@ impl<'a> TransformContext<'a> {
     }
 
     if let JSXChild::Fragment(node) = &mut *self.root_node.borrow_mut() {
-      let codegen_map = &mut self.codegen_map.borrow_mut();
-      for child in &node.children {
-        if let Some(NodeTypes::VNodeCall(vnode_call)) = codegen_map.remove(&child.span()) {
-          statements
-            .push(ast.statement_return(SPAN, Some(self.gen_vnode_call(vnode_call, codegen_map))));
+      if let Some(child) = &node.children.first() {
+        let codegen_map = &mut self.codegen_map.borrow_mut();
+        if let Some(codegen) = codegen_map.remove(&child.span()) {
+          statements.push(ast.statement_return(
+            SPAN,
+            Some(match codegen {
+              NodeTypes::VNodeCall(vnode_call) => self.gen_vnode_call(vnode_call, codegen_map),
+              NodeTypes::TextCallNode(exp) => exp,
+              NodeTypes::CacheExpression(exp) => exp,
+            }),
+          ))
         }
       }
     }

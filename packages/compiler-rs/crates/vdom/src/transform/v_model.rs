@@ -207,7 +207,7 @@ pub fn transform_v_model<'a>(
 
   // cache v-model handler if applicable (when it's not a computed member expression)
   if cacheable && !*context.in_v_once.borrow() {
-    assignment_exp = context.cache(assignment_exp, false, false)
+    assignment_exp = context.cache(assignment_exp, false, false, false)
   }
 
   if !is_component {
