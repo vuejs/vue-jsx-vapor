@@ -3,8 +3,9 @@ use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   NONE,
   ast::{
-    BinaryExpression, BindingPatternKind, Expression, FormalParameterKind, FormalParameters,
-    JSXAttribute, JSXAttributeValue, JSXChild, JSXElement, PropertyKind,
+    AssignmentOperator, AssignmentTarget, BinaryExpression, BinaryOperator, BindingPatternKind,
+    Expression, FormalParameterKind, FormalParameters, JSXAttribute, JSXAttributeValue, JSXChild,
+    JSXElement, LogicalOperator, NumberBase, PropertyKind, Statement, VariableDeclarationKind,
   },
 };
 use oxc_span::{GetSpan, SPAN, Span};
@@ -67,7 +68,7 @@ pub unsafe fn transform_v_for<'a>(
 
   let is_template = is_template(unsafe { &*node });
   let memo = if let Some(memo_prop) =
-    find_prop_mut(unsafe { &mut *node }, Either::A("memo".to_string()))
+    find_prop_mut(unsafe { &mut *node }, Either::A("v-memo".to_string()))
     && let Some(value) = &mut memo_prop.value
   {
     Some(context.jsx_attribute_value_to_expression(value))
@@ -169,31 +170,162 @@ pub unsafe fn transform_v_for<'a>(
     else {
       unreachable!()
     };
+    let mut key_exp = None;
     if is_template && let Some(key_property) = key_property {
+      key_exp = Some(key_property.value.clone_in(context.allocator));
       inject_prop(&mut child_block, key_property, context);
     }
     child_block.is_block = !is_stable_fragment;
 
-    render_exp.arguments.push(
-      ast
-        .expression_arrow_function(
-          SPAN,
-          true,
-          false,
-          NONE,
-          create_for_loop_params(value, key, index, context),
-          NONE,
-          ast.function_body(
+    if let Some(memo) = memo {
+      render_exp.arguments.push(
+        ast
+          .expression_arrow_function(
             SPAN,
-            ast.vec(),
-            ast.vec1(ast.statement_expression(
+            false,
+            false,
+            NONE,
+            create_for_loop_params(
+              value,
+              key,
+              index,
+              Some(ast.expression_identifier(SPAN, "_cached")),
+              context,
+            ),
+            NONE,
+            ast.function_body(
               SPAN,
-              context.gen_vnode_call(child_block, &mut context.codegen_map.borrow_mut()),
-            )),
-          ),
-        )
-        .into(),
-    );
+              ast.vec(),
+              ast.vec_from_array([
+                Statement::VariableDeclaration(ast.alloc_variable_declaration(
+                  SPAN,
+                  VariableDeclarationKind::Const,
+                  ast.vec1(ast.variable_declarator(
+                    SPAN,
+                    VariableDeclarationKind::Const,
+                    ast.binding_pattern(
+                      ast.binding_pattern_kind_binding_identifier(SPAN, "_memo"),
+                      NONE,
+                      false,
+                    ),
+                    Some(ast.expression_parenthesized(SPAN, memo)),
+                    false,
+                  )),
+                  false,
+                )),
+                Statement::IfStatement(ast.alloc_if_statement(
+                  SPAN,
+                  ast.expression_logical(
+                    SPAN,
+                    if let Some(key_exp) = key_exp {
+                      ast.expression_logical(
+                        SPAN,
+                        ast.expression_identifier(SPAN, "_cached"),
+                        LogicalOperator::And,
+                        ast.expression_binary(
+                          SPAN,
+                          Expression::StaticMemberExpression(ast.alloc_static_member_expression(
+                            SPAN,
+                            ast.expression_identifier(SPAN, "_cached"),
+                            ast.identifier_name(SPAN, "key"),
+                            false,
+                          )),
+                          BinaryOperator::StrictEquality,
+                          key_exp,
+                        ),
+                      )
+                    } else {
+                      ast.expression_identifier(SPAN, "_cached")
+                    },
+                    LogicalOperator::And,
+                    ast.expression_call(
+                      SPAN,
+                      ast.expression_identifier(SPAN, ast.atom(&context.helper("isMemoSame"))),
+                      NONE,
+                      ast.vec_from_array([
+                        ast.expression_identifier(SPAN, "_cached").into(),
+                        ast.expression_identifier(SPAN, "_memo").into(),
+                      ]),
+                      false,
+                    ),
+                  ),
+                  ast.statement_return(SPAN, Some(ast.expression_identifier(SPAN, "_cached"))),
+                  None,
+                )),
+                Statement::VariableDeclaration(ast.alloc_variable_declaration(
+                  SPAN,
+                  VariableDeclarationKind::Const,
+                  ast.vec1(ast.variable_declarator(
+                    SPAN,
+                    VariableDeclarationKind::Const,
+                    ast.binding_pattern(
+                      ast.binding_pattern_kind_binding_identifier(SPAN, "_item"),
+                      NONE,
+                      false,
+                    ),
+                    Some(
+                      context.gen_vnode_call(child_block, &mut context.codegen_map.borrow_mut()),
+                    ),
+                    false,
+                  )),
+                  false,
+                )),
+                ast.statement_expression(
+                  SPAN,
+                  ast.expression_assignment(
+                    SPAN,
+                    AssignmentOperator::Assign,
+                    AssignmentTarget::StaticMemberExpression(ast.alloc_static_member_expression(
+                      SPAN,
+                      ast.expression_identifier(SPAN, "_item"),
+                      ast.identifier_name(SPAN, "memo"),
+                      false,
+                    )),
+                    ast.expression_identifier(SPAN, "_memo"),
+                  ),
+                ),
+                ast.statement_return(SPAN, Some(ast.expression_identifier(SPAN, "_item"))),
+              ]),
+            ),
+          )
+          .into(),
+      );
+      render_exp
+        .arguments
+        .push(ast.expression_identifier(SPAN, "_cache").into());
+      render_exp.arguments.push(
+        ast
+          .expression_numeric_literal(
+            SPAN,
+            *context.cache_index.borrow() as f64,
+            None,
+            NumberBase::Hex,
+          )
+          .into(),
+      );
+      *context.cache_index.borrow_mut() += 1;
+    } else {
+      render_exp.arguments.push(
+        ast
+          .expression_arrow_function(
+            SPAN,
+            true,
+            false,
+            NONE,
+            create_for_loop_params(value, key, index, None, context),
+            NONE,
+            ast.function_body(
+              SPAN,
+              ast.vec(),
+              ast.vec1(ast.statement_expression(
+                SPAN,
+                context.gen_vnode_call(child_block, &mut context.codegen_map.borrow_mut()),
+              )),
+            ),
+          )
+          .into(),
+      );
+    }
 
     if let Some(NodeTypes::VNodeCall(fragment_codegen)) =
       context.codegen_map.borrow_mut().get_mut(&fragment_span)
@@ -265,6 +397,7 @@ pub fn create_for_loop_params<'a>(
   value: Option<Expression<'a>>,
   key: Option<Expression<'a>>,
   index: Option<Expression<'a>>,
+  memo: Option<Expression<'a>>,
   context: &TransformContext<'a>,
 ) -> FormalParameters<'a> {
   let ast = &context.ast;
@@ -297,7 +430,7 @@ pub fn create_for_loop_params<'a>(
               context.options.source_type,
             )
           }
-        } else if key.is_some() || index.is_some() {
+        } else if key.is_some() || index.is_some() || memo.is_some() {
           Some(ast.formal_parameter(
             SPAN,
             ast.vec(),
@@ -328,7 +461,7 @@ pub fn create_for_loop_params<'a>(
             false,
             false,
           ))
-        } else if index.is_some() {
+        } else if index.is_some() || memo.is_some() {
           Some(ast.formal_parameter(
             SPAN,
             ast.vec(),
@@ -351,6 +484,37 @@ pub fn create_for_loop_params<'a>(
             ast.binding_pattern(
               BindingPatternKind::BindingIdentifier(
                 ast.alloc_binding_identifier(index.span, index.name),
+              ),
+              NONE,
+              false,
+            ),
+            None,
+            false,
+            false,
+          ))
+        } else if memo.is_some() {
+          Some(ast.formal_parameter(
+            SPAN,
+            ast.vec(),
+            ast.binding_pattern(
+              BindingPatternKind::BindingIdentifier(ast.alloc_binding_identifier(SPAN, "___")),
+              NONE,
+              false,
+            ),
+            None,
+            false,
+            false,
+          ))
+        } else {
+          None
+        },
+        if let Some(Expression::Identifier(memo)) = memo {
+          Some(ast.formal_parameter(
+            SPAN,
+            ast.vec(),
+            ast.binding_pattern(
+              BindingPatternKind::BindingIdentifier(
+                ast.alloc_binding_identifier(memo.span, memo.name),
               ),
               NONE,
               false,

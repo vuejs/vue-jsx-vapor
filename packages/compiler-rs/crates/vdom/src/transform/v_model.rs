@@ -11,11 +11,8 @@ use oxc_ast::{
 use oxc_parser::Parser;
 use oxc_span::{SPAN, Span};
 
-use crate::{
-  ir::index::BlockIRNode,
-  transform::{
-    DirectiveTransformResult, TransformContext, transform_element::build_directive_args,
-  },
+use crate::transform::{
+  DirectiveTransformResult, TransformContext, transform_element::build_directive_args,
 };
 use common::{
   check::{is_jsx_component, is_member_expression, is_simple_identifier},

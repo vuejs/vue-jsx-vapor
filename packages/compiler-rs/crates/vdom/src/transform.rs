@@ -20,6 +20,7 @@ pub mod v_bind;
 pub mod v_for;
 pub mod v_html;
 pub mod v_if;
+pub mod v_memo;
 pub mod v_model;
 pub mod v_on;
 pub mod v_once;
@@ -30,6 +31,7 @@ pub mod v_text;
 
 use crate::ast::{ConstantTypes, NodeTypes};
 use crate::transform::cache_static::cache_static;
+use crate::transform::v_memo::transform_v_memo;
 use crate::transform::v_slot::track_slot_scopes;
 use crate::{
   ir::index::{
@@ -510,6 +512,7 @@ impl<'a> TransformContext<'a> {
         for node_transform in [
           transform_v_once,
           transform_v_if,
+          transform_v_memo,
           transform_v_for,
           transform_v_slots,
           transform_element,

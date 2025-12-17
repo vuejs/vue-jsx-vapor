@@ -258,19 +258,19 @@ pub fn create_children_codegen_node<'a>(
     false,
     false,
   );
-  let ret = if let Some(NodeTypes::VNodeCall(codegent_node)) =
-    codegen_map.remove(&unsafe { &*branch.node }.span())
+  match codegen_map
+    .remove(&unsafe { &*branch.node }.span())
+    .unwrap()
   {
-    Some(codegent_node)
-  } else {
-    None
+    NodeTypes::VNodeCall(mut vnode_call) => {
+      // Change createVNode to createBlock.
+      vnode_call.is_block = true;
+      inject_prop(&mut vnode_call, key_property, context);
+      context.gen_vnode_call(vnode_call, codegen_map)
+    }
+    NodeTypes::TextCallNode(exp) => exp,
+    NodeTypes::CacheExpression(exp) => exp,
   }
-  .unwrap();
-  let mut vnode_call = ret;
-  // Change createVNode to createBlock.
-  vnode_call.is_block = true;
-  inject_prop(&mut vnode_call, key_property, context);
-  context.gen_vnode_call(vnode_call, codegen_map)
 }
 
 fn get_parent_condition<'a>(

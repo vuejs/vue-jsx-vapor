@@ -352,7 +352,7 @@ pub fn build_slots<'a>(
                     true,
                     false,
                     NONE,
-                    create_for_loop_params(value, key, index, context),
+                    create_for_loop_params(value, key, index, None, context),
                     NONE,
                     ast.function_body(
                       SPAN,
