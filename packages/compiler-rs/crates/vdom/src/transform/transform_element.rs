@@ -12,9 +12,15 @@ use oxc_span::{GetSpan, SPAN, Span};
 use crate::{
   ast::{NodeTypes, RootNode, VNodeCall},
   transform::{
-    DirectiveTransformResult, TransformContext, cache_static::get_constant_type,
-    v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
-    v_on::transform_v_on, v_show::transform_v_show, v_slot::build_slots, v_text::transform_v_text,
+    DirectiveTransformResult, TransformContext,
+    cache_static::{cache_static, get_constant_type},
+    v_bind::transform_v_bind,
+    v_html::transform_v_html,
+    v_model::transform_v_model,
+    v_on::transform_v_on,
+    v_show::transform_v_show,
+    v_slot::build_slots,
+    v_text::transform_v_text,
   },
 };
 
@@ -84,14 +90,15 @@ pub unsafe fn transform_element<'a>(
   }
 
   let mut should_use_block = RootNode::is_single_root(parent_node)
+    || RootNode::is_fragment(parent_node)
     || vnode_tag == "Teleport"
     || vnode_tag == "Suspense"
-    || (!is_component &&
-    // <svg> and <foreignObject> must be forced into blocks so that block
-    // updates inside get proper isSVG flag at runtime. (#639, #643)
-    // This is technically web-specific, but splitting the logic out of core
-    // leads to too much unnecessary complexity.
-    (vnode_tag == "svg" || vnode_tag =="foreignObject" || vnode_tag =="math"));
+    || (!is_component
+      // <svg> and <foreignObject> must be forced into blocks so that block
+      // updates inside get proper isSVG flag at runtime. (#639, #643)
+      // This is technically web-specific, but splitting the logic out of core
+      // leads to too much unnecessary complexity.
+      && (vnode_tag == "svg" || vnode_tag == "foreignObject" || vnode_tag == "math"));
 
   let _node = node as *mut oxc_allocator::Box<JSXElement>;
   let props_build_result = build_props(unsafe { &mut *_node }, context, is_component);
@@ -142,6 +149,11 @@ pub unsafe fn transform_element<'a>(
       && (vnode_tag != "KeepAlive" || vnode_tag != "keep-alive"); // explained above.
 
       vnode_children = Some(if should_build_as_slots {
+        cache_static(
+          unsafe { &mut *context_node },
+          context,
+          &mut context.codegen_map.borrow_mut(),
+        );
         let (slots, has_dynamic_slots) = build_slots(node, context);
         if has_dynamic_slots {
           patch_flag |= PatchFlags::DynamicSlots as i32
@@ -184,7 +196,9 @@ pub unsafe fn transform_element<'a>(
       tag: vnode_tag,
       props: vnode_props,
       children: vnode_children,
-      patch_flag: if patch_flag == 0 {
+      patch_flag: if RootNode::is_fragment(parent_node) {
+        Some(PatchFlags::StableFragment as i32)
+      } else if patch_flag == 0 {
         None
       } else {
         Some(patch_flag)
@@ -265,6 +279,7 @@ pub fn build_props<'a>(
   };
 
   let _has_ref = &mut has_ref as *mut _;
+  let _has_dynamic_keys = &mut has_dynamic_keys as *mut _;
   let mut analyze_patch_flag = |prop: &ObjectPropertyKind| {
     let ObjectPropertyKind::ObjectProperty(prop) = prop else {
       return;
@@ -327,7 +342,7 @@ pub fn build_props<'a>(
         dynamic_prop_names.push(name);
       }
     } else {
-      has_dynamic_keys = true
+      *unsafe { &mut *_has_dynamic_keys } = true;
     }
   };
 
@@ -343,16 +358,13 @@ pub fn build_props<'a>(
         }
         .split("_")
         .collect::<Vec<&str>>()[0];
-        if !is_directive(name)
-          && !is_event(name)
-          && matches!(prop.value, Some(JSXAttributeValue::StringLiteral(_)))
-          && name == "ref"
-        {
-          has_ref = prop
-            .value
-            .as_ref()
-            .map(|value| matches!(value, JSXAttributeValue::StringLiteral(_)))
-            .unwrap_or_default();
+        let is_static = prop
+          .value
+          .as_ref()
+          .and_then(|value| Some(matches!(value, JSXAttributeValue::StringLiteral(_))))
+          .unwrap_or_default();
+        if !is_directive(name) && !is_event(name) && is_static && name == "ref" {
+          has_ref = true;
           if let Some(marker) = ref_v_for_marker() {
             properties.push(marker)
           };
@@ -373,6 +385,7 @@ pub fn build_props<'a>(
           }
 
           if prop.name.get_identifier().name == "v-on" {
+            has_dynamic_keys = true;
             if let Some(value) = &mut prop.value {
               // v-on={obj} -> toHandlers(obj)
               if !properties.is_empty() {
@@ -390,7 +403,7 @@ pub fn build_props<'a>(
         if let Some(DirectiveTransformResult { props, runtime }) = match dir_name.as_str() {
           "bind" => {
             // #938: elements with dynamic keys should be forced into blocks
-            if name == "key" {
+            if name == "key" && !is_static {
               should_use_block = true
             }
             // force hydration for prop with .prop modifier
@@ -429,6 +442,11 @@ pub fn build_props<'a>(
                 )
                 .into(),
               );
+              // custom dirs may use beforeUpdate so they need to force blocks
+              // to ensure before-update gets called before children update
+              if has_children {
+                should_use_block = true;
+              }
             }
             None
           }
@@ -443,6 +461,7 @@ pub fn build_props<'a>(
         };
       }
       JSXAttributeItem::SpreadAttribute(prop) => {
+        has_dynamic_keys = true;
         // #10696 in case a {...obj} object contains ref
         if let Some(marker) = ref_v_for_marker() {
           properties.push(marker)
@@ -534,7 +553,7 @@ pub fn build_props<'a>(
         // no dynamic key
         if !has_dynamic_key {
           if let Some(class_prop) = class_prop
-            && matches!(class_prop.value, Expression::StringLiteral(_))
+            && !matches!(class_prop.value, Expression::StringLiteral(_))
           {
             class_prop.value = ast.expression_call(
               SPAN,

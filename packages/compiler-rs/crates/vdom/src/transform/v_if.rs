@@ -10,7 +10,7 @@ use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ast::{IfBranchNode, NodeTypes, VNodeCall},
-  transform::{TransformContext, cache_static::cache_static, utils::inject_prop},
+  transform::{TransformContext, cache_static::cache_static_children, utils::inject_prop},
 };
 
 use common::{
@@ -187,7 +187,6 @@ pub unsafe fn transform_v_if<'a>(
         && let Some(branchs) = &mut fragment_codegen.v_if
       {
         let branch = &mut branchs[0];
-        cache_static(unsafe { &mut *branch.node }, context, codegen_map);
         fragment_codegen.children = Some(Either3::C(create_codegen_node_for_branch(
           branch,
           key,
@@ -201,7 +200,6 @@ pub unsafe fn transform_v_if<'a>(
       && let Some(branchs) = if_node.v_if.as_mut()
     {
       let branch = branchs.last_mut().unwrap();
-      cache_static(unsafe { &mut *branch.node }, context, codegen_map);
       // attach this branch's codegen node to the v-if root.
       let parent_condition = unsafe { &mut *get_parent_condition(children).unwrap() };
       parent_condition.alternate =
@@ -256,16 +254,21 @@ pub fn create_children_codegen_node<'a>(
     false,
     false,
   );
-  match codegen_map
-    .remove(&unsafe { &*branch.node }.span())
-    .unwrap()
-  {
-    NodeTypes::VNodeCall(mut vnode_call) => {
-      // Change createVNode to createBlock.
-      vnode_call.is_block = true;
-      inject_prop(&mut vnode_call, key_property, context);
-      context.gen_vnode_call(vnode_call, codegen_map)
-    }
+  let span = unsafe { &*branch.node }.span();
+  if let Some(NodeTypes::VNodeCall(vnode_call)) = codegen_map.get_mut(&span) {
+    // Change createVNode to createBlock.
+    vnode_call.is_block = true;
+    inject_prop(vnode_call, key_property, context);
+  }
+  cache_static_children(
+    None,
+    vec![unsafe { &mut *branch.node }],
+    context,
+    codegen_map,
+    false,
+  );
+  match codegen_map.remove(&span).unwrap() {
+    NodeTypes::VNodeCall(vnode_call) => context.gen_vnode_call(vnode_call, codegen_map),
     NodeTypes::TextCallNode(exp) => exp,
     NodeTypes::CacheExpression(exp) => exp,
   }

@@ -12,7 +12,11 @@ use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ast::{ConstantTypes, ForNode, NodeTypes, VNodeCall},
-  transform::{TransformContext, cache_static::get_constant_type, utils::inject_prop},
+  transform::{
+    TransformContext,
+    cache_static::{cache_static_children, get_constant_type},
+    utils::inject_prop,
+  },
 };
 use common::{
   check::is_template,
@@ -143,7 +147,7 @@ pub unsafe fn transform_v_for<'a>(
     // finish the codegen now that all children have been traversed
     let children = &mut unsafe { &mut *node }
       .children
-      .iter()
+      .iter_mut()
       .filter(|child| {
         // check <template v-for> key placement
         if is_template
@@ -158,22 +162,37 @@ pub unsafe fn transform_v_for<'a>(
       })
       .collect::<Vec<_>>();
 
+    let child_span = &children[0].span();
+    let mut key_exp = None;
     // Normal element v-for. Directly use the child's codegenNode
     // but mark it as a block.
-    let NodeTypes::VNodeCall(mut child_block) = context
+    if let NodeTypes::VNodeCall(child_block) = context
       .codegen_map
       .borrow_mut()
-      .remove(&children[0].span())
+      .get_mut(child_span)
       .unwrap()
-    else {
-      unreachable!()
-    };
-    let mut key_exp = None;
-    if is_template && let Some(key_property) = key_property {
-      key_exp = Some(key_property.value.clone_in(context.allocator));
-      inject_prop(&mut child_block, key_property, context);
+    {
+      if is_template && let Some(key_property) = key_property {
+        key_exp = Some(key_property.value.clone_in(context.allocator));
+        inject_prop(child_block, key_property, context);
+      }
+      child_block.is_block = !is_stable_fragment;
     }
-    child_block.is_block = !is_stable_fragment;
+    cache_static_children(
+      None,
+      vec![children.get_mut(0).unwrap()],
+      context,
+      &mut context.codegen_map.borrow_mut(),
+      false,
+    );
+    let child_block = context.codegen_map.borrow_mut().remove(child_span).unwrap();
+    let child_block = match child_block {
+      NodeTypes::VNodeCall(child_block) => {
+        context.gen_vnode_call(child_block, &mut context.codegen_map.borrow_mut())
+      }
+      NodeTypes::CacheExpression(exp) => exp,
+      _ => unreachable!(),
+    };
 
     if let Some(memo) = memo {
       render_exp.arguments.push(
@@ -261,9 +280,7 @@ pub unsafe fn transform_v_for<'a>(
                       NONE,
                       false,
                     ),
-                    Some(
-                      context.gen_vnode_call(child_block, &mut context.codegen_map.borrow_mut()),
-                    ),
+                    Some(child_block),
                     false,
                   )),
                   false,
@@ -315,10 +332,7 @@ pub unsafe fn transform_v_for<'a>(
             ast.function_body(
               SPAN,
               ast.vec(),
-              ast.vec1(ast.statement_expression(
-                SPAN,
-                context.gen_vnode_call(child_block, &mut context.codegen_map.borrow_mut()),
-              )),
+              ast.vec1(ast.statement_expression(SPAN, child_block)),
             ),
           )
           .into(),

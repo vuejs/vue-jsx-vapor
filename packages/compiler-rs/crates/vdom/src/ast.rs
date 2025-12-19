@@ -93,7 +93,8 @@ impl<'a> RootNode {
   pub fn is_root(node: &JSXChild<'a>) -> bool {
     let span = node.span();
     if span.end == 0 {
-      span.start - span.end > 0
+      let offset = span.start - span.end;
+      offset > 0 && offset < 4
     } else {
       false
     }

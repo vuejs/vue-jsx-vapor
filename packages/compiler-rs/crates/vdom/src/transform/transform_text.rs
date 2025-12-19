@@ -14,7 +14,7 @@ use crate::{
 use common::{
   check::{is_built_in_directive, is_directive, is_jsx_component, is_template},
   patch_flag::PatchFlags,
-  text::{get_text_like_value, is_empty_text, resolve_jsx_text},
+  text::{is_empty_text, resolve_jsx_text},
 };
 
 /// # SAFETY
@@ -85,7 +85,7 @@ pub unsafe fn transform_text<'a>(
             )
           }
         } else if let JSXChild::ExpressionContainer(child) = child {
-          if get_text_like_value(child.expression.to_expression(), false).is_some() {
+          if child.expression.to_expression().is_literal() {
             call_args.push(
               child
                 .expression

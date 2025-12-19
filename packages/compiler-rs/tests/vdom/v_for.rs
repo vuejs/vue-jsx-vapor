@@ -16,9 +16,11 @@ fn basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
+  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, ({ x, y }) => (_openBlock(), _createElementBlock("div", { key: x }, [_createElementVNode("span", null, "foobar")]))), 128);
+    const _cache = _useVdomCache();
+    return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, ({ x, y }) => (_openBlock(), _createElementBlock("div", { key: x }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, "foobar", -1))]))), 128);
   })();
   "#);
 }

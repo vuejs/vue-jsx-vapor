@@ -72,9 +72,11 @@ fn jsx_fragment() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createElementVNode as _createElementVNode, createVNode as _createVNode } from "vue";
+  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-    return _createVNode(_Fragment, null, [_createElementVNode("span")]);
+    const _cache = _useVdomCache();
+    return _openBlock(), _createBlock(_Fragment, null, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))], 64);
   })();
   "#)
 }

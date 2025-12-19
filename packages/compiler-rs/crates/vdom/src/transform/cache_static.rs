@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use common::{
   check::{is_directive, is_jsx_component},
   patch_flag::PatchFlags,
-  text::{get_text_like_value, is_empty_text},
+  text::is_empty_text,
 };
 use napi::{Either, bindgen_prelude::Either3};
 use oxc_ast::ast::{
@@ -14,7 +14,7 @@ use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ast::{ConstantTypes, NodeTypes, get_vnode_block_helper},
-  transform::TransformContext,
+  transform::{TransformContext, utils::get_children},
 };
 
 pub fn cache_static<'a>(
@@ -22,53 +22,36 @@ pub fn cache_static<'a>(
   context: &'a TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
 ) {
-  walk(
-    root,
-    None,
+  let node = unsafe { &*(root as *mut JSXChild) };
+  let children = get_children(root);
+  let single_root = if let JSXChild::Fragment(_) = node
+    && children.len() == 1
+    && let JSXChild::Element(child) = &children[0]
+    && !is_jsx_component(child)
+  {
+    true
+  } else {
+    false
+  };
+  cache_static_children(
+    Some(node),
+    children,
     context,
     codegen_map,
     // Root node is unfortunately non-hoistable due to potential parent
     // fallthrough attributes.
-    get_single_element_root(root).is_some(),
+    single_root,
   );
 }
 
-pub fn get_single_element_root<'a>(
-  root: &'a JSXChild<'a>,
-) -> Option<&'a oxc_allocator::Box<'a, JSXElement<'a>>> {
-  if let JSXChild::Fragment(root) = root {
-    let children = root
-      .children
-      .iter()
-      .filter(|child| !is_empty_text(child))
-      .collect::<Vec<_>>();
-    if children.len() == 1
-      && let JSXChild::Element(child) = children[0]
-      && !is_jsx_component(child)
-    {
-      return Some(child);
-    }
-  }
-  None
-}
-
-fn walk<'a>(
-  node: &mut JSXChild<'a>,
-  _parent: Option<&'a mut JSXChild<'a>>,
+pub fn cache_static_children<'a>(
+  node: Option<&JSXChild<'a>>,
+  children: Vec<&mut JSXChild<'a>>,
   context: &'a TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
   do_not_hoist_node: bool,
 ) {
-  let node_ptr = node as *mut _;
   let codegen_map_ptr = codegen_map as *mut HashMap<Span, NodeTypes>;
-  let children = match node {
-    JSXChild::Element(node) => &mut node.children,
-    JSXChild::Fragment(node) => &mut node.children,
-    _ => return,
-  }
-  .into_iter()
-  .filter(|child| !is_empty_text(child))
-  .collect::<Vec<_>>();
   let child_len = children.len();
   let mut to_cache = vec![];
   for child in children {
@@ -148,9 +131,9 @@ fn walk<'a>(
       if is_component {
         *context.in_v_slot.borrow_mut() += 1;
       }
-      walk(
-        unsafe { &mut *child_ptr },
-        Some(unsafe { &mut *node_ptr }),
+      cache_static_children(
+        Some(unsafe { &*child_ptr }),
+        get_children(unsafe { &mut *child_ptr }),
         context,
         codegen_map,
         false,
@@ -164,9 +147,9 @@ fn walk<'a>(
         && codegen.v_for
       {
         // Do not hoist v-for because it has to be a block
-        walk(
-          unsafe { &mut *child_ptr },
-          Some(unsafe { &mut *node_ptr }),
+        cache_static_children(
+          Some(unsafe { &*child_ptr }),
+          get_children(unsafe { &mut *child_ptr }),
           context,
           codegen_map,
           true,
@@ -175,13 +158,14 @@ fn walk<'a>(
     }
   }
 
-  let mut cached_as_array = false;
-  if to_cache.len() == child_len
+  if child_len > 1
+    && to_cache.len() == child_len
+    && let Some(node) = node
     && let JSXChild::Element(node) = node
-    && !is_jsx_component(node)
     && let Some(codegen) = unsafe { &mut *codegen_map_ptr }.get_mut(&node.span)
     && let NodeTypes::VNodeCall(codegen) = codegen
-    && let Some(Either3::B(_)) = codegen.children.as_mut()
+    && !is_jsx_component(node)
+    && let Some(Either3::B(_)) = codegen.children.as_ref()
   {
     // all children were hoisted - the entire children array is cacheable.
     codegen.children = Some(Either3::C(context.cache(
@@ -190,32 +174,30 @@ fn walk<'a>(
       false,
       true,
     )));
-    cached_as_array = true;
+    return;
   }
 
-  if !cached_as_array {
-    for child in to_cache {
-      let span = child.span();
-      match codegen_map.remove(&span).unwrap() {
-        NodeTypes::VNodeCall(codegen) => {
-          unsafe { &mut *codegen_map_ptr }.insert(
-            span,
-            NodeTypes::CacheExpression(context.cache(
-              context.gen_vnode_call(codegen, codegen_map),
-              false,
-              false,
-              false,
-            )),
-          );
-        }
-        NodeTypes::TextCallNode(codegen) => {
-          codegen_map.insert(
-            span,
-            NodeTypes::CacheExpression(context.cache(codegen, false, false, false)),
-          );
-        }
-        _ => (),
+  for child in to_cache {
+    let span = child.span();
+    match codegen_map.remove(&span).unwrap() {
+      NodeTypes::VNodeCall(codegen) => {
+        unsafe { &mut *codegen_map_ptr }.insert(
+          span,
+          NodeTypes::CacheExpression(context.cache(
+            context.gen_vnode_call(codegen, codegen_map),
+            false,
+            false,
+            false,
+          )),
+        );
       }
+      NodeTypes::TextCallNode(codegen) => {
+        codegen_map.insert(
+          span,
+          NodeTypes::CacheExpression(context.cache(codegen, false, false, false)),
+        );
+      }
+      _ => (),
     }
   }
 }
@@ -302,6 +284,7 @@ pub fn get_constant_type<'a>(
                 let name = &p.name.get_identifier().name;
                 if !is_directive(name)
                   && let Some(JSXAttributeValue::ExpressionContainer(value)) = p.value.as_ref()
+                  && value.span != SPAN
                 {
                   let exp_type = get_constant_type(
                     Either::B(value.expression.to_expression()),
@@ -362,8 +345,8 @@ pub fn get_constant_type<'a>(
         ConstantTypes::NotConstant
       }
       JSXChild::ExpressionContainer(node) => {
-        if get_text_like_value(node.expression.to_expression(), false).is_some() {
-          ConstantTypes::CanSkipPatch
+        if node.expression.to_expression().is_literal() {
+          ConstantTypes::CanStringify
         } else {
           ConstantTypes::NotConstant
         }
@@ -372,8 +355,8 @@ pub fn get_constant_type<'a>(
       _ => ConstantTypes::NotConstant,
     },
     Either::B(node) => {
-      if get_text_like_value(node, false).is_some() {
-        ConstantTypes::CanSkipPatch
+      if node.is_literal() {
+        ConstantTypes::CanStringify
       } else {
         ConstantTypes::NotConstant
       }
