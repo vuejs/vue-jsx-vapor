@@ -28,8 +28,9 @@ use common::{
   check::{
     is_built_in_directive, is_directive, is_event, is_jsx_component, is_reserved_prop, is_template,
   },
-  directive::{DirectiveNode, resolve_directive},
+  directive::{DirectiveNode, find_prop, resolve_directive},
   error::ErrorCodes,
+  expression::parse_expression,
   patch_flag::PatchFlags,
   text::{camelize, get_tag_name, is_empty_text, to_valid_asset_id},
 };
@@ -64,7 +65,19 @@ pub unsafe fn transform_element<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  if is_template(node) {
+  if is_template(node)
+    && find_prop(
+      node,
+      Either::B(vec![
+        String::from("v-if"),
+        String::from("v-else-if"),
+        String::from("v-else"),
+        String::from("v-for"),
+        String::from("v-slot"),
+      ]),
+    )
+    .is_some()
+  {
     return None;
   }
 
@@ -314,7 +327,7 @@ pub fn build_props<'a>(
         value = arg.to_expression();
       }
 
-      if context.constant_cache.borrow().get(&value.span()).is_some()
+      if matches!(value, Expression::LogicalExpression(value) if value.span() == SPAN)
         || (get_constant_type(
           Either::B(value),
           context,
@@ -352,18 +365,16 @@ pub fn build_props<'a>(
     match prop {
       JSXAttributeItem::Attribute(prop) => {
         let ast = &context.ast;
-        let name = match &prop.name {
+        let name_splited = match &prop.name {
           JSXAttributeName::Identifier(name) => name.name.as_str(),
           JSXAttributeName::NamespacedName(name) => name.namespace.name.as_str(),
         }
         .split("_")
-        .collect::<Vec<&str>>()[0];
-        let is_static = prop
-          .value
-          .as_ref()
-          .and_then(|value| Some(matches!(value, JSXAttributeValue::StringLiteral(_))))
-          .unwrap_or_default();
-        if !is_directive(name) && !is_event(name) && is_static && name == "ref" {
+        .collect::<Vec<_>>();
+        let Some((name, modifiers)) = name_splited.split_first() else {
+          unreachable!()
+        };
+        if !is_directive(name) && !is_event(name) && *name == "ref" {
           has_ref = true;
           if let Some(marker) = ref_v_for_marker() {
             properties.push(marker)
@@ -392,7 +403,17 @@ pub fn build_props<'a>(
                 merge_args
                   .push(ast.expression_object(node.span, dedupe_properties(properties, ast)));
               }
-              merge_args.push(context.jsx_attribute_value_to_expression(value));
+              let mut args = ast.vec1(context.jsx_attribute_value_to_expression(value).into());
+              if !is_component {
+                args.push(ast.expression_boolean_literal(SPAN, true).into())
+              }
+              merge_args.push(ast.expression_call(
+                SPAN,
+                ast.expression_identifier(SPAN, ast.atom(&context.helper("toHandlers"))),
+                NONE,
+                args,
+                false,
+              ));
             } else {
               context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, prop.span);
             }
@@ -403,11 +424,17 @@ pub fn build_props<'a>(
         if let Some(DirectiveTransformResult { props, runtime }) = match dir_name.as_str() {
           "bind" => {
             // #938: elements with dynamic keys should be forced into blocks
-            if name == "key" && !is_static {
+            if *name == "key"
+              && !prop
+                .value
+                .as_ref()
+                .and_then(|value| Some(matches!(value, JSXAttributeValue::StringLiteral(_))))
+                .unwrap_or_default()
+            {
               should_use_block = true
             }
             // force hydration for prop with .prop modifier
-            if name.split("_").any(|n| n == "prop") {
+            if modifiers.iter().any(|n| *n == "prop") {
               patch_flag |= PatchFlags::NeedHydration as i32;
             }
             transform_v_bind(prop, node, context)
@@ -415,7 +442,7 @@ pub fn build_props<'a>(
           "on" => {
             // inline before-update hooks need to force block so that it is invoked
             // before children
-            if has_children && name == "onVue:before-update" {
+            if has_children && *name == "onVue:beforeUpdate" {
               should_use_block = true;
             }
             transform_v_on(prop, context)
@@ -692,19 +719,31 @@ pub fn build_directive_args<'a>(
   // built-in directive with runtime
   dir_args.push(ast.expression_identifier(SPAN, ast.atom(runtime)));
   let exp_is_none = dir.exp.is_none();
-  if let Some(exp) = dir.exp
-    && let Some(node) = exp.ast
-  {
-    dir_args.push(node.take_in(ast.allocator));
+  if let Some(exp) = dir.exp {
+    dir_args.push(if let Some(node) = exp.ast {
+      node.take_in(ast.allocator)
+    } else {
+      ast.expression_string_literal(exp.loc, ast.atom(&exp.content), None)
+    });
   }
   let arg_is_none = dir.arg.is_none();
   if let Some(arg) = dir.arg {
     if arg_is_none {
       dir_args.push(ast.expression_identifier(SPAN, "void 0"))
     }
-    if let Some(arg_ast) = arg.ast {
-      dir_args.push(arg_ast.take_in(ast.allocator))
-    }
+    dir_args.push(if !arg.content.contains(".") {
+      context
+        .ast
+        .expression_identifier(SPAN, ast.atom(&arg.content))
+    } else {
+      parse_expression(
+        &arg.content,
+        arg.loc,
+        context.allocator,
+        context.options.source_type,
+      )
+      .unwrap()
+    })
   }
   if !dir.modifiers.is_empty() {
     if arg_is_none {

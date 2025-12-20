@@ -1,4 +1,5 @@
 use common::{
+  check::is_keyboard_event,
   directive::{Modifiers, resolve_modifiers},
   error::ErrorCodes,
   text::capitalize,
@@ -38,7 +39,7 @@ pub fn transform_v_on<'a>(
   }
 
   if event_name.starts_with("vue:") {
-    event_name = format!("vnode-{}", &event_name[4..]);
+    event_name = format!("vnode{}", capitalize(event_name[4..].to_string()));
   }
 
   let mut should_cache = value.is_none() && !*context.in_v_once.borrow();
@@ -148,7 +149,23 @@ pub fn transform_v_on<'a>(
       )
     }
 
-    if !key_modifiers.is_empty() {
+    if !key_modifiers.is_empty()
+      && let key_modifiers = key_modifiers
+        .iter()
+        .filter_map(|key| {
+          if is_keyboard_event(key) {
+            Some(
+              ast
+                .expression_string_literal(SPAN, ast.atom(key), None)
+                .into(),
+            )
+          } else {
+            None
+          }
+        })
+        .collect::<Vec<_>>()
+      && !key_modifiers.is_empty()
+    {
       exp = ast.expression_call(
         SPAN,
         ast.expression_identifier(SPAN, ast.atom(&context.helper("withKeys"))),
@@ -156,18 +173,11 @@ pub fn transform_v_on<'a>(
         ast.vec_from_array([
           exp.into(),
           ast
-            .expression_array(
-              SPAN,
-              ast.vec_from_iter(non_key_modifiers.iter().map(|modifier| {
-                ast
-                  .expression_string_literal(SPAN, ast.atom(modifier), None)
-                  .into()
-              })),
-            )
+            .expression_array(SPAN, ast.vec_from_iter(key_modifiers))
             .into(),
         ]),
         false,
-      )
+      );
     }
 
     if !event_option_modifiers.is_empty() {

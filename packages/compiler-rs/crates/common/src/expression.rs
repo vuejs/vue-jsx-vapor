@@ -187,3 +187,26 @@ pub fn expression_to_params<'a>(
     None
   }
 }
+
+pub fn parse_expression<'a>(
+  source: &str,
+  span: Span,
+  allocator: &'a Allocator,
+  source_type: SourceType,
+) -> Option<Expression<'a>> {
+  if let Ok(exp) = Parser::new(
+    allocator,
+    Atom::from_in(
+      &format!("/*{}*/({})", ".".repeat(span.start as usize - 5), source),
+      allocator,
+    )
+    .as_str(),
+    source_type,
+  )
+  .parse_expression()
+  {
+    Some(exp)
+  } else {
+    None
+  }
+}

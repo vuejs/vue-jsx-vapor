@@ -15,10 +15,9 @@ fn v_model() {
   assert_snapshot!(code, @r#"
   import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
-  const _hoisted_1 = ["onUpdate:modelValue"];
   (() => {
     const _cache = _useVdomCache();
-    return _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => foo = $event) }, null, 8, _hoisted_1)), [[
+    return _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => foo = $event) }, null, 512)), [[
       _vModelText,
       foo,
       void 0,
@@ -47,11 +46,7 @@ fn v_model_component() {
       model: foo.value,
       "onUpdate:model": _cache[0] || (_cache[0] = ($event) => foo.value = $event),
       modelModifiers$: { foo: true }
-    }, null, 8, [
-      "model",
-      "onUpdate:model",
-      "modelModifiers$"
-    ]);
+    }, null, 8, ["model", "modelModifiers$"]);
   })();
   "#);
 }

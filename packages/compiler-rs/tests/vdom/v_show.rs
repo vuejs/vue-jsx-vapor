@@ -41,11 +41,7 @@ fn v_model_component() {
       model: foo.value,
       "onUpdate:model": _cache[0] || (_cache[0] = ($event) => foo.value = $event),
       modelModifiers$: { foo: true }
-    }, null, 8, [
-      "model",
-      "onUpdate:model",
-      "modelModifiers$"
-    ]);
+    }, null, 8, ["model", "modelModifiers$"]);
   })();
   "#);
 }

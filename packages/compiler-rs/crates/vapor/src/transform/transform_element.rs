@@ -30,7 +30,7 @@ use common::{
     is_built_in_directive, is_directive, is_event, is_jsx_component, is_reserved_prop, is_template,
     is_void_tag,
   },
-  directive::resolve_directive,
+  directive::{find_prop, resolve_directive},
   dom::is_valid_html_nesting,
   error::ErrorCodes,
   expression::SimpleExpressionNode,
@@ -47,7 +47,19 @@ pub unsafe fn transform_element<'a>(
   let Either::B(JSXChild::Element(node)) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  if is_template(node) {
+  if is_template(node)
+    && find_prop(
+      node,
+      Either::B(vec![
+        String::from("v-if"),
+        String::from("v-else-if"),
+        String::from("v-else"),
+        String::from("v-for"),
+        String::from("v-slot"),
+      ]),
+    )
+    .is_some()
+  {
     return None;
   }
   let mut effect_index = context_block.effect.len() as i32;

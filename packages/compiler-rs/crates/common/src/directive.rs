@@ -23,7 +23,10 @@ pub fn resolve_directive<'a>(node: &'a mut JSXAttribute<'a>, source: &'a str) ->
     JSXAttributeName::Identifier(name) => (name.span, name.name.to_string()),
     JSXAttributeName::NamespacedName(name) => {
       arg_string = name.name.name.to_string();
-      (name.name.span, name.namespace.name.to_string())
+      (
+        Span::new(name.name.span.start + 1, name.name.span.end - 1),
+        name.namespace.name.to_string(),
+      )
     }
   };
   let is_directive = name_string.starts_with("v-");

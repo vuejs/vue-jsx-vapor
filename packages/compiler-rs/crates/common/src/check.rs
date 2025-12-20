@@ -135,6 +135,7 @@ static HTML_TAGS: phf::Set<&'static str> = phf_set! {
     "img",
     "li",
     "main",
+    "math",
     "ol",
     "p",
     "pre",
