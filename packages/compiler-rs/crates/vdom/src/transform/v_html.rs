@@ -1,4 +1,4 @@
-use common::error::ErrorCodes;
+use common::{error::ErrorCodes, text::is_empty_text};
 use oxc_ast::ast::{JSXAttribute, JSXElement, PropertyKind};
 use oxc_span::{GetSpan, SPAN};
 
@@ -16,7 +16,7 @@ pub fn transform_v_html<'a>(
     return None;
   };
 
-  if !node.children.is_empty() {
+  if node.children.iter().filter(|c| !is_empty_text(c)).count() > 0 {
     context.options.on_error.as_ref()(ErrorCodes::VHtmlWithChildren, node.span);
     return None;
   }

@@ -84,13 +84,13 @@ impl<'a> WalkIdentifiers<'a> {
       ast.vec(),
       ast.vec(),
     );
+    program
+      .body
+      .push(ast.statement_expression(SPAN, expression));
     let scoping = SemanticBuilder::new()
       .build(program)
       .semantic
       .into_scoping();
-    program
-      .body
-      .push(ast.statement_expression(SPAN, expression));
     traverse_mut(self, ast.allocator, program, scoping, ());
     let Statement::ExpressionStatement(stmt) = &mut program.body[0] else {
       unreachable!();

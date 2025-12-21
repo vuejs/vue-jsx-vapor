@@ -15,7 +15,7 @@ fn basic() {
 }
 
 #[test]
-fn nested() {
+fn v_slot_with_v_slots() {
   let code = transform(
     "<Comp v-slot={{ bar }}>
       <Comp bar={bar} v-slots={{

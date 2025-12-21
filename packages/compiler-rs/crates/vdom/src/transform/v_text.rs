@@ -1,4 +1,4 @@
-use common::{check::is_void_tag, error::ErrorCodes};
+use common::{check::is_void_tag, error::ErrorCodes, text::is_empty_text};
 use napi::Either;
 use oxc_ast::{
   NONE,
@@ -22,7 +22,7 @@ pub fn transform_v_text<'a>(
     return None;
   };
 
-  if !node.children.is_empty() {
+  if node.children.iter().filter(|c| !is_empty_text(c)).count() > 0 {
     context.options.on_error.as_ref()(ErrorCodes::VTextWithChildren, node.span);
     return None;
   };

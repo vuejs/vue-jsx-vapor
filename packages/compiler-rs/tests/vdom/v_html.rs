@@ -27,7 +27,7 @@ fn should_convert_v_html_to_inner_html() {
 fn should_raise_error_if_has_children() {
   let error = RefCell::new(None);
   transform(
-    r#"<div v-html={test}>hello</div>"#,
+    r#"<div v-html={test}> </div>"#,
     Some(TransformOptions {
       interop: true,
       on_error: Box::new(|e, _| {

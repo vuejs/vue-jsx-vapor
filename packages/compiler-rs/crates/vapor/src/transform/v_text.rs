@@ -1,4 +1,6 @@
-use common::{check::is_void_tag, error::ErrorCodes, expression::SimpleExpressionNode};
+use common::{
+  check::is_void_tag, error::ErrorCodes, expression::SimpleExpressionNode, text::is_empty_text,
+};
 use napi::bindgen_prelude::{Either3, Either16};
 use oxc_ast::ast::{JSXAttribute, JSXElement};
 
@@ -20,7 +22,7 @@ pub fn transform_v_text<'a>(
     SimpleExpressionNode::default()
   };
 
-  if !node.children.is_empty() {
+  if node.children.iter().filter(|c| !is_empty_text(c)).count() > 0 {
     context.options.on_error.as_ref()(ErrorCodes::VTextWithChildren, node.span);
     return None;
   };

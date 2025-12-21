@@ -13,7 +13,7 @@ use crate::{
 };
 use common::{
   check::is_jsx_component, directive::find_prop_mut, error::ErrorCodes,
-  expression::SimpleExpressionNode,
+  expression::SimpleExpressionNode, text::is_empty_text,
 };
 
 /// # SAFETY
@@ -35,7 +35,13 @@ pub unsafe fn transform_v_slots<'a>(
       return None;
     }
 
-    if !unsafe { &mut *node }.children.is_empty() {
+    if unsafe { &*node }
+      .children
+      .iter()
+      .filter(|c| !is_empty_text(c))
+      .count()
+      > 0
+    {
       context.options.on_error.as_ref()(ErrorCodes::VSlotMixedSlotUsage, unsafe { &*node }.span);
       return None;
     }
