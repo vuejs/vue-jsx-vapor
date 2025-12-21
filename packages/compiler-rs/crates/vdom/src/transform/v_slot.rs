@@ -24,6 +24,7 @@ use crate::{
   ast::{ForNode, VNodeCallChildren},
   transform::{
     TransformContext,
+    cache_static::cache_static_children,
     v_for::{create_for_loop_params, get_for_parse_result},
   },
 };
@@ -119,10 +120,7 @@ pub fn build_slots<'a>(
           ast.vec(),
           ast.vec1(ast.statement_expression(
             SPAN,
-            context.gen_node_list(
-              VNodeCallChildren::B(&mut unsafe { &mut *_node }.children),
-              &mut context.codegen_map.borrow_mut(),
-            ),
+            gen_cache_node_list(&mut unsafe { &mut *_node }.children, context),
           )),
         ),
       ),
@@ -228,10 +226,7 @@ pub fn build_slots<'a>(
         ast.vec(),
         ast.vec1(ast.statement_expression(
           SPAN,
-          context.gen_node_list(
-            VNodeCallChildren::B(&mut slot_element.children.take_in(context.allocator)),
-            &mut context.codegen_map.borrow_mut(),
-          ),
+          gen_cache_node_list(&mut slot_element.children, context),
         )),
       ),
     );
@@ -411,12 +406,7 @@ pub fn build_slots<'a>(
             ast.vec(),
             ast.vec1(ast.statement_expression(
               SPAN,
-              context.gen_node_list(
-                VNodeCallChildren::B(
-                  &mut implicit_default_children, // &mut unsafe { &mut *_node }.children.take_in(context.allocator),
-                ),
-                &mut context.codegen_map.borrow_mut(),
-              ),
+              gen_cache_node_list(&mut implicit_default_children, context),
             )),
           ),
         ),
@@ -453,10 +443,7 @@ pub fn build_slots<'a>(
               ast.vec(),
               ast.vec1(ast.statement_expression(
                 SPAN,
-                context.gen_node_list(
-                  VNodeCallChildren::B(&mut implicit_default_children),
-                  &mut context.codegen_map.borrow_mut(),
-                ),
+                gen_cache_node_list(&mut implicit_default_children, context),
               )),
             ),
           ),
@@ -561,4 +548,24 @@ fn build_dynamic_slot<'a>(
     ))
   }
   ast.expression_object(SPAN, props)
+}
+
+fn gen_cache_node_list<'a>(
+  node_children: &mut oxc_allocator::Vec<'a, JSXChild<'a>>,
+  context: &'a TransformContext<'a>,
+) -> Expression<'a> {
+  context.gen_node_list(
+    {
+      let mut children = VNodeCallChildren::B(node_children);
+      cache_static_children(
+        Some(Either::B(&mut children)),
+        node_children.iter_mut().collect::<Vec<_>>(),
+        context,
+        &mut context.codegen_map.borrow_mut(),
+        false,
+      );
+      children
+    },
+    &mut context.codegen_map.borrow_mut(),
+  )
 }

@@ -13,7 +13,7 @@ use oxc_ast::ast::{
 use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
-  ast::{ConstantTypes, NodeTypes, get_vnode_block_helper},
+  ast::{ConstantTypes, NodeTypes, VNodeCallChildren, get_vnode_block_helper},
   transform::{TransformContext, utils::get_children},
 };
 
@@ -34,7 +34,7 @@ pub fn cache_static<'a>(
     false
   };
   cache_static_children(
-    Some(node),
+    Some(Either::A(node)),
     children,
     context,
     codegen_map,
@@ -45,7 +45,7 @@ pub fn cache_static<'a>(
 }
 
 pub fn cache_static_children<'a>(
-  node: Option<&JSXChild<'a>>,
+  node: Option<Either<&JSXChild<'a>, &mut VNodeCallChildren<'a>>>,
   children: Vec<&mut JSXChild<'a>>,
   context: &'a TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
@@ -132,7 +132,7 @@ pub fn cache_static_children<'a>(
         *context.in_v_slot.borrow_mut() += 1;
       }
       cache_static_children(
-        Some(unsafe { &*child_ptr }),
+        Some(Either::A(unsafe { &*child_ptr })),
         get_children(unsafe { &mut *child_ptr }),
         context,
         codegen_map,
@@ -148,7 +148,7 @@ pub fn cache_static_children<'a>(
       {
         // Do not hoist v-for because it has to be a block
         cache_static_children(
-          Some(unsafe { &*child_ptr }),
+          Some(Either::A(unsafe { &*child_ptr })),
           get_children(unsafe { &mut *child_ptr }),
           context,
           codegen_map,
@@ -158,23 +158,31 @@ pub fn cache_static_children<'a>(
     }
   }
 
-  if child_len > 1
-    && to_cache.len() == child_len
-    && let Some(node) = node
-    && let JSXChild::Element(node) = node
-    && let Some(codegen) = unsafe { &mut *codegen_map_ptr }.get_mut(&node.span)
-    && let NodeTypes::VNodeCall(codegen) = codegen
-    && !is_jsx_component(node)
-    && let Some(Either3::B(_)) = codegen.children.as_ref()
-  {
-    // all children were hoisted - the entire children array is cacheable.
-    codegen.children = Some(Either3::C(context.cache(
-      context.gen_node_list(codegen.children.take().unwrap(), codegen_map),
-      false,
-      false,
-      true,
-    )));
-    return;
+  if child_len > 1 && to_cache.len() == child_len {
+    if let Some((children, codegen_children)) = if let Some(Either::A(node)) = node
+      && let JSXChild::Element(node) = node
+      && let Some(codegen) = unsafe { &mut *codegen_map_ptr }.get_mut(&node.span)
+      && let NodeTypes::VNodeCall(codegen) = codegen
+      && let Some(codegen_children) = codegen.children.as_mut()
+      && let Either3::B(children) = codegen_children
+    {
+      Some((*children, codegen_children))
+    } else if let Some(Either::B(codegen_children)) = node
+      && let Either3::B(children) = codegen_children
+    {
+      Some((*children, codegen_children))
+    } else {
+      None
+    } {
+      // all children were hoisted - the entire children array is cacheable.
+      *codegen_children = Either3::C(context.cache(
+        context.gen_node_list(Either3::B(children), codegen_map),
+        false,
+        false,
+        true,
+      ));
+      return;
+    }
   }
 
   for child in to_cache {

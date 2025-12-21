@@ -28,7 +28,7 @@ fn v_if_basic() {
   const _hoisted_3 = { key: 2 };
   const _hoisted_4 = { key: 3 };
   (() => {
-    return _openBlock(), _createBlock(_Fragment, null, [(_openBlock(), _createBlock(_Fragment, null, foo ? (_openBlock(), _createBlock(_Fragment, { key: 0 }, [_createElementVNode("div", { foo }, "foo", 8, _hoisted_1)])) : _createCommentVNode("", true))), foo ? (_openBlock(), _createElementBlock("span", _hoisted_2)) : bar ? (_openBlock(), _createElementBlock("span", _hoisted_3)) : (_openBlock(), _createElementBlock("a", _hoisted_4))], 64);
+    return _openBlock(), _createBlock(_Fragment, null, [(_openBlock(), _createBlock(_Fragment, null, foo ? (_openBlock(), _createBlock(_Fragment, { key: 0 }, [_createElementVNode("div", { foo }, "foo", 8, _hoisted_1)], 64)) : _createCommentVNode("", true))), foo ? (_openBlock(), _createElementBlock("span", _hoisted_2)) : bar ? (_openBlock(), _createElementBlock("span", _hoisted_3)) : (_openBlock(), _createElementBlock("a", _hoisted_4))], 64);
   })();
   "#);
 }

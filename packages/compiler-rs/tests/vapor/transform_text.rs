@@ -29,7 +29,7 @@ fn on_consecutive_text() {
 
 #[test]
 fn consecutive_text() {
-  let code = transform("<>{ msg }</>", None).code;
+  let code = transform("<>{ msg }  <div/></>", None).code;
   assert_snapshot!(code);
 }
 

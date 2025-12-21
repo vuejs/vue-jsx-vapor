@@ -39,7 +39,7 @@ fn cache_root_node_children() {
   import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
     const _cache = _useVdomCache();
-    return _openBlock(), _createBlock(_Fragment, null, [_cache[0] || (_cache[0] = _createElementVNode("span", { class: "inline" }, "hello", -1)), _cache[1] || (_cache[1] = _createElementVNode("span", { class: "inline" }, "hello", -1))], 64);
+    return _openBlock(), _createBlock(_Fragment, null, [..._cache[0] || (_cache[0] = [_createElementVNode("span", { class: "inline" }, "hello", -1), _createElementVNode("span", { class: "inline" }, "hello", -1)])], 64);
   })();
   "#);
 }
@@ -167,7 +167,7 @@ fn cache_default_slot_as_whole() {
   (() => {
     const _cache = _useVdomCache();
     return _openBlock(), _createBlock(Foo, null, {
-      default: () => [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1)), _cache[1] || (_cache[1] = _createElementVNode("span", null, null, -1))],
+      default: () => [..._cache[0] || (_cache[0] = [_createElementVNode("span", null, null, -1), _createElementVNode("span", null, null, -1)])],
       _: 1
     });
   })();
@@ -213,7 +213,7 @@ fn cache_named_slot_as_a_whole() {
   (() => {
     const _cache = _useVdomCache();
     return _openBlock(), _createBlock(Foo, null, {
-      foo: () => [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1)), _cache[1] || (_cache[1] = _createElementVNode("span", null, null, -1))],
+      foo: () => [..._cache[0] || (_cache[0] = [_createElementVNode("span", null, null, -1), _createElementVNode("span", null, null, -1)])],
       _: 1
     });
   })();
@@ -236,7 +236,7 @@ fn cache_dynamically_named_slot_as_a_whole() {
   (() => {
     const _cache = _useVdomCache();
     return _openBlock(), _createBlock(Foo, null, {
-      [foo]: () => [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1)), _cache[1] || (_cache[1] = _createElementVNode("span", null, null, -1))],
+      [foo]: () => [..._cache[0] || (_cache[0] = [_createElementVNode("span", null, null, -1), _createElementVNode("span", null, null, -1)])],
       _: 2
     }, 1024);
   })();
@@ -639,7 +639,7 @@ fn should_cache_keyed_template_v_for_with_plain_element_child() {
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
     const _cache = _useVdomCache();
-    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: item }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]))), 128))]);
+    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: item }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))], 64))), 128))]);
   })();
   "#);
 }

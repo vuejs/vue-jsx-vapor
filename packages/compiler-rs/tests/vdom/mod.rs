@@ -1,5 +1,6 @@
 mod cache_static;
 mod transform_element;
+mod transform_text;
 mod v_for;
 mod v_html;
 mod v_if;

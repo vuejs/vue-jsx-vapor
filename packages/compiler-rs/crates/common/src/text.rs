@@ -50,6 +50,9 @@ pub fn resolve_jsx_text(node: &JSXText) -> String {
   if ends_with_newline_and_spaces(&value) {
     value = value.trim_end().to_owned();
   }
+  if value.trim().is_empty() {
+    return String::from(" ");
+  }
   value
 }
 
@@ -99,11 +102,7 @@ pub fn camelize(str: &str) -> String {
 
 pub fn capitalize(name: String) -> String {
   if let Some(first) = name.chars().next() {
-    format!(
-      "{}{}",
-      first.to_ascii_uppercase(),
-      &name[1..]
-    )
+    format!("{}{}", first.to_ascii_uppercase(), &name[1..])
   } else {
     String::new()
   }

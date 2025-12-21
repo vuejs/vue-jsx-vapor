@@ -12,15 +12,9 @@ use oxc_span::{GetSpan, SPAN, Span};
 use crate::{
   ast::{NodeTypes, RootNode, VNodeCall},
   transform::{
-    DirectiveTransformResult, TransformContext,
-    cache_static::{cache_static, get_constant_type},
-    v_bind::transform_v_bind,
-    v_html::transform_v_html,
-    v_model::transform_v_model,
-    v_on::transform_v_on,
-    v_show::transform_v_show,
-    v_slot::build_slots,
-    v_text::transform_v_text,
+    DirectiveTransformResult, TransformContext, cache_static::get_constant_type,
+    v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
+    v_on::transform_v_on, v_show::transform_v_show, v_slot::build_slots, v_text::transform_v_text,
   },
 };
 
@@ -161,12 +155,11 @@ pub unsafe fn transform_element<'a>(
       && vnode_tag != "Teleport" // Teleport is not a real component and has dedicated runtime handling
       && (vnode_tag != "KeepAlive" || vnode_tag != "keep-alive"); // explained above.
 
+      if vnode_tag == "Fragment" || vnode_tag == "_Fragment" {
+        patch_flag |= PatchFlags::StableFragment as i32;
+      }
+
       vnode_children = Some(if should_build_as_slots {
-        cache_static(
-          unsafe { &mut *context_node },
-          context,
-          &mut context.codegen_map.borrow_mut(),
-        );
         let (slots, has_dynamic_slots) = build_slots(node, context);
         if has_dynamic_slots {
           patch_flag |= PatchFlags::DynamicSlots as i32
