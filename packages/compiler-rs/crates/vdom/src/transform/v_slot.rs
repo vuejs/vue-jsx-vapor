@@ -68,7 +68,8 @@ pub fn build_slots<'a>(
   let _node = node as *mut JSXElement;
   // If the slot is inside a v-for or another v-slot, force it to be dynamic
   // since it likely uses a scope variable.
-  let mut has_dynamic_slots = *context.in_v_slot.borrow() > 0 || *context.in_v_for.borrow() > 0;
+  let mut has_dynamic_slots =
+    *context.in_v_slot.borrow() > 0 || *context.options.in_v_for.borrow() > 0;
   let mut slots_properties = ast.vec();
   let mut dynamic_slots = ast.vec();
 

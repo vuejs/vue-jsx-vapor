@@ -42,7 +42,7 @@ pub fn transform_v_on<'a>(
     event_name = format!("vnode{}", capitalize(event_name[4..].to_string()));
   }
 
-  let mut should_cache = value.is_none() && !*context.in_v_once.borrow();
+  let mut should_cache = value.is_none() && !*context.options.in_v_once.borrow();
   // handler processing
   let mut exp = if let Some(JSXAttributeValue::ExpressionContainer(value)) = value {
     let exp = value

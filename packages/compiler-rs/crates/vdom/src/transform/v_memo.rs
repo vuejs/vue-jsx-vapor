@@ -26,7 +26,10 @@ pub unsafe fn transform_v_memo<'a>(
     )
   {
     let seen = &mut context.seen.borrow_mut();
-    if seen.contains(&dir.span.start) || *context.in_v_once.borrow() || context.options.in_ssr {
+    if seen.contains(&dir.span.start)
+      || *context.options.in_v_once.borrow()
+      || context.options.in_ssr
+    {
       return None;
     }
     seen.insert(dir.span.start);

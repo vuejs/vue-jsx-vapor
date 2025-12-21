@@ -66,7 +66,7 @@ pub unsafe fn transform_v_for<'a>(
   let ast = &context.ast;
 
   // bookkeeping
-  *context.in_v_for.borrow_mut() += 1;
+  *context.options.in_v_for.borrow_mut() += 1;
 
   let is_template = is_template(unsafe { &*node });
   let memo = if let Some(memo_prop) =
@@ -151,7 +151,7 @@ pub unsafe fn transform_v_for<'a>(
   }
 
   Some(Box::new(move || {
-    *context.in_v_for.borrow_mut() -= 1;
+    *context.options.in_v_for.borrow_mut() -= 1;
     // finish the codegen now that all children have been traversed
     let children = &mut unsafe { &mut *node }
       .children

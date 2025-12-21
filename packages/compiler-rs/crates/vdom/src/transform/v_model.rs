@@ -203,7 +203,7 @@ pub fn transform_v_model<'a>(
   );
 
   // cache v-model handler if applicable (when it's not a computed member expression)
-  if cacheable && !*context.in_v_once.borrow() {
+  if cacheable && !*context.options.in_v_once.borrow() {
     assignment_exp = context.cache(assignment_exp, false, false, false)
   }
 
@@ -314,11 +314,8 @@ pub fn transform_v_model<'a>(
 
   Some(DirectiveTransformResult {
     props,
-    runtime: runtime_name.map(|runtime_name| build_directive_args(
-        cloned_dir.unwrap(),
-        context,
-        &runtime_name,
-      )),
+    runtime: runtime_name
+      .map(|runtime_name| build_directive_args(cloned_dir.unwrap(), context, &runtime_name)),
   })
 }
 

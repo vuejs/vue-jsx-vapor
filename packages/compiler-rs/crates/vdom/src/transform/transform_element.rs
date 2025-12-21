@@ -269,7 +269,7 @@ pub fn build_props<'a>(
 
   // mark template ref on v-for
   let ref_v_for_marker = || -> Option<ObjectPropertyKind> {
-    if *context.in_v_for.borrow() > 0 {
+    if *context.options.in_v_for.borrow() > 0 {
       Some(ast.object_property_kind_object_property(
         SPAN,
         PropertyKind::Init,
@@ -420,7 +420,8 @@ pub fn build_props<'a>(
             if *name == "key"
               && !prop
                 .value
-                .as_ref().map(|value| matches!(value, JSXAttributeValue::StringLiteral(_)))
+                .as_ref()
+                .map(|value| matches!(value, JSXAttributeValue::StringLiteral(_)))
                 .unwrap_or_default()
             {
               should_use_block = true

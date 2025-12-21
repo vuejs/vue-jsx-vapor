@@ -1,4 +1,3 @@
-use common::expression::SimpleExpressionNode;
 pub use common::options::TransformOptions;
 use common::walk::WalkIdentifiers;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
@@ -39,7 +38,7 @@ use crate::transform::{
   v_once::transform_v_once, v_slots::transform_v_slots,
 };
 
-use common::check::{is_constant_node, is_template};
+use common::check::is_template;
 
 pub struct DirectiveTransformResult<'a> {
   pub props: Vec<ObjectPropertyKind<'a>>,
@@ -55,8 +54,6 @@ pub struct TransformContext<'a> {
   pub template: RefCell<String>,
   pub children_template: RefCell<Vec<String>>,
 
-  pub in_v_once: RefCell<bool>,
-  pub in_v_for: RefCell<i32>,
   pub in_v_slot: RefCell<i32>,
 
   pub seen: Rc<RefCell<HashSet<u32>>>,
@@ -79,8 +76,6 @@ impl<'a> TransformContext<'a> {
       index: RefCell::new(0),
       template: RefCell::new(String::new()),
       children_template: RefCell::new(Vec::new()),
-      in_v_once: RefCell::new(*options.in_v_once.borrow()),
-      in_v_for: RefCell::new(*options.in_v_for.borrow()),
       in_v_slot: RefCell::new(0),
       seen: Rc::new(RefCell::new(HashSet::new())),
       root_node: RefCell::new(RootNode::new(allocator)),
@@ -213,22 +208,6 @@ impl<'a> TransformContext<'a> {
     }
   }
 
-  pub fn is_operation(&self, expressions: Vec<&SimpleExpressionNode>) -> bool {
-    if self.in_v_once.borrow().eq(&true) {
-      return true;
-    }
-    let expressions: Vec<&SimpleExpressionNode> = expressions
-      .into_iter()
-      .filter(|exp| !exp.is_constant_expression())
-      .collect();
-    if expressions.is_empty() {
-      return true;
-    }
-    expressions
-      .iter()
-      .all(|exp| is_constant_node(&exp.ast.as_deref()))
-  }
-
   pub fn wrap_fragment(&self, mut node: Expression<'a>, span: Span) -> JSXChild<'a> {
     let ast = self.ast;
     if let Expression::JSXFragment(node) = node {
@@ -331,8 +310,8 @@ impl<'a> TransformContext<'a> {
         let context = self as *const TransformContext;
         let parent_node = parent_node.unwrap() as *mut JSXChild;
         for node_transform in [
-          transform_v_once,
           transform_v_if,
+          transform_v_once,
           transform_v_memo,
           transform_v_for,
           transform_v_slots,
