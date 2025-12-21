@@ -13,11 +13,9 @@ fn v_show() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
-  import { createElementBlock as _createElementBlock, createTextVNode as _createTextVNode, openBlock as _openBlock, vShow as _vShow, withDirectives as _withDirectives } from "vue";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, vShow as _vShow, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
-    return _withDirectives((_openBlock(), _createElementBlock("div", null, _cache[0] || (_cache[0] = _createTextVNode("show", -1)), 512)), [[_vShow, foo]]);
+    return _withDirectives((_openBlock(), _createElementBlock("div", null, "show", 512)), [[_vShow, foo]]);
   })();
   "#)
 }

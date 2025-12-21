@@ -158,8 +158,8 @@ pub fn cache_static_children<'a>(
     }
   }
 
-  if child_len > 1 && to_cache.len() == child_len {
-    if let Some((children, codegen_children)) = if let Some(Either::A(node)) = node
+  if child_len > 1 && to_cache.len() == child_len
+    && let Some((children, codegen_children)) = if let Some(Either::A(node)) = node
       && let JSXChild::Element(node) = node
       && let Some(codegen) = unsafe { &mut *codegen_map_ptr }.get_mut(&node.span)
       && let NodeTypes::VNodeCall(codegen) = codegen
@@ -183,7 +183,6 @@ pub fn cache_static_children<'a>(
       ));
       return;
     }
-  }
 
   for child in to_cache {
     let span = child.span();

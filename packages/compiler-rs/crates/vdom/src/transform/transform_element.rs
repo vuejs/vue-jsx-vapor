@@ -420,14 +420,13 @@ pub fn build_props<'a>(
             if *name == "key"
               && !prop
                 .value
-                .as_ref()
-                .and_then(|value| Some(matches!(value, JSXAttributeValue::StringLiteral(_))))
+                .as_ref().map(|value| matches!(value, JSXAttributeValue::StringLiteral(_)))
                 .unwrap_or_default()
             {
               should_use_block = true
             }
             // force hydration for prop with .prop modifier
-            if modifiers.iter().any(|n| *n == "prop") {
+            if modifiers.contains(&"prop") {
               patch_flag |= PatchFlags::NeedHydration as i32;
             }
             transform_v_bind(prop, node, context)

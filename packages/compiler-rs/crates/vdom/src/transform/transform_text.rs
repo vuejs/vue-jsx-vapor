@@ -58,7 +58,7 @@ pub unsafe fn transform_text<'a>(
               p.as_attribute()
                 .map(|p| {
                   is_directive(&p.name.get_identifier().name)
-                    && !is_built_in_directive(&p.name.get_identifier().name)
+                    && !is_built_in_directive(&p.name.get_identifier().name[2..])
                 })
                 .unwrap_or_default()
             })

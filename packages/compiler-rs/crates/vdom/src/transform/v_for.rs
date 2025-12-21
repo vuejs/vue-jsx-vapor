@@ -124,23 +124,31 @@ pub unsafe fn transform_v_for<'a>(
     Expression::JSXElement(unsafe { &mut *node }.take_in_box(context.allocator)),
     fragment_span,
   );
-  context.codegen_map.borrow_mut().insert(
-    fragment_span,
-    NodeTypes::VNodeCall(VNodeCall {
-      tag: context.helper("Fragment"),
-      props: None,
-      children: None,
-      patch_flag: Some(fragment_flag as i32),
-      dynamic_props: None,
-      directives: None,
-      is_block: true,
-      disable_tracking: !is_stable_fragment,
-      is_component: true,
-      v_for: true,
-      v_if: None,
-      loc: node_span,
-    }),
-  );
+  if let Some(NodeTypes::VNodeCall(vnode_call)) =
+    context.codegen_map.borrow_mut().get_mut(&fragment_span)
+  {
+    vnode_call.v_for = true;
+    vnode_call.patch_flag = Some(fragment_flag as i32);
+    vnode_call.disable_tracking = !is_stable_fragment;
+  } else {
+    context.codegen_map.borrow_mut().insert(
+      fragment_span,
+      NodeTypes::VNodeCall(VNodeCall {
+        tag: context.helper("Fragment"),
+        props: None,
+        children: None,
+        patch_flag: Some(fragment_flag as i32),
+        dynamic_props: None,
+        directives: None,
+        is_block: true,
+        disable_tracking: !is_stable_fragment,
+        is_component: true,
+        v_for: true,
+        v_if: None,
+        loc: node_span,
+      }),
+    );
+  }
 
   Some(Box::new(move || {
     *context.in_v_for.borrow_mut() -= 1;
@@ -148,18 +156,7 @@ pub unsafe fn transform_v_for<'a>(
     let children = &mut unsafe { &mut *node }
       .children
       .iter_mut()
-      .filter(|child| {
-        // check <template v-for> key placement
-        if is_template
-          && let JSXChild::Element(child) = child
-          && let Some(key) = find_prop(child, Either::A(String::from("key")))
-        {
-          context.options.on_error.as_ref()(ErrorCodes::VForTemplateKeyPlacement, key.span);
-          true
-        } else {
-          !is_empty_text(child)
-        }
-      })
+      .filter(|child| !is_empty_text(child))
       .collect::<Vec<_>>();
 
     let child_span = &children[0].span();

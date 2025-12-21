@@ -242,12 +242,12 @@ impl<'a> TransformContext<'a> {
         ast.jsx_opening_fragment(SPAN),
         ast.vec1(
           ast.jsx_child_element(
-            SPAN,
+            node.span,
             ast.jsx_opening_element(
               node.opening_element.span,
               name.clone_in(ast.allocator),
               NONE,
-              ast.vec(),
+              node.opening_element.attributes.take_in(self.allocator),
             ),
             node.children.take_in(self.allocator),
             node

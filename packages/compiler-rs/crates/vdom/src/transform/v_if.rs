@@ -66,7 +66,7 @@ pub unsafe fn transform_v_if<'a>(
   let mut last_if_node: Option<*mut VNodeCall> = None;
 
   if dir_name == "v-if" {
-    fragment_span = Span::new(node_span.end, node_span.start);
+    fragment_span = Span::new(node_span.end, node_span.start + 1);
     *unsafe { &mut *context_node } = context.wrap_fragment(
       Expression::JSXElement(unsafe { &mut *node }.take_in_box(context.allocator)),
       fragment_span,
@@ -131,10 +131,9 @@ pub unsafe fn transform_v_if<'a>(
       && let Some(branch) = &branchs.last()
       && branch.condition.is_some()
     {
-      let fragment_span = Span::new(node_span.end, node_span.start);
       *unsafe { &mut *context_node } = context.wrap_fragment(
         Expression::JSXElement(unsafe { &mut *node }.take_in_box(context.allocator)),
-        fragment_span,
+        Span::new(node_span.end, node_span.start),
       );
       let branch = if let JSXChild::Fragment(node) = unsafe { &mut *context_node }
         && let Some(child) = node.children.get_mut(0)
