@@ -439,7 +439,7 @@ pub fn build_props<'a>(
             if has_children && *name == "onVue:beforeUpdate" {
               should_use_block = true;
             }
-            transform_v_on(prop, context)
+            transform_v_on(prop, node, context)
           }
           "model" => transform_v_model(prop, node, context),
           "show" => transform_v_show(prop, context),

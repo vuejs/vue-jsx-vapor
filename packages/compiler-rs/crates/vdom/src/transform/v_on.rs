@@ -1,5 +1,5 @@
 use common::{
-  check::is_keyboard_event,
+  check::{is_jsx_component, is_keyboard_event, is_simple_identifier},
   directive::{Modifiers, resolve_modifiers},
   error::ErrorCodes,
   text::capitalize,
@@ -8,7 +8,7 @@ use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
   ast::{
-    Expression, FormalParameterKind, JSXAttribute, JSXAttributeName, JSXAttributeValue,
+    Expression, FormalParameterKind, JSXAttribute, JSXAttributeName, JSXAttributeValue, JSXElement,
     PropertyKind,
   },
 };
@@ -18,6 +18,7 @@ use crate::transform::{DirectiveTransformResult, TransformContext};
 
 pub fn transform_v_on<'a>(
   dir: &'a mut JSXAttribute<'a>,
+  node: &JSXElement<'a>,
   context: &'a TransformContext<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let ast = &context.ast;
@@ -49,8 +50,16 @@ pub fn transform_v_on<'a>(
       .expression
       .to_expression_mut()
       .take_in(context.allocator);
+    let is_component = is_jsx_component(node);
     let is_member_exp = exp.is_member_expression() || matches!(exp, Expression::Identifier(_));
-    should_cache = true; // TODO !hasScopeRef(exp, context.identifiers)
+    should_cache = !*context.options.in_v_once.borrow()
+      // #1541 bail if this is a member exp handler passed to a component -
+      // we need to use the original function to preserve arity,
+      // e.g. <transition> relies on checking cb.length to determine
+      // transition end handling. Inline function is ok since its arity
+      // is preserved even when cached.
+      && !(is_member_exp && is_component)
+      && !context.has_scope_ref(&exp);
     if should_cache && is_member_exp {
       ast.expression_arrow_function(
         SPAN,
@@ -149,23 +158,7 @@ pub fn transform_v_on<'a>(
       )
     }
 
-    if !key_modifiers.is_empty()
-      && let key_modifiers = key_modifiers
-        .iter()
-        .filter_map(|key| {
-          if is_keyboard_event(key) {
-            Some(
-              ast
-                .expression_string_literal(SPAN, ast.atom(key), None)
-                .into(),
-            )
-          } else {
-            None
-          }
-        })
-        .collect::<Vec<_>>()
-      && !key_modifiers.is_empty()
-    {
+    if !key_modifiers.is_empty() && is_keyboard_event(&event_name) {
       exp = ast.expression_call(
         SPAN,
         ast.expression_identifier(SPAN, ast.atom(&context.helper("withKeys"))),
@@ -173,7 +166,14 @@ pub fn transform_v_on<'a>(
         ast.vec_from_array([
           exp.into(),
           ast
-            .expression_array(SPAN, ast.vec_from_iter(key_modifiers))
+            .expression_array(
+              SPAN,
+              ast.vec_from_iter(key_modifiers.into_iter().map(|key| {
+                ast
+                  .expression_string_literal(SPAN, ast.atom(&key), None)
+                  .into()
+              })),
+            )
             .into(),
         ]),
         false,
@@ -194,14 +194,15 @@ pub fn transform_v_on<'a>(
     exp = context.cache(exp, false, false, false)
   }
 
+  let mut on_event_name = format!("on{}", capitalize(event_name));
+  if !is_simple_identifier(&on_event_name) {
+    on_event_name = format!("\"{}\"", on_event_name);
+  }
   Some(DirectiveTransformResult {
     props: vec![ast.object_property_kind_object_property(
       SPAN,
       PropertyKind::Init,
-      ast.property_key_static_identifier(
-        name_loc,
-        ast.atom(&format!("on{}", capitalize(event_name))),
-      ),
+      ast.property_key_static_identifier(name_loc, ast.atom(&on_event_name)),
       exp,
       false,
       false,
