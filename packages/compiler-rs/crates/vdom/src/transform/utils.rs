@@ -2,9 +2,11 @@ use common::text::is_empty_text;
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
-  ast::{Argument, Expression, JSXChild, ObjectProperty, ObjectPropertyKind, PropertyKey},
+  ast::{
+    Argument, CallExpression, Expression, JSXChild, ObjectProperty, ObjectPropertyKind, PropertyKey,
+  },
 };
-use oxc_span::{GetSpan, SPAN};
+use oxc_span::SPAN;
 
 use crate::{ast::VNodeCall, transform::TransformContext};
 
@@ -14,12 +16,8 @@ fn get_unnormalized_props<'a>(
 ) -> *mut Expression<'a> {
   let _props = props as *mut _;
   if let Expression::CallExpression(props) = props {
-    let callee = if let Expression::Identifier(callee) = &props.callee {
-      callee.name.to_string()
-    } else {
-      String::new()
-    };
-    if ["normalizeProps", "guardReactiveProps"].contains(&callee.as_str()) {
+    if ["_normalizeProps", "_guardReactiveProps"].contains(&props.callee_name().unwrap_or_default())
+    {
       call_path.push(unsafe { &mut *_props });
       return get_unnormalized_props(
         props.arguments.get_mut(0).unwrap().to_expression_mut(),
@@ -36,7 +34,6 @@ pub fn inject_prop<'a>(
   context: &TransformContext<'a>,
 ) {
   let ast = &context.ast;
-  let source_text = *context.source.borrow();
   let mut props_with_injection = None;
   // 1. mergeProps(...)
   // 2. toHandlers(...)
@@ -55,52 +52,52 @@ pub fn inject_prop<'a>(
       // merged props... add ours
       // only inject key to object literal if it's the first argument so that
       // if doesn't override user provided keys
+      let callee_name = unsafe { &*(props as *mut oxc_allocator::Box<CallExpression>) }
+        .callee_name()
+        .unwrap_or_default();
       let first = props.arguments.first_mut();
       if let Some(first) = first
         && let Argument::ObjectExpression(first) = first
       {
-        // #6631
-        if !first.properties.iter().any(|p| {
-          p.as_property()
-            .map(|p| {
-              if let PropertyKey::StaticIdentifier(key) = &p.key
-                && let PropertyKey::StaticIdentifier(prop_key) = &prop.key
-              {
-                key.name == prop_key.name
-              } else {
-                false
-              }
-            })
-            .unwrap_or_default()
-        }) {
-          first
-            .properties
-            .insert(0, ObjectPropertyKind::ObjectProperty(ast.alloc(prop)));
+        if callee_name.eq("_toHandlers") {
+          // #2366
+          props_with_injection = Some(
+            ast.expression_call(
+              SPAN,
+              ast.expression_identifier(SPAN, ast.atom(&context.helper("mergeProps"))),
+              NONE,
+              ast.vec_from_array([
+                ast
+                  .expression_object(
+                    SPAN,
+                    ast.vec1(ObjectPropertyKind::ObjectProperty(ast.alloc(prop))),
+                  )
+                  .into(),
+                Expression::CallExpression(props.take_in_box(context.allocator)).into(),
+              ]),
+              false,
+            ),
+          );
+        } else {
+          // #6631
+          if !first.properties.iter().any(|p| {
+            p.as_property()
+              .map(|p| {
+                if let PropertyKey::StaticIdentifier(key) = &p.key
+                  && let PropertyKey::StaticIdentifier(prop_key) = &prop.key
+                {
+                  key.name == prop_key.name
+                } else {
+                  false
+                }
+              })
+              .unwrap_or_default()
+          }) {
+            first
+              .properties
+              .insert(0, ObjectPropertyKind::ObjectProperty(ast.alloc(prop)));
+          }
         }
-      } else if props
-        .callee
-        .span()
-        .source_text(source_text)
-        .eq("toHandlers")
-      {
-        // #2366
-        props_with_injection = Some(
-          ast.expression_call(
-            SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&context.helper("mergeProps"))),
-            NONE,
-            ast.vec_from_array([
-              ast
-                .expression_object(
-                  SPAN,
-                  ast.vec1(ObjectPropertyKind::ObjectProperty(ast.alloc(prop))),
-                )
-                .into(),
-              Expression::CallExpression(props.take_in_box(context.allocator)).into(),
-            ]),
-            false,
-          ),
-        )
       } else {
         props.arguments.insert(
           0,
@@ -162,13 +159,13 @@ pub fn inject_prop<'a>(
       // the `guardReactiveProps` will no longer be needed
       if let Some(Expression::CallExpression(parent)) = parent_call
         && parent
-          .callee
-          .span()
-          .source_text(source_text)
-          .eq("guardReactiveProps")
+          .callee_name()
+          .unwrap_or_default()
+          .eq("_guardReactiveProps")
       {
         let len = call_path.len();
-        parent_call = call_path.get_mut(len - 2);
+        call_path.remove(len - 1);
+        parent_call = None;
       }
     }
   } else {
