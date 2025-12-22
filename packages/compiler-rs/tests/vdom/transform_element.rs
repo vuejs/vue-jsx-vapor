@@ -451,8 +451,9 @@ fn props_merging_style() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, normalizeStyle as _normalizeStyle, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = { style: _normalizeStyle(["color: green", { color: "red" }]) };
   (() => {
-    return _openBlock(), _createElementBlock("div", { style: _normalizeStyle(["color: green", { color: "red" }]) }, null, 4);
+    return _openBlock(), _createElementBlock("div", _hoisted_1);
   })();
   "#)
 }

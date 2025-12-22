@@ -9,7 +9,7 @@ use crate::{
   transform::{DirectiveTransformResult, TransformContext},
 };
 use common::{
-  check::{is_jsx_component, is_member_expression},
+  check::is_jsx_component,
   directive::{find_prop, resolve_directive},
   error::ErrorCodes,
   expression::SimpleExpressionNode,
@@ -29,8 +29,13 @@ pub fn transform_v_model<'a>(
     return None;
   };
 
-  let exp_string = &exp.content;
-  if exp_string.trim().is_empty() || !is_member_expression(exp) {
+  if exp.content.trim().is_empty()
+    || !exp
+      .ast
+      .as_ref()
+      .map(|ast| ast.is_identifier_reference() || ast.is_member_expression())
+      .unwrap_or_default()
+  {
     context.options.on_error.as_ref()(ErrorCodes::VModelMalformedExpression, exp.loc);
     return None;
   }

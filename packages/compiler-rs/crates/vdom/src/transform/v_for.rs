@@ -394,6 +394,17 @@ pub fn get_for_parse_result<'a>(
     context.options.on_error.as_ref()(ErrorCodes::VForNoExpression, dir.span);
     return None;
   }
+  // scope management
+  // inject identifiers to context
+  if let Some(value) = value.as_ref() {
+    context.add_identifiers(value);
+  }
+  if let Some(key) = key.as_ref() {
+    context.add_identifiers(key);
+  }
+  if let Some(index) = index.as_ref() {
+    context.add_identifiers(index);
+  }
   Some(ForNode {
     value,
     index,

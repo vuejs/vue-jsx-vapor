@@ -9,13 +9,13 @@ use oxc_ast::{
   },
 };
 use oxc_parser::Parser;
-use oxc_span::{SPAN, Span};
+use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::transform::{
   DirectiveTransformResult, TransformContext, transform_element::build_directive_args,
 };
 use common::{
-  check::{is_jsx_component, is_member_expression, is_simple_identifier},
+  check::{is_jsx_component, is_simple_identifier},
   directive::{find_prop, get_modifier_prop_name, resolve_directive},
   error::ErrorCodes,
   text::get_tag_name,
@@ -27,40 +27,50 @@ pub fn transform_v_model<'a>(
   context: &'a TransformContext<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let ast = &context.ast;
-  let mut dir = resolve_directive(_dir, *context.source.borrow());
-  let is_component = is_jsx_component(node);
+  let dir_ref = _dir as *mut JSXAttribute;
+  let Some(exp) = &mut unsafe { &mut *dir_ref }.value else {
+    context.options.on_error.as_ref()(ErrorCodes::VModelNoExpression, _dir.span);
+    return None;
+  };
+
+  // we assume v-model directives are always parsed
+  // (not artificially created by a transform)
+  let exp = if let JSXAttributeValue::ExpressionContainer(exp) = exp
+    && let Some(exp) = exp.expression.as_expression_mut()
+    && (exp.is_identifier_reference() || exp.is_member_expression())
+  {
+    exp
+  } else {
+    context.options.on_error.as_ref()(ErrorCodes::VModelMalformedExpression, exp.span());
+    return None;
+  };
+
+  if context
+    .options
+    .identifiers
+    .borrow()
+    .contains_key(exp.span().source_text(*context.source.borrow()))
+  {
+    context.options.on_error.as_ref()(ErrorCodes::VModelOnScopeVariable, exp.span());
+    return None;
+  }
+
+  let dir = resolve_directive(_dir, *context.source.borrow());
+  let tag = get_tag_name(&node.opening_element.name, *context.source.borrow());
+  let is_custom_element = context.options.is_custom_element.as_ref()(tag.to_string());
+  let is_component = is_jsx_component(node) && !is_custom_element;
   let mut cloned_dir = if !is_component {
     Some(dir.clone())
   } else {
     None
   };
 
-  let Some(exp) = &mut dir.exp else {
-    context.options.on_error.as_ref()(ErrorCodes::VModelNoExpression, dir.loc);
-    return None;
-  };
-
-  // we assume v-model directives are always parsed
-  // (not artificially created by a transform)
-  let exp_string = &exp.content;
-  if exp_string.trim().is_empty() || !is_member_expression(exp) {
-    context.options.on_error.as_ref()(ErrorCodes::VModelMalformedExpression, exp.loc);
-    return None;
-  }
-
   let arg_is_some = dir.arg.is_some();
   let mut computed = false;
 
   let prop_name = if let Some(arg) = &dir.arg {
     if arg.is_static {
-      ast.property_key_static_identifier(
-        arg.loc,
-        if is_simple_identifier(&arg.content) {
-          ast.atom(&arg.content)
-        } else {
-          ast.atom(&format!("\"{}\"", arg.content))
-        },
-      )
+      ast.property_key_static_identifier(arg.loc, ast.atom(&arg.content))
     } else {
       Parser::new(
         context.allocator,
@@ -87,7 +97,14 @@ pub fn transform_v_model<'a>(
       ast.object_property_kind_object_property(
         SPAN,
         PropertyKind::Init,
-        ast.property_key_static_identifier(SPAN, ast.atom(&m.content)),
+        ast.property_key_static_identifier(
+          SPAN,
+          ast.atom(&if is_simple_identifier(&m.content) {
+            m.content
+          } else {
+            format!("\"{}\"", m.content)
+          }),
+        ),
         ast.expression_boolean_literal(SPAN, true),
         false,
         false,
@@ -151,7 +168,6 @@ pub fn transform_v_model<'a>(
     ast.property_key_static_identifier(SPAN, "\"onUpdate:modelValue\"")
   };
 
-  let mut cacheable = true;
   let mut assignment_exp = ast.expression_arrow_function(
     SPAN,
     true,
@@ -183,7 +199,7 @@ pub fn transform_v_model<'a>(
         ast.expression_assignment(
           SPAN,
           AssignmentOperator::Assign,
-          match exp.ast.as_ref().unwrap() {
+          match exp {
             Expression::Identifier(exp) => AssignmentTarget::AssignmentTargetIdentifier(
               ast.alloc_identifier_reference(exp.span, exp.name),
             ),
@@ -191,7 +207,6 @@ pub fn transform_v_model<'a>(
               AssignmentTarget::StaticMemberExpression(exp.clone_in(context.allocator))
             }
             Expression::ComputedMemberExpression(exp) => {
-              cacheable = false;
               AssignmentTarget::ComputedMemberExpression(exp.clone_in(context.allocator))
             }
             _ => unimplemented!(),
@@ -203,22 +218,27 @@ pub fn transform_v_model<'a>(
   );
 
   // cache v-model handler if applicable (when it's not a computed member expression)
-  if cacheable && !*context.options.in_v_once.borrow() {
+  if !*context.options.in_v_once.borrow() && !context.has_scope_ref(exp) {
     assignment_exp = context.cache(assignment_exp, false, false, false)
   }
 
   if !is_component {
-    cloned_dir.as_mut().unwrap().exp.as_mut().unwrap().ast = Some(unsafe {
-      &mut *(&mut exp.ast.as_ref().unwrap().clone_in(context.allocator) as *mut Expression)
-    });
+    cloned_dir.as_mut().unwrap().exp.as_mut().unwrap().ast =
+      Some(unsafe { &mut *(&mut exp.clone_in(context.allocator) as *mut Expression) });
   }
 
   let mut props = vec![
     ast.object_property_kind_object_property(
       SPAN,
       PropertyKind::Init,
-      prop_name,
-      exp.ast.as_mut().unwrap().take_in(context.allocator),
+      if let PropertyKey::StaticIdentifier(name) = &prop_name
+        && !is_simple_identifier(&name.name)
+      {
+        ast.property_key_static_identifier(name.span, ast.atom(&format!("\"{}\"", name.name)))
+      } else {
+        prop_name
+      },
+      exp.take_in(context.allocator),
       false,
       false,
       computed,
@@ -250,8 +270,6 @@ pub fn transform_v_model<'a>(
   }
 
   let mut runtime_name = None;
-  let tag = get_tag_name(&node.opening_element.name, *context.source.borrow());
-  let is_custom_element = context.options.is_custom_element.as_ref()(tag.to_string());
   if matches!(tag.as_str(), "input" | "textarea" | "select") || is_custom_element {
     let mut directive_to_use = "vModelText";
     let mut is_invalid_type = false;
@@ -281,7 +299,7 @@ pub fn transform_v_model<'a>(
         check_duplicated_value(node, context)
       }
     } else if tag == "select" {
-      directive_to_use = "select"
+      directive_to_use = "vModelSelect"
     } else {
       // textarea
       check_duplicated_value(node, context)

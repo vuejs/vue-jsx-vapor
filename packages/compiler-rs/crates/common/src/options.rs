@@ -1,4 +1,7 @@
-use std::{cell::RefCell, collections::BTreeSet};
+use std::{
+  cell::RefCell,
+  collections::{BTreeSet, HashMap},
+};
 
 use oxc_ast::ast::Expression;
 use oxc_span::{SourceType, Span};
@@ -34,7 +37,9 @@ pub struct TransformOptions<'a> {
   pub hmr: bool,
   pub ssr: RefCell<bool>,
   pub in_v_for: RefCell<i32>,
+  pub in_v_slot: RefCell<i32>,
   pub in_v_once: RefCell<bool>,
+  pub identifiers: RefCell<HashMap<String, i32>>,
   /**
    * Indicates whether the compiler generates code for SSR,
    * it is always true when generating code for SSR,
@@ -65,7 +70,9 @@ impl<'a> Default for TransformOptions<'a> {
       on_exit_program: RefCell::new(None),
       on_enter_expression: RefCell::new(None),
       in_v_for: RefCell::new(0),
+      in_v_slot: RefCell::new(0),
       in_v_once: RefCell::new(false),
+      identifiers: RefCell::new(HashMap::new()),
       in_ssr: false,
     }
   }

@@ -49,10 +49,13 @@ pub unsafe fn track_slot_scopes<'a>(
     {
       // We are only checking non-empty v-slot here
       // since we only care about slots that introduce scope variables.
-      if find_prop(node, Either::A(String::from("v-slot"))).is_some() {
-        *context.in_v_slot.borrow_mut() += 1;
+      if let Some(v_slot) = find_prop(node, Either::A(String::from("v-slot"))) {
+        if let Some(JSXAttributeValue::ExpressionContainer(slot_props)) = v_slot.value.as_ref() {
+          context.add_identifiers(slot_props.expression.to_expression());
+        }
+        *context.options.in_v_slot.borrow_mut() += 1;
         return Some(Box::new(move || {
-          *context.in_v_slot.borrow_mut() -= 1;
+          *context.options.in_v_slot.borrow_mut() -= 1;
         }));
       }
     }
@@ -69,7 +72,7 @@ pub fn build_slots<'a>(
   // If the slot is inside a v-for or another v-slot, force it to be dynamic
   // since it likely uses a scope variable.
   let mut has_dynamic_slots =
-    *context.in_v_slot.borrow() > 0 || *context.options.in_v_for.borrow() > 0;
+    *context.options.in_v_slot.borrow() > 0 || *context.options.in_v_for.borrow() > 0;
   let mut slots_properties = ast.vec();
   let mut dynamic_slots = ast.vec();
 

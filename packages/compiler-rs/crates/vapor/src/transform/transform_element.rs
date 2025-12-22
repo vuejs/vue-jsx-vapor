@@ -76,7 +76,8 @@ pub unsafe fn transform_element<'a>(
   }) as Box<dyn FnMut() -> i32>));
 
   let tag = get_tag_name(&node.opening_element.name, context.ir.borrow().source);
-  let is_component = is_jsx_component(node);
+  let is_custom_element = context.options.is_custom_element.as_ref()(tag.clone());
+  let is_component = is_jsx_component(node) && !is_custom_element;
   let _context_block = context_block as *mut BlockIRNode;
   let props_result = build_props(
     node,

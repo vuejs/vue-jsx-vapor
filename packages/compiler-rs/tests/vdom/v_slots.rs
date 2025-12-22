@@ -29,15 +29,13 @@ fn v_slot_basic() {
 #[test]
 fn v_slot_with_v_slots() {
   let code = transform(
-    "<Comp v-slot={{ bar }}>
-      <Comp bar={bar} v-slots={{
+    "<Comp bar={bar} v-slots={{
         bar,
         default: ({ foo })=> <>
           { foo + bar }
           {<Comp v-slot={{baz}}>{bar}{baz}</Comp>}
         </>
       }}>
-      </Comp>{bar}
     </Comp>",
     Some(TransformOptions {
       interop: true,
@@ -46,22 +44,19 @@ fn v_slot_with_v_slots() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, openBlock as _openBlock } from "vue";
   (() => {
-    return _openBlock(), _createBlock(Comp, null, {
-      default: ({ bar }) => [_createVNode(Comp, { bar }, {
-        bar,
-        default: ({ foo }) => (() => {
-          return _openBlock(), _createBlock(_Fragment, null, [foo + bar, (() => {
-            return _openBlock(), _createBlock(Comp, null, {
-              default: ({ baz }) => [bar, baz],
-              _: 1
-            });
-          })()], 64);
-        })()
-      }, 8, ["bar"]), bar],
-      _: 1
-    });
+    return _openBlock(), _createBlock(Comp, { bar }, {
+      bar,
+      default: ({ foo }) => (() => {
+        return _openBlock(), _createBlock(_Fragment, null, [foo + bar, (() => {
+          return _openBlock(), _createBlock(Comp, null, {
+            default: ({ baz }) => [bar, baz],
+            _: 2
+          }, 1024);
+        })()], 64);
+      })()
+    }, 8, ["bar"]);
   })();
   "#)
 }

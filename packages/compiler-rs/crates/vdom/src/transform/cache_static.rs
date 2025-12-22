@@ -4,8 +4,10 @@ use common::{
   check::{is_directive, is_jsx_component},
   patch_flag::PatchFlags,
   text::is_empty_text,
+  walk::WalkIdentifiers,
 };
 use napi::{Either, bindgen_prelude::Either3};
+use oxc_allocator::CloneIn;
 use oxc_ast::ast::{
   Expression, JSXAttributeItem, JSXAttributeValue, JSXChild, JSXElement, NumberBase,
   ObjectPropertyKind,
@@ -129,7 +131,7 @@ pub fn cache_static_children<'a>(
     if let JSXChild::Element(child) = unsafe { &*child_ptr } {
       let is_component = is_jsx_component(child);
       if is_component {
-        *context.in_v_slot.borrow_mut() += 1;
+        *context.options.in_v_slot.borrow_mut() += 1;
       }
       cache_static_children(
         Some(Either::A(unsafe { &*child_ptr })),
@@ -139,7 +141,7 @@ pub fn cache_static_children<'a>(
         false,
       );
       if is_component {
-        *context.in_v_slot.borrow_mut() -= 1;
+        *context.options.in_v_slot.borrow_mut() -= 1;
       }
     } else if let JSXChild::Fragment(child) = unsafe { &*child_ptr } {
       let codegen = codegen_map.get(&child.span);
@@ -158,7 +160,8 @@ pub fn cache_static_children<'a>(
     }
   }
 
-  if child_len > 1 && to_cache.len() == child_len
+  if child_len > 1
+    && to_cache.len() == child_len
     && let Some((children, codegen_children)) = if let Some(Either::A(node)) = node
       && let JSXChild::Element(node) = node
       && let Some(codegen) = unsafe { &mut *codegen_map_ptr }.get_mut(&node.span)
@@ -173,16 +176,17 @@ pub fn cache_static_children<'a>(
       Some((*children, codegen_children))
     } else {
       None
-    } {
-      // all children were hoisted - the entire children array is cacheable.
-      *codegen_children = Either3::C(context.cache(
-        context.gen_node_list(Either3::B(children), codegen_map),
-        false,
-        false,
-        true,
-      ));
-      return;
     }
+  {
+    // all children were hoisted - the entire children array is cacheable.
+    *codegen_children = Either3::C(context.cache(
+      context.gen_node_list(Either3::B(children), codegen_map),
+      false,
+      false,
+      true,
+    ));
+    return;
+  }
 
   for child in to_cache {
     let span = child.span();
@@ -211,7 +215,7 @@ pub fn cache_static_children<'a>(
 
 pub fn get_constant_type<'a>(
   node: Either<&JSXChild<'a>, &Expression>,
-  context: &TransformContext<'a>,
+  context: &'a TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
 ) -> ConstantTypes {
   let codegen_map_ptr = codegen_map as *mut HashMap<Span, NodeTypes>;
@@ -365,7 +369,29 @@ pub fn get_constant_type<'a>(
       if node.is_literal() {
         ConstantTypes::CanStringify
       } else {
-        ConstantTypes::NotConstant
+        if match node {
+          Expression::Identifier(_) => true,
+          _ => {
+            let mut has_ref = false;
+            let has_ref_ptr = &mut has_ref as *mut bool;
+            WalkIdentifiers::new(
+              Box::new(move |_, _, _, _, _| {
+                *unsafe { &mut *has_ref_ptr } = true;
+                None
+              }),
+              &context.ast,
+              *context.source.borrow(),
+              context.options,
+              false,
+            )
+            .traverse(node.clone_in(context.allocator));
+            has_ref
+          }
+        } {
+          ConstantTypes::NotConstant
+        } else {
+          ConstantTypes::CanStringify
+        }
       }
     }
   }
@@ -373,7 +399,7 @@ pub fn get_constant_type<'a>(
 
 fn get_generated_props_constant_type<'a>(
   node: &JSXElement<'a>,
-  context: &TransformContext<'a>,
+  context: &'a TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
 ) -> ConstantTypes {
   let mut return_type = ConstantTypes::CanStringify;

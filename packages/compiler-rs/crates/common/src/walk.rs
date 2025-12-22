@@ -123,7 +123,7 @@ impl<'a> WalkIdentifiers<'a> {
     id: &mut IdentifierReference<'a>,
     ctx: &mut TraverseCtx<'a, ()>,
   ) -> Option<Expression<'a>> {
-    if id.span.eq(&SPAN) {
+    if id.span.eq(&SPAN) && !id.name.eq("_cache") {
       return None;
     }
     let is_local = self.known_ids.contains_key(id.name.as_str());

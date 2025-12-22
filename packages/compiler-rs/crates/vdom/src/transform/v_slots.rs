@@ -41,10 +41,12 @@ pub unsafe fn transform_v_slots<'a>(
         if let Some(NodeTypes::VNodeCall(vnode_call)) =
           context.codegen_map.borrow_mut().get_mut(&node_span)
         {
+          *context.options.in_v_slot.borrow_mut() += 1;
           vnode_call.children = Some(Either3::C(
             context.jsx_expression_to_expression(&mut value.expression),
           ));
-          vnode_call.patch_flag = Some(vnode_call.patch_flag.unwrap_or_default())
+          vnode_call.patch_flag = Some(vnode_call.patch_flag.unwrap_or_default());
+          *context.options.in_v_slot.borrow_mut() -= 1;
         }
       }))
     } else {

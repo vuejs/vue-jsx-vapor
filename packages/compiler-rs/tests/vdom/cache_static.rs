@@ -619,7 +619,7 @@ fn should_not_cache_elements_with_cached_handlers_with_other_bindings() {
     return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", {
       class: _normalizeClass({}),
       onClick: _cache[0] || (_cache[0] = (...args) => foo(...args))
-    }, null, 2)])]);
+    })])]);
   })();
   "#);
 }

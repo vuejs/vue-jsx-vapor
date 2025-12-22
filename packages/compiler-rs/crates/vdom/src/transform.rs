@@ -47,14 +47,8 @@ pub struct DirectiveTransformResult<'a> {
 
 pub struct TransformContext<'a> {
   pub allocator: &'a Allocator,
-  pub index: RefCell<i32>,
 
   pub options: &'a TransformOptions<'a>,
-
-  pub template: RefCell<String>,
-  pub children_template: RefCell<Vec<String>>,
-
-  pub in_v_slot: RefCell<i32>,
 
   pub seen: Rc<RefCell<HashSet<u32>>>,
 
@@ -73,10 +67,6 @@ impl<'a> TransformContext<'a> {
   pub fn new(allocator: &'a Allocator, options: &'a TransformOptions<'a>) -> Self {
     TransformContext {
       allocator,
-      index: RefCell::new(0),
-      template: RefCell::new(String::new()),
-      children_template: RefCell::new(Vec::new()),
-      in_v_slot: RefCell::new(0),
       seen: Rc::new(RefCell::new(HashSet::new())),
       root_node: RefCell::new(RootNode::new(allocator)),
       source: RefCell::new(""),
@@ -267,12 +257,20 @@ impl<'a> TransformContext<'a> {
     &'a self,
     value: &mut JSXAttributeValue<'a>,
   ) -> Expression<'a> {
-    match value.take_in(self.allocator) {
-      JSXAttributeValue::Element(value) => Expression::JSXElement(value),
-      JSXAttributeValue::Fragment(value) => Expression::JSXFragment(value),
-      JSXAttributeValue::StringLiteral(value) => Expression::StringLiteral(value),
-      JSXAttributeValue::ExpressionContainer(mut value) => {
-        self.jsx_expression_to_expression(&mut value.expression)
+    match value {
+      JSXAttributeValue::Element(value) => {
+        Expression::JSXElement(value.take_in_box(self.allocator))
+      }
+      JSXAttributeValue::Fragment(value) => {
+        Expression::JSXFragment(value.take_in_box(self.allocator))
+      }
+      JSXAttributeValue::StringLiteral(value) => {
+        self
+          .ast
+          .expression_string_literal(value.span, value.value, value.raw)
+      }
+      JSXAttributeValue::ExpressionContainer(value) => {
+        self.jsx_expression_to_expression(&mut value.take_in(self.allocator).expression)
       }
     }
   }
@@ -293,6 +291,76 @@ impl<'a> TransformContext<'a> {
         false,
       )
       .traverse(value)
+    }
+  }
+
+  pub fn add_identifiers(&'a self, exp: &Expression<'a>) {
+    let identifiers = self.options.identifiers.as_ptr();
+    match exp {
+      Expression::Identifier(id) => {
+        unsafe { &mut *identifiers }
+          .entry(id.name.to_string())
+          .and_modify(|v| *v += 1)
+          .or_insert(1);
+      }
+      _ => {
+        WalkIdentifiers::new(
+          Box::new(move |id, _, _, _, _| {
+            unsafe { &mut *identifiers }
+              .entry(id.name.to_string())
+              .and_modify(|v| *v += 1)
+              .or_insert(1);
+            None
+          }),
+          &self.ast,
+          *self.source.borrow(),
+          self.options,
+          false,
+        )
+        .traverse(exp.clone_in(self.allocator));
+      }
+    };
+  }
+
+  pub fn remove_identifiers(&self, id: &'a str) {
+    let identifiers = &mut self.options.identifiers.borrow_mut();
+    if let Some(v) = identifiers.get_mut(id)
+      && *v > 1
+    {
+      *v -= 1;
+    } else {
+      identifiers.remove(id);
+    }
+  }
+
+  pub fn has_scope_ref(&'a self, exp: &Expression<'a>) -> bool {
+    let identifiers = self.options.identifiers.borrow();
+    match exp {
+      Expression::Identifier(id) => {
+        if identifiers.contains_key(id.name.as_str()) {
+          true
+        } else {
+          false
+        }
+      }
+      _ => {
+        let mut has_ref = false;
+        let has_ref_ptr = &mut has_ref as *mut bool;
+        WalkIdentifiers::new(
+          Box::new(move |id, _, _, _, _| {
+            if identifiers.contains_key(id.name.as_str()) {
+              *unsafe { &mut *has_ref_ptr } = true;
+            }
+            None
+          }),
+          &self.ast,
+          *self.source.borrow(),
+          self.options,
+          false,
+        )
+        .traverse(exp.clone_in(self.allocator));
+        has_ref
+      }
     }
   }
 

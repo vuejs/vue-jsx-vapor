@@ -75,21 +75,22 @@ pub unsafe fn transform_element<'a>(
     return None;
   }
 
-  let is_component = is_jsx_component(node);
-
   // The goal of the transform is to create a codegenNode implementing the
   // VNodeCall interface.
   let mut vnode_tag = get_tag_name(&node.opening_element.name, *context.source.borrow());
-  if is_component
-    && ((context.options.with_fallback
-      && !context.options.helpers.borrow().contains(
-        if let Some(vnode_tag) = vnode_tag.strip_prefix("_") {
-          vnode_tag
-        } else {
-          &vnode_tag
-        },
-      ))
-      || vnode_tag.contains("-"))
+  let is_custom_element = context.options.is_custom_element.as_ref()(vnode_tag.clone());
+  let is_component = is_jsx_component(node) && !is_custom_element;
+  if !is_custom_element
+    && (is_component
+      && ((context.options.with_fallback
+        && !context.options.helpers.borrow().contains(
+          if let Some(vnode_tag) = vnode_tag.strip_prefix("_") {
+            vnode_tag
+          } else {
+            &vnode_tag
+          },
+        ))
+        || vnode_tag.contains("-")))
   {
     context.helper("resolveComponent");
     context.components.borrow_mut().insert(vnode_tag.clone());
