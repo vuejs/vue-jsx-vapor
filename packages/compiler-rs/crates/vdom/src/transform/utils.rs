@@ -15,8 +15,8 @@ fn get_unnormalized_props<'a>(
   call_path: &mut Vec<&mut Expression<'a>>,
 ) -> *mut Expression<'a> {
   let _props = props as *mut _;
-  if let Expression::CallExpression(props) = props {
-    if ["_normalizeProps", "_guardReactiveProps"].contains(&props.callee_name().unwrap_or_default())
+  if let Expression::CallExpression(props) = props
+    && ["_normalizeProps", "_guardReactiveProps"].contains(&props.callee_name().unwrap_or_default())
     {
       call_path.push(unsafe { &mut *_props });
       return get_unnormalized_props(
@@ -24,7 +24,6 @@ fn get_unnormalized_props<'a>(
         call_path,
       );
     }
-  }
   props
 }
 

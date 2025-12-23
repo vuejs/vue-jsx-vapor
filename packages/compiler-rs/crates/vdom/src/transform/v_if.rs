@@ -17,7 +17,6 @@ use common::{
   check::is_template,
   directive::{find_prop, find_prop_mut},
   error::ErrorCodes,
-  text::is_empty_text,
 };
 
 /// # SAFETY
@@ -63,7 +62,12 @@ pub unsafe fn transform_v_if<'a>(
 
   let node_span = unsafe { &*node }.span;
   let mut fragment_span = SPAN;
-  let mut last_if_node: Option<*mut VNodeCall> = None;
+  let mut last_if_span = None;
+
+  let context_v_if_map = &mut context.v_if_map.borrow_mut();
+  let v_if_map = context_v_if_map
+    .entry(parent_node.span())
+    .or_default();
 
   if dir_name == "v-if" {
     fragment_span = Span::new(node_span.end, node_span.start + 1);
@@ -96,38 +100,24 @@ pub unsafe fn transform_v_if<'a>(
         is_block: true,
         disable_tracking: false,
         is_component: true,
-        v_for: false,
+        v_for: None,
         v_if: Some(vec![branch]),
         loc: node_span,
       }),
     );
+    v_if_map.push(fragment_span);
   } else {
-    let siblings = match parent_node {
-      JSXChild::Element(node) => Some(&node.children),
-      JSXChild::Fragment(node) => Some(&node.children),
-      _ => None,
-    };
-    if let Some(siblings) = siblings
-      && let Some(index) = siblings.iter().position(|s| s.span().eq(&node_span))
+    let mut last_if_node: Option<*mut VNodeCall> = None;
+    if let Some(v_if_span) = v_if_map.last()
+      && let Some(NodeTypes::VNodeCall(v_if)) = context.codegen_map.borrow_mut().get_mut(v_if_span)
     {
-      for sibling in siblings[..index].iter().rev() {
-        if is_empty_text(sibling) {
-          continue;
-        }
-
-        if let Some(NodeTypes::VNodeCall(sibling)) =
-          context.codegen_map.borrow_mut().get_mut(&sibling.span())
-          && let Some(_) = sibling.v_if
-        {
-          last_if_node = Some(sibling as *mut _);
-          break;
-        }
-      }
+      last_if_span = Some(*v_if_span);
+      last_if_node = Some(v_if as *mut _);
     }
 
     // Check if v-else was followed by v-else-if or there are two adjacent v-else
     if let Some(last_if_node) = last_if_node
-      && let Some(branchs) = &mut unsafe { &mut *last_if_node }.v_if
+      && let Some(branchs) = unsafe { &mut *last_if_node }.v_if.as_mut()
       && let Some(branch) = &branchs.last()
       && branch.condition.is_some()
     {
@@ -154,24 +144,15 @@ pub unsafe fn transform_v_if<'a>(
   // #1587: We need to dynamically increment the key based on the current
   // node's sibling nodes, since chained v-if/else branches are
   // rendered at the same depth
-  let siblings = match parent_node {
-    JSXChild::Element(node) => Some(&node.children),
-    JSXChild::Fragment(node) => Some(&node.children),
-    _ => None,
-  };
   let mut key = 0;
-  if let Some(siblings) = siblings {
-    for sibling in siblings {
-      let sibling_span = sibling.span();
-      if sibling_span.eq(&fragment_span) {
-        break;
-      }
-      if let Some(NodeTypes::VNodeCall(vnode_call)) =
-        context.codegen_map.borrow().get(&sibling_span)
-        && let Some(branchs) = &vnode_call.v_if
-      {
-        key += branchs.len();
-      }
+  for sibling_span in v_if_map.iter() {
+    if sibling_span.eq(&fragment_span) {
+      break;
+    }
+    if let Some(NodeTypes::VNodeCall(vnode_call)) = context.codegen_map.borrow().get(sibling_span)
+      && let Some(branchs) = &vnode_call.v_if
+    {
+      key += branchs.len();
     }
   }
 
@@ -193,12 +174,12 @@ pub unsafe fn transform_v_if<'a>(
           codegen_map,
         )));
       }
-    } else if let Some(if_node) = last_if_node
-      && let if_node = unsafe { &mut *if_node }
+    } else if let Some(NodeTypes::VNodeCall(if_node)) =
+      unsafe { &mut *codegen_map_ptr }.get_mut(&last_if_span.unwrap())
       && let Some(Either3::C(children)) = &mut if_node.children
       && let Some(branchs) = if_node.v_if.as_mut()
+      && let Some(branch) = branchs.last_mut()
     {
-      let branch = branchs.last_mut().unwrap();
       // attach this branch's codegen node to the v-if root.
       let parent_condition = unsafe { &mut *get_parent_condition(children).unwrap() };
       parent_condition.alternate =
@@ -273,7 +254,7 @@ pub fn create_children_codegen_node<'a>(
   }
 }
 
-fn get_parent_condition<'a>(
+pub fn get_parent_condition<'a>(
   mut node: &mut Expression<'a>,
 ) -> Option<*mut oxc_allocator::Box<'a, ConditionalExpression<'a>>> {
   let mut ret = None;

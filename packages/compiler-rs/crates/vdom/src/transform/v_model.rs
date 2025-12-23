@@ -8,7 +8,6 @@ use oxc_ast::{
     ObjectPropertyKind, PropertyKey, PropertyKind,
   },
 };
-use oxc_parser::Parser;
 use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::transform::{
@@ -72,20 +71,7 @@ pub fn transform_v_model<'a>(
     if arg.is_static {
       ast.property_key_static_identifier(arg.loc, ast.atom(&arg.content))
     } else {
-      Parser::new(
-        context.allocator,
-        ast
-          .atom(&format!(
-            "/*{}*/{}",
-            ".".repeat(arg.loc.start as usize - 4),
-            arg.content
-          ))
-          .as_str(),
-        context.options.source_type,
-      )
-      .parse_expression()
-      .unwrap()
-      .into()
+      context.parse_dynamic_arg(&arg.content, arg.loc).into()
     }
   } else {
     ast.property_key_static_identifier(Span::new(dir.loc.start, dir.loc.start + 7), "modelValue")

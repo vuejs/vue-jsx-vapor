@@ -45,7 +45,7 @@ pub fn resolve_directive<'a>(node: &'a mut JSXAttribute<'a>, source: &'a str) ->
   } else {
     let cloned = arg_string.clone();
     let splited = &mut cloned.split("$").collect::<Vec<_>>();
-    if splited.len() > 1 {
+    if splited.len() > 2 {
       is_static = false;
       arg_string = splited[1].replace("_", ".");
       if !splited[2].is_empty() {

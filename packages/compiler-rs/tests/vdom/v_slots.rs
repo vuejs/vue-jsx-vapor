@@ -52,8 +52,8 @@ fn v_slot_with_v_slots() {
         return _openBlock(), _createBlock(_Fragment, null, [foo + bar, (() => {
           return _openBlock(), _createBlock(Comp, null, {
             default: ({ baz }) => [bar, baz],
-            _: 2
-          }, 1024);
+            _: 1
+          });
         })()], 64);
       })()
     }, 8, ["bar"]);

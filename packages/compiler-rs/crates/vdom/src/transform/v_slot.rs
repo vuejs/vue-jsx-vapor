@@ -9,7 +9,7 @@ use common::{
   text::{get_tag_name, is_empty_text},
 };
 use napi::Either;
-use oxc_allocator::TakeIn;
+use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   NONE,
   ast::{
@@ -26,6 +26,7 @@ use crate::{
     TransformContext,
     cache_static::cache_static_children,
     v_for::{create_for_loop_params, get_for_parse_result},
+    v_if::get_parent_condition,
   },
 };
 
@@ -50,12 +51,14 @@ pub unsafe fn track_slot_scopes<'a>(
       // We are only checking non-empty v-slot here
       // since we only care about slots that introduce scope variables.
       if let Some(v_slot) = find_prop(node, Either::A(String::from("v-slot"))) {
+        let mut identifiers = vec![];
         if let Some(JSXAttributeValue::ExpressionContainer(slot_props)) = v_slot.value.as_ref() {
-          context.add_identifiers(slot_props.expression.to_expression());
+          identifiers = context.add_identifiers(&Some(slot_props.expression.to_expression()));
         }
         *context.options.in_v_slot.borrow_mut() += 1;
         return Some(Box::new(move || {
           *context.options.in_v_slot.borrow_mut() -= 1;
+          context.remove_identifiers(identifiers);
         }));
       }
     }
@@ -66,15 +69,30 @@ pub unsafe fn track_slot_scopes<'a>(
 pub fn build_slots<'a>(
   node: &'a mut JSXElement<'a>,
   context: &'a TransformContext<'a>,
-) -> (Expression<'a>, bool) {
+) -> (Expression<'a>, bool, Vec<String>) {
   let ast = &context.ast;
   let _node = node as *mut JSXElement;
-  // If the slot is inside a v-for or another v-slot, force it to be dynamic
-  // since it likely uses a scope variable.
-  let mut has_dynamic_slots =
-    *context.options.in_v_slot.borrow() > 0 || *context.options.in_v_for.borrow() > 0;
   let mut slots_properties = ast.vec();
   let mut dynamic_slots = ast.vec();
+  let mut should_removed_identifiers = vec![];
+
+  // If the slot is inside a v-for or another v-slot, force it to be dynamic
+  // since it likely uses a scope variable.
+  let mut has_dynamic_slots = if *context.options.ssr.borrow() {
+    *context.options.in_v_slot.borrow() > 0 || *context.options.in_v_for.borrow() > 0
+  } else {
+    !context.options.identifiers.borrow().is_empty()
+  };
+  // This can be further optimized to make
+  // it dynamic when the slot children use the scope variables.
+  if !*context.options.ssr.borrow() && has_dynamic_slots {
+    has_dynamic_slots = context.has_scope_ref(&ast.expression_jsx_fragment(
+      SPAN,
+      ast.jsx_opening_fragment(SPAN),
+      unsafe { &mut *_node }.children.clone_in(ast.allocator),
+      ast.jsx_closing_fragment(SPAN),
+    ));
+  }
 
   // 1. Check for slot with slotProps on component itself.
   //    <Comp v-slot="{ prop }"/>
@@ -83,7 +101,7 @@ pub fn build_slots<'a>(
     let mut arg_node = None;
     if let JSXAttributeName::NamespacedName(arg) = &on_component_slot.name {
       arg_node = Some(&arg.name);
-      if arg.name.name.split("$").count() > 1 {
+      if arg.name.name.split("$").count() > 2 {
         has_dynamic_slots = true
       }
     };
@@ -119,14 +137,7 @@ pub fn build_slots<'a>(
           NONE,
         ),
         NONE,
-        ast.function_body(
-          SPAN,
-          ast.vec(),
-          ast.vec1(ast.statement_expression(
-            SPAN,
-            gen_cache_node_list(&mut unsafe { &mut *_node }.children, context),
-          )),
-        ),
+        ast.function_body(SPAN, ast.vec(), ast.vec()),
       ),
       false,
       false,
@@ -183,7 +194,7 @@ pub fn build_slots<'a>(
     let mut static_slot_name = None;
     let slot_dir = slot_dir.unwrap();
     let slot_name = if let JSXAttributeName::NamespacedName(name) = &slot_dir.name {
-      if name.name.name.split("$").count() > 1 {
+      if name.name.name.split("$").count() > 2 {
         has_dynamic_slots = true;
         ast.expression_identifier(
           name.span,
@@ -284,15 +295,10 @@ pub fn build_slots<'a>(
         && let Some(ArrayExpressionElement::ConditionalExpression(conditional)) =
           dynamic_slots.last_mut()
       {
-        let mut ret = conditional;
-        let ret_ptr = ret as *mut oxc_allocator::Box<ConditionalExpression>;
-        while let Expression::ConditionalExpression(alternate) =
-          &mut unsafe { &mut *ret_ptr }.alternate
-        {
-          ret = alternate
-        }
+        let ret = get_parent_condition(&mut conditional.alternate)
+          .unwrap_or(conditional as *mut oxc_allocator::Box<ConditionalExpression>);
         conditional_branch_index += 1;
-        ret.alternate = if let Some(value) = &mut v_else.value {
+        unsafe { &mut *ret }.alternate = if let Some(value) = &mut v_else.value {
           ast.expression_conditional(
             SPAN,
             context.jsx_attribute_value_to_expression(value),
@@ -325,8 +331,10 @@ pub fn build_slots<'a>(
         value,
         key,
         index,
+        identifiers,
       }) = get_for_parse_result(v_for, context)
       {
+        should_removed_identifiers = identifiers;
         // Render the dynamic slots as an array and add it to the createSlot()
         // args. The runtime knows how to handle it appropriately.
         dynamic_slots.push(
@@ -459,6 +467,16 @@ pub fn build_slots<'a>(
     }
   }
 
+  if on_component_slot.is_some()
+    && let Some(ObjectPropertyKind::ObjectProperty(prop)) = slots_properties.first_mut()
+    && let Expression::ArrowFunctionExpression(value) = &mut prop.value
+  {
+    value.body.statements = ast.vec1(ast.statement_expression(
+      SPAN,
+      gen_cache_node_list(&mut implicit_default_children, context),
+    ));
+  }
+
   let slot_flag = if has_dynamic_slots {
     SlotFlags::DYNAMIC
   } else {
@@ -510,7 +528,7 @@ pub fn build_slots<'a>(
     )
   }
 
-  (slots, has_dynamic_slots)
+  (slots, has_dynamic_slots, should_removed_identifiers)
 }
 
 fn build_dynamic_slot<'a>(

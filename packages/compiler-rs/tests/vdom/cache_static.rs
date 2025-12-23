@@ -506,7 +506,6 @@ fn cache_nested_static_tree_with_static_prop_value() {
 }
 
 #[test]
-#[ignore] // TODO
 fn cache_class_with_static_object_value() {
   let code = transform(
     r#"<div><span class={{ foo: true }}>{bar}</span></div>"#,
@@ -518,8 +517,9 @@ fn cache_class_with_static_object_value() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = { class: _normalizeClass({ foo: true }) };
   (() => {
-    return _openBlock(), _createElementBlock("div", null, [_createElementVNode("span", { class: _normalizeClass({ foo: true }) }, bar, 2)]);
+    return _openBlock(), _createElementBlock("div", null, [_createElementVNode("span", _hoisted_1, bar)]);
   })();
   "#);
 }

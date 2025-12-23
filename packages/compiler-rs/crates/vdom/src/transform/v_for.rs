@@ -56,6 +56,7 @@ pub unsafe fn transform_v_for<'a>(
     key,
     index,
     source,
+    identifiers,
   } = get_for_parse_result(dir, context)?;
 
   let Some(source) = source else {
@@ -127,7 +128,7 @@ pub unsafe fn transform_v_for<'a>(
   if let Some(NodeTypes::VNodeCall(vnode_call)) =
     context.codegen_map.borrow_mut().get_mut(&fragment_span)
   {
-    vnode_call.v_for = true;
+    vnode_call.v_for = Some(identifiers);
     vnode_call.patch_flag = Some(fragment_flag as i32);
     vnode_call.disable_tracking = !is_stable_fragment;
   } else {
@@ -143,7 +144,7 @@ pub unsafe fn transform_v_for<'a>(
         is_block: true,
         disable_tracking: !is_stable_fragment,
         is_component: true,
-        v_for: true,
+        v_for: Some(identifiers),
         v_if: None,
         loc: node_span,
       }),
@@ -152,6 +153,15 @@ pub unsafe fn transform_v_for<'a>(
 
   Some(Box::new(move || {
     *context.options.in_v_for.borrow_mut() -= 1;
+    let codegen_map = context.codegen_map.as_ptr();
+    let Some(NodeTypes::VNodeCall(fragment_codegen)) =
+      unsafe { &mut *codegen_map }.get_mut(&fragment_span)
+    else {
+      return;
+    };
+    if let Some(v_for) = fragment_codegen.v_for.take() {
+      context.remove_identifiers(v_for)
+    }
     // finish the codegen now that all children have been traversed
     let children = &mut unsafe { &mut *node }
       .children
@@ -163,11 +173,8 @@ pub unsafe fn transform_v_for<'a>(
     let mut key_exp = None;
     // Normal element v-for. Directly use the child's codegenNode
     // but mark it as a block.
-    if let NodeTypes::VNodeCall(child_block) = context
-      .codegen_map
-      .borrow_mut()
-      .get_mut(child_span)
-      .unwrap()
+    if let NodeTypes::VNodeCall(child_block) =
+      unsafe { &mut *codegen_map }.get_mut(child_span).unwrap()
     {
       if is_template && let Some(key_property) = key_property {
         key_exp = Some(key_property.value.clone_in(context.allocator));
@@ -179,13 +186,13 @@ pub unsafe fn transform_v_for<'a>(
       None,
       vec![children.get_mut(0).unwrap()],
       context,
-      &mut context.codegen_map.borrow_mut(),
+      unsafe { &mut *codegen_map },
       false,
     );
-    let child_block = context.codegen_map.borrow_mut().remove(child_span).unwrap();
+    let child_block = unsafe { &mut *codegen_map }.remove(child_span).unwrap();
     let child_block = match child_block {
       NodeTypes::VNodeCall(child_block) => {
-        context.gen_vnode_call(child_block, &mut context.codegen_map.borrow_mut())
+        context.gen_vnode_call(child_block, unsafe { &mut *codegen_map })
       }
       NodeTypes::CacheExpression(exp) => exp,
       _ => unreachable!(),
@@ -336,13 +343,9 @@ pub unsafe fn transform_v_for<'a>(
       );
     }
 
-    if let Some(NodeTypes::VNodeCall(fragment_codegen)) =
-      context.codegen_map.borrow_mut().get_mut(&fragment_span)
-    {
-      fragment_codegen.children = Some(Either3::C(Expression::CallExpression(
-        ast.alloc(render_exp),
-      )));
-    };
+    fragment_codegen.children = Some(Either3::C(Expression::CallExpression(
+      ast.alloc(render_exp),
+    )));
   }))
 }
 
@@ -396,20 +399,16 @@ pub fn get_for_parse_result<'a>(
   }
   // scope management
   // inject identifiers to context
-  if let Some(value) = value.as_ref() {
-    context.add_identifiers(value);
-  }
-  if let Some(key) = key.as_ref() {
-    context.add_identifiers(key);
-  }
-  if let Some(index) = index.as_ref() {
-    context.add_identifiers(index);
-  }
+  let mut identifiers = vec![];
+  identifiers.extend(context.add_identifiers(&value.as_ref()));
+  identifiers.extend(context.add_identifiers(&key.as_ref()));
+  identifiers.extend(context.add_identifiers(&index.as_ref()));
   Some(ForNode {
     value,
     index,
     key,
     source,
+    identifiers,
   })
 }
 

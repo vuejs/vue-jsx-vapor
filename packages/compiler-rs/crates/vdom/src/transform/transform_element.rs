@@ -24,7 +24,6 @@ use common::{
   },
   directive::{DirectiveNode, find_prop, resolve_directive},
   error::ErrorCodes,
-  expression::parse_expression,
   patch_flag::PatchFlags,
   text::{camelize, get_tag_name, is_empty_text, to_valid_asset_id},
 };
@@ -161,7 +160,16 @@ pub unsafe fn transform_element<'a>(
       }
 
       vnode_children = Some(if should_build_as_slots {
-        let (slots, has_dynamic_slots) = build_slots(node, context);
+        let (slots, has_dynamic_slots, identifiers) = build_slots(node, context);
+        if let Some(NodeTypes::VNodeCall(v_for_vnode_call)) = context
+          .codegen_map
+          .borrow_mut()
+          .get_mut(&Span::new(node_span.end, node_span.start))
+          && let Some(v_for) = v_for_vnode_call.v_for.as_mut()
+        {
+          *v_for = identifiers;
+        }
+
         if has_dynamic_slots {
           patch_flag |= PatchFlags::DynamicSlots as i32
         }
@@ -215,7 +223,7 @@ pub unsafe fn transform_element<'a>(
       is_block: should_use_block,
       disable_tracking: false,
       is_component,
-      v_for: false,
+      v_for: None,
       v_if: None,
       loc: SPAN,
     };
@@ -382,6 +390,18 @@ pub fn build_props<'a>(
         } else {
           "bind".to_string()
         };
+
+        // skip v-slot - it is handled by its dedicated transform.
+        if dir_name == "slot" {
+          if !is_component {
+            context.options.on_error.as_ref()(ErrorCodes::VSlotMisplaced, prop.span);
+          }
+          continue;
+        }
+        // skip v-once/v-memo - they are handled by dedicated transforms.
+        if dir_name == "once" || dir_name == "memo" {
+          continue;
+        }
 
         if dir_name == "on" {
           // skip v-on in SSR compilation
@@ -725,19 +745,7 @@ pub fn build_directive_args<'a>(
     if arg_is_none {
       dir_args.push(ast.expression_identifier(SPAN, "void 0"))
     }
-    dir_args.push(if !arg.content.contains(".") {
-      context
-        .ast
-        .expression_identifier(SPAN, ast.atom(&arg.content))
-    } else {
-      parse_expression(
-        &arg.content,
-        arg.loc,
-        context.allocator,
-        context.options.source_type,
-      )
-      .unwrap()
-    })
+    dir_args.push(context.parse_dynamic_arg(&arg.content, arg.loc))
   }
   if !dir.modifiers.is_empty() {
     if arg_is_none {

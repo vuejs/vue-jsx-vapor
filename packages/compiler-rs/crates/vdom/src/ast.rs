@@ -138,7 +138,7 @@ pub struct VNodeCall<'a> {
   pub is_block: bool,
   pub disable_tracking: bool,
   pub is_component: bool,
-  pub v_for: bool,
+  pub v_for: Option<Vec<String>>,
   pub v_if: Option<Vec<IfBranchNode<'a>>>,
   pub loc: Span,
 }
@@ -174,6 +174,7 @@ pub struct ForNode<'a> {
   pub value: Option<Expression<'a>>,
   pub key: Option<Expression<'a>>,
   pub index: Option<Expression<'a>>,
+  pub identifiers: Vec<String>,
 }
 
 /**

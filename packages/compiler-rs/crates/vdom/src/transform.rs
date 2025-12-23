@@ -1,3 +1,4 @@
+use common::expression::parse_expression;
 pub use common::options::TransformOptions;
 use common::walk::WalkIdentifiers;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
@@ -58,6 +59,7 @@ pub struct TransformContext<'a> {
   pub ast: AstBuilder<'a>,
   pub constant_cache: RefCell<HashMap<Span, ConstantTypes>>,
   pub codegen_map: RefCell<HashMap<Span, NodeTypes<'a>>>,
+  pub v_if_map: RefCell<HashMap<Span, Vec<Span>>>,
   pub cache_index: RefCell<usize>,
   pub components: RefCell<HashSet<String>>,
   pub directives: RefCell<HashSet<String>>,
@@ -73,6 +75,7 @@ impl<'a> TransformContext<'a> {
       ast: AstBuilder::new(allocator),
       constant_cache: RefCell::new(HashMap::new()),
       codegen_map: RefCell::new(HashMap::new()),
+      v_if_map: RefCell::new(HashMap::new()),
       cache_index: RefCell::new(0),
       components: RefCell::new(HashSet::new()),
       directives: RefCell::new(HashSet::new()),
@@ -258,29 +261,26 @@ impl<'a> TransformContext<'a> {
     value: &mut JSXAttributeValue<'a>,
   ) -> Expression<'a> {
     match value {
-      JSXAttributeValue::Element(value) => {
-        Expression::JSXElement(value.take_in_box(self.allocator))
-      }
-      JSXAttributeValue::Fragment(value) => {
-        Expression::JSXFragment(value.take_in_box(self.allocator))
-      }
+      JSXAttributeValue::Element(value) => Expression::JSXElement(value.clone_in(self.allocator)),
+      JSXAttributeValue::Fragment(value) => Expression::JSXFragment(value.clone_in(self.allocator)),
       JSXAttributeValue::StringLiteral(value) => {
         self
           .ast
           .expression_string_literal(value.span, value.value, value.raw)
       }
       JSXAttributeValue::ExpressionContainer(value) => {
-        self.jsx_expression_to_expression(&mut value.take_in(self.allocator).expression)
+        self.jsx_expression_to_expression(&mut value.expression)
       }
     }
   }
 
   pub fn jsx_expression_to_expression(&'a self, value: &mut JSXExpression<'a>) -> Expression<'a> {
-    let value = value.to_expression_mut().take_in(self.allocator);
+    let value = value.to_expression_mut().clone_in(self.allocator);
     if matches!(
       value,
       Expression::Identifier(_) | Expression::StaticMemberExpression(_)
-    ) {
+    ) || value.is_literal()
+    {
       value
     } else {
       WalkIdentifiers::new(
@@ -294,20 +294,36 @@ impl<'a> TransformContext<'a> {
     }
   }
 
-  pub fn add_identifiers(&'a self, exp: &Expression<'a>) {
+  pub fn parse_dynamic_arg(&self, arg: &str, span: Span) -> Expression<'a> {
+    let arg = arg.replace("_", ".");
+    if !arg.contains(".") {
+      self.ast.expression_identifier(SPAN, self.ast.atom(&arg))
+    } else {
+      parse_expression(&arg, span, self.allocator, self.options.source_type).unwrap()
+    }
+  }
+
+  pub fn add_identifiers(&'a self, exp: &Option<&Expression<'a>>) -> Vec<String> {
+    let Some(exp) = exp else { return vec![] };
     let identifiers = self.options.identifiers.as_ptr();
+    let mut ids = vec![];
+    let ids_ptr = &mut ids as *mut Vec<String>;
     match exp {
       Expression::Identifier(id) => {
+        let name = id.name.to_string();
+        ids.push(name.clone());
         unsafe { &mut *identifiers }
-          .entry(id.name.to_string())
+          .entry(name)
           .and_modify(|v| *v += 1)
           .or_insert(1);
       }
       _ => {
         WalkIdentifiers::new(
           Box::new(move |id, _, _, _, _| {
+            let name = id.name.to_string();
+            unsafe { &mut *ids_ptr }.push(name.clone());
             unsafe { &mut *identifiers }
-              .entry(id.name.to_string())
+              .entry(name)
               .and_modify(|v| *v += 1)
               .or_insert(1);
             None
@@ -320,16 +336,19 @@ impl<'a> TransformContext<'a> {
         .traverse(exp.clone_in(self.allocator));
       }
     };
+    ids
   }
 
-  pub fn remove_identifiers(&self, id: &'a str) {
+  pub fn remove_identifiers(&self, ids: Vec<String>) {
     let identifiers = &mut self.options.identifiers.borrow_mut();
-    if let Some(v) = identifiers.get_mut(id)
-      && *v > 1
-    {
-      *v -= 1;
-    } else {
-      identifiers.remove(id);
+    for id in ids {
+      if let Some(v) = identifiers.get_mut(&id)
+        && *v > 1
+      {
+        *v -= 1;
+      } else {
+        identifiers.remove(&id);
+      }
     }
   }
 
@@ -337,11 +356,7 @@ impl<'a> TransformContext<'a> {
     let identifiers = self.options.identifiers.borrow();
     match exp {
       Expression::Identifier(id) => {
-        if identifiers.contains_key(id.name.as_str()) {
-          true
-        } else {
-          false
-        }
+        identifiers.contains_key(id.name.as_str())
       }
       _ => {
         let mut has_ref = false;
@@ -356,7 +371,7 @@ impl<'a> TransformContext<'a> {
           &self.ast,
           *self.source.borrow(),
           self.options,
-          false,
+          true,
         )
         .traverse(exp.clone_in(self.allocator));
         has_ref

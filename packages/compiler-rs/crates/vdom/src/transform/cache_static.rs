@@ -146,7 +146,7 @@ pub fn cache_static_children<'a>(
     } else if let JSXChild::Fragment(child) = unsafe { &*child_ptr } {
       let codegen = codegen_map.get(&child.span);
       if let Some(NodeTypes::VNodeCall(codegen)) = codegen
-        && codegen.v_for
+        && codegen.v_for.is_some()
       {
         // Do not hoist v-for because it has to be a block
         cache_static_children(
@@ -236,7 +236,7 @@ pub fn get_constant_type<'a>(
           let NodeTypes::VNodeCall(codegen) = codegen else {
             return ConstantTypes::NotConstant;
           };
-          if codegen.v_for || codegen.v_if.is_some() {
+          if codegen.v_for.is_some() || codegen.v_if.is_some() {
             return ConstantTypes::NotConstant;
           }
           let tag = node.opening_element.name.to_string();
@@ -368,30 +368,28 @@ pub fn get_constant_type<'a>(
     Either::B(node) => {
       if node.is_literal() {
         ConstantTypes::CanStringify
-      } else {
-        if match node {
-          Expression::Identifier(_) => true,
-          _ => {
-            let mut has_ref = false;
-            let has_ref_ptr = &mut has_ref as *mut bool;
-            WalkIdentifiers::new(
-              Box::new(move |_, _, _, _, _| {
-                *unsafe { &mut *has_ref_ptr } = true;
-                None
-              }),
-              &context.ast,
-              *context.source.borrow(),
-              context.options,
-              false,
-            )
-            .traverse(node.clone_in(context.allocator));
-            has_ref
-          }
-        } {
-          ConstantTypes::NotConstant
-        } else {
-          ConstantTypes::CanStringify
+      } else if match node {
+        Expression::Identifier(_) => true,
+        _ => {
+          let mut has_ref = false;
+          let has_ref_ptr = &mut has_ref as *mut bool;
+          WalkIdentifiers::new(
+            Box::new(move |_, _, _, _, _| {
+              *unsafe { &mut *has_ref_ptr } = true;
+              None
+            }),
+            &context.ast,
+            *context.source.borrow(),
+            context.options,
+            false,
+          )
+          .traverse(node.clone_in(context.allocator));
+          has_ref
         }
+      } {
+        ConstantTypes::NotConstant
+      } else {
+        ConstantTypes::CanStringify
       }
     }
   }
