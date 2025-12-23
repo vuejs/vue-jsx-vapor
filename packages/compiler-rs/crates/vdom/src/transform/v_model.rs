@@ -58,11 +58,6 @@ pub fn transform_v_model<'a>(
   let tag = get_tag_name(&node.opening_element.name, *context.source.borrow());
   let is_custom_element = context.options.is_custom_element.as_ref()(tag.to_string());
   let is_component = is_jsx_component(node) && !is_custom_element;
-  let mut cloned_dir = if !is_component {
-    Some(dir.clone())
-  } else {
-    None
-  };
 
   let arg_is_some = dir.arg.is_some();
   let mut computed = false;
@@ -79,14 +74,14 @@ pub fn transform_v_model<'a>(
 
   // modelModifiers: { foo: true, "bar-baz": true }
   let modfiiers = if !dir.modifiers.is_empty() && is_component {
-    let modifiers = dir.modifiers.into_iter().map(|m| {
+    let modifiers = dir.modifiers.iter().map(|m| {
       ast.object_property_kind_object_property(
         SPAN,
         PropertyKind::Init,
         ast.property_key_static_identifier(
           SPAN,
           ast.atom(&if is_simple_identifier(&m.content) {
-            m.content
+            m.content.clone()
           } else {
             format!("\"{}\"", m.content)
           }),
@@ -130,7 +125,7 @@ pub fn transform_v_model<'a>(
     None
   };
 
-  let event_name = if let Some(arg) = dir.arg {
+  let event_name = if let Some(arg) = dir.arg.as_ref() {
     if arg.is_static {
       ast.property_key_static_identifier(
         SPAN,
@@ -208,11 +203,6 @@ pub fn transform_v_model<'a>(
     assignment_exp = context.cache(assignment_exp, false, false, false)
   }
 
-  if !is_component {
-    cloned_dir.as_mut().unwrap().exp.as_mut().unwrap().ast =
-      Some(unsafe { &mut *(&mut exp.clone_in(context.allocator) as *mut Expression) });
-  }
-
   let mut props = vec![
     ast.object_property_kind_object_property(
       SPAN,
@@ -224,7 +214,7 @@ pub fn transform_v_model<'a>(
       } else {
         prop_name
       },
-      exp.take_in(context.allocator),
+      exp.clone_in(context.allocator),
       false,
       false,
       computed,
@@ -318,8 +308,7 @@ pub fn transform_v_model<'a>(
 
   Some(DirectiveTransformResult {
     props,
-    runtime: runtime_name
-      .map(|runtime_name| build_directive_args(cloned_dir.unwrap(), context, &runtime_name)),
+    runtime: runtime_name.map(|runtime_name| build_directive_args(&dir, context, &runtime_name)),
   })
 }
 

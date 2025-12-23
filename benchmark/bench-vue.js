@@ -63,7 +63,7 @@ console.time('vue-vapor                  ')
 vueTransform(vueSource)
 console.timeEnd('vue-vapor                  ')
 
-rsTransform(source, { interop: true })
+rsTransform(source)
 console.time('vue-jsx-vapor.rs  + oxc    ')
 rsTransform(source)
 console.timeEnd('vue-jsx-vapor.rs  + oxc    ')

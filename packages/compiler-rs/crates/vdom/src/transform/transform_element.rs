@@ -477,7 +477,7 @@ pub fn build_props<'a>(
               };
               runtime_directives.push(
                 build_directive_args(
-                  resolve_directive(prop, *context.source.borrow()),
+                  &resolve_directive(prop, *context.source.borrow()),
                   context,
                   &runtime,
                 )
@@ -724,7 +724,7 @@ pub fn dedupe_properties<'a>(
 }
 
 pub fn build_directive_args<'a>(
-  dir: DirectiveNode<'a>,
+  dir: &DirectiveNode<'a>,
   context: &'a TransformContext<'a>,
   runtime: &str,
 ) -> Expression<'a> {
@@ -733,15 +733,15 @@ pub fn build_directive_args<'a>(
   // built-in directive with runtime
   dir_args.push(ast.expression_identifier(SPAN, ast.atom(runtime)));
   let exp_is_none = dir.exp.is_none();
-  if let Some(exp) = dir.exp {
-    dir_args.push(if let Some(node) = exp.ast {
-      node.take_in(ast.allocator)
+  if let Some(exp) = dir.exp.as_ref() {
+    dir_args.push(if let Some(node) = exp.ast.as_ref() {
+      node.clone_in(ast.allocator)
     } else {
       ast.expression_string_literal(exp.loc, ast.atom(&exp.content), None)
     });
   }
   let arg_is_none = dir.arg.is_none();
-  if let Some(arg) = dir.arg {
+  if let Some(arg) = dir.arg.as_ref() {
     if arg_is_none {
       dir_args.push(ast.expression_identifier(SPAN, "void 0"))
     }
@@ -756,7 +756,7 @@ pub fn build_directive_args<'a>(
     }
     dir_args.push(ast.expression_object(
       dir.loc,
-      ast.vec_from_iter(dir.modifiers.into_iter().map(|modifier| {
+      ast.vec_from_iter(dir.modifiers.iter().map(|modifier| {
         ast.object_property_kind_object_property(
           modifier.loc,
           PropertyKind::Init,

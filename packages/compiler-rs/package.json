@@ -50,7 +50,7 @@
   "scripts": {
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
-    "dev": "nodemon -w src -e rs -x 'napi build --platform'",
+    "dev": "nodemon -w crates -e rs -x 'napi build --platform'",
     "format": "taplo format",
     "prepublishOnly": "napi prepublish -t npm",
     "version": "napi version",
