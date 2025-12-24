@@ -59,7 +59,7 @@ pub struct TransformContext<'a> {
   pub ast: AstBuilder<'a>,
   pub constant_cache: RefCell<HashMap<Span, ConstantTypes>>,
   pub codegen_map: RefCell<HashMap<Span, NodeTypes<'a>>>,
-  pub v_if_map: RefCell<HashMap<Span, Vec<Span>>>,
+  pub v_if_map: RefCell<HashMap<Span, (usize, Vec<Span>)>>,
   pub cache_index: RefCell<usize>,
   pub components: RefCell<HashSet<String>>,
   pub directives: RefCell<HashSet<String>>,
@@ -269,13 +269,13 @@ impl<'a> TransformContext<'a> {
           .expression_string_literal(value.span, value.value, value.raw)
       }
       JSXAttributeValue::ExpressionContainer(value) => {
-        self.jsx_expression_to_expression(&mut value.expression)
+        self.jsx_expression_to_expression(value.expression.clone_in(self.allocator))
       }
     }
   }
 
-  pub fn jsx_expression_to_expression(&'a self, value: &mut JSXExpression<'a>) -> Expression<'a> {
-    let value = value.to_expression_mut().clone_in(self.allocator);
+  pub fn jsx_expression_to_expression(&'a self, mut value: JSXExpression<'a>) -> Expression<'a> {
+    let value = value.to_expression_mut().take_in(self.allocator);
     if matches!(
       value,
       Expression::Identifier(_) | Expression::StaticMemberExpression(_)
@@ -355,9 +355,7 @@ impl<'a> TransformContext<'a> {
   pub fn has_scope_ref(&'a self, exp: &Expression<'a>) -> bool {
     let identifiers = self.options.identifiers.borrow();
     match exp {
-      Expression::Identifier(id) => {
-        identifiers.contains_key(id.name.as_str())
-      }
+      Expression::Identifier(id) => identifiers.contains_key(id.name.as_str()),
       _ => {
         let mut has_ref = false;
         let has_ref_ptr = &mut has_ref as *mut bool;

@@ -7,7 +7,7 @@ packages:
 defines:
   - &vue-macros ^3.0.1
   - &ts-macro ^0.3.6
-  - &vue 3.6.0-alpha.2
+  - &vue 3.6.0-alpha.7
 
 catalog:
   '@nuxt/kit': ^3.19.2

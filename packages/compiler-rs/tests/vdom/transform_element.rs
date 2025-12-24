@@ -93,11 +93,11 @@ fn props_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { id: "foo" };
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(), _createElementBlock("div", _hoisted_1, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]);
   })();
   "#)
@@ -114,10 +114,10 @@ fn zero_placeholder_for_children_with_no_props() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]);
   })();
   "#)
@@ -279,10 +279,10 @@ fn should_handle_teleport_with_normal_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(), _createBlock(Teleport, { target: "\\#foo" }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]);
   })();
   "#)
@@ -302,13 +302,13 @@ fn should_handle_suspense() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
-  import { createBlock as _createBlock, createTextVNode as _createTextVNode, openBlock as _openBlock } from "vue";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
+  import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(), _createBlock(Suspense, null, {
-      default: () => [_cache[0] || (_cache[0] = _createTextVNode("foo", -1))],
-      fallback: () => [_cache[1] || (_cache[1] = _createTextVNode("fallback", -1))],
+      default: _withCtx(() => [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))]),
+      fallback: _withCtx(() => [_cache[1] || (_cache[1] = _normalizeVNode("fallback", -1))]),
       _: 1
     });
   })();
@@ -330,14 +330,11 @@ fn should_handle_keep_alive() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _useVdomCache();
-    return _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createBlock(KeepAlive, null, {
-      default: () => [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))],
-      _: 1
-    }, 1024))]);
+    const _cache = _createVNodeCache();
+    return _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createBlock(KeepAlive, null, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))], 1024))]);
   })();
   "#)
 }
@@ -355,12 +352,12 @@ fn should_handle_base_transition() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
-  import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
+  import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(), _createBlock(BaseTransition, null, {
-      default: () => [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))],
+      default: _withCtx(() => [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]),
       _: 1
     });
   })();
@@ -430,10 +427,10 @@ fn props_merging_event_handlers() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(), _createElementBlock("div", { onClick: [_cache[0] || (_cache[0] = (...args) => a(...args)), _cache[1] || (_cache[1] = (...args) => b(...args))] });
   })();
   "#)
@@ -711,10 +708,10 @@ mod patch_flag_analysis {
     )
     .code;
     assert_snapshot!(code, @r#"
-    import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+    import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     (() => {
-      const _cache = _useVdomCache();
+      const _cache = _createVNodeCache();
       return _openBlock(), _createElementBlock("div", { onVnodeUpdated: _cache[0] || (_cache[0] = (...args) => foo(...args)) }, null, 512);
     })();
     "#)
@@ -731,10 +728,10 @@ mod patch_flag_analysis {
     )
     .code;
     assert_snapshot!(code, @r#"
-    import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+    import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     (() => {
-      const _cache = _useVdomCache();
+      const _cache = _createVNodeCache();
       return _openBlock(), _createElementBlock("div", { onKeyup: _cache[0] || (_cache[0] = (...args) => foo(...args)) }, null, 32);
     })();
     "#)
@@ -770,10 +767,10 @@ mod patch_flag_analysis {
     )
     .code;
     assert_snapshot!(code, @r#"
-    import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+    import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     (() => {
-      const _cache = _useVdomCache();
+      const _cache = _createVNodeCache();
       return _openBlock(), _createElementBlock("div", { onKeydown: _cache[0] || (_cache[0] = (...args) => foo(...args)) }, null, 32);
     })();
     "#)
@@ -791,10 +788,10 @@ fn svg_should_be_forced_into_blocks() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _createElementVNode("svg", null, null, -1))]);
   })();
   "#)
@@ -811,10 +808,10 @@ fn math_should_be_forced_into_blocks() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _createElementVNode("math", null, null, -1))]);
   })();
   "#)
@@ -831,11 +828,11 @@ fn force_block_for_runtime_custom_directive_with_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
-  import { createElementBlock as _createElementBlock, createTextVNode as _createTextVNode, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
-    return _withDirectives((_openBlock(), _createElementBlock("div", null, _cache[0] || (_cache[0] = _createTextVNode("hello", -1)))), [[vFoo]]);
+    const _cache = _createVNodeCache();
+    return _withDirectives((_openBlock(), _createElementBlock("div", null, _cache[0] || (_cache[0] = _normalizeVNode("hello", -1)))), [[vFoo]]);
   })();
   "#)
 }
@@ -915,6 +912,26 @@ fn ref_for_marker_on_v_bind() {
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
     return _openBlock(true), _createBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", _mergeProps({ ref_for: true }, x), null, 16))), 256);
+  })();
+  "#)
+}
+
+#[test]
+fn keep_alive() {
+  let code = transform(
+    r#"<div><KeepAlive include={foo}>foo</KeepAlive></div>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
+  import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  (() => {
+    const _cache = _createVNodeCache();
+    return _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createBlock(KeepAlive, { include: foo }, _cache[0] || (_cache[0] = _normalizeVNode("foo", -1)), 1032, ["include"]))]);
   })();
   "#)
 }

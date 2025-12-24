@@ -38,7 +38,7 @@ impl<'a> TransformContext<'a> {
             ),
             Some(ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&self.helper("useVdomCache"))),
+              ast.expression_identifier(SPAN, ast.atom(&self.helper("createVNodeCache"))),
               NONE,
               ast.vec(),
               false,

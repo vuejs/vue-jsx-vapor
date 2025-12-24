@@ -13,10 +13,10 @@ fn on_root_element() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withMemo([x], () => (_openBlock(), _createElementBlock("div")), _cache, 0);
   })();
   "#)
@@ -33,10 +33,10 @@ fn on_normal_element() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withMemo([x], () => (_openBlock(), _createElementBlock("div")), _cache, 0);
   })();
   "#)
@@ -53,10 +53,10 @@ fn on_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createBlock as _createBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withMemo([x], () => (_openBlock(), _createBlock(Comp)), _cache, 0);
   })();
   "#)
@@ -76,11 +76,11 @@ fn on_v_if() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, createVNode as _createVNode, openBlock as _openBlock, withMemo as _withMemo } from "vue";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
+  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx, withMemo as _withMemo } from "vue";
   (() => {
-    const _cache = _useVdomCache();
-    return _openBlock(), _createBlock(_Fragment, null, [ok ? _withMemo([x], () => (_openBlock(), _createElementBlock("div", null, [_createElementVNode("span", null, "foo"), _createTextVNode("bar")])), _cache, 0) : _withMemo([x], () => _createVNode(Comp), _cache, 1)], 64);
+    const _cache = _createVNodeCache();
+    return _openBlock(), _createBlock(_Fragment, null, [ok ? _withMemo([x], () => (_openBlock(), _createElementBlock("div", null, [_createElementVNode("span", null, "foo"), _normalizeVNode("bar")])), _cache, 0) : _withMemo([x], () => _createVNode(Comp), _cache, 1)], 64);
   })();
   "#)
 }
@@ -98,10 +98,10 @@ fn on_v_for() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
       const _memo = [x, y === z];
       if (_cached && _isMemoSame(_cached, _memo)) return _cached;
@@ -126,10 +126,10 @@ fn on_template_v_for() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
       const _memo = [x, y === z];
       if (_cached && _cached.key === x && _isMemoSame(_cached, _memo)) return _cached;
@@ -152,10 +152,10 @@ fn element_v_for_key_expression_v_memo() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(true), _createBlock(_Fragment, null, _renderList(tableData, (data, __, ___, _cached) => {
       const _memo = getLetter(data);
       if (_cached && _isMemoSame(_cached, _memo)) return _cached;

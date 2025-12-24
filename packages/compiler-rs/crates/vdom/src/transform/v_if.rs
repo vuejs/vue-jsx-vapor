@@ -65,9 +65,7 @@ pub unsafe fn transform_v_if<'a>(
   let mut last_if_span = None;
 
   let context_v_if_map = &mut context.v_if_map.borrow_mut();
-  let v_if_map = context_v_if_map
-    .entry(parent_node.span())
-    .or_default();
+  let v_if_map = context_v_if_map.entry(parent_node.span()).or_default();
 
   if dir_name == "v-if" {
     fragment_span = Span::new(node_span.end, node_span.start + 1);
@@ -105,10 +103,10 @@ pub unsafe fn transform_v_if<'a>(
         loc: node_span,
       }),
     );
-    v_if_map.push(fragment_span);
+    v_if_map.1.push(fragment_span);
   } else {
     let mut last_if_node: Option<*mut VNodeCall> = None;
-    if let Some(v_if_span) = v_if_map.last()
+    if let Some(v_if_span) = v_if_map.1.last()
       && let Some(NodeTypes::VNodeCall(v_if)) = context.codegen_map.borrow_mut().get_mut(v_if_span)
     {
       last_if_span = Some(*v_if_span);
@@ -141,20 +139,8 @@ pub unsafe fn transform_v_if<'a>(
     }
   }
 
-  // #1587: We need to dynamically increment the key based on the current
-  // node's sibling nodes, since chained v-if/else branches are
-  // rendered at the same depth
-  let mut key = 0;
-  for sibling_span in v_if_map.iter() {
-    if sibling_span.eq(&fragment_span) {
-      break;
-    }
-    if let Some(NodeTypes::VNodeCall(vnode_call)) = context.codegen_map.borrow().get(sibling_span)
-      && let Some(branchs) = &vnode_call.v_if
-    {
-      key += branchs.len();
-    }
-  }
+  let key = v_if_map.0;
+  v_if_map.0 += 1;
 
   // Exit callback. Complete the codegenNode when all children have been
   // transformed.
@@ -183,7 +169,7 @@ pub unsafe fn transform_v_if<'a>(
       // attach this branch's codegen node to the v-if root.
       let parent_condition = unsafe { &mut *get_parent_condition(children).unwrap() };
       parent_condition.alternate =
-        create_codegen_node_for_branch(branch, key - 1, context, codegen_map);
+        create_codegen_node_for_branch(branch, key, context, codegen_map);
     }
   }))
 }

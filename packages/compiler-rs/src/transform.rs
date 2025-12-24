@@ -144,9 +144,37 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
 
     let mut helpers = self.options.helpers.take();
     if !helpers.is_empty() {
-      let jsx_helpers = vec![
+      let vdom_helpers = vec!["createVNodeCache", "normalizeVNode"]
+        .into_iter()
+        .filter(|helper| {
+          if helpers.contains(*helper) {
+            helpers.remove(*helper);
+            true
+          } else {
+            false
+          }
+        })
+        .collect::<Vec<_>>();
+      if !vdom_helpers.is_empty() {
+        statements.push(Statement::ImportDeclaration(ast.alloc_import_declaration(
+          SPAN,
+          Some(ast.vec_from_iter(vdom_helpers.into_iter().map(|helper| {
+            ast.import_declaration_specifier_import_specifier(
+              SPAN,
+              ast.module_export_name_identifier_name(SPAN, ast.atom(helper)),
+              ast.binding_identifier(SPAN, ast.atom(format!("_{}", helper).as_str())),
+              ImportOrExportKind::Value,
+            )
+          }))),
+          ast.string_literal(SPAN, ast.atom("/vue-jsx-vapor/vnode"), None),
+          None,
+          NONE,
+          ImportOrExportKind::Value,
+        )))
+      }
+
+      let vapor_helpers = vec![
         "setNodes",
-        "useVdomCache",
         "createNodes",
         "createComponent",
         "createComponentWithFallback",
@@ -161,10 +189,10 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
         }
       })
       .collect::<Vec<_>>();
-      if !jsx_helpers.is_empty() {
+      if !vapor_helpers.is_empty() {
         statements.push(Statement::ImportDeclaration(ast.alloc_import_declaration(
           SPAN,
-          Some(ast.vec_from_iter(jsx_helpers.into_iter().map(|helper| {
+          Some(ast.vec_from_iter(vapor_helpers.into_iter().map(|helper| {
             ast.import_declaration_specifier_import_specifier(
               SPAN,
               ast.module_export_name_identifier_name(SPAN, ast.atom(helper)),

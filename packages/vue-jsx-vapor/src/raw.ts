@@ -3,6 +3,12 @@ import { relative } from 'pathe'
 import { createFilter, normalizePath } from 'unplugin-utils'
 import { transformVueJsxVapor } from './core'
 import { ssrRegisterHelperCode, ssrRegisterHelperId } from './core/ssr'
+import {
+  propsHelperCode,
+  propsHelperId,
+  vnodeHelperCode,
+  vnodeHelperId,
+} from './runtime/raw'
 import type { Options } from './options'
 import type { UnpluginOptions } from 'unplugin'
 
@@ -48,13 +54,25 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
         },
       },
       resolveId(id) {
-        if (id === ssrRegisterHelperId) return id
+        if (
+          id === ssrRegisterHelperId ||
+          id === vnodeHelperId ||
+          id === propsHelperId
+        )
+          return id
       },
       loadInclude(id) {
-        if (id === ssrRegisterHelperId) return true
+        if (
+          id === ssrRegisterHelperId ||
+          id === vnodeHelperId ||
+          id === propsHelperId
+        )
+          return true
       },
       load(id) {
         if (id === ssrRegisterHelperId) return ssrRegisterHelperCode
+        if (id === vnodeHelperId) return vnodeHelperCode
+        if (id === propsHelperId) return propsHelperCode
       },
       transformInclude,
       transform(code, id, opt?: { ssr?: boolean }) {

@@ -152,8 +152,8 @@ pub unsafe fn transform_element<'a>(
       }
 
       let should_build_as_slots = is_component
-      && vnode_tag != "Teleport" // Teleport is not a real component and has dedicated runtime handling
-      && (vnode_tag != "KeepAlive" || vnode_tag != "keep-alive"); // explained above.
+        && vnode_tag != "Teleport" // Teleport is not a real component and has dedicated runtime handling
+        && vnode_tag != "KeepAlive" && vnode_tag != "keep-alive"; // explained above.
 
       if vnode_tag == "Fragment" || vnode_tag == "_Fragment" {
         patch_flag |= PatchFlags::StableFragment as i32;
@@ -176,11 +176,11 @@ pub unsafe fn transform_element<'a>(
         Either3::C(slots)
       } else if children.len() == 1 && vnode_tag != "Teleport" {
         let child = children.get_mut(0).unwrap();
-        // check for dynamic text children
-        let has_dynamic_text_child = child.is_expression_container();
         // pass directly if the only child is a text node
         // (plain / interpolation / expression)
-        if has_dynamic_text_child || matches!(child, JSXChild::Text(_)) {
+        if matches!(child, JSXChild::Text(_))
+          || matches!(child,JSXChild::ExpressionContainer(child) if child.expression.to_expression().is_literal())
+        {
           Either3::A(*child as *mut _)
         } else {
           Either3::B(&mut node.children as *mut _)

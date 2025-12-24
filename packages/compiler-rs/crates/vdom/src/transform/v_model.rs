@@ -1,5 +1,5 @@
 use napi::Either;
-use oxc_allocator::{CloneIn, TakeIn};
+use oxc_allocator::CloneIn;
 use oxc_ast::{
   NONE,
   ast::{

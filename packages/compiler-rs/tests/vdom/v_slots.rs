@@ -15,12 +15,13 @@ fn v_slot_basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
     return _openBlock(), _createBlock(Comp, null, { default: () => (() => {
-      return _openBlock(), _createBlock(_Fragment, null, [(() => {
+      return _openBlock(), _createBlock(_Fragment, null, [_normalizeVNode((() => {
         return _openBlock(), _createElementBlock("span");
-      })()], 64);
+      })(), 1)], 64);
     })() }, 0);
   })();
   "#);
@@ -44,17 +45,18 @@ fn v_slot_with_v_slots() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
+  import { Fragment as _Fragment, createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
     return _openBlock(), _createBlock(Comp, { bar }, {
       bar,
       default: ({ foo }) => (() => {
-        return _openBlock(), _createBlock(_Fragment, null, [foo + bar, (() => {
+        return _openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(foo + bar, 1), _normalizeVNode((() => {
           return _openBlock(), _createBlock(Comp, null, {
-            default: ({ baz }) => [bar, baz],
+            default: _withCtx(({ baz }) => [_normalizeVNode(bar, 1), _normalizeVNode(baz, 1)]),
             _: 1
           });
-        })()], 64);
+        })(), 1)], 64);
       })()
     }, 8, ["bar"]);
   })();

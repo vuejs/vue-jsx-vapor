@@ -13,12 +13,12 @@ use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   NONE,
   ast::{
-    ArrayExpressionElement, ConditionalExpression, Expression, FormalParameterKind,
+    Argument, ArrayExpressionElement, ConditionalExpression, Expression, FormalParameterKind,
     JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement, NumberBase, ObjectPropertyKind,
     PropertyKey, PropertyKind, Statement,
   },
 };
-use oxc_span::{GetSpan, SPAN};
+use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ast::{ForNode, VNodeCallChildren},
@@ -98,50 +98,33 @@ pub fn build_slots<'a>(
   //    <Comp v-slot="{ prop }"/>
   let on_component_slot = find_prop(node, Either::A(String::from("v-slot")));
   if let Some(on_component_slot) = on_component_slot {
-    let mut arg_node = None;
+    let mut arg_name = None;
+    let mut arg_span = SPAN;
+    let mut computed = false;
     if let JSXAttributeName::NamespacedName(arg) = &on_component_slot.name {
-      arg_node = Some(&arg.name);
-      if arg.name.name.split("$").count() > 2 {
-        has_dynamic_slots = true
-      }
+      let splited = arg.name.name.split("$").collect::<Vec<_>>();
+      arg_name = Some(if splited.len() > 2 {
+        has_dynamic_slots = true;
+        computed = true;
+        arg_span = Span::new(arg.name.span.start + 1, arg.name.span.end - 1);
+        ast.atom(&splited[1].replace("_", "."))
+      } else {
+        arg_span = arg.name.span;
+        arg.name.name
+      })
     };
     slots_properties.push(ast.object_property_kind_object_property(
       SPAN,
       PropertyKind::Init,
-      if let Some(id) = arg_node {
-        ast.property_key_static_identifier(id.span, id.name)
+      if let Some(arg_name) = arg_name {
+        ast.property_key_static_identifier(arg_span, arg_name)
       } else {
         ast.property_key_static_identifier(SPAN, "default")
       },
-      ast.expression_arrow_function(
-        SPAN,
-        true,
-        false,
-        NONE,
-        ast.alloc_formal_parameters(
-          SPAN,
-          FormalParameterKind::ArrowFormalParameters,
-          if let Some(JSXAttributeValue::ExpressionContainer(value)) = &on_component_slot.value {
-            ast.vec1(
-              expression_to_params(
-                value.expression.to_expression(),
-                *context.source.borrow(),
-                context.allocator,
-                context.options.source_type,
-              )
-              .unwrap(),
-            )
-          } else {
-            ast.vec()
-          },
-          NONE,
-        ),
-        NONE,
-        ast.function_body(SPAN, ast.vec(), ast.vec()),
-      ),
+      ast.expression_null_literal(SPAN),
       false,
       false,
-      false,
+      computed,
     ))
   }
 
@@ -386,7 +369,13 @@ pub fn build_slots<'a>(
         SPAN,
         PropertyKind::Init,
         slot_name.into(),
-        slot_function,
+        ast.expression_call(
+          SPAN,
+          ast.expression_identifier(SPAN, ast.atom(&context.helper("withCtx"))),
+          NONE,
+          ast.vec1(slot_function.into()),
+          false,
+        ),
         false,
         false,
         static_slot_name.is_none(),
@@ -394,87 +383,147 @@ pub fn build_slots<'a>(
     }
   }
 
-  if on_component_slot.is_none() {
-    if !has_template_slots {
-      // implicit default slot (on component)
-      slots_properties.push(ast.object_property_kind_object_property(
+  if let Some(on_component_slot) = on_component_slot {
+    if let Some(ObjectPropertyKind::ObjectProperty(prop)) = slots_properties.first_mut() {
+      prop.value = ast.expression_call(
+        SPAN,
+        ast.expression_identifier(SPAN, ast.atom(&context.helper("withCtx"))),
+        NONE,
+        ast.vec1(
+          ast
+            .expression_arrow_function(
+              SPAN,
+              true,
+              false,
+              NONE,
+              ast.alloc_formal_parameters(
+                SPAN,
+                FormalParameterKind::ArrowFormalParameters,
+                if let Some(JSXAttributeValue::ExpressionContainer(value)) =
+                  &on_component_slot.value
+                {
+                  ast.vec1(
+                    expression_to_params(
+                      value.expression.to_expression(),
+                      *context.source.borrow(),
+                      context.allocator,
+                      context.options.source_type,
+                    )
+                    .unwrap(),
+                  )
+                } else {
+                  ast.vec()
+                },
+                NONE,
+              ),
+              NONE,
+              ast.function_body(
+                SPAN,
+                ast.vec(),
+                ast.vec1(ast.statement_expression(
+                  SPAN,
+                  gen_cache_node_list(&mut implicit_default_children, context),
+                )),
+              ),
+            )
+            .into(),
+        ),
+        false,
+      )
+    }
+  } else if !has_template_slots {
+    // implicit default slot (on component)
+    slots_properties.push(
+      ast.object_property_kind_object_property(
         SPAN,
         PropertyKind::Init,
         ast.property_key_static_identifier(SPAN, "default"),
-        ast.expression_arrow_function(
+        ast.expression_call(
           SPAN,
-          true,
+          ast.expression_identifier(SPAN, ast.atom(&context.helper("withCtx"))),
+          NONE,
+          ast.vec1(
+            ast
+              .expression_arrow_function(
+                SPAN,
+                true,
+                false,
+                NONE,
+                ast.alloc_formal_parameters(
+                  SPAN,
+                  FormalParameterKind::ArrowFormalParameters,
+                  ast.vec(),
+                  NONE,
+                ),
+                NONE,
+                ast.function_body(
+                  SPAN,
+                  ast.vec(),
+                  ast.vec1(ast.statement_expression(
+                    SPAN,
+                    gen_cache_node_list(&mut implicit_default_children, context),
+                  )),
+                ),
+              )
+              .into(),
+          ),
           false,
-          NONE,
-          ast.alloc_formal_parameters(
-            SPAN,
-            FormalParameterKind::ArrowFormalParameters,
-            ast.vec(),
-            NONE,
-          ),
-          NONE,
-          ast.function_body(
-            SPAN,
-            ast.vec(),
-            ast.vec1(ast.statement_expression(
-              SPAN,
-              gen_cache_node_list(&mut implicit_default_children, context),
-            )),
-          ),
         ),
         false,
         false,
         false,
-      ));
-    } else if !implicit_default_children.is_empty() {
-      // implicit default slot (mixed with named slots)
-      if has_named_default_slot {
-        context.options.on_error.as_ref()(
-          ErrorCodes::VSlotExtraneousDefaultSlotChildren,
-          implicit_default_children[0].span(),
-        )
-      } else {
-        slots_properties.push(ast.object_property_kind_object_property(
+      ),
+    );
+  } else if !implicit_default_children.is_empty() {
+    // implicit default slot (mixed with named slots)
+    if has_named_default_slot {
+      context.options.on_error.as_ref()(
+        ErrorCodes::VSlotExtraneousDefaultSlotChildren,
+        implicit_default_children[0].span(),
+      )
+    } else {
+      slots_properties.push(
+        ast.object_property_kind_object_property(
           SPAN,
           PropertyKind::Init,
           ast.property_key_static_identifier(SPAN, "default"),
-          ast.expression_arrow_function(
+          ast.expression_call(
             SPAN,
-            true,
+            ast.expression_identifier(SPAN, ast.atom(&context.helper("withCtx"))),
+            NONE,
+            ast.vec1(
+              ast
+                .expression_arrow_function(
+                  SPAN,
+                  true,
+                  false,
+                  NONE,
+                  ast.alloc_formal_parameters(
+                    SPAN,
+                    FormalParameterKind::ArrowFormalParameters,
+                    ast.vec(),
+                    NONE,
+                  ),
+                  NONE,
+                  ast.function_body(
+                    SPAN,
+                    ast.vec(),
+                    ast.vec1(ast.statement_expression(
+                      SPAN,
+                      gen_cache_node_list(&mut implicit_default_children, context),
+                    )),
+                  ),
+                )
+                .into(),
+            ),
             false,
-            NONE,
-            ast.alloc_formal_parameters(
-              SPAN,
-              FormalParameterKind::ArrowFormalParameters,
-              ast.vec(),
-              NONE,
-            ),
-            NONE,
-            ast.function_body(
-              SPAN,
-              ast.vec(),
-              ast.vec1(ast.statement_expression(
-                SPAN,
-                gen_cache_node_list(&mut implicit_default_children, context),
-              )),
-            ),
           ),
           false,
           false,
           false,
-        ));
-      }
+        ),
+      );
     }
-  }
-
-  if on_component_slot.is_some()
-    && let Some(ObjectPropertyKind::ObjectProperty(prop)) = slots_properties.first_mut()
-    && let Expression::ArrowFunctionExpression(value) = &mut prop.value
-  {
-    value.body.statements = ast.vec1(ast.statement_expression(
-      SPAN,
-      gen_cache_node_list(&mut implicit_default_children, context),
-    ));
   }
 
   let slot_flag = if has_dynamic_slots {
@@ -503,7 +552,8 @@ pub fn build_slots<'a>(
         if let ObjectPropertyKind::ObjectProperty(mut prop) = prop
           && let PropertyKey::StaticIdentifier(key) = &prop.key
           && key.name == "default"
-          && let Expression::ArrowFunctionExpression(value) = &mut prop.value
+          && let Expression::CallExpression(exp) = &mut prop.value
+          && let Some(Argument::ArrowFunctionExpression(value)) = exp.arguments.first_mut()
           && let Some(Statement::ExpressionStatement(stmt)) = value.body.statements.get_mut(0)
         {
           Some(stmt.expression.take_in(context.allocator))

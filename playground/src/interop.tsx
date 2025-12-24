@@ -14,7 +14,7 @@ const VaporComp = defineVaporComponent(
 
 const Comp = (props) => <div>Virtual Dom Component:{props.model}</div>
 
-export default defineComponent(() => {
+const VDom = defineComponent(() => {
   const model = ref('')
   return () => [
     <input v-model={model.value}></input>,
@@ -22,3 +22,5 @@ export default defineComponent(() => {
     <VaporComp model={model.value} />,
   ]
 })
+
+export default defineVaporComponent(() => <VDom></VDom>, { name: 'interop' })

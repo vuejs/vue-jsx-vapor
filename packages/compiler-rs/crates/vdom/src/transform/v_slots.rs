@@ -1,4 +1,5 @@
 use napi::{Either, bindgen_prelude::Either3};
+use oxc_allocator::CloneIn;
 use oxc_ast::ast::{JSXAttributeValue, JSXChild, JSXElement};
 
 use crate::{ast::NodeTypes, transform::TransformContext};
@@ -43,7 +44,7 @@ pub unsafe fn transform_v_slots<'a>(
         {
           *context.options.in_v_slot.borrow_mut() += 1;
           vnode_call.children = Some(Either3::C(
-            context.jsx_expression_to_expression(&mut value.expression),
+            context.jsx_expression_to_expression(value.expression.clone_in(context.allocator)),
           ));
           vnode_call.patch_flag = Some(vnode_call.patch_flag.unwrap_or_default());
           *context.options.in_v_slot.borrow_mut() -= 1;

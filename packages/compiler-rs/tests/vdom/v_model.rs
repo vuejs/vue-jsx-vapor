@@ -15,10 +15,10 @@ fn simple_expression() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model = $event) }, null, 512)), [[_vModelText, model]]);
   })();
   "#)
@@ -35,10 +35,10 @@ fn simple_expression_for_input_text() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("input", {
       type: "text",
       "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model = $event)
@@ -58,10 +58,10 @@ fn simple_expression_for_input_radio() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelRadio as _vModelRadio, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("input", {
       type: "radio",
       "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model = $event)
@@ -81,10 +81,10 @@ fn simple_expression_for_input_checkbox() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelCheckbox as _vModelCheckbox, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("input", {
       type: "checkbox",
       "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model = $event)
@@ -104,11 +104,11 @@ fn simple_expression_for_input_dynamic_type() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelDynamic as _vModelDynamic, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = ["type"];
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("input", {
       type: foo,
       "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model = $event)
@@ -128,10 +128,10 @@ fn input_with_dynamic_v_bind() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, vModelDynamic as _vModelDynamic, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("input", _mergeProps(obj, { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model = $event) }), null, 16)), [[_vModelDynamic, model]]);
   })();
   "#);
@@ -148,10 +148,10 @@ fn simple_expression_for_select() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelSelect as _vModelSelect, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("select", { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model = $event) }, null, 512)), [[_vModelSelect, model]]);
   })();
   "#);
@@ -168,10 +168,10 @@ fn simple_expression_for_textarea() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("textarea", { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model = $event) }, null, 512)), [[_vModelText, model]]);
   })();
   "#);
@@ -188,10 +188,10 @@ fn compound_expression() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model[index] = $event) }, null, 512)), [[_vModelText, model[index]]]);
   })();
   "#)
@@ -208,10 +208,10 @@ fn component_with_argument() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(), _createBlock(Comp, {
       "foo-value": model,
       "onUpdate:foo-value": _cache[0] || (_cache[0] = ($event) => model = $event)
@@ -231,10 +231,10 @@ fn component_with_dynamic_argument() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createBlock as _createBlock, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(), _createBlock(Comp, _normalizeProps({
       [value]: model,
       ["onUpdate:" + value]: _cache[0] || (_cache[0] = ($event) => model = $event)
@@ -273,10 +273,10 @@ fn should_not_cache_update_handler_if_it_inside_v_once() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementVNode as _createElementVNode, setBlockTracking as _setBlockTracking, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div", null, [_withDirectives(_createElementVNode("input", { "onUpdate:modelValue": ($event) => foo = $event }, null, 512), [[_vModelText, foo]])])).cacheIndex = 0, _setBlockTracking(1), _cache[0]);
   })();
   "#)
@@ -293,11 +293,11 @@ fn should_mark_update_handler_dynamic_if_it_refers_slot_scope_variables() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
+  import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, vModelText as _vModelText, withCtx as _withCtx, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = ["onUpdate:modelValue"];
   (() => {
     return _openBlock(), _createBlock(Comp, null, {
-      default: ({ foo }) => [_withDirectives(_createElementVNode("input", { "onUpdate:modelValue": ($event) => foo.bar = $event }, null, 8, _hoisted_1), [[_vModelText, foo.bar]])],
+      default: _withCtx(({ foo }) => [_withDirectives(_createElementVNode("input", { "onUpdate:modelValue": ($event) => foo.bar = $event }, null, 8, _hoisted_1), [[_vModelText, foo.bar]])]),
       _: 1
     });
   })();
@@ -315,10 +315,10 @@ fn should_generate_model_modifiers_for_component_v_model() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(), _createBlock(Comp, {
       modelValue: foo,
       "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => foo = $event),
@@ -342,10 +342,10 @@ fn should_generate_model_modifiers_for_component_v_model_with_arguments() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(), _createBlock(Comp, {
       foo,
       "onUpdate:foo": _cache[0] || (_cache[0] = ($event) => foo = $event),
@@ -369,10 +369,10 @@ fn should_generate_model_modifiers_dollar_for_component_v_model_model_with_argum
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _openBlock(), _createBlock(Comp, {
       model: foo,
       "onUpdate:model": _cache[0] || (_cache[0] = ($event) => foo = $event),
@@ -393,10 +393,10 @@ fn modifiers_number() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model = $event) }, null, 512)), [[
       _vModelText,
       model,
@@ -418,10 +418,10 @@ fn modifiers_trim() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model = $event) }, null, 512)), [[
       _vModelText,
       model,
@@ -443,10 +443,10 @@ fn modifiers_lazy() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model = $event) }, null, 512)), [[
       _vModelText,
       model,
@@ -533,10 +533,10 @@ fn should_not_error_on_static_value_binding_alongside_v_model() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("input", {
       "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => test = $event),
       value: "test"
@@ -557,10 +557,10 @@ fn should_allow_usage_on_custom_element() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { useVdomCache as _useVdomCache } from "vue-jsx-vapor";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _cache = _useVdomCache();
+    const _cache = _createVNodeCache();
     return _withDirectives((_openBlock(), _createElementBlock("my-input", { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model = $event) }, null, 512)), [[_vModelText, model]]);
   })();
   "#);

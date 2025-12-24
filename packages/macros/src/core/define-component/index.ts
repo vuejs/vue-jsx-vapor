@@ -47,7 +47,7 @@ export function transformDefineComponent(
           0,
           'useFullProps',
           undefined,
-          'vue-jsx-vapor',
+          '/vue-jsx-vapor/props',
         )}()`,
       )
       s.overwrite(

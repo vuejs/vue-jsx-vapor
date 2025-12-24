@@ -733,21 +733,27 @@ fn match_patterns<'a>(
 
   if let Some(key_prop) = key_prop {
     let effects = &mut render.effect;
-    let _effects = effects as *mut Vec<IREffect>;
-    for i in 0..effects.len() {
-      let effect = unsafe { &mut *_effects }.get(i).unwrap();
-      if let Some(selector) = match_selector_pattern(effect, &key_prop.content, id_map, context) {
-        effect_patterns.push(effects.remove(i));
+    let mut kept = Vec::with_capacity(effects.len());
+    let mut old = std::mem::take(effects);
+    for effect in old.drain(..) {
+      let effect_ptr = &effect as *const _;
+      if let Some(selector) =
+        match_selector_pattern(unsafe { &*effect_ptr }, &key_prop.content, id_map, context)
+      {
+        effect_patterns.push(effect);
         selector_patterns.push(selector);
       } else if !effect.operations.is_empty()
-        && let Some(ast) = &get_expression(effect).unwrap().ast
+        && let Some(ast) = &get_expression(unsafe { &*effect_ptr }).unwrap().ast
         && key_prop
           .content
           .eq(ast.span().source_text(context.ir.source))
       {
-        key_only_binding_patterns.push(effects.remove(i));
+        key_only_binding_patterns.push(effect);
+      } else {
+        kept.push(effect)
       }
     }
+    *effects = kept;
   }
 
   (

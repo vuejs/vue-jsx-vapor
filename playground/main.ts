@@ -1,7 +1,4 @@
-import {
-  createVaporApp,
-  // vaporInteropPlugin,
-} from 'vue'
+import { createVaporApp, vaporInteropPlugin } from 'vue'
 
 const modules = import.meta.glob<any>('./src/*.tsx')
 const mod = (
@@ -10,12 +7,12 @@ const mod = (
 
 mod.then(({ default: mod }) => {
   const app = createVaporApp(mod)
-    // app.use(vaporInteropPlugin).
-    .mount('#app')
-
+  if (mod.name === 'interop') {
+    app.use(vaporInteropPlugin)
+  }
+  app.mount('#app')
   // @ts-expect-error
   globalThis.unmount = () => {
-    // @ts-expect-error
     app.unmount()
   }
 })

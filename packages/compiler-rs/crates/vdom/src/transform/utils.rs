@@ -17,13 +17,13 @@ fn get_unnormalized_props<'a>(
   let _props = props as *mut _;
   if let Expression::CallExpression(props) = props
     && ["_normalizeProps", "_guardReactiveProps"].contains(&props.callee_name().unwrap_or_default())
-    {
-      call_path.push(unsafe { &mut *_props });
-      return get_unnormalized_props(
-        props.arguments.get_mut(0).unwrap().to_expression_mut(),
-        call_path,
-      );
-    }
+  {
+    call_path.push(unsafe { &mut *_props });
+    return get_unnormalized_props(
+      props.arguments.get_mut(0).unwrap().to_expression_mut(),
+      call_path,
+    );
+  }
   props
 }
 
