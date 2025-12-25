@@ -1,8 +1,17 @@
 {
+  "type": "module",
   "version": "3.0.4",
   "packageManager": "pnpm@10.26.2",
   "description": "Vue JSX Vapor",
-  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
+  },
   "keywords": [
     "unplugin",
     "vite",
@@ -15,15 +24,6 @@
     "babel",
     "compiler"
   ],
-  "license": "MIT",
-  "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
-  "bugs": {
-    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
-  },
   "scripts": {
     "dev": "pnpm run --filter=\"./packages/*\" --parallel dev",
     "build": "pnpm run --filter=\"./packages/*\" --parallel build",

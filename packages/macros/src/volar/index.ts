@@ -1,10 +1,10 @@
 import { getText, type TsmVirtualCode } from 'ts-macro'
-import type { OptionsResolved } from '../options'
 import { transformDefineComponent } from './define-component'
+import type { OptionsResolved } from '../options'
 import type { Overwrite } from '@vue-macros/common'
 
-export { transformJsxMacros } from './transform'
 export { getGlobalTypes } from './global-types'
+export { transformJsxMacros } from './transform'
 
 export type TransformOptions = Overwrite<
   TsmVirtualCode,

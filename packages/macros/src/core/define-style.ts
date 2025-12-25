@@ -1,8 +1,8 @@
 import { walkAST, type MagicStringAST } from '@vue-macros/common'
 import hash from 'hash-sum'
 import { helperPrefix } from './helper'
-import type { FunctionalNode } from './utils'
 import { isFunctionalNode, type DefineStyle, type Macros } from '.'
+import type { FunctionalNode } from './utils'
 import type { Node } from '@babel/types'
 
 export function transformDefineStyle(

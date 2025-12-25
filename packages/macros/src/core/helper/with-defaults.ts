@@ -28,9 +28,10 @@ export function createPropsDefaultProxy(
   const defaultProps = resolveDefaultProps(defaults)
   const result: Record<string, any> = {}
 
-  for (const key of [
-    ...new Set([...Object.keys(props), ...Object.keys(defaultProps)]),
-  ]) {
+  for (const key of new Set([
+    ...Object.keys(props),
+    ...Object.keys(defaultProps),
+  ])) {
     Object.defineProperty(result, key, {
       enumerable: true,
       get: () => (props[key] === undefined ? defaultProps[key] : props[key]),

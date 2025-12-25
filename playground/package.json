@@ -1,8 +1,8 @@
 {
   "name": "playground",
+  "type": "module",
   "version": "3.0.4",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "node vite.js --port 5174",
     "build": "node vite.js build"

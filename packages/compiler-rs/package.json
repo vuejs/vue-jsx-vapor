@@ -2,6 +2,11 @@
   "name": "@vue-jsx-vapor/compiler-rs",
   "version": "3.0.4",
   "description": "Template project for writing node package with napi-rs",
+  "license": "MIT",
+  "repository": {
+    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git",
+    "type": "git"
+  },
   "keywords": [
     "napi-rs",
     "NAPI",
@@ -10,18 +15,13 @@
     "node-addon",
     "node-addon-api"
   ],
-  "license": "MIT",
-  "repository": {
-    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git",
-    "type": "git"
-  },
+  "main": "index.js",
+  "types": "index.d.ts",
   "files": [
     "browser.js",
     "index.d.ts",
     "index.js"
   ],
-  "main": "index.js",
-  "types": "index.d.ts",
   "browser": "browser.js",
   "napi": {
     "binaryName": "compiler-rs",

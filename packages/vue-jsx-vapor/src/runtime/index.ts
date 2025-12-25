@@ -1,2 +1,2 @@
-export * from './vnode'
 export * from './props'
+export * from './vnode'

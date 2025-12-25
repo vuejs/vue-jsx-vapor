@@ -1,8 +1,17 @@
 {
   "name": "vue-jsx-vapor",
+  "type": "module",
   "version": "3.0.4",
   "description": "Vapor Mode of Vue JSX",
-  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
+  },
   "keywords": [
     "unplugin",
     "vite",
@@ -13,22 +22,6 @@
     "volar",
     "vapor"
   ],
-  "license": "MIT",
-  "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
-  "bugs": {
-    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
-  },
-  "files": [
-    "dist",
-    "jsx-runtime"
-  ],
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -120,6 +113,9 @@
     },
     "./*": "./*"
   },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "typesVersions": {
     "*": {
       "*": [
@@ -131,6 +127,10 @@
       ]
     }
   },
+  "files": [
+    "dist",
+    "jsx-runtime"
+  ],
   "scripts": {
     "build": "tsdown",
     "dev": "DEV=true tsdown",

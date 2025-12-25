@@ -1,5 +1,5 @@
-import type { Options } from './options'
 import unplugin from '.'
+import type { Options } from './options'
 
 export default (options: Options) => ({
   name: 'vue-jsx-vapor',
