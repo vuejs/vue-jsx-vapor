@@ -27,7 +27,6 @@ use common::{
 pub unsafe fn transform_text<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let ast = &context.ast;
   let node = unsafe { &mut *context_node };

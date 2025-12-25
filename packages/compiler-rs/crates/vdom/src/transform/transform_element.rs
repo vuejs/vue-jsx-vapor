@@ -12,7 +12,7 @@ use oxc_span::{GetSpan, SPAN, Span};
 use crate::{
   ast::{NodeTypes, RootNode, VNodeCall},
   transform::{
-    DirectiveTransformResult, TransformContext, cache_static::get_constant_type,
+    DirectiveTransformResult, Directives, TransformContext, cache_static::get_constant_type,
     v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
     v_on::transform_v_on, v_show::transform_v_show, v_slot::build_slots, v_text::transform_v_text,
   },
@@ -22,7 +22,7 @@ use common::{
   check::{
     is_built_in_directive, is_directive, is_event, is_jsx_component, is_reserved_prop, is_template,
   },
-  directive::{DirectiveNode, find_prop, resolve_directive},
+  directive::{DirectiveNode, resolve_directive},
   error::ErrorCodes,
   patch_flag::PatchFlags,
   text::{camelize, get_tag_name, is_empty_text, to_valid_asset_id},
@@ -31,6 +31,7 @@ use common::{
 /// # SAFETY
 /// generate a JavaScript AST for this element's codegen
 pub unsafe fn transform_element<'a>(
+  directives: &mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   parent_node: &'a mut JSXChild<'a>,
@@ -59,17 +60,11 @@ pub unsafe fn transform_element<'a>(
     return None;
   };
   if is_template(node)
-    && find_prop(
-      node,
-      Either::B(vec![
-        String::from("v-if"),
-        String::from("v-else-if"),
-        String::from("v-else"),
-        String::from("v-for"),
-        String::from("v-slot"),
-      ]),
-    )
-    .is_some()
+    && (directives.v_if.is_some()
+      || directives.v_else_if.is_some()
+      || directives.v_else.is_some()
+      || directives.v_for.is_some()
+      || directives.v_slot.is_some())
   {
     return None;
   }
@@ -119,6 +114,7 @@ pub unsafe fn transform_element<'a>(
     should_use_block = true;
   }
 
+  let directives_ptr = directives as *mut _;
   // perform the work on exit, after all child expressions have been
   // processed and merged.
   Some(Box::new(move || {
@@ -160,7 +156,8 @@ pub unsafe fn transform_element<'a>(
       }
 
       vnode_children = Some(if should_build_as_slots {
-        let (slots, has_dynamic_slots, identifiers) = build_slots(node, context);
+        let (slots, has_dynamic_slots, identifiers) =
+          build_slots(unsafe { &mut *directives_ptr }, node, context);
         if let Some(NodeTypes::VNodeCall(v_for_vnode_call)) = context
           .codegen_map
           .borrow_mut()

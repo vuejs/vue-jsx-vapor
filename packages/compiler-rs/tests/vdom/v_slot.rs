@@ -121,7 +121,7 @@ fn on_component_dynamically_named_slot() {
   import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
     return _openBlock(), _createBlock(Comp, null, {
-      [named.value]: _withCtx(({ foo }) => [
+      [named]: _withCtx(({ foo }) => [
         _normalizeVNode(foo, 1),
         _normalizeVNode(bar, 1),
         _createVNode(Comp, null, {
@@ -514,7 +514,7 @@ fn named_slot_with_v_for() {
   import { createBlock as _createBlock, createSlots as _createSlots, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
     return _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [_renderList(list, (name) => ({
-      name: name.value,
+      name,
       fn: () => [_normalizeVNode(name, 1)]
     }))]), 1024);
   })();

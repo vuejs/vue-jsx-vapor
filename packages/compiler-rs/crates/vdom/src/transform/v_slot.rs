@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use common::{
   check::{is_jsx_component, is_template},
-  directive::{find_prop, find_prop_mut},
+  directive::{Directives, find_prop},
   error::ErrorCodes,
   expression::expression_to_params,
   patch_flag::SlotFlags,
@@ -39,9 +39,9 @@ use crate::{
 //    Note the exit callback is executed before buildSlots() on the same node,
 //    so only nested slots see positive numbers.
 pub unsafe fn track_slot_scopes<'a>(
+  directives: &mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   unsafe {
     let node = &mut *context_node;
@@ -50,7 +50,7 @@ pub unsafe fn track_slot_scopes<'a>(
     {
       // We are only checking non-empty v-slot here
       // since we only care about slots that introduce scope variables.
-      if let Some(v_slot) = find_prop(node, Either::A(String::from("v-slot"))) {
+      if let Some(v_slot) = directives.v_slot.as_ref() {
         let mut identifiers = vec![];
         if let Some(JSXAttributeValue::ExpressionContainer(slot_props)) = v_slot.value.as_ref() {
           identifiers = context.add_identifiers(&Some(slot_props.expression.to_expression()));
@@ -67,6 +67,7 @@ pub unsafe fn track_slot_scopes<'a>(
 }
 
 pub fn build_slots<'a>(
+  directives: &mut Directives<'a>,
   node: &'a mut JSXElement<'a>,
   context: &'a TransformContext<'a>,
 ) -> (Expression<'a>, bool, Vec<String>) {
@@ -96,7 +97,7 @@ pub fn build_slots<'a>(
 
   // 1. Check for slot with slotProps on component itself.
   //    <Comp v-slot="{ prop }"/>
-  let on_component_slot = find_prop(node, Either::A(String::from("v-slot")));
+  let on_component_slot = directives.v_slot.as_ref();
   if let Some(on_component_slot) = on_component_slot {
     let mut arg_name = None;
     let mut arg_span = SPAN;
@@ -150,11 +151,9 @@ pub fn build_slots<'a>(
       continue;
     };
     let slot_element_ptr = slot_element as *mut oxc_allocator::Box<JSXElement>;
+    let mut slot_directives = Directives::new(unsafe { &mut *slot_element_ptr });
     if if is_template(slot_element) {
-      slot_dir = find_prop(
-        unsafe { &*slot_element_ptr },
-        Either::A(String::from("v-slot")),
-      );
+      slot_dir = slot_directives.v_slot.as_ref();
       slot_dir.is_none()
     } else {
       true
@@ -230,10 +229,7 @@ pub fn build_slots<'a>(
     );
 
     // check if this slot is conditional (v-if/v-for)
-    if let Some(v_if) = find_prop_mut(
-      unsafe { &mut *slot_element_ptr },
-      Either::A(String::from("v-if")),
-    ) {
+    if let Some(v_if) = slot_directives.v_if.as_mut() {
       has_dynamic_slots = true;
       dynamic_slots.push(
         ast
@@ -254,10 +250,11 @@ pub fn build_slots<'a>(
           )
           .into(),
       );
-    } else if let Some(v_else) = find_prop_mut(
-      unsafe { &mut *slot_element_ptr },
-      Either::B(vec![String::from("v-else"), String::from("v-else-if")]),
-    ) {
+    } else if let Some(v_else) = slot_directives
+      .v_else
+      .as_mut()
+      .or(slot_directives.v_else_if.as_mut())
+    {
       // find adjacent v-if
       let j = i;
       let mut prev = None;
@@ -304,10 +301,7 @@ pub fn build_slots<'a>(
       } else {
         context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, v_else.span);
       }
-    } else if let Some(v_for) = find_prop_mut(
-      unsafe { &mut *slot_element_ptr },
-      Either::A(String::from("v-for")),
-    ) {
+    } else if let Some(v_for) = slot_directives.v_for.as_mut() {
       has_dynamic_slots = true;
       if let Some(ForNode {
         source,

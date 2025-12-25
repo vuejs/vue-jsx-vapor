@@ -1,3 +1,4 @@
+use common::directive::Directives;
 use common::expression::parse_expression;
 pub use common::options::TransformOptions;
 use common::walk::WalkIdentifiers;
@@ -390,21 +391,60 @@ impl<'a> TransformContext<'a> {
       if !is_root {
         let context = self as *const TransformContext;
         let parent_node = parent_node.unwrap() as *mut JSXChild;
-        for node_transform in [
-          transform_v_if,
-          transform_v_once,
-          transform_v_memo,
-          transform_v_for,
-          transform_v_slots,
-          transform_element,
-          track_slot_scopes,
-          transform_text,
-        ] {
-          let on_exit = node_transform(&mut *node, &*context, &mut *parent_node);
-          if let Some(on_exit) = on_exit {
-            exit_fns.push(on_exit);
+        let mut directives = Directives::default();
+        if let JSXChild::Element(element) = &mut *node {
+          directives = Directives::new(element);
+          if directives.v_if.is_some()
+            || directives.v_else_if.is_some()
+            || directives.v_else.is_some()
+          {
+            if let Some(on_exit) =
+              transform_v_if(&mut directives, node, &*context, &mut *parent_node)
+            {
+              exit_fns.push(on_exit);
+            };
+          }
+
+          if directives.v_once.is_some() {
+            if let Some(on_exit) = transform_v_once(&mut directives, node, &*context) {
+              exit_fns.push(on_exit);
+            };
+          }
+
+          if directives.v_memo.is_some() {
+            if let Some(on_exit) = transform_v_memo(&mut directives, node, &*context) {
+              exit_fns.push(on_exit);
+            };
+          }
+
+          if directives.v_for.is_some() {
+            if let Some(on_exit) = transform_v_for(&mut directives, node, &*context) {
+              exit_fns.push(on_exit);
+            };
+          }
+
+          if directives.v_slots.is_some() {
+            if let Some(on_exit) = transform_v_slots(&mut directives, node, &*context) {
+              exit_fns.push(on_exit);
+            };
           }
         }
+
+        if let Some(on_exit) =
+          transform_element(&mut directives, node, &*context, &mut *parent_node)
+        {
+          exit_fns.push(on_exit);
+        };
+
+        if directives.v_slot.is_some() {
+          if let Some(on_exit) = track_slot_scopes(&mut directives, node, &*context) {
+            exit_fns.push(on_exit);
+          };
+        }
+
+        if let Some(on_exit) = transform_text(node, &*context) {
+          exit_fns.push(on_exit);
+        };
       }
 
       transform_children(&mut *node, self);

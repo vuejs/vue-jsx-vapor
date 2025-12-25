@@ -58,9 +58,9 @@ console.time('vue                        ')
 vueTransform(vueSource)
 console.timeEnd('vue                        ')
 
-vueTransform(vueSource)
+vueTransform(vueSource, { vapor: true })
 console.time('vue-vapor                  ')
-vueTransform(vueSource)
+vueTransform(vueSource, { vapor: true })
 console.timeEnd('vue-vapor                  ')
 
 rsTransform(source)

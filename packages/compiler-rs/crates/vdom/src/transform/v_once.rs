@@ -1,20 +1,19 @@
-use common::directive::find_prop;
-use napi::Either;
 use oxc_ast::ast::JSXChild;
 use oxc_span::Span;
 
 use crate::{ast::NodeTypes, transform::TransformContext};
+use common::directive::Directives;
 
 /// # SAFETY
 pub unsafe fn transform_v_once<'a>(
+  directives: &mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let node = unsafe { &*context_node };
 
   if let JSXChild::Element(node) = &node
-    && let Some(dir) = find_prop(node, Either::A(String::from("v-once")))
+    && let Some(dir) = directives.v_once.as_ref()
   {
     let seen = &mut context.seen.borrow_mut();
     if seen.contains(&dir.span.start)
@@ -24,7 +23,7 @@ pub unsafe fn transform_v_once<'a>(
       return None;
     }
     seen.insert(dir.span.start);
-    let node_span = if find_prop(node, Either::A(String::from("v-for"))).is_some() {
+    let node_span = if directives.v_for.is_some() {
       Span::new(node.span.end, node.span.start)
     } else {
       node.span

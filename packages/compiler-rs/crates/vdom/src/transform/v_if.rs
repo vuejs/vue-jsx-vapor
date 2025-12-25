@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use napi::{Either, bindgen_prelude::Either3};
+use napi::bindgen_prelude::Either3;
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
@@ -10,17 +10,16 @@ use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ast::{IfBranchNode, NodeTypes, VNodeCall},
-  transform::{TransformContext, cache_static::cache_static_children, utils::inject_prop},
+  transform::{
+    Directives, TransformContext, cache_static::cache_static_children, utils::inject_prop,
+  },
 };
 
-use common::{
-  check::is_template,
-  directive::{find_prop, find_prop_mut},
-  error::ErrorCodes,
-};
+use common::{check::is_template, error::ErrorCodes};
 
 /// # SAFETY
 pub unsafe fn transform_v_if<'a>(
+  directives: &mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   parent_node: &'a mut JSXChild<'a>,
@@ -29,19 +28,16 @@ pub unsafe fn transform_v_if<'a>(
     return None;
   };
   let is_template_node = is_template(node);
-  if is_template_node && find_prop(node, Either::A("v-slot".to_string())).is_some() {
+  if is_template_node && directives.v_slot.is_some() {
     return None;
   }
   let node = node as *mut oxc_allocator::Box<JSXElement>;
 
-  let dir = find_prop_mut(
-    unsafe { &mut *node },
-    Either::B(vec![
-      "v-if".to_string(),
-      "v-else".to_string(),
-      "v-else-if".to_string(),
-    ]),
-  )?;
+  let dir = directives
+    .v_if
+    .as_mut()
+    .or(directives.v_else_if.as_mut().or(directives.v_else.as_mut()))
+    .unwrap();
   let seen = &mut context.seen.borrow_mut();
   let start = dir.span.start;
   if seen.contains(&start) {

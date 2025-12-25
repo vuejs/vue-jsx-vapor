@@ -206,3 +206,43 @@ pub fn resolve_modifiers(key_string: &str, modifiers: Vec<&str>) -> Modifiers {
     options: event_option_modifiers,
   }
 }
+
+#[derive(Default, Debug)]
+pub struct Directives<'a> {
+  pub v_if: Option<&'a mut JSXAttribute<'a>>,
+  pub v_else_if: Option<&'a mut JSXAttribute<'a>>,
+  pub v_else: Option<&'a mut JSXAttribute<'a>>,
+  pub v_for: Option<&'a mut JSXAttribute<'a>>,
+  pub v_once: Option<&'a mut JSXAttribute<'a>>,
+  pub v_memo: Option<&'a mut JSXAttribute<'a>>,
+  pub v_slots: Option<&'a mut JSXAttribute<'a>>,
+  pub v_slot: Option<&'a mut JSXAttribute<'a>>,
+  pub key: Option<&'a mut JSXAttribute<'a>>,
+}
+
+impl<'a> Directives<'a> {
+  pub fn new(element: &'a mut JSXElement<'a>) -> Directives<'a> {
+    let mut directives = Directives::default();
+    for dir in element.opening_element.attributes.iter_mut() {
+      if let JSXAttributeItem::Attribute(dir) = dir {
+        let dir_name = match &dir.name {
+          JSXAttributeName::Identifier(name) => name.name,
+          JSXAttributeName::NamespacedName(name) => name.namespace.name,
+        };
+        match dir_name.as_str() {
+          "v-if" => directives.v_if = Some(dir),
+          "v-else-if" => directives.v_else_if = Some(dir),
+          "v-else" => directives.v_else = Some(dir),
+          "v-for" => directives.v_for = Some(dir),
+          "v-once" => directives.v_once = Some(dir),
+          "v-memo" => directives.v_memo = Some(dir),
+          "v-slot" => directives.v_slot = Some(dir),
+          "v-slots" => directives.v_slots = Some(dir),
+          "key" => directives.key = Some(dir),
+          _ => (),
+        }
+      }
+    }
+    directives
+  }
+}

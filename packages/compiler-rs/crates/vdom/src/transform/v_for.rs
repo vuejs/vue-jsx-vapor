@@ -13,37 +13,31 @@ use oxc_span::{GetSpan, SPAN, Span};
 use crate::{
   ast::{ConstantTypes, ForNode, NodeTypes, VNodeCall},
   transform::{
-    TransformContext,
+    Directives, TransformContext,
     cache_static::{cache_static_children, get_constant_type},
     utils::inject_prop,
   },
 };
 use common::{
-  check::is_template,
-  directive::{find_prop, find_prop_mut},
-  error::ErrorCodes,
-  expression::expression_to_params,
-  patch_flag::PatchFlags,
+  check::is_template, error::ErrorCodes, expression::expression_to_params, patch_flag::PatchFlags,
   text::is_empty_text,
 };
 
 /// # SAFETY
 pub unsafe fn transform_v_for<'a>(
+  directives: &mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
   let node = node as *mut oxc_allocator::Box<JSXElement>;
-  if is_template(unsafe { &*node })
-    && find_prop(unsafe { &*node }, Either::A("v-slot".to_string())).is_some()
-  {
+  if is_template(unsafe { &*node }) && directives.v_slot.is_some() {
     return None;
   }
 
-  let dir = find_prop_mut(unsafe { &mut *node }, Either::A("v-for".to_string()))?;
+  let dir = directives.v_for.as_mut()?;
   let seen = &mut context.seen.borrow_mut();
   let span = dir.span;
   if seen.contains(&span.start) {
@@ -70,16 +64,14 @@ pub unsafe fn transform_v_for<'a>(
   *context.options.in_v_for.borrow_mut() += 1;
 
   let is_template = is_template(unsafe { &*node });
-  let memo = if let Some(memo_prop) =
-    find_prop_mut(unsafe { &mut *node }, Either::A("v-memo".to_string()))
+  let memo = if let Some(memo_prop) = directives.v_memo.as_mut()
     && let Some(value) = &mut memo_prop.value
   {
     Some(context.jsx_attribute_value_to_expression(value))
   } else {
     None
   };
-  let key_property = if let Some(key_prop) =
-    find_prop_mut(unsafe { &mut *node }, Either::A("key".to_string()))
+  let key_property = if let Some(key_prop) = directives.key.as_mut()
     && let Some(value) = &mut key_prop.value
   {
     Some(ast.object_property(
@@ -350,7 +342,7 @@ pub unsafe fn transform_v_for<'a>(
 }
 
 pub fn get_for_parse_result<'a>(
-  dir: &'a mut JSXAttribute<'a>,
+  dir: &mut JSXAttribute<'a>,
   context: &'a TransformContext<'a>,
 ) -> Option<ForNode<'a>> {
   let mut value = None;

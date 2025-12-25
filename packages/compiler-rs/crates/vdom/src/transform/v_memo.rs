@@ -1,29 +1,23 @@
-use common::{
-  check::is_jsx_component,
-  directive::{find_prop, find_prop_mut},
-};
-use napi::Either;
+use common::check::is_jsx_component;
 use oxc_ast::{
   NONE,
-  ast::{FormalParameterKind, JSXChild, JSXElement, NumberBase},
+  ast::{FormalParameterKind, JSXChild, NumberBase},
 };
 use oxc_span::SPAN;
 
 use crate::{ast::NodeTypes, transform::TransformContext};
+use common::directive::Directives;
 
 /// # SAFETY
 pub unsafe fn transform_v_memo<'a>(
+  directives: &mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-  _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let node = unsafe { &mut *context_node };
   if let JSXChild::Element(node) = node
-    && find_prop(node, Either::A(String::from("v-for"))).is_none()
-    && let Some(dir) = find_prop_mut(
-      unsafe { &mut *(node as *mut oxc_allocator::Box<JSXElement>) },
-      Either::A(String::from("v-memo")),
-    )
+    && directives.v_for.is_none()
+    && let Some(dir) = directives.v_memo.as_mut()
   {
     let seen = &mut context.seen.borrow_mut();
     if seen.contains(&dir.span.start)

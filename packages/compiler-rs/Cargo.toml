@@ -65,3 +65,4 @@ napi-build = "2"
 lto = true
 codegen-units = 1
 strip = "symbols"
+# panic = "abort"
