@@ -40,7 +40,7 @@ fn ends_with_newline_and_spaces(s: &str) -> bool {
 }
 
 pub fn resolve_jsx_text(node: &JSXText) -> String {
-  if is_all_empty_text(&node.raw.unwrap()) {
+  if is_all_empty_text(&node.value) {
     return String::new();
   }
   let mut value = node.value.to_string();
@@ -58,7 +58,7 @@ pub fn resolve_jsx_text(node: &JSXText) -> String {
 
 pub fn is_empty_text(node: &JSXChild) -> bool {
   match node {
-    JSXChild::Text(node) => is_all_empty_text(&node.raw.unwrap()),
+    JSXChild::Text(node) => is_all_empty_text(&node.value),
     JSXChild::ExpressionContainer(node) => {
       matches!(node.expression, JSXExpression::EmptyExpression(_))
     }
