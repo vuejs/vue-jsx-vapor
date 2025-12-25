@@ -1,3 +1,12 @@
+## [3.1.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.0...v3.1.1) (2025-12-25)
+
+
+### Bug Fixes
+
+* **compiler/vdom:** prevent JSXText.raw unwrap error in browser ([85699ae](https://github.com/vuejs/vue-jsx-vapor/commit/85699ae0f3f87587ab9989c4b3b4d6e8635c1166))
+
+
+
 # [3.1.0](https://github.com/vuejs/vue-jsx-vapor/compare/v3.0.4...v3.1.0) (2025-12-25)
 
 

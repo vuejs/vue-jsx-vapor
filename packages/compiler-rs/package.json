@@ -1,6 +1,6 @@
 {
   "name": "@vue-jsx-vapor/compiler-rs",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Template project for writing node package with napi-rs",
   "license": "MIT",
   "repository": {
