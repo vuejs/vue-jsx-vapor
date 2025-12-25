@@ -8,7 +8,7 @@
     "build": "node vite.js build"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.1",
+    "@vitejs/plugin-vue": "^6.0.3",
     "@vue-macros/define-render": "catalog:",
     "vite": "catalog:",
     "vite-hyper-config": "^0.7.1",

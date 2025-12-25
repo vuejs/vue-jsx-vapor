@@ -19,14 +19,14 @@ members = ["crates/*"]
 napi = { version = "3.3.0", features = ["napi9"] }
 napi-derive = "3.3.0"
 
-oxc_parser = "0.99.0"
-oxc_ast = "0.99.0"
-oxc_allocator = "0.99.0"
-oxc_span = "0.99.0"
-oxc_ast_visit = "0.99.0"
-oxc_traverse = "0.99.0"
-oxc_semantic = "0.99.0"
-oxc_codegen = "0.99.0"
+oxc_parser = "0.105.0"
+oxc_ast = "0.105.0"
+oxc_allocator = "0.105.0"
+oxc_span = "0.105.0"
+oxc_ast_visit = "0.105.0"
+oxc_traverse = "0.105.0"
+oxc_semantic = "0.105.0"
+oxc_codegen = "0.105.0"
 phf = "0.13.1"
 indexmap = "2.12.0"
 
