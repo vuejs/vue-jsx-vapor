@@ -1,7 +1,7 @@
 {
   "name": "@vue-jsx-vapor/runtime",
   "type": "module",
-  "version": "3.0.4",
+  "version": "3.1.0",
   "description": "Vue JSX Vapor Runtime",
   "license": "MIT",
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",

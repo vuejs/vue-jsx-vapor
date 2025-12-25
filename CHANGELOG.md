@@ -1,3 +1,12 @@
+# [3.1.0](https://github.com/vuejs/vue-jsx-vapor/compare/v3.0.4...v3.1.0) (2025-12-25)
+
+
+### Features
+
+* **compiler:** support generating Virtual DOM ([#26](https://github.com/vuejs/vue-jsx-vapor/issues/26)) ([c1701db](https://github.com/vuejs/vue-jsx-vapor/commit/c1701dbd691c95db37cb83fd39bbd75aec8730e1))
+
+
+
 ## [3.0.4](https://github.com/vuejs/vue-jsx-vapor/compare/v3.0.3...v3.0.4) (2025-12-10)
 
 
