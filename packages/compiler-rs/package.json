@@ -1,8 +1,12 @@
 {
   "name": "@vue-jsx-vapor/compiler-rs",
   "version": "3.0.4",
-  "packageManager": "pnpm@10.17.1",
   "description": "Template project for writing node package with napi-rs",
+  "license": "MIT",
+  "repository": {
+    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git",
+    "type": "git"
+  },
   "keywords": [
     "napi-rs",
     "NAPI",
@@ -11,18 +15,13 @@
     "node-addon",
     "node-addon-api"
   ],
-  "license": "MIT",
-  "repository": {
-    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git",
-    "type": "git"
-  },
+  "main": "index.js",
+  "types": "index.d.ts",
   "files": [
     "browser.js",
     "index.d.ts",
     "index.js"
   ],
-  "main": "index.js",
-  "types": "index.d.ts",
   "browser": "browser.js",
   "napi": {
     "binaryName": "compiler-rs",
@@ -50,7 +49,7 @@
   "scripts": {
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
-    "dev": "nodemon -w src -e rs -x 'napi build --platform'",
+    "dev": "nodemon -w crates -e rs -x 'napi build --platform'",
     "format": "taplo format",
     "prepublishOnly": "napi prepublish -t npm",
     "version": "napi version",
@@ -60,11 +59,11 @@
     "flamegraph": "CARGO_PROFILE_RELEASE_STRIP=false CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --bench bench --no-default-features"
   },
   "devDependencies": {
-    "@emnapi/core": "^1.5.0",
-    "@emnapi/runtime": "^1.5.0",
-    "@napi-rs/cli": "^3.2.0",
-    "@napi-rs/wasm-runtime": "^1.0.4",
+    "@emnapi/core": "^1.7.1",
+    "@emnapi/runtime": "^1.7.1",
+    "@napi-rs/cli": "^3.5.0",
+    "@napi-rs/wasm-runtime": "^1.1.0",
     "@taplo/cli": "^0.7.0",
-    "emnapi": "^1.5.0"
+    "emnapi": "^1.7.1"
   }
 }

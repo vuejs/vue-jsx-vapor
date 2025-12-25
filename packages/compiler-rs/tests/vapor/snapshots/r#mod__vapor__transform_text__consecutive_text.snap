@@ -3,7 +3,10 @@ source: tests/vapor/transform_text.rs
 expression: code
 ---
 import { createNodes as _createNodes } from "vue-jsx-vapor";
+import { template as _template } from "vue";
+const t0 = _template("<div></div>");
 (() => {
-  const n0 = _createNodes(() => msg);
-  return n0;
+  const n2 = t0();
+  const n0 = _createNodes(() => msg, " ");
+  return [n0, n2];
 })();

@@ -1,11 +1,11 @@
-use common::{expression::SimpleExpressionNode, text::camelize};
+use common::{check::is_reserved_prop, expression::SimpleExpressionNode, text::camelize};
 use napi::bindgen_prelude::Either3;
 use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement};
 use oxc_span::SPAN;
 
 use crate::{
   ir::index::BlockIRNode,
-  transform::{DirectiveTransformResult, TransformContext, transform_element::is_reserved_prop},
+  transform::{DirectiveTransformResult, TransformContext},
 };
 
 pub fn transform_v_bind<'a>(

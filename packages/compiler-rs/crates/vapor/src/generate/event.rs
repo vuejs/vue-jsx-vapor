@@ -1,3 +1,4 @@
+use common::directive::Modifiers;
 use common::expression::SimpleExpressionNode;
 use oxc_ast::NONE;
 use oxc_ast::ast::{
@@ -7,7 +8,7 @@ use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
 use crate::generate::expression::gen_expression;
-use crate::ir::index::{Modifiers, SetDynamicEventsIRNode, SetEventIRNode};
+use crate::ir::index::{SetDynamicEventsIRNode, SetEventIRNode};
 
 pub fn gen_set_event<'a>(
   oper: SetEventIRNode<'a>,

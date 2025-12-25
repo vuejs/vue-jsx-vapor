@@ -22,7 +22,7 @@ export function prependFunctionalNode(
     : node.body.start!
   s.appendRight(
     start + (isBlockStatement ? 1 : 0),
-    `${result};${!isBlockStatement ? 'return ' : ''}`,
+    `${result};${isBlockStatement ? '' : 'return '}`,
   )
   if (!isBlockStatement) {
     s.appendLeft(start, '{')

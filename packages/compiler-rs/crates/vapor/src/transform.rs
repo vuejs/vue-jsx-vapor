@@ -1,3 +1,4 @@
+use common::directive::Modifiers;
 use common::expression::SimpleExpressionNode;
 pub use common::options::TransformOptions;
 use napi::Either;
@@ -5,7 +6,7 @@ use oxc_allocator::{Allocator, TakeIn};
 use oxc_ast::ast::{
   Expression, JSXChild, JSXClosingFragment, JSXExpressionContainer, JSXFragment, JSXOpeningFragment,
 };
-use oxc_span::SPAN;
+use oxc_span::{GetSpan, SPAN};
 use std::{cell::RefCell, collections::HashSet, mem, rc::Rc};
 pub mod transform_children;
 pub mod transform_element;
@@ -26,8 +27,7 @@ pub mod v_text;
 use crate::generate::CodegenContext;
 use crate::{
   ir::index::{
-    BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, Modifiers, OperationNode, RootIRNode,
-    RootNode,
+    BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, OperationNode, RootIRNode, RootNode,
   },
   transform::{
     transform_children::transform_children, transform_element::transform_element,
@@ -89,8 +89,6 @@ pub struct TransformContext<'a> {
   pub node: RefCell<ContextNode<'a>>,
 
   pub parent_dynamic: RefCell<IRDynamicInfo<'a>>,
-
-  pub vdom: RefCell<bool>,
 }
 
 impl<'a> TransformContext<'a> {
@@ -108,7 +106,6 @@ impl<'a> TransformContext<'a> {
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
       ir: Rc::new(RefCell::new(RootIRNode::new(""))),
       block: RefCell::new(BlockIRNode::new()),
-      vdom: RefCell::new(false),
       options,
     }
   }
@@ -122,11 +119,6 @@ impl<'a> TransformContext<'a> {
     self.transform_node(None, None);
     let generate_context: *const CodegenContext = &CodegenContext::new(self);
     (unsafe { &*generate_context }).generate()
-
-    // if *self.vdom.borrow() {
-    //   (unsafe { &*generate_context }).generate_vdom()
-    // } else {
-    // }
   }
 
   pub fn increase_id(&self) -> i32 {
@@ -280,7 +272,7 @@ impl<'a> TransformContext<'a> {
               Expression::JSXFragment(node) => JSXChild::Fragment(node),
               _ => JSXChild::ExpressionContainer(oxc_allocator::Box::new_in(
                 JSXExpressionContainer {
-                  span: SPAN,
+                  span: node.span(),
                   expression: node.into(),
                 },
                 self.allocator,

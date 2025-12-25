@@ -1,0 +1,15 @@
+mod cache_static;
+mod transform_element;
+mod transform_text;
+mod v_bind;
+mod v_for;
+mod v_html;
+mod v_if;
+mod v_memo;
+mod v_model;
+mod v_on;
+mod v_once;
+mod v_show;
+mod v_slot;
+mod v_slots;
+mod v_text;

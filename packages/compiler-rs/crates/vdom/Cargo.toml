@@ -1,0 +1,17 @@
+[package]
+name = "vdom"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+oxc_ast = { workspace = true }
+oxc_allocator = { workspace = true }
+oxc_span = { workspace = true }
+oxc_ast_visit = { workspace = true }
+oxc_traverse = { workspace = true }
+oxc_parser = { workspace = true }
+
+napi = { workspace = true }
+indexmap = { workspace = true }
+phf = { workspace = true }
+common = { workspace = true }

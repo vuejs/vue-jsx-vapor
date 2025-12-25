@@ -1,7 +1,7 @@
 import { transformerTwoslash } from '@shikijs/vitepress-twoslash'
 import { createTwoslasher } from '@ts-macro/twoslash'
 import { defineConfig } from 'vitepress'
-import vueJsxVapor from 'vue-jsx-vapor/volar'
+import vueJsxVapor from '../../packages/vue-jsx-vapor/src/volar'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({

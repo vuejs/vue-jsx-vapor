@@ -12,6 +12,9 @@ export default [
       'unicorn/no-new-array',
       'unicorn/prefer-dom-node-remove',
       'unused-imports/no-unused-imports',
+      'unicorn/no-anonymous-default-export',
+      'unicorn/prefer-code-point',
+      'unicorn/no-array-sort',
       '@eslint-community/eslint-comments/no-unlimited-disable',
     )
     .append([

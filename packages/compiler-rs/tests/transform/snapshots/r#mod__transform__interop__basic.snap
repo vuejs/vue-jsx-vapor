@@ -3,7 +3,7 @@ source: tests/transform/interop.rs
 expression: code
 ---
 import { createNodes as _createNodes } from "vue-jsx-vapor";
-import { template as _template } from "vue";
+import { createElementBlock as _createElementBlock, openBlock as _openBlock, template as _template } from "vue";
 const t0 = _template("<span></span>", true);
 const t1 = _template("<div></div>");
 const t2 = _template("<div></div>", true);
@@ -12,10 +12,14 @@ const A = defineComponent(() => {
     const n0 = t0();
     return n0;
   })());
-  return () => <div />;
+  return () => (() => {
+    return _openBlock(), _createElementBlock("div");
+  })();
 });
 const B = defineVaporComponent(() => {
-  const C = defineComponent(() => <div />);
+  const C = defineComponent(() => (() => {
+    return _openBlock(), _createElementBlock("div");
+  })());
   const D = (() => {
     const n2 = t1();
     const n0 = _createNodes(() => foo, " ");

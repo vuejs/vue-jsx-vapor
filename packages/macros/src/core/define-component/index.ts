@@ -12,9 +12,9 @@ import {
   prependFunctionalNode,
   type FunctionalNode,
 } from '../utils'
-import type { Macros } from '..'
 import { transformAwait } from './await'
 import { transformReturn } from './return'
+import type { Macros } from '..'
 import type { Node } from '@babel/types'
 
 export function transformDefineComponent(
@@ -47,7 +47,7 @@ export function transformDefineComponent(
           0,
           'useFullProps',
           undefined,
-          'vue-jsx-vapor',
+          '/vue-jsx-vapor/props',
         )}()`,
       )
       s.overwrite(
@@ -217,33 +217,51 @@ function getTypeAndValue(s: MagicStringAST, node: Node) {
   let value = ''
   let type = ''
   let skipFactory = false
-  if (node.type === 'StringLiteral') {
-    type = 'String'
-    value = `'${node.value}'`
-  } else if (node.type === 'BooleanLiteral') {
-    type = 'Boolean'
-    value = String(node.value)
-  } else if (node.type === 'NumericLiteral') {
-    type = 'Number'
-    value = String(node.value)
-  } else if (node.type === 'ObjectExpression') {
-    type = 'Object'
-    value = `() => (${s.sliceNode(node)})`
-  } else if (node.type === 'ArrayExpression') {
-    type = 'Array'
-    value = `() => (${s.sliceNode(node)})`
-  } else if (isFunctionalNode(node)) {
-    type = 'Function'
-    value = s.sliceNode(node)
-  } else if (node.type === 'Identifier') {
-    if (node.name === 'undefined') {
-      value = 'undefined'
-    } else {
-      skipFactory = true
-      value = s.sliceNode(node)
+  switch (node.type) {
+    case 'StringLiteral': {
+      type = 'String'
+      value = `'${node.value}'`
+
+      break
     }
-  } else if (node.type === 'NullLiteral') {
-    value = 'null'
+    case 'BooleanLiteral': {
+      type = 'Boolean'
+      value = String(node.value)
+
+      break
+    }
+    case 'NumericLiteral': {
+      type = 'Number'
+      value = String(node.value)
+
+      break
+    }
+    case 'ObjectExpression': {
+      type = 'Object'
+      value = `() => (${s.sliceNode(node)})`
+
+      break
+    }
+    case 'ArrayExpression': {
+      type = 'Array'
+      value = `() => (${s.sliceNode(node)})`
+
+      break
+    }
+    default:
+      if (isFunctionalNode(node)) {
+        type = 'Function'
+        value = s.sliceNode(node)
+      } else if (node.type === 'Identifier') {
+        if (node.name === 'undefined') {
+          value = 'undefined'
+        } else {
+          skipFactory = true
+          value = s.sliceNode(node)
+        }
+      } else if (node.type === 'NullLiteral') {
+        value = 'null'
+      }
   }
   return { value, type, skipFactory }
 }

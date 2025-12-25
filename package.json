@@ -1,8 +1,17 @@
 {
-  "version": "3.0.4",
-  "packageManager": "pnpm@10.17.0",
-  "description": "Vue JSX Vapor",
   "type": "module",
+  "version": "3.0.4",
+  "packageManager": "pnpm@10.26.2",
+  "description": "Vue JSX Vapor",
+  "license": "MIT",
+  "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
+  },
   "keywords": [
     "unplugin",
     "vite",
@@ -15,19 +24,11 @@
     "babel",
     "compiler"
   ],
-  "license": "MIT",
-  "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
-  "bugs": {
-    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
-  },
   "scripts": {
     "dev": "pnpm run --filter=\"./packages/*\" --parallel dev",
     "build": "pnpm run --filter=\"./packages/*\" --parallel build",
     "bench": "pnpm run -C ./benchmark bench",
+    "bench:vue": "pnpm run -C ./benchmark bench:vue",
     "typecheck": "tsmc --noEmit",
     "lint": "eslint .",
     "play": "npm -C playground run dev",
@@ -40,14 +41,14 @@
     "docs:build": "pnpm run -C ./docs build"
   },
   "devDependencies": {
-    "@sxzz/eslint-config": "^7.1.4",
+    "@sxzz/eslint-config": "^7.4.4",
     "@ts-macro/tsc": "catalog:",
-    "@types/node": "^22.18.6",
-    "bumpp": "^10.2.3",
+    "@types/node": "^22.19.3",
+    "bumpp": "^10.3.2",
     "conventional-changelog-cli": "^5.0.0",
-    "eslint": "^9.36.0",
-    "tsdown": "^0.15.12",
-    "typescript": "^5.9.2",
+    "eslint": "^9.39.2",
+    "tsdown": "^0.18.3",
+    "typescript": "^5.9.3",
     "unplugin-raw": "^0.5.1",
     "vite": "catalog:",
     "vitest": "catalog:",

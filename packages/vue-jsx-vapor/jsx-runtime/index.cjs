@@ -22,7 +22,7 @@ const __copyProps = (to, from, except, desc) => {
   return to
 }
 const __toESM = (mod, isNodeMode, target) => (
-  (target = mod != null ? __create(__getProtoOf(mod)) : {}),
+  (target = mod == null ? {} : __create(__getProtoOf(mod))),
   __copyProps(
     isNodeMode || !mod || !mod.__esModule
       ? __defProp(target, 'default', {

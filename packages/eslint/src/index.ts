@@ -9,7 +9,9 @@ export const plugins = {
 
 export { rules, type Rules }
 
-export default ({ rules = {}, ...options }: Linter.Config<Rules> = {}) => ({
+const config: (
+  options: Linter.Config<Rules>,
+) => Rules & Record<string, unknown> = ({ rules = {}, ...options } = {}) => ({
   name: 'vue-jsx-vapor',
   plugins,
   rules: {
@@ -33,6 +35,8 @@ export default ({ rules = {}, ...options }: Linter.Config<Rules> = {}) => ({
       },
     ],
     'vue-jsx-vapor/define-style': rules['vue-jsx-vapor/define-style'] || 'warn',
-  } satisfies Rules & Record<string, unknown>,
+  },
   ...options,
 })
+
+export default config

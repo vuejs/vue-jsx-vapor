@@ -19,7 +19,7 @@ use common::{
   check::{is_constant_node, is_fragment_node, is_jsx_component, is_template},
   directive::find_prop,
   expression::SimpleExpressionNode,
-  text::{is_empty_text, resolve_jsx_text},
+  text::{is_empty_text, is_text_like, resolve_jsx_text},
 };
 
 /// # SAFETY
@@ -301,21 +301,6 @@ fn process_text_like_expressions<'a>(
     ))
   }
   values
-}
-
-fn is_text_like(node: &JSXChild) -> bool {
-  if let JSXChild::ExpressionContainer(node) = node {
-    !matches!(
-      node
-        .expression
-        .to_expression()
-        .without_parentheses()
-        .get_inner_expression(),
-      Expression::ConditionalExpression(_) | Expression::LogicalExpression(_)
-    )
-  } else {
-    matches!(node, JSXChild::Text(_))
-  }
 }
 
 pub fn process_conditional_expression<'a>(

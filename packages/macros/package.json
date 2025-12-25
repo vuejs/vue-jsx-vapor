@@ -1,8 +1,17 @@
 {
   "name": "@vue-jsx-vapor/macros",
+  "type": "module",
   "version": "3.0.4",
   "description": "Macros for Vue JSX Vapor",
-  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
+  },
   "keywords": [
     "transform",
     "vue-jsx",
@@ -10,21 +19,6 @@
     "volar",
     "vapor"
   ],
-  "license": "MIT",
-  "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
-  "bugs": {
-    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
-  },
-  "files": [
-    "dist"
-  ],
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -94,6 +88,9 @@
     },
     "./*": "./*"
   },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "typesVersions": {
     "*": {
       "*": [
@@ -102,6 +99,9 @@
       ]
     }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsdown",
     "dev": "DEV=true tsdown"
@@ -142,7 +142,7 @@
     "unplugin": "catalog:"
   },
   "devDependencies": {
-    "@babel/types": "catalog:",
+    "@babel/types": "^7.28.5",
     "@nuxt/kit": "catalog:",
     "@nuxt/schema": "catalog:",
     "@types/hash-sum": "catalog:",

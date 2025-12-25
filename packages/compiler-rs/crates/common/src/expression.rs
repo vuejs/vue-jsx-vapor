@@ -1,7 +1,9 @@
 use napi::bindgen_prelude::Either3;
 
-use oxc_ast::ast::{Expression, JSXAttributeValue, JSXChild};
-use oxc_span::{GetSpan, SPAN, Span};
+use oxc_allocator::{Allocator, FromIn, TakeIn};
+use oxc_ast::ast::{Expression, FormalParameter, JSXAttributeValue, JSXChild};
+use oxc_parser::Parser;
+use oxc_span::{Atom, GetSpan, SPAN, SourceType, Span};
 use phf::phf_set;
 
 use crate::text::{get_text_like_value, resolve_jsx_text};
@@ -108,7 +110,7 @@ impl<'a> SimpleExpressionNode<'a> {
 
   pub fn get_literal_expression_value(&self) -> Option<String> {
     if let Some(ast) = &self.ast
-      && let Some(res) = get_text_like_value(ast, None)
+      && let Some(res) = get_text_like_value(ast, false)
     {
       return Some(res);
     }
@@ -156,4 +158,51 @@ static GLOBALLY_ALLOWED: phf::Set<&'static str> = phf_set! {
 };
 pub fn is_globally_allowed(key: &str) -> bool {
   GLOBALLY_ALLOWED.contains(key)
+}
+
+pub fn expression_to_params<'a>(
+  exp: &Expression<'a>,
+  source: &str,
+  allocator: &'a Allocator,
+  source_type: SourceType,
+) -> Option<FormalParameter<'a>> {
+  let span = exp.without_parentheses().span();
+  if let Ok(Expression::ArrowFunctionExpression(mut exp)) = Parser::new(
+    allocator,
+    Atom::from_in(
+      &format!(
+        "/*{}*/({})=>{{}}",
+        ".".repeat(span.start as usize - 5),
+        span.source_text(source)
+      ),
+      allocator,
+    )
+    .as_str(),
+    source_type,
+  )
+  .parse_expression()
+  {
+    Some(exp.params.items[0].take_in(allocator))
+  } else {
+    None
+  }
+}
+
+pub fn parse_expression<'a>(
+  source: &str,
+  span: Span,
+  allocator: &'a Allocator,
+  source_type: SourceType,
+) -> Option<Expression<'a>> {
+  Parser::new(
+    allocator,
+    Atom::from_in(
+      &format!("/*{}*/({})", ".".repeat(span.start as usize - 5), source),
+      allocator,
+    )
+    .as_str(),
+    source_type,
+  )
+  .parse_expression()
+  .ok()
 }

@@ -43,7 +43,7 @@ type OnIdentifier<'a> = Box<
 // Return value indicates whether the AST walked can be a constant
 pub struct WalkIdentifiers<'a> {
   known_ids: HashMap<String, u32>,
-  include_all: bool,
+  prevent_transform_jsx: bool,
   on_identifier: OnIdentifier<'a>,
   scope_ids_map: HashMap<Span, HashSet<String>>,
   pub ast: &'a AstBuilder<'a>,
@@ -58,14 +58,14 @@ impl<'a> WalkIdentifiers<'a> {
     ast: &'a AstBuilder<'a>,
     source_text: &'a str,
     options: &'a TransformOptions<'a>,
-    include_all: bool,
+    prevent_transform_jsx: bool,
   ) -> Self {
     Self {
       ast,
       source_text,
       options,
       on_identifier,
-      include_all,
+      prevent_transform_jsx,
       known_ids: HashMap::new(),
       scope_ids_map: HashMap::new(),
       roots: vec![],
@@ -84,13 +84,13 @@ impl<'a> WalkIdentifiers<'a> {
       ast.vec(),
       ast.vec(),
     );
+    program
+      .body
+      .push(ast.statement_expression(SPAN, expression));
     let scoping = SemanticBuilder::new()
       .build(program)
       .semantic
       .into_scoping();
-    program
-      .body
-      .push(ast.statement_expression(SPAN, expression));
     traverse_mut(self, ast.allocator, program, scoping, ());
     let Statement::ExpressionStatement(stmt) = &mut program.body[0] else {
       unreachable!();
@@ -123,12 +123,12 @@ impl<'a> WalkIdentifiers<'a> {
     id: &mut IdentifierReference<'a>,
     ctx: &mut TraverseCtx<'a, ()>,
   ) -> Option<Expression<'a>> {
-    if id.span.eq(&SPAN) {
+    if id.span.eq(&SPAN) && !id.name.eq("_cache") {
       return None;
     }
     let is_local = self.known_ids.contains_key(id.name.as_str());
     let is_refed = is_referenced_identifier(id, &ctx.ancestry);
-    if self.include_all || (is_refed && !is_local) {
+    if is_refed && !is_local {
       self.on_identifier.as_mut()(id, &ctx.parent(), &ctx.ancestry, is_refed, is_local)
     } else {
       None
@@ -142,7 +142,8 @@ impl<'a> Traverse<'a, ()> for WalkIdentifiers<'a> {
       if let Some(replacer) = self.on_identifier_reference(id, ctx) {
         *node = replacer;
       }
-    } else if let Some(on_enter_expression) = self.options.on_enter_expression.borrow().as_ref()
+    } else if !self.prevent_transform_jsx
+      && let Some(on_enter_expression) = self.options.on_enter_expression.borrow().as_ref()
       && let Some((node_ref, vdom)) = on_enter_expression(node, ctx)
     {
       self.roots.push(RootJsx {
@@ -154,7 +155,9 @@ impl<'a> Traverse<'a, ()> for WalkIdentifiers<'a> {
   }
 
   fn exit_program(&mut self, _: &mut Program<'a>, _: &mut TraverseCtx<'a, ()>) {
-    if let Some(on_exit_program) = self.options.on_exit_program.borrow().as_ref() {
+    if !self.prevent_transform_jsx
+      && let Some(on_exit_program) = self.options.on_exit_program.borrow().as_ref()
+    {
       on_exit_program(mem::take(&mut self.roots), self.source_text);
     }
   }

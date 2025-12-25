@@ -1,14 +1,14 @@
 {
   "name": "playground",
+  "type": "module",
   "version": "3.0.4",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "node vite.js --port 5174",
     "build": "node vite.js build"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.1",
+    "@vitejs/plugin-vue": "^6.0.3",
     "@vue-macros/define-render": "catalog:",
     "vite": "catalog:",
     "vite-hyper-config": "^0.7.1",

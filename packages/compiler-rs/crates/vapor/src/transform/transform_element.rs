@@ -26,36 +26,16 @@ use crate::{
 };
 
 use common::{
-  check::{is_build_in_directive, is_jsx_component, is_template, is_void_tag},
-  directive::resolve_directive,
+  check::{
+    is_built_in_directive, is_directive, is_event, is_jsx_component, is_reserved_prop, is_template,
+    is_void_tag,
+  },
+  directive::{find_prop, resolve_directive},
   dom::is_valid_html_nesting,
   error::ErrorCodes,
   expression::SimpleExpressionNode,
   text::{camelize, get_tag_name, get_text_like_value},
 };
-
-static RESERVED_PROP: [&str; 5] = ["", "key", "ref", "ref_for", "ref_key"];
-pub fn is_reserved_prop(name: &str) -> bool {
-  RESERVED_PROP.contains(&name)
-}
-
-pub fn is_event(s: &str) -> bool {
-  s.starts_with("on")
-    && s
-      .chars()
-      .nth(2)
-      .map(|c| c.is_ascii_uppercase())
-      .unwrap_or(false)
-}
-
-pub fn is_directive(s: &str) -> bool {
-  s.starts_with("v-")
-    && s
-      .chars()
-      .nth(2)
-      .map(|c| c.is_ascii_lowercase())
-      .unwrap_or(false)
-}
 
 /// # SAFETY
 pub unsafe fn transform_element<'a>(
@@ -67,7 +47,19 @@ pub unsafe fn transform_element<'a>(
   let Either::B(JSXChild::Element(node)) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  if is_template(node) {
+  if is_template(node)
+    && find_prop(
+      node,
+      Either::B(vec![
+        String::from("v-if"),
+        String::from("v-else-if"),
+        String::from("v-else"),
+        String::from("v-for"),
+        String::from("v-slot"),
+      ]),
+    )
+    .is_some()
+  {
     return None;
   }
   let mut effect_index = context_block.effect.len() as i32;
@@ -84,7 +76,8 @@ pub unsafe fn transform_element<'a>(
   }) as Box<dyn FnMut() -> i32>));
 
   let tag = get_tag_name(&node.opening_element.name, context.ir.borrow().source);
-  let is_component = is_jsx_component(node);
+  let is_custom_element = context.options.is_custom_element.as_ref()(tag.clone());
+  let is_component = is_jsx_component(node) && !is_custom_element;
   let _context_block = context_block as *mut BlockIRNode;
   let props_result = build_props(
     node,
@@ -203,25 +196,13 @@ pub fn transform_native_element<'a>(
 }
 
 pub fn transform_component_element<'a>(
-  mut tag: String,
+  tag: String,
   props_result: PropsResult<'a>,
   single_root: bool,
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) {
-  let mut asset = context.options.with_fallback;
-
-  if let Some(dot_index) = tag.find('.') {
-    let ns = tag[0..dot_index].to_string();
-    if !ns.is_empty() {
-      tag = ns + &tag[dot_index..];
-    }
-  }
-
-  if tag.contains("-") {
-    asset = true
-  }
-
+  let asset = context.options.with_fallback || tag.contains("-");
   if asset {
     let component = &mut context.ir.borrow_mut().component;
     component.insert(tag.clone());
@@ -394,7 +375,7 @@ pub fn transform_prop<'a>(
   let value = if let Some(value) = &prop.value {
     match value {
       JSXAttributeValue::ExpressionContainer(value) => {
-        get_text_like_value(value.expression.to_expression(), Some(is_component))
+        get_text_like_value(value.expression.to_expression(), is_component)
       }
       JSXAttributeValue::StringLiteral(value) => Some(value.value.to_string()),
       _ => None,
@@ -449,7 +430,7 @@ pub fn transform_prop<'a>(
     _ => (),
   };
 
-  if !is_build_in_directive(&name) {
+  if !is_built_in_directive(&name) {
     let with_fallback = context.options.with_fallback;
     if with_fallback {
       let directive = &mut context.ir.borrow_mut().directive;

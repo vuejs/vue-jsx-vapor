@@ -1,12 +1,13 @@
 import process from 'node:process'
-import { defineConfig, type Options } from 'tsdown'
+import { defineConfig, type UserConfig } from 'tsdown'
 import Raw from 'unplugin-raw/rolldown'
 
-export const config = (options: Options = {}) =>
+export const config = (options: UserConfig = {}) =>
   defineConfig({
     entry: ['./src/*.ts', '!./**.d.ts'],
     clean: true,
     format: ['cjs', 'esm'],
+    fixedExtension: false,
     watch: !!process.env.DEV,
     dts: !process.env.DEV,
     external: ['vue'],

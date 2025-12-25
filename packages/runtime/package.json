@@ -1,29 +1,23 @@
 {
   "name": "@vue-jsx-vapor/runtime",
+  "type": "module",
   "version": "3.0.4",
   "description": "Vue JSX Vapor Runtime",
-  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
+  },
   "keywords": [
     "vue",
     "jsx",
     "vapor",
     "runtime"
   ],
-  "license": "MIT",
-  "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
-  "bugs": {
-    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
-  },
-  "files": [
-    "dist"
-  ],
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -33,6 +27,12 @@
     },
     "./*": "./*"
   },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsdown",
     "dev": "DEV=true tsdown",
@@ -43,6 +43,6 @@
     "vue": "^3.6.0-alpha.2"
   },
   "devDependencies": {
-    "csstype": "^3.1.3"
+    "csstype": "^3.2.3"
   }
 }

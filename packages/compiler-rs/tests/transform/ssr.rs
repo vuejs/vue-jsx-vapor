@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+
 use compiler_rs::{TransformOptions, transform};
 use insta::assert_snapshot;
 
@@ -6,7 +8,8 @@ pub fn ssr_export() {
   let code = transform(
     "export const foo = () => {}",
     Some(TransformOptions {
-      ssr: true,
+      ssr: RefCell::new(true),
+      in_ssr: true,
       ..Default::default()
     }),
   )
@@ -22,7 +25,8 @@ pub fn ssr_export_default() {
     export default Comp
     ",
     Some(TransformOptions {
-      ssr: true,
+      ssr: RefCell::new(true),
+      in_ssr: true,
       ..Default::default()
     }),
   )

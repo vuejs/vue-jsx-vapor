@@ -5,22 +5,13 @@ packages:
   - benchmark
 
 defines:
-  - &babel ^7.28.4
-  - &vue-macros ^3.0.1
+  - &vue-macros ^3.1.1
   - &ts-macro ^0.3.6
-  - &vue 3.6.0-alpha.2
+  - &vue 3.6.0-alpha.7
 
 catalog:
-  '@babel/core': *babel
-  '@babel/parser': *babel
-  '@babel/plugin-syntax-jsx': ^7.27.1
-  '@babel/plugin-transform-typescript': ^7.28.0
-  '@babel/traverse': *babel
-  '@babel/types': *babel
-  '@types/babel__core': ^7.20.5
-
-  '@nuxt/kit': ^3.19.2
-  '@nuxt/schema': ^3.19.2
+  '@nuxt/kit': ^3.20.2
+  '@nuxt/schema': ^3.20.2
 
   '@vue/compiler-sfc': *vue
   '@vue/shared': *vue
@@ -33,12 +24,10 @@ catalog:
 
   '@ts-macro/tsc': *ts-macro
   '@types/hash-sum': ^1.0.2
-  ast-kit: ^2.1.2
   hash-sum: ^2.0.0
-  source-map-js: ^1.2.1
   ts-macro: *ts-macro
-  unplugin: ^2.3.10
+  unplugin: ^2.3.11
   unplugin-utils: ^0.2.5
-  vite: ^7.1.6
+  vite: ^8.0.0-beta.5
   vitest: ^3.2.4
   vue: *vue

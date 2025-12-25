@@ -68,8 +68,11 @@ pub struct TransformReturn {
 #[cfg(feature = "napi")]
 #[napi]
 pub fn _transform(env: Env, source: String, options: Option<_TransformOptions>) -> TransformReturn {
+  use std::cell::RefCell;
+
   let options = options.unwrap_or_default();
   let filename = &options.filename.unwrap_or("index.jsx".to_string());
+  let ssr = options.ssr.unwrap_or(false);
   let CodegenReturn { code, map, .. } = transform(
     &source,
     Some(TransformOptions {
@@ -79,7 +82,8 @@ pub fn _transform(env: Env, source: String, options: Option<_TransformOptions>) 
       with_fallback: options.with_fallback.unwrap_or(false),
       interop: options.interop.unwrap_or(false),
       hmr: options.hmr.unwrap_or(false),
-      ssr: options.ssr.unwrap_or(false),
+      ssr: RefCell::new(ssr),
+      in_ssr: ssr,
       is_custom_element: if let Some(is_custom_element) = options.is_custom_element {
         Box::new(move |tag: String| is_custom_element.call(tag).unwrap())
           as Box<dyn Fn(String) -> bool>

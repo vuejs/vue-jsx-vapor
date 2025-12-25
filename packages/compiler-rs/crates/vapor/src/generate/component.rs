@@ -1,5 +1,6 @@
 use std::mem;
 
+use common::directive::Modifiers;
 use common::expression::SimpleExpressionNode;
 use napi::bindgen_prelude::Either3;
 use oxc_allocator::CloneIn;
@@ -28,7 +29,6 @@ use crate::ir::component::IRProps;
 use crate::ir::component::IRPropsStatic;
 use crate::ir::index::BlockIRNode;
 use crate::ir::index::CreateComponentIRNode;
-use crate::ir::index::Modifiers;
 use common::text::camelize;
 use common::text::to_valid_asset_id;
 

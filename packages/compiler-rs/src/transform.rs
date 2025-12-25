@@ -12,7 +12,6 @@ use oxc_ast::{
 use oxc_semantic::SemanticBuilder;
 use oxc_span::{GetSpan, SPAN};
 use oxc_traverse::{Ancestor, Traverse, TraverseCtx, traverse_mut};
-use vapor::transform::TransformContext;
 
 use crate::hmr_or_ssr::HmrOrSsrTransform;
 
@@ -56,8 +55,13 @@ impl<'a> Transform<'a> {
     *options.on_exit_program.borrow_mut() = Some(Box::new(|mut roots, source| unsafe {
       for root in roots.drain(..) {
         if root.vdom {
-          *root.node_ref = root.node;
+          use vdom::transform::TransformContext;
+          let transform_context: *mut TransformContext =
+            &mut TransformContext::new(allocator, options);
+          let source_text = &source[..root.node.span().end as usize];
+          *root.node_ref = (&*transform_context).transform(root.node, source_text);
         } else {
+          use vapor::transform::TransformContext;
           let transform_context: *mut TransformContext =
             &mut TransformContext::new(allocator, options);
           let source_text = &source[..root.node.span().end as usize];
@@ -109,7 +113,7 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
     }
   }
   fn exit_program(&mut self, program: &mut Program<'a>, ctx: &mut TraverseCtx<'a, ()>) {
-    if self.options.ssr || self.options.hmr {
+    if self.options.in_ssr || self.options.hmr {
       HmrOrSsrTransform::new(self.options).exit_program(program, ctx);
     }
 
@@ -140,9 +144,37 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
 
     let mut helpers = self.options.helpers.take();
     if !helpers.is_empty() {
-      let jsx_helpers = vec![
+      let vdom_helpers = vec!["createVNodeCache", "normalizeVNode"]
+        .into_iter()
+        .filter(|helper| {
+          if helpers.contains(*helper) {
+            helpers.remove(*helper);
+            true
+          } else {
+            false
+          }
+        })
+        .collect::<Vec<_>>();
+      if !vdom_helpers.is_empty() {
+        statements.push(Statement::ImportDeclaration(ast.alloc_import_declaration(
+          SPAN,
+          Some(ast.vec_from_iter(vdom_helpers.into_iter().map(|helper| {
+            ast.import_declaration_specifier_import_specifier(
+              SPAN,
+              ast.module_export_name_identifier_name(SPAN, ast.atom(helper)),
+              ast.binding_identifier(SPAN, ast.atom(format!("_{}", helper).as_str())),
+              ImportOrExportKind::Value,
+            )
+          }))),
+          ast.string_literal(SPAN, ast.atom("/vue-jsx-vapor/vnode"), None),
+          None,
+          NONE,
+          ImportOrExportKind::Value,
+        )))
+      }
+
+      let vapor_helpers = vec![
         "setNodes",
-        "useVdomCache",
         "createNodes",
         "createComponent",
         "createComponentWithFallback",
@@ -157,10 +189,10 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
         }
       })
       .collect::<Vec<_>>();
-      if !jsx_helpers.is_empty() {
+      if !vapor_helpers.is_empty() {
         statements.push(Statement::ImportDeclaration(ast.alloc_import_declaration(
           SPAN,
-          Some(ast.vec_from_iter(jsx_helpers.into_iter().map(|helper| {
+          Some(ast.vec_from_iter(vapor_helpers.into_iter().map(|helper| {
             ast.import_declaration_specifier_import_specifier(
               SPAN,
               ast.module_export_name_identifier_name(SPAN, ast.atom(helper)),
@@ -238,6 +270,30 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
         })
         .collect::<Vec<_>>();
       statements.extend(template_statements);
+    }
+
+    for (i, exp) in self.options.hoists.borrow_mut().drain(..).enumerate() {
+      statements.push(Statement::VariableDeclaration(
+        ast.alloc_variable_declaration(
+          SPAN,
+          VariableDeclarationKind::Const,
+          ast.vec1(ast.variable_declarator(
+            SPAN,
+            VariableDeclarationKind::Const,
+            ast.binding_pattern(
+              ast.binding_pattern_kind_binding_identifier(
+                SPAN,
+                ast.atom(&format!("_hoisted_{}", i + 1)),
+              ),
+              NONE,
+              false,
+            ),
+            Some(exp),
+            false,
+          )),
+          false,
+        ),
+      ))
     }
 
     if !statements.is_empty() {

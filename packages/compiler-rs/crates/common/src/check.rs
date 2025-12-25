@@ -1,22 +1,15 @@
 use oxc_ast::ast::{
-  ArrayExpressionElement, Expression, IdentifierReference, JSXChild, JSXElement, JSXElementName,
-  ObjectPropertyKind, PropertyKey,
+  ArrayExpressionElement, ComputedMemberExpression, Expression, IdentifierReference, JSXChild,
+  JSXElement, JSXElementName, ObjectPropertyKind, PropertyKey, StaticMemberExpression,
 };
 use oxc_span::GetSpan;
-use oxc_traverse::{Ancestor, TraverseAncestry};
+use oxc_traverse::{
+  Ancestor, TraverseAncestry,
+  ancestor::{ComputedMemberExpressionWithoutObject, StaticMemberExpressionWithoutObject},
+};
 use phf::phf_set;
 
-use crate::expression::{SimpleExpressionNode, is_globally_allowed};
-
-pub fn is_member_expression(exp: &SimpleExpressionNode) -> bool {
-  let Some(ast) = &exp.ast else { return false };
-  let ret = ast.without_parentheses().get_inner_expression();
-  match ret {
-    Expression::StaticMemberExpression(_) => true,
-    Expression::Identifier(_) => !ret.is_undefined(),
-    _ => false,
-  }
-}
+use crate::expression::is_globally_allowed;
 
 pub fn is_template<'a>(node: &'a JSXElement<'a>) -> bool {
   if let JSXElementName::Identifier(name) = &node.opening_element.name {
@@ -135,6 +128,7 @@ static HTML_TAGS: phf::Set<&'static str> = phf_set! {
     "img",
     "li",
     "main",
+    "math",
     "ol",
     "p",
     "pre",
@@ -310,11 +304,6 @@ pub fn is_fragment_node(node: &JSXChild) -> bool {
   }
 }
 
-static RESERVED_PROP: [&str; 4] = ["key", "ref", "ref_for", "ref_key"];
-pub fn is_reserved_prop(prop_name: &str) -> bool {
-  RESERVED_PROP.contains(&prop_name)
-}
-
 static VOID_TAGS: phf::Set<&'static str> = phf_set! {
     "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source",
     "track", "wbr",
@@ -327,7 +316,7 @@ static BUILD_IN_DIRECTIVE: phf::Set<&'static str> = phf_set! {
   "bind", "cloak", "else-if", "else", "for", "html", "if", "model", "on", "once", "pre", "show",
   "slot", "slots", "text", "memo",
 };
-pub fn is_build_in_directive(prop_name: &str) -> bool {
+pub fn is_built_in_directive(prop_name: &str) -> bool {
   BUILD_IN_DIRECTIVE.contains(prop_name)
 }
 
@@ -368,11 +357,19 @@ pub fn is_referenced(
     // yes: PARENT[NODE]
     // yes: NODE.child
     // no: parent.NODE
-    Ancestor::StaticMemberExpressionObject(parent) => !parent.property().span.eq(&node.span),
-    Ancestor::StaticMemberExpressionProperty(parent) => parent.object().span().eq(&node.span),
+    Ancestor::StaticMemberExpressionObject(parent) => unsafe {
+      let parent = *((parent as *const StaticMemberExpressionWithoutObject)
+        as *const *const StaticMemberExpression);
+      *&(*parent).object.span().eq(&node.span)
+    },
+    Ancestor::StaticMemberExpressionProperty(_) => false,
 
-    Ancestor::ComputedMemberExpressionObject(parent) => parent.expression().span().eq(&node.span),
-    Ancestor::ComputedMemberExpressionExpression(parent) => parent.object().span().eq(&node.span),
+    Ancestor::ComputedMemberExpressionObject(parent) => unsafe {
+      let parent = *((parent as *const ComputedMemberExpressionWithoutObject)
+        as *const *const ComputedMemberExpression);
+      *&(*parent).object.span().eq(&node.span)
+    },
+    Ancestor::ComputedMemberExpressionExpression(_) => true,
 
     Ancestor::JSXMemberExpressionProperty(parent) => parent.object().span().eq(&node.span),
     Ancestor::JSXMemberExpressionObject(_) => false,
@@ -691,5 +688,40 @@ pub fn maybe_key_modifier(modifier: &str) -> bool {
 }
 
 pub fn is_keyboard_event(key: &str) -> bool {
-  matches!(key, "onkeyup" | "onkeydown" | "onkeypress")
+  matches!(key, "keyup" | "keydown" | "keypress")
+}
+
+static RESERVED_PROP: phf::Set<&str> = phf_set!(
+  "",
+  "key",
+  "ref",
+  "ref_for",
+  "ref_key",
+  "onVnodeBeforeMount",
+  "onVnodeMounted",
+  "onVnodeBeforeUpdate",
+  "onVnodeUpdated",
+  "onVnodeBeforeUnmount",
+  "onVnodeUnmounted",
+);
+pub fn is_reserved_prop(name: &str) -> bool {
+  RESERVED_PROP.contains(name)
+}
+
+pub fn is_event(s: &str) -> bool {
+  s.starts_with("on")
+    && s
+      .chars()
+      .nth(2)
+      .map(|c| c.is_ascii_uppercase())
+      .unwrap_or(false)
+}
+
+pub fn is_directive(s: &str) -> bool {
+  s.starts_with("v-")
+    && s
+      .chars()
+      .nth(2)
+      .map(|c| c.is_ascii_lowercase())
+      .unwrap_or(false)
 }

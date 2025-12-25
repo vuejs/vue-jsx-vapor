@@ -1,9 +1,24 @@
-import { defineComponent, defineVaporComponent, nextTick, unref, VaporComponentInstance, VNode } from 'vue'
+import {
+  defineComponent,
+  defineVaporComponent,
+  nextTick,
+  unref,
+  VaporComponentInstance,
+  VNode,
+} from 'vue'
 
 const $ = unref
 
 const Comp = defineVaporComponent(
-  ({ bar = 'bar'! as string, Comp, ...attrs }: { bar: string; baz: 'baz', Comp: any }) => {
+  ({
+    bar = 'bar'! as string,
+    Comp,
+    ...attrs
+  }: {
+    bar: string
+    baz: 'baz'
+    Comp: any
+  }) => {
     defineModel()
     const foo = $(
       defineModel('foo', {
@@ -13,21 +28,27 @@ const Comp = defineVaporComponent(
         type: String,
       })!,
     )
-    return <div>
-      {[foo, bar, attrs.baz]}
-      <Comp />
-    </div>
+    return (
+      <div>
+        {[foo, bar, attrs.baz]}
+        <Comp />
+      </div>
+    )
   },
   { name: 'Comp', props: { Comp: Object } },
 )
 
-const Comp1 = defineVaporComponent((props: { bar: 'bar'; 'onUpdate:bar': any, comp: any }) => {
-  const foo = defineModel('foo')
-  return <div>
-      {[foo.value, props['bar'], props['onUpdate:bar']]}
-      <props.comp />
-    </div>
-})
+const Comp1 = defineVaporComponent(
+  (props: { bar: 'bar'; 'onUpdate:bar': any; comp: any }) => {
+    const foo = defineModel('foo')
+    return (
+      <div>
+        {[foo.value, props['bar'], props['onUpdate:bar']]}
+        <props.comp />
+      </div>
+    )
+  },
+)
 
 const Comp2 = defineComponent(async () => {
   await nextTick()
@@ -38,38 +59,38 @@ const Comp2 = defineComponent(async () => {
 })
 
 const foo = () => {}
-defineVaporComponent(({
-  a = 0,
-  b = 'b',
-  c = true,
-  d = () => {},
-  e = {},
-  f = [],
-  g = foo,
-  h = null,
-  i = undefined!,
-}) => {
-  return (
-    <>
-      {a}
-      {b}
-      {c}
-      {d}
-      {e}
-      {f}
-      {g}
-      {h}
-      {i}
-    </>
-  )
-})
+defineVaporComponent(
+  ({
+    a = 0,
+    b = 'b',
+    c = true,
+    d = () => {},
+    e = {},
+    f = [],
+    g = foo,
+    h = null,
+    i = undefined!,
+  }) => {
+    return (
+      <>
+        {a}
+        {b}
+        {c}
+        {d}
+        {e}
+        {f}
+        {g}
+        {h}
+        {i}
+      </>
+    )
+  },
+)
 
 // #21
-const Comp3 = defineComponent(<T,>()=>{
+const Comp3 = defineComponent(<T,>() => {
   return () => <div>123</div>
 })
-;<Comp3 /> == ({} as VNode)
 const Comp4 = defineVaporComponent(<T,>() => {
   return <div>123</div>
 })
-;<Comp4 /> == ({} as VaporComponentInstance)

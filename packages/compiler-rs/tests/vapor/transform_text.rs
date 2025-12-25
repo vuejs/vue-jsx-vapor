@@ -29,7 +29,7 @@ fn on_consecutive_text() {
 
 #[test]
 fn consecutive_text() {
-  let code = transform("<>{ msg }</>", None).code;
+  let code = transform("<>{ msg }  <div/></>", None).code;
   assert_snapshot!(code);
 }
 
@@ -52,6 +52,12 @@ fn expression_conditional() {
     None,
   )
   .code;
+  assert_snapshot!(code);
+}
+
+#[test]
+fn multiple_conditional() {
+  let code = transform("<>{ok? ok : fail} {foo ? foo : <span />}</>", None).code;
   assert_snapshot!(code);
 }
 

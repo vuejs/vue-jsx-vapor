@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     Vue(),
     VueJsxVapor({
-      // interop: true,
+      interop: true,
       macros: true,
     }),
     DefineRender({
