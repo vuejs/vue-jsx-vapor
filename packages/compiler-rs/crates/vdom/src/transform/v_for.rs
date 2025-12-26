@@ -8,7 +8,7 @@ use oxc_ast::{
     JSXElement, LogicalOperator, NumberBase, PropertyKind, Statement, VariableDeclarationKind,
   },
 };
-use oxc_span::{GetSpan, SPAN, Span};
+use oxc_span::{SPAN, Span};
 
 use crate::{
   ast::{ConstantTypes, ForNode, NodeTypes, VNodeCall},
@@ -20,7 +20,6 @@ use crate::{
 };
 use common::{
   check::is_template, error::ErrorCodes, expression::expression_to_params, patch_flag::PatchFlags,
-  text::is_empty_text,
 };
 
 /// # SAFETY
@@ -32,8 +31,9 @@ pub unsafe fn transform_v_for<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  let node = node as *mut oxc_allocator::Box<JSXElement>;
-  if is_template(unsafe { &*node }) && directives.v_slot.is_some() {
+  let node_ptr = node as *mut oxc_allocator::Box<JSXElement>;
+  let is_template = is_template(unsafe { &*node_ptr });
+  if is_template && directives.v_slot.is_some() {
     return None;
   }
 
@@ -63,7 +63,6 @@ pub unsafe fn transform_v_for<'a>(
   // bookkeeping
   *context.options.in_v_for.borrow_mut() += 1;
 
-  let is_template = is_template(unsafe { &*node });
   let memo = if let Some(memo_prop) = directives.v_memo.as_mut()
     && let Some(value) = &mut memo_prop.value
   {
@@ -111,10 +110,10 @@ pub unsafe fn transform_v_for<'a>(
     false,
   );
 
-  let node_span = unsafe { &*node }.span;
+  let node_span = node.span;
   let fragment_span = Span::new(node_span.end, node_span.start);
   *unsafe { &mut *context_node } = context.wrap_fragment(
-    Expression::JSXElement(unsafe { &mut *node }.take_in_box(context.allocator)),
+    Expression::JSXElement(node.take_in_box(context.allocator)),
     fragment_span,
   );
   if let Some(NodeTypes::VNodeCall(vnode_call)) =
@@ -154,19 +153,12 @@ pub unsafe fn transform_v_for<'a>(
     if let Some(v_for) = fragment_codegen.v_for.take() {
       context.remove_identifiers(v_for)
     }
-    // finish the codegen now that all children have been traversed
-    let children = &mut unsafe { &mut *node }
-      .children
-      .iter_mut()
-      .filter(|child| !is_empty_text(child))
-      .collect::<Vec<_>>();
 
-    let child_span = &children[0].span();
     let mut key_exp = None;
     // Normal element v-for. Directly use the child's codegenNode
     // but mark it as a block.
     if let NodeTypes::VNodeCall(child_block) =
-      unsafe { &mut *codegen_map }.get_mut(child_span).unwrap()
+      unsafe { &mut *codegen_map }.get_mut(&node_span).unwrap()
     {
       if is_template && let Some(key_property) = key_property {
         key_exp = Some(key_property.value.clone_in(context.allocator));
@@ -174,14 +166,16 @@ pub unsafe fn transform_v_for<'a>(
       }
       child_block.is_block = !is_stable_fragment;
     }
-    cache_static_children(
-      None,
-      vec![children.get_mut(0).unwrap()],
-      context,
-      unsafe { &mut *codegen_map },
-      false,
-    );
-    let child_block = unsafe { &mut *codegen_map }.remove(child_span).unwrap();
+    if let JSXChild::Fragment(node) = unsafe { &mut *context_node } {
+      cache_static_children(
+        None,
+        node.children.iter_mut().collect::<Vec<_>>(),
+        context,
+        &mut context.codegen_map.borrow_mut(),
+        false,
+      );
+    }
+    let child_block = unsafe { &mut *codegen_map }.remove(&node_span).unwrap();
     let child_block = match child_block {
       NodeTypes::VNodeCall(child_block) => {
         context.gen_vnode_call(child_block, unsafe { &mut *codegen_map })
