@@ -1,7 +1,8 @@
-import { proxyRefs, toRefs, useAttrs, type GenericComponentInstance } from 'vue'
+import { proxyRefs, toRefs, useAttrs } from 'vue'
 import * as Vue from 'vue'
 
-export function getCurrentInstance(): GenericComponentInstance | null {
+export function getCurrentInstance(): // @ts-expect-error Suppors vue3.6 and below versions
+import('vue').GenericComponentInstance | null {
   // @ts-ignore
   return Vue.currentInstance || Vue.getCurrentInstance()
 }
