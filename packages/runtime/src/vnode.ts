@@ -24,22 +24,26 @@ export function createVNodeCache(index: number) {
   }
 }
 
-export function normalizeVNode(child = ' ', flag = 0): VNode {
-  if (child == null || typeof child === 'boolean') {
+export function normalizeVNode(value: any = ' ', flag = 0): VNode {
+  if (value == null || typeof value === 'boolean') {
     // empty placeholder
     return createVNode(Comment)
+  } else if (typeof value !== 'function') {
+    return createVNode(Text, null, String(value), flag)
+  }
+  openBlock()
+  const child = value()
+  if (value == null || typeof value === 'boolean') {
+    // empty placeholder
+    return createBlock(Comment)
   } else if (Array.isArray(child)) {
     // fragment
-    return createVNode(
-      Fragment,
-      null,
-      child.map((node) => normalizeVNode(node)),
-    )
+    return createBlock(Fragment, null, child.slice())
   } else if (isVNode(child)) {
-    return (openBlock(), createBlock(cloneIfMounted(child)))
+    return createBlock(cloneIfMounted(child))
   } else {
     // strings and numbers
-    return createVNode(Text, null, String(child), flag)
+    return createBlock(Text, null, String(child), flag)
   }
 }
 

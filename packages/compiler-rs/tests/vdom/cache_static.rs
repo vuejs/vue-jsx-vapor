@@ -144,7 +144,7 @@ fn cache_inside_default_slot() {
   (() => {
     const _cache = _createVNodeCache(0);
     return _openBlock(), _createBlock(Foo, null, {
-      default: _withCtx(() => [_normalizeVNode(x, 1), _cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]),
+      default: _withCtx(() => [_normalizeVNode(() => x, 1), _cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]),
       _: 1
     });
   })();
@@ -190,7 +190,7 @@ fn cache_inside_named_slot() {
   (() => {
     const _cache = _createVNodeCache(0);
     return _openBlock(), _createBlock(Foo, null, {
-      foo: _withCtx(() => [_normalizeVNode(x, 1), _cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]),
+      foo: _withCtx(() => [_normalizeVNode(() => x, 1), _cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]),
       _: 1
     });
   })();
@@ -370,7 +370,7 @@ fn hoist_static_props_for_elements_with_dynamic_text_children() {
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { id: "foo" };
   (() => {
-    return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", _hoisted_1, [_normalizeVNode(hello, 1)])]);
+    return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", _hoisted_1, [_normalizeVNode(() => hello, 1)])]);
   })();
   "#);
 }
@@ -478,9 +478,9 @@ fn cache_nested_static_tree_with_static_interpolation() {
     const _cache = _createVNodeCache(0);
     return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _createElementVNode("span", null, [
       _normalizeVNode("foo "),
-      _normalizeVNode(1),
+      _normalizeVNode(() => 1),
       _normalizeVNode(),
-      _normalizeVNode(true)
+      _normalizeVNode(() => true)
     ], -1))]);
   })();
   "#);
@@ -521,7 +521,7 @@ fn cache_class_with_static_object_value() {
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { class: _normalizeClass({ foo: true }) };
   (() => {
-    return _openBlock(), _createElementBlock("div", null, [_createElementVNode("span", _hoisted_1, [_normalizeVNode(bar, 1)])]);
+    return _openBlock(), _createElementBlock("div", null, [_createElementVNode("span", _hoisted_1, [_normalizeVNode(() => bar, 1)])]);
   })();
   "#);
 }
@@ -540,7 +540,7 @@ fn should_not_cache_expressions_that_refer_scope_variables() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (o) => (_openBlock(), _createElementBlock("p", null, [_createElementVNode("span", null, [_normalizeVNode(o, 1)])]))), 256))]);
+    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (o) => (_openBlock(), _createElementBlock("p", null, [_createElementVNode("span", null, [_normalizeVNode(() => o, 1)])]))), 256))]);
   })();
   "#);
 }
@@ -559,7 +559,7 @@ fn should_not_cache_expressions_that_refer_scope_variables_2() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (o) => (_openBlock(), _createElementBlock("p", null, [_createElementVNode("span", null, [_normalizeVNode(o + "foo", 1)])]))), 256))]);
+    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (o) => (_openBlock(), _createElementBlock("p", null, [_createElementVNode("span", null, [_normalizeVNode(() => o + "foo", 1)])]))), 256))]);
   })();
   "#);
 }
@@ -579,7 +579,7 @@ fn should_not_cache_expressions_that_refer_scope_variables_v_slot() {
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
     return _openBlock(), _createBlock(Comp, null, {
-      default: _withCtx(({ foo }) => [_normalizeVNode(foo, 1)]),
+      default: _withCtx(({ foo }) => [_normalizeVNode(() => foo, 1)]),
       _: 1
     });
   })();

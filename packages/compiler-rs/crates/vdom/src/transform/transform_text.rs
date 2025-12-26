@@ -2,7 +2,10 @@ use napi::Either;
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   NONE,
-  ast::{ConditionalExpression, Expression, JSXChild, LogicalExpression, NumberBase, PropertyKind},
+  ast::{
+    ConditionalExpression, Expression, FormalParameterKind, JSXChild, LogicalExpression,
+    NumberBase, PropertyKind,
+  },
 };
 use oxc_span::{GetSpan, SPAN};
 
@@ -103,8 +106,31 @@ pub unsafe fn transform_text<'a>(
             continue;
           }
           call_args.push(
-            context
-              .jsx_expression_to_expression(child.expression.clone_in(context.allocator))
+            ast
+              .expression_arrow_function(
+                SPAN,
+                true,
+                false,
+                NONE,
+                ast.formal_parameters(
+                  SPAN,
+                  FormalParameterKind::ArrowFormalParameters,
+                  ast.vec(),
+                  NONE,
+                ),
+                NONE,
+                ast.function_body(
+                  SPAN,
+                  ast.vec(),
+                  ast.vec1(
+                    ast.statement_expression(
+                      SPAN,
+                      context
+                        .jsx_expression_to_expression(child.expression.clone_in(context.allocator)),
+                    ),
+                  ),
+                ),
+              )
               .into(),
           )
         };
