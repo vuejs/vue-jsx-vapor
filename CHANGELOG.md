@@ -1,3 +1,12 @@
+## [3.1.2](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.1...v3.1.2) (2025-12-26)
+
+
+### Bug Fixes
+
+* **compiler:** prevent v-for error in browser ([1cf005b](https://github.com/vuejs/vue-jsx-vapor/commit/1cf005ba1fdeeb17a2b6e27e431a137e2e336113))
+
+
+
 ## [3.1.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.0...v3.1.1) (2025-12-25)
 
 
