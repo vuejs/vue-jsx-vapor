@@ -104,7 +104,7 @@ fn on_v_for() {
     const _cache = _createVNodeCache();
     return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
       const _memo = [x, y === z];
-      if (_cached && _isMemoSame(_cached, _memo)) return _cached;
+      if (_cached && _cached.key === x && _isMemoSame(_cached, _memo)) return _cached;
       const _item = (_openBlock(), _createElementBlock("div", { key: x }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, "foobar", -1))]));
       _item.memo = _memo;
       return _item;

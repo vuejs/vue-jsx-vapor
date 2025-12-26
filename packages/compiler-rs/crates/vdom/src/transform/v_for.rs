@@ -160,9 +160,11 @@ pub unsafe fn transform_v_for<'a>(
     if let NodeTypes::VNodeCall(child_block) =
       unsafe { &mut *codegen_map }.get_mut(&node_span).unwrap()
     {
-      if is_template && let Some(key_property) = key_property {
+      if let Some(key_property) = key_property {
         key_exp = Some(key_property.value.clone_in(context.allocator));
-        inject_prop(child_block, key_property, context);
+        if is_template {
+          inject_prop(child_block, key_property, context);
+        }
       }
       child_block.is_block = !is_stable_fragment;
     }
