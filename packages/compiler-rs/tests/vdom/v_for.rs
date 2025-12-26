@@ -14,9 +14,9 @@ fn number_expression() {
   .code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(), _createBlock(_Fragment, null, _renderList(5, (index) => _createElementVNode("span", null, [_normalizeVNode(index, 1)])), 64);
+    return _openBlock(), _createElementBlock(_Fragment, null, _renderList(5, (index) => _createElementVNode("span", null, [_normalizeVNode(index, 1)])), 64);
   })();
   "#);
 }
@@ -32,9 +32,9 @@ fn value() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("span"))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("span"))), 256);
   })();
   "#);
 }
@@ -50,9 +50,9 @@ fn object_de_structured_value() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, ({ id, value }) => (_openBlock(), _createElementBlock("span"))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, ({ id, value }) => (_openBlock(), _createElementBlock("span"))), 256);
   })();
   "#);
 }
@@ -68,9 +68,9 @@ fn array_de_structured_value() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, ([id, value]) => (_openBlock(), _createElementBlock("span"))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, ([id, value]) => (_openBlock(), _createElementBlock("span"))), 256);
   })();
   "#);
 }
@@ -86,9 +86,9 @@ fn value_and_key() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item, key) => (_openBlock(), _createElementBlock("span"))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item, key) => (_openBlock(), _createElementBlock("span"))), 256);
   })();
   "#);
 }
@@ -104,9 +104,9 @@ fn value_and_key_and_index() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item, key, index) => (_openBlock(), _createElementBlock("span"))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item, key, index) => (_openBlock(), _createElementBlock("span"))), 256);
   })();
   "#);
 }
@@ -122,9 +122,9 @@ fn unbracketed_value() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("span"))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("span"))), 256);
   })();
   "#);
 }
@@ -140,9 +140,9 @@ fn source_containing_string_expression_with_spaces() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(state["my items"], (item) => (_openBlock(), _createElementBlock("span"))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(state["my items"], (item) => (_openBlock(), _createElementBlock("span"))), 256);
   })();
   "#);
 }
@@ -158,11 +158,11 @@ fn missing_expression() {
   )
   .code;
   assert_snapshot!(code, @r#"
-    import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
-    (() => {
-      return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("span"))), 256);
-    })();
-    "#)
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  (() => {
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("span"))), 256);
+  })();
+  "#)
 }
 
 #[test]
@@ -176,9 +176,9 @@ fn v_for_source_with_complex_expression() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(list.concat([foo]), (i) => (_openBlock(), _createElementBlock("span"))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list.concat([foo]), (i) => (_openBlock(), _createElementBlock("span"))), 256);
   })();
   "#)
 }
@@ -195,9 +195,9 @@ fn should_not_prefix_v_for_aliases() {
   .code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, (i, j, k) => (_openBlock(), _createElementBlock("span", null, [_normalizeVNode(i + j + k, 1), _normalizeVNode(l, 1)]))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i, j, k) => (_openBlock(), _createElementBlock("span", null, [_normalizeVNode(i + j + k, 1), _normalizeVNode(l, 1)]))), 256);
   })();
   "#)
 }
@@ -216,9 +216,9 @@ fn nested_v_for() {
   .code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div", null, [_normalizeVNode(i + j, 1)]))), 256)), _normalizeVNode(i, 1)]))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div", null, [_normalizeVNode(i + j, 1)]))), 256)), _normalizeVNode(i, 1)]))), 256);
   })();
   "#)
 }
@@ -237,9 +237,9 @@ fn v_for_aliases_with_complex_expressions() {
   .code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, ({ foo = bar, baz: [qux = quux] }) => (_openBlock(), _createElementBlock("div", null, [_normalizeVNode(foo + bar + baz + qux + quux, 1)]))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ foo = bar, baz: [qux = quux] }) => (_openBlock(), _createElementBlock("div", null, [_normalizeVNode(foo + bar + baz + qux + quux, 1)]))), 256);
   })();
   "#)
 }
@@ -255,9 +255,9 @@ fn element_v_for_key_expression_prefixing() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("div", { key: itemKey(item) }, "test"))), 128);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("div", { key: itemKey(item) }, "test"))), 128);
   })();
   "#)
 }
@@ -274,10 +274,10 @@ fn template_v_for_key_expression_prefixing() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: itemKey(item) }, [_cache[0] || (_cache[0] = _normalizeVNode("test", -1))], 64))), 128);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: itemKey(item) }, [_cache[0] || (_cache[0] = _normalizeVNode("test", -1))], 64))), 128);
   })();
   "#)
 }
@@ -294,10 +294,10 @@ fn template_v_for_key_no_prefixing_on_attribute_key() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: "key" }, [_cache[0] || (_cache[0] = _normalizeVNode("test", -1))], 64))), 128);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: "key" }, [_cache[0] || (_cache[0] = _normalizeVNode("test", -1))], 64))), 128);
   })();
   "#)
 }
@@ -314,10 +314,10 @@ fn template_v_for_with_multiple_children() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, null, [..._cache[0] || (_cache[0] = [_normalizeVNode("hello", -1), _createElementVNode("span", null, null, -1)])], 64))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, null, [..._cache[0] || (_cache[0] = [_normalizeVNode("hello", -1), _createElementVNode("span", null, null, -1)])], 64))), 256);
   })();
   "#)
 }
@@ -333,9 +333,9 @@ fn template_v_for_with_slot() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, null, [_createVNode(slots.default)], 64))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, null, [_createVNode(slots.default)], 64))), 256);
   })();
   "#)
 }
@@ -351,10 +351,10 @@ fn template_v_for_key_injection_with_single_child() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   const _hoisted_1 = ["id"];
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: item.id }, [_createElementVNode("span", { id: item.id }, null, 8, _hoisted_1)], 64))), 128);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: item.id }, [_createElementVNode("span", { id: item.id }, null, 8, _hoisted_1)], 64))), 128);
   })();
   "#)
 }
@@ -370,9 +370,9 @@ fn keyed_v_for() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("span", { key: item }))), 128);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("span", { key: item }))), 128);
   })();
   "#)
 }
@@ -389,10 +389,10 @@ fn keyed_template_v_for() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: item }, [..._cache[0] || (_cache[0] = [_normalizeVNode("hello", -1), _createElementVNode("span", null, null, -1)])], 64))), 128);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: item }, [..._cache[0] || (_cache[0] = [_normalizeVNode("hello", -1), _createElementVNode("span", null, null, -1)])], 64))), 128);
   })();
   "#)
 }
@@ -408,9 +408,9 @@ fn v_if_with_v_for() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return ok ? (_openBlock(true), _createBlock(_Fragment, { key: 0 }, _renderList(list, (i) => (_openBlock(), _createElementBlock("div"))), 256)) : _createCommentVNode("", true);
+    return ok ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(list, (i) => (_openBlock(), _createElementBlock("div"))), 256)) : _createCommentVNode("", true);
   })();
   "#)
 }
@@ -426,9 +426,9 @@ fn v_if_with_v_for_on_template() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(), _createBlock(_Fragment, null, ok ? (_openBlock(true), _createBlock(_Fragment, { key: 0 }, _renderList(list, (i) => (_openBlock(), _createBlock(_Fragment))), 256)) : _createCommentVNode("", true));
+    return _openBlock(), _createBlock(_Fragment, null, ok ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(list, (i) => (_openBlock(), _createBlock(_Fragment))), 256)) : _createCommentVNode("", true));
   })();
   "#)
 }
@@ -444,9 +444,9 @@ fn v_for_on_element_with_custom_directive() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, withDirectives as _withDirectives } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, withDirectives as _withDirectives } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, (i) => _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[vFoo]])), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[vFoo]])), 256);
   })();
   "#)
 }
@@ -462,9 +462,9 @@ fn template_v_for_key_with_key_on_div() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(keys, (key) => (_openBlock(), _createElementBlock("div", { key }, "test"))), 128);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(keys, (key) => (_openBlock(), _createElementBlock("div", { key }, "test"))), 128);
   })();
   "#)
 }

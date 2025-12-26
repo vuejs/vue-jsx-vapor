@@ -150,7 +150,7 @@ pub unsafe fn transform_v_for<'a>(
     else {
       return;
     };
-    if let Some(v_for) = fragment_codegen.v_for.take() {
+    if let Some(v_for) = fragment_codegen.v_for.replace(vec![]) {
       context.remove_identifiers(v_for)
     }
 

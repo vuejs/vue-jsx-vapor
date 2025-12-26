@@ -430,11 +430,11 @@ fn should_hoist_v_for_children_if_static() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   const _hoisted_1 = { id: "foo" };
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div", _hoisted_1, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]))), 256))]);
+    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div", _hoisted_1, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]))), 256))]);
   })();
   "#);
 }
@@ -538,9 +538,9 @@ fn should_not_cache_expressions_that_refer_scope_variables() {
   .code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createBlock(_Fragment, null, _renderList(list, (o) => (_openBlock(), _createElementBlock("p", null, [_createElementVNode("span", null, [_normalizeVNode(o, 1)])]))), 256))]);
+    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (o) => (_openBlock(), _createElementBlock("p", null, [_createElementVNode("span", null, [_normalizeVNode(o, 1)])]))), 256))]);
   })();
   "#);
 }
@@ -557,9 +557,9 @@ fn should_not_cache_expressions_that_refer_scope_variables_2() {
   .code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createBlock(_Fragment, null, _renderList(list, (o) => (_openBlock(), _createElementBlock("p", null, [_createElementVNode("span", null, [_normalizeVNode(o + "foo", 1)])]))), 256))]);
+    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (o) => (_openBlock(), _createElementBlock("p", null, [_createElementVNode("span", null, [_normalizeVNode(o + "foo", 1)])]))), 256))]);
   })();
   "#);
 }
@@ -644,7 +644,7 @@ fn should_cache_keyed_template_v_for_with_plain_element_child() {
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: item }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))], 64))), 128))]);
+    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: item }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))], 64))), 128))]);
   })();
   "#);
 }
@@ -682,10 +682,10 @@ fn clone_hoisted_array_children_in_v_for_hmr_mode() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createBlock(_Fragment, null, _renderList(1, (i) => _cache[0] || (_cache[0] = _createElementVNode("div", null, [_createElementVNode("span", { class: "hi" })], -1))), 64))]);
+    return _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createElementBlock(_Fragment, null, _renderList(1, (i) => _cache[0] || (_cache[0] = _createElementVNode("div", null, [_createElementVNode("span", { class: "hi" })], -1))), 64))]);
   })();
   "#);
 }

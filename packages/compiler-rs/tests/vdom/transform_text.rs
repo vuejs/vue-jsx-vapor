@@ -161,10 +161,10 @@ fn template_v_for() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createBlock(_Fragment, null, [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))], 64))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createBlock(_Fragment, null, [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))], 64))), 256);
   })();
   "#);
 }

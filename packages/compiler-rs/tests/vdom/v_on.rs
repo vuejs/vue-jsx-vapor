@@ -289,10 +289,10 @@ fn unicode_identifier_from_v_for_should_not_be_cached() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   const _hoisted_1 = ["onClick"];
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(items, (项) => (_openBlock(), _createElementBlock("div", { key: value }, [_createElementVNode("div", { onClick: foo(项) }, null, 8, _hoisted_1)]))), 128);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (项) => (_openBlock(), _createElementBlock("div", { key: value }, [_createElementVNode("div", { onClick: foo(项) }, null, 8, _hoisted_1)]))), 128);
   })();
   "#);
 }

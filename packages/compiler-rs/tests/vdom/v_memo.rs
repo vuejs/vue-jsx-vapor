@@ -99,10 +99,10 @@ fn on_v_for() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
       const _memo = [x, y === z];
       if (_cached && _cached.key === x && _isMemoSame(_cached, _memo)) return _cached;
       const _item = (_openBlock(), _createElementBlock("div", { key: x }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, "foobar", -1))]));
@@ -127,10 +127,10 @@ fn on_template_v_for() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
       const _memo = [x, y === z];
       if (_cached && _cached.key === x && _isMemoSame(_cached, _memo)) return _cached;
       const _item = (_openBlock(), _createBlock(_Fragment, { key: x }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, "foobar", -1))], 64));
@@ -153,10 +153,10 @@ fn element_v_for_key_expression_v_memo() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(tableData, (data, __, ___, _cached) => {
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(tableData, (data, __, ___, _cached) => {
       const _memo = getLetter(data);
       if (_cached && _cached.key === getId(data) && _isMemoSame(_cached, _memo)) return _cached;
       const _item = (_openBlock(), _createElementBlock("span", { key: getId(data) }));

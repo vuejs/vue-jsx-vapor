@@ -866,13 +866,13 @@ fn ref_for_marker_on_static_ref() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   const _hoisted_1 = {
     ref_for: true,
     ref: "x"
   };
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", _hoisted_1, null, 512))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", _hoisted_1, null, 512))), 256);
   })();
   "#)
 }
@@ -888,9 +888,9 @@ fn ref_for_marker_on_dynamic_ref() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", {
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", {
       ref_for: true,
       ref: x
     }, null, 512))), 256);
@@ -909,9 +909,9 @@ fn ref_for_marker_on_v_bind() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", _mergeProps({ ref_for: true }, x), null, 16))), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", _mergeProps({ ref_for: true }, x), null, 16))), 256);
   })();
   "#)
 }

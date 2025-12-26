@@ -248,6 +248,7 @@ impl<'a> TransformContext<'a> {
       is_block,
       disable_tracking,
       is_component,
+      v_for,
       ..
     } = node;
 
@@ -259,7 +260,10 @@ impl<'a> TransformContext<'a> {
     }
 
     let call_helper = if is_block {
-      get_vnode_block_helper(self.options.in_ssr, is_component)
+      get_vnode_block_helper(
+        self.options.in_ssr,
+        if v_for.is_some() { false } else { is_component },
+      )
     } else {
       get_vnode_helper(self.options.in_ssr, is_component)
     };

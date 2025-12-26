@@ -254,10 +254,10 @@ fn should_not_cache_update_handler_if_it_refers_v_for_scope_variables() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = ["onUpdate:modelValue"];
   (() => {
-    return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, (i) => _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": ($event) => foo[i] = $event }, null, 8, _hoisted_1)), [[_vModelText, foo[i]]])), 256);
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": ($event) => foo[i] = $event }, null, 8, _hoisted_1)), [[_vModelText, foo[i]]])), 256);
   })();
   "#)
 }
