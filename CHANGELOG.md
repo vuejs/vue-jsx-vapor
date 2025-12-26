@@ -1,3 +1,23 @@
+## [3.1.3](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.2...v3.1.3) (2025-12-26)
+
+
+### Bug Fixes
+
+* add index for createVNodeCache ([0c9af89](https://github.com/vuejs/vue-jsx-vapor/commit/0c9af89949516a1e018d85daccbafd99179d9b1e))
+
+
+### Features
+
+* **compiler/vdom:** check key for v-memo in v-for ([6f7f1a3](https://github.com/vuejs/vue-jsx-vapor/commit/6f7f1a3c5d5fbbdfde2988ffdf4dfe5e7ec133a5))
+* **compiler/vdom:** support map expression ([ab16f06](https://github.com/vuejs/vue-jsx-vapor/commit/ab16f06e577bceced0031ac4eba176a71a42e4d5))
+
+
+### Performance Improvements
+
+* **compiler:** use createElementBlock instead of createBlock for v-for ([7a86c07](https://github.com/vuejs/vue-jsx-vapor/commit/7a86c072571ed84ace5f022369e76894c013433a))
+
+
+
 ## [3.1.2](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.1...v3.1.2) (2025-12-26)
 
 
