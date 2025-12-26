@@ -158,7 +158,7 @@ fn element_v_for_key_expression_v_memo() {
     const _cache = _createVNodeCache();
     return _openBlock(true), _createBlock(_Fragment, null, _renderList(tableData, (data, __, ___, _cached) => {
       const _memo = getLetter(data);
-      if (_cached && _isMemoSame(_cached, _memo)) return _cached;
+      if (_cached && _cached.key === getId(data) && _isMemoSame(_cached, _memo)) return _cached;
       const _item = (_openBlock(), _createElementBlock("span", { key: getId(data) }));
       _item.memo = _memo;
       return _item;
