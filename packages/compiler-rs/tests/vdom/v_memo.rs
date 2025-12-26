@@ -16,7 +16,7 @@ fn on_root_element() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
   (() => {
-    const _cache = _createVNodeCache();
+    const _cache = _createVNodeCache(0);
     return _withMemo([x], () => (_openBlock(), _createElementBlock("div")), _cache, 0);
   })();
   "#)
@@ -36,7 +36,7 @@ fn on_normal_element() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
   (() => {
-    const _cache = _createVNodeCache();
+    const _cache = _createVNodeCache(0);
     return _withMemo([x], () => (_openBlock(), _createElementBlock("div")), _cache, 0);
   })();
   "#)
@@ -56,7 +56,7 @@ fn on_component() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createBlock as _createBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
   (() => {
-    const _cache = _createVNodeCache();
+    const _cache = _createVNodeCache(0);
     return _withMemo([x], () => (_openBlock(), _createBlock(Comp)), _cache, 0);
   })();
   "#)
@@ -79,7 +79,7 @@ fn on_v_if() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
   import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx, withMemo as _withMemo } from "vue";
   (() => {
-    const _cache = _createVNodeCache();
+    const _cache = _createVNodeCache(0);
     return _openBlock(), _createBlock(_Fragment, null, [ok ? _withMemo([x], () => (_openBlock(), _createElementBlock("div", null, [_createElementVNode("span", null, "foo"), _normalizeVNode("bar")])), _cache, 0) : _withMemo([x], () => _createVNode(Comp), _cache, 1)], 64);
   })();
   "#)
@@ -101,7 +101,7 @@ fn on_v_for() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    const _cache = _createVNodeCache();
+    const _cache = _createVNodeCache(0);
     return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
       const _memo = [x, y === z];
       if (_cached && _cached.key === x && _isMemoSame(_cached, _memo)) return _cached;
@@ -129,7 +129,7 @@ fn on_template_v_for() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
-    const _cache = _createVNodeCache();
+    const _cache = _createVNodeCache(0);
     return _openBlock(true), _createBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
       const _memo = [x, y === z];
       if (_cached && _cached.key === x && _isMemoSame(_cached, _memo)) return _cached;
@@ -155,7 +155,7 @@ fn element_v_for_key_expression_v_memo() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    const _cache = _createVNodeCache();
+    const _cache = _createVNodeCache(0);
     return _openBlock(true), _createBlock(_Fragment, null, _renderList(tableData, (data, __, ___, _cached) => {
       const _memo = getLetter(data);
       if (_cached && _cached.key === getId(data) && _isMemoSame(_cached, _memo)) return _cached;

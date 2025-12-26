@@ -37,7 +37,7 @@ fn template_v_if() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
   import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
-    const _cache = _createVNodeCache();
+    const _cache = _createVNodeCache(0);
     return _openBlock(), _createBlock(_Fragment, null, ok ? (_openBlock(), _createBlock(_Fragment, { key: 0 }, [..._cache[0] || (_cache[0] = [
       _createElementVNode("div", null, null, -1),
       _normalizeVNode("hello", -1),
@@ -121,7 +121,7 @@ fn v_if_v_else_if_v_else() {
   const _hoisted_1 = { key: 0 };
   const _hoisted_2 = { key: 1 };
   (() => {
-    const _cache = _createVNodeCache();
+    const _cache = _createVNodeCache(0);
     return _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : orNot ? (_openBlock(), _createElementBlock("p", _hoisted_2)) : (_openBlock(), _createBlock(_Fragment, { key: 2 }, [_cache[0] || (_cache[0] = _normalizeVNode("fine", -1))], 64))], 64);
   })();
   "#);
@@ -366,7 +366,7 @@ fn with_spaces_between_branches() {
   const _hoisted_2 = { key: 1 };
   const _hoisted_3 = { key: 2 };
   (() => {
-    const _cache = _createVNodeCache();
+    const _cache = _createVNodeCache(0);
     return _openBlock(), _createBlock(_Fragment, null, [
       ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : no ? (_openBlock(), _createElementBlock("div", _hoisted_2)) : (_openBlock(), _createElementBlock("div", _hoisted_3)),
       _cache[0] || (_cache[0] = _normalizeVNode()),
@@ -401,7 +401,7 @@ fn with_comments() {
   const _hoisted_1 = { key: 0 };
   const _hoisted_2 = { key: 1 };
   (() => {
-    const _cache = _createVNodeCache();
+    const _cache = _createVNodeCache(0);
     return _openBlock(), _createBlock(_Fragment, null, ok ? (_openBlock(), _createBlock(_Fragment, { key: 0 }, [ok2 ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : (_openBlock(), _createElementBlock("b", _hoisted_2)), _cache[0] || (_cache[0] = _createElementVNode("p", null, null, -1))], 64)) : _createCommentVNode("", true));
   })();
   "#)

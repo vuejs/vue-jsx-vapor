@@ -40,6 +40,7 @@ pub struct TransformOptions<'a> {
   pub in_v_slot: RefCell<i32>,
   pub in_v_once: RefCell<bool>,
   pub identifiers: RefCell<HashMap<String, i32>>,
+  pub cache_index: RefCell<i32>,
   /**
    * Indicates whether the compiler generates code for SSR,
    * it is always true when generating code for SSR,
@@ -73,6 +74,7 @@ impl<'a> Default for TransformOptions<'a> {
       in_v_slot: RefCell::new(0),
       in_v_once: RefCell::new(false),
       identifiers: RefCell::new(HashMap::new()),
+      cache_index: RefCell::new(0),
       in_ssr: false,
     }
   }

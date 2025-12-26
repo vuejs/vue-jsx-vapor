@@ -13,12 +13,12 @@ import {
 
 const cacheMap = new WeakMap()
 
-export function createVNodeCache() {
+export function createVNodeCache(index: number) {
   const i = getCurrentInstance()
   if (i) {
     !cacheMap.has(i) && cacheMap.set(i, [])
     const caches = cacheMap.get(i)
-    return (caches[caches.length] = [])
+    return caches[index] || (caches[index] = [])
   } else {
     return []
   }

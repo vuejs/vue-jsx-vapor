@@ -28,26 +28,40 @@ impl<'a> TransformContext<'a> {
         ast.alloc_variable_declaration(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.vec1(ast.variable_declarator(
-            SPAN,
-            VariableDeclarationKind::Const,
-            ast.binding_pattern(
-              ast.binding_pattern_kind_binding_identifier(SPAN, "_cache"),
-              NONE,
+          ast.vec1(
+            ast.variable_declarator(
+              SPAN,
+              VariableDeclarationKind::Const,
+              ast.binding_pattern(
+                ast.binding_pattern_kind_binding_identifier(SPAN, "_cache"),
+                NONE,
+                false,
+              ),
+              Some(
+                ast.expression_call(
+                  SPAN,
+                  ast.expression_identifier(SPAN, ast.atom(&self.helper("createVNodeCache"))),
+                  NONE,
+                  ast.vec1(
+                    ast
+                      .expression_numeric_literal(
+                        SPAN,
+                        *self.options.cache_index.borrow() as f64,
+                        None,
+                        NumberBase::Hex,
+                      )
+                      .into(),
+                  ),
+                  false,
+                ),
+              ),
               false,
             ),
-            Some(ast.expression_call(
-              SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&self.helper("createVNodeCache"))),
-              NONE,
-              ast.vec(),
-              false,
-            )),
-            false,
-          )),
+          ),
           false,
         ),
       ));
+      *self.options.cache_index.borrow_mut() += 1;
     }
 
     for name in self.components.borrow_mut().drain() {
