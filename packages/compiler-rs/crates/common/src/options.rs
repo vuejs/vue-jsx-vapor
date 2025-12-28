@@ -3,6 +3,7 @@ use std::{
   collections::{BTreeSet, HashMap},
 };
 
+use indexmap::IndexMap;
 use oxc_ast::ast::Expression;
 use oxc_span::{SourceType, Span};
 use oxc_traverse::TraverseCtx;
@@ -40,6 +41,7 @@ pub struct TransformOptions<'a> {
   pub in_v_slot: RefCell<i32>,
   pub in_v_once: RefCell<bool>,
   pub identifiers: RefCell<HashMap<String, i32>>,
+  pub slot_identifiers: RefCell<IndexMap<Span, (i32, Vec<String>)>>,
   pub cache_index: RefCell<i32>,
   /**
    * Indicates whether the compiler generates code for SSR,
@@ -74,6 +76,7 @@ impl<'a> Default for TransformOptions<'a> {
       in_v_slot: RefCell::new(0),
       in_v_once: RefCell::new(false),
       identifiers: RefCell::new(HashMap::new()),
+      slot_identifiers: RefCell::new(IndexMap::new()),
       cache_index: RefCell::new(0),
       in_ssr: false,
     }

@@ -42,7 +42,7 @@ fn on_component_default_slot() {
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
     return _openBlock(), _createBlock(Comp, null, {
-      default: _withCtx(({ foo }) => [_normalizeVNode(() => foo, 1), _normalizeVNode(() => bar, 1)]),
+      default: _withCtx(({ foo }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
       _: 1
     });
   })();
@@ -64,7 +64,7 @@ fn on_component_named_slot() {
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
     return _openBlock(), _createBlock(Comp, null, {
-      named: _withCtx(({ foo }) => [_normalizeVNode(() => foo, 1), _normalizeVNode(() => bar, 1)]),
+      named: _withCtx(({ foo }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
       _: 1
     });
   })();
@@ -93,8 +93,8 @@ fn template_named_slots() {
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
     return _openBlock(), _createBlock(Comp, null, {
-      one: _withCtx(({ foo }) => [_normalizeVNode(() => foo, 1), _normalizeVNode(() => bar, 1)]),
-      two: _withCtx(({ bar }) => [_normalizeVNode(() => foo, 1), _normalizeVNode(() => bar, 1)]),
+      one: _withCtx(({ foo }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
+      two: _withCtx(({ bar }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
       _: 1
     });
   })();
@@ -122,10 +122,10 @@ fn on_component_dynamically_named_slot() {
   (() => {
     return _openBlock(), _createBlock(Comp, null, {
       [named]: _withCtx(({ foo }) => [
-        _normalizeVNode(() => foo, 1),
-        _normalizeVNode(() => bar, 1),
+        _normalizeVNode(() => foo),
+        _normalizeVNode(() => bar),
         _createVNode(Comp, null, {
-          default: _withCtx((baz) => [_normalizeVNode(() => bar, 1)]),
+          default: _withCtx((baz) => [_normalizeVNode(() => bar)]),
           _: 1
         })
       ]),
@@ -183,8 +183,8 @@ fn dynamically_named_slots() {
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
     return _openBlock(), _createBlock(Comp, null, {
-      [one]: _withCtx(({ foo }) => [_normalizeVNode(() => foo, 1), _normalizeVNode(() => bar, 1)]),
-      [two]: _withCtx(({ bar }) => [_normalizeVNode(() => foo, 1), _normalizeVNode(() => bar, 1)]),
+      [one]: _withCtx(({ foo }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
+      [two]: _withCtx(({ bar }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
       _: 2
     }, 1024);
   })();
@@ -216,15 +216,15 @@ fn nested_slots_scoping() {
       default: _withCtx(({ foo }) => [
         _createVNode(Inner, null, {
           default: _withCtx(({ bar }) => [
-            _normalizeVNode(() => foo, 1),
-            _normalizeVNode(() => bar, 1),
-            _normalizeVNode(() => baz, 1)
+            _normalizeVNode(() => foo),
+            _normalizeVNode(() => bar),
+            _normalizeVNode(() => baz)
           ]),
           _: 2
         }, 1024),
-        _normalizeVNode(() => foo, 1),
-        _normalizeVNode(() => bar, 1),
-        _normalizeVNode(() => baz, 1)
+        _normalizeVNode(() => foo),
+        _normalizeVNode(() => bar),
+        _normalizeVNode(() => baz)
       ]),
       _: 1
     });
@@ -274,7 +274,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars1() {
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
     return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div", null, [_createVNode(Comp, null, {
-      default: _withCtx((bar) => [_normalizeVNode(() => i, 1)]),
+      default: _withCtx((bar) => [_normalizeVNode(() => i)]),
       _: 2
     }, 1024)]))), 256);
   })();
@@ -300,7 +300,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars2() {
   (() => {
     return _openBlock(), _createBlock(Comp, null, {
       default: _withCtx((foo) => [_createVNode(Comp, null, {
-        default: _withCtx((bar) => [_normalizeVNode(() => bar, 1)]),
+        default: _withCtx((bar) => [_normalizeVNode(() => bar)]),
         _: 1
       })]),
       _: 1
@@ -327,7 +327,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars3() {
   (() => {
     return _openBlock(), _createBlock(Comp, null, {
       default: _withCtx((foo) => [_createVNode(Comp, null, {
-        default: _withCtx((bar) => [_normalizeVNode(() => foo, 1)]),
+        default: _withCtx((bar) => [_normalizeVNode(() => foo)]),
         _: 2
       }, 1024)]),
       _: 1
@@ -454,7 +454,7 @@ fn named_slot_with_v_if2() {
   (() => {
     return _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [ok ? {
       name: one,
-      fn: () => [_normalizeVNode(() => props, 1)],
+      fn: () => [_normalizeVNode(() => props)],
       key: 0
     } : undefined]), 1024);
   })();
@@ -515,7 +515,7 @@ fn named_slot_with_v_for() {
   (() => {
     return _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [_renderList(list, (name) => ({
       name,
-      fn: () => [_normalizeVNode(() => name, 1)]
+      fn: () => [_normalizeVNode(() => name)]
     }))]), 1024);
   })();
   "#);

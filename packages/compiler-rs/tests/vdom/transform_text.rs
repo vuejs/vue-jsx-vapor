@@ -16,7 +16,7 @@ fn no_consecutive_text() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
   import { Fragment as _Fragment, createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
-    return _openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(() => foo, 1)], 64);
+    return _openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(() => foo)], 64);
   })();
   "#);
 }
@@ -37,9 +37,9 @@ fn consecutive_text() {
   (() => {
     const _cache = _createVNodeCache(0);
     return _openBlock(), _createBlock(_Fragment, null, [
-      _normalizeVNode(() => foo, 1),
+      _normalizeVNode(() => foo),
       _cache[0] || (_cache[0] = _normalizeVNode(" bar ", -1)),
-      _normalizeVNode(() => baz, 1)
+      _normalizeVNode(() => baz)
     ], 64);
   })();
   "#);
@@ -62,9 +62,9 @@ fn consecutive_text_between_elements() {
     const _cache = _createVNodeCache(0);
     return _openBlock(), _createBlock(_Fragment, null, [
       _cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1)),
-      _normalizeVNode(() => foo, 1),
+      _normalizeVNode(() => foo),
       _cache[1] || (_cache[1] = _normalizeVNode(" bar ", -1)),
-      _normalizeVNode(() => baz, 1),
+      _normalizeVNode(() => baz),
       _cache[2] || (_cache[2] = _createElementVNode("div", null, null, -1))
     ], 64);
   })();
@@ -138,9 +138,9 @@ fn consecutive_text_mixed_with_elements() {
     const _cache = _createVNodeCache(0);
     return _openBlock(), _createBlock(_Fragment, null, [
       _cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1)),
-      _normalizeVNode(() => foo, 1),
+      _normalizeVNode(() => foo),
       _cache[1] || (_cache[1] = _normalizeVNode(" bar ", -1)),
-      _normalizeVNode(() => baz, 1),
+      _normalizeVNode(() => baz),
       _cache[2] || (_cache[2] = _createElementVNode("div", null, null, -1)),
       _cache[3] || (_cache[3] = _normalizeVNode("hello", -1)),
       _cache[4] || (_cache[4] = _createElementVNode("div", null, null, -1))
@@ -183,7 +183,7 @@ fn element_with_custom_directives_and_only_one_text_child_node() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
   (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("p", null, [_normalizeVNode(() => foo, 1)])), [[vFoo]]);
+    return _withDirectives((_openBlock(), _createElementBlock("p", null, [_normalizeVNode(() => foo)])), [[vFoo]]);
   })();
   "#);
 }
@@ -207,7 +207,7 @@ fn condition_expression() {
   const _hoisted_1 = { key: 0 };
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(), _createElementBlock("div", null, [foo ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), foo ? (_openBlock(), _createElementBlock("div", { key: 1 }, [_normalizeVNode(() => foo, 1), _cache[0] || (_cache[0] = _normalizeVNode("bar", -1))])) : (_openBlock(), _createBlock(_Fragment, { key: 2 }, [_cache[1] || (_cache[1] = _normalizeVNode(() => "bar", -1))], 64))]);
+    return _openBlock(), _createElementBlock("div", null, [foo ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), foo ? (_openBlock(), _createElementBlock("div", { key: 1 }, [_normalizeVNode(() => foo), _cache[0] || (_cache[0] = _normalizeVNode("bar", -1))])) : (_openBlock(), _createBlock(_Fragment, { key: 2 }, [_cache[1] || (_cache[1] = _normalizeVNode("bar", -1))], 64))]);
   })();
   "#)
 }
@@ -226,7 +226,7 @@ fn logical_expression() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
-    return _openBlock(), _createElementBlock("div", null, [foo && (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo, 1)]))]);
+    return _openBlock(), _createElementBlock("div", null, [foo && (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)]))]);
   })();
   "#)
 }

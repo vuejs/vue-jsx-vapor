@@ -307,7 +307,7 @@ pub fn get_constant_type<'a>(
                 let name = &p.name.get_identifier().name;
                 if !is_directive(name)
                   && let Some(JSXAttributeValue::ExpressionContainer(value)) = p.value.as_ref()
-                  && value.span != SPAN
+                  && value.expression.span() != SPAN
                 {
                   let exp_type = get_constant_type(
                     Either::B(value.expression.to_expression()),
@@ -368,40 +368,45 @@ pub fn get_constant_type<'a>(
         ConstantTypes::NotConstant
       }
       JSXChild::ExpressionContainer(node) => {
-        if node.expression.to_expression().is_literal() {
-          ConstantTypes::CanStringify
-        } else {
+        let node = &node.expression;
+        if node.span() == SPAN || !node.to_expression().is_literal() {
           ConstantTypes::NotConstant
+        } else {
+          ConstantTypes::CanStringify
         }
       }
       JSXChild::Text(_) => ConstantTypes::CanStringify,
       _ => ConstantTypes::NotConstant,
     },
     Either::B(node) => {
-      if node.is_literal() {
-        ConstantTypes::CanStringify
-      } else if match node {
-        Expression::Identifier(_) => true,
-        _ => {
-          let mut has_ref = false;
-          let has_ref_ptr = &mut has_ref as *mut bool;
-          WalkIdentifiers::new(
-            Box::new(move |_, _, _, _, _| {
-              *unsafe { &mut *has_ref_ptr } = true;
-              None
-            }),
-            &context.ast,
-            *context.source.borrow(),
-            context.options,
-            false,
-          )
-          .traverse(node.clone_in(context.allocator));
-          has_ref
+      let node_span = node.span();
+      if let Some(has_ref) = context.reference_expressions.borrow().get(&node_span) {
+        if *has_ref {
+          ConstantTypes::NotConstant
+        } else {
+          ConstantTypes::CanStringify
         }
-      } {
-        ConstantTypes::NotConstant
-      } else {
+      } else if node.is_literal() {
         ConstantTypes::CanStringify
+      } else {
+        let mut has_ref = false;
+        let has_ref_ptr = &mut has_ref as *mut bool;
+        WalkIdentifiers::new(
+          Box::new(move |_, _, _, _, _| {
+            *unsafe { &mut *has_ref_ptr } = true;
+            None
+          }),
+          &context.ast,
+          *context.source.borrow(),
+          context.options,
+          false,
+        )
+        .traverse(node.clone_in(context.allocator));
+        if has_ref {
+          ConstantTypes::NotConstant
+        } else {
+          ConstantTypes::CanStringify
+        }
       }
     }
   }

@@ -21,7 +21,7 @@ fn v_slot_basic() {
     return _openBlock(), _createBlock(Comp, null, { default: () => (() => {
       return _openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(() => (() => {
         return _openBlock(), _createElementBlock("span");
-      })(), 1)], 64);
+      })())], 64);
     })() }, 0);
   })();
   "#);
@@ -51,12 +51,12 @@ fn v_slot_with_v_slots() {
     return _openBlock(), _createBlock(Comp, { bar }, {
       bar,
       default: ({ foo }) => (() => {
-        return _openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(() => foo + bar, 1), _normalizeVNode(() => (() => {
+        return _openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(() => foo + bar), _normalizeVNode(() => (() => {
           return _openBlock(), _createBlock(Comp, null, {
-            default: _withCtx(({ baz }) => [_normalizeVNode(() => bar, 1), _normalizeVNode(() => baz, 1)]),
+            default: _withCtx(({ baz }) => [_normalizeVNode(() => bar), _normalizeVNode(() => baz)]),
             _: 1
           });
-        })(), 1)], 64);
+        })())], 64);
       })()
     }, 8, ["bar"]);
   })();

@@ -9,7 +9,7 @@ use common::{
   text::get_tag_name,
 };
 use napi::Either;
-use oxc_allocator::{CloneIn, TakeIn};
+use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
   ast::{
@@ -45,15 +45,24 @@ pub unsafe fn track_slot_scopes<'a>(
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   unsafe {
     let node = &mut *context_node;
-    if let JSXChild::Element(node) = node
-      && (is_jsx_component(node) || is_template(node))
-    {
+    let JSXChild::Element(node) = node else {
+      return None;
+    };
+    let is_component = is_jsx_component(node);
+    if is_component || is_template(node) {
       // We are only checking non-empty v-slot here
       // since we only care about slots that introduce scope variables.
       if let Some(v_slot) = directives.v_slot.as_ref() {
         let mut identifiers = vec![];
         if let Some(JSXAttributeValue::ExpressionContainer(slot_props)) = v_slot.value.as_ref() {
           identifiers = context.add_identifiers(&Some(slot_props.expression.to_expression()));
+        }
+        if is_component {
+          context
+            .options
+            .slot_identifiers
+            .borrow_mut()
+            .insert(node.span, (0, identifiers.clone()));
         }
         *context.options.in_v_slot.borrow_mut() += 1;
         return Some(Box::new(move || {
@@ -87,12 +96,13 @@ pub fn build_slots<'a>(
   // This can be further optimized to make
   // it dynamic when the slot children use the scope variables.
   if !*context.options.ssr.borrow() && has_dynamic_slots {
-    has_dynamic_slots = context.has_scope_ref(&ast.expression_jsx_fragment(
-      SPAN,
-      ast.jsx_opening_fragment(SPAN),
-      unsafe { &mut *_node }.children.clone_in(ast.allocator),
-      ast.jsx_closing_fragment(SPAN),
-    ));
+    has_dynamic_slots = context
+      .options
+      .slot_identifiers
+      .borrow()
+      .get(&node.span)
+      .map(|n| n.0 > 0)
+      .unwrap_or_default();
   }
 
   // 1. Check for slot with slotProps on component itself.
@@ -137,7 +147,7 @@ pub fn build_slots<'a>(
   let mut seen_slot_names = HashSet::new();
   let mut conditional_branch_index = 0;
 
-  for (i, slot_element) in unsafe { &mut *_node }.children.iter_mut().enumerate() {
+  for (i, slot_element) in node.children.iter_mut().enumerate() {
     let mut slot_dir = None;
 
     let _slot_element = slot_element as *mut JSXChild;

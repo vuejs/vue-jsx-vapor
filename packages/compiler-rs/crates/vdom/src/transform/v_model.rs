@@ -4,7 +4,7 @@ use oxc_ast::{
   NONE,
   ast::{
     AssignmentOperator, AssignmentTarget, BinaryOperator, Expression, FormalParameterKind,
-    JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElement,
+    JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElement, JSXExpression,
     ObjectPropertyKind, PropertyKey, PropertyKind,
   },
 };
@@ -34,11 +34,13 @@ pub fn transform_v_model<'a>(
 
   // we assume v-model directives are always parsed
   // (not artificially created by a transform)
-  let exp = if let JSXAttributeValue::ExpressionContainer(exp) = exp
-    && let Some(exp) = exp.expression.as_expression_mut()
+  let (exp, has_scope_ref) = if let JSXAttributeValue::ExpressionContainer(exp) = exp
+    && !matches!(exp.expression, JSXExpression::EmptyExpression(_))
+    && let (exp, has_scope_ref) =
+      context.process_jsx_expression(&mut exp.expression.clone_in(context.allocator))
     && (exp.is_identifier_reference() || exp.is_member_expression())
   {
-    exp
+    (exp, has_scope_ref)
   } else {
     context.options.on_error.as_ref()(ErrorCodes::VModelMalformedExpression, exp.span());
     return None;
@@ -180,7 +182,7 @@ pub fn transform_v_model<'a>(
         ast.expression_assignment(
           SPAN,
           AssignmentOperator::Assign,
-          match exp {
+          match &exp {
             Expression::Identifier(exp) => AssignmentTarget::AssignmentTargetIdentifier(
               ast.alloc_identifier_reference(exp.span, exp.name),
             ),
@@ -199,7 +201,7 @@ pub fn transform_v_model<'a>(
   );
 
   // cache v-model handler if applicable (when it's not a computed member expression)
-  if !*context.options.in_v_once.borrow() && !context.has_scope_ref(exp) {
+  if !*context.options.in_v_once.borrow() && !has_scope_ref {
     assignment_exp = context.cache(assignment_exp, false, false, false)
   }
 
@@ -214,7 +216,7 @@ pub fn transform_v_model<'a>(
       } else {
         prop_name
       },
-      exp.clone_in(context.allocator),
+      exp,
       false,
       false,
       computed,
@@ -308,7 +310,7 @@ pub fn transform_v_model<'a>(
 
   Some(DirectiveTransformResult {
     props,
-    runtime: runtime_name.map(|runtime_name| build_directive_args(&dir, context, &runtime_name)),
+    runtime: runtime_name.map(|runtime_name| build_directive_args(dir, context, &runtime_name)),
   })
 }
 

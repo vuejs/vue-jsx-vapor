@@ -31,13 +31,15 @@ pub unsafe fn transform_v_slots<'a>(
     }
 
     if let Some(JSXAttributeValue::ExpressionContainer(value)) = &mut dir.value {
-      let expression = value.expression.take_in(context.allocator);
+      let mut expression = value.expression.take_in(context.allocator);
       Some(Box::new(move || {
         if let Some(NodeTypes::VNodeCall(vnode_call)) =
           context.codegen_map.borrow_mut().get_mut(&node_span)
         {
           *context.options.in_v_slot.borrow_mut() += 1;
-          vnode_call.children = Some(Either3::C(context.jsx_expression_to_expression(expression)));
+          vnode_call.children = Some(Either3::C(
+            context.process_jsx_expression(&mut expression).0,
+          ));
           vnode_call.patch_flag = Some(vnode_call.patch_flag.unwrap_or_default());
           *context.options.in_v_slot.borrow_mut() -= 1;
         }

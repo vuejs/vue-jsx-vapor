@@ -18,3 +18,4 @@ oxc_parser = { workspace = true }
 napi-derive = { workspace = true }
 napi = { workspace = true }
 phf = { workspace = true }
+indexmap = { workspace = true }

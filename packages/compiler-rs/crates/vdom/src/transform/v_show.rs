@@ -16,7 +16,7 @@ pub fn transform_v_show<'a>(
   Some(DirectiveTransformResult {
     props: vec![],
     runtime: Some(build_directive_args(
-      &resolve_directive(dir, *context.source.borrow()),
+      resolve_directive(dir, *context.source.borrow()),
       context,
       &context.helper("vShow"),
     )),

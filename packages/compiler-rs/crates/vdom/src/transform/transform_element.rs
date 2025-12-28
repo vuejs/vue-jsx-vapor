@@ -172,7 +172,14 @@ pub unsafe fn transform_element<'a>(
         // pass directly if the only child is a text node
         // (plain / interpolation / expression)
         if matches!(child, JSXChild::Text(_))
-          || matches!(child,JSXChild::ExpressionContainer(child) if child.expression.to_expression().is_literal())
+          || if let JSXChild::ExpressionContainer(child) = child
+            && let Some(exp) = child.expression.as_expression()
+            && exp.span() != SPAN
+          {
+            exp.is_literal()
+          } else {
+            false
+          }
         {
           Either3::A(child as *mut _)
         } else {
@@ -224,6 +231,14 @@ pub unsafe fn transform_element<'a>(
       .codegen_map
       .borrow_mut()
       .insert(node_span, NodeTypes::VNodeCall(vnode_call));
+
+    if is_component {
+      context
+        .options
+        .slot_identifiers
+        .borrow_mut()
+        .shift_remove(&node_span);
+    }
   }))
 }
 
@@ -470,7 +485,7 @@ pub fn build_props<'a>(
               };
               runtime_directives.push(
                 build_directive_args(
-                  &resolve_directive(prop, *context.source.borrow()),
+                  resolve_directive(prop, *context.source.borrow()),
                   context,
                   &runtime,
                 )
@@ -717,7 +732,7 @@ pub fn dedupe_properties<'a>(
 }
 
 pub fn build_directive_args<'a>(
-  dir: &DirectiveNode<'a>,
+  mut dir: DirectiveNode<'a>,
   context: &'a TransformContext<'a>,
   runtime: &str,
 ) -> Expression<'a> {
@@ -726,9 +741,9 @@ pub fn build_directive_args<'a>(
   // built-in directive with runtime
   dir_args.push(ast.expression_identifier(SPAN, ast.atom(runtime)));
   let exp_is_none = dir.exp.is_none();
-  if let Some(exp) = dir.exp.as_ref() {
-    dir_args.push(if let Some(node) = exp.ast.as_ref() {
-      node.clone_in(ast.allocator)
+  if let Some(exp) = dir.exp.as_mut() {
+    dir_args.push(if let Some(node) = exp.ast.as_mut() {
+      node.take_in(context.allocator)
     } else {
       ast.expression_string_literal(exp.loc, ast.atom(&exp.content), None)
     });

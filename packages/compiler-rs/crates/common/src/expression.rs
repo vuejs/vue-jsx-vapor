@@ -75,11 +75,14 @@ impl<'a> SimpleExpressionNode<'a> {
       },
       Either3::C(node) => match node {
         JSXAttributeValue::ExpressionContainer(node) => {
-          let expression = node.expression.to_expression_mut();
-          is_static = matches!(expression, Expression::StringLiteral(_));
-          loc = expression.span();
-          ast = Some(expression);
-          loc.source_text(source).to_string()
+          if let Some(expression) = node.expression.as_expression_mut() {
+            is_static = matches!(expression, Expression::StringLiteral(_));
+            loc = expression.span();
+            ast = Some(expression);
+            loc.source_text(source).to_string()
+          } else {
+            String::new()
+          }
         }
         JSXAttributeValue::StringLiteral(node) => {
           is_static = true;

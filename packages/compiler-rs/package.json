@@ -54,8 +54,8 @@
     "prepublishOnly": "napi prepublish -t npm",
     "version": "napi version",
     "bench": "cargo bench --no-default-features --bench bench_vdom",
-    "bench_vapor": "cargo bench --no-default-features --bench bench_vapor",
-    "test": "cargo test",
+    "bench:vapor": "cargo bench --no-default-features --bench bench_vapor",
+    "test": "cargo test -- --nocapture",
     "test:watch": "nodemon -w crates -w tests -w src -e rs -x 'cargo test'",
     "flamegraph": "CARGO_PROFILE_RELEASE_STRIP=false CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --bench bench --no-default-features"
   },

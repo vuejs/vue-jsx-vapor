@@ -4,7 +4,6 @@ use common::{
   error::ErrorCodes,
   text::capitalize,
 };
-use oxc_allocator::CloneIn;
 use oxc_ast::{
   NONE,
   ast::{
@@ -46,7 +45,7 @@ pub fn transform_v_on<'a>(
   let mut should_cache = value.is_none() && !*context.options.in_v_once.borrow();
   // handler processing
   let mut exp = if let Some(JSXAttributeValue::ExpressionContainer(value)) = value {
-    let exp = context.jsx_expression_to_expression(value.expression.clone_in(context.allocator));
+    let (exp, has_scope_ref) = context.process_jsx_expression(&mut value.expression);
     let is_component = is_jsx_component(node);
     let is_member_exp = exp.is_member_expression() || matches!(exp, Expression::Identifier(_));
     should_cache = !*context.options.in_v_once.borrow()
@@ -56,7 +55,7 @@ pub fn transform_v_on<'a>(
       // transition end handling. Inline function is ok since its arity
       // is preserved even when cached.
       && !(is_member_exp && is_component)
-      && !context.has_scope_ref(&exp);
+      && !has_scope_ref;
     if should_cache && is_member_exp {
       ast.expression_arrow_function(
         SPAN,

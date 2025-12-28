@@ -4,9 +4,9 @@ pub use common::options::TransformOptions;
 use common::walk::WalkIdentifiers;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
 use oxc_ast::ast::{
-  ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, JSXAttributeValue,
-  JSXChild, JSXClosingFragment, JSXExpression, JSXExpressionContainer, JSXFragment,
-  JSXOpeningFragment, LogicalOperator, NumberBase, ObjectPropertyKind,
+  ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, IdentifierReference,
+  JSXAttributeValue, JSXChild, JSXClosingFragment, JSXExpression, JSXExpressionContainer,
+  JSXFragment, JSXOpeningFragment, LogicalOperator, NumberBase, ObjectPropertyKind,
 };
 use oxc_ast::{AstBuilder, NONE};
 use oxc_span::{GetSpan, SPAN, Span};
@@ -64,6 +64,7 @@ pub struct TransformContext<'a> {
   pub cache_index: RefCell<usize>,
   pub components: RefCell<HashSet<String>>,
   pub directives: RefCell<HashSet<String>>,
+  pub reference_expressions: RefCell<HashMap<Span, bool>>,
 }
 
 impl<'a> TransformContext<'a> {
@@ -80,6 +81,7 @@ impl<'a> TransformContext<'a> {
       cache_index: RefCell::new(0),
       components: RefCell::new(HashSet::new()),
       directives: RefCell::new(HashSet::new()),
+      reference_expressions: RefCell::new(HashMap::new()),
       options,
     }
   }
@@ -270,28 +272,93 @@ impl<'a> TransformContext<'a> {
           .expression_string_literal(value.span, value.value, value.raw)
       }
       JSXAttributeValue::ExpressionContainer(value) => {
-        self.jsx_expression_to_expression(value.expression.clone_in(self.allocator))
+        self.process_jsx_expression(&mut value.expression).0
       }
     }
   }
 
-  pub fn jsx_expression_to_expression(&'a self, mut value: JSXExpression<'a>) -> Expression<'a> {
-    let value = value.to_expression_mut().take_in(self.allocator);
+  pub fn process_jsx_expression(&'a self, value: &mut JSXExpression<'a>) -> (Expression<'a>, bool) {
+    let span = value.span();
+    let exp = value.to_expression_mut();
+    let value = if exp.is_literal() {
+      exp.clone_in(self.allocator)
+    } else {
+      exp.take_in(self.allocator)
+    };
+    let mut has_ref = false;
+    let mut has_scope_ref = false;
+    let has_scope_ref_ptr = &mut has_scope_ref as *mut _;
     if matches!(
       value,
       Expression::Identifier(_) | Expression::StaticMemberExpression(_)
     ) || value.is_literal()
     {
-      value
+      if let Some(id) = if let Expression::Identifier(id) = &value {
+        Some(id)
+      } else if let Expression::StaticMemberExpression(id) = &value
+        && let Expression::Identifier(id) = id.get_first_object()
+      {
+        Some(id)
+      } else {
+        None
+      } {
+        if self
+          .options
+          .identifiers
+          .borrow()
+          .get(id.name.as_str())
+          .is_some()
+        {
+          has_scope_ref = true;
+          self.add_slot_identifiers(id);
+        }
+        has_ref = true;
+        self
+          .reference_expressions
+          .borrow_mut()
+          .insert(span, has_ref);
+      };
+      (value, has_scope_ref)
     } else {
-      WalkIdentifiers::new(
-        Box::new(|_, _, _, _, _| None),
+      let has_ref_ptr = &mut has_ref as *mut bool;
+      let exp = WalkIdentifiers::new(
+        Box::new(move |id, _, _, _, _| {
+          if self
+            .options
+            .identifiers
+            .borrow()
+            .get(id.name.as_str())
+            .is_some()
+          {
+            *unsafe { &mut *has_scope_ref_ptr } = true;
+            self.add_slot_identifiers(id);
+          }
+          *unsafe { &mut *has_ref_ptr } = true;
+          None
+        }),
         &self.ast,
         *self.source.borrow(),
         self.options,
         false,
       )
-      .traverse(value)
+      .traverse(value);
+      self
+        .reference_expressions
+        .borrow_mut()
+        .insert(span, has_ref);
+      (exp, has_scope_ref)
+    }
+  }
+
+  pub fn add_slot_identifiers(&self, id: &IdentifierReference) {
+    let slot_identifiers = &mut self.options.slot_identifiers.borrow_mut();
+    let len = slot_identifiers.len();
+    let last_index = if len > 1 { len - 1 } else { 0 };
+    for (index, value) in slot_identifiers.values_mut().enumerate() {
+      if index == last_index && value.1.contains(&id.name.to_string()) {
+        continue;
+      }
+      value.0 += 1;
     }
   }
 

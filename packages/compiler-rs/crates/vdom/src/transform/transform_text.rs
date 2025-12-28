@@ -1,5 +1,4 @@
-use napi::Either;
-use oxc_allocator::{CloneIn, TakeIn};
+use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
   ast::{
@@ -10,17 +9,12 @@ use oxc_ast::{
 use oxc_span::{GetSpan, SPAN};
 
 use crate::{
-  ast::{ConstantTypes, NodeTypes},
-  transform::{
-    TransformContext,
-    cache_static::{cache_static_children, get_constant_type},
-    utils::inject_prop,
-  },
+  ast::NodeTypes,
+  transform::{TransformContext, cache_static::cache_static_children, utils::inject_prop},
 };
 
 use common::{
   check::{is_built_in_directive, is_directive, is_jsx_component, is_template},
-  patch_flag::PatchFlags,
   text::resolve_jsx_text,
 };
 
@@ -103,58 +97,41 @@ pub unsafe fn transform_text<'a>(
           } else if let Expression::LogicalExpression(exp) = exp {
             transform_logical_expression(exp, unsafe { &mut *context_node }, context);
             continue;
-          }
-          call_args.push(
-            ast
-              .expression_arrow_function(
-                SPAN,
-                true,
-                false,
-                NONE,
-                ast.formal_parameters(
+          } else if exp.is_literal() {
+            call_args.push(
+              context
+                .process_jsx_expression(&mut child.expression)
+                .0
+                .into(),
+            );
+          } else {
+            call_args.push(
+              ast
+                .expression_arrow_function(
                   SPAN,
-                  FormalParameterKind::ArrowFormalParameters,
-                  ast.vec(),
+                  true,
+                  false,
                   NONE,
-                ),
-                NONE,
-                ast.function_body(
-                  SPAN,
-                  ast.vec(),
-                  ast.vec1(
-                    ast.statement_expression(
-                      SPAN,
-                      context
-                        .jsx_expression_to_expression(child.expression.clone_in(context.allocator)),
-                    ),
+                  ast.formal_parameters(
+                    SPAN,
+                    FormalParameterKind::ArrowFormalParameters,
+                    ast.vec(),
+                    NONE,
                   ),
-                ),
-              )
-              .into(),
-          )
+                  NONE,
+                  ast.function_body(
+                    SPAN,
+                    ast.vec(),
+                    ast.vec1(ast.statement_expression(
+                      SPAN,
+                      context.process_jsx_expression(&mut child.expression).0,
+                    )),
+                  ),
+                )
+                .into(),
+            )
+          }
         };
-        // mark dynamic text with flag so it gets patched inside a block
-        if !*context.options.ssr.borrow()
-          && matches!(
-            get_constant_type(
-              Either::A(child),
-              context,
-              &mut context.codegen_map.borrow_mut()
-            ),
-            ConstantTypes::NotConstant
-          )
-        {
-          call_args.push(
-            ast
-              .expression_numeric_literal(
-                SPAN,
-                PatchFlags::Text as i32 as f64,
-                None,
-                NumberBase::Hex,
-              )
-              .into(),
-          )
-        }
         context.codegen_map.borrow_mut().insert(
           child.span(),
           NodeTypes::TextCallNode(ast.expression_call(
