@@ -25,7 +25,7 @@ use common::{
   directive::{DirectiveNode, resolve_directive},
   error::ErrorCodes,
   patch_flag::PatchFlags,
-  text::{camelize, get_tag_name, is_empty_text, to_valid_asset_id},
+  text::{camelize, get_tag_name, to_valid_asset_id},
 };
 
 /// # SAFETY
@@ -120,11 +120,7 @@ pub unsafe fn transform_element<'a>(
   Some(Box::new(move || {
     // children
     let node_span = node.span;
-    let children = &mut node
-      .children
-      .iter_mut()
-      .filter(|child| !is_empty_text(child))
-      .collect::<Vec<_>>();
+    let children = &mut node.children;
     if !children.is_empty() {
       if vnode_tag == "KeepAlive" || vnode_tag == "keep-alive" {
         // Although a built-in component, we compile KeepAlive with raw children
@@ -178,7 +174,7 @@ pub unsafe fn transform_element<'a>(
         if matches!(child, JSXChild::Text(_))
           || matches!(child,JSXChild::ExpressionContainer(child) if child.expression.to_expression().is_literal())
         {
-          Either3::A(*child as *mut _)
+          Either3::A(child as *mut _)
         } else {
           Either3::B(&mut node.children as *mut _)
         }

@@ -7,7 +7,8 @@ use insta::assert_snapshot;
 #[test]
 fn should_convert_v_text_to_text_content() {
   let code = transform(
-    r#"<div v-text={test} />"#,
+    r#"<div v-text={test}>
+    </div>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()

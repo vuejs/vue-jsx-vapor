@@ -1,7 +1,7 @@
-use compiler_rs::{TransformOptions, transform};
+use compiler_rs::transform;
 use criterion::{Criterion, criterion_group, criterion_main};
 
-fn bench_compile(b: &mut Criterion) {
+fn bench_vapor(b: &mut Criterion) {
   let source = format!(
     "<>{}</>",
     "<Comp
@@ -34,19 +34,7 @@ fn bench_compile(b: &mut Criterion) {
   );
 
   b.bench_function("vapor", |b| b.iter(|| transform(&source, None)));
-
-  b.bench_function("vdom", |b| {
-    b.iter(|| {
-      transform(
-        &source,
-        Some(TransformOptions {
-          interop: true,
-          ..Default::default()
-        }),
-      )
-    })
-  });
 }
 
-criterion_group!(benches, bench_compile);
+criterion_group!(benches, bench_vapor);
 criterion_main!(benches);

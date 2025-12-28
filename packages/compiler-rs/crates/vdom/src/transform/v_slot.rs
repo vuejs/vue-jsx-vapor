@@ -6,7 +6,7 @@ use common::{
   error::ErrorCodes,
   expression::expression_to_params,
   patch_flag::SlotFlags,
-  text::{get_tag_name, is_empty_text},
+  text::get_tag_name,
 };
 use napi::Either;
 use oxc_allocator::{CloneIn, TakeIn};
@@ -138,16 +138,11 @@ pub fn build_slots<'a>(
   let mut conditional_branch_index = 0;
 
   for (i, slot_element) in unsafe { &mut *_node }.children.iter_mut().enumerate() {
-    if is_empty_text(slot_element) {
-      continue;
-    }
     let mut slot_dir = None;
 
     let _slot_element = slot_element as *mut JSXChild;
     let JSXChild::Element(slot_element) = slot_element else {
-      if !is_empty_text(unsafe { &*_slot_element }) {
-        implicit_default_children.push(unsafe { &mut *_slot_element }.take_in(context.allocator))
-      }
+      implicit_default_children.push(unsafe { &mut *_slot_element }.take_in(context.allocator));
       continue;
     };
     let slot_element_ptr = slot_element as *mut oxc_allocator::Box<JSXElement>;
@@ -159,9 +154,7 @@ pub fn build_slots<'a>(
       true
     } {
       // not a <template v-slot>, skip.
-      if !is_empty_text(unsafe { &*_slot_element }) {
-        implicit_default_children.push(unsafe { &mut *_slot_element }.take_in(context.allocator))
-      }
+      implicit_default_children.push(unsafe { &mut *_slot_element }.take_in(context.allocator));
       continue;
     }
 
@@ -256,14 +249,11 @@ pub fn build_slots<'a>(
       .or(slot_directives.v_else_if.as_mut())
     {
       // find adjacent v-if
-      let j = i;
-      let mut prev = None;
-      for _prev in unsafe { &mut *_node }.children[..j].iter_mut().rev() {
-        if !is_empty_text(_prev) {
-          prev = Some(_prev);
-          break;
-        }
-      }
+      let prev = if i > 0 {
+        unsafe { &mut *_node }.children.get_mut(i - 1)
+      } else {
+        None
+      };
       if let Some(JSXChild::Element(prev)) = prev
         && is_template(prev)
         && find_prop(
@@ -625,7 +615,7 @@ fn gen_cache_node_list<'a>(
       let mut children = VNodeCallChildren::B(node_children);
       cache_static_children(
         Some(Either::B(&mut children)),
-        node_children.iter_mut().collect::<Vec<_>>(),
+        node_children,
         context,
         &mut context.codegen_map.borrow_mut(),
         false,

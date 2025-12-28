@@ -171,7 +171,7 @@ pub unsafe fn transform_v_for<'a>(
     if let JSXChild::Fragment(node) = unsafe { &mut *context_node } {
       cache_static_children(
         None,
-        node.children.iter_mut().collect::<Vec<_>>(),
+        &mut node.children,
         context,
         &mut context.codegen_map.borrow_mut(),
         false,

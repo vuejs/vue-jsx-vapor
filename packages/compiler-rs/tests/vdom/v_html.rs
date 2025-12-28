@@ -7,7 +7,8 @@ use insta::assert_snapshot;
 #[test]
 fn should_convert_v_html_to_inner_html() {
   let code = transform(
-    r#"<div v-html={test} />"#,
+    r#"<div v-html={test}>
+    </div>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()

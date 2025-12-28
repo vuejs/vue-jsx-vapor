@@ -222,13 +222,9 @@ pub fn create_children_codegen_node<'a>(
     vnode_call.is_block = true;
     inject_prop(vnode_call, key_property, context);
   }
-  cache_static_children(
-    None,
-    vec![unsafe { &mut *branch.node }],
-    context,
-    codegen_map,
-    false,
-  );
+  let children = &mut ast.vec1(unsafe { &mut *branch.node }.take_in(context.allocator));
+  cache_static_children(None, children, context, codegen_map, false);
+  branch.node = children.first_mut().unwrap();
   match codegen_map.remove(&span).unwrap() {
     NodeTypes::VNodeCall(vnode_call) => context.gen_vnode_call(vnode_call, codegen_map),
     NodeTypes::TextCallNode(exp) => exp,

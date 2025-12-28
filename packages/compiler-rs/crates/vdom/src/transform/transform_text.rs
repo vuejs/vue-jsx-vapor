@@ -21,7 +21,7 @@ use crate::{
 use common::{
   check::{is_built_in_directive, is_directive, is_jsx_component, is_template},
   patch_flag::PatchFlags,
-  text::{is_empty_text, resolve_jsx_text},
+  text::resolve_jsx_text,
 };
 
 /// # SAFETY
@@ -33,17 +33,16 @@ pub unsafe fn transform_text<'a>(
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let ast = &context.ast;
   let node = unsafe { &mut *context_node };
-
-  let mut children = match unsafe { &mut *context_node } {
-    JSXChild::Element(node) => &mut node.children,
-    JSXChild::Fragment(node) => &mut node.children,
-    _ => return None,
+  if !matches!(node, JSXChild::Element(_) | JSXChild::Fragment(_)) {
+    return None;
   }
-  .into_iter()
-  .filter(|child| !is_empty_text(child))
-  .collect::<Vec<_>>();
 
   Some(Box::new(move || {
+    let children = match unsafe { &mut *context_node } {
+      JSXChild::Element(node) => &mut node.children,
+      JSXChild::Fragment(node) => &mut node.children,
+      _ => unreachable!(),
+    };
     let has_text = children.iter().any(|child| is_text_like(child));
 
     // if this is a plain element with a single text child, leave it
@@ -232,7 +231,7 @@ fn transform_branch<'a>(
       );
       vnode_call.is_block = true;
       inject_prop(&mut vnode_call, key_property, context);
-      cache_static_children(None, vec![&mut branch], context, codegen_map, false);
+      cache_static_children(None, &mut ast.vec1(branch), context, codegen_map, false);
       *exp = context.gen_vnode_call(vnode_call, codegen_map);
     }
   }

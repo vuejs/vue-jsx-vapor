@@ -35,13 +35,7 @@ pub unsafe fn transform_v_slots<'a>(
       return None;
     }
 
-    if unsafe { &*node }
-      .children
-      .iter()
-      .filter(|c| !is_empty_text(c))
-      .count()
-      > 0
-    {
+    if unsafe { &*node }.children.iter().any(|c| !is_empty_text(c)) {
       context.options.on_error.as_ref()(ErrorCodes::VSlotMixedSlotUsage, unsafe { &*node }.span);
       return None;
     }

@@ -1,6 +1,6 @@
 use napi::bindgen_prelude::Either3;
 use oxc_allocator::TakeIn;
-use oxc_ast::ast::{JSXAttributeValue, JSXChild, JSXElement};
+use oxc_ast::ast::{JSXAttributeValue, JSXChild};
 
 use crate::{ast::NodeTypes, transform::TransformContext};
 use common::{
@@ -13,26 +13,19 @@ pub unsafe fn transform_v_slots<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
-  let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
+  let JSXChild::Element(node) = (unsafe { &*context_node }) else {
     return None;
   };
 
   let node_span = node.span;
-  let node = node as *mut oxc_allocator::Box<'a, JSXElement<'a>>;
 
   if let Some(dir) = directives.v_slots.as_mut() {
-    if !is_jsx_component(unsafe { &*node }) {
+    if !is_jsx_component(&*node) {
       context.options.on_error.as_ref()(ErrorCodes::VSlotMisplaced, node_span);
       return None;
     }
 
-    if unsafe { &*node }
-      .children
-      .iter()
-      .filter(|c| !is_empty_text(c))
-      .count()
-      > 0
-    {
+    if node.children.iter().any(|c| !is_empty_text(c)) {
       context.options.on_error.as_ref()(ErrorCodes::VSlotMixedSlotUsage, node_span);
       return None;
     }

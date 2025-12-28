@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use common::text::{is_empty_text, resolve_jsx_text, to_valid_asset_id};
+use common::text::{resolve_jsx_text, to_valid_asset_id};
 use napi::bindgen_prelude::Either3;
 use oxc_allocator::TakeIn;
 use oxc_ast::{
@@ -194,13 +194,9 @@ impl<'a> TransformContext<'a> {
       Either3::B(children) => ast.expression_array(
         SPAN,
         ast.vec_from_iter(unsafe { &mut *children }.into_iter().filter_map(|child| {
-          if is_empty_text(child) {
-            None
-          } else {
-            self
-              .gen_node(child.take_in(self.allocator), codegen_map)
-              .map(|node| node.into())
-          }
+          self
+            .gen_node(child.take_in(self.allocator), codegen_map)
+            .map(|node| node.into())
         })),
       ),
       Either3::C(children) => children,

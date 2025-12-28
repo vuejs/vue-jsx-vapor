@@ -2,7 +2,10 @@ use oxc_ast::ast::JSXChild;
 
 use crate::transform::TransformContext;
 
-use common::check::{is_fragment_node, is_jsx_component};
+use common::{
+  check::{is_fragment_node, is_jsx_component},
+  text::is_empty_text,
+};
 
 /// # SAFETY
 pub unsafe fn transform_children<'a>(
@@ -25,11 +28,14 @@ pub unsafe fn transform_children<'a>(
       JSXChild::Fragment(node) => &mut node.children,
       _ => unreachable!(),
     } as *mut oxc_allocator::Vec<JSXChild>;
-    for child in (&mut *children).iter_mut() {
-      // if matches!(child, JSXChild::Element(_) | JSXChild::Fragment(_)) {
-      context.transform_node(child, Some(node));
-      // }
-    }
+    (&mut *children).retain_mut(|child| {
+      if is_empty_text(child) {
+        false
+      } else {
+        context.transform_node(child, Some(node));
+        true
+      }
+    });
     None
   }
 }

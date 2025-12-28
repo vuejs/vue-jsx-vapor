@@ -16,7 +16,7 @@ use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ast::{ConstantTypes, NodeTypes, VNodeCallChildren, get_vnode_block_helper},
-  transform::{TransformContext, utils::get_children},
+  transform::TransformContext,
 };
 
 pub fn cache_static<'a>(
@@ -25,7 +25,11 @@ pub fn cache_static<'a>(
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
 ) {
   let node = unsafe { &*(root as *mut JSXChild) };
-  let children = get_children(root);
+  let children = match unsafe { &mut *(root as *mut JSXChild) } {
+    JSXChild::Element(node) => &mut node.children,
+    JSXChild::Fragment(node) => &mut node.children,
+    _ => unimplemented!(),
+  };
   let single_root = if let JSXChild::Fragment(_) = node
     && children.len() == 1
     && let JSXChild::Element(child) = &children[0]
@@ -48,7 +52,7 @@ pub fn cache_static<'a>(
 
 pub fn cache_static_children<'a>(
   node: Option<Either<&JSXChild<'a>, &mut VNodeCallChildren<'a>>>,
-  children: Vec<&mut JSXChild<'a>>,
+  children: &mut oxc_allocator::Vec<JSXChild<'a>>,
   context: &'a TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
   do_not_hoist_node: bool,
@@ -135,7 +139,11 @@ pub fn cache_static_children<'a>(
       }
       cache_static_children(
         Some(Either::A(unsafe { &*child_ptr })),
-        get_children(unsafe { &mut *child_ptr }),
+        match unsafe { &mut *child_ptr } {
+          JSXChild::Element(node) => &mut node.children,
+          JSXChild::Fragment(node) => &mut node.children,
+          _ => unimplemented!(),
+        },
         context,
         codegen_map,
         false,
@@ -151,7 +159,11 @@ pub fn cache_static_children<'a>(
         // Do not hoist v-for because it has to be a block
         cache_static_children(
           Some(Either::A(unsafe { &*child_ptr })),
-          get_children(unsafe { &mut *child_ptr }),
+          match unsafe { &mut *child_ptr } {
+            JSXChild::Element(node) => &mut node.children,
+            JSXChild::Fragment(node) => &mut node.children,
+            _ => unimplemented!(),
+          },
           context,
           codegen_map,
           true,

@@ -1,10 +1,7 @@
-use common::text::is_empty_text;
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
-  ast::{
-    Argument, CallExpression, Expression, JSXChild, ObjectProperty, ObjectPropertyKind, PropertyKey,
-  },
+  ast::{Argument, CallExpression, Expression, ObjectProperty, ObjectPropertyKind, PropertyKey},
 };
 use oxc_span::SPAN;
 
@@ -181,15 +178,4 @@ pub fn inject_prop<'a>(
   } else {
     node.props = props_with_injection
   }
-}
-
-pub fn get_children<'a>(node: &'a mut JSXChild<'a>) -> Vec<&'a mut JSXChild<'a>> {
-  match node {
-    JSXChild::Element(node) => &mut node.children,
-    JSXChild::Fragment(node) => &mut node.children,
-    _ => unimplemented!(),
-  }
-  .into_iter()
-  .filter(|child| !is_empty_text(child))
-  .collect::<Vec<_>>()
 }

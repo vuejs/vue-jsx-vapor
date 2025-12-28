@@ -22,7 +22,7 @@ pub fn transform_v_text<'a>(
     SimpleExpressionNode::default()
   };
 
-  if node.children.iter().filter(|c| !is_empty_text(c)).count() > 0 {
+  if node.children.iter().any(|c| !is_empty_text(c)) {
     context.options.on_error.as_ref()(ErrorCodes::VTextWithChildren, node.span);
     return None;
   };
