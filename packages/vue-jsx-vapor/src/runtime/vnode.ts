@@ -24,7 +24,7 @@ export function createVNodeCache(index: number) {
   }
 }
 
-export function normalizeVNode(value: any = ' ', flag = 0): VNode {
+export function normalizeVNode(value: any = ' ', flag = 1): VNode {
   if (value == null || typeof value === 'boolean') {
     // empty placeholder
     return createVNode(Comment)
