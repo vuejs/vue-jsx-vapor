@@ -313,8 +313,7 @@ impl<'a> Traverse<'a, ()> for HmrOrSsrTransform<'a> {
               ast.identifier_name(SPAN, ast.atom(&exported)),
               false,
             ));
-          let logical_expression_with_render = ast.expression_logical(
-            SPAN,
+          let exported_expression_render =
             Expression::StaticMemberExpression(ast.alloc_static_member_expression(
               SPAN,
               Expression::StaticMemberExpression(ast.alloc_static_member_expression(
@@ -325,19 +324,7 @@ impl<'a> Traverse<'a, ()> for HmrOrSsrTransform<'a> {
               )),
               ast.identifier_name(SPAN, ast.atom("render")),
               false,
-            )),
-            LogicalOperator::Or,
-            ast.expression_binary(
-              SPAN,
-              ast.expression_unary(
-                SPAN,
-                UnaryOperator::Typeof,
-                exported_expression.clone_in(ast.allocator),
-              ),
-              BinaryOperator::StrictEquality,
-              ast.expression_string_literal(SPAN, "function", None),
-            ),
-          );
+            ));
           callbacks.push(Statement::ExpressionStatement(
             ast.alloc_expression_statement(
               SPAN,
@@ -348,7 +335,21 @@ impl<'a> Traverse<'a, ()> for HmrOrSsrTransform<'a> {
                   ast.expression_identifier(SPAN, "__VUE_HMR_RUNTIME__"),
                   ast.expression_conditional(
                     SPAN,
-                    logical_expression_with_render.clone_in(ast.allocator),
+                    ast.expression_logical(
+                      SPAN,
+                      exported_expression_render.clone_in(ast.allocator),
+                      LogicalOperator::Or,
+                      ast.expression_binary(
+                        SPAN,
+                        ast.expression_unary(
+                          SPAN,
+                          UnaryOperator::Typeof,
+                          exported_expression.clone_in(ast.allocator),
+                        ),
+                        BinaryOperator::StrictEquality,
+                        ast.expression_string_literal(SPAN, "function", None),
+                      ),
+                    ),
                     ast.expression_string_literal(SPAN, "rerender", None),
                     ast.expression_string_literal(SPAN, "reload", None),
                   ),
@@ -363,7 +364,14 @@ impl<'a> Traverse<'a, ()> for HmrOrSsrTransform<'a> {
                     false,
                   ))
                   .into(),
-                  logical_expression_with_render.into(),
+                  ast
+                    .expression_logical(
+                      SPAN,
+                      exported_expression_render,
+                      LogicalOperator::Or,
+                      exported_expression,
+                    )
+                    .into(),
                 ]),
                 false,
               ),

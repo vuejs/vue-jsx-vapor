@@ -1,4 +1,4 @@
-import { createVaporApp, vaporInteropPlugin } from 'vue'
+import { createApp, createVaporApp, vaporInteropPlugin } from 'vue'
 
 const modules = import.meta.glob<any>('./src/*.tsx')
 const mod = (
@@ -6,13 +6,22 @@ const mod = (
 )()
 
 mod.then(({ default: mod }) => {
-  const app = createVaporApp(mod)
-  if (mod.name === 'interop') {
-    app.use(vaporInteropPlugin)
-  }
-  app.mount('#app')
-  // @ts-expect-error
-  globalThis.unmount = () => {
-    app.unmount()
+  if (mod.name === 'vdom') {
+    const app = createApp(mod)
+    app.mount('#app')
+    // @ts-expect-error
+    globalThis.unmount = () => {
+      app.unmount()
+    }
+  } else {
+    const app = createVaporApp(mod)
+    if (mod.name === 'interop') {
+      app.use(vaporInteropPlugin)
+    }
+    app.mount('#app')
+    // @ts-expect-error
+    globalThis.unmount = () => {
+      app.unmount()
+    }
   }
 })
