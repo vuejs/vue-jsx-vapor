@@ -15,7 +15,7 @@ const VaporComp = defineVaporComponent(
 const Comp = (props) => <div>Virtual Dom Component:{props.model}</div>
 
 const VDom = defineComponent(() => {
-  const model = ref('')
+  const model = ref()
   return () => [
     <input v-model={model.value}></input>,
     <Comp model={model.value}></Comp>,

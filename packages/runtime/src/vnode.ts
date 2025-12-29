@@ -32,18 +32,18 @@ export function normalizeVNode(value: any = ' ', flag = 0): VNode {
     return createVNode(Text, null, String(value), flag)
   }
   openBlock()
-  const child = value()
-  if (value == null || typeof value === 'boolean') {
+  const node = value()
+  if (node == null || typeof node === 'boolean') {
     // empty placeholder
     return createBlock(Comment)
-  } else if (Array.isArray(child)) {
+  } else if (Array.isArray(node)) {
     // fragment
-    return createBlock(Fragment, null, child.slice())
-  } else if (isVNode(child)) {
-    return createBlock(cloneIfMounted(child))
+    return createBlock(Fragment, null, node.slice())
+  } else if (isVNode(node)) {
+    return createBlock(cloneIfMounted(node))
   } else {
     // strings and numbers
-    return createBlock(Text, null, String(child), flag)
+    return createBlock(Text, null, String(node), flag)
   }
 }
 
