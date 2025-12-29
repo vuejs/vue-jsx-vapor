@@ -1,4 +1,4 @@
-import type { CompilerOptions } from '@vue-jsx-vapor/compiler'
+import type { CompilerOptions } from '@vue-jsx-vapor/compiler-rs'
 import type { Options as MacrosOptions } from '@vue-jsx-vapor/macros'
 import type { FilterPattern } from 'unplugin-utils'
 

@@ -19,5 +19,6 @@ export function transformVueJsxVapor(
     interop: vapor ? false : options?.interop,
     hmr: needHMR,
     ssr,
+    ...options?.compile,
   })
 }

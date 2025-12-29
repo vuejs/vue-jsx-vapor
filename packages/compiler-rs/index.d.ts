@@ -30,9 +30,7 @@ export declare const enum ErrorCodes {
   VShowNoExpression = 61,
   VSlotsNoExpression = 62
 }
-export declare function transform(source: string, options?: TransformOptions | undefined | null): TransformReturn
-
-export interface TransformOptions {
+export interface CompilerOptions {
   /** * Whether to compile components to createComponentWithFallback.
    * @default false
    */
@@ -63,6 +61,8 @@ export interface TransformOptions {
    */
   ssr?: boolean
 }
+
+export declare function transform(source: string, options?: CompilerOptions | undefined | null): TransformReturn
 
 export interface TransformReturn {
   code: string

@@ -19,7 +19,7 @@ mod transform;
 
 #[cfg_attr(feature = "napi", napi(object))]
 #[derive(Default)]
-pub struct _TransformOptions {
+pub struct CompilerOptions {
   /**
    * Whether to compile components to createComponentWithFallback.
    * @default false
@@ -67,7 +67,7 @@ pub struct TransformReturn {
 
 #[cfg(feature = "napi")]
 #[napi]
-pub fn _transform(env: Env, source: String, options: Option<_TransformOptions>) -> TransformReturn {
+pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) -> TransformReturn {
   use std::cell::RefCell;
 
   let options = options.unwrap_or_default();
