@@ -1,3 +1,24 @@
+## [3.1.4](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.3...v3.1.4) (2025-12-29)
+
+
+### Bug Fixes
+
+* **runtime:** prevent render undefined ([7b8c058](https://github.com/vuejs/vue-jsx-vapor/commit/7b8c0582a5e481cc542cb8fc7f75ce35d5bdf3e6)), closes [#27](https://github.com/vuejs/vue-jsx-vapor/issues/27)
+
+
+### Features
+
+* **hmr:** support rerender render function ([4c394e5](https://github.com/vuejs/vue-jsx-vapor/commit/4c394e5fd6751192fc46f461387d6c5b9703c3a5)), closes [#28](https://github.com/vuejs/vue-jsx-vapor/issues/28)
+* **vue-jsx-vapor:** add compiler options ([1bb3932](https://github.com/vuejs/vue-jsx-vapor/commit/1bb393268f318303155a4e418d2372ab84e64d33))
+
+
+### Performance Improvements
+
+* **compiler/vdom:** use take_in instead of clone_in for JSXExpression ([76c53bd](https://github.com/vuejs/vue-jsx-vapor/commit/76c53bd23d51a67b877960b49284f1b4f9e38dad))
+* **compiler:** remove empty_text ([c796b83](https://github.com/vuejs/vue-jsx-vapor/commit/c796b837cd9a31af0afa87e190ba789fc8b1536d))
+
+
+
 ## [3.1.3](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.2...v3.1.3) (2025-12-26)
 
 
