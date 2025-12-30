@@ -2,8 +2,8 @@ use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
   ast::{
-    ConditionalExpression, Expression, FormalParameterKind, JSXChild, LogicalExpression,
-    NumberBase, PropertyKind,
+    BinaryOperator, ConditionalExpression, Expression, FormalParameterKind, JSXChild,
+    LogicalExpression, NumberBase, PropertyKind,
   },
 };
 use oxc_span::{GetSpan, SPAN};
@@ -94,8 +94,31 @@ pub unsafe fn transform_text<'a>(
           if let Expression::ConditionalExpression(exp) = exp {
             transform_condition_expression(exp, unsafe { &mut *context_node }, context);
             continue;
-          } else if let Expression::LogicalExpression(exp) = exp {
-            transform_logical_expression(exp, unsafe { &mut *context_node }, context);
+          } else if let Expression::LogicalExpression(logical_exp) = exp {
+            transform_logical_expression(logical_exp, unsafe { &mut *context_node }, context);
+            *exp = ast.expression_conditional(
+              SPAN,
+              if logical_exp.operator.is_coalesce() {
+                ast.expression_binary(
+                  SPAN,
+                  logical_exp.left.take_in(ast.allocator),
+                  BinaryOperator::Equality,
+                  ast.expression_null_literal(SPAN),
+                )
+              } else {
+                logical_exp.left.take_in(ast.allocator)
+              },
+              if logical_exp.operator.is_and() || logical_exp.operator.is_coalesce() {
+                logical_exp.right.take_in(ast.allocator)
+              } else {
+                ast.expression_null_literal(SPAN)
+              },
+              if logical_exp.operator.is_and() || logical_exp.operator.is_coalesce() {
+                ast.expression_null_literal(SPAN)
+              } else {
+                logical_exp.right.take_in(ast.allocator)
+              },
+            );
             continue;
           } else if exp.is_literal() {
             call_args.push(

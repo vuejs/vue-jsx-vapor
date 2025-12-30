@@ -5,8 +5,11 @@ use napi::{
   bindgen_prelude::{Either3, Either16},
 };
 use oxc_allocator::{CloneIn, TakeIn};
-use oxc_ast::ast::{ConditionalExpression, Expression, JSXChild, LogicalExpression};
-use oxc_span::GetSpan;
+use oxc_ast::{
+  AstBuilder,
+  ast::{BinaryOperator, ConditionalExpression, Expression, JSXChild, LogicalExpression},
+};
+use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   ir::index::{
@@ -377,13 +380,22 @@ fn process_logical_expression<'a>(
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
   let id = context.reference(dynamic);
   let block = context_block as *mut BlockIRNode;
-  let (_left, _right) = if node.operator.is_and() {
+  let (_left, _right) = if node.operator.is_and() || node.operator.is_coalesce() {
     (right, left.clone_in(context.allocator))
   } else {
     (left.clone_in(context.allocator), right)
   };
   let exit_block = context.create_block(context_node, unsafe { &mut *block }, _left, None);
 
+  if node.operator.is_coalesce() {
+    let ast = AstBuilder::new(context.allocator);
+    *left = ast.expression_binary(
+      SPAN,
+      left.take_in(context.allocator),
+      BinaryOperator::Equality,
+      ast.expression_null_literal(SPAN),
+    );
+  }
   Box::new(move || {
     let block = exit_block();
 
@@ -467,14 +479,24 @@ fn set_negative<'a>(
       .without_parentheses_mut()
       .get_inner_expression_mut()
       .take_in(context.allocator);
-    let (_left, mut _right) = if unsafe { &mut *node }.operator.is_and() {
-      (right, left.clone_in(context.allocator))
-    } else {
-      (left.clone_in(context.allocator), right)
-    };
+    let (_left, mut _right) =
+      if unsafe { &mut *node }.operator.is_and() || unsafe { &mut *node }.operator.is_coalesce() {
+        (right, left.clone_in(context.allocator))
+      } else {
+        (left.clone_in(context.allocator), right)
+      };
     let block = context_block as *mut BlockIRNode;
     let exit_block = context.create_block(context_node, unsafe { &mut *block }, _left, None);
     context.transform_node(Some(unsafe { &mut *block }), Some(parent_node));
+    if unsafe { &mut *node }.operator.is_coalesce() {
+      let ast = AstBuilder::new(context.allocator);
+      *left = ast.expression_binary(
+        SPAN,
+        left.take_in(context.allocator),
+        BinaryOperator::Equality,
+        ast.expression_null_literal(SPAN),
+      );
+    }
     let block = exit_block();
     let mut negative = IfIRNode {
       id: -1,

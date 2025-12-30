@@ -226,7 +226,26 @@ fn logical_expression() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
-    return _openBlock(), _createElementBlock("div", null, [foo && (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)]))]);
+    return _openBlock(), _createElementBlock("div", null, [foo ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : null]);
+  })();
+  "#)
+}
+
+#[test]
+fn logical_expression_coalesce() {
+  let code = transform(
+    r#"<div>{foo ?? <div>{foo}</div>}</div>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  (() => {
+    return _openBlock(), _createElementBlock("div", null, [foo == null ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : null]);
   })();
   "#)
 }
