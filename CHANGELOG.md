@@ -1,3 +1,19 @@
+## [3.1.5](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.4...v3.1.5) (2025-12-30)
+
+
+### Bug Fixes
+
+* **compiler:** use cache for LogicalExpression ([f3e14b3](https://github.com/vuejs/vue-jsx-vapor/commit/f3e14b32b6f56f3c1cae7f49f60969e8e3bf3316))
+* **runtime:** use Text instead of Comment to support undefined ref ([e0e5a4d](https://github.com/vuejs/vue-jsx-vapor/commit/e0e5a4d5cde58f76df36131a6c88f9057b05ae4b))
+
+
+### Features
+
+* **compiler:** convert ObjectExpression and FunctionExpression to ([38e6057](https://github.com/vuejs/vue-jsx-vapor/commit/38e60575606ddf65d152521a02c8c2277e3b4246)), closes [#29](https://github.com/vuejs/vue-jsx-vapor/issues/29)
+* **compiler:** support LogicalExpression with coalesce ([0f48e4c](https://github.com/vuejs/vue-jsx-vapor/commit/0f48e4c625905c0ebc896b254e7ebf66481d3183))
+
+
+
 ## [3.1.4](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.3...v3.1.4) (2025-12-29)
 
 
