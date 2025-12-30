@@ -28,6 +28,11 @@ export function normalizeVNode(value: any = ' ', flag = 1): VNode {
   if (value == null || typeof value === 'boolean') {
     // empty placeholder
     return createVNode(Comment)
+  } else if (Array.isArray(value)) {
+    // fragment
+    return createVNode(Fragment, null, value.slice())
+  } else if (isVNode(value)) {
+    return createBlock(cloneIfMounted(value))
   } else if (typeof value !== 'function') {
     return createVNode(Text, null, String(value), flag)
   }

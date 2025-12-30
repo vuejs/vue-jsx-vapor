@@ -54,7 +54,7 @@ pub enum PatchFlags {
   // e.g. event listeners & v-bind with prop modifier
   NeedHydration = 1 << 5,
 
-  //Indicates a fragment whose children order doesn't change.
+  // Indicates a fragment whose children order doesn't change.
   StableFragment = 1 << 6,
 
   // Indicates a fragment with keyed or partially keyed children

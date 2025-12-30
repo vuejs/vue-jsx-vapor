@@ -1,9 +1,9 @@
-use oxc_allocator::TakeIn;
+use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   NONE,
   ast::{
-    BinaryOperator, ConditionalExpression, Expression, FormalParameterKind, JSXChild,
-    LogicalExpression, NumberBase, PropertyKind,
+    AssignmentOperator, AssignmentTarget, BinaryOperator, ConditionalExpression, Expression,
+    FormalParameterKind, JSXChild, LogicalExpression, NumberBase, PropertyKind,
   },
 };
 use oxc_span::{GetSpan, SPAN};
@@ -96,25 +96,58 @@ pub unsafe fn transform_text<'a>(
             continue;
           } else if let Expression::LogicalExpression(logical_exp) = exp {
             transform_logical_expression(logical_exp, unsafe { &mut *context_node }, context);
+            // {foo() ?? bar} => (_temp = foo(), _temp == null) ? bar : _temp
+            let left = ast.expression_parenthesized(
+              SPAN,
+              ast.expression_sequence(
+                SPAN,
+                ast.vec_from_array([
+                  ast.expression_assignment(
+                    SPAN,
+                    AssignmentOperator::Assign,
+                    AssignmentTarget::AssignmentTargetIdentifier(
+                      ast.alloc_identifier_reference(SPAN, "_temp"),
+                    ),
+                    logical_exp.left.take_in(ast.allocator),
+                  ),
+                  {
+                    logical_exp.left = ast.expression_identifier(SPAN, "_temp");
+                    if logical_exp.operator.is_coalesce() {
+                      ast.expression_binary(
+                        SPAN,
+                        logical_exp.left.clone_in(ast.allocator),
+                        BinaryOperator::Equality,
+                        ast.expression_null_literal(SPAN),
+                      )
+                    } else {
+                      logical_exp.left.clone_in(ast.allocator)
+                    }
+                  },
+                ]),
+              ),
+            );
             *exp = ast.expression_conditional(
               SPAN,
-              if logical_exp.operator.is_coalesce() {
-                ast.expression_binary(
-                  SPAN,
-                  logical_exp.left.take_in(ast.allocator),
-                  BinaryOperator::Equality,
-                  ast.expression_null_literal(SPAN),
-                )
-              } else {
-                logical_exp.left.take_in(ast.allocator)
-              },
+              left,
               if logical_exp.operator.is_and() || logical_exp.operator.is_coalesce() {
                 logical_exp.right.take_in(ast.allocator)
               } else {
-                ast.expression_null_literal(SPAN)
+                ast.expression_call(
+                  SPAN,
+                  ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeVNode"))),
+                  NONE,
+                  ast.vec1(logical_exp.left.take_in(ast.allocator).into()),
+                  false,
+                )
               },
               if logical_exp.operator.is_and() || logical_exp.operator.is_coalesce() {
-                ast.expression_null_literal(SPAN)
+                ast.expression_call(
+                  SPAN,
+                  ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeVNode"))),
+                  NONE,
+                  ast.vec1(logical_exp.left.take_in(ast.allocator).into()),
+                  false,
+                )
               } else {
                 logical_exp.right.take_in(ast.allocator)
               },
