@@ -5,7 +5,7 @@ use compiler_rs::transform;
 use insta::assert_snapshot;
 
 #[test]
-fn v_slot_basic() {
+fn v_slots_basic() {
   let code = transform(
     r#"<Comp v-slots={{ default: () => <>{<span/>}</> }}></Comp>"#,
     Some(TransformOptions {
@@ -22,7 +22,77 @@ fn v_slot_basic() {
       return _openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(() => (() => {
         return _openBlock(), _createElementBlock("span");
       })())], 64);
-    })() }, 0);
+    })() });
+  })();
+  "#);
+}
+
+#[test]
+fn function_expression_children() {
+  let code = transform(
+    r#"<Comp>
+      {() => <div />}
+    </Comp>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  (() => {
+    return _openBlock(), _createBlock(Comp, null, () => (() => {
+      return _openBlock(), _createElementBlock("div");
+    })());
+  })();
+  "#);
+}
+
+#[test]
+fn object_expression_children() {
+  let code = transform(
+    r#"<Comp>
+      {{ default: () => <>foo</> }}
+    </Comp>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
+  import { Fragment as _Fragment, createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  (() => {
+    return _openBlock(), _createBlock(Comp, null, { default: () => (() => {
+      const _cache = _createVNodeCache(0);
+      return _openBlock(), _createBlock(_Fragment, null, [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))], 64);
+    })() });
+  })();
+  "#);
+}
+
+#[test]
+fn object_expression_children_with_computed_property() {
+  let code = transform(
+    r#"<Comp>
+      {{ [foo]: () => <>foo</> }}
+    </Comp>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
+  import { Fragment as _Fragment, createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  (() => {
+    return _openBlock(), _createBlock(Comp, null, { [foo]: () => (() => {
+      const _cache = _createVNodeCache(0);
+      return _openBlock(), _createBlock(_Fragment, null, [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))], 64);
+    })() }, 1024);
   })();
   "#);
 }

@@ -11,7 +11,85 @@ fn basic() {
     None,
   )
   .code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "vue-jsx-vapor";
+  (() => {
+    const n0 = _createComponent(Comp, null, { $: [{ default: ({ foo }) => (() => {
+      const n0 = _createNodes(() => foo + bar);
+      return n0;
+    })() }] }, true);
+    return n0;
+  })();
+  "#);
+}
+
+#[test]
+fn function_expression_children() {
+  let code = transform(
+    r#"<Comp>
+      {() => <div />}
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "vue-jsx-vapor";
+  import { template as _template } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n2 = _createComponent(Comp, null, { $: [{ default: () => (() => {
+      const n0 = t0();
+      return n0;
+    })() }] }, true);
+    return n2;
+  })();
+  "#);
+}
+
+#[test]
+fn object_expression_children() {
+  let code = transform(
+    r#"<Comp>
+      {{ default: () => <>foo</> }}
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "vue-jsx-vapor";
+  import { template as _template } from "vue";
+  const t0 = _template("foo");
+  (() => {
+    const n2 = _createComponent(Comp, null, { $: [{ default: () => (() => {
+      const n0 = t0();
+      return n0;
+    })() }] }, true);
+    return n2;
+  })();
+  "#);
+}
+
+#[test]
+fn object_expression_children_with_computed_property() {
+  let code = transform(
+    r#"<Comp>
+      {{ [foo]: () => <>foo</> }}
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "vue-jsx-vapor";
+  import { template as _template } from "vue";
+  const t0 = _template("foo");
+  (() => {
+    const n2 = _createComponent(Comp, null, { $: [() => ({ [foo]: () => (() => {
+      const n0 = t0();
+      return n0;
+    })() })] }, true);
+    return n2;
+  })();
+  "#);
 }
 
 #[test]

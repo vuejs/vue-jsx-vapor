@@ -490,11 +490,9 @@ impl<'a> TransformContext<'a> {
             };
           }
 
-          if directives.v_slots.is_some() {
-            if let Some(on_exit) = transform_v_slots(&mut directives, node, &*context) {
-              exit_fns.push(on_exit);
-            };
-          }
+          if let Some(on_exit) = transform_v_slots(&mut directives, node, &*context) {
+            exit_fns.push(on_exit);
+          };
         }
 
         if let Some(on_exit) =

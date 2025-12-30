@@ -1,6 +1,16 @@
 import { defineComponent, ref } from 'vue'
 
-const Comp = (props) => <div>Virtual Dom Component:{props.model}</div>
+const Comp = (props) => {
+  const slots = defineSlots({
+    default: (props: { foo: number }) => <div>{props.foo}</div>,
+  })
+  return (
+    <div>
+      Virtual Dom Component:{props.model}
+      <slots.default foo={'foo'}></slots.default>
+    </div>
+  )
+}
 
 export default defineComponent({
   name: 'vdom',
@@ -12,7 +22,9 @@ export default defineComponent({
     return (
       <>
         <input v-model={data.model}></input>
-        <Comp model={data.model}></Comp>
+        <Comp model={data.model}>
+          {{ default: ({ foo }) => <div>{foo}11</div> }}
+        </Comp>
       </>
     )
   },

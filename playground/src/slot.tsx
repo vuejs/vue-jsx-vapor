@@ -32,6 +32,12 @@ export default () => {
             foo={foo.value}
             v-slots={{ default: (scope) => <div>{scope.foo}</div> }}
           />
+
+          <Comp foo={foo.value}>
+            {{ default: (scope) => <div>{scope.foo}</div> }}
+          </Comp>
+
+          <Comp foo={foo.value}>{(scope) => <div>{scope.foo}</div>}</Comp>
         </fieldset>
 
         <fieldset>
