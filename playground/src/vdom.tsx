@@ -22,8 +22,9 @@ export default defineComponent({
     return (
       <>
         <input v-model={data.model}></input>
+        {data.model}
         <Comp model={data.model}>
-          {{ default: ({ foo }) => <div>{foo}11</div> }}
+          {{ default: ({ foo }) => <div>{foo}</div> }}
         </Comp>
       </>
     )

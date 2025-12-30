@@ -1,6 +1,5 @@
 import {
   cloneVNode,
-  Comment,
   createBlock,
   createVNode,
   Fragment,
@@ -27,7 +26,7 @@ export function createVNodeCache(index: number) {
 export function normalizeVNode(value: any = ' ', flag = 1): VNode {
   if (value == null || typeof value === 'boolean') {
     // empty placeholder
-    return createVNode(Comment)
+    return createVNode(Text, null, '', flag)
   } else if (Array.isArray(value)) {
     // fragment
     return createVNode(Fragment, null, value.slice())
@@ -40,7 +39,7 @@ export function normalizeVNode(value: any = ' ', flag = 1): VNode {
   const node = value()
   if (node == null || typeof node === 'boolean') {
     // empty placeholder
-    return createBlock(Comment)
+    return createBlock(Text, null, '', flag)
   } else if (Array.isArray(node)) {
     // fragment
     return createBlock(Fragment, null, node.slice())

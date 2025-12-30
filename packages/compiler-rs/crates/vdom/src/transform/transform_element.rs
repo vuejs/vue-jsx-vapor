@@ -211,9 +211,7 @@ pub unsafe fn transform_element<'a>(
       tag: vnode_tag,
       props: vnode_props,
       children: vnode_children,
-      patch_flag: if RootNode::is_fragment(parent_node) {
-        Some(PatchFlags::StableFragment as i32)
-      } else if patch_flag == 0 {
+      patch_flag: if patch_flag == 0 {
         None
       } else {
         Some(patch_flag)
