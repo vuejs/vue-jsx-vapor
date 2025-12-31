@@ -1,3 +1,14 @@
+## [3.1.6](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.5...v3.1.6) (2025-12-31)
+
+
+### Bug Fixes
+
+* **compiler/vdom:** prevent cache include slot props's events for ([0ce3a55](https://github.com/vuejs/vue-jsx-vapor/commit/0ce3a55f3ca14b689c02ceded9d4c056a6e60068)), closes [#30](https://github.com/vuejs/vue-jsx-vapor/issues/30)
+* **compiler:** add missing _temp variable ([2b4b691](https://github.com/vuejs/vue-jsx-vapor/commit/2b4b6916594a9d1b1e0be7a993071a56e443f8c7)), closes [#31](https://github.com/vuejs/vue-jsx-vapor/issues/31)
+* **compiler:** remove unused withCtx helper for Fragment ([afdec4a](https://github.com/vuejs/vue-jsx-vapor/commit/afdec4a4000a40e0c1493c12085ab19cb820ebdb))
+
+
+
 ## [3.1.5](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.4...v3.1.5) (2025-12-30)
 
 
