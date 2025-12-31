@@ -471,24 +471,27 @@ impl<'a> TransformContext<'a> {
             || directives.v_else.is_some())
             && let Some(on_exit) =
               transform_v_if(&mut directives, node, &*context, &mut *parent_node)
-            {
-              exit_fns.push(on_exit);
-            };
+          {
+            exit_fns.push(on_exit);
+          };
 
           if directives.v_once.is_some()
-            && let Some(on_exit) = transform_v_once(&mut directives, node, &*context) {
-              exit_fns.push(on_exit);
-            };
+            && let Some(on_exit) = transform_v_once(&mut directives, node, &*context)
+          {
+            exit_fns.push(on_exit);
+          };
 
           if directives.v_memo.is_some()
-            && let Some(on_exit) = transform_v_memo(&mut directives, node, &*context) {
-              exit_fns.push(on_exit);
-            };
+            && let Some(on_exit) = transform_v_memo(&mut directives, node, &*context)
+          {
+            exit_fns.push(on_exit);
+          };
 
           if directives.v_for.is_some()
-            && let Some(on_exit) = transform_v_for(&mut directives, node, &*context) {
-              exit_fns.push(on_exit);
-            };
+            && let Some(on_exit) = transform_v_for(&mut directives, node, &*context)
+          {
+            exit_fns.push(on_exit);
+          };
 
           if let Some(on_exit) = transform_v_slots(&mut directives, node, &*context) {
             exit_fns.push(on_exit);
@@ -502,9 +505,10 @@ impl<'a> TransformContext<'a> {
         };
 
         if directives.v_slot.is_some()
-          && let Some(on_exit) = track_slot_scopes(&mut directives, node, &*context) {
-            exit_fns.push(on_exit);
-          };
+          && let Some(on_exit) = track_slot_scopes(&mut directives, node, &*context)
+        {
+          exit_fns.push(on_exit);
+        };
 
         if let Some(on_exit) = transform_text(node, &*context) {
           exit_fns.push(on_exit);
