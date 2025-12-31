@@ -5,8 +5,8 @@ use common::walk::WalkIdentifiers;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
 use oxc_ast::ast::{
   ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, IdentifierReference,
-  JSXAttributeValue, JSXChild, JSXClosingFragment, JSXExpression, JSXExpressionContainer,
-  JSXFragment, JSXOpeningFragment, LogicalOperator, NumberBase, ObjectPropertyKind,
+  JSXAttributeValue, JSXChild, JSXClosingFragment, JSXExpressionContainer, JSXFragment,
+  JSXOpeningFragment, LogicalOperator, NumberBase, ObjectPropertyKind,
 };
 use oxc_ast::{AstBuilder, NONE};
 use oxc_span::{GetSpan, SPAN, Span};
@@ -276,14 +276,15 @@ impl<'a> TransformContext<'a> {
           .expression_string_literal(value.span, value.value, value.raw)
       }
       JSXAttributeValue::ExpressionContainer(value) => {
-        self.process_jsx_expression(&mut value.expression).0
+        self
+          .process_expression(value.expression.to_expression_mut())
+          .0
       }
     }
   }
 
-  pub fn process_jsx_expression(&'a self, value: &mut JSXExpression<'a>) -> (Expression<'a>, bool) {
-    let span = value.span();
-    let exp = value.to_expression_mut();
+  pub fn process_expression(&'a self, exp: &mut Expression<'a>) -> (Expression<'a>, bool) {
+    let span = exp.span();
     let value = if exp.is_literal() {
       exp.clone_in(self.allocator)
     } else {

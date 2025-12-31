@@ -36,8 +36,12 @@ pub fn transform_v_model<'a>(
   // (not artificially created by a transform)
   let (exp, has_scope_ref) = if let JSXAttributeValue::ExpressionContainer(exp) = exp
     && !matches!(exp.expression, JSXExpression::EmptyExpression(_))
-    && let (exp, has_scope_ref) =
-      context.process_jsx_expression(&mut exp.expression.clone_in(context.allocator))
+    && let (exp, has_scope_ref) = context.process_expression(
+      exp
+        .expression
+        .clone_in(context.allocator)
+        .to_expression_mut(),
+    )
     && (exp.is_identifier_reference() || exp.is_member_expression())
   {
     (exp, has_scope_ref)

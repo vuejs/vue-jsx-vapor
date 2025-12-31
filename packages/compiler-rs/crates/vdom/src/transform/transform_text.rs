@@ -101,7 +101,7 @@ pub unsafe fn transform_text<'a>(
           } else if exp.is_literal() || context.static_expressions.borrow().contains(&exp.span()) {
             call_args.push(
               context
-                .process_jsx_expression(&mut child.expression)
+                .process_expression(child.expression.to_expression_mut())
                 .0
                 .into(),
             );
@@ -123,10 +123,14 @@ pub unsafe fn transform_text<'a>(
                   ast.function_body(
                     SPAN,
                     ast.vec(),
-                    ast.vec1(ast.statement_expression(
-                      SPAN,
-                      context.process_jsx_expression(&mut child.expression).0,
-                    )),
+                    ast.vec1(
+                      ast.statement_expression(
+                        SPAN,
+                        context
+                          .process_expression(child.expression.to_expression_mut())
+                          .0,
+                      ),
+                    ),
                   ),
                 )
                 .into(),
