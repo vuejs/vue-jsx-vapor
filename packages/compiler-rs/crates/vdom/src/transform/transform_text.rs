@@ -95,65 +95,10 @@ pub unsafe fn transform_text<'a>(
             transform_condition_expression(exp, unsafe { &mut *context_node }, context);
             continue;
           } else if let Expression::LogicalExpression(logical_exp) = exp {
-            transform_logical_expression(logical_exp, unsafe { &mut *context_node }, context);
-            // {foo() ?? bar} => (_temp = foo(), _temp == null) ? bar : _temp
-            let left = ast.expression_parenthesized(
-              SPAN,
-              ast.expression_sequence(
-                SPAN,
-                ast.vec_from_array([
-                  ast.expression_assignment(
-                    SPAN,
-                    AssignmentOperator::Assign,
-                    AssignmentTarget::AssignmentTargetIdentifier(
-                      ast.alloc_identifier_reference(SPAN, "_temp"),
-                    ),
-                    logical_exp.left.take_in(ast.allocator),
-                  ),
-                  {
-                    logical_exp.left = ast.expression_identifier(SPAN, "_temp");
-                    if logical_exp.operator.is_coalesce() {
-                      ast.expression_binary(
-                        SPAN,
-                        logical_exp.left.clone_in(ast.allocator),
-                        BinaryOperator::Equality,
-                        ast.expression_null_literal(SPAN),
-                      )
-                    } else {
-                      logical_exp.left.clone_in(ast.allocator)
-                    }
-                  },
-                ]),
-              ),
-            );
-            *exp = ast.expression_conditional(
-              SPAN,
-              left,
-              if logical_exp.operator.is_and() || logical_exp.operator.is_coalesce() {
-                logical_exp.right.take_in(ast.allocator)
-              } else {
-                ast.expression_call(
-                  SPAN,
-                  ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeVNode"))),
-                  NONE,
-                  ast.vec1(logical_exp.left.take_in(ast.allocator).into()),
-                  false,
-                )
-              },
-              if logical_exp.operator.is_and() || logical_exp.operator.is_coalesce() {
-                ast.expression_call(
-                  SPAN,
-                  ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeVNode"))),
-                  NONE,
-                  ast.vec1(logical_exp.left.take_in(ast.allocator).into()),
-                  false,
-                )
-              } else {
-                logical_exp.right.take_in(ast.allocator)
-              },
-            );
+            *exp =
+              transform_logical_expression(logical_exp, unsafe { &mut *context_node }, context);
             continue;
-          } else if exp.is_literal() {
+          } else if exp.is_literal() || context.static_expressions.borrow().contains(&exp.span()) {
             call_args.push(
               context
                 .process_jsx_expression(&mut child.expression)
@@ -226,14 +171,75 @@ fn transform_logical_expression<'a>(
   node: &mut LogicalExpression<'a>,
   parent: &mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-) {
+) -> Expression<'a> {
   let context_v_if_map = context.v_if_map.as_ptr();
   let v_if_map = unsafe { &mut *context_v_if_map }
     .entry(parent.span())
     .or_default();
   let key = v_if_map.0;
-  v_if_map.0 += 1;
+  v_if_map.0 += 2;
   transform_branch(&mut node.right, key, parent, context);
+
+  // {foo() ?? bar} => (_temp = foo(), _temp == null) ? bar : _temp
+  *context.has_temp.borrow_mut() = true;
+  let ast = &context.ast;
+  let left_span = node.left.span();
+  let test = ast.expression_parenthesized(
+    SPAN,
+    ast.expression_sequence(
+      SPAN,
+      ast.vec_from_array([
+        ast.expression_assignment(
+          SPAN,
+          AssignmentOperator::Assign,
+          AssignmentTarget::AssignmentTargetIdentifier(
+            ast.alloc_identifier_reference(SPAN, "_temp"),
+          ),
+          node.left.take_in(ast.allocator),
+        ),
+        {
+          node.left = ast.expression_identifier(left_span, "_temp");
+          if node.operator.is_coalesce() {
+            ast.expression_binary(
+              SPAN,
+              node.left.clone_in(ast.allocator),
+              BinaryOperator::Equality,
+              ast.expression_null_literal(SPAN),
+            )
+          } else {
+            node.left.clone_in(ast.allocator)
+          }
+        },
+      ]),
+    ),
+  );
+  transform_branch(&mut node.left, key + 1, parent, context);
+  ast.expression_conditional(
+    SPAN,
+    test,
+    if node.operator.is_and() || node.operator.is_coalesce() {
+      node.right.take_in(ast.allocator)
+    } else {
+      ast.expression_call(
+        SPAN,
+        ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeVNode"))),
+        NONE,
+        ast.vec1(node.left.take_in(ast.allocator).into()),
+        false,
+      )
+    },
+    if node.operator.is_and() || node.operator.is_coalesce() {
+      ast.expression_call(
+        SPAN,
+        ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeVNode"))),
+        NONE,
+        ast.vec1(node.left.take_in(ast.allocator).into()),
+        false,
+      )
+    } else {
+      node.right.take_in(ast.allocator)
+    },
+  )
 }
 
 fn transform_branch<'a>(
@@ -244,6 +250,7 @@ fn transform_branch<'a>(
 ) {
   let ast = &context.ast;
   let span = exp.span();
+  context.static_expressions.borrow_mut().push(span);
   let mut branch = if let Expression::JSXElement(branch) = exp {
     JSXChild::Element(branch.take_in_box(context.allocator))
   } else {

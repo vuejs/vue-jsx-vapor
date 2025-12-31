@@ -193,7 +193,7 @@ fn condition_expression() {
   let code = transform(
     r#"<div>
       <div v-if={foo}/>
-      {foo ? <div>{foo}bar</div> : "bar"}
+      {foo ? <div>{foo}bar</div> : bar}
     </div>"#,
     Some(TransformOptions {
       interop: true,
@@ -207,7 +207,7 @@ fn condition_expression() {
   const _hoisted_1 = { key: 0 };
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(), _createElementBlock("div", null, [foo ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), foo ? (_openBlock(), _createElementBlock("div", { key: 1 }, [_normalizeVNode(() => foo), _cache[0] || (_cache[0] = _normalizeVNode("bar", -1))])) : (_openBlock(), _createBlock(_Fragment, { key: 2 }, [_cache[1] || (_cache[1] = _normalizeVNode("bar", -1))], 64))]);
+    return _openBlock(), _createElementBlock("div", null, [foo ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), foo ? (_openBlock(), _createElementBlock("div", { key: 1 }, [_normalizeVNode(() => foo), _cache[0] || (_cache[0] = _normalizeVNode("bar", -1))])) : (_openBlock(), _createBlock(_Fragment, { key: 2 }, [_normalizeVNode(bar)], 64))]);
   })();
   "#)
 }
@@ -224,9 +224,10 @@ fn logical_expression() {
   .code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
-    return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : _normalizeVNode(_temp)]);
+    let _temp;
+    return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : _normalizeVNode((_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(_temp)], 64)))]);
   })();
   "#)
 }
@@ -243,9 +244,10 @@ fn logical_expression_or() {
   .code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
-    return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp) ? _normalizeVNode(_temp) : (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)]))]);
+    let _temp;
+    return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp) ? _normalizeVNode((_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(_temp)], 64))) : (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)]))]);
   })();
   "#)
 }
@@ -262,9 +264,10 @@ fn logical_expression_coalesce() {
   .code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
-  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
-    return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp == null) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : _normalizeVNode(_temp)]);
+    let _temp;
+    return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp == null) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : _normalizeVNode((_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(_temp)], 64)))]);
   })();
   "#)
 }

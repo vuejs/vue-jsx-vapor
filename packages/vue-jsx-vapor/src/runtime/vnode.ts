@@ -24,30 +24,41 @@ export function createVNodeCache(index: number) {
 }
 
 export function normalizeVNode(value: any = ' ', flag = 1): VNode {
-  if (value == null || typeof value === 'boolean') {
-    // empty placeholder
-    return createVNode(Text, null, '', flag)
+  if (isVNode(value)) {
+    return cloneIfMounted(value)
   } else if (Array.isArray(value)) {
     // fragment
-    return createVNode(Fragment, null, value.slice())
-  } else if (isVNode(value)) {
-    return createBlock(cloneIfMounted(value))
+    return createVNode(
+      Fragment,
+      null,
+      value.map((n) => normalizeVNode(n)),
+    )
   } else if (typeof value !== 'function') {
-    return createVNode(Text, null, String(value), flag)
+    return createVNode(
+      Text,
+      null,
+      value == null || typeof value === 'boolean' ? '' : String(value),
+      flag,
+    )
   }
   openBlock()
   const node = value()
-  if (node == null || typeof node === 'boolean') {
-    // empty placeholder
-    return createBlock(Text, null, '', flag)
+  if (isVNode(node)) {
+    return createBlock(cloneIfMounted(node))
   } else if (Array.isArray(node)) {
     // fragment
-    return createBlock(Fragment, null, node.slice())
-  } else if (isVNode(node)) {
-    return createBlock(cloneIfMounted(node))
+    return createBlock(
+      Fragment,
+      null,
+      node.map((n) => normalizeVNode(n)),
+    )
   } else {
-    // strings and numbers
-    return createBlock(Text, null, String(node), flag)
+    return createBlock(
+      Text,
+      null,
+      node == null || typeof node === 'boolean' ? '' : String(node),
+      flag,
+    )
   }
 }
 

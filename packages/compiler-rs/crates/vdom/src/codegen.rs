@@ -64,6 +64,27 @@ impl<'a> TransformContext<'a> {
       *self.options.cache_index.borrow_mut() += 1;
     }
 
+    if *self.has_temp.borrow() {
+      statements.push(Statement::VariableDeclaration(
+        ast.alloc_variable_declaration(
+          SPAN,
+          VariableDeclarationKind::Let,
+          ast.vec1(ast.variable_declarator(
+            SPAN,
+            VariableDeclarationKind::Let,
+            ast.binding_pattern(
+              ast.binding_pattern_kind_binding_identifier(SPAN, "_temp"),
+              NONE,
+              false,
+            ),
+            None,
+            false,
+          )),
+          false,
+        ),
+      ))
+    }
+
     for name in self.components.borrow_mut().drain() {
       statements.push(Statement::VariableDeclaration(
         ast.alloc_variable_declaration(

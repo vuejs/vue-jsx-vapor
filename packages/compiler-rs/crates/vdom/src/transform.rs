@@ -64,7 +64,9 @@ pub struct TransformContext<'a> {
   pub cache_index: RefCell<usize>,
   pub components: RefCell<HashSet<String>>,
   pub directives: RefCell<HashSet<String>>,
+  pub has_temp: RefCell<bool>,
   pub reference_expressions: RefCell<HashMap<Span, bool>>,
+  pub static_expressions: RefCell<Vec<Span>>,
 }
 
 impl<'a> TransformContext<'a> {
@@ -82,6 +84,8 @@ impl<'a> TransformContext<'a> {
       components: RefCell::new(HashSet::new()),
       directives: RefCell::new(HashSet::new()),
       reference_expressions: RefCell::new(HashMap::new()),
+      static_expressions: RefCell::new(vec![]),
+      has_temp: RefCell::new(false),
       options,
     }
   }
