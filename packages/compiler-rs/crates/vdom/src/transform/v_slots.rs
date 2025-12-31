@@ -139,7 +139,7 @@ pub unsafe fn transform_v_slots<'a>(
   }
 }
 
-pub fn transform_fn<'a>(
+fn transform_fn<'a>(
   params: &oxc_allocator::Box<'a, FormalParameters<'a>>,
   exp: *mut Expression<'a>,
   context: &'a TransformContext<'a>,

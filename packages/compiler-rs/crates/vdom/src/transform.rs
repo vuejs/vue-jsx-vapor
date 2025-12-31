@@ -358,7 +358,7 @@ impl<'a> TransformContext<'a> {
   pub fn add_slot_identifiers(&self, id: &IdentifierReference) {
     let slot_identifiers = &mut self.options.slot_identifiers.borrow_mut();
     let len = slot_identifiers.len();
-    let last_index = if len > 1 { len - 1 } else { 0 };
+    let last_index = len.saturating_sub(1);
     for (index, value) in slot_identifiers.values_mut().enumerate() {
       if index == last_index && value.1.contains(&id.name.to_string()) {
         continue;
@@ -466,34 +466,29 @@ impl<'a> TransformContext<'a> {
         let mut directives = Directives::default();
         if let JSXChild::Element(element) = &mut *node {
           directives = Directives::new(element);
-          if directives.v_if.is_some()
+          if (directives.v_if.is_some()
             || directives.v_else_if.is_some()
-            || directives.v_else.is_some()
-          {
-            if let Some(on_exit) =
+            || directives.v_else.is_some())
+            && let Some(on_exit) =
               transform_v_if(&mut directives, node, &*context, &mut *parent_node)
             {
               exit_fns.push(on_exit);
             };
-          }
 
-          if directives.v_once.is_some() {
-            if let Some(on_exit) = transform_v_once(&mut directives, node, &*context) {
+          if directives.v_once.is_some()
+            && let Some(on_exit) = transform_v_once(&mut directives, node, &*context) {
               exit_fns.push(on_exit);
             };
-          }
 
-          if directives.v_memo.is_some() {
-            if let Some(on_exit) = transform_v_memo(&mut directives, node, &*context) {
+          if directives.v_memo.is_some()
+            && let Some(on_exit) = transform_v_memo(&mut directives, node, &*context) {
               exit_fns.push(on_exit);
             };
-          }
 
-          if directives.v_for.is_some() {
-            if let Some(on_exit) = transform_v_for(&mut directives, node, &*context) {
+          if directives.v_for.is_some()
+            && let Some(on_exit) = transform_v_for(&mut directives, node, &*context) {
               exit_fns.push(on_exit);
             };
-          }
 
           if let Some(on_exit) = transform_v_slots(&mut directives, node, &*context) {
             exit_fns.push(on_exit);
@@ -506,11 +501,10 @@ impl<'a> TransformContext<'a> {
           exit_fns.push(on_exit);
         };
 
-        if directives.v_slot.is_some() {
-          if let Some(on_exit) = track_slot_scopes(&mut directives, node, &*context) {
+        if directives.v_slot.is_some()
+          && let Some(on_exit) = track_slot_scopes(&mut directives, node, &*context) {
             exit_fns.push(on_exit);
           };
-        }
 
         if let Some(on_exit) = transform_text(node, &*context) {
           exit_fns.push(on_exit);
