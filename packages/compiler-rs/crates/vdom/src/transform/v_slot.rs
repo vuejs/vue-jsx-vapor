@@ -82,6 +82,8 @@ pub fn build_slots<'a>(
 ) -> (Expression<'a>, bool, Vec<String>) {
   let ast = &context.ast;
   let _node = node as *mut JSXElement;
+  let tag_name = get_tag_name(&node.opening_element.name, *context.source.borrow());
+  let is_fragment = tag_name == "Fragment" || tag_name == "_Fragment";
   let mut slots_properties = ast.vec();
   let mut dynamic_slots = ast.vec();
   let mut should_removed_identifiers = vec![];
@@ -434,7 +436,14 @@ pub fn build_slots<'a>(
         ast.property_key_static_identifier(SPAN, "default"),
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(&context.helper("withCtx"))),
+          ast.expression_identifier(
+            SPAN,
+            ast.atom(&if is_fragment {
+              String::from("withCtx")
+            } else {
+              context.helper("withCtx")
+            }),
+          ),
           NONE,
           ast.vec1(
             ast
@@ -537,8 +546,7 @@ pub fn build_slots<'a>(
     false,
   ));
   // covert Fragment's object slots to array
-  let tag_name = get_tag_name(&node.opening_element.name, *context.source.borrow());
-  let mut slots = if tag_name == "Fragment" || tag_name == "_Fragment" {
+  let mut slots = if is_fragment {
     has_dynamic_slots = false;
     slots_properties
       .into_iter()

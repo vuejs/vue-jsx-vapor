@@ -22,7 +22,7 @@ fn basic() {
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createNodes as _createNodes } from "vue-jsx-vapor";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, template as _template, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, template as _template } from "vue";
   const t0 = _template("<span></span>", true);
   const t1 = _template("<div></div>");
   const t2 = _template("<div></div>", true);

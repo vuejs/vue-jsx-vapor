@@ -36,7 +36,7 @@ fn cache_root_node_children() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
     return _openBlock(), _createBlock(_Fragment, null, [..._cache[0] || (_cache[0] = [_createElementVNode("span", { class: "inline" }, "hello", -1), _createElementVNode("span", { class: "inline" }, "hello", -1)])], 64);
@@ -452,7 +452,7 @@ fn should_hoist_props_for_root_with_single_element_excluding_comments() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
     return _openBlock(), _createBlock(_Fragment, null, [_cache[0] || (_cache[0] = _createElementVNode("div", { id: "a" }, [_createElementVNode("div", { id: "b" }, [_createElementVNode("div", { id: "c" }, [_createElementVNode("div", { id: "d" }, [_createElementVNode("div", { id: "e" }, "hello")])])])], -1))], 64);
@@ -641,7 +641,7 @@ fn should_cache_keyed_template_v_for_with_plain_element_child() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
     return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: item }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))], 64))), 128))]);

@@ -116,7 +116,7 @@ fn with_v_if_else() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, setBlockTracking as _setBlockTracking, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, setBlockTracking as _setBlockTracking } from "vue";
   const _hoisted_1 = { key: 1 };
   (() => {
     const _cache = _createVNodeCache(0);
