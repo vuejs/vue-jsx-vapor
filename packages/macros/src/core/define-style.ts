@@ -1,26 +1,29 @@
-import { walkAST, type MagicStringAST } from '@vue-macros/common'
+import { walkAST } from 'ast-kit'
 import hash from 'hash-sum'
 import { helperPrefix } from './helper'
 import { isFunctionalNode, type DefineStyle, type Macros } from '.'
 import type { FunctionalNode } from './utils'
 import type { Node } from '@babel/types'
+import type MagicString from 'magic-string'
 
 export function transformDefineStyle(
   defineStyle: DefineStyle,
   index: number,
   root: FunctionalNode | undefined,
-  s: MagicStringAST,
+  s: MagicString,
   importMap: Map<string, string>,
   { defineSlots }: Macros,
 ): void {
   const { expression, lang, isCssModules } = defineStyle
   if (expression.arguments[0]?.type !== 'TemplateLiteral') return
 
-  let css = s.sliceNode(expression.arguments[0]).slice(1, -1)
+  let css = s
+    .slice(expression.arguments[0].start!, expression.arguments[0].end!)
+    .slice(1, -1)
   const scopeId = hash(css)
   const vars = new Map<string, string>()
   expression.arguments[0].expressions.forEach((exp) => {
-    const cssVar = s.sliceNode(exp)
+    const cssVar = s.slice(exp.start!, exp.end!)
     const cssVarId = toCssVarId(cssVar, `--${scopeId}-`)
     s.overwrite(exp.start! - 2, exp.end! + 1, `var(${cssVarId})`)
     vars.set(cssVarId, cssVar)
@@ -69,26 +72,29 @@ export function transformDefineStyle(
       ? defineSlots.id.type === 'Identifier'
         ? defineSlots.id.name
         : defineSlots.id.type === 'ObjectPattern'
-          ? defineSlots.id.properties.map((prop) =>
-              s.sliceNode(
-                prop.type === 'RestElement' ? prop.argument : prop.value,
-              ),
-            )
+          ? defineSlots.id.properties.map((prop) => {
+              const value =
+                prop.type === 'RestElement' ? prop.argument : prop.value
+              return s.slice(value.start!, value.end!)
+            })
           : []
       : []
     walkAST<Node>(root, {
       enter(node) {
         if (
           node.type === 'JSXElement' &&
-          s.sliceNode(node.openingElement.name) !== 'template'
+          s.slice(
+            node.openingElement.name.start!,
+            node.openingElement.name.end!,
+          ) !== 'template'
         ) {
           let subfix = ''
           if (slotNames.length) {
-            const name = s.sliceNode(
+            const tagName =
               node.openingElement.name.type === 'JSXMemberExpression'
                 ? node.openingElement.name.object
-                : node.openingElement.name,
-            )
+                : node.openingElement.name
+            const name = s.slice(tagName.start!, tagName.end!)
             subfix = slotNames.includes(name) ? '-s' : ''
           }
           s.appendRight(
@@ -101,7 +107,7 @@ export function transformDefineStyle(
   }
 
   css = s
-    .sliceNode(expression.arguments[0])
+    .slice(expression.arguments[0].start!, expression.arguments[0].end!)
     .slice(1, -1)
     .replaceAll(/\/\/(.*)(?=\n)/g, '/*$1*/')
   const module = isCssModules ? 'module.' : ''
@@ -113,7 +119,11 @@ export function transformDefineStyle(
       ? `import style${index} from "${importId}";`
       : `import "${importId}";`,
   )
-  s.overwriteNode(expression, isCssModules ? `style${index}` : '')
+  s.overwrite(
+    expression.start!,
+    expression.end!,
+    isCssModules ? `style${index}` : '',
+  )
 }
 
 function getReturnStatement(root: FunctionalNode) {

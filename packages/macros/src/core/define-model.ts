@@ -1,15 +1,17 @@
-import { importHelperFn, type MagicStringAST } from '@vue-macros/common'
 import { useModelHelperId } from './helper'
+import { importHelperFn } from './utils'
 import type { CallExpression } from '@babel/types'
+import type MagicString from 'magic-string'
 
 export function transformDefineModel(
   node: CallExpression,
   propsName: string,
-  s: MagicStringAST,
+  s: MagicString,
 ): void {
-  s.overwriteNode(
-    node.callee,
-    importHelperFn(s, 0, 'useModel', undefined, useModelHelperId),
+  s.overwrite(
+    node.callee.start!,
+    node.callee.end!,
+    importHelperFn(s, 'useModel', undefined, useModelHelperId),
   )
   s.appendRight(
     node.arguments[0]?.start || node.end! - 1,

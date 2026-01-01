@@ -2,10 +2,10 @@
 
 exports[`defineComponent autoReturnFunction fixtures > ./fixtures/define-component.tsx 1`] = `
 "
-import { useAttrs as __MACROS_useAttrs } from "vue";
-import { useModel as __MACROS_useModel } from "/vue-jsx-vapor/macros/use-model";
-import { useFullProps as __MACROS_useFullProps } from "/vue-jsx-vapor/props";
-import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import {
+import { useAttrs as __useAttrs } from "vue";
+import { useModel as __useModel } from "/vue-jsx-vapor/macros/use-model";
+import { useFullProps as __useFullProps } from "/vue-jsx-vapor/props";
+import { withAsyncContext as __withAsyncContext } from "vue";import {
   defineComponent,
   defineVaporComponent,
   nextTick,
@@ -17,10 +17,10 @@ import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import {
 const $ = unref
 
 const Comp = defineVaporComponent(
-  (__MACROS_props) => {const attrs = __MACROS_useAttrs();
-    __MACROS_useModel(__MACROS_props, 'modelValue',)
+  (__props) => {const attrs = __useAttrs();
+    __useModel(__props, 'modelValue',)
     const foo = $(
-      __MACROS_useModel(__MACROS_props, 'foo', {
+      __useModel(__props, 'foo', {
         validator: (value) => {
           return value === 'foo'
         },
@@ -29,8 +29,8 @@ const Comp = defineVaporComponent(
     )
     return () => (
       <div>
-        {[foo, __MACROS_props.bar, attrs.baz]}
-        <__MACROS_props.Comp />
+        {[foo, __props.bar, attrs.baz]}
+        <__props.Comp />
       </div>
     )
   },
@@ -49,8 +49,8 @@ const Comp = defineVaporComponent(
 )
 
 const Comp1 = defineVaporComponent(
-  () => {const props = __MACROS_useFullProps();
-    const foo = __MACROS_useModel(props, 'foo')
+  () => {const props = __useFullProps();
+    const foo = __useModel(props, 'foo')
     return () => (
       <div>
         {[foo.value, props['bar'], props['onUpdate:bar']]}
@@ -71,12 +71,12 @@ const Comp2 = defineComponent(async () => {
 let __temp, __restore
 
   ;(
-  ([__temp,__restore] = __MACROS_withAsyncContext(() => nextTick())),
+  ([__temp,__restore] = __withAsyncContext(() => nextTick())),
   await __temp,
   __restore()
 )
   let foo = (
-  ([__temp,__restore] = __MACROS_withAsyncContext(() => new Promise((resolve) => {
+  ([__temp,__restore] = __withAsyncContext(() => new Promise((resolve) => {
     setTimeout(() => resolve('foo'), 1000)
   }))),
   __temp = await __temp,
@@ -88,18 +88,18 @@ let __temp, __restore
 
 const foo = () => {}
 defineVaporComponent(
-  (__MACROS_props) => {
+  (__props) => {
     return () => (
       <>
-        {__MACROS_props.a}
-        {__MACROS_props.b}
-        {__MACROS_props.c}
-        {__MACROS_props.d}
-        {__MACROS_props.e}
-        {__MACROS_props.f}
-        {__MACROS_props.g}
-        {__MACROS_props.h}
-        {__MACROS_props.i}
+        {__props.a}
+        {__props.b}
+        {__props.c}
+        {__props.d}
+        {__props.e}
+        {__props.f}
+        {__props.g}
+        {__props.h}
+        {__props.i}
       </>
     )
   }, { props: {
@@ -127,10 +127,10 @@ const Comp4 = defineVaporComponent(<T,>() => {
 
 exports[`fixtures > ./fixtures/define-component.tsx 1`] = `
 "
-import { useAttrs as __MACROS_useAttrs } from "vue";
-import { useModel as __MACROS_useModel } from "/vue-jsx-vapor/macros/use-model";
-import { useFullProps as __MACROS_useFullProps } from "/vue-jsx-vapor/props";
-import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import {
+import { useAttrs as __useAttrs } from "vue";
+import { useModel as __useModel } from "/vue-jsx-vapor/macros/use-model";
+import { useFullProps as __useFullProps } from "/vue-jsx-vapor/props";
+import { withAsyncContext as __withAsyncContext } from "vue";import {
   defineComponent,
   defineVaporComponent,
   nextTick,
@@ -142,10 +142,10 @@ import { withAsyncContext as __MACROS_withAsyncContext } from "vue";import {
 const $ = unref
 
 const Comp = defineVaporComponent(
-  (__MACROS_props) => {const attrs = __MACROS_useAttrs();
-    __MACROS_useModel(__MACROS_props, 'modelValue',)
+  (__props) => {const attrs = __useAttrs();
+    __useModel(__props, 'modelValue',)
     const foo = $(
-      __MACROS_useModel(__MACROS_props, 'foo', {
+      __useModel(__props, 'foo', {
         validator: (value) => {
           return value === 'foo'
         },
@@ -154,8 +154,8 @@ const Comp = defineVaporComponent(
     )
     return (
       <div>
-        {[foo, __MACROS_props.bar, attrs.baz]}
-        <__MACROS_props.Comp />
+        {[foo, __props.bar, attrs.baz]}
+        <__props.Comp />
       </div>
     )
   },
@@ -174,8 +174,8 @@ const Comp = defineVaporComponent(
 )
 
 const Comp1 = defineVaporComponent(
-  () => {const props = __MACROS_useFullProps();
-    const foo = __MACROS_useModel(props, 'foo')
+  () => {const props = __useFullProps();
+    const foo = __useModel(props, 'foo')
     return (
       <div>
         {[foo.value, props['bar'], props['onUpdate:bar']]}
@@ -196,12 +196,12 @@ const Comp2 = defineComponent(async () => {
 let __temp, __restore
 
   ;(
-  ([__temp,__restore] = __MACROS_withAsyncContext(() => nextTick())),
+  ([__temp,__restore] = __withAsyncContext(() => nextTick())),
   await __temp,
   __restore()
 )
   let foo = (
-  ([__temp,__restore] = __MACROS_withAsyncContext(() => new Promise((resolve) => {
+  ([__temp,__restore] = __withAsyncContext(() => new Promise((resolve) => {
     setTimeout(() => resolve('foo'), 1000)
   }))),
   __temp = await __temp,
@@ -213,18 +213,18 @@ let __temp, __restore
 
 const foo = () => {}
 defineVaporComponent(
-  (__MACROS_props) => {
+  (__props) => {
     return (
       <>
-        {__MACROS_props.a}
-        {__MACROS_props.b}
-        {__MACROS_props.c}
-        {__MACROS_props.d}
-        {__MACROS_props.e}
-        {__MACROS_props.f}
-        {__MACROS_props.g}
-        {__MACROS_props.h}
-        {__MACROS_props.i}
+        {__props.a}
+        {__props.b}
+        {__props.c}
+        {__props.d}
+        {__props.e}
+        {__props.f}
+        {__props.g}
+        {__props.h}
+        {__props.i}
       </>
     )
   }, { props: {
@@ -252,22 +252,22 @@ const Comp4 = defineVaporComponent(<T,>() => {
 
 exports[`fixtures > ./fixtures/define-expose.tsx 1`] = `
 "
-import { getCurrentInstance as __MACROS_getCurrentInstance } from "/vue-jsx-vapor/props";export function Comp() {
-  ;(__MACROS_getCurrentInstance().exposed = {
+import { getCurrentInstance as __getCurrentInstance } from "/vue-jsx-vapor/props";export function Comp() {
+  ;(__getCurrentInstance().exposed = {
     foo: 1,
   })
   return <div />
 }
 
 export const Comp1 = function (props: any) {
-  ;(__MACROS_getCurrentInstance().exposed = {
+  ;(__getCurrentInstance().exposed = {
     foo: props.foo,
   })
   return <div />
 }
 
-export const Comp2 = ({ foo, ...__MACROS_props }: any) => {
-  ;(__MACROS_getCurrentInstance().exposed = {
+export const Comp2 = ({ foo, ...__props }: any) => {
+  ;(__getCurrentInstance().exposed = {
     foo,
   })
   return <div />
@@ -277,23 +277,23 @@ export const Comp2 = ({ foo, ...__MACROS_props }: any) => {
 
 exports[`fixtures > ./fixtures/define-model.tsx 1`] = `
 "
-import { useModel as __MACROS_useModel } from "/vue-jsx-vapor/macros/use-model";
+import { useModel as __useModel } from "/vue-jsx-vapor/macros/use-model";
 import { defineVaporComponent, unref } from 'vue'
 
 const $ = unref
 
-export const Comp = defineVaporComponent((__MACROS_props) => {
-  const foo = __MACROS_useModel<string, 'm1' | 'm2'>(__MACROS_props, 'foo', { default: __MACROS_props.bar })
+export const Comp = defineVaporComponent((__props) => {
+  const foo = __useModel<string, 'm1' | 'm2'>(__props, 'foo', { default: __props.bar })
   return <div>{foo.value}</div>
 }, { props: {
 'bar': null, 
-'foo': { default: __MACROS_props.bar, skipFactory: true }, 
+'foo': { default: __props.bar, skipFactory: true }, 
 'onUpdate:foo': null, 
 'fooModifiers': null
 } })
 
-export default function (__MACROS_props) {
-  const modelValue = $(__MACROS_useModel<string>(__MACROS_props, 'modelValue',)!)
+export default function (__props) {
+  const modelValue = $(__useModel<string>(__props, 'modelValue',)!)
   return (
     <Comp v-model:foo_m1={modelValue} bar="bar">
       {modelValue}
@@ -305,17 +305,17 @@ export default function (__MACROS_props) {
 
 exports[`fixtures > ./fixtures/define-slots.tsx 1`] = `
 "
-import { useSlots as __MACROS_useSlots } from "vue";export const Comp = () => {
+import { useSlots as __useSlots } from "vue";export const Comp = () => {
   const slots = Object.assign<{
     default: () => any
-  }>({}, __MACROS_useSlots())
+  }>({}, __useSlots())
   return <div>{slots.default?.()}</div>
 }
 
 export default function () {
   const slots = Object.assign({
     default: () => <div>default</div>,
-  },__MACROS_useSlots())
+  },__useSlots())
   return <div>{slots.default?.()}</div>
 }
 "
@@ -323,7 +323,7 @@ export default function () {
 
 exports[`fixtures > ./fixtures/define-style.tsx 1`] = `
 "import "/vue-jsx-vapor/macros/define-style/0?scopeId=4e9d5cd0&scoped=true&lang.css";import style1 from "/vue-jsx-vapor/macros/define-style/1?scopeId=13f8dd3a&scoped=true&lang.module.scss";
-import { useSlots as __MACROS_useSlots } from "vue";import "/vue-jsx-vapor/macros/define-style/2?scopeId=63a7910c&scoped=false&lang.scss";import { defineComponent, ref } from 'vue'
+import { useSlots as __useSlots } from "vue";import "/vue-jsx-vapor/macros/define-style/2?scopeId=63a7910c&scoped=false&lang.scss";import { defineComponent, ref } from 'vue'
 
 export const Comp = () => {
   const color = ref('red')
@@ -334,7 +334,7 @@ export const Comp = () => {
 export default defineComponent(() => {
   const color = ref('red')
   const styles = style1
-  const { default: Default, ...slots } = Object.assign({}, __MACROS_useSlots())
+  const { default: Default, ...slots } = Object.assign({}, __useSlots())
   return () => (
     <>
       <div {...{style:{'--13f8dd3a-color-value': color.value}}} data-v-13f8dd3a="" class={styles.bar}>foo</div>

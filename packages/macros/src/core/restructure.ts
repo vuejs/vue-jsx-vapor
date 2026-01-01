@@ -1,16 +1,14 @@
-import {
-  HELPER_PREFIX,
-  importHelperFn,
-  walkIdentifiers,
-  type MagicStringAST,
-} from '@vue-macros/common'
+import { walkIdentifiers } from 'ast-kit'
 import { withDefaultsHelperId } from './helper'
 import {
   getDefaultValue,
+  HELPER_PREFIX,
+  importHelperFn,
   prependFunctionalNode,
   type FunctionalNode,
 } from './utils'
 import type { Node } from '@babel/types'
+import type MagicString from 'magic-string'
 
 type Options = {
   withDefaultsFrom?: string
@@ -31,7 +29,7 @@ type Prop = {
 }
 
 export function restructure(
-  s: MagicStringAST,
+  s: MagicString,
   node: FunctionalNode,
   options: Options = {},
 ): Prop[] {
@@ -68,7 +66,6 @@ export function restructure(
         options.generateRestProps?.(rest.name, index, rests) ??
           `\nconst ${rest.name} = ${importHelperFn(
             s,
-            0,
             'createPropsRestProxy',
           )}(${rest.path}, [${rest.value}])`,
       )
@@ -77,7 +74,6 @@ export function restructure(
     for (const [path, values] of Object.entries(defaultValues)) {
       const createPropsDefaultProxy = importHelperFn(
         s,
-        0,
         'createPropsDefaultProxy',
         undefined,
         options.withDefaultsFrom ?? withDefaultsHelperId,
@@ -118,7 +114,7 @@ export function restructure(
 }
 
 function getProps(
-  s: MagicStringAST,
+  s: MagicString,
   options: Options,
   node: Node,
   path = '',
@@ -147,11 +143,12 @@ function getProps(
       prop.left.type === 'Identifier'
     ) {
       // [foo = 'foo']
+      const defaultValue = getDefaultValue(prop.right)
       props.push({
         path,
         name: prop.left.name,
         value: `[${index}]`,
-        defaultValue: s.sliceNode(getDefaultValue(prop.right)),
+        defaultValue: s.slice(defaultValue.start!, defaultValue.end!),
       })
       propNames.push(`'${prop.left.name}'`)
     } else if (
@@ -161,11 +158,12 @@ function getProps(
       if (prop.value.type === 'AssignmentPattern') {
         if (prop.value.left.type === 'Identifier') {
           // { foo: bar = 'foo' }
+          const defaultValue = getDefaultValue(prop.value.right)
           props.push({
             path,
             name: prop.value.left.name,
             value: `.${prop.key.name}`,
-            defaultValue: s.sliceNode(getDefaultValue(prop.value.right)),
+            defaultValue: s.slice(defaultValue.start!, defaultValue.end!),
           })
         } else {
           // { foo: { bar } = {} }

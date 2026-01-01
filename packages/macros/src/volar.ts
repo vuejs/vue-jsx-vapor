@@ -1,13 +1,18 @@
-import { createFilter, REGEX_VUE_SFC } from '@vue-macros/common'
 import { createPlugin, type PluginReturn } from 'ts-macro'
+import { createFilter } from 'unplugin-utils'
 import { resolveOptions, type Options } from './options'
 import { getGlobalTypes, getRootMap, transformJsxMacros } from './volar/index'
+
+const REGEX_VUE_SFC: RegExp = /\.vue$/
 
 const plugin: PluginReturn<Options | undefined> = createPlugin(
   ({ ts }, userOptions = {}) => {
     const resolvedOptions = resolveOptions(userOptions!)
     ;(resolvedOptions.include as any[]).push(REGEX_VUE_SFC)
-    const filter = createFilter(resolvedOptions)
+    const filter = createFilter(
+      resolvedOptions.include,
+      resolvedOptions.exclude,
+    )
 
     return {
       name: '@vue-jsx-vapor/macros',

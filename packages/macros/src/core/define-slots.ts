@@ -1,9 +1,10 @@
-import { importHelperFn, type MagicStringAST } from '@vue-macros/common'
+import { importHelperFn } from './utils'
 import type { CallExpression } from '@babel/types'
+import type MagicString from 'magic-string'
 
 export function transformDefineSlots(
   node: CallExpression,
-  s: MagicStringAST,
+  s: MagicString,
 ): void {
   s.overwrite(
     node.start!,
@@ -12,6 +13,6 @@ export function transformDefineSlots(
       node.callee.end!,
     `Object.assign`,
   )
-  const slots = `${importHelperFn(s, 0, 'useSlots')}()`
+  const slots = `${importHelperFn(s, 'useSlots')}()`
   s.appendLeft(node.end! - 1, `${node.arguments[0] ? ',' : '{}, '}${slots}`)
 }

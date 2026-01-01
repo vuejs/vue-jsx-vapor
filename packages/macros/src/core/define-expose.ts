@@ -1,13 +1,14 @@
-import { importHelperFn, type MagicStringAST } from '@vue-macros/common'
+import { importHelperFn } from './utils'
 import type { CallExpression } from '@babel/types'
+import type MagicString from 'magic-string'
 
 export function transformDefineExpose(
   node: CallExpression,
-  s: MagicStringAST,
+  s: MagicString,
 ): void {
-  s.overwriteNode(node.callee, ';')
+  s.overwrite(node.callee.start!, node.callee.end!, ';')
   s.appendRight(
     node.arguments[0]?.start || node.end! - 1,
-    `${importHelperFn(s, 0, 'getCurrentInstance', undefined, '/vue-jsx-vapor/props')}().exposed = `,
+    `${importHelperFn(s, 'getCurrentInstance', undefined, '/vue-jsx-vapor/props')}().exposed = `,
   )
 }

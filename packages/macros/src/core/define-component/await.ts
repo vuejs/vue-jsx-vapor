@@ -1,15 +1,11 @@
 // Modified from: https://github.com/vuejs/core/blob/main/packages/compiler-sfc/src/script/topLevelAwait.ts
 
-import {
-  importHelperFn,
-  isFunctionType,
-  walkAST,
-  type MagicStringAST,
-} from '@vue-macros/common'
-import type { FunctionalNode } from '../utils'
+import { isFunctionType, walkAST } from 'ast-kit'
+import { importHelperFn, type FunctionalNode } from '../utils'
 import type { AwaitExpression, Node, Statement } from '@babel/types'
+import type MagicString from 'magic-string'
 
-export function transformAwait(root: FunctionalNode, s: MagicStringAST): void {
+export function transformAwait(root: FunctionalNode, s: MagicString): void {
   if (root.body.type !== 'BlockStatement') return
   let hasAwait = false
   for (const node of root.body.body) {
@@ -61,7 +57,7 @@ export function transformAwait(root: FunctionalNode, s: MagicStringAST): void {
 }
 
 function processAwait(
-  s: MagicStringAST,
+  s: MagicString,
   node: AwaitExpression,
   needSemi: boolean,
   isStatement: boolean,
@@ -80,7 +76,6 @@ function processAwait(
     argumentStart,
     `${needSemi ? `;` : ``}(\n  ([__temp,__restore] = ${importHelperFn(
       s,
-      0,
       `withAsyncContext`,
     )}(${containsNestedAwait ? `async ` : ``}() => `,
   )

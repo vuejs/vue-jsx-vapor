@@ -41,9 +41,4 @@ export default defineVaporComponent(() => {
       </div>
     </div>
   )
-  defineStyle(`
-    .foo {
-      color: red;
-    }
-  `)
 })

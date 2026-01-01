@@ -112,6 +112,7 @@
     "esbuild": "*",
     "rollup": "^3",
     "vite": ">=3",
+    "vue": ">=3",
     "webpack": "^4 || ^5"
   },
   "peerDependenciesMeta": {
@@ -135,11 +136,12 @@
     }
   },
   "dependencies": {
-    "@vue-macros/common": "catalog:",
-    "@vue/compiler-sfc": "catalog:",
+    "ast-kit": "^2.2.0",
     "hash-sum": "catalog:",
+    "magic-string": "^0.30.21",
     "ts-macro": "catalog:",
-    "unplugin": "catalog:"
+    "unplugin": "catalog:",
+    "unplugin-utils": "catalog:"
   },
   "devDependencies": {
     "@babel/types": "^7.28.5",

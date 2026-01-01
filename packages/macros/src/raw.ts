@@ -1,4 +1,4 @@
-import { createFilter, normalizePath } from '@vue-macros/common'
+import { createFilter, normalizePath } from 'unplugin-utils'
 import { transformJsxMacros } from './core'
 import {
   helperPrefix,
@@ -15,7 +15,7 @@ const name = '@vue-jsx-vapor/macros'
 
 const plugin = (userOptions: Options = {}): UnpluginOptions => {
   const options = resolveOptions(userOptions)
-  const filter = createFilter(options)
+  const filter = createFilter(options.include, options.exclude)
   const importMap = new Map()
 
   return {

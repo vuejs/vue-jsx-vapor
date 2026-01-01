@@ -1,7 +1,7 @@
 import { isFunctionalNode, type FunctionalNode } from '../utils'
-import type { MagicStringAST } from '@vue-macros/common'
+import type MagicString from 'magic-string'
 
-export function transformReturn(root: FunctionalNode, s: MagicStringAST): void {
+export function transformReturn(root: FunctionalNode, s: MagicString): void {
   const node =
     root.body.type === 'BlockStatement'
       ? root.body.body.find((node) => node.type === 'ReturnStatement')?.argument

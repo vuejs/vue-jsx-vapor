@@ -1,10 +1,11 @@
+/* eslint-disable node/prefer-global/process */
 import type {
   ArrowFunctionExpression,
   FunctionDeclaration,
   FunctionExpression,
   Node,
 } from '@babel/types'
-import type { MagicStringAST } from '@vue-macros/common'
+import type MagicString from 'magic-string'
 
 export type FunctionalNode =
   | FunctionDeclaration
@@ -13,7 +14,7 @@ export type FunctionalNode =
 
 export function prependFunctionalNode(
   node: FunctionalNode,
-  s: MagicStringAST,
+  s: MagicString,
   result: string,
 ): void {
   const isBlockStatement = node.body.type === 'BlockStatement'
@@ -56,4 +57,49 @@ export function getDefaultValue(node: Node): Node {
     return getDefaultValue(node.expression)
   }
   return node
+}
+
+let require: NodeJS.Require | undefined
+
+export function getRequire() {
+  if (require) return require
+
+  try {
+    // @ts-expect-error check api
+    if (globalThis.process?.getBuiltinModule) {
+      const module = process.getBuiltinModule('node:module')
+      // unenv has implemented `getBuiltinModule` but has yet to support `module.createRequire`
+      if (module?.createRequire) {
+        return (require = module.createRequire(import.meta.url))
+      }
+    }
+  } catch {}
+}
+
+const importedMap = new WeakMap<MagicString, Set<string>>()
+export const HELPER_PREFIX = '__'
+export function importHelperFn(
+  s: MagicString,
+  imported: string,
+  local: string = imported,
+  from = 'vue',
+) {
+  const cacheKey = `${from}@${imported}`
+  if (!importedMap.get(s)?.has(cacheKey)) {
+    s.appendLeft(
+      0,
+      `\nimport ${
+        imported === 'default'
+          ? HELPER_PREFIX + local
+          : `{ ${imported} as ${HELPER_PREFIX + local} }`
+      } from ${JSON.stringify(from)};`,
+    )
+    if (importedMap.has(s)) {
+      importedMap.get(s)!.add(cacheKey)
+    } else {
+      importedMap.set(s, new Set([cacheKey]))
+    }
+  }
+
+  return `${HELPER_PREFIX}${local}`
 }

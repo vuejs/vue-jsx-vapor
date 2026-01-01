@@ -1,9 +1,10 @@
-import { babelParse, MagicStringAST, walkAST } from '@vue-macros/common'
+import { babelParse, walkAST } from 'ast-kit'
+import MagicString from 'magic-string'
 import { describe, expect, test } from 'vitest'
 import { restructure } from '../src/api'
 
 const transformRestructure = (code: string): string => {
-  const s = new MagicStringAST(code)
+  const s = new MagicString(code)
   const ast = babelParse(code, 'tsx')
   walkAST(ast, {
     enter(node) {

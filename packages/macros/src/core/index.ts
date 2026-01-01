@@ -1,18 +1,16 @@
-import {
-  babelParse,
-  generateTransform,
-  getLang,
-  HELPER_PREFIX,
-  MagicStringAST,
-  walkAST,
-  type CodeTransform,
-} from '@vue-macros/common'
+import { babelParse, getLang, walkAST } from 'ast-kit'
+import MagicString from 'magic-string'
 import { transformDefineComponent } from './define-component'
 import { transformDefineExpose } from './define-expose'
 import { transformDefineModel } from './define-model'
 import { transformDefineSlots } from './define-slots'
 import { transformDefineStyle } from './define-style'
-import { getParamsStart, isFunctionalNode, type FunctionalNode } from './utils'
+import {
+  getParamsStart,
+  HELPER_PREFIX,
+  isFunctionalNode,
+  type FunctionalNode,
+} from './utils'
 import type { OptionsResolved } from '../options'
 import type {
   CallExpression,
@@ -21,6 +19,11 @@ import type {
   Program,
   VoidPattern,
 } from '@babel/types'
+
+interface CodeTransform {
+  code: string
+  map: any
+}
 
 export { isFunctionalNode }
 
@@ -52,7 +55,7 @@ export function transformJsxMacros(
   importMap: Map<string, string>,
   options: OptionsResolved,
 ): CodeTransform | undefined {
-  const s = new MagicStringAST(code)
+  const s = new MagicString(code)
   const lang = getLang(id)
   if (lang === 'dts') return
   const ast = babelParse(s.original, lang)
@@ -125,10 +128,21 @@ export function transformJsxMacros(
     }
   }
 
-  return generateTransform(s, id)
+  if (s.hasChanged()) {
+    return {
+      code: s.toString(),
+      get map() {
+        return s.generateMap({
+          source: id,
+          includeContent: true,
+          hires: 'boundary',
+        })
+      },
+    }
+  }
 }
 
-function getRootMap(ast: Program, s: MagicStringAST, options: OptionsResolved) {
+function getRootMap(ast: Program, s: MagicString, options: OptionsResolved) {
   const parents: (Node | undefined | null)[] = []
   const rootMap = new Map<FunctionalNode | undefined, Macros>()
   walkAST<Node>(ast, {
@@ -139,7 +153,9 @@ function getRootMap(ast: Program, s: MagicStringAST, options: OptionsResolved) {
       if (
         root &&
         parents[2]?.type === 'CallExpression' &&
-        options.defineComponent.alias.includes(s.sliceNode(parents[2].callee))
+        options.defineComponent.alias.includes(
+          s.slice(parents[2].callee.start!, parents[2].callee.end!),
+        )
       ) {
         if (!rootMap.has(root)) rootMap.set(root, {})
         if (!rootMap.get(root)!.defineComponent) {
@@ -150,7 +166,10 @@ function getRootMap(ast: Program, s: MagicStringAST, options: OptionsResolved) {
       const expression =
         node.type === 'VariableDeclaration'
           ? node.declarations[0].init?.type === 'CallExpression' &&
-            s.sliceNode(node.declarations[0].init.callee) === '$'
+            s.slice(
+              node.declarations[0].init.callee.start!,
+              node.declarations[0].init.callee.end!,
+            ) === '$'
             ? node.declarations[0].init.arguments[0]
             : node.declarations[0].init
           : node.type === 'ExpressionStatement'
@@ -160,11 +179,11 @@ function getRootMap(ast: Program, s: MagicStringAST, options: OptionsResolved) {
       const macroExpression = getMacroExpression(expression, options)
       if (!macroExpression) return
       if (!rootMap.has(root)) rootMap.set(root, {})
-      const macroName = s.sliceNode(
+      const macro =
         macroExpression.callee.type === 'MemberExpression'
           ? macroExpression.callee.object
-          : macroExpression.callee,
-      )
+          : macroExpression.callee
+      const macroName = s.slice(macro.start!, macro.end!)
       if (macroName) {
         if (options.defineModel.alias.includes(macroName)) {
           ;(rootMap.get(root)!.defineModel ??= []).push({

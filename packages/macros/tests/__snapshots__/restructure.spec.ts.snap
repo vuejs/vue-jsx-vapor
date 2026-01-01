@@ -1,45 +1,45 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`transform > reconstruct 1`] = `
-"const App = (__MACROS_props, __MACROS_props1) => {
-        function onClick(__MACROS_props){
-          return { foo: __MACROS_props.foo, baz: __MACROS_props1.baz.baz }
+"const App = (__props, __props1) => {
+        function onClick(__props){
+          return { foo: __props.foo, baz: __props1.baz.baz }
         };
-        return [ __MACROS_props[0][0][1], __MACROS_props[1].id.foo[0], __MACROS_props1.baz ]
+        return [ __props[0][0][1], __props[1].id.foo[0], __props1.baz ]
       }"
 `;
 
 exports[`transform > reconstruct AssignmentPattern 1`] = `
 "
-import { createPropsDefaultProxy as __MACROS_createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";function App(__MACROS_props){
-__MACROS_props = __MACROS_createPropsDefaultProxy(__MACROS_props, {'.foo.foo': 1, '.bar[0]': 2});
-        return <>{[__MACROS_props.foo.foo, __MACROS_props.bar[0]]}</>
+import { createPropsDefaultProxy as __createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";function App(__props){
+__props = __createPropsDefaultProxy(__props, {'.foo.foo': 1, '.bar[0]': 2});
+        return <>{[__props.foo.foo, __props.bar[0]]}</>
       }"
 `;
 
 exports[`transform > reconstruct arrowFunctionExpression 1`] = `
-"const App = (__MACROS_props) => (
-        <>{[__MACROS_props[0].root.foo]}</>
+"const App = (__props) => (
+        <>{[__props[0].root.foo]}</>
       )"
 `;
 
 exports[`transform > reconstruct default-prop 1`] = `
 "
-import { createPropsRestProxy as __MACROS_createPropsRestProxy } from "vue";
-import { createPropsDefaultProxy as __MACROS_createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";function App(__MACROS_props, __MACROS_props1){
-const rest = __MACROS_createPropsRestProxy(__MACROS_props, ['foo', 'baz']);
-__MACROS_props = __MACROS_createPropsDefaultProxy(__MACROS_props, {'.foo': 'bar'});
-__MACROS_props1 = __MACROS_createPropsDefaultProxy(__MACROS_props1, {'[0]': 'foo'});
-        return <>{[__MACROS_props.foo, __MACROS_props.baz, rest, __MACROS_props1[0]]}</>
+import { createPropsRestProxy as __createPropsRestProxy } from "vue";
+import { createPropsDefaultProxy as __createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";function App(__props, __props1){
+const rest = __createPropsRestProxy(__props, ['foo', 'baz']);
+__props = __createPropsDefaultProxy(__props, {'.foo': 'bar'});
+__props1 = __createPropsDefaultProxy(__props1, {'[0]': 'foo'});
+        return <>{[__props.foo, __props.baz, rest, __props1[0]]}</>
       }"
 `;
 
 exports[`transform > reconstruct rest-prop 1`] = `
 "
-import { createPropsRestProxy as __MACROS_createPropsRestProxy } from "vue";
-import { createPropsDefaultProxy as __MACROS_createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";function App(__MACROS_props){
-const rest = __MACROS_createPropsRestProxy(__MACROS_props, ['foo', 'bar']);
-__MACROS_props = __MACROS_createPropsDefaultProxy(__MACROS_props, {'.bar': 1});
-        return <>{[__MACROS_props.foo, __MACROS_props.bar, rest]}</>
+import { createPropsRestProxy as __createPropsRestProxy } from "vue";
+import { createPropsDefaultProxy as __createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";function App(__props){
+const rest = __createPropsRestProxy(__props, ['foo', 'bar']);
+__props = __createPropsDefaultProxy(__props, {'.bar': 1});
+        return <>{[__props.foo, __props.bar, rest]}</>
       }"
 `;

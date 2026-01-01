@@ -1,10 +1,15 @@
-import {
-  REGEX_NODE_MODULES,
-  REGEX_SETUP_SFC,
-  REGEX_SRC_FILE,
-  type BaseOptions,
-  type MarkRequired,
-} from '@vue-macros/common'
+import type { FilterPattern } from 'unplugin-utils'
+
+export interface BaseOptions {
+  include?: FilterPattern
+  exclude?: FilterPattern
+  version?: number
+  isProduction?: boolean
+}
+type MarkRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
+const REGEX_NODE_MODULES: RegExp = /node_modules/
+const REGEX_SRC_FILE: RegExp = /\.[cm]?[jt]sx?$/
+const REGEX_SETUP_SFC: RegExp = /\.setup\.[cm]?[jt]sx?$/
 
 type DefineComponentOptions = { alias?: string[]; autoReturnFunction?: boolean }
 type DefineModelOptions = { alias?: string[] }

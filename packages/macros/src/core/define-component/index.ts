@@ -1,13 +1,9 @@
-import {
-  HELPER_PREFIX,
-  importHelperFn,
-  walkAST,
-  walkIdentifiers,
-  type MagicStringAST,
-} from '@vue-macros/common'
+import { walkAST, walkIdentifiers } from 'ast-kit'
 import { restructure } from '../restructure'
 import {
   getDefaultValue,
+  HELPER_PREFIX,
+  importHelperFn,
   isFunctionalNode,
   prependFunctionalNode,
   type FunctionalNode,
@@ -16,22 +12,26 @@ import { transformAwait } from './await'
 import { transformReturn } from './return'
 import type { Macros } from '..'
 import type { Node } from '@babel/types'
+import type MagicString from 'magic-string'
 
 export function transformDefineComponent(
   root: FunctionalNode,
   propsName: string,
   macros: Macros,
-  s: MagicStringAST,
+  s: MagicString,
   autoReturnFunction = false,
 ): void {
   if (!macros.defineComponent) return
 
-  const defineComponentName = s.sliceNode(macros.defineComponent.callee)
+  const defineComponentName = s.slice(
+    macros.defineComponent.callee.start!,
+    macros.defineComponent.callee.end!,
+  )
   if (
     defineComponentName &&
     !['defineComponent', 'defineVaporComponent'].includes(defineComponentName)
   ) {
-    importHelperFn(s, 0, 'defineComponent', defineComponentName)
+    importHelperFn(s, 'defineComponent', defineComponentName)
   }
 
   let hasRestProp = false
@@ -44,7 +44,6 @@ export function transformDefineComponent(
         s,
         `const ${propsName} = ${importHelperFn(
           s,
-          0,
           'useFullProps',
           undefined,
           '/vue-jsx-vapor/props',
@@ -108,7 +107,7 @@ export function transformDefineComponent(
         generateRestProps: (restPropsName, index, list) => {
           if (index === list.length - 1) {
             hasRestProp = true
-            const useAttrs = importHelperFn(s, 0, 'useAttrs')
+            const useAttrs = importHelperFn(s, 'useAttrs')
             return `const ${restPropsName} = ${useAttrs}()`
           }
         },
@@ -161,7 +160,7 @@ function getWalkedIds(root: FunctionalNode, propsName: string) {
 }
 
 function transformDefineModel(
-  s: MagicStringAST,
+  s: MagicString,
   defineModel: Macros['defineModel'],
   props: Record<string, string | null>,
 ) {
@@ -184,7 +183,7 @@ function transformDefineModel(
         if (prop.key.name === 'default') {
           defaultValueNode = prop.value
         }
-        options[prop.key.name] = s.sliceNode(prop.value)
+        options[prop.key.name] = s.slice(prop.value.start!, prop.value.end!)
       }
     }
     if (defaultValueNode && !options.type) {
@@ -213,7 +212,7 @@ function transformDefineModel(
   }
 }
 
-function getTypeAndValue(s: MagicStringAST, node: Node) {
+function getTypeAndValue(s: MagicString, node: Node) {
   let value = ''
   let type = ''
   let skipFactory = false
@@ -238,26 +237,26 @@ function getTypeAndValue(s: MagicStringAST, node: Node) {
     }
     case 'ObjectExpression': {
       type = 'Object'
-      value = `() => (${s.sliceNode(node)})`
+      value = `() => (${s.slice(node.start!, node.end!)})`
 
       break
     }
     case 'ArrayExpression': {
       type = 'Array'
-      value = `() => (${s.sliceNode(node)})`
+      value = `() => (${s.slice(node.start!, node.end!)})`
 
       break
     }
     default:
       if (isFunctionalNode(node)) {
         type = 'Function'
-        value = s.sliceNode(node)
+        value = s.slice(node.start!, node.end!)
       } else if (node.type === 'Identifier') {
         if (node.name === 'undefined') {
           value = 'undefined'
         } else {
           skipFactory = true
-          value = s.sliceNode(node)
+          value = s.slice(node.start!, node.end!)
         }
       } else if (node.type === 'NullLiteral') {
         value = 'null'

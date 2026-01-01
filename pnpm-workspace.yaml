@@ -13,7 +13,6 @@ catalog:
   '@nuxt/kit': ^3.20.2
   '@nuxt/schema': ^3.20.2
 
-  '@vue/compiler-sfc': *vue
   '@vue/shared': *vue
 
   '@vue-macros/common': *vue-macros
