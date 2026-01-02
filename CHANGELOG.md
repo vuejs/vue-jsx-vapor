@@ -1,3 +1,12 @@
+## [3.1.8](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.7...v3.1.8) (2026-01-02)
+
+
+### Bug Fixes
+
+* **compiler/dom:** slots in v-for should be dynamic ([d6fd49e](https://github.com/vuejs/vue-jsx-vapor/commit/d6fd49eb7b4105d1f581b253f785939f8840aedf))
+
+
+
 ## [3.1.7](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.6...v3.1.7) (2025-12-31)
 
 
