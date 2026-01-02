@@ -43,8 +43,8 @@ fn on_component_default_slot() {
   (() => {
     return _openBlock(), _createBlock(Comp, null, {
       default: _withCtx(({ foo }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
-      _: 1
-    });
+      _: 2
+    }, 1024);
   })();
   "#);
 }
@@ -65,8 +65,8 @@ fn on_component_named_slot() {
   (() => {
     return _openBlock(), _createBlock(Comp, null, {
       named: _withCtx(({ foo }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
-      _: 1
-    });
+      _: 2
+    }, 1024);
   })();
   "#);
 }
@@ -95,8 +95,8 @@ fn template_named_slots() {
     return _openBlock(), _createBlock(Comp, null, {
       one: _withCtx(({ foo }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
       two: _withCtx(({ bar }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
-      _: 1
-    });
+      _: 2
+    }, 1024);
   })();
   "#);
 }
@@ -126,8 +126,8 @@ fn on_component_dynamically_named_slot() {
         _normalizeVNode(() => bar),
         _createVNode(Comp, null, {
           default: _withCtx((baz) => [_normalizeVNode(() => bar)]),
-          _: 1
-        })
+          _: 2
+        }, 1024)
       ]),
       _: 2
     }, 1024);
@@ -226,8 +226,8 @@ fn nested_slots_scoping() {
         _normalizeVNode(() => bar),
         _normalizeVNode(() => baz)
       ]),
-      _: 1
-    });
+      _: 2
+    }, 1024);
   })();
   "#);
 }
@@ -330,8 +330,8 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars3() {
         default: _withCtx((bar) => [_normalizeVNode(() => foo)]),
         _: 2
       }, 1024)]),
-      _: 1
-    });
+      _: 2
+    }, 1024);
   })();
   "#);
 }
@@ -398,12 +398,11 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars6() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
+  const _hoisted_1 = ["onClick"];
   (() => {
-    const _cache = _createVNodeCache(0);
     return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div", null, [_createVNode(Comp, null, {
-      [i.value]: _withCtx(() => [_createElementVNode("button", { onClick: _cache[0] || (_cache[0] = fn()) })]),
+      [i.value]: _withCtx(() => [_createElementVNode("button", { onClick: fn() }, null, 8, _hoisted_1)]),
       _: 2
     }, 1024)]))), 256);
   })();

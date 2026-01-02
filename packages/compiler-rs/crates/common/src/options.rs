@@ -80,7 +80,7 @@ impl<'a> Default for TransformOptions<'a> {
       slot_identifiers: RefCell::new(IndexMap::new()),
       cache_index: RefCell::new(0),
       in_ssr: false,
-      optimize_slots: true,
+      optimize_slots: false,
     }
   }
 }

@@ -58,9 +58,8 @@ pub struct CompilerOptions {
   pub ssr: Option<bool>,
   /**
    * Whether the compiler should detect if the `patchFlag` for slots is stable.
-   * This is only used in interop mode.
-   * Note: This is not supported for slots within `CallExpression` (e.g. `map()`) or `ObjectExpression` | `FunctionExpression` slots.
-   *       Please use v-for and v-slot directive instead.
+   * Note: This is only used in interop mode, And not supported for slots within `CallExpression` (e.g. `map()`)
+   * or `ObjectExpression` | `FunctionExpression` slots. use `v-for` and `v-slot` directive instead.
    * @default false
    */
   pub optimize_slots: Option<bool>,
@@ -92,6 +91,7 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       hmr: options.hmr.unwrap_or(false),
       ssr: RefCell::new(ssr),
       in_ssr: ssr,
+      optimize_slots: options.optimize_slots.unwrap_or(false),
       is_custom_element: if let Some(is_custom_element) = options.is_custom_element {
         Box::new(move |tag: String| is_custom_element.call(tag).unwrap())
           as Box<dyn Fn(String) -> bool>

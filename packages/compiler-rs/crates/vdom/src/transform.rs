@@ -307,13 +307,14 @@ impl<'a> TransformContext<'a> {
       } else {
         None
       } {
-        if self.options.optimize_slots
-          && self
-            .options
-            .identifiers
-            .borrow()
-            .get(id.name.as_str())
-            .is_some()
+        if !self.options.optimize_slots {
+          self.add_slot_identifiers(id);
+        } else if self
+          .options
+          .identifiers
+          .borrow()
+          .get(id.name.as_str())
+          .is_some()
         {
           has_scope_ref = true;
           self.add_slot_identifiers(id);
@@ -329,13 +330,14 @@ impl<'a> TransformContext<'a> {
       let has_ref_ptr = &mut has_ref as *mut bool;
       let exp = WalkIdentifiers::new(
         Box::new(move |id, _, _, _, _| {
-          if self.options.optimize_slots
-            && self
-              .options
-              .identifiers
-              .borrow()
-              .get(id.name.as_str())
-              .is_some()
+          if !self.options.optimize_slots {
+            self.add_slot_identifiers(id);
+          } else if self
+            .options
+            .identifiers
+            .borrow()
+            .get(id.name.as_str())
+            .is_some()
           {
             *unsafe { &mut *has_scope_ref_ptr } = true;
             self.add_slot_identifiers(id);
@@ -379,9 +381,6 @@ impl<'a> TransformContext<'a> {
   }
 
   pub fn add_identifiers(&'a self, exp: &Option<&Expression<'a>>) -> Vec<String> {
-    if !self.options.optimize_slots {
-      return vec![];
-    }
     let Some(exp) = exp else { return vec![] };
     let identifiers = self.options.identifiers.as_ptr();
     let mut ids = vec![];
@@ -418,9 +417,6 @@ impl<'a> TransformContext<'a> {
   }
 
   pub fn remove_identifiers(&self, ids: Vec<String>) {
-    if !self.options.optimize_slots {
-      return;
-    }
     let identifiers = &mut self.options.identifiers.borrow_mut();
     for id in ids {
       if let Some(v) = identifiers.get_mut(&id)

@@ -103,7 +103,7 @@ pub fn build_slots<'a>(
   };
   // This can be further optimized to make
   // it dynamic when the slot children use the scope variables.
-  if !*context.options.ssr.borrow() && has_dynamic_slots {
+  if !*context.options.ssr.borrow() && (has_dynamic_slots || !context.options.optimize_slots) {
     has_dynamic_slots = context
       .options
       .slot_identifiers
