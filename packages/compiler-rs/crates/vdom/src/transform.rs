@@ -355,14 +355,14 @@ impl<'a> TransformContext<'a> {
     }
   }
 
-  pub fn add_slot_identifiers(&self, id: &IdentifierReference) {
+  fn add_slot_identifiers(&self, id: &IdentifierReference) {
     let slot_identifiers = &mut self.options.slot_identifiers.borrow_mut();
-    let len = slot_identifiers.len();
-    let last_index = len.saturating_sub(1);
-    for (index, value) in slot_identifiers.values_mut().enumerate() {
-      if index == last_index && value.1.contains(&id.name.to_string()) {
-        continue;
-      }
+    if let Some(last_slot) = slot_identifiers.last()
+      && last_slot.1.1.contains(&id.name.to_string())
+    {
+      return;
+    }
+    for value in slot_identifiers.values_mut() {
       value.0 += 1;
     }
   }
@@ -493,7 +493,9 @@ impl<'a> TransformContext<'a> {
             exit_fns.push(on_exit);
           };
 
-          if let Some(on_exit) = transform_v_slots(&mut directives, node, &*context) {
+          if directives.v_slot.is_none()
+            && let Some(on_exit) = transform_v_slots(&mut directives, node, &*context)
+          {
             exit_fns.push(on_exit);
           };
         }
@@ -504,9 +506,7 @@ impl<'a> TransformContext<'a> {
           exit_fns.push(on_exit);
         };
 
-        if directives.v_slot.is_some()
-          && let Some(on_exit) = track_slot_scopes(&mut directives, node, &*context)
-        {
+        if let Some(on_exit) = track_slot_scopes(&mut directives, node, &*context) {
           exit_fns.push(on_exit);
         };
 

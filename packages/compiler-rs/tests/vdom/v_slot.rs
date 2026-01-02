@@ -261,7 +261,7 @@ fn should_force_dynamic_when_inside_v_for() {
 fn should_only_force_dynamic_slots_when_actually_using_scope_vars1() {
   let code = transform(
     r#"<div v-for={i in list}>
-      <Comp v-slot={bar}>{i}</Comp>
+      <Comp>{i}</Comp>
     </div>"#,
     Some(TransformOptions {
       interop: true,
@@ -274,7 +274,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars1() {
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
     return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div", null, [_createVNode(Comp, null, {
-      default: _withCtx((bar) => [_normalizeVNode(() => i)]),
+      default: _withCtx(() => [_normalizeVNode(() => i)]),
       _: 2
     }, 1024)]))), 256);
   })();

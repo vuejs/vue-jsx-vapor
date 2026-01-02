@@ -69,6 +69,12 @@ pub unsafe fn track_slot_scopes<'a>(
           *context.options.in_v_slot.borrow_mut() -= 1;
           context.remove_identifiers(identifiers);
         }));
+      } else if is_component {
+        context
+          .options
+          .slot_identifiers
+          .borrow_mut()
+          .insert(node.span, (0, vec![]));
       }
     }
     None
