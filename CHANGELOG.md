@@ -1,3 +1,7 @@
+## [3.1.9](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.8...v3.1.9) (2026-01-02)
+
+
+
 ## [3.1.8](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.7...v3.1.8) (2026-01-02)
 
 
