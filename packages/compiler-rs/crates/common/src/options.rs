@@ -52,6 +52,7 @@ pub struct TransformOptions<'a> {
    *  - context.inSSR = true
    */
   pub in_ssr: bool,
+  pub optimize_slots: bool,
 }
 
 impl<'a> Default for TransformOptions<'a> {
@@ -79,6 +80,7 @@ impl<'a> Default for TransformOptions<'a> {
       slot_identifiers: RefCell::new(IndexMap::new()),
       cache_index: RefCell::new(0),
       in_ssr: false,
+      optimize_slots: true,
     }
   }
 }

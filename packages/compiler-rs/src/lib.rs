@@ -56,6 +56,14 @@ pub struct CompilerOptions {
    * @default false
    */
   pub ssr: Option<bool>,
+  /**
+   * Whether the compiler should detect if the `patchFlag` for slots is stable.
+   * This is only used in interop mode.
+   * Note: This is not supported for slots within `CallExpression` (e.g. `map()`) or `ObjectExpression` | `FunctionExpression` slots.
+   *       Please use v-for and v-slot directive instead.
+   * @default false
+   */
+  pub optimize_slots: Option<bool>,
 }
 
 #[cfg(feature = "napi")]

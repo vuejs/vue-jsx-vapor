@@ -1,15 +1,12 @@
 use napi::bindgen_prelude::Either3;
 use oxc_allocator::TakeIn;
-use oxc_ast::ast::{
-  Expression, FormalParameters, JSXAttributeItem, JSXAttributeValue, JSXChild, JSXElement,
-  ObjectPropertyKind,
-};
+use oxc_ast::ast::{Expression, JSXAttributeItem, JSXAttributeValue, JSXChild, JSXElement};
 use oxc_span::SPAN;
 
 use crate::{ast::NodeTypes, transform::TransformContext};
 use common::{
-  check::is_jsx_component, directive::Directives, error::ErrorCodes, expression::parse_expression,
-  patch_flag::PatchFlags, text::is_empty_text,
+  check::is_jsx_component, directive::Directives, error::ErrorCodes, patch_flag::PatchFlags,
+  text::is_empty_text,
 };
 
 /// # SAFETY
@@ -81,52 +78,16 @@ pub unsafe fn transform_v_slots<'a>(
 
     if let Some(JSXAttributeValue::ExpressionContainer(value)) = &mut dir.value {
       let mut expression = value.expression.take_in(context.allocator);
-      let mut computed = false;
-      let exp = expression.to_expression_mut();
-      let exp_ptr = exp as *mut _;
-      let exp = match exp {
-        Expression::ArrowFunctionExpression(arrow_fn_exp) => {
-          transform_fn(&arrow_fn_exp.params, exp_ptr, context);
-          exp.take_in(context.allocator)
-        }
-        Expression::FunctionExpression(fn_exp) => {
-          transform_fn(&fn_exp.params, exp_ptr, context);
-          exp.take_in(context.allocator)
-        }
-        Expression::ObjectExpression(obj_exp) => {
-          for prop in obj_exp.properties.iter_mut() {
-            if let ObjectPropertyKind::ObjectProperty(prop) = prop {
-              if prop.computed {
-                computed = true;
-              }
-              match &mut prop.value {
-                Expression::ArrowFunctionExpression(arrow_fn_exp) => {
-                  transform_fn(&arrow_fn_exp.params, exp_ptr, context);
-                }
-                Expression::FunctionExpression(fn_exp) => {
-                  transform_fn(&fn_exp.params, exp_ptr, context);
-                }
-                _ => {
-                  prop.value = context.process_expression(&mut prop.value).0;
-                }
-              }
-            }
-          }
-          exp.take_in(context.allocator)
-        }
-        _ => context.process_expression(exp).0,
-      };
+      let exp = context.process_expression(expression.to_expression_mut()).0;
       Some(Box::new(move || {
         if let Some(NodeTypes::VNodeCall(vnode_call)) =
           context.codegen_map.borrow_mut().get_mut(&node_span)
         {
           *context.options.in_v_slot.borrow_mut() += 1;
           vnode_call.children = Some(Either3::C(exp));
-          if computed {
-            let mut patch_flag = vnode_call.patch_flag.unwrap_or_default();
-            patch_flag |= PatchFlags::DynamicSlots as i32;
-            vnode_call.patch_flag = Some(patch_flag);
-          }
+          let mut patch_flag = vnode_call.patch_flag.unwrap_or_default();
+          patch_flag |= PatchFlags::DynamicSlots as i32;
+          vnode_call.patch_flag = Some(patch_flag);
           *context.options.in_v_slot.borrow_mut() -= 1;
         }
       }))
@@ -137,20 +98,4 @@ pub unsafe fn transform_v_slots<'a>(
   } else {
     None
   }
-}
-
-fn transform_fn<'a>(
-  params: &oxc_allocator::Box<'a, FormalParameters<'a>>,
-  exp: *mut Expression<'a>,
-  context: &'a TransformContext<'a>,
-) {
-  if let Some(params) = parse_expression(
-    params.span.source_text(&context.source.borrow()),
-    params.span,
-    context.allocator,
-    context.options.source_type,
-  ) {
-    context.add_identifiers(&Some(&params));
-  }
-  *unsafe { &mut *exp } = context.process_expression(unsafe { &mut *exp }).0;
 }

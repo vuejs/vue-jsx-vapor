@@ -17,17 +17,16 @@ fn v_slots_basic() {
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vnode";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
-  const _hoisted_1 = ["onClick"];
   (() => {
     return _openBlock(), _createBlock(Comp, null, { default: ({ foo }) => (() => {
       return _openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(() => (() => {
         const _cache = _createVNodeCache(0);
         return _withDirectives((_openBlock(), _createElementBlock("input", {
           "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => bar = $event),
-          onClick: () => foo
-        }, null, 8, _hoisted_1)), [[_vModelText, bar]]);
+          onClick: _cache[1] || (_cache[1] = () => foo)
+        }, null, 512)), [[_vModelText, bar]]);
       })())], 64);
-    })() });
+    })() }, 1024);
   })();
   "#);
 }
@@ -45,12 +44,13 @@ fn function_expression_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = ["onClick"];
   (() => {
     return _openBlock(), _createBlock(Comp, null, ({ foo }) => (() => {
-      return _openBlock(), _createElementBlock("div", { onClick: () => foo }, null, 8, _hoisted_1);
-    })());
+      const _cache = _createVNodeCache(0);
+      return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
+    })(), 1024);
   })();
   "#);
 }
@@ -70,15 +70,14 @@ fn object_expression_children() {
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vnode";
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
-  const _hoisted_1 = ["onClick"];
   (() => {
     return _openBlock(), _createBlock(Comp, null, { default: ({ foo }) => (() => {
       const _cache = _createVNodeCache(0);
       return _withDirectives((_openBlock(), _createElementBlock("input", {
         "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => bar = $event),
-        onClick: () => foo
-      }, null, 8, _hoisted_1)), [[_vModelText, bar]]);
-    })() });
+        onClick: _cache[1] || (_cache[1] = () => foo)
+      }, null, 512)), [[_vModelText, bar]]);
+    })() }, 1024);
   })();
   "#);
 }
@@ -138,7 +137,7 @@ fn v_slot_with_v_slots() {
           });
         })())], 64);
       })()
-    }, 8, ["bar"]);
+    }, 1032, ["bar"]);
   })();
   "#)
 }
