@@ -413,7 +413,6 @@ jobs:
           npm config set provenance true
           if git log -1 --pretty=%B | grep "v\?[0-9]\+\.[0-9]\+\.[0-9]\+$";
           then
-            npx changelogithub
             npm publish --access public
             cd ../../
             pnpm install --no-frozen-lockfile
