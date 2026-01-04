@@ -172,7 +172,6 @@
     "@vue-jsx-vapor/compiler-rs": "workspace:*",
     "@vue-jsx-vapor/macros": "workspace:*",
     "@vue-jsx-vapor/runtime": "workspace:*",
-    "@vue-macros/volar": "catalog:",
     "@vue/shared": "catalog:",
     "pathe": "^2.0.3",
     "ts-macro": "catalog:",
@@ -181,6 +180,7 @@
   },
   "devDependencies": {
     "@nuxt/kit": "catalog:",
-    "@nuxt/schema": "catalog:"
+    "@nuxt/schema": "catalog:",
+    "@vue-macros/volar": "catalog:"
   }
 }

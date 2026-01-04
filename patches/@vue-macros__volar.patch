@@ -1,0 +1,91 @@
+diff --git a/dist/jsx-directive-Cfx4Hdxx.js b/dist/jsx-directive-Cfx4Hdxx.js
+index 2303eee6f5de9dc780363acf500eb95bad3f0b47..2ac646a65e6372fd0d08a9fa6efcaed30d93b364 100644
+--- a/dist/jsx-directive-Cfx4Hdxx.js
++++ b/dist/jsx-directive-Cfx4Hdxx.js
+@@ -1,6 +1,4 @@
+-import { addCode } from "./common-BTTMZY21.js";
+ import { allCodeFeatures, createPlugin } from "ts-macro";
+-import { createFilter } from "@vue-macros/common";
+ import { isHTMLTag, isSVGTag } from "@vue/shared";
+ 
+ //#region src/jsx-directive/context.ts
+@@ -59,7 +57,7 @@ declare function __VLS_asFunctionalComponent<
+             expose?: any
+             slots?: any
+             emit?: any
+-          } 
++          }
+         };
+ const __VLS_nativeElements = {
+   ...{} as SVGElementTagNameMap,
+@@ -71,9 +69,9 @@ declare function __VLS_getFunctionalComponentCtx<T, K, const S>(
+   s: S,
+ ): S extends keyof typeof __VLS_nativeElements
+   ? { expose: (exposed: (typeof __VLS_nativeElements)[S]) => any }
+-    : '__ctx' extends keyof __VLS_PickNotAny<K, {}> 
++    : '__ctx' extends keyof __VLS_PickNotAny<K, {}>
+       ? K extends { __ctx?: infer Ctx } ? Ctx : never
+-      : T extends (props: infer P, ctx: { expose: (exposed: infer Exposed) => void } & infer Ctx) => any 
++      : T extends (props: infer P, ctx: { expose: (exposed: infer Exposed) => void } & infer Ctx) => any
+         ? Ctx & {
+             props: P,
+             expose: (
+@@ -122,6 +120,10 @@ function transformCtx(node, root, index, options) {
+ 	else addCode(codes, result);
+ 	return ctxName;
+ }
++function addCode(codes, ...args) {
++	const index = codes.findIndex((code) => code.includes("__VLS_setup = (async () => {"));
++	codes.splice(index === -1 ? codes.length : index + 1, 0, ...args);
++}
+ function getRefValue(expression, options) {
+ 	const { ts, ast } = options;
+ 	if (ts.isIdentifier(expression)) return expression.getText(ast);
+@@ -688,11 +690,10 @@ function getTagName(node, options) {
+ //#region src/jsx-directive.ts
+ const plugin = createPlugin(({ ts, vueCompilerOptions }, options = vueCompilerOptions?.vueMacros?.jsxDirective === true ? {} : vueCompilerOptions?.vueMacros?.jsxDirective ?? {}) => {
+ 	if (!options) return [];
+-	const filter = createFilter(options);
+ 	return {
+ 		name: "vue-macros-jsx-directive",
+-		resolveVirtualCode({ filePath, ast, codes, lang }) {
+-			if (!filter(filePath) || !["jsx", "tsx"].includes(lang)) return;
++		resolveVirtualCode({ ast, codes, lang }) {
++			if (!["jsx", "tsx"].includes(lang)) return;
+ 			transformJsxDirective({
+ 				codes,
+ 				ast,
+diff --git a/dist/jsx-directive.js b/dist/jsx-directive.js
+index c8a8d4c79afe1ceecc68eacab1938262d3cd658e..b113fcde6c3b9c34308ed873e38b39158cf6614c 100644
+--- a/dist/jsx-directive.js
++++ b/dist/jsx-directive.js
+@@ -1,4 +1,3 @@
+-import "./common-BTTMZY21.js";
+ import { jsx_directive_default, plugin } from "./jsx-directive-Cfx4Hdxx.js";
+ 
+ export { jsx_directive_default as default, plugin as "module.exports" };
+diff --git a/dist/jsx-ref-DZlb-F7c.js b/dist/jsx-ref-DZlb-F7c.js
+index ffe0b9f6eab21f435b60e4eeb32e0931d629a1bd..52897702b7bd76e92d9ce90e1e29668ca88e66f4 100644
+--- a/dist/jsx-ref-DZlb-F7c.js
++++ b/dist/jsx-ref-DZlb-F7c.js
+@@ -1,5 +1,4 @@
+ import { createPlugin } from "ts-macro";
+-import { createFilter } from "@vue-macros/common";
+ 
+ //#region src/jsx-ref.ts
+ function transformRef({ nodes, codes, ts }) {
+@@ -27,12 +26,11 @@ function getRefNodes(ts, sourceFile, alias) {
+ }
+ const plugin = createPlugin(({ ts, vueCompilerOptions }, options = vueCompilerOptions?.vueMacros?.jsxRef === true ? {} : vueCompilerOptions?.vueMacros?.jsxRef ?? {}) => {
+ 	if (!options) return [];
+-	const filter = createFilter(options);
+ 	const alias = options.alias || ["useRef"];
+ 	return {
+ 		name: "vue-macros-jsx-ref",
+-		resolveVirtualCode({ filePath, ast, codes, source, lang }) {
+-			if (!filter(filePath) || !["jsx", "tsx"].includes(lang)) return;
++		resolveVirtualCode({ ast, codes, source, lang }) {
++			if (!["jsx", "tsx"].includes(lang)) return;
+ 			const nodes = getRefNodes(ts, ast, alias);
+ 			if (nodes.length) transformRef({
+ 				nodes,

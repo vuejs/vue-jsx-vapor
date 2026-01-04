@@ -58,6 +58,9 @@
     "overrides": {
       "estree-walker": "2.0.2",
       "ts-macro": "catalog:"
+    },
+    "patchedDependencies": {
+      "@vue-macros/volar": "patches/@vue-macros__volar.patch"
     }
   }
 }
