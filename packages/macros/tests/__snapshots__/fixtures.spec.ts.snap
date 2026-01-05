@@ -10,8 +10,6 @@ import { withAsyncContext as __withAsyncContext } from "vue";import {
   defineVaporComponent,
   nextTick,
   unref,
-  VaporComponentInstance,
-  VNode,
 } from 'vue'
 
 const $ = unref
@@ -135,8 +133,6 @@ import { withAsyncContext as __withAsyncContext } from "vue";import {
   defineVaporComponent,
   nextTick,
   unref,
-  VaporComponentInstance,
-  VNode,
 } from 'vue'
 
 const $ = unref
