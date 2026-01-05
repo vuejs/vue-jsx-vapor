@@ -2,7 +2,7 @@
 source: tests/vapor/custom_directive.rs
 expression: code
 ---
-import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
 import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
 const t0 = _template("<div></div>");
 (() => {

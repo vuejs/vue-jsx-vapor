@@ -2,7 +2,7 @@
 source: tests/vapor/transform_children.rs
 expression: code
 ---
-import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
 import { child as _child, createIf as _createIf, next as _next, nthChild as _nthChild, renderEffect as _renderEffect, setInsertionState as _setInsertionState, setProp as _setProp, template as _template } from "vue";
 const t0 = _template("<div></div>");
 const t1 = _template("<div><div></div><!><div></div><!><div><button></button></div></div>", true);

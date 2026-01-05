@@ -166,7 +166,7 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
               ImportOrExportKind::Value,
             )
           }))),
-          ast.string_literal(SPAN, ast.atom("/vue-jsx-vapor/vnode"), None),
+          ast.string_literal(SPAN, ast.atom("/vue-jsx-vapor/vdom"), None),
           None,
           NONE,
           ImportOrExportKind::Value,
@@ -200,7 +200,7 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
               ImportOrExportKind::Value,
             )
           }))),
-          ast.string_literal(SPAN, ast.atom("vue-jsx-vapor"), None),
+          ast.string_literal(SPAN, ast.atom("/vue-jsx-vapor/vapor"), None),
           None,
           NONE,
           ImportOrExportKind::Value,

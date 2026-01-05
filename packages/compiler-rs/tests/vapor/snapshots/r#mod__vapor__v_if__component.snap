@@ -2,7 +2,7 @@
 source: tests/vapor/v_if.rs
 expression: code
 ---
-import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
 import { createIf as _createIf } from "vue";
 (() => {
   const n0 = _createIf(() => foo, () => {

@@ -2,7 +2,7 @@
 source: tests/vapor/v_model.rs
 expression: code
 ---
-import { createComponent as _createComponent } from "vue-jsx-vapor";
+import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
 (() => {
   const n0 = _createComponent(Comp, {
     modelValue: () => foo,

@@ -12,7 +12,7 @@ fn basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes, createComponent as _createComponent } from "vue-jsx-vapor";
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
     const n0 = _createComponent(Comp, null, { $: [{ default: ({ foo }) => (() => {
       const n0 = _createNodes(() => foo + bar);
@@ -33,7 +33,7 @@ fn function_expression_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "vue-jsx-vapor";
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
@@ -56,7 +56,7 @@ fn object_expression_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "vue-jsx-vapor";
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
   const t0 = _template("foo");
   (() => {
@@ -79,7 +79,7 @@ fn object_expression_children_with_computed_property() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "vue-jsx-vapor";
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
   const t0 = _template("foo");
   (() => {

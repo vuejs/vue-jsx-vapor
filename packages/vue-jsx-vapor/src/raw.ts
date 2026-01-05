@@ -2,8 +2,10 @@ import macros from '@vue-jsx-vapor/macros/raw'
 import {
   propsHelperCode,
   propsHelperId,
-  vnodeHelperCode,
-  vnodeHelperId,
+  vaporHelperCode,
+  vaporHelperId,
+  vdomHelperCode,
+  vdomHelperId,
 } from '@vue-jsx-vapor/runtime/raw'
 import { relative } from 'pathe'
 import { createFilter, normalizePath } from 'unplugin-utils'
@@ -56,23 +58,26 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
       resolveId(id) {
         if (
           id === ssrRegisterHelperId ||
-          id === vnodeHelperId ||
-          id === propsHelperId
+          id === propsHelperId ||
+          id === vdomHelperId ||
+          id === vaporHelperId
         )
           return id
       },
       loadInclude(id) {
         if (
           id === ssrRegisterHelperId ||
-          id === vnodeHelperId ||
-          id === propsHelperId
+          id === propsHelperId ||
+          id === vdomHelperId ||
+          id === vaporHelperId
         )
           return true
       },
       load(id) {
         if (id === ssrRegisterHelperId) return ssrRegisterHelperCode
-        if (id === vnodeHelperId) return vnodeHelperCode
         if (id === propsHelperId) return propsHelperCode
+        if (id === vdomHelperId) return vdomHelperCode
+        if (id === vaporHelperId) return vaporHelperCode
       },
       transformInclude,
       transform(code, id, opt?: { ssr?: boolean }) {

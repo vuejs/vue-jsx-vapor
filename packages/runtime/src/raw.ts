@@ -1,5 +1,11 @@
-export { default as propsHelperCode } from './props?raw'
-export { default as vnodeHelperCode } from './vnode?raw'
+import _propsHelperCode from './props?raw'
+import _vaporHelerCode from './vapor?raw'
+import _vdomHelperCode from './vdom?raw'
 
-export const vnodeHelperId = '/vue-jsx-vapor/vnode'
+export const propsHelperCode: string = _propsHelperCode
+export const vdomHelperCode: string = _vdomHelperCode
+export const vaporHelperCode: string = _vaporHelerCode
+
 export const propsHelperId = '/vue-jsx-vapor/props'
+export const vdomHelperId = '/vue-jsx-vapor/vdom'
+export const vaporHelperId = '/vue-jsx-vapor/vapor'

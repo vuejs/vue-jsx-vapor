@@ -2,7 +2,7 @@
 source: tests/vapor/transform_children.rs
 expression: code
 ---
-import { setNodes as _setNodes } from "vue-jsx-vapor";
+import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
 import { child as _child, nthChild as _nthChild, template as _template } from "vue";
 const t0 = _template("<div><div>x</div><div>x</div><div> </div></div>", true);
 (() => {

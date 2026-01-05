@@ -71,7 +71,7 @@ fn logical_expression() {
 fn logical_expression_or() {
   let code = transform(r#"<div>{foo || <div>{foo}</div>}</div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes, createNodes as _createNodes } from "vue-jsx-vapor";
+  import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { child as _child, createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
   const t0 = _template("<div> </div>");
   const t1 = _template("<div></div>", true);
@@ -96,7 +96,7 @@ fn logical_expression_or() {
 fn logical_expression_coalesce() {
   let code = transform(r#"<div>{foo ?? <div>{foo}</div>}</div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes, createNodes as _createNodes } from "vue-jsx-vapor";
+  import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { child as _child, createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
   const t0 = _template("<div> </div>");
   const t1 = _template("<div></div>", true);

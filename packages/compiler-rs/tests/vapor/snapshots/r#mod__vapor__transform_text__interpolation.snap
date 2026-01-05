@@ -2,7 +2,7 @@
 source: tests/vapor/transform_text.rs
 expression: code
 ---
-import { createNodes as _createNodes } from "vue-jsx-vapor";
+import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
 (() => {
   const n0 = _createNodes(1, 2, () => a + b + c);
   return n0;

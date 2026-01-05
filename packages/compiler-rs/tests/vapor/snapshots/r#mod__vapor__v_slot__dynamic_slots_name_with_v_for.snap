@@ -2,7 +2,7 @@
 source: tests/vapor/v_slot.rs
 expression: code
 ---
-import { createNodes as _createNodes, createComponent as _createComponent } from "vue-jsx-vapor";
+import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
 import { createForSlots as _createForSlots } from "vue";
 (() => {
   const n4 = _createComponent(Comp, null, { $: [() => _createForSlots(list, (item) => ({

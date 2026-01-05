@@ -2,7 +2,7 @@
 source: tests/vapor/v_once.rs
 expression: code
 ---
-import { setNodes as _setNodes } from "vue-jsx-vapor";
+import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
 import { child as _child, createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
 const t0 = _template("<span> </span>");
 const t1 = _template("<div>fail</div>");

@@ -1,6 +1,10 @@
 /* eslint-disable prefer-rest-params */
-import { isBlock, type NodeArrayChildren, type NodeChild } from './block'
-import { createComponentWithFallback } from './component'
+import {
+  createComponentWithFallback,
+  isBlock,
+  type NodeArrayChildren,
+  type NodeChild,
+} from './vapor'
 import type {
   Block,
   Component,
