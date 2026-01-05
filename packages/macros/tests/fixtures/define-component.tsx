@@ -3,8 +3,6 @@ import {
   defineVaporComponent,
   nextTick,
   unref,
-  VaporComponentInstance,
-  VNode,
 } from 'vue'
 
 const $ = unref
