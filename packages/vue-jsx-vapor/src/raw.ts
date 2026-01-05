@@ -1,14 +1,14 @@
 import macros from '@vue-jsx-vapor/macros/raw'
-import { relative } from 'pathe'
-import { createFilter, normalizePath } from 'unplugin-utils'
-import { transformVueJsxVapor } from './core'
-import { ssrRegisterHelperCode, ssrRegisterHelperId } from './core/ssr'
 import {
   propsHelperCode,
   propsHelperId,
   vnodeHelperCode,
   vnodeHelperId,
-} from './runtime/raw'
+} from '@vue-jsx-vapor/runtime/raw'
+import { relative } from 'pathe'
+import { createFilter, normalizePath } from 'unplugin-utils'
+import { transformVueJsxVapor } from './core'
+import { ssrRegisterHelperCode, ssrRegisterHelperId } from './core/ssr'
 import type { Options } from './options'
 import type { UnpluginOptions } from 'unplugin'
 

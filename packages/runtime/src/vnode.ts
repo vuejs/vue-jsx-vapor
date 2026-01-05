@@ -1,6 +1,5 @@
 import {
   cloneVNode,
-  Comment,
   createBlock,
   createVNode,
   Fragment,
@@ -25,26 +24,29 @@ export function createVNodeCache(index: number) {
 }
 
 export function normalizeVNode(value: any = ' ', flag = 1): VNode {
-  if (value == null || typeof value === 'boolean') {
-    // empty placeholder
-    return createVNode(Comment)
-  } else if (typeof value !== 'function') {
-    return createVNode(Text, null, String(value), flag)
+  let create: any = createVNode
+  const isFunction = typeof value === 'function'
+  if (isFunction) {
+    openBlock()
+    create = createBlock
+    value = value()
   }
-  openBlock()
-  const node = value()
-  if (node == null || typeof node === 'boolean') {
-    // empty placeholder
-    return createBlock(Comment)
-  } else if (Array.isArray(node)) {
-    // fragment
-    return createBlock(Fragment, null, node.slice())
-  } else if (isVNode(node)) {
-    return createBlock(cloneIfMounted(node))
-  } else {
-    // strings and numbers
-    return createBlock(Text, null, String(node), flag)
-  }
+  return isVNode(value)
+    ? isFunction
+      ? createBlock(cloneIfMounted(value))
+      : cloneIfMounted(value)
+    : Array.isArray(value)
+      ? create(
+          Fragment,
+          null,
+          value.map((n) => normalizeVNode(n)),
+        )
+      : create(
+          Text,
+          null,
+          value == null || typeof value === 'boolean' ? '' : String(value),
+          flag,
+        )
 }
 
 // optimized normalization for template-compiled render fns

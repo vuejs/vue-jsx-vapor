@@ -25,6 +25,12 @@
       "require": "./dist/index.cjs",
       "import": "./dist/index.js"
     },
+    "./raw": {
+      "types": "./dist/raw.d.ts",
+      "jsx-vapor-dev": "./src/raw.ts",
+      "require": "./dist/raw.cjs",
+      "import": "./dist/raw.js"
+    },
     "./*": "./*"
   },
   "main": "dist/index.cjs",

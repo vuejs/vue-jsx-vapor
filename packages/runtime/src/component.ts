@@ -5,7 +5,7 @@ import {
   type VaporComponent,
 } from 'vue'
 import { normalizeNode } from './block'
-import { getCurrentInstance } from './helpers'
+import { getCurrentInstance } from './props'
 
 type Tail<T extends any[]> = T extends [any, ...infer R] ? R : never
 
