@@ -18,7 +18,6 @@ catalog:
   '@vue-macros/common': *vue-macros
   '@vue-macros/define-render': *vue-macros
   '@vue-macros/jsx-directive': *vue-macros
-  '@vue-macros/test-utils': *vue-macros
   '@vue-macros/volar': *vue-macros
 
   '@ts-macro/tsc': *ts-macro

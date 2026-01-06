@@ -1,5 +1,4 @@
-import { testFixtures } from '@vue-macros/test-utils'
-import { describe } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { transformJsxMacros } from '../src/core'
 
 const options = {
@@ -10,38 +9,48 @@ const options = {
   defineComponent: { alias: ['defineComponent', 'defineVaporComponent'] },
 }
 
-const globs = import.meta.glob('./fixtures/**/*.tsx', {
-  eager: true,
-  as: 'raw',
+describe('fixtures', () => {
+  for (const [id, code] of Object.entries(
+    import.meta.glob('./fixtures/**/*.tsx', {
+      eager: true,
+      as: 'raw',
+    }),
+  )) {
+    test(id, async () => {
+      expect(
+        (
+          await transformJsxMacros(code, id, new Map(), {
+            include: ['*.tsx'],
+            version: 3.6,
+            ...options,
+          })
+        )?.code,
+      ).toMatchSnapshot()
+    })
+  }
 })
 
-describe('fixtures', async () => {
-  await testFixtures(
-    globs,
-    (args, id, code) =>
-      transformJsxMacros(code, id, new Map(), {
-        include: ['*.tsx'],
-        version: 3.6,
-        ...options,
-      })?.code,
-  )
-})
-
-describe('defineComponent autoReturnFunction fixtures', async () => {
-  await testFixtures(
+describe('defineComponent autoReturnFunction fixtures', () => {
+  for (const [id, code] of Object.entries(
     import.meta.glob('./fixtures/**/define-component.tsx', {
       eager: true,
       as: 'raw',
     }),
-    (args, id, code) =>
-      transformJsxMacros(code, id, new Map(), {
-        include: ['*.tsx'],
-        version: 3.6,
-        ...options,
-        defineComponent: {
-          alias: ['defineComponent', 'defineVaporComponent'],
-          autoReturnFunction: true,
-        },
-      })?.code,
-  )
+  )) {
+    test(id, async () => {
+      expect(
+        (
+          await transformJsxMacros(code, id, new Map(), {
+            include: ['*.tsx'],
+            version: 3.6,
+            ...options,
+            defineComponent: {
+              alias: ['defineComponent', 'defineVaporComponent'],
+              autoReturnFunction: true,
+            },
+          })
+        )?.code,
+      ).toMatchSnapshot()
+    })
+  }
 })

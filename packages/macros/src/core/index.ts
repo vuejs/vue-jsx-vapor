@@ -1,4 +1,4 @@
-import { babelParse, getLang, walkAST } from 'ast-kit'
+import { getLang, walkAST } from 'ast-kit'
 import MagicString from 'magic-string'
 import { transformDefineComponent } from './define-component'
 import { transformDefineExpose } from './define-expose'
@@ -7,11 +7,13 @@ import { transformDefineSlots } from './define-slots'
 import { transformDefineStyle } from './define-style'
 import {
   getParamsStart,
+  getRequire,
   HELPER_PREFIX,
   isFunctionalNode,
   type FunctionalNode,
 } from './utils'
 import type { OptionsResolved } from '../options'
+import type { parse } from '@babel/parser'
 import type {
   CallExpression,
   LVal,
@@ -28,6 +30,20 @@ interface CodeTransform {
 export { isFunctionalNode }
 
 export { restructure } from './restructure'
+
+let babelParse: typeof parse
+async function getBabelParse(): Promise<typeof parse | undefined> {
+  if (babelParse) {
+    return babelParse
+  }
+  const require = getRequire()
+  try {
+    return (babelParse = require
+      ? require('vue/compiler-sfc').babelParse
+      : // @ts-ignore support browser
+        (await import('https://esm.sh/@vue/compiler-sfc')).babelParse)
+  } catch {}
+}
 
 export type DefineStyle = {
   expression: CallExpression
@@ -49,16 +65,27 @@ export type Macros = {
   defineStyle?: DefineStyle[]
 }
 
-export function transformJsxMacros(
+export async function transformJsxMacros(
   code: string,
   id: string,
   importMap: Map<string, string>,
   options: OptionsResolved,
-): CodeTransform | undefined {
+): Promise<CodeTransform | undefined> {
   const s = new MagicString(code)
   const lang = getLang(id)
   if (lang === 'dts') return
-  const ast = babelParse(s.original, lang)
+  const babelParse = await getBabelParse()
+  const ast = babelParse!(s.original, {
+    sourceType: 'module',
+    plugins:
+      lang === 'tsx'
+        ? ['typescript', 'jsx']
+        : lang === 'jsx'
+          ? ['jsx']
+          : lang === 'ts'
+            ? ['typescript']
+            : [],
+  }).program
   const rootMap = getRootMap(ast, s, options)
 
   let defineStyleIndex = 0
