@@ -1,6 +1,6 @@
 import type { CompilerOptions } from '@vue-jsx-vapor/compiler-rs'
 import type { Options as MacrosOptions } from '@vue-jsx-vapor/macros'
-import type { FilterPattern } from 'unplugin-utils'
+import type { FilterPattern } from 'unplugin'
 
 export interface Options {
   // define your plugin options here

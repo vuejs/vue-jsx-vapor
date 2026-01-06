@@ -8,17 +8,12 @@ import {
   vdomHelperId,
 } from '@vue-jsx-vapor/runtime/raw'
 import { relative } from 'pathe'
-import { createFilter, normalizePath } from 'unplugin-utils'
-import { transformVueJsxVapor } from './core'
+import { normalizePath } from 'unplugin-utils'
+import { transformVueJsxVapor, type Options } from './core'
 import { ssrRegisterHelperCode, ssrRegisterHelperId } from './core/ssr'
-import type { Options } from './options'
 import type { UnpluginOptions } from 'unplugin'
 
 const plugin = (options: Options = {}): UnpluginOptions[] => {
-  const transformInclude = createFilter(
-    options?.include || /\.[cm]?[jt]sx$/,
-    options?.exclude || /node_modules/,
-  )
   let root = ''
   let needHMR = false
   let needSourceMap = options.sourceMap || false
@@ -26,7 +21,7 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
     ...(options.macros === false
       ? []
       : options.macros
-        ? [macros(options.macros === true ? undefined : options.macros)]
+        ? macros(options.macros === true ? undefined : options.macros)
         : []),
     {
       enforce: 'pre',
@@ -55,46 +50,60 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
             config.command === 'serve' || !!config.build.sourcemap
         },
       },
-      resolveId(id) {
-        if (
-          id === ssrRegisterHelperId ||
-          id === propsHelperId ||
-          id === vdomHelperId ||
-          id === vaporHelperId
-        )
-          return id
+      resolveId: {
+        filter: {
+          id: {
+            include: [
+              ssrRegisterHelperId,
+              propsHelperId,
+              vdomHelperId,
+              vaporHelperId,
+            ],
+          },
+        },
+        handler: (id) => id,
       },
-      loadInclude(id) {
-        if (
-          id === ssrRegisterHelperId ||
-          id === propsHelperId ||
-          id === vdomHelperId ||
-          id === vaporHelperId
-        )
-          return true
+      load: {
+        filter: {
+          id: {
+            include: [
+              ssrRegisterHelperId,
+              propsHelperId,
+              vdomHelperId,
+              vaporHelperId,
+            ],
+          },
+        },
+        handler(id) {
+          if (id === ssrRegisterHelperId) return ssrRegisterHelperCode
+          if (id === propsHelperId) return propsHelperCode
+          if (id === vdomHelperId) return vdomHelperCode
+          if (id === vaporHelperId) return vaporHelperCode
+        },
       },
-      load(id) {
-        if (id === ssrRegisterHelperId) return ssrRegisterHelperCode
-        if (id === propsHelperId) return propsHelperCode
-        if (id === vdomHelperId) return vdomHelperCode
-        if (id === vaporHelperId) return vaporHelperCode
-      },
-      transformInclude,
-      transform(code, id, opt?: { ssr?: boolean }) {
-        const result = transformVueJsxVapor(
-          code,
-          opt?.ssr ? normalizePath(relative(root, id)) : id,
-          options,
-          needSourceMap,
-          needHMR,
-          opt?.ssr,
-        )
-        if (result?.code) {
-          return {
-            code: result.code,
-            map: result.map ? JSON.parse(result.map) : null,
+      transform: {
+        filter: {
+          id: {
+            include: options?.include || /\.[cm]?[jt]sx$/,
+            exclude: options?.exclude || /node_modules/,
+          },
+        },
+        handler(code, id, opt?: { ssr?: boolean }) {
+          const result = transformVueJsxVapor(
+            code,
+            opt?.ssr ? normalizePath(relative(root, id)) : id,
+            options,
+            needSourceMap,
+            needHMR,
+            opt?.ssr,
+          )
+          if (result?.code) {
+            return {
+              code: result.code,
+              map: result.map ? JSON.parse(result.map) : null,
+            }
           }
-        }
+        },
       },
     },
   ]

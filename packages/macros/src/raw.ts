@@ -1,7 +1,5 @@
-import { createFilter, normalizePath } from 'unplugin-utils'
 import { transformJsxMacros } from './core'
 import {
-  helperPrefix,
   useModelHelperCode,
   useModelHelperId,
   withDefaultsHelperCode,
@@ -11,41 +9,87 @@ import { transformStyle } from './core/style'
 import { resolveOptions, type Options } from './options'
 import type { UnpluginOptions } from 'unplugin'
 
-const name = '@vue-jsx-vapor/macros'
-
-const plugin = (userOptions: Options = {}): UnpluginOptions => {
+const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
   const options = resolveOptions(userOptions)
-  const filter = createFilter(options.include, options.exclude)
   const importMap = new Map()
+  const defineStyleRegex = /^\/vue-jsx-vapor\/macros\/define-style/
 
-  return {
-    name,
-    enforce: 'pre',
+  return [
+    {
+      name: '@vue-jsx-vapor/macros',
+      enforce: 'pre',
 
-    resolveId(id) {
-      if (normalizePath(id).startsWith(helperPrefix)) return id
-    },
-    loadInclude(id) {
-      return normalizePath(id).startsWith(helperPrefix)
-    },
-    load(_id) {
-      const id = normalizePath(_id)
-      if (id === useModelHelperId) return useModelHelperCode
-      else if (id === withDefaultsHelperId) return withDefaultsHelperCode
-      else if (importMap.get(id)) return importMap.get(id)
-    },
+      resolveId: {
+        filter: {
+          id: {
+            include: [useModelHelperId, withDefaultsHelperId],
+          },
+        },
+        handler(id) {
+          return id
+        },
+      },
+      load: {
+        filter: {
+          id: {
+            include: [useModelHelperId, withDefaultsHelperId],
+          },
+        },
+        handler(id) {
+          if (id === useModelHelperId) return useModelHelperCode
+          if (id === withDefaultsHelperId) return withDefaultsHelperCode
+        },
+      },
 
-    transformInclude(id) {
-      if (importMap.get(id)) return true
-      return filter(id)
+      transform: {
+        filter: {
+          id: {
+            include: options.include || /\.[cm]?[jt]sx$/,
+          },
+        },
+        handler(code, id, opt?: { ssr?: boolean }) {
+          if (opt?.ssr) {
+            options.defineComponent.autoReturnFunction = true
+          }
+          return transformJsxMacros(code, id, importMap, options)
+        },
+      },
     },
-    transform(code, id, opt?: { ssr?: boolean }) {
-      if (opt?.ssr) {
-        options.defineComponent.autoReturnFunction = true
-      }
-      if (importMap.get(id)) return transformStyle(code, id, options)
-      return transformJsxMacros(code, id, importMap, options)
+    {
+      name: '@vue-jsx-vapor/macros/define-style',
+
+      resolveId: {
+        filter: {
+          id: {
+            include: defineStyleRegex,
+          },
+        },
+        handler(id) {
+          return id
+        },
+      },
+      load: {
+        filter: {
+          id: {
+            include: defineStyleRegex,
+          },
+        },
+        handler(id) {
+          return importMap.get(id)
+        },
+      },
+
+      transform: {
+        filter: {
+          id: {
+            include: defineStyleRegex,
+          },
+        },
+        handler(code, id) {
+          return transformStyle(code, id, options)
+        },
+      },
     },
-  }
+  ]
 }
 export default plugin
