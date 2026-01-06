@@ -1,3 +1,12 @@
+## [3.1.10](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.9...v3.1.10) (2026-01-06)
+
+
+### Features
+
+* **vue-jsx-vapor:** use virtual helper modules to prevent deps on ([654da93](https://github.com/vuejs/vue-jsx-vapor/commit/654da93778c30727f313c691f76ad66965c1d37e))
+
+
+
 ## [3.1.9](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.8...v3.1.9) (2026-01-02)
 
 
