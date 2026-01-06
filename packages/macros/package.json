@@ -140,8 +140,7 @@
     "hash-sum": "catalog:",
     "magic-string": "^0.30.21",
     "ts-macro": "catalog:",
-    "unplugin": "catalog:",
-    "unplugin-utils": "catalog:"
+    "unplugin": "catalog:"
   },
   "devDependencies": {
     "@babel/types": "^7.28.5",
