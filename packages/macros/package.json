@@ -143,12 +143,12 @@
     "unplugin-utils": "catalog:"
   },
   "devDependencies": {
-    "ast-kit": "^2.2.0",
     "@babel/parser": "^7.28.5",
     "@babel/types": "^7.28.5",
     "@nuxt/kit": "catalog:",
     "@nuxt/schema": "catalog:",
     "@types/hash-sum": "catalog:",
+    "ast-kit": "^2.2.0",
     "vue": "catalog:"
   }
 }
