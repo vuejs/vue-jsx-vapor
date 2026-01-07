@@ -21,10 +21,7 @@ use std::{cell::RefCell, collections::HashMap, mem};
 use common::{options::TransformOptions, text::to_valid_asset_id};
 use oxc_ast::{
   AstBuilder, NONE,
-  ast::{
-    Argument, BindingPatternKind, Expression, FormalParameterKind, Statement,
-    VariableDeclarationKind,
-  },
+  ast::{Argument, Expression, FormalParameterKind, Statement, VariableDeclarationKind},
 };
 use oxc_span::SPAN;
 
@@ -126,11 +123,8 @@ impl<'a> CodegenContext<'a> {
           ast.vec1(ast.variable_declarator(
             SPAN,
             VariableDeclarationKind::Const,
-            ast.binding_pattern(
-              ast.binding_pattern_kind_binding_identifier(SPAN, ast.atom("_setTemplateRef")),
-              NONE,
-              false,
-            ),
+            ast.binding_pattern_binding_identifier(SPAN, "_setTemplateRef"),
+            NONE,
             Some(ast.expression_call(
               SPAN,
               ast.expression_identifier(SPAN, ast.atom(&self.helper("createTemplateRefSetter"))),
@@ -153,13 +147,11 @@ impl<'a> CodegenContext<'a> {
           ast.vec1(ast.variable_declarator(
             SPAN,
             VariableDeclarationKind::Const,
-            ast.binding_pattern(
-              BindingPatternKind::BindingIdentifier(
-                ast.alloc_binding_identifier(SPAN, ast.atom(&to_valid_asset_id(name, "component"))),
-              ),
-              NONE,
-              false,
+            ast.binding_pattern_binding_identifier(
+              SPAN,
+              ast.atom(&to_valid_asset_id(name, "component")),
             ),
+            NONE,
             Some(ast.expression_call(
               SPAN,
               ast.expression_identifier(SPAN, ast.atom(&self.helper("resolveComponent"))),
@@ -186,13 +178,11 @@ impl<'a> CodegenContext<'a> {
           ast.vec1(ast.variable_declarator(
             SPAN,
             VariableDeclarationKind::Const,
-            ast.binding_pattern(
-              BindingPatternKind::BindingIdentifier(
-                ast.alloc_binding_identifier(SPAN, ast.atom(&to_valid_asset_id(name, "directive"))),
-              ),
-              NONE,
-              false,
+            ast.binding_pattern_binding_identifier(
+              SPAN,
+              ast.atom(&to_valid_asset_id(name, "directive")),
             ),
+            NONE,
             Some(ast.expression_call(
               SPAN,
               ast.expression_identifier(SPAN, ast.atom(&self.helper("resolveDirective"))),

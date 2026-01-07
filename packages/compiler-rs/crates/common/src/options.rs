@@ -4,9 +4,8 @@ use std::{
 };
 
 use indexmap::IndexMap;
-use oxc_ast::ast::Expression;
+use oxc_ast::{AstKind, ast::Expression};
 use oxc_span::{SourceType, Span};
-use oxc_traverse::TraverseCtx;
 
 use crate::error::ErrorCodes;
 
@@ -17,9 +16,8 @@ pub struct RootJsx<'a> {
 }
 
 type OnExitProgram<'a> = Box<dyn Fn(Vec<RootJsx<'a>>, &'a str) + 'a>;
-type OnEnterExpression<'a> = Box<
-  dyn Fn(*mut Expression<'a>, &mut TraverseCtx<'a, ()>) -> Option<(*mut Expression<'a>, bool)> + 'a,
->;
+type OnEnterExpression<'a> =
+  Box<dyn Fn(*mut Expression<'a>, &Vec<AstKind>) -> Option<(*mut Expression<'a>, bool)> + 'a>;
 
 pub struct TransformOptions<'a> {
   pub templates: RefCell<Vec<(String, bool)>>,

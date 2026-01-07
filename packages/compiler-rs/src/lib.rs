@@ -129,7 +129,7 @@ pub fn transform<'a>(source: &'a str, options: Option<TransformOptions<'a>>) -> 
   Transform::new(unsafe { &*allocator }, unsafe {
     &*(&options as *const TransformOptions)
   })
-  .traverse(&mut program);
+  .visit(&mut program);
   Codegen::new()
     .with_options(CodegenOptions {
       source_map_path: if source_map {

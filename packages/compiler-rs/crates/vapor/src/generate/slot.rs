@@ -2,10 +2,9 @@ use std::collections::{HashMap, HashSet};
 
 use indexmap::IndexMap;
 use napi::bindgen_prelude::{Either, Either4};
-use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
-  ast::{BindingPatternKind, Expression, FormalParameterKind, PropertyKind},
+  ast::{Expression, FormalParameterKind, PropertyKind},
 };
 use oxc_span::SPAN;
 
@@ -17,7 +16,7 @@ use crate::{
   },
 };
 
-use common::{check::is_simple_identifier, walk::WalkIdentifiers};
+use common::{check::is_simple_identifier, walk_mut::WalkIdentifiersMut};
 
 pub fn gen_raw_slots<'a>(
   mut slots: Vec<IRSlots<'a>>,
@@ -244,85 +243,35 @@ fn gen_loop_slot<'a>(
             ast.vec_from_iter(
               [
                 if let Some(raw_value) = raw_value {
-                  Some(ast.formal_parameter(
+                  Some(ast.plain_formal_parameter(
                     SPAN,
-                    ast.vec(),
-                    ast.binding_pattern(
-                      BindingPatternKind::BindingIdentifier(
-                        ast.alloc_binding_identifier(SPAN, ast.atom(&raw_value)),
-                      ),
-                      NONE,
-                      false,
-                    ),
-                    None,
-                    false,
-                    false,
+                    ast.binding_pattern_binding_identifier(SPAN, ast.atom(&raw_value)),
                   ))
                 } else if raw_key.is_some() && raw_index.is_some() {
-                  Some(ast.formal_parameter(
+                  Some(ast.plain_formal_parameter(
                     SPAN,
-                    ast.vec(),
-                    ast.binding_pattern(
-                      BindingPatternKind::BindingIdentifier(
-                        ast.alloc_binding_identifier(SPAN, ast.atom("_")),
-                      ),
-                      NONE,
-                      false,
-                    ),
-                    None,
-                    false,
-                    false,
+                    ast.binding_pattern_binding_identifier(SPAN, ast.atom("_")),
                   ))
                 } else {
                   None
                 },
                 if let Some(raw_key) = raw_key {
-                  Some(ast.formal_parameter(
+                  Some(ast.plain_formal_parameter(
                     SPAN,
-                    ast.vec(),
-                    ast.binding_pattern(
-                      BindingPatternKind::BindingIdentifier(
-                        ast.alloc_binding_identifier(SPAN, ast.atom(&raw_key)),
-                      ),
-                      NONE,
-                      false,
-                    ),
-                    None,
-                    false,
-                    false,
+                    ast.binding_pattern_binding_identifier(SPAN, ast.atom(&raw_key)),
                   ))
                 } else if raw_index.is_some() {
-                  Some(ast.formal_parameter(
+                  Some(ast.plain_formal_parameter(
                     SPAN,
-                    ast.vec(),
-                    ast.binding_pattern(
-                      BindingPatternKind::BindingIdentifier(
-                        ast.alloc_binding_identifier(SPAN, ast.atom("__")),
-                      ),
-                      NONE,
-                      false,
-                    ),
-                    None,
-                    false,
-                    false,
+                    ast.binding_pattern_binding_identifier(SPAN, ast.atom("__")),
                   ))
                 } else {
                   None
                 },
                 raw_index.map(|raw_index| {
-                  ast.formal_parameter(
+                  ast.plain_formal_parameter(
                     SPAN,
-                    ast.vec(),
-                    ast.binding_pattern(
-                      BindingPatternKind::BindingIdentifier(
-                        ast.alloc_binding_identifier(SPAN, ast.atom(&raw_index)),
-                      ),
-                      NONE,
-                      false,
-                    ),
-                    None,
-                    false,
-                    false,
+                    ast.binding_pattern_binding_identifier(SPAN, ast.atom(&raw_index)),
                   )
                 }),
               ]
@@ -423,7 +372,7 @@ fn gen_slot_block_with_props<'a>(
       props_name = format!("_slotProps{}", scope.0);
       if let Some(ast) = props.ast {
         let ids_of_props = &mut ids_of_props as *mut HashSet<String>;
-        WalkIdentifiers::new(
+        WalkIdentifiersMut::new(
           Box::new(move |id, _, _, _, _| {
             unsafe { &mut *ids_of_props }.insert(id.name.to_string());
             None
@@ -431,9 +380,8 @@ fn gen_slot_block_with_props<'a>(
           &context.ast,
           context.ir.source,
           context.options,
-          false,
         )
-        .traverse(ast.take_in(context.ast.allocator));
+        .visit(ast);
       }
       exit_scope = Some(scope.1);
     } else {
@@ -469,19 +417,9 @@ fn gen_slot_block_with_props<'a>(
         oper,
         context,
         context_block,
-        ast.vec1(ast.formal_parameter(
+        ast.vec1(ast.plain_formal_parameter(
           SPAN,
-          ast.vec(),
-          ast.binding_pattern(
-            BindingPatternKind::BindingIdentifier(
-              ast.alloc_binding_identifier(props_loc, ast.atom(&props_name)),
-            ),
-            NONE,
-            false,
-          ),
-          None,
-          false,
-          false,
+          ast.binding_pattern_binding_identifier(props_loc, ast.atom(&props_name)),
         )),
       )
     },

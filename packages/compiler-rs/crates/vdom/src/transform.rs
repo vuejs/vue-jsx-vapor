@@ -2,6 +2,7 @@ use common::directive::Directives;
 use common::expression::parse_expression;
 pub use common::options::TransformOptions;
 use common::walk::WalkIdentifiers;
+use common::walk_mut::WalkIdentifiersMut;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
 use oxc_ast::ast::{
   ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, IdentifierReference,
@@ -285,7 +286,7 @@ impl<'a> TransformContext<'a> {
 
   pub fn process_expression(&'a self, exp: &mut Expression<'a>) -> (Expression<'a>, bool) {
     let span = exp.span();
-    let value = if exp.is_literal() {
+    let mut value = if exp.is_literal() {
       exp.clone_in(self.allocator)
     } else {
       exp.take_in(self.allocator)
@@ -328,7 +329,7 @@ impl<'a> TransformContext<'a> {
       (value, has_scope_ref)
     } else {
       let has_ref_ptr = &mut has_ref as *mut bool;
-      let exp = WalkIdentifiers::new(
+      WalkIdentifiersMut::new(
         Box::new(move |id, _, _, _, _| {
           if !self.options.optimize_slots {
             self.add_slot_identifiers(id);
@@ -348,14 +349,13 @@ impl<'a> TransformContext<'a> {
         &self.ast,
         *self.source.borrow(),
         self.options,
-        false,
       )
-      .traverse(value);
+      .visit(&mut value);
       self
         .reference_expressions
         .borrow_mut()
         .insert(span, has_ref);
-      (exp, has_scope_ref)
+      (value, has_scope_ref)
     }
   }
 
@@ -403,14 +403,12 @@ impl<'a> TransformContext<'a> {
               .entry(name)
               .and_modify(|v| *v += 1)
               .or_insert(1);
-            None
           }),
           &self.ast,
           *self.source.borrow(),
           self.options,
-          false,
         )
-        .traverse(exp.clone_in(self.allocator));
+        .visit(exp);
       }
     };
     ids

@@ -1,6 +1,5 @@
 use napi::Either;
 use oxc_ast::NONE;
-use oxc_ast::ast::BindingPatternKind;
 use oxc_ast::ast::FormalParameterKind;
 use oxc_ast::ast::Statement;
 use oxc_ast::ast::VariableDeclarationKind;
@@ -114,13 +113,8 @@ pub fn gen_if<'a>(
       ast.vec1(ast.variable_declarator(
         SPAN,
         VariableDeclarationKind::Const,
-        ast.binding_pattern(
-          BindingPatternKind::BindingIdentifier(
-            ast.alloc_binding_identifier(SPAN, ast.atom(&format!("n{}", oper.id))),
-          ),
-          NONE,
-          false,
-        ),
+        ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("n{}", oper.id))),
+        NONE,
         Some(expression),
         false,
       )),

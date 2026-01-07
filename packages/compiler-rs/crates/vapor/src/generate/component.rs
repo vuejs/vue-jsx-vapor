@@ -6,7 +6,6 @@ use napi::bindgen_prelude::Either3;
 use oxc_allocator::CloneIn;
 use oxc_ast::NONE;
 use oxc_ast::ast::BinaryOperator;
-use oxc_ast::ast::BindingPatternKind;
 use oxc_ast::ast::Expression;
 use oxc_ast::ast::FormalParameterKind;
 use oxc_ast::ast::ObjectPropertyKind;
@@ -140,13 +139,8 @@ pub fn gen_create_component<'a>(
       ast.vec1(ast.variable_declarator(
         SPAN,
         VariableDeclarationKind::Const,
-        ast.binding_pattern(
-          BindingPatternKind::BindingIdentifier(
-            ast.alloc_binding_identifier(SPAN, ast.atom(&format!("n{id}"))),
-          ),
-          NONE,
-          false,
-        ),
+        ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("n{id}"))),
+        NONE,
         Some(ast.expression_call(
           SPAN,
           ast.expression_identifier(

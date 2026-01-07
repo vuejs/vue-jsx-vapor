@@ -3,28 +3,26 @@ use std::mem;
 use common::options::{RootJsx, TransformOptions};
 use oxc_allocator::{Allocator, TakeIn};
 use oxc_ast::{
-  NONE,
-  ast::{
-    Argument, BindingPatternKind, Expression, ImportOrExportKind, Program, Statement,
-    VariableDeclarationKind,
-  },
+  AstBuilder, AstKind, NONE,
+  ast::{Argument, Expression, ImportOrExportKind, Program, Statement, VariableDeclarationKind},
 };
-use oxc_semantic::SemanticBuilder;
+use oxc_ast_visit::{VisitMut, walk_mut};
 use oxc_span::{GetSpan, SPAN};
-use oxc_traverse::{Ancestor, Traverse, TraverseCtx, traverse_mut};
 
 use crate::hmr_or_ssr::HmrOrSsrTransform;
 
 pub struct Transform<'a> {
   allocator: &'a Allocator,
+  ast: AstBuilder<'a>,
   source_text: &'a str,
   roots: Vec<RootJsx<'a>>,
   options: &'a TransformOptions<'a>,
+  parents: Vec<AstKind<'a>>,
 }
 
 impl<'a> Transform<'a> {
   pub fn new(allocator: &'a Allocator, options: &'a TransformOptions<'a>) -> Self {
-    *options.on_enter_expression.borrow_mut() = Some(Box::new(|node, ctx| unsafe {
+    *options.on_enter_expression.borrow_mut() = Some(Box::new(|node, parents| unsafe {
       if !matches!(
         &*node,
         Expression::JSXElement(_) | Expression::JSXFragment(_)
@@ -33,9 +31,9 @@ impl<'a> Transform<'a> {
       }
       if options.interop {
         let mut has_define_vapor_component = false;
-        for ancestor in ctx.ancestors() {
-          if let Ancestor::CallExpressionArguments(ancestor) = ancestor
-            && let Expression::Identifier(name) = ancestor.callee()
+        for parent in parents.iter().rev() {
+          if let AstKind::CallExpression(parent) = parent
+            && let Expression::Identifier(name) = &parent.callee
           {
             if name.name == "defineVaporComponent" {
               has_define_vapor_component = true;
@@ -74,54 +72,26 @@ impl<'a> Transform<'a> {
       allocator,
       source_text: "",
       roots: vec![],
+      ast: AstBuilder::new(allocator),
       options,
+      parents: vec![],
     }
   }
 
-  pub fn traverse(mut self, program: &mut Program<'a>) {
-    let allocator = self.allocator;
-
+  pub fn visit(&mut self, program: &mut Program<'a>) {
     self.source_text = program.source_text;
 
-    traverse_mut(
-      &mut self,
-      allocator,
-      program,
-      SemanticBuilder::new()
-        .build(program)
-        .semantic
-        .into_scoping(),
-      (),
-    );
-  }
-}
+    self.visit_program(program);
 
-impl<'a> Traverse<'a, ()> for Transform<'a> {
-  fn enter_expression(
-    &mut self,
-    node: &mut Expression<'a>,
-    ctx: &mut oxc_traverse::TraverseCtx<'a, ()>,
-  ) {
-    if let Some(on_enter_expression) = self.options.on_enter_expression.borrow().as_ref()
-      && let Some((node_ref, vdom)) = on_enter_expression(node, ctx)
-    {
-      self.roots.push(RootJsx {
-        node_ref,
-        node: unsafe { &mut *node_ref }.take_in(self.allocator),
-        vdom,
-      });
-    }
-  }
-  fn exit_program(&mut self, program: &mut Program<'a>, ctx: &mut TraverseCtx<'a, ()>) {
     if self.options.in_ssr || self.options.hmr {
-      HmrOrSsrTransform::new(self.options).exit_program(program, ctx);
+      HmrOrSsrTransform::new(self.options).visit(&self.ast, program);
     }
 
     if let Some(on_exit_program) = self.options.on_exit_program.borrow().as_ref() {
       on_exit_program(mem::take(&mut self.roots), self.source_text);
     }
 
-    let ast = &ctx.ast;
+    let ast = &self.ast;
     let mut statements = vec![];
     let delegates = self.options.delegates.take();
     if !delegates.is_empty() {
@@ -133,7 +103,7 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
           NONE,
           oxc_allocator::Vec::from_iter_in(
             delegates.iter().map(|delegate| {
-              Argument::StringLiteral(ctx.alloc(ast.string_literal(SPAN, ast.atom(delegate), None)))
+              Argument::StringLiteral(ast.alloc(ast.string_literal(SPAN, ast.atom(delegate), None)))
             }),
             ast.allocator,
           ),
@@ -242,13 +212,8 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
             ast.vec1(ast.variable_declarator(
               SPAN,
               VariableDeclarationKind::Const,
-              ast.binding_pattern(
-                BindingPatternKind::BindingIdentifier(
-                  ast.alloc_binding_identifier(SPAN, ast.atom(&format!("t{index}"))),
-                ),
-                NONE,
-                false,
-              ),
+              ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("t{index}"))),
+              NONE,
               Some(ast.expression_call(
                 SPAN,
                 ast.expression_identifier(SPAN, ast.atom("_template")),
@@ -280,14 +245,8 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
           ast.vec1(ast.variable_declarator(
             SPAN,
             VariableDeclarationKind::Const,
-            ast.binding_pattern(
-              ast.binding_pattern_kind_binding_identifier(
-                SPAN,
-                ast.atom(&format!("_hoisted_{}", i + 1)),
-              ),
-              NONE,
-              false,
-            ),
+            ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_hoisted_{}", i + 1))),
+            NONE,
             Some(exp),
             false,
           )),
@@ -305,5 +264,27 @@ impl<'a> Traverse<'a, ()> for Transform<'a> {
         .unwrap_or(program.body.len());
       program.body.splice(index..index, statements);
     }
+  }
+}
+
+impl<'a> VisitMut<'a> for Transform<'a> {
+  fn visit_expression(&mut self, node: &mut Expression<'a>) {
+    if let Some(on_enter_expression) = self.options.on_enter_expression.borrow().as_ref()
+      && let Some((node_ref, vdom)) = on_enter_expression(node, &self.parents)
+    {
+      self.roots.push(RootJsx {
+        node_ref,
+        node: unsafe { &mut *node_ref }.take_in(self.allocator),
+        vdom,
+      });
+    }
+    walk_mut::walk_expression(self, node);
+  }
+
+  fn enter_node(&mut self, kind: AstKind<'a>) {
+    self.parents.push(kind);
+  }
+  fn leave_node(&mut self, _: oxc_ast::AstKind<'a>) {
+    self.parents.pop();
   }
 }

@@ -1,7 +1,5 @@
 use oxc_ast::NONE;
-use oxc_ast::ast::{
-  AssignmentOperator, AssignmentTarget, BindingPatternKind, Statement, VariableDeclarationKind,
-};
+use oxc_ast::ast::{AssignmentOperator, AssignmentTarget, Statement, VariableDeclarationKind};
 use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
@@ -78,13 +76,8 @@ pub fn gen_declare_old_ref<'a>(
     ast.vec1(ast.variable_declarator(
       SPAN,
       VariableDeclarationKind::Let,
-      ast.binding_pattern(
-        BindingPatternKind::BindingIdentifier(
-          ast.alloc_binding_identifier(SPAN, ast.atom(&format!("r{}", oper.id))),
-        ),
-        NONE,
-        false,
-      ),
+      ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("r{}", oper.id))),
+      NONE,
       None,
       false,
     )),

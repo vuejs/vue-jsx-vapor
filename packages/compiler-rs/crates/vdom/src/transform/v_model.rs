@@ -163,18 +163,9 @@ pub fn transform_v_model<'a>(
     ast.formal_parameters(
       SPAN,
       FormalParameterKind::ArrowFormalParameters,
-      ast.vec1(ast.formal_parameter(
-        SPAN,
-        ast.vec(),
-        ast.binding_pattern(
-          ast.binding_pattern_kind_binding_identifier(SPAN, "$event"),
-          NONE,
-          false,
-        ),
-        None,
-        false,
-        false,
-      )),
+      ast.vec1(
+        ast.plain_formal_parameter(SPAN, ast.binding_pattern_binding_identifier(SPAN, "$event")),
+      ),
       NONE,
     ),
     NONE,

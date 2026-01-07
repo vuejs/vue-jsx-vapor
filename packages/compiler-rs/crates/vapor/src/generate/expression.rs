@@ -4,11 +4,10 @@ use oxc_ast::{
   ast::{AssignmentOperator, AssignmentTarget, Expression, FormalParameterKind},
 };
 use oxc_span::{GetSpan, SPAN, Span};
-use oxc_traverse::Ancestor;
 
 use crate::generate::CodegenContext;
 
-use common::{expression::SimpleExpressionNode, walk::WalkIdentifiers};
+use common::{expression::SimpleExpressionNode, walk_mut::WalkIdentifiersMut};
 
 pub fn gen_expression<'a>(
   node: SimpleExpressionNode<'a>,
@@ -49,23 +48,18 @@ pub fn gen_expression<'a>(
   let mut expression = if let Expression::Identifier(ast) = ast {
     gen_identifier(&ast.name, context, span, None)
   } else {
-    WalkIdentifiers::new(
-      Box::new(|id, parent, _, _, _| {
+    WalkIdentifiersMut::new(
+      Box::new(|id, _, _, _, _| {
         let span = id.span();
         let content = span.source_text(context.ir.source);
-        if let Ancestor::ObjectPropertyKey(parent) = parent
-          && !parent.computed()
-        {
-          return None;
-        };
         Some(gen_identifier(content, context, span, None))
       }),
       &context.ast,
       context.ir.source,
       context.options,
-      false,
     )
-    .traverse(ast.take_in(context.ast.allocator))
+    .visit(ast);
+    ast.take_in(context.ast.allocator)
   };
   if let Some(assignment) = assignment {
     let span = expression.span();

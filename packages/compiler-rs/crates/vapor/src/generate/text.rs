@@ -1,7 +1,6 @@
 use common::expression::SimpleExpressionNode;
 use oxc_ast::NONE;
 use oxc_ast::ast::Argument;
-use oxc_ast::ast::BindingPatternKind;
 use oxc_ast::ast::Statement;
 use oxc_ast::ast::VariableDeclarationKind;
 use oxc_span::SPAN;
@@ -62,13 +61,8 @@ pub fn gen_get_text_child<'a>(
         ast.variable_declarator(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.binding_pattern(
-            BindingPatternKind::BindingIdentifier(
-              ast.alloc_binding_identifier(SPAN, ast.atom(&format!("x{}", oper.parent))),
-            ),
-            NONE,
-            false,
-          ),
+          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("x{}", oper.parent))),
+          NONE,
           Some(
             ast.expression_call(
               SPAN,
@@ -154,11 +148,8 @@ pub fn gen_create_nodes<'a>(
     ast.vec1(ast.variable_declarator(
       SPAN,
       VariableDeclarationKind::Const,
-      ast.binding_pattern(
-        ast.binding_pattern_kind_binding_identifier(SPAN, ast.atom(&format!("n{id}"))),
-        NONE,
-        false,
-      ),
+      ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("n{id}"))),
+      NONE,
       Some(ast.expression_call(
         SPAN,
         ast.expression_identifier(SPAN, ast.atom(&context.helper("createNodes"))),

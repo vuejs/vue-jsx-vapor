@@ -40,10 +40,12 @@ const source = `export default () => <>${`
       ? list.map(({item}, index) => <div key={index}>{item}</div>)
       : bar
         ? <span>{bar}</span>
-        : <Foo v-slots={{
-            default: () => <>default</>,
-            bar: ({bar}) => <>{bar}</>
-          }}/> }
+        : <Foo>
+            {{
+              default: () => <div>default</div>,
+              bar: ({bar}) => <div>{bar}</div>
+            }}
+          </Foo> }
   </Comp>`.repeat(10)}
 </>`
 

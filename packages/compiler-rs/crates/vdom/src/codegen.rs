@@ -6,7 +6,7 @@ use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
   ast::{
-    Argument, BindingPatternKind, Expression, FormalParameterKind, JSXChild, NumberBase, Statement,
+    Argument, Expression, FormalParameterKind, JSXChild, NumberBase, Statement,
     VariableDeclarationKind,
   },
 };
@@ -32,11 +32,8 @@ impl<'a> TransformContext<'a> {
             ast.variable_declarator(
               SPAN,
               VariableDeclarationKind::Const,
-              ast.binding_pattern(
-                ast.binding_pattern_kind_binding_identifier(SPAN, "_cache"),
-                NONE,
-                false,
-              ),
+              ast.binding_pattern_binding_identifier(SPAN, "_cache"),
+              NONE,
               Some(
                 ast.expression_call(
                   SPAN,
@@ -72,11 +69,8 @@ impl<'a> TransformContext<'a> {
           ast.vec1(ast.variable_declarator(
             SPAN,
             VariableDeclarationKind::Let,
-            ast.binding_pattern(
-              ast.binding_pattern_kind_binding_identifier(SPAN, "_temp"),
-              NONE,
-              false,
-            ),
+            ast.binding_pattern_binding_identifier(SPAN, "_temp"),
+            NONE,
             None,
             false,
           )),
@@ -90,32 +84,27 @@ impl<'a> TransformContext<'a> {
         ast.alloc_variable_declaration(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.vec1(
-            ast.variable_declarator(
+          ast.vec1(ast.variable_declarator(
+            SPAN,
+            VariableDeclarationKind::Const,
+            ast.binding_pattern_binding_identifier(
               SPAN,
-              VariableDeclarationKind::Const,
-              ast.binding_pattern(
-                BindingPatternKind::BindingIdentifier(ast.alloc_binding_identifier(
-                  SPAN,
-                  ast.atom(&to_valid_asset_id(&name, "component")),
-                )),
-                NONE,
-                false,
-              ),
-              Some(ast.expression_call(
-                SPAN,
-                ast.expression_identifier(SPAN, ast.atom(&self.helper("resolveComponent"))),
-                NONE,
-                ast.vec_from_array([Argument::StringLiteral(ast.alloc_string_literal(
-                  SPAN,
-                  ast.atom(&name),
-                  None,
-                ))]),
-                false,
-              )),
-              false,
+              ast.atom(&to_valid_asset_id(&name, "component")),
             ),
-          ),
+            NONE,
+            Some(ast.expression_call(
+              SPAN,
+              ast.expression_identifier(SPAN, ast.atom(&self.helper("resolveComponent"))),
+              NONE,
+              ast.vec_from_array([Argument::StringLiteral(ast.alloc_string_literal(
+                SPAN,
+                ast.atom(&name),
+                None,
+              ))]),
+              false,
+            )),
+            false,
+          )),
           false,
         ),
       ));
@@ -126,32 +115,27 @@ impl<'a> TransformContext<'a> {
         ast.alloc_variable_declaration(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.vec1(
-            ast.variable_declarator(
+          ast.vec1(ast.variable_declarator(
+            SPAN,
+            VariableDeclarationKind::Const,
+            ast.binding_pattern_binding_identifier(
               SPAN,
-              VariableDeclarationKind::Const,
-              ast.binding_pattern(
-                BindingPatternKind::BindingIdentifier(ast.alloc_binding_identifier(
-                  SPAN,
-                  ast.atom(&to_valid_asset_id(&name, "directive")),
-                )),
-                NONE,
-                false,
-              ),
-              Some(ast.expression_call(
-                SPAN,
-                ast.expression_identifier(SPAN, ast.atom(&self.helper("resolveDirective"))),
-                NONE,
-                ast.vec1(Argument::StringLiteral(ast.alloc_string_literal(
-                  SPAN,
-                  ast.atom(&name),
-                  None,
-                ))),
-                false,
-              )),
-              false,
+              ast.atom(&to_valid_asset_id(&name, "directive")),
             ),
-          ),
+            NONE,
+            Some(ast.expression_call(
+              SPAN,
+              ast.expression_identifier(SPAN, ast.atom(&self.helper("resolveDirective"))),
+              NONE,
+              ast.vec1(Argument::StringLiteral(ast.alloc_string_literal(
+                SPAN,
+                ast.atom(&name),
+                None,
+              ))),
+              false,
+            )),
+            false,
+          )),
           false,
         ),
       ))

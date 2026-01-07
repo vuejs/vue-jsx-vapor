@@ -66,13 +66,10 @@ pub fn transform_v_on<'a>(
           SPAN,
           FormalParameterKind::ArrowFormalParameters,
           ast.vec(),
-          Some(ast.alloc_binding_rest_element(
+          Some(ast.alloc_formal_parameter_rest(
             SPAN,
-            ast.binding_pattern(
-              ast.binding_pattern_kind_binding_identifier(SPAN, "args"),
-              NONE,
-              false,
-            ),
+            ast.binding_rest_element(SPAN, ast.binding_pattern_binding_identifier(SPAN, "args")),
+            NONE,
           )),
         ),
         NONE,

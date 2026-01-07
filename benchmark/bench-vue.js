@@ -23,9 +23,9 @@ const source = `export default () => <>${`
     </div>
     <span v-else-if={bar}>{bar}</span>
     <Foo v-else>
-      default
+      <div>default</div>
       <template v-slot:bar={{ bar }}>
-        {bar}
+        <div>{bar}</div>
       </template>
     </Foo>
   </Comp>`.repeat(10)}

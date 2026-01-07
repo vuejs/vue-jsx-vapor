@@ -57,7 +57,7 @@
     "bench:vapor": "cargo bench --no-default-features --bench bench_vapor",
     "test": "cargo test -- --nocapture",
     "test:watch": "nodemon -w crates -w tests -w src -e rs -x 'cargo test'",
-    "flamegraph": "CARGO_PROFILE_RELEASE_STRIP=false CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --bench bench --no-default-features"
+    "flamegraph": "CARGO_PROFILE_RELEASE_STRIP=false CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --bench bench_vdom --no-default-features"
   },
   "devDependencies": {
     "@emnapi/core": "^1.7.1",

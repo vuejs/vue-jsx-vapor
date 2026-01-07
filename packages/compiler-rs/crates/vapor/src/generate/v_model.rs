@@ -2,7 +2,6 @@ use common::check::is_simple_identifier;
 use common::directive::DirectiveNode;
 use common::expression::SimpleExpressionNode;
 use oxc_ast::NONE;
-use oxc_ast::ast::BindingPatternKind;
 use oxc_ast::ast::Expression;
 use oxc_ast::ast::FormalParameterKind;
 use oxc_ast::ast::PropertyKind;
@@ -129,20 +128,9 @@ pub fn gen_model_handler<'a>(
     ast.formal_parameters(
       SPAN,
       FormalParameterKind::ArrowFormalParameters,
-      ast.vec1(ast.formal_parameter(
-        SPAN,
-        ast.vec(),
-        ast.binding_pattern(
-          BindingPatternKind::BindingIdentifier(
-            ast.alloc_binding_identifier(SPAN, ast.atom("_value")),
-          ),
-          NONE,
-          false,
-        ),
-        None,
-        false,
-        false,
-      )),
+      ast.vec1(
+        ast.plain_formal_parameter(SPAN, ast.binding_pattern_binding_identifier(SPAN, "_value")),
+      ),
       NONE,
     ),
     NONE,

@@ -1,12 +1,17 @@
+use oxc_allocator::TakeIn;
 use oxc_ast::{
   AstBuilder,
   ast::{
-    ArrowFunctionExpression, BindingIdentifier, BindingPattern, BlockStatement, CatchClause,
-    Expression, ForInStatement, ForOfStatement, ForStatement, ForStatementInit, ForStatementLeft,
-    Function, FunctionBody, Statement, VariableDeclarationKind,
+    ArrowFunctionExpression, AssignmentTargetMaybeDefault, AssignmentTargetProperty,
+    BindingIdentifier, BindingPattern, BlockStatement, CatchClause, Expression, ForInStatement,
+    ForOfStatement, ForStatement, ForStatementInit, ForStatementLeft, Function, FunctionBody,
+    Statement, VariableDeclarationKind,
   },
 };
-use oxc_ast_visit::{Visit, walk};
+use oxc_ast_visit::{
+  VisitMut,
+  walk_mut::{self, walk_expression},
+};
 use std::collections::{HashMap, HashSet};
 
 use napi::bindgen_prelude::Either3;
@@ -19,7 +24,14 @@ use crate::{
 };
 
 type OnIdentifier<'a> = Box<
-  dyn FnMut(&IdentifierReference<'a>, Option<&AstKind<'a>>, &Vec<AstKind<'a>>, bool, bool) + 'a,
+  dyn FnMut(
+      &mut IdentifierReference<'a>,
+      Option<&AstKind<'a>>,
+      &Vec<AstKind<'a>>,
+      bool,
+      bool,
+    ) -> Option<Expression<'a>>
+    + 'a,
 >;
 
 // Modified from https://github.com/vuejs/core/blob/main/packages/compiler-core/src/babelUtils.ts
@@ -28,7 +40,7 @@ type OnIdentifier<'a> = Box<
 // https://github.com/vuejs/core/blob/main/LICENSE
 //
 // Return value indicates whether the AST walked can be a constant
-pub struct WalkIdentifiers<'a> {
+pub struct WalkIdentifiersMut<'a> {
   known_ids: HashMap<String, u32>,
   on_identifier: OnIdentifier<'a>,
   scope_ids_map: HashMap<Span, HashSet<String>>,
@@ -39,7 +51,7 @@ pub struct WalkIdentifiers<'a> {
   pub roots: Vec<RootJsx<'a>>,
 }
 
-impl<'a> WalkIdentifiers<'a> {
+impl<'a> WalkIdentifiersMut<'a> {
   pub fn new(
     on_identifier: OnIdentifier<'a>,
     ast: &'a AstBuilder<'a>,
@@ -58,35 +70,119 @@ impl<'a> WalkIdentifiers<'a> {
     }
   }
 
-  pub fn on_identifier_reference(&mut self, id: &IdentifierReference<'a>) {
+  pub fn on_identifier_reference(
+    &mut self,
+    id: &mut IdentifierReference<'a>,
+  ) -> Option<Expression<'a>> {
     if id.span.eq(&SPAN) && !id.name.eq("_cache") {
-      return;
+      return None;
     }
     let is_local = self.known_ids.contains_key(id.name.as_str());
     let is_refed = is_referenced_identifier(id, &self.parents);
     if is_refed && !is_local {
-      self.on_identifier.as_mut()(id, self.parents.last(), &self.parents, is_refed, is_local);
+      self.on_identifier.as_mut()(id, self.parents.last(), &self.parents, is_refed, is_local)
+    } else {
+      None
     }
   }
 
-  pub fn visit(&mut self, it: &Expression<'a>) {
+  pub fn on_visit_expression(&self, node: &mut Expression<'a>) -> Option<bool> {
+    if !matches!(node, Expression::JSXElement(_) | Expression::JSXFragment(_)) {
+      return None;
+    }
+    if self.options.interop {
+      let mut has_define_vapor_component = false;
+      for parent in self.parents.iter().rev() {
+        if let AstKind::CallExpression(parent) = parent
+          && let Expression::Identifier(name) = &parent.callee
+        {
+          if name.name == "defineVaporComponent" {
+            has_define_vapor_component = true;
+            break;
+          } else if name.name == "defineComponent" {
+            return Some(true);
+          }
+        }
+      }
+      if !has_define_vapor_component {
+        return Some(true);
+      }
+    }
+    Some(false)
+  }
+
+  pub fn visit(&mut self, it: &mut Expression<'a>) {
     self.visit_expression(it);
   }
 }
 
-impl<'a> Visit<'a> for WalkIdentifiers<'a> {
+impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
   fn enter_node(&mut self, kind: AstKind<'a>) {
     self.parents.push(kind);
   }
 
-  fn visit_expression(&mut self, node: &Expression<'a>) {
+  fn visit_expression(&mut self, node: &mut Expression<'a>) {
     if let Expression::Identifier(id) = node {
-      self.on_identifier_reference(id);
+      if let Some(replacer) = self.on_identifier_reference(id) {
+        *node = replacer;
+      }
+    } else if let Some(vdom) = self.on_visit_expression(node) {
+      let node_ref = node as *mut _;
+      self.roots.push(RootJsx {
+        node_ref,
+        node: unsafe { &mut *node_ref }.take_in(self.ast.allocator),
+        vdom,
+      });
     }
-    walk::walk_expression(self, node);
+    walk_expression(self, node);
   }
 
-  fn visit_function(&mut self, node: &Function<'a>, flags: oxc_semantic::ScopeFlags) {
+  fn visit_assignment_target_property(&mut self, node: &mut AssignmentTargetProperty<'a>) {
+    let ast = self.ast;
+    match node {
+      // ;({ baz } = bar)
+      AssignmentTargetProperty::AssignmentTargetPropertyIdentifier(id) => {
+        if let Some(replacer) = self.on_identifier_reference(&mut id.binding) {
+          *node = ast.assignment_target_property_assignment_target_property_property(
+            SPAN,
+            ast.property_key_static_identifier(id.binding.span, id.binding.name),
+            match replacer {
+              Expression::Identifier(replacer) => {
+                AssignmentTargetMaybeDefault::AssignmentTargetIdentifier(replacer)
+              }
+              Expression::StaticMemberExpression(replacer) => {
+                AssignmentTargetMaybeDefault::StaticMemberExpression(replacer)
+              }
+              _ => unimplemented!(),
+            },
+            false,
+          );
+        };
+      }
+      // ;({ baz: baz } = bar)
+      AssignmentTargetProperty::AssignmentTargetPropertyProperty(property) => {
+        match &mut property.binding {
+          AssignmentTargetMaybeDefault::AssignmentTargetIdentifier(id) => {
+            if let Some(replacer) = self.on_identifier_reference(id) {
+              property.binding = match replacer {
+                Expression::Identifier(replacer) => {
+                  AssignmentTargetMaybeDefault::AssignmentTargetIdentifier(replacer)
+                }
+                Expression::StaticMemberExpression(replacer) => {
+                  AssignmentTargetMaybeDefault::StaticMemberExpression(replacer)
+                }
+                _ => unimplemented!(),
+              };
+            }
+          }
+          _ => unreachable!(),
+        };
+      }
+    }
+    walk_mut::walk_assignment_target_property(self, node);
+  }
+
+  fn visit_function(&mut self, node: &mut Function<'a>, flags: oxc_semantic::ScopeFlags) {
     if let Some(scope_ids) = self.scope_ids_map.get(&node.span) {
       for id in scope_ids {
         mark_known_ids(id.clone(), &mut self.known_ids);
@@ -100,10 +196,10 @@ impl<'a> Visit<'a> for WalkIdentifiers<'a> {
         }
       }
     }
-    walk::walk_function(self, node, flags);
+    walk_mut::walk_function(self, node, flags);
   }
 
-  fn visit_arrow_function_expression(&mut self, node: &ArrowFunctionExpression<'a>) {
+  fn visit_arrow_function_expression(&mut self, node: &mut ArrowFunctionExpression<'a>) {
     if let Some(scope_ids) = self.scope_ids_map.get(&node.span) {
       for id in scope_ids {
         mark_known_ids(id.clone(), &mut self.known_ids);
@@ -117,10 +213,10 @@ impl<'a> Visit<'a> for WalkIdentifiers<'a> {
         }
       }
     }
-    walk::walk_arrow_function_expression(self, node);
+    walk_mut::walk_arrow_function_expression(self, node);
   }
 
-  fn visit_function_body(&mut self, node: &FunctionBody<'a>) {
+  fn visit_function_body(&mut self, node: &mut FunctionBody<'a>) {
     if let Some(scope_ids) = self.scope_ids_map.get(&node.span) {
       for id in scope_ids {
         mark_known_ids(id.clone(), &mut self.known_ids);
@@ -130,10 +226,10 @@ impl<'a> Visit<'a> for WalkIdentifiers<'a> {
         mark_scope_identifier(node.span, id, &mut self.known_ids, &mut self.scope_ids_map);
       });
     }
-    walk::walk_function_body(self, node);
+    walk_mut::walk_function_body(self, node);
   }
 
-  fn visit_block_statement(&mut self, node: &BlockStatement<'a>) {
+  fn visit_block_statement(&mut self, node: &mut BlockStatement<'a>) {
     if let Some(scope_ids) = self.scope_ids_map.get(&node.span) {
       for id in scope_ids {
         mark_known_ids(id.clone(), &mut self.known_ids);
@@ -144,35 +240,35 @@ impl<'a> Visit<'a> for WalkIdentifiers<'a> {
         mark_scope_identifier(node.span, id, &mut self.known_ids, &mut self.scope_ids_map);
       });
     }
-    walk::walk_block_statement(self, node);
+    walk_mut::walk_block_statement(self, node);
   }
 
-  fn visit_catch_clause(&mut self, node: &CatchClause<'a>) {
+  fn visit_catch_clause(&mut self, node: &mut CatchClause<'a>) {
     if let Some(param) = &node.param {
       for id in extract_identifiers(&param.pattern, vec![]) {
         mark_scope_identifier(node.span, id, &mut self.known_ids, &mut self.scope_ids_map);
       }
     }
-    walk::walk_catch_clause(self, node);
+    walk_mut::walk_catch_clause(self, node);
   }
 
-  fn visit_for_statement(&mut self, node: &ForStatement<'a>) {
+  fn visit_for_statement(&mut self, node: &mut ForStatement<'a>) {
     walk_for_statement(Either3::A(node), true, &mut |id| {
       mark_scope_identifier(node.span, id, &mut self.known_ids, &mut self.scope_ids_map);
     });
-    walk::walk_for_statement(self, node);
+    walk_mut::walk_for_statement(self, node);
   }
-  fn visit_for_in_statement(&mut self, node: &ForInStatement<'a>) {
+  fn visit_for_in_statement(&mut self, node: &mut ForInStatement<'a>) {
     walk_for_statement(Either3::B(node), true, &mut |id| {
       mark_scope_identifier(node.span, id, &mut self.known_ids, &mut self.scope_ids_map);
     });
-    walk::walk_for_in_statement(self, node);
+    walk_mut::walk_for_in_statement(self, node);
   }
-  fn visit_for_of_statement(&mut self, node: &ForOfStatement<'a>) {
+  fn visit_for_of_statement(&mut self, node: &mut ForOfStatement<'a>) {
     walk_for_statement(Either3::C(node), true, &mut |id| {
       mark_scope_identifier(node.span, id, &mut self.known_ids, &mut self.scope_ids_map);
     });
-    walk::walk_for_of_statement(self, node);
+    walk_mut::walk_for_of_statement(self, node);
   }
 
   fn leave_node(&mut self, kind: AstKind<'a>) {
@@ -202,6 +298,12 @@ impl<'a> Visit<'a> for WalkIdentifiers<'a> {
           }
         }
       }
+    }
+
+    if let Some(on_exit_program) = self.options.on_exit_program.borrow().as_ref()
+      && self.parents.is_empty()
+    {
+      on_exit_program(std::mem::take(&mut self.roots), self.source_text);
     }
   }
 }

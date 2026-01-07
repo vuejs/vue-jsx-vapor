@@ -8,7 +8,6 @@ oxc_ast = { workspace = true }
 oxc_allocator = { workspace = true }
 oxc_span = { workspace = true }
 oxc_ast_visit = { workspace = true }
-oxc_traverse = { workspace = true }
 
 napi = { workspace = true }
 indexmap = { workspace = true }

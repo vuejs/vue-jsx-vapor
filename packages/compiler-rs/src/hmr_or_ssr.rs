@@ -3,15 +3,21 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use common::options::TransformOptions;
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
-  NONE,
+  AstBuilder, NONE,
   ast::{
-    Argument, AssignmentOperator, AssignmentTarget, BinaryOperator, BindingPatternKind,
-    Declaration, ExportDefaultDeclarationKind, Expression, FormalParameterKind, ImportOrExportKind,
-    LogicalOperator, Statement, UnaryOperator, VariableDeclaration, VariableDeclarationKind,
+    Argument, AssignmentOperator, AssignmentTarget, BinaryOperator, BindingPattern, Declaration,
+    ExportDefaultDeclarationKind, Expression, FormalParameterKind, ImportOrExportKind,
+    LogicalOperator, Program, Statement, UnaryOperator, VariableDeclaration,
+    VariableDeclarationKind,
   },
 };
 use oxc_span::{GetSpan, SPAN};
-use oxc_traverse::Traverse;
+
+struct Component {
+  local: String,
+  exported: String,
+  id: String,
+}
 
 pub struct HmrOrSsrTransform<'a> {
   has_default_export: bool,
@@ -42,7 +48,7 @@ impl<'a> HmrOrSsrTransform<'a> {
   fn parse_component_decls(&self, node: &VariableDeclaration) -> Vec<String> {
     let mut names = vec![];
     for decl in &node.declarations {
-      if let BindingPatternKind::BindingIdentifier(id) = &decl.id.kind
+      if let BindingPattern::BindingIdentifier(id) = &decl.id
         && let Some(init) = &decl.init
         && (init.is_function() || self.is_define_component_call(Some(init)))
       {
@@ -57,22 +63,8 @@ impl<'a> HmrOrSsrTransform<'a> {
     format!("{}{}", self.options.filename, s).hash(&mut hasher);
     format!("{:x}", hasher.finish())
   }
-}
 
-struct Component {
-  local: String,
-  exported: String,
-  id: String,
-}
-
-impl<'a> Traverse<'a, ()> for HmrOrSsrTransform<'a> {
-  fn exit_program(
-    &mut self,
-    program: &mut oxc_ast::ast::Program<'a>,
-    ctx: &mut oxc_traverse::TraverseCtx<'a, ()>,
-  ) {
-    let ast = &ctx.ast;
-
+  pub fn visit(&mut self, ast: &AstBuilder<'a>, program: &mut Program<'a>) {
     let mut declared_components = vec![];
     let mut default_declaration_index = 0;
 
@@ -182,13 +174,8 @@ impl<'a> Traverse<'a, ()> for HmrOrSsrTransform<'a> {
                 ast.variable_declarator(
                   SPAN,
                   VariableDeclarationKind::Const,
-                  ast.binding_pattern(
-                    ctx
-                      .ast
-                      .binding_pattern_kind_binding_identifier(SPAN, "__default__"),
-                    NONE,
-                    false,
-                  ),
+                  ast.binding_pattern_binding_identifier(SPAN, "__default__"),
+                  NONE,
                   Some(match declaration {
                     ExportDefaultDeclarationKind::FunctionDeclaration(e) => {
                       Expression::FunctionExpression(e)
@@ -219,13 +206,8 @@ impl<'a> Traverse<'a, ()> for HmrOrSsrTransform<'a> {
             ast.vec1(ast.variable_declarator(
               SPAN,
               VariableDeclarationKind::Const,
-              ast.binding_pattern(
-                BindingPatternKind::BindingIdentifier(
-                  ast.alloc_binding_identifier(SPAN, "__moduleId"),
-                ),
-                NONE,
-                false,
-              ),
+              ast.binding_pattern_binding_identifier(SPAN, "__moduleId"),
+              NONE,
               Some(ast.expression_string_literal(SPAN, ast.atom(self.options.filename), None)),
               false,
             )),
@@ -417,19 +399,9 @@ impl<'a> Traverse<'a, ()> for HmrOrSsrTransform<'a> {
                       ast.formal_parameters(
                         SPAN,
                         FormalParameterKind::ArrowFormalParameters,
-                        ast.vec1(ast.formal_parameter(
+                        ast.vec1(ast.plain_formal_parameter(
                           SPAN,
-                          ast.vec(),
-                          ast.binding_pattern(
-                            BindingPatternKind::BindingIdentifier(
-                              ast.alloc_binding_identifier(SPAN, "mod"),
-                            ),
-                            NONE,
-                            false,
-                          ),
-                          None,
-                          false,
-                          false,
+                          ast.binding_pattern_binding_identifier(SPAN, "mod"),
                         )),
                         NONE,
                       ),

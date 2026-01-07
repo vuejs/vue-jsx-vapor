@@ -301,7 +301,7 @@ pub fn build_props<'a>(
 
   let _has_ref = &mut has_ref as *mut _;
   let _has_dynamic_keys = &mut has_dynamic_keys as *mut _;
-  let mut analyze_patch_flag = |prop: &ObjectPropertyKind| {
+  let mut analyze_patch_flag = |prop: &ObjectPropertyKind<'a>| {
     let ObjectPropertyKind::ObjectProperty(prop) = prop else {
       return;
     };

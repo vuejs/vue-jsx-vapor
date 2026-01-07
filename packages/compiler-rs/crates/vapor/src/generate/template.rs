@@ -2,7 +2,6 @@ use std::mem;
 
 use oxc_ast::NONE;
 use oxc_ast::ast::Argument;
-use oxc_ast::ast::BindingPatternKind;
 use oxc_ast::ast::Statement;
 use oxc_ast::ast::VariableDeclarationKind;
 use oxc_span::SPAN;
@@ -39,13 +38,8 @@ pub fn gen_self<'a>(
         ast.vec1(ast.variable_declarator(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.binding_pattern(
-            BindingPatternKind::BindingIdentifier(
-              ast.alloc_binding_identifier(SPAN, ast.atom(&format!("n{id}"))),
-            ),
-            NONE,
-            false,
-          ),
+          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("n{id}"))),
+          NONE,
           Some(ast.expression_call(
             SPAN,
             ast.expression_identifier(SPAN, ast.atom(&format!("t{template}"))),
@@ -219,13 +213,8 @@ fn gen_children<'a>(
         ast.vec1(ast.variable_declarator(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.binding_pattern(
-            BindingPatternKind::BindingIdentifier(
-              ast.alloc_binding_identifier(SPAN, ast.atom(&variable)),
-            ),
-            NONE,
-            false,
-          ),
+          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&variable)),
+          NONE,
           Some(expression_call),
           false,
         )),

@@ -7,3 +7,4 @@ pub mod options;
 pub mod patch_flag;
 pub mod text;
 pub mod walk;
+pub mod walk_mut;

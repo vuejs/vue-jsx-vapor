@@ -3,23 +3,20 @@ use std::{collections::HashMap, ops::Deref};
 use common::{
   expression::{SimpleExpressionNode, is_globally_allowed},
   walk::WalkIdentifiers,
+  walk_mut::WalkIdentifiersMut,
 };
 use napi::bindgen_prelude::Either16;
-use oxc_allocator::{CloneIn, TakeIn};
+use oxc_allocator::CloneIn;
 use oxc_ast::{
-  NONE,
+  AstKind, NONE,
   ast::{
-    Argument, ArrayExpression, AssignmentOperator, AssignmentTarget, BinaryExpression,
-    BinaryOperator, BindingPatternKind, Expression, FormalParameterKind, NumberBase,
-    ObjectExpression, ObjectPropertyKind, PropertyKey, Statement, VariableDeclarationKind,
+    Argument, AssignmentOperator, AssignmentTarget, BinaryExpression, BinaryOperator, Expression,
+    FormalParameterKind, NumberBase, ObjectPropertyKind, PropertyKey, Statement,
+    VariableDeclarationKind,
   },
 };
 use oxc_ast_visit::Visit;
 use oxc_span::{GetSpan, SPAN, Span};
-use oxc_traverse::{
-  Ancestor,
-  ancestor::{ArrayExpressionWithoutElements, ObjectExpressionWithoutProperties},
-};
 
 use crate::{
   generate::{
@@ -118,8 +115,8 @@ pub fn gen_for<'a>(
     if let Some(_ast) = value_ast
       && !matches!(_ast, Expression::Identifier(_))
     {
-      WalkIdentifiers::new(
-        Box::new(move |id, _, ancestry, _, _| {
+      WalkIdentifiersMut::new(
+        Box::new(move |id, _, parent_stack, _, _| {
           let mut path = ast
             .member_expression_static(
               id.span(),
@@ -128,19 +125,17 @@ pub fn gen_for<'a>(
               false,
             )
             .into();
-          let mut parent_stack = ancestry.ancestors().collect::<Vec<_>>();
-          parent_stack.reverse();
           for i in 0..parent_stack.len() {
             let parent = parent_stack[i];
             let child = parent_stack.get(i + 1);
             let child_is_spread = if let Some(child) = child {
-              matches!(child, Ancestor::SpreadElementArgument(_))
+              matches!(child, AstKind::SpreadElement(_))
             } else {
               false
             };
 
-            if let Ancestor::ObjectPropertyValue(parent) = parent {
-              if let PropertyKey::StringLiteral(key) = &parent.key() {
+            if let AstKind::ObjectProperty(parent) = parent {
+              if let PropertyKey::StringLiteral(key) = &parent.key {
                 path = ast
                   .member_expression_computed(
                     SPAN,
@@ -149,29 +144,19 @@ pub fn gen_for<'a>(
                     false,
                   )
                   .into();
-              } else if let PropertyKey::StaticIdentifier(key) = &parent.key() {
+              } else if let PropertyKey::StaticIdentifier(key) = &parent.key {
                 // non-computed, can only be identifier
                 path = ast
                   .member_expression_static(SPAN, path, key.deref().clone_in(ast.allocator), false)
                   .into()
               }
-            } else if let Ancestor::ArrayExpressionElements(parent) = &parent {
-              let elements = unsafe {
-                let parent = *((parent as *const ArrayExpressionWithoutElements)
-                  as *const *const ArrayExpression);
-                &(*parent).elements
-              };
-              let index = elements
+            } else if let AstKind::ArrayExpression(parent) = &parent {
+              let index = parent
+                .elements
                 .iter()
                 .position(|element| {
                   if let Some(child) = child {
-                    let span = match child {
-                      Ancestor::SpreadElementArgument(e) => e.span(),
-                      Ancestor::ArrayExpressionElements(e) => e.span(),
-                      Ancestor::ObjectExpressionProperties(e) => e.span(),
-                      _ => unimplemented!(),
-                    };
-                    element.span().eq(span)
+                    element.span().eq(&child.span())
                   } else {
                     element.span().eq(&id.span())
                   }
@@ -202,14 +187,10 @@ pub fn gen_for<'a>(
                   )
                   .into();
               }
-            } else if let Ancestor::ObjectExpressionProperties(parent) = &parent
+            } else if let AstKind::ObjectExpression(parent) = &parent
               && child_is_spread
             {
-              let properties = unsafe {
-                let parent = *((parent as *const ObjectExpressionWithoutProperties)
-                  as *const *const ObjectExpression);
-                &(*parent).properties
-              };
+              let properties = &parent.properties;
               unsafe { &mut *_id_map }.insert("getRestElement".to_string(), None);
               path = ast.expression_call(
                 SPAN,
@@ -253,9 +234,8 @@ pub fn gen_for<'a>(
         &context.ast,
         context.ir.source,
         context.options,
-        false,
       )
-      .traverse(_ast.take_in(context.ast.allocator));
+      .visit(_ast);
     } else {
       id_map.insert(
         raw_value.clone(),
@@ -326,13 +306,8 @@ pub fn gen_for<'a>(
         ast.vec1(ast.variable_declarator(
           SPAN,
           VariableDeclarationKind::Let,
-          ast.binding_pattern(
-            BindingPatternKind::BindingIdentifier(
-              ast.alloc_binding_identifier(SPAN, ast.atom(&selector_name)),
-            ),
-            NONE,
-            false,
-          ),
+          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&selector_name)),
+          NONE,
           None,
           false,
         )),
@@ -390,19 +365,9 @@ pub fn gen_for<'a>(
           SPAN,
           FormalParameterKind::ArrowFormalParameters,
           ast.vec_from_iter(args.into_iter().map(|arg| {
-            ast.formal_parameter(
+            ast.plain_formal_parameter(
               SPAN,
-              ast.vec(),
-              ast.binding_pattern(
-                BindingPatternKind::BindingIdentifier(
-                  ast.alloc_binding_identifier(SPAN, ast.atom(&arg)),
-                ),
-                NONE,
-                false,
-              ),
-              None,
-              false,
-              false,
+              ast.binding_pattern_binding_identifier(SPAN, ast.atom(&arg)),
             )
           })),
           NONE,
@@ -491,124 +456,75 @@ pub fn gen_for<'a>(
     flags |= VaporVForFlags::Once as i32;
   }
 
-  let gen_callback = if let Some(key_prop) = key_prop {
-    let res = context.with_id(
-      || gen_expression(key_prop, context, None, None),
-      HashMap::new(),
-    );
+  let gen_callback =
+    if let Some(key_prop) = key_prop {
+      let res = context.with_id(
+        || gen_expression(key_prop, context, None, None),
+        HashMap::new(),
+      );
 
-    Some(
-      ast.expression_arrow_function(
-        SPAN,
-        true,
-        false,
-        NONE,
-        ast.formal_parameters(
+      Some(
+        ast.expression_arrow_function(
           SPAN,
-          FormalParameterKind::ArrowFormalParameters,
-          ast.vec_from_iter(
-            [
-              if !raw_value.is_empty() {
-                Some(ast.formal_parameter(
-                  SPAN,
-                  ast.vec(),
-                  ast.binding_pattern(
-                    BindingPatternKind::BindingIdentifier(
-                      ast.alloc_binding_identifier(value_span, ast.atom(&raw_value)),
-                    ),
-                    NONE,
-                    false,
-                  ),
-                  None,
-                  false,
-                  false,
-                ))
-              } else if raw_key.is_some() || raw_index.is_some() {
-                Some(ast.formal_parameter(
-                  SPAN,
-                  ast.vec(),
-                  ast.binding_pattern(
-                    BindingPatternKind::BindingIdentifier(
-                      ast.alloc_binding_identifier(SPAN, ast.atom("_")),
-                    ),
-                    NONE,
-                    false,
-                  ),
-                  None,
-                  false,
-                  false,
-                ))
-              } else {
-                None
-              },
-              if let Some(raw_key) = raw_key {
-                Some(ast.formal_parameter(
-                  SPAN,
-                  ast.vec(),
-                  ast.binding_pattern(
-                    BindingPatternKind::BindingIdentifier(
-                      ast.alloc_binding_identifier(key_span, ast.atom(&raw_key)),
-                    ),
-                    NONE,
-                    false,
-                  ),
-                  None,
-                  false,
-                  false,
-                ))
-              } else if raw_index.is_some() {
-                Some(ast.formal_parameter(
-                  SPAN,
-                  ast.vec(),
-                  ast.binding_pattern(
-                    BindingPatternKind::BindingIdentifier(
-                      ast.alloc_binding_identifier(SPAN, ast.atom("__")),
-                    ),
-                    NONE,
-                    false,
-                  ),
-                  None,
-                  false,
-                  false,
-                ))
-              } else {
-                None
-              },
-              raw_index.map(|raw_index| {
-                ast.formal_parameter(
-                  SPAN,
-                  ast.vec(),
-                  ast.binding_pattern(
-                    BindingPatternKind::BindingIdentifier(
-                      ast.alloc_binding_identifier(index_span, ast.atom(&raw_index)),
-                    ),
-                    NONE,
-                    false,
-                  ),
-                  None,
-                  false,
-                  false,
-                )
-              }),
-            ]
-            .into_iter()
-            .flatten(),
+          true,
+          false,
+          NONE,
+          ast.formal_parameters(
+            SPAN,
+            FormalParameterKind::ArrowFormalParameters,
+            ast.vec_from_iter(
+              [
+                if !raw_value.is_empty() {
+                  Some(ast.plain_formal_parameter(
+                    SPAN,
+                    ast.binding_pattern_binding_identifier(value_span, ast.atom(&raw_value)),
+                  ))
+                } else if raw_key.is_some() || raw_index.is_some() {
+                  Some(ast.plain_formal_parameter(
+                    SPAN,
+                    ast.binding_pattern_binding_identifier(SPAN, "_"),
+                  ))
+                } else {
+                  None
+                },
+                if let Some(raw_key) = raw_key {
+                  Some(ast.plain_formal_parameter(
+                    SPAN,
+                    ast.binding_pattern_binding_identifier(key_span, ast.atom(&raw_key)),
+                  ))
+                } else if raw_index.is_some() {
+                  Some(ast.plain_formal_parameter(
+                    SPAN,
+                    ast.binding_pattern_binding_identifier(SPAN, "__"),
+                  ))
+                } else {
+                  None
+                },
+                raw_index.map(|raw_index| {
+                  ast.plain_formal_parameter(
+                    SPAN,
+                    ast.binding_pattern_binding_identifier(index_span, ast.atom(&raw_index)),
+                  )
+                }),
+              ]
+              .into_iter()
+              .flatten(),
+            ),
+            NONE,
           ),
           NONE,
+          ast.function_body(
+            SPAN,
+            ast.vec(),
+            ast.vec1(ast.statement_expression(SPAN, res)),
+          ),
         ),
-        NONE,
-        ast.function_body(
-          SPAN,
-          ast.vec(),
-          ast.vec1(ast.statement_expression(SPAN, res)),
-        ),
-      ),
-    )
-  } else if flags > 0 {
-    Some(ast.expression_identifier(SPAN, "void 0"))
-  } else {
-    None
-  };
+      )
+    } else if flags > 0 {
+      Some(ast.expression_identifier(SPAN, "void 0"))
+    } else {
+      None
+    };
 
   let ast = &context.ast;
 
@@ -625,33 +541,19 @@ pub fn gen_for<'a>(
           ast.formal_parameters(
             SPAN,
             FormalParameterKind::ArrowFormalParameters,
-            ast.vec1(ast.formal_parameter(
+            ast.vec1(ast.plain_formal_parameter(
               SPAN,
-              ast.vec(),
-              ast.binding_pattern(
-                BindingPatternKind::ObjectPattern(ast.alloc_object_pattern(
+              ast.binding_pattern_object_pattern(
+                SPAN,
+                ast.vec1(ast.binding_property(
                   SPAN,
-                  ast.vec1(ast.binding_property(
-                    SPAN,
-                    ast.property_key_static_identifier(SPAN, ast.atom("createSelector")),
-                    ast.binding_pattern(
-                      BindingPatternKind::BindingIdentifier(
-                        ast.alloc_binding_identifier(SPAN, ast.atom("createSelector")),
-                      ),
-                      NONE,
-                      false,
-                    ),
-                    true,
-                    false,
-                  )),
-                  NONE,
+                  ast.property_key_static_identifier(SPAN, "createSelector"),
+                  ast.binding_pattern_binding_identifier(SPAN, "createSelector"),
+                  true,
+                  false,
                 )),
                 NONE,
-                false,
               ),
-              None,
-              false,
-              false,
             )),
             NONE,
           ),
@@ -672,13 +574,8 @@ pub fn gen_for<'a>(
         ast.variable_declarator(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.binding_pattern(
-            BindingPatternKind::BindingIdentifier(
-              ast.alloc_binding_identifier(SPAN, ast.atom(&format!("n{id}"))),
-            ),
-            NONE,
-            false,
-          ),
+          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("n{id}"))),
+          NONE,
           Some(
             ast.expression_call(
               SPAN,
@@ -819,14 +716,12 @@ fn match_selector_pattern<'a>(
         if start != key.start && start != selector.start {
           *unsafe { &mut *_has_extra_id } = true
         }
-        None
       }),
       &context.ast,
       context.ir.source,
       context.options,
-      false,
     )
-    .traverse(ast.clone_in(context.ast.allocator));
+    .visit(ast);
 
     if !has_extra_id {
       let content = expression.content
@@ -857,14 +752,12 @@ fn analyze_variable_scopes<'a>(
       if !is_globally_allowed(&name) && (&*_id_map).get(&name).is_some() {
         (&mut *_locals).push(name);
       }
-      None
     }),
     &context.ast,
     context.ir.source,
     context.options,
-    false,
   )
-  .traverse(ast.clone_in(context.ast.allocator));
+  .visit(&ast.clone_in(context.ast.allocator));
 
   locals
 }
@@ -885,10 +778,10 @@ fn get_expression<'a>(effect: &'a IREffect<'a>) -> Option<&'a SimpleExpressionNo
 }
 
 struct BinaryExpressionVisitor<'a> {
-  on_binary_expression: Box<dyn FnMut(&BinaryExpression) + 'a>,
+  on_binary_expression: Box<dyn FnMut(&BinaryExpression<'a>) + 'a>,
 }
 impl<'a> Visit<'a> for BinaryExpressionVisitor<'a> {
-  fn visit_binary_expression(&mut self, node: &BinaryExpression) {
+  fn visit_binary_expression(&mut self, node: &BinaryExpression<'a>) {
     self.on_binary_expression.as_mut()(node)
   }
 }

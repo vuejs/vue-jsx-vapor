@@ -3,9 +3,9 @@ use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   NONE,
   ast::{
-    AssignmentOperator, AssignmentTarget, BinaryExpression, BinaryOperator, BindingPatternKind,
-    Expression, FormalParameterKind, FormalParameters, JSXAttribute, JSXAttributeValue, JSXChild,
-    JSXElement, LogicalOperator, NumberBase, PropertyKind, Statement, VariableDeclarationKind,
+    AssignmentOperator, AssignmentTarget, BinaryExpression, BinaryOperator, Expression,
+    FormalParameterKind, FormalParameters, JSXAttribute, JSXAttributeValue, JSXChild, JSXElement,
+    LogicalOperator, NumberBase, PropertyKind, Statement, VariableDeclarationKind,
   },
 };
 use oxc_span::{SPAN, Span};
@@ -212,11 +212,8 @@ pub unsafe fn transform_v_for<'a>(
                   ast.vec1(ast.variable_declarator(
                     SPAN,
                     VariableDeclarationKind::Const,
-                    ast.binding_pattern(
-                      ast.binding_pattern_kind_binding_identifier(SPAN, "_memo"),
-                      NONE,
-                      false,
-                    ),
+                    ast.binding_pattern_binding_identifier(SPAN, "_memo"),
+                    NONE,
                     Some(ast.expression_parenthesized(SPAN, memo)),
                     false,
                   )),
@@ -267,11 +264,8 @@ pub unsafe fn transform_v_for<'a>(
                   ast.vec1(ast.variable_declarator(
                     SPAN,
                     VariableDeclarationKind::Const,
-                    ast.binding_pattern(
-                      ast.binding_pattern_kind_binding_identifier(SPAN, "_item"),
-                      NONE,
-                      false,
-                    ),
+                    ast.binding_pattern_binding_identifier(SPAN, "_item"),
+                    NONE,
                     Some(child_block),
                     false,
                   )),
@@ -415,19 +409,9 @@ pub fn create_for_loop_params<'a>(
       [
         if let Some(value) = value {
           if let Expression::Identifier(value) = value {
-            Some(ast.formal_parameter(
+            Some(ast.plain_formal_parameter(
               SPAN,
-              ast.vec(),
-              ast.binding_pattern(
-                BindingPatternKind::BindingIdentifier(
-                  ast.alloc_binding_identifier(value.span, value.name),
-                ),
-                NONE,
-                false,
-              ),
-              None,
-              false,
-              false,
+              ast.binding_pattern_binding_identifier(value.span, value.name),
             ))
           } else {
             expression_to_params(
@@ -438,97 +422,36 @@ pub fn create_for_loop_params<'a>(
             )
           }
         } else if key.is_some() || index.is_some() || memo.is_some() {
-          Some(ast.formal_parameter(
-            SPAN,
-            ast.vec(),
-            ast.binding_pattern(
-              BindingPatternKind::BindingIdentifier(ast.alloc_binding_identifier(SPAN, "_")),
-              NONE,
-              false,
-            ),
-            None,
-            false,
-            false,
-          ))
+          Some(ast.plain_formal_parameter(SPAN, ast.binding_pattern_binding_identifier(SPAN, "_")))
         } else {
           None
         },
         if let Some(Expression::Identifier(key)) = key {
-          Some(ast.formal_parameter(
+          Some(ast.plain_formal_parameter(
             SPAN,
-            ast.vec(),
-            ast.binding_pattern(
-              BindingPatternKind::BindingIdentifier(
-                ast.alloc_binding_identifier(key.span, key.name),
-              ),
-              NONE,
-              false,
-            ),
-            None,
-            false,
-            false,
+            ast.binding_pattern_binding_identifier(key.span, key.name),
           ))
         } else if index.is_some() || memo.is_some() {
-          Some(ast.formal_parameter(
-            SPAN,
-            ast.vec(),
-            ast.binding_pattern(
-              BindingPatternKind::BindingIdentifier(ast.alloc_binding_identifier(SPAN, "__")),
-              NONE,
-              false,
-            ),
-            None,
-            false,
-            false,
-          ))
+          Some(ast.plain_formal_parameter(SPAN, ast.binding_pattern_binding_identifier(SPAN, "__")))
         } else {
           None
         },
         if let Some(Expression::Identifier(index)) = index {
-          Some(ast.formal_parameter(
+          Some(ast.plain_formal_parameter(
             SPAN,
-            ast.vec(),
-            ast.binding_pattern(
-              BindingPatternKind::BindingIdentifier(
-                ast.alloc_binding_identifier(index.span, index.name),
-              ),
-              NONE,
-              false,
-            ),
-            None,
-            false,
-            false,
+            ast.binding_pattern_binding_identifier(index.span, index.name),
           ))
         } else if memo.is_some() {
-          Some(ast.formal_parameter(
-            SPAN,
-            ast.vec(),
-            ast.binding_pattern(
-              BindingPatternKind::BindingIdentifier(ast.alloc_binding_identifier(SPAN, "___")),
-              NONE,
-              false,
-            ),
-            None,
-            false,
-            false,
-          ))
+          Some(
+            ast.plain_formal_parameter(SPAN, ast.binding_pattern_binding_identifier(SPAN, "___")),
+          )
         } else {
           None
         },
         if let Some(Expression::Identifier(memo)) = memo {
-          Some(ast.formal_parameter(
+          Some(ast.plain_formal_parameter(
             SPAN,
-            ast.vec(),
-            ast.binding_pattern(
-              BindingPatternKind::BindingIdentifier(
-                ast.alloc_binding_identifier(memo.span, memo.name),
-              ),
-              NONE,
-              false,
-            ),
-            None,
-            false,
-            false,
+            ast.binding_pattern_binding_identifier(memo.span, memo.name),
           ))
         } else {
           None

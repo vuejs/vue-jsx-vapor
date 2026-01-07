@@ -7,7 +7,6 @@ use common::{
   walk::WalkIdentifiers,
 };
 use napi::{Either, bindgen_prelude::Either3};
-use oxc_allocator::CloneIn;
 use oxc_ast::ast::{
   Expression, JSXAttributeItem, JSXAttributeValue, JSXChild, JSXElement, NumberBase,
   ObjectPropertyKind,
@@ -226,7 +225,7 @@ pub fn cache_static_children<'a>(
 }
 
 pub fn get_constant_type<'a>(
-  node: Either<&JSXChild<'a>, &Expression>,
+  node: Either<&JSXChild<'a>, &Expression<'a>>,
   context: &'a TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
 ) -> ConstantTypes {
@@ -390,18 +389,20 @@ pub fn get_constant_type<'a>(
         ConstantTypes::CanStringify
       } else {
         let mut has_ref = false;
-        let has_ref_ptr = &mut has_ref as *mut bool;
-        WalkIdentifiers::new(
-          Box::new(move |_, _, _, _, _| {
-            *unsafe { &mut *has_ref_ptr } = true;
-            None
-          }),
-          &context.ast,
-          *context.source.borrow(),
-          context.options,
-          false,
-        )
-        .traverse(node.clone_in(context.allocator));
+        if node.is_identifier_reference() || matches!(node, Expression::StaticMemberExpression(_)) {
+          has_ref = true;
+        } else {
+          let has_ref_ptr = &mut has_ref as *mut bool;
+          WalkIdentifiers::new(
+            Box::new(move |_, _, _, _, _| {
+              *unsafe { &mut *has_ref_ptr } = true;
+            }),
+            &context.ast,
+            *context.source.borrow(),
+            context.options,
+          )
+          .visit(node);
+        }
         if has_ref {
           ConstantTypes::NotConstant
         } else {
