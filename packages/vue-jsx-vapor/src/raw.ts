@@ -52,27 +52,13 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
       },
       resolveId: {
         filter: {
-          id: {
-            include: [
-              ssrRegisterHelperId,
-              propsHelperId,
-              vdomHelperId,
-              vaporHelperId,
-            ],
-          },
+          id: [ssrRegisterHelperId, propsHelperId, vdomHelperId, vaporHelperId],
         },
         handler: (id) => id,
       },
       load: {
         filter: {
-          id: {
-            include: [
-              ssrRegisterHelperId,
-              propsHelperId,
-              vdomHelperId,
-              vaporHelperId,
-            ],
-          },
+          id: [ssrRegisterHelperId, propsHelperId, vdomHelperId, vaporHelperId],
         },
         handler(id) {
           if (id === ssrRegisterHelperId) return ssrRegisterHelperCode

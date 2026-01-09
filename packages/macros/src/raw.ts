@@ -44,8 +44,16 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
       transform: {
         filter: {
           id: {
-            include: options.include || /\.[cm]?[jt]sx$/,
+            include: options.include,
+            exclude: options.exclude,
           },
+          code: [
+            ...options.defineComponent.alias,
+            ...options.defineExpose.alias,
+            ...options.defineModel.alias,
+            ...options.defineSlots.alias,
+            ...options.defineStyle.alias,
+          ],
         },
         handler(code, id, opt?: { ssr?: boolean }) {
           if (opt?.ssr) {
@@ -60,9 +68,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
 
       resolveId: {
         filter: {
-          id: {
-            include: defineStyleRegex,
-          },
+          id: defineStyleRegex,
         },
         handler(id) {
           return id
@@ -70,9 +76,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
       },
       load: {
         filter: {
-          id: {
-            include: defineStyleRegex,
-          },
+          id: defineStyleRegex,
         },
         handler(id) {
           return importMap.get(id)
@@ -81,9 +85,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
 
       transform: {
         filter: {
-          id: {
-            include: defineStyleRegex,
-          },
+          id: defineStyleRegex,
         },
         handler(code, id) {
           return transformStyle(code, id, options)
