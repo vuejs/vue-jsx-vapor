@@ -116,6 +116,10 @@ jobs:
         with:
           toolchain: stable
           targets: ${{ matrix.settings.target }}
+      - name: Enable git longpaths
+        if: contains(matrix.settings.host, 'windows')
+        shell: bash
+        run: git config --global core.longpaths true
       - name: Cache cargo
         uses: actions/cache@v4
         with:
