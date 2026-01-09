@@ -257,6 +257,10 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
           architecture: ${{ matrix.settings.architecture }}
+      - name: Enable git longpaths
+        if: contains(matrix.settings.host, 'windows')
+        shell: bash
+        run: git config --global core.longpaths true
       - name: Install dependencies
         run: pnpm install
       - name: Download artifacts
