@@ -25,6 +25,7 @@ pub fn gen_self<'a>(
     children,
     template,
     operation,
+    has_dynamic_child,
     ..
   } = dynamic;
 
@@ -68,14 +69,16 @@ pub fn gen_self<'a>(
     );
   }
 
-  gen_children(
-    statements,
-    children,
-    context,
-    context_block,
-    statements.len(),
-    format!("n{}", id.unwrap_or(0)),
-  );
+  if has_dynamic_child.unwrap_or_default() {
+    gen_children(
+      statements,
+      children,
+      context,
+      context_block,
+      statements.len(),
+      format!("n{}", id.unwrap_or(0)),
+    );
+  }
 }
 
 fn gen_children<'a>(

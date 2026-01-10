@@ -68,7 +68,7 @@ pub unsafe fn transform_v_for<'a>(
     None
   };
 
-  let component =
+  let is_component =
     is_jsx_component(unsafe { &*node }) || is_template_with_single_component(unsafe { &*node });
   let dynamic = &mut context_block.dynamic;
   let id = context.reference(dynamic);
@@ -122,7 +122,7 @@ pub unsafe fn transform_v_for<'a>(
       render: block,
       once: *context.in_v_once.borrow() || is_constant_node(&source.ast.as_deref()),
       source,
-      component,
+      component: is_component,
       only_child,
       parent: None,
       anchor: None,
