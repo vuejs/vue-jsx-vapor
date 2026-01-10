@@ -1,6 +1,7 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 
 use common::options::TransformOptions;
+use napi::Either;
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   AstBuilder, NONE,
@@ -23,6 +24,7 @@ pub struct HmrOrSsrTransform<'a> {
   has_default_export: bool,
   components: Vec<Component>,
   options: &'a TransformOptions<'a>,
+  define_component_name: Vec<String>,
 }
 
 impl<'a> HmrOrSsrTransform<'a> {
@@ -31,13 +33,21 @@ impl<'a> HmrOrSsrTransform<'a> {
       has_default_export: false,
       components: vec![],
       options,
+      define_component_name: if let Either::B(hmr) = &options.hmr {
+        hmr.define_component_name.clone()
+      } else {
+        vec![
+          String::from("defineComponent"),
+          String::from("defineVaporComponent"),
+        ]
+      },
     }
   }
 
   fn is_define_component_call(&self, node: Option<&Expression>) -> bool {
     if let Some(Expression::CallExpression(node)) = node
       && let Expression::Identifier(id) = &node.callee
-      && ["defineComponent", "defineVaporComponent"].contains(&id.name.as_str())
+      && self.define_component_name.contains(&id.name.to_string())
     {
       true
     } else {

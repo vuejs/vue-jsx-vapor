@@ -673,7 +673,6 @@ fn clone_hoisted_array_children_in_v_for_hmr_mode() {
     r#"<div><div v-for={i in 1}><span class="hi"></span></div></div>"#,
     Some(TransformOptions {
       interop: true,
-      hmr: true,
       ..Default::default()
     }),
   )

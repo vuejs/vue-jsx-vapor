@@ -1,6 +1,7 @@
 use std::mem;
 
 use common::options::{RootJsx, TransformOptions};
+use napi::Either;
 use oxc_allocator::{Allocator, TakeIn};
 use oxc_ast::{
   AstBuilder, AstKind, NONE,
@@ -83,7 +84,7 @@ impl<'a> Transform<'a> {
 
     self.visit_program(program);
 
-    if self.options.in_ssr || self.options.hmr {
+    if self.options.in_ssr || !matches!(self.options.hmr, Either::A(false)) {
       HmrOrSsrTransform::new(self.options).visit(&self.ast, program);
     }
 

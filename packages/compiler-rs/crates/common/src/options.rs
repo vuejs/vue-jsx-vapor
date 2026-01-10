@@ -1,9 +1,11 @@
+use napi_derive::napi;
 use std::{
   cell::RefCell,
   collections::{BTreeSet, HashMap},
 };
 
 use indexmap::IndexMap;
+use napi::Either;
 use oxc_ast::{AstKind, ast::Expression};
 use oxc_span::{SourceType, Span};
 
@@ -19,6 +21,16 @@ type OnExitProgram<'a> = Box<dyn Fn(Vec<RootJsx<'a>>, &'a str) + 'a>;
 type OnEnterExpression<'a> =
   Box<dyn Fn(*mut Expression<'a>, &Vec<AstKind>) -> Option<(*mut Expression<'a>, bool)> + 'a>;
 
+#[napi(object)]
+pub struct Hmr {
+  /**
+   * The name of the function to be used for defining components.
+   * This is useful when you have a custom defineComponent function.
+   * @default ['defineComponent', 'defineVaporComponent']
+   */
+  pub define_component_name: Vec<String>,
+}
+
 pub struct TransformOptions<'a> {
   pub templates: RefCell<Vec<(String, bool)>>,
   pub helpers: RefCell<BTreeSet<String>>,
@@ -33,7 +45,7 @@ pub struct TransformOptions<'a> {
   pub filename: &'a str,
   pub source_type: SourceType,
   pub interop: bool,
-  pub hmr: bool,
+  pub hmr: Either<bool, Hmr>,
   pub ssr: RefCell<bool>,
   pub in_v_for: RefCell<i32>,
   pub in_v_slot: RefCell<i32>,
@@ -67,7 +79,7 @@ impl<'a> Default for TransformOptions<'a> {
       is_custom_element: Box::new(|_| false),
       on_error: Box::new(|_, _| {}),
       interop: false,
-      hmr: false,
+      hmr: Either::A(false),
       ssr: RefCell::new(false),
       on_exit_program: RefCell::new(None),
       on_enter_expression: RefCell::new(None),

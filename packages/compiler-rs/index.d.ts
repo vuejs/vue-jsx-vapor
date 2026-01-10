@@ -30,6 +30,14 @@ export declare const enum ErrorCodes {
   VShowNoExpression = 61,
   VSlotsNoExpression = 62
 }
+
+export interface Hmr {
+  /** * The name of the function to be used for defining components.
+   * This is useful when you have a custom defineComponent function.
+   * @default ['defineComponent']
+   */
+  defineComponentName: Array<string>
+}
 export interface CompilerOptions {
   /** * Whether to compile components to createComponentWithFallback.
    * @default false
@@ -55,7 +63,7 @@ export interface CompilerOptions {
   /** * Enabled HMR support.
    * @default false
    */
-  hmr?: boolean
+  hmr?: boolean | Hmr
   /** * Enabled SSR support.
    * @default false
    */

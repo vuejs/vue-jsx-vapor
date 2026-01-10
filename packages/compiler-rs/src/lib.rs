@@ -1,6 +1,6 @@
 pub use common::options::TransformOptions;
 use napi::{
-  Env,
+  Either, Env,
   bindgen_prelude::{Function, Object},
 };
 use napi_derive::napi;
@@ -10,7 +10,10 @@ use oxc_parser::Parser;
 use oxc_span::{SourceType, Span};
 use std::path::PathBuf;
 
-use common::error::{ErrorCodes, create_compiler_error};
+use common::{
+  error::{ErrorCodes, create_compiler_error},
+  options::Hmr,
+};
 
 use crate::transform::Transform;
 
@@ -48,9 +51,12 @@ pub struct CompilerOptions {
   pub interop: Option<bool>,
   /**
    * Enabled HMR support.
+   * - `true`/`false`: a boolean to simply enable/disable HMR. When `true`, HMR
+   *   is enabled with default configuration.
+   * - `Hmr`: an object to enable HMR with custom configuration.
    * @default false
    */
-  pub hmr: Option<bool>,
+  pub hmr: Option<Either<bool, Hmr>>,
   /**
    * Enabled SSR support.
    * @default false
@@ -88,7 +94,7 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       source_map: options.source_map.unwrap_or(false),
       with_fallback: options.with_fallback.unwrap_or(false),
       interop: options.interop.unwrap_or(false),
-      hmr: options.hmr.unwrap_or(false),
+      hmr: options.hmr.unwrap_or(Either::A(false)),
       ssr: RefCell::new(ssr),
       in_ssr: ssr,
       optimize_slots: options.optimize_slots.unwrap_or(false),
