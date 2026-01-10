@@ -10,7 +10,7 @@ use oxc_ast::{
 use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
-  ast::{NodeTypes, RootNode, VNodeCall},
+  ast::{NodeTypes, VNodeCall},
   transform::{
     DirectiveTransformResult, Directives, TransformContext, cache_static::get_constant_type,
     v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
@@ -19,6 +19,7 @@ use crate::{
 };
 
 use common::{
+  ast::RootNode,
   check::{
     is_built_in_directive, is_directive, is_event, is_jsx_component, is_reserved_prop, is_template,
   },

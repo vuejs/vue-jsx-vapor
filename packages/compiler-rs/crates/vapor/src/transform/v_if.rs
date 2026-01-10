@@ -5,7 +5,7 @@ use oxc_span::SPAN;
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, IfIRNode},
-  transform::{ContextNode, TransformContext},
+  transform::TransformContext,
 };
 
 use common::{
@@ -17,12 +17,12 @@ use common::{
 
 /// # SAFETY
 pub unsafe fn transform_v_if<'a>(
-  context_node: *mut ContextNode<'a>,
+  context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  _: &'a mut ContextNode<'a>,
+  _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
-  let Either::B(JSXChild::Element(node)) = (unsafe { &mut *context_node }) else {
+  let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
   if is_template(node) && find_prop(node, Either::A("v-slot".to_string())).is_some() {

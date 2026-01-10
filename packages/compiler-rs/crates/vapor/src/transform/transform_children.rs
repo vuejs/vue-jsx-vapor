@@ -1,45 +1,41 @@
 use std::{collections::VecDeque, mem};
 
-use napi::{Either, bindgen_prelude::Either16};
+use napi::bindgen_prelude::Either16;
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::ast::JSXChild;
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, InsertNodeIRNode},
-  transform::{ContextNode, TransformContext},
+  transform::TransformContext,
 };
 
-use common::check::{is_fragment_node, is_jsx_component};
+use common::{
+  ast::RootNode,
+  check::{is_fragment_node, is_jsx_component},
+};
 
 /// # SAFETY
 pub unsafe fn transform_children<'a>(
-  node: &mut ContextNode<'a>,
+  node: &mut JSXChild<'a>,
   context: &TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
-  let is_fragment_or_component = match &node {
-    Either::A(_) => true,
-    Either::B(node) => {
-      is_fragment_node(node)
-        || match node {
-          JSXChild::Element(node) => is_jsx_component(node),
-          _ => false,
-        }
-    }
-  };
+  let is_fragment_or_component = RootNode::is_root(node)
+    || is_fragment_node(node)
+    || match node {
+      JSXChild::Element(node) => is_jsx_component(node),
+      _ => false,
+    };
 
-  if !matches!(&node, Either::B(JSXChild::Element(_))) && !is_fragment_or_component {
+  if !matches!(&node, JSXChild::Element(_)) && !is_fragment_or_component {
     return None;
   }
 
-  let _node = node as *mut ContextNode;
+  let _node = node as *mut _;
   let children = match node {
-    Either::A(node) => &mut node.children,
-    Either::B(node) => match node {
-      JSXChild::Element(node) => &mut node.children,
-      JSXChild::Fragment(node) => &mut node.children,
-      _ => unreachable!(),
-    },
+    JSXChild::Element(node) => &mut node.children,
+    JSXChild::Fragment(node) => &mut node.children,
+    _ => unreachable!(),
   } as *mut oxc_allocator::Vec<JSXChild>;
   let mut parent_children_template = context.children_template.take();
   let grand_parent_dynamic = context

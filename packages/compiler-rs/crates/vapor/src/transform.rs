@@ -1,7 +1,7 @@
+use common::ast::RootNode;
 use common::directive::Modifiers;
 use common::expression::SimpleExpressionNode;
 pub use common::options::TransformOptions;
-use napi::Either;
 use oxc_allocator::{Allocator, TakeIn};
 use oxc_ast::ast::{
   Expression, JSXChild, JSXClosingFragment, JSXExpressionContainer, JSXFragment, JSXOpeningFragment,
@@ -26,9 +26,7 @@ pub mod v_text;
 
 use crate::generate::CodegenContext;
 use crate::{
-  ir::index::{
-    BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, OperationNode, RootIRNode, RootNode,
-  },
+  ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, OperationNode, RootIRNode},
   transform::{
     transform_children::transform_children, transform_element::transform_element,
     transform_template_ref::transform_template_ref, transform_text::transform_text,
@@ -65,7 +63,6 @@ impl<'a> DirectiveTransformResult<'a> {
   }
 }
 
-pub type ContextNode<'a> = Either<RootNode<'a>, JSXChild<'a>>;
 type GetIndex<'a> = Option<Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>>;
 
 pub struct TransformContext<'a> {
@@ -86,7 +83,7 @@ pub struct TransformContext<'a> {
   global_id: RefCell<i32>,
 
   pub ir: Rc<RefCell<RootIRNode<'a>>>,
-  pub node: RefCell<ContextNode<'a>>,
+  pub node: RefCell<JSXChild<'a>>,
 
   pub parent_dynamic: RefCell<IRDynamicInfo<'a>>,
 }
@@ -102,7 +99,7 @@ impl<'a> TransformContext<'a> {
       in_v_for: RefCell::new(*options.in_v_for.borrow()),
       seen: Rc::new(RefCell::new(HashSet::new())),
       global_id: RefCell::new(0),
-      node: RefCell::new(Either::A(RootNode::new(allocator))),
+      node: RefCell::new(RootNode::new(allocator)),
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
       ir: Rc::new(RefCell::new(RootIRNode::new(""))),
       block: RefCell::new(BlockIRNode::new()),
@@ -113,7 +110,7 @@ impl<'a> TransformContext<'a> {
   pub fn transform(&'a self, expression: Expression<'a>, source: &'a str) -> Expression<'a> {
     let allocator = self.allocator;
     let ir = RootIRNode::new(source);
-    *self.node.borrow_mut() = Either::A(RootNode::from(allocator, expression));
+    *self.node.borrow_mut() = RootNode::from(allocator, expression, true);
     *self.block.borrow_mut() = BlockIRNode::new();
     *self.ir.borrow_mut() = ir;
     self.transform_node(None, None);
@@ -288,13 +285,13 @@ impl<'a> TransformContext<'a> {
 
   pub fn create_block(
     &'a self,
-    context_node: &mut ContextNode<'a>,
+    context_node: &mut JSXChild<'a>,
     context_block: &'a mut BlockIRNode<'a>,
     node: Expression<'a>,
     is_v_for: Option<bool>,
   ) -> Box<dyn FnOnce() -> BlockIRNode<'a> + 'a> {
     let block = BlockIRNode::new();
-    *context_node = Either::B(self.wrap_fragment(node));
+    *context_node = self.wrap_fragment(node);
     let _context_block = context_block as *mut BlockIRNode;
     let exit_block = self.enter_block(
       unsafe { &mut *_context_block },
@@ -311,7 +308,7 @@ impl<'a> TransformContext<'a> {
     index: i32,
     block: &mut BlockIRNode<'a>,
   ) -> impl FnOnce() {
-    self.node.replace(Either::B(node));
+    self.node.replace(node);
     let index = self.index.replace(index);
     let in_v_once = *self.in_v_once.borrow();
     let template = self.template.replace(String::new());
@@ -329,7 +326,7 @@ impl<'a> TransformContext<'a> {
   pub fn transform_node(
     self: &TransformContext<'a>,
     context_block: Option<&'a mut BlockIRNode<'a>>,
-    parent_node: Option<&mut ContextNode<'a>>,
+    parent_node: Option<&mut JSXChild<'a>>,
   ) {
     unsafe {
       let context_block = if let Some(context_block) = context_block {
@@ -341,11 +338,11 @@ impl<'a> TransformContext<'a> {
       let block = context_block as *mut BlockIRNode;
       let mut exit_fns = vec![];
 
-      let is_root = matches!(&*self.node.borrow(), Either::A(_));
+      let is_root = RootNode::is_root(&*self.node.borrow());
       if !is_root {
         let context = self as *const TransformContext;
         let node = &mut *self.node.borrow_mut() as *mut _;
-        let parent_node = parent_node.unwrap() as *mut ContextNode;
+        let parent_node = parent_node.unwrap() as *mut JSXChild;
         for node_transform in [
           transform_v_once,
           transform_v_if,
@@ -363,11 +360,8 @@ impl<'a> TransformContext<'a> {
         }
       }
 
-      transform_children(
-        &mut self.node.replace(Either::A(RootNode::new(self.allocator))),
-        self,
-        &mut *block,
-      );
+      let node = &mut self.node.borrow_mut().take_in(self.allocator);
+      transform_children(node, self, &mut *block);
 
       let mut i = exit_fns.len();
       while i > 0 {

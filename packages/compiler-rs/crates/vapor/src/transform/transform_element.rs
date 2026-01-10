@@ -19,13 +19,14 @@ use crate::{
     },
   },
   transform::{
-    ContextNode, DirectiveTransformResult, TransformContext, v_bind::transform_v_bind,
-    v_html::transform_v_html, v_model::transform_v_model, v_on::transform_v_on,
-    v_show::transform_v_show, v_text::transform_v_text,
+    DirectiveTransformResult, TransformContext, v_bind::transform_v_bind, v_html::transform_v_html,
+    v_model::transform_v_model, v_on::transform_v_on, v_show::transform_v_show,
+    v_text::transform_v_text,
   },
 };
 
 use common::{
+  ast::RootNode,
   check::{
     is_built_in_directive, is_directive, is_event, is_jsx_component, is_reserved_prop, is_template,
     is_void_tag,
@@ -39,12 +40,12 @@ use common::{
 
 /// # SAFETY
 pub unsafe fn transform_element<'a>(
-  context_node: *mut ContextNode<'a>,
+  context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut ContextNode<'a>,
+  parent_node: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
-  let Either::B(JSXChild::Element(node)) = (unsafe { &mut *context_node }) else {
+  let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
   if is_template(node)
@@ -88,7 +89,7 @@ pub unsafe fn transform_element<'a>(
     Rc::clone(&get_operation_index),
   );
 
-  let single_root = matches!(parent_node, Either::A(parent_node) if parent_node.is_single_root);
+  let single_root = RootNode::is_single_root(parent_node);
 
   Some(Box::new(move || {
     if is_component {
@@ -115,7 +116,7 @@ pub fn transform_native_element<'a>(
   single_root: bool,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut ContextNode<'a>,
+  parent_node: &'a mut JSXChild<'a>,
   get_effect_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
   get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
 ) {
@@ -182,7 +183,7 @@ pub fn transform_native_element<'a>(
     ir.root_template_index = Some(context.options.templates.borrow().len())
   }
 
-  if let Either::B(JSXChild::Element(parent_node)) = parent_node
+  if let JSXChild::Element(parent_node) = parent_node
     && let JSXElementName::Identifier(name) = &parent_node.opening_element.name
     && !is_valid_html_nesting(&name.name, &tag)
   {

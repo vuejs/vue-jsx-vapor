@@ -34,7 +34,7 @@ export declare const enum ErrorCodes {
 export interface Hmr {
   /** * The name of the function to be used for defining components.
    * This is useful when you have a custom defineComponent function.
-   * @default ['defineComponent']
+   * @default ['defineComponent', 'defineVaporComponent']
    */
   defineComponentName: Array<string>
 }
@@ -61,6 +61,9 @@ export interface CompilerOptions {
    */
   interop?: boolean
   /** * Enabled HMR support.
+   * - `true`/`false`: a boolean to simply enable/disable HMR. When `true`, HMR
+   *   is enabled with default configuration.
+   * - `Hmr`: an object to enable HMR with custom configuration.
    * @default false
    */
   hmr?: boolean | Hmr

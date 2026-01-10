@@ -9,9 +9,10 @@ use oxc_ast::ast::{
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, ForIRNode, IRFor},
-  transform::{ContextNode, TransformContext},
+  transform::TransformContext,
 };
 use common::{
+  ast::RootNode,
   check::{is_constant_node, is_jsx_component, is_template},
   directive::{find_prop, find_prop_mut},
   error::ErrorCodes,
@@ -21,12 +22,12 @@ use common::{
 
 /// # SAFETY
 pub unsafe fn transform_v_for<'a>(
-  context_node: *mut ContextNode<'a>,
+  context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut ContextNode<'a>,
+  parent_node: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
-  let Either::B(JSXChild::Element(node)) = (unsafe { &mut *context_node }) else {
+  let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
   let node = node as *mut oxc_allocator::Box<JSXElement>;
@@ -87,15 +88,16 @@ pub unsafe fn transform_v_for<'a>(
   // if v-for is the only child of a parent element, it can go the fast path
   // when the entire list is emptied
   let mut only_child = false;
-  if let Either::B(JSXChild::Element(parent_node)) = parent_node
+  if let JSXChild::Element(parent_node) = parent_node
     && !is_jsx_component(parent_node)
   {
     let index = *context.index.borrow() as usize;
     for (i, child) in parent_node.children.iter().enumerate() {
       let child = if index == i {
-        match unsafe { &mut *context_node } {
-          Either::A(_) => child,
-          Either::B(node) => node,
+        if RootNode::is_root(unsafe { &*context_node }) {
+          child
+        } else {
+          unsafe { &*context_node }
         }
       } else {
         child

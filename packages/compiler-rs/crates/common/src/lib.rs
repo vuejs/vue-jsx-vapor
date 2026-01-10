@@ -1,3 +1,4 @@
+pub mod ast;
 pub mod check;
 pub mod directive;
 pub mod dom;

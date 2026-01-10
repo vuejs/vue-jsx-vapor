@@ -1,3 +1,4 @@
+use common::ast::RootNode;
 use common::directive::Directives;
 use common::expression::parse_expression;
 pub use common::options::TransformOptions;
@@ -31,7 +32,7 @@ pub mod v_slot;
 pub mod v_slots;
 pub mod v_text;
 
-use crate::ast::{ConstantTypes, NodeTypes, RootNode};
+use crate::ast::{ConstantTypes, NodeTypes};
 use crate::transform::cache_static::cache_static;
 use crate::transform::v_memo::transform_v_memo;
 use crate::transform::v_slot::track_slot_scopes;
@@ -93,7 +94,7 @@ impl<'a> TransformContext<'a> {
 
   pub fn transform(&'a self, expression: Expression<'a>, source: &'a str) -> Expression<'a> {
     let allocator = self.allocator;
-    *self.root_node.borrow_mut() = RootNode::from(allocator, expression);
+    *self.root_node.borrow_mut() = RootNode::from(allocator, expression, false);
     *self.source.borrow_mut() = source;
     unsafe {
       self.transform_node(self.root_node.as_ptr(), None);

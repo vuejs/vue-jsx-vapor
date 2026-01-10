@@ -9,7 +9,7 @@ use crate::{
     component::{IRSlotDynamicBasic, IRSlotDynamicConditional, IRSlotType, IRSlots, IRSlotsStatic},
     index::{BlockIRNode, DynamicFlag},
   },
-  transform::{ContextNode, TransformContext, v_for::get_for_parse_result},
+  transform::{TransformContext, v_for::get_for_parse_result},
 };
 use common::{
   check::{is_jsx_component, is_template},
@@ -21,12 +21,12 @@ use common::{
 
 /// # SAFETY
 pub unsafe fn transform_v_slot<'a>(
-  context_node: *mut ContextNode<'a>,
+  context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut ContextNode<'a>,
+  parent_node: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
-  let Either::B(JSXChild::Element(node)) = (unsafe { &mut *context_node }) else {
+  let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
 
@@ -35,7 +35,7 @@ pub unsafe fn transform_v_slot<'a>(
     .map(|dir| resolve_directive(dir, context.ir.borrow().source));
   let is_component = is_jsx_component(unsafe { &*node });
   let is_slot_template = is_template(unsafe { &*node })
-    && if let Either::B(JSXChild::Element(parent_node)) = parent_node
+    && if let JSXChild::Element(parent_node) = parent_node
       && is_jsx_component(parent_node)
     {
       true

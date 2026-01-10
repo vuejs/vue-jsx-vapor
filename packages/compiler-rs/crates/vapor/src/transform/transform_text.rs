@@ -15,10 +15,11 @@ use crate::{
   ir::index::{
     BlockIRNode, CreateNodesIRNode, DynamicFlag, GetTextChildIRNode, IfIRNode, SetNodesIRNode,
   },
-  transform::{ContextNode, TransformContext},
+  transform::TransformContext,
 };
 
 use common::{
+  ast::RootNode,
   check::{is_constant_node, is_fragment_node, is_jsx_component, is_template},
   directive::find_prop,
   expression::SimpleExpressionNode,
@@ -27,14 +28,12 @@ use common::{
 
 /// # SAFETY
 pub unsafe fn transform_text<'a>(
-  context_node: *mut ContextNode<'a>,
+  context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut ContextNode<'a>,
+  parent_node: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
-  let Either::B(node) = (unsafe { &mut *context_node }) else {
-    return None;
-  };
+  let node = unsafe { &mut *context_node };
   let dynamic = &mut context_block.dynamic;
   let span = node.span();
   let seen = &mut context.seen.borrow_mut();
@@ -162,19 +161,16 @@ fn process_children<'a>(
 }
 
 fn process_interpolation<'a>(
-  context_node: &'a mut ContextNode<'a>,
+  context_node: &'a mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut ContextNode<'a>,
+  parent_node: &'a mut JSXChild<'a>,
   seen: &mut HashSet<u32>,
 ) {
   let children = match parent_node {
-    ContextNode::A(e) => &mut e.children,
-    ContextNode::B(e) => match e {
-      JSXChild::Element(e) => &mut e.children,
-      JSXChild::Fragment(e) => &mut e.children,
-      _ => return,
-    },
+    JSXChild::Element(e) => &mut e.children,
+    JSXChild::Fragment(e) => &mut e.children,
+    _ => return,
   };
   if children.is_empty() {
     return;
@@ -182,10 +178,9 @@ fn process_interpolation<'a>(
   let children = children as *mut oxc_allocator::Vec<JSXChild>;
   let index = *context.index.borrow() as usize;
   let nodes: &mut Vec<_> = &mut (unsafe { &mut *children })[index..].iter_mut().collect();
-  match context_node {
-    Either::A(_) => (),
-    Either::B(node) => nodes[0] = node,
-  };
+  if !RootNode::is_root(context_node) {
+    nodes[0] = context_node
+  }
   let idx = nodes.iter().position(|n| !is_text_like(n));
   if let Some(idx) = idx {
     nodes.truncate(idx)
@@ -209,12 +204,12 @@ fn process_interpolation<'a>(
 
   let id = context.reference(dynamic);
   let once = *context.in_v_once.borrow();
-  if match parent_node {
-    Either::A(_) => true,
-    Either::B(parent) => {
-      is_fragment_node(parent)
-        || matches!(parent, JSXChild::Element(parent) if find_prop(parent, Either::A(String::from("v-slot"))).is_some())
-    }
+  if if RootNode::is_root(parent_node) {
+    true
+  } else {
+    is_fragment_node(parent_node)
+      || matches!(parent_node, JSXChild::Element(parent_node)
+          if find_prop(parent_node, Either::A(String::from("v-slot"))).is_some())
   } {
     context.register_operation(
       context_block,
@@ -308,10 +303,10 @@ fn process_text_like_expressions<'a>(
 
 pub fn process_conditional_expression<'a>(
   node: &'a mut ConditionalExpression<'a>,
-  context_node: &'a mut ContextNode<'a>,
+  context_node: &'a mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut ContextNode<'a>,
+  parent_node: &'a mut JSXChild<'a>,
 ) -> Box<dyn FnOnce() + 'a> {
   let test = &mut node.test;
   let consequent = node
@@ -361,10 +356,10 @@ pub fn process_conditional_expression<'a>(
 
 fn process_logical_expression<'a>(
   node: &'a mut LogicalExpression<'a>,
-  context_node: &'a mut ContextNode<'a>,
+  context_node: &'a mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut ContextNode<'a>,
+  parent_node: &'a mut JSXChild<'a>,
 ) -> Box<dyn FnOnce() + 'a> {
   let left = node
     .left
@@ -426,10 +421,10 @@ fn process_logical_expression<'a>(
 fn set_negative<'a>(
   mut node: Expression<'a>,
   operation: &mut IfIRNode<'a>,
-  context_node: &mut ContextNode<'a>,
+  context_node: &mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut ContextNode<'a>,
+  parent_node: &'a mut JSXChild<'a>,
 ) {
   let node = node.without_parentheses_mut().get_inner_expression_mut();
   if let Expression::ConditionalExpression(node) = node {
