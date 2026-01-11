@@ -1,3 +1,20 @@
+## [3.1.11](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.10...v3.1.11) (2026-01-11)
+
+
+### Features
+
+* **hmr:** support defineComponentName option ([1664b82](https://github.com/vuejs/vue-jsx-vapor/commit/1664b82289e353c32c767f0d683ed1103c003777)), closes [#35](https://github.com/vuejs/vue-jsx-vapor/issues/35)
+
+
+### Performance Improvements
+
+* **compiler:** remove IIFE that only returns an expression ([ac72506](https://github.com/vuejs/vue-jsx-vapor/commit/ac725066c6ab4bfb4f13f485da0df86367d8cea7))
+* **compiler:** use oxc_ast_visit instead of oxc_traverse ([32b789e](https://github.com/vuejs/vue-jsx-vapor/commit/32b789eb15fbc3560598e0a2070b7227e4817f98))
+* **macros:** add code filter hooks ([fe8d82f](https://github.com/vuejs/vue-jsx-vapor/commit/fe8d82f83b90e9774f10298b345471cac405d8c9))
+* **vapor:** use Direcives struct instead of find_prop ([ede1ab3](https://github.com/vuejs/vue-jsx-vapor/commit/ede1ab3ce2bc40bf55de3dfd25647f6937f72229))
+
+
+
 ## [3.1.10](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.9...v3.1.10) (2026-01-06)
 
 
