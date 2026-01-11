@@ -1,9 +1,0 @@
----
-source: tests/vapor/transform_element.rs
-expression: code
----
-import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-(() => {
-  const n0 = _createComponent(Foo, { style: () => ["color: green", { color: "red" }] }, null, true);
-  return n0;
-})();

@@ -14,7 +14,12 @@ pub fn ssr_export() {
     }),
   )
   .code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  import { ssrRegisterHelper } from "/__vue-jsx-ssr-register-helper";
+  const __moduleId = "index.jsx";
+  export const foo = () => {};
+  ssrRegisterHelper(foo, __moduleId);
+  "#);
 }
 
 #[test]
@@ -31,5 +36,11 @@ pub fn ssr_export_default() {
     }),
   )
   .code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  import { ssrRegisterHelper } from "/__vue-jsx-ssr-register-helper";
+  const __moduleId = "index.jsx";
+  const Comp = () => {};
+  export default Comp;
+  ssrRegisterHelper(Comp, __moduleId);
+  "#);
 }

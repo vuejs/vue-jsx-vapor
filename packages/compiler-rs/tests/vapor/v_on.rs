@@ -7,7 +7,16 @@ use insta::assert_snapshot;
 #[test]
 fn basic() {
   let code = transform("<div onClick={handleClick}></div>", None).code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  _delegateEvents("click");
+  import { delegateEvents as _delegateEvents, template as _template } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    n0.$evtclick = handleClick;
+    return n0;
+  })();
+  "#);
 }
 
 #[test]
@@ -40,7 +49,84 @@ fn event_modifier() {
     None,
   )
   .code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  _delegateEvents("click", "contextmenu", "keyup", "mouseup");
+  import { delegateEvents as _delegateEvents, on as _on, template as _template, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
+  const t0 = _template("<a></a>");
+  const t1 = _template("<form></form>");
+  const t2 = _template("<div></div>");
+  const t3 = _template("<input>");
+  (() => {
+    const n1 = t0();
+    const n3 = t1();
+    const n5 = t0();
+    const n7 = t2();
+    const n9 = t2();
+    const n11 = t0();
+    const n13 = t2();
+    const n15 = t3();
+    const n17 = t3();
+    const n19 = t3();
+    const n21 = t3();
+    const n23 = t3();
+    const n25 = t3();
+    const n27 = t3();
+    const n29 = t3();
+    const n31 = t3();
+    const n33 = t3();
+    const n35 = t3();
+    const n37 = t3();
+    const n39 = t3();
+    const n41 = t3();
+    const n43 = t3();
+    n1.$evtclick = _withModifiers(handleEvent, ["stop"]);
+    _on(n3, "submit", _withModifiers(handleEvent, ["prevent"]));
+    n5.$evtclick = _withModifiers(handleEvent, ["stop", "prevent"]);
+    n7.$evtclick = _withModifiers(handleEvent, ["self"]);
+    _on(n9, "click", handleEvent, { capture: true });
+    _on(n11, "click", handleEvent, { once: true });
+    _on(n13, "scroll", handleEvent, { passive: true });
+    n15.$evtcontextmenu = _withModifiers(handleEvent, ["right"]);
+    n17.$evtclick = _withModifiers(handleEvent, ["left"]);
+    n19.$evtmouseup = _withModifiers(handleEvent, ["middle"]);
+    n21.$evtcontextmenu = _withKeys(_withModifiers(handleEvent, ["right"]), ["enter"]);
+    n23.$evtkeyup = _withKeys(handleEvent, ["enter"]);
+    n25.$evtkeyup = _withKeys(handleEvent, ["tab"]);
+    n27.$evtkeyup = _withKeys(handleEvent, ["delete"]);
+    n29.$evtkeyup = _withKeys(handleEvent, ["esc"]);
+    n31.$evtkeyup = _withKeys(handleEvent, ["space"]);
+    n33.$evtkeyup = _withKeys(handleEvent, ["up"]);
+    n35.$evtkeyup = _withKeys(handleEvent, ["down"]);
+    n37.$evtkeyup = _withKeys(handleEvent, ["left"]);
+    n39.$evtkeyup = _withModifiers(submit, ["middle"]);
+    n41.$evtkeyup = _withModifiers(submit, ["middle", "self"]);
+    n43.$evtkeyup = _withKeys(_withModifiers(handleEvent, ["self"]), ["enter"]);
+    return [
+      n1,
+      n3,
+      n5,
+      n7,
+      n9,
+      n11,
+      n13,
+      n15,
+      n17,
+      n19,
+      n21,
+      n23,
+      n25,
+      n27,
+      n29,
+      n31,
+      n33,
+      n35,
+      n37,
+      n39,
+      n41,
+      n43
+    ];
+  })();
+  "#);
 }
 
 #[test]
@@ -72,71 +158,179 @@ fn should_not_error_if_no_expression_but_has_modifier() {
   )
   .code;
   assert!(error.borrow().is_none());
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  _delegateEvents("click");
+  import { delegateEvents as _delegateEvents, template as _template, withModifiers as _withModifiers } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    n0.$evtclick = _withModifiers(() => {}, ["prevent"]);
+    return n0;
+  })();
+  "#);
 }
 
 #[test]
 fn should_support_multiple_modifiers_and_event_options() {
   let code = transform("<div onClick_stop_prevent_capture_once={test} />", None).code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    _on(n0, "click", _withModifiers(test, ["stop", "prevent"]), {
+      capture: true,
+      once: true
+    });
+    return n0;
+  })();
+  "#);
 }
 
 #[test]
 fn should_support_multiple_events_and_modifiers_options() {
   let code = transform("<div onClick_stop={test} onKeyup_enter={test} />", None).code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  _delegateEvents("click", "keyup");
+  import { delegateEvents as _delegateEvents, template as _template, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    n0.$evtclick = _withModifiers(test, ["stop"]);
+    n0.$evtkeyup = _withKeys(test, ["enter"]);
+    return n0;
+  })();
+  "#);
 }
 
 #[test]
 fn should_wrap_keys_guard_for_keyboard_events_or_dynamic_events() {
   let code = transform("<div onKeydown_stop_capture_ctrl_a={test}/>", None).code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    _on(n0, "keydown", _withKeys(_withModifiers(test, ["stop", "ctrl"]), ["a"]), { capture: true });
+    return n0;
+  })();
+  "#);
 }
 
 #[test]
 fn should_not_wrap_keys_guard_if_no_key_modifier_is_present() {
   let code = transform("<div onKeyup_exact={test}/>", None).code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  _delegateEvents("keyup");
+  import { delegateEvents as _delegateEvents, template as _template, withModifiers as _withModifiers } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    n0.$evtkeyup = _withModifiers(test, ["exact"]);
+    return n0;
+  })();
+  "#);
 }
 
 #[test]
 fn should_wrap_keys_guard_for_static_key_event_with_left_or_right_modifiers() {
   let code = transform("<div onKeyup_left={test}/>", None).code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  _delegateEvents("keyup");
+  import { delegateEvents as _delegateEvents, template as _template, withKeys as _withKeys } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    n0.$evtkeyup = _withKeys(test, ["left"]);
+    return n0;
+  })();
+  "#);
 }
 
 #[test]
 fn should_transform_click_right() {
   let code = transform("<div onClick_right={test}/>", None).code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  _delegateEvents("contextmenu");
+  import { delegateEvents as _delegateEvents, template as _template, withModifiers as _withModifiers } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    n0.$evtcontextmenu = _withModifiers(test, ["right"]);
+    return n0;
+  })();
+  "#);
 }
 
 #[test]
 fn should_transform_click_middle() {
   let code = transform("<div onClick_middle={test}/>", None).code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  _delegateEvents("mouseup");
+  import { delegateEvents as _delegateEvents, template as _template, withModifiers as _withModifiers } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    n0.$evtmouseup = _withModifiers(test, ["middle"]);
+    return n0;
+  })();
+  "#);
 }
 
 #[test]
 fn should_delegate_event() {
   let code = transform("<div onClick={test}/>", None).code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  _delegateEvents("click");
+  import { delegateEvents as _delegateEvents, template as _template } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    n0.$evtclick = test;
+    return n0;
+  })();
+  "#);
 }
 
 #[test]
 fn should_use_delegate_helper_when_have_multiple_events_of_same_name() {
   let code = transform("<div onClick={test} onClick_stop={test} />", None).code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  _delegateEvents("click");
+  import { delegate as _delegate, delegateEvents as _delegateEvents, template as _template, withModifiers as _withModifiers } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    _delegate(n0, "click", test);
+    _delegate(n0, "click", _withModifiers(test, ["stop"]));
+    return n0;
+  })();
+  "#);
 }
 
 #[test]
 fn namespace_event_with_component() {
   let code = transform("<Comp onUpdate:modelValue={() => {}} />", None).code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+    const n0 = _createComponent(Comp, { "onUpdate:modelValue": () => () => {} }, null, true);
+    return n0;
+  })();
+  "#);
 }
 
 #[test]
 fn expression_with_type() {
   let code = transform("<div onClick={handleClick as any} />", None).code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  _delegateEvents("click");
+  import { delegateEvents as _delegateEvents, template as _template } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    n0.$evtclick = handleClick as any;
+    return n0;
+  })();
+  "#);
 }

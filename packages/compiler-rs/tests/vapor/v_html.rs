@@ -7,7 +7,15 @@ use insta::assert_snapshot;
 #[test]
 fn should_convert_v_html_to_inner_html() {
   let code = transform("<div v-html={code.value}></div>", None).code;
-  assert_snapshot!(code);
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setHtml as _setHtml, template as _template } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    _renderEffect(() => _setHtml(n0, code.value));
+    return n0;
+  })();
+  "#);
 }
 
 #[test]
