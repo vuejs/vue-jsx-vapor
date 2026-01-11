@@ -218,6 +218,9 @@ pub struct Directives<'a> {
   pub v_slots: Option<&'a mut JSXAttribute<'a>>,
   pub v_slot: Option<&'a mut JSXAttribute<'a>>,
   pub key: Option<&'a mut JSXAttribute<'a>>,
+  pub _ref: Option<&'a mut JSXAttribute<'a>>,
+  pub _type: Option<&'a mut JSXAttribute<'a>>,
+  pub value: Option<&'a mut JSXAttribute<'a>>,
 }
 
 impl<'a> Directives<'a> {
@@ -239,6 +242,9 @@ impl<'a> Directives<'a> {
           "v-slot" => directives.v_slot = Some(dir),
           "v-slots" => directives.v_slots = Some(dir),
           "key" => directives.key = Some(dir),
+          "ref" => directives._ref = Some(dir),
+          "type" => directives._type = Some(dir),
+          "value" => directives.value = Some(dir),
           _ => (),
         }
       }

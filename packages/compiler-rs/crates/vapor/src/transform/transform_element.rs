@@ -31,7 +31,7 @@ use common::{
     is_built_in_directive, is_directive, is_event, is_jsx_component, is_reserved_prop, is_template,
     is_void_tag,
   },
-  directive::{find_prop, resolve_directive},
+  directive::{Directives, resolve_directive},
   dom::is_valid_html_nesting,
   error::ErrorCodes,
   expression::SimpleExpressionNode,
@@ -40,6 +40,7 @@ use common::{
 
 /// # SAFETY
 pub unsafe fn transform_element<'a>(
+  directives: &Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
@@ -49,17 +50,11 @@ pub unsafe fn transform_element<'a>(
     return None;
   };
   if is_template(node)
-    && find_prop(
-      node,
-      Either::B(vec![
-        String::from("v-if"),
-        String::from("v-else-if"),
-        String::from("v-else"),
-        String::from("v-for"),
-        String::from("v-slot"),
-      ]),
-    )
-    .is_some()
+    && (directives.v_if.is_some()
+      || directives.v_else_if.is_some()
+      || directives.v_else.is_some()
+      || directives.v_for.is_some()
+      || directives.v_slot.is_some())
   {
     return None;
   }
@@ -81,6 +76,7 @@ pub unsafe fn transform_element<'a>(
   let is_component = is_jsx_component(node) && !is_custom_element;
   let _context_block = context_block as *mut BlockIRNode;
   let props_result = build_props(
+    directives,
     node,
     context,
     unsafe { &mut *_context_block },
@@ -236,6 +232,7 @@ pub struct PropsResult<'a> {
 }
 
 pub fn build_props<'a>(
+  directives: &Directives<'a>,
   node: &'a mut JSXElement<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
@@ -308,6 +305,7 @@ pub fn build_props<'a>(
 
         let context_block = context_block as *mut BlockIRNode;
         if let Some(prop) = transform_prop(
+          directives,
           prop,
           unsafe { &mut *node },
           is_component,
@@ -360,6 +358,7 @@ pub fn build_props<'a>(
 }
 
 pub fn transform_prop<'a>(
+  directives: &Directives<'a>,
   prop: &'a mut JSXAttribute<'a>,
   node: &'a mut JSXElement<'a>,
   is_component: bool,
@@ -424,7 +423,7 @@ pub fn transform_prop<'a>(
   match name.as_str() {
     "bind" => return transform_v_bind(prop, node, context, context_block),
     "on" => return transform_v_on(prop, node, context, context_block),
-    "model" => return transform_v_model(prop, node, context, context_block),
+    "model" => return transform_v_model(directives, prop, node, context, context_block),
     "show" => return transform_v_show(prop, node, context, context_block),
     "html" => return transform_v_html(prop, node, context, context_block),
     "text" => return transform_v_text(prop, node, context, context_block),

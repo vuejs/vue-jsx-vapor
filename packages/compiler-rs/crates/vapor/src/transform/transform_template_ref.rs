@@ -1,30 +1,24 @@
-use napi::{
-  Either,
-  bindgen_prelude::{Either3, Either16},
-};
+use napi::bindgen_prelude::{Either3, Either16};
 use oxc_ast::ast::JSXChild;
 
 use crate::{
   ir::index::{BlockIRNode, DeclareOldRefIRNode, SetTemplateRefIRNode},
   transform::TransformContext,
 };
-use common::{check::is_fragment_node, directive::find_prop_mut, expression::SimpleExpressionNode};
+use common::{check::is_fragment_node, directive::Directives, expression::SimpleExpressionNode};
 
 /// # SAFETY
 pub unsafe fn transform_template_ref<'a>(
+  directives: &'a mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let node = unsafe { &mut *context_node };
   if is_fragment_node(node) {
     return None;
   }
-  let JSXChild::Element(node) = node else {
-    return None;
-  };
-  let dir = find_prop_mut(node, Either::A(String::from("ref")))?;
+  let dir = directives._ref.as_mut()?;
   let Some(value) = &mut dir.value else {
     return None;
   };

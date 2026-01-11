@@ -1,4 +1,3 @@
-use napi::Either;
 use oxc_allocator::CloneIn;
 use oxc_ast::{
   NONE,
@@ -15,12 +14,13 @@ use crate::transform::{
 };
 use common::{
   check::{is_jsx_component, is_simple_identifier},
-  directive::{find_prop, get_modifier_prop_name, resolve_directive},
+  directive::{Directives, get_modifier_prop_name, resolve_directive},
   error::ErrorCodes,
   text::get_tag_name,
 };
 
 pub fn transform_v_model<'a>(
+  directives: &Directives<'a>,
   _dir: &'a mut JSXAttribute<'a>,
   node: &JSXElement,
   context: &'a TransformContext<'a>,
@@ -247,7 +247,7 @@ pub fn transform_v_model<'a>(
     let mut directive_to_use = "vModelText";
     let mut is_invalid_type = false;
     if tag == "input" || is_custom_element {
-      if let Some(_type) = find_prop(node, Either::A("type".to_string())) {
+      if let Some(_type) = directives._type.as_ref() {
         let value = &_type.value;
         if let Some(JSXAttributeValue::ExpressionContainer(_)) = value {
           // type={foo}
@@ -261,7 +261,7 @@ pub fn transform_v_model<'a>(
               context.options.on_error.as_ref()(ErrorCodes::VModelOnFileInputElement, node.span);
             }
             // text type
-            _ => check_duplicated_value(node, context),
+            _ => check_duplicated_value(directives, context),
           }
         }
       } else if has_dynamic_key_v_bind(node) {
@@ -269,13 +269,13 @@ pub fn transform_v_model<'a>(
         directive_to_use = "vModelDynamic";
       } else {
         // text type
-        check_duplicated_value(node, context)
+        check_duplicated_value(directives, context)
       }
     } else if tag == "select" {
       directive_to_use = "vModelSelect"
     } else {
       // textarea
-      check_duplicated_value(node, context)
+      check_duplicated_value(directives, context)
     }
     // inject runtime directive
     // by returning the helper symbol via needRuntime
@@ -309,9 +309,8 @@ pub fn transform_v_model<'a>(
   })
 }
 
-fn check_duplicated_value(node: &JSXElement, context: &TransformContext) {
-  let value = find_prop(node, Either::A("value".to_string()));
-  if let Some(value) = value
+fn check_duplicated_value(directives: &Directives, context: &TransformContext) {
+  if let Some(value) = directives.value.as_ref()
     && !matches!(value.value, Some(JSXAttributeValue::StringLiteral(_)))
   {
     context.options.on_error.as_ref()(ErrorCodes::VModelUnnecessaryValue, value.span);

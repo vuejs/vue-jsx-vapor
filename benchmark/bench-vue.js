@@ -25,7 +25,7 @@ const source = `export default () => <>${`
     <Foo v-else>
       <div>default</div>
       <template v-slot:bar={{ bar }}>
-        <div>{bar}</div>
+        {bar}
       </template>
     </Foo>
   </Comp>`.repeat(10)}

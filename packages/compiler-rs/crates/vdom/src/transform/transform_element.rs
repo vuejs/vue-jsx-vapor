@@ -104,7 +104,7 @@ pub unsafe fn transform_element<'a>(
       && (vnode_tag == "svg" || vnode_tag == "foreignObject" || vnode_tag == "math"));
 
   let _node = node as *mut oxc_allocator::Box<JSXElement>;
-  let props_build_result = build_props(unsafe { &mut *_node }, context, is_component);
+  let props_build_result = build_props(directives, unsafe { &mut *_node }, context, is_component);
 
   let vnode_props = props_build_result.props;
   let mut vnode_children = None;
@@ -250,6 +250,7 @@ pub struct PropsResult<'a> {
 }
 
 pub fn build_props<'a>(
+  directives: &Directives<'a>,
   node: &'a mut JSXElement<'a>,
   context: &'a TransformContext<'a>,
   is_component: bool,
@@ -468,7 +469,7 @@ pub fn build_props<'a>(
             }
             transform_v_on(prop, node, context)
           }
-          "model" => transform_v_model(prop, node, context),
+          "model" => transform_v_model(directives, prop, node, context),
           "show" => transform_v_show(prop, context),
           "html" => transform_v_html(prop, node, context),
           "text" => transform_v_text(prop, node, context),

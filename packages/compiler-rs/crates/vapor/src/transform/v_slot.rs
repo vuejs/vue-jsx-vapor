@@ -13,7 +13,7 @@ use crate::{
 };
 use common::{
   check::{is_jsx_component, is_template},
-  directive::{DirectiveNode, find_prop, find_prop_mut, resolve_directive},
+  directive::{DirectiveNode, Directives, find_prop, resolve_directive},
   error::ErrorCodes,
   expression::SimpleExpressionNode,
   text::is_empty_text,
@@ -21,6 +21,7 @@ use common::{
 
 /// # SAFETY
 pub unsafe fn transform_v_slot<'a>(
+  directives: &'a mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
@@ -31,7 +32,9 @@ pub unsafe fn transform_v_slot<'a>(
   };
 
   let node = node as *mut oxc_allocator::Box<JSXElement>;
-  let dir = find_prop_mut(unsafe { &mut *node }, Either::A(String::from("v-slot")))
+  let dir = unsafe { &mut *(directives as *mut Directives) }
+    .v_slot
+    .as_mut()
     .map(|dir| resolve_directive(dir, context.ir.borrow().source));
   let is_component = is_jsx_component(unsafe { &*node });
   let is_slot_template = is_template(unsafe { &*node })
@@ -51,7 +54,12 @@ pub unsafe fn transform_v_slot<'a>(
       context_block,
     ));
   } else if is_slot_template && let Some(dir) = dir {
-    return Some(transform_template_slot(dir, node, context, context_block));
+    return Some(transform_template_slot(
+      directives,
+      dir,
+      context,
+      context_block,
+    ));
   } else if !is_component && dir.is_some() {
     context.options.on_error.as_ref()(ErrorCodes::VSlotMisplaced, unsafe { &*node }.span);
   }
@@ -118,8 +126,8 @@ fn transform_component_slot<'a>(
 
 // <template v-slot:foo>
 fn transform_template_slot<'a>(
+  directives: &'a mut Directives<'a>,
   dir: DirectiveNode<'a>,
-  node: *mut oxc_allocator::Box<'a, JSXElement<'a>>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Box<dyn FnOnce() + 'a> {
@@ -130,19 +138,21 @@ fn transform_template_slot<'a>(
   let DirectiveNode { arg, exp, .. } = dir;
   let exit_block = create_slot_block(exp, context, context_block);
 
-  let v_for = find_prop_mut(unsafe { &mut *node }, Either::A(String::from("v-for")));
-  let for_parse_result = if let Some(v_for) = v_for {
+  let for_parse_result = if let Some(v_for) = directives.v_for.as_mut() {
+    dbg!(&v_for);
     get_for_parse_result(v_for, context)
   } else {
     None
   };
-  let v_if = find_prop_mut(unsafe { &mut *node }, Either::A(String::from("v-if")));
-  let v_if_dir = v_if.map(|v_if| resolve_directive(v_if, context.ir.borrow().source));
-  let v_else = find_prop_mut(
-    unsafe { &mut *node },
-    Either::B(vec![String::from("v-else"), String::from("v-else-if")]),
-  );
-  let v_else_dir = v_else.map(|v_else| resolve_directive(v_else, context.ir.borrow().source));
+  let v_if_dir = directives
+    .v_if
+    .as_mut()
+    .map(|v_if| resolve_directive(v_if, context.ir.borrow().source));
+  let v_else_dir = directives
+    .v_else
+    .as_mut()
+    .or(directives.v_else_if.as_mut())
+    .map(|v_else| resolve_directive(v_else, context.ir.borrow().source));
 
   Box::new(move || {
     let slots = &mut unsafe { &mut *_context_block }.slots;

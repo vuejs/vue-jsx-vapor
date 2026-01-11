@@ -43,7 +43,7 @@ const source = `export default () => <>${`
         : <Foo>
             {{
               default: () => <div>default</div>,
-              bar: ({bar}) => <div>{bar}</div>
+              bar: ({bar}) => <>{bar}</>
             }}
           </Foo> }
   </Comp>`.repeat(10)}

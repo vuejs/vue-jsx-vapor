@@ -1,5 +1,5 @@
 use common::ast::RootNode;
-use common::directive::Modifiers;
+use common::directive::{Directives, Modifiers};
 use common::expression::SimpleExpressionNode;
 pub use common::options::TransformOptions;
 use oxc_allocator::{Allocator, TakeIn};
@@ -18,7 +18,6 @@ pub mod v_html;
 pub mod v_if;
 pub mod v_model;
 pub mod v_on;
-pub mod v_once;
 pub mod v_show;
 pub mod v_slot;
 pub mod v_slots;
@@ -30,8 +29,8 @@ use crate::{
   transform::{
     transform_children::transform_children, transform_element::transform_element,
     transform_template_ref::transform_template_ref, transform_text::transform_text,
-    v_for::transform_v_for, v_if::transform_v_if, v_once::transform_v_once,
-    v_slot::transform_v_slot, v_slots::transform_v_slots,
+    v_for::transform_v_for, v_if::transform_v_if, v_slot::transform_v_slot,
+    v_slots::transform_v_slots,
   },
 };
 
@@ -342,21 +341,69 @@ impl<'a> TransformContext<'a> {
       if !is_root {
         let context = self as *const TransformContext;
         let node = &mut *self.node.borrow_mut() as *mut _;
-        let parent_node = parent_node.unwrap() as *mut JSXChild;
-        for node_transform in [
-          transform_v_once,
-          transform_v_if,
-          transform_v_for,
-          transform_template_ref,
-          transform_element,
-          transform_text,
-          transform_v_slots,
-          transform_v_slot,
-        ] {
-          let on_exit = node_transform(node, &*context, &mut *block, &mut *parent_node);
-          if let Some(on_exit) = on_exit {
+        let parent_node = parent_node.unwrap() as *mut _;
+        let mut directives = Directives::default();
+        let directives_ptr = &mut directives as *mut _;
+        if let JSXChild::Element(element) = &mut *node {
+          directives = Directives::new(element);
+          if directives.v_once.is_some() {
+            *(&*context).in_v_once.borrow_mut() = true;
+          };
+
+          if (directives.v_if.is_some()
+            || directives.v_else_if.is_some()
+            || directives.v_else.is_some())
+            && let Some(on_exit) =
+              transform_v_if(&mut *directives_ptr, node, &*context, &mut *block)
+          {
             exit_fns.push(on_exit);
-          }
+          };
+
+          if directives.v_for.is_some()
+            && let Some(on_exit) = transform_v_for(
+              &mut *directives_ptr,
+              node,
+              &*context,
+              &mut *block,
+              &mut *parent_node,
+            )
+          {
+            exit_fns.push(on_exit);
+          };
+
+          if directives._ref.is_some()
+            && let Some(on_exit) =
+              transform_template_ref(&mut *directives_ptr, node, &*context, &mut *block)
+          {
+            exit_fns.push(on_exit);
+          };
+        }
+
+        if let Some(on_exit) =
+          transform_element(&directives, node, &*context, &mut *block, &mut *parent_node)
+        {
+          exit_fns.push(on_exit);
+        };
+
+        if let Some(on_exit) = transform_text(node, &*context, &mut *block, &mut *parent_node) {
+          exit_fns.push(on_exit);
+        };
+
+        if directives.v_slot.is_none()
+          && let Some(on_exit) =
+            transform_v_slots(&mut *directives_ptr, node, &*context, &mut *block)
+        {
+          exit_fns.push(on_exit);
+        }
+
+        if let Some(on_exit) = transform_v_slot(
+          &mut *directives_ptr,
+          node,
+          &*context,
+          &mut *block,
+          &mut *parent_node,
+        ) {
+          exit_fns.push(on_exit);
         }
       }
 

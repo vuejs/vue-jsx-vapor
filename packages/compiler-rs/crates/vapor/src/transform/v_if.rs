@@ -10,34 +10,31 @@ use crate::{
 
 use common::{
   check::{is_constant_node, is_template},
-  directive::{find_prop, find_prop_mut, resolve_directive},
+  directive::{Directives, resolve_directive},
   error::ErrorCodes,
   expression::SimpleExpressionNode,
 };
 
 /// # SAFETY
 pub unsafe fn transform_v_if<'a>(
+  directives: &'a mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  if is_template(node) && find_prop(node, Either::A("v-slot".to_string())).is_some() {
+  if is_template(node) && directives.v_slot.is_some() {
     return None;
   }
   let node = node as *mut oxc_allocator::Box<JSXElement>;
 
-  let dir = find_prop_mut(
-    unsafe { &mut *node },
-    Either::B(vec![
-      "v-if".to_string(),
-      "v-else".to_string(),
-      "v-else-if".to_string(),
-    ]),
-  )?;
+  let dir = directives
+    .v_if
+    .as_mut()
+    .or(directives.v_else_if.as_mut().or(directives.v_else.as_mut()))
+    .unwrap();
   let seen = &mut context.seen.borrow_mut();
   let start = dir.span.start;
   if seen.contains(&start) {

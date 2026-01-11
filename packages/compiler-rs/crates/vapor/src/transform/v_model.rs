@@ -1,4 +1,4 @@
-use napi::{Either, bindgen_prelude::Either16};
+use napi::bindgen_prelude::Either16;
 use oxc_ast::ast::{
   JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElement,
 };
@@ -10,13 +10,14 @@ use crate::{
 };
 use common::{
   check::is_jsx_component,
-  directive::{find_prop, resolve_directive},
+  directive::{Directives, resolve_directive},
   error::ErrorCodes,
   expression::SimpleExpressionNode,
   text::get_tag_name,
 };
 
 pub fn transform_v_model<'a>(
+  directives: &Directives<'a>,
   _dir: &'a mut JSXAttribute<'a>,
   node: &JSXElement,
   context: &'a TransformContext<'a>,
@@ -79,8 +80,7 @@ pub fn transform_v_model<'a>(
   // TODO let runtimeDirective: VaporHelper | undefined = 'vModelText'
   if matches!(tag.as_str(), "input" | "textarea" | "select") || is_custom_element {
     if tag == "input" || is_custom_element {
-      let _type = find_prop(node, Either::A("type".to_string()));
-      if let Some(_type) = _type {
+      if let Some(_type) = directives._type.as_ref() {
         let value = &_type.value;
         if let Some(JSXAttributeValue::ExpressionContainer(_)) = value {
           // type={foo}
@@ -94,7 +94,7 @@ pub fn transform_v_model<'a>(
               context.options.on_error.as_ref()(ErrorCodes::VModelOnFileInputElement, node.span);
             }
             // text type
-            _ => check_duplicated_value(node, context),
+            _ => check_duplicated_value(directives, context),
           }
         }
       } else if has_dynamic_key_v_bind(node) {
@@ -102,13 +102,13 @@ pub fn transform_v_model<'a>(
         model_type = "dynamic";
       } else {
         // text type
-        check_duplicated_value(node, context)
+        check_duplicated_value(directives, context)
       }
     } else if tag == "select" {
       model_type = "select"
     } else {
       // textarea
-      check_duplicated_value(node, context)
+      check_duplicated_value(directives, context)
     }
   } else if !is_custom_element {
     context.options.on_error.as_ref()(ErrorCodes::VModelOnInvalidElement, node.span)
@@ -134,9 +134,8 @@ pub fn transform_v_model<'a>(
   None
 }
 
-fn check_duplicated_value(node: &JSXElement, context: &TransformContext) {
-  let value = find_prop(node, Either::A("value".to_string()));
-  if let Some(value) = value
+fn check_duplicated_value(directives: &Directives, context: &TransformContext) {
+  if let Some(value) = directives.value.as_ref()
     && !matches!(value.value, Some(JSXAttributeValue::StringLiteral(_)))
   {
     context.options.on_error.as_ref()(ErrorCodes::VModelUnnecessaryValue, value.span);

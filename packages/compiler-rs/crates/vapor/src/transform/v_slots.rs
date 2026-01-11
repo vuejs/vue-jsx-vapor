@@ -1,13 +1,10 @@
-use napi::{
-  Either,
-  bindgen_prelude::{Either3, Either4},
-};
+use napi::bindgen_prelude::{Either3, Either4};
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   AstBuilder, NONE,
   ast::{
-    Expression, FormalParameterKind, JSXAttributeValue, JSXChild, JSXElement, ObjectPropertyKind,
-    PropertyKind,
+    Expression, FormalParameterKind, JSXAttributeItem, JSXAttributeValue, JSXChild, JSXElement,
+    ObjectPropertyKind, PropertyKind,
   },
 };
 use oxc_span::SPAN;
@@ -20,16 +17,16 @@ use crate::{
   transform::TransformContext,
 };
 use common::{
-  check::is_jsx_component, directive::find_prop_mut, error::ErrorCodes,
+  check::is_jsx_component, directive::Directives, error::ErrorCodes,
   expression::SimpleExpressionNode, text::is_empty_text,
 };
 
 /// # SAFETY
 pub unsafe fn transform_v_slots<'a>(
+  directives: &'a mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  _: &'a mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
@@ -67,11 +64,16 @@ pub unsafe fn transform_v_slots<'a>(
             ast.jsx_attribute_value_expression_container(SPAN, exp.take_in(ast.allocator).into()),
           ),
         ));
+      if let JSXAttributeItem::Attribute(attribute) =
+        node.opening_element.attributes.last_mut().unwrap()
+      {
+        directives.v_slots = Some(attribute);
+      }
       unsafe { &mut *node_ptr }.children.remove(first_child_index);
     }
   }
 
-  if let Some(dir) = find_prop_mut(unsafe { &mut *node_ptr }, Either::A("v-slots".to_string())) {
+  if let Some(dir) = directives.v_slots.as_mut() {
     if !is_jsx_component(unsafe { &*node_ptr }) {
       context.options.on_error.as_ref()(ErrorCodes::VSlotMisplaced, unsafe { &*node_ptr }.span);
       return None;

@@ -1,7 +1,4 @@
-use napi::{
-  Either,
-  bindgen_prelude::{Either3, Either16},
-};
+use napi::bindgen_prelude::{Either3, Either16};
 use oxc_allocator::TakeIn;
 use oxc_ast::ast::{
   BinaryExpression, Expression, JSXAttribute, JSXAttributeValue, JSXChild, JSXElement,
@@ -14,7 +11,7 @@ use crate::{
 use common::{
   ast::RootNode,
   check::{is_constant_node, is_jsx_component, is_template},
-  directive::{find_prop, find_prop_mut},
+  directive::Directives,
   error::ErrorCodes,
   expression::SimpleExpressionNode,
   text::is_empty_text,
@@ -22,6 +19,7 @@ use common::{
 
 /// # SAFETY
 pub unsafe fn transform_v_for<'a>(
+  directives: &'a mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
@@ -31,13 +29,11 @@ pub unsafe fn transform_v_for<'a>(
     return None;
   };
   let node = node as *mut oxc_allocator::Box<JSXElement>;
-  if is_template(unsafe { &*node })
-    && find_prop(unsafe { &*node }, Either::A("v-slot".to_string())).is_some()
-  {
+  if is_template(unsafe { &*node }) && directives.v_slot.is_some() {
     return None;
   }
 
-  let dir = find_prop_mut(unsafe { &mut *node }, Either::A("v-for".to_string()))?;
+  let dir = directives.v_for.as_mut()?;
   let seen = &mut context.seen.borrow_mut();
   let span = dir.span;
   if seen.contains(&span.start) {
@@ -57,8 +53,7 @@ pub unsafe fn transform_v_for<'a>(
     return None;
   };
 
-  let key_prop = if let Some(key_prop) =
-    find_prop_mut(unsafe { &mut *node }, Either::A("key".to_string()))
+  let key_prop = if let Some(key_prop) = directives.key.as_mut()
     && let Some(value) = &mut key_prop.value
   {
     Some(SimpleExpressionNode::new(
