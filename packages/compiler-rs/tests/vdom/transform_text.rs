@@ -3,6 +3,19 @@ use compiler_rs::transform;
 use insta::assert_snapshot;
 
 #[test]
+fn text() {
+  let code = transform(
+    r#"<>foo</>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"("foo");"#);
+}
+
+#[test]
 fn no_consecutive_text() {
   let code = transform(
     r#"<>{foo}</>"#,
@@ -15,9 +28,7 @@ fn no_consecutive_text() {
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(() => foo)], 64);
-  })();
+  _openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(() => foo)], 64);
   "#);
 }
 
@@ -182,9 +193,7 @@ fn element_with_custom_directives_and_only_one_text_child_node() {
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("p", null, [_normalizeVNode(() => foo)])), [[vFoo]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("p", null, [_normalizeVNode(() => foo)])), [[vFoo]]);
   "#);
 }
 

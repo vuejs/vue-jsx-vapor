@@ -18,9 +18,7 @@ fn should_convert_v_text_to_text_content() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
   const _hoisted_1 = ["textContent"];
-  (() => {
-    return _openBlock(), _createElementBlock("div", { textContent: _toDisplayString(test) }, null, 8, _hoisted_1);
-  })();
+  _openBlock(), _createElementBlock("div", { textContent: _toDisplayString(test) }, null, 8, _hoisted_1);
   "#)
 }
 

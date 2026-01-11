@@ -16,14 +16,14 @@ const source = `export default () => <>${`
     foo={foo}
     ref={foo}
     v-model={foo}
-    onClick={()=> alert(1)}
+    onClick={() => alert(1)}
   >
     <div v-if={foo} v-for={({item}, index) in list} key={index}>
       {item}
     </div>
     <span v-else-if={bar}>{bar}</span>
     <Foo v-else>
-      <div>default</div>
+      default
       <template v-slot:bar={{ bar }}>
         {bar}
       </template>
@@ -35,7 +35,6 @@ const vueSource = `<template>${`
   <Comp
     :foo="foo"
     :ref="foo"
-    v-show="true"
     v-model="foo"
     onClick="() => alert(1)"
   >

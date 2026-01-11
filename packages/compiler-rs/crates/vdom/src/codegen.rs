@@ -146,14 +146,15 @@ impl<'a> TransformContext<'a> {
     {
       let codegen_map = &mut self.codegen_map.borrow_mut();
       if let Some(codegen) = codegen_map.remove(&child.span()) {
-        statements.push(ast.statement_return(
-          SPAN,
-          Some(match codegen {
-            NodeTypes::VNodeCall(vnode_call) => self.gen_vnode_call(vnode_call, codegen_map),
-            NodeTypes::TextCallNode(exp) => exp,
-            NodeTypes::CacheExpression(exp) => exp,
-          }),
-        ))
+        let exp = match codegen {
+          NodeTypes::VNodeCall(vnode_call) => self.gen_vnode_call(vnode_call, codegen_map),
+          NodeTypes::TextCallNode(exp) => exp,
+          NodeTypes::CacheExpression(exp) => exp,
+        };
+        if statements.is_empty() {
+          return exp;
+        }
+        statements.push(ast.statement_return(SPAN, Some(exp)))
       }
     }
 

@@ -16,9 +16,7 @@ fn should_not_cache_root_node() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div");
-  })();
+  _openBlock(), _createElementBlock("div");
   "#);
 }
 
@@ -255,9 +253,7 @@ fn cache_should_not_cache_components() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div", null, [_createVNode(Comp)]);
-  })();
+  _openBlock(), _createElementBlock("div", null, [_createVNode(Comp)]);
   "#);
 }
 
@@ -274,9 +270,7 @@ fn cache_should_not_cache_element_with_dynamic_props_but_hoist_the_props_list() 
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["id"];
-  (() => {
-    return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", { id: foo }, null, 8, _hoisted_1)]);
-  })();
+  _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", { id: foo }, null, 8, _hoisted_1)]);
   "#);
 }
 
@@ -312,9 +306,7 @@ fn should_not_cache_element_with_dynamic_key() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createElementBlock("div", { key: foo }))]);
-  })();
+  _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createElementBlock("div", { key: foo }))]);
   "#);
 }
 
@@ -330,9 +322,7 @@ fn should_not_cache_element_with_dynamic_ref() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", { ref: foo }, null, 512)]);
-  })();
+  _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", { ref: foo }, null, 512)]);
   "#);
 }
 
@@ -349,9 +339,7 @@ fn hoist_static_props_for_elements_with_directives() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = { id: "foo" };
-  (() => {
-    return _openBlock(), _createElementBlock("div", null, [_withDirectives(_createElementVNode("div", _hoisted_1, null, 512), [[vFoo]])]);
-  })();
+  _openBlock(), _createElementBlock("div", null, [_withDirectives(_createElementVNode("div", _hoisted_1, null, 512), [[vFoo]])]);
   "#);
 }
 
@@ -369,9 +357,7 @@ fn hoist_static_props_for_elements_with_dynamic_text_children() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { id: "foo" };
-  (() => {
-    return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", _hoisted_1, [_normalizeVNode(() => hello)])]);
-  })();
+  _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", _hoisted_1, [_normalizeVNode(() => hello)])]);
   "#);
 }
 
@@ -388,9 +374,7 @@ fn hoist_static_props_for_elements_with_unhoistable_children() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { id: "foo" };
-  (() => {
-    return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", _hoisted_1, [_createVNode(Comp)])]);
-  })();
+  _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", _hoisted_1, [_createVNode(Comp)])]);
   "#);
 }
 
@@ -520,9 +504,7 @@ fn cache_class_with_static_object_value() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { class: _normalizeClass({ foo: true }) };
-  (() => {
-    return _openBlock(), _createElementBlock("div", null, [_createElementVNode("span", _hoisted_1, [_normalizeVNode(() => bar)])]);
-  })();
+  _openBlock(), _createElementBlock("div", null, [_createElementVNode("span", _hoisted_1, [_normalizeVNode(() => bar)])]);
   "#);
 }
 
@@ -539,9 +521,7 @@ fn should_not_cache_expressions_that_refer_scope_variables() {
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (o) => (_openBlock(), _createElementBlock("p", null, [_createElementVNode("span", null, [_normalizeVNode(() => o)])]))), 256))]);
-  })();
+  _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (o) => (_openBlock(), _createElementBlock("p", null, [_createElementVNode("span", null, [_normalizeVNode(() => o)])]))), 256))]);
   "#);
 }
 
@@ -558,9 +538,7 @@ fn should_not_cache_expressions_that_refer_scope_variables_2() {
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (o) => (_openBlock(), _createElementBlock("p", null, [_createElementVNode("span", null, [_normalizeVNode(() => o + "foo")])]))), 256))]);
-  })();
+  _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (o) => (_openBlock(), _createElementBlock("p", null, [_createElementVNode("span", null, [_normalizeVNode(() => o + "foo")])]))), 256))]);
   "#);
 }
 
@@ -577,12 +555,10 @@ fn should_not_cache_expressions_that_refer_scope_variables_v_slot() {
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
-  (() => {
-    return _openBlock(), _createBlock(Comp, null, {
-      default: _withCtx(({ foo }) => [_normalizeVNode(() => foo)]),
-      _: 1
-    });
-  })();
+  _openBlock(), _createBlock(Comp, null, {
+    default: _withCtx(({ foo }) => [_normalizeVNode(() => foo)]),
+    _: 1
+  });
   "#);
 }
 
@@ -599,9 +575,7 @@ fn should_not_cache_elements_with_cached_handlers() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick"];
-  (() => {
-    return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", { onClick: foo }, null, 8, _hoisted_1)])]);
-  })();
+  _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", { onClick: foo }, null, 8, _hoisted_1)])]);
   "#);
 }
 
@@ -618,12 +592,10 @@ fn should_not_cache_elements_with_cached_handlers_with_other_bindings() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick"];
-  (() => {
-    return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", {
-      class: _normalizeClass({}),
-      onClick: foo
-    }, null, 8, _hoisted_1)])]);
-  })();
+  _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", {
+    class: _normalizeClass({}),
+    onClick: foo
+  }, null, 8, _hoisted_1)])]);
   "#);
 }
 

@@ -16,9 +16,7 @@ fn basic() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["id"];
-  (() => {
-    return _openBlock(), _createElementBlock("div", { id }, null, 8, _hoisted_1);
-  })();
+  _openBlock(), _createElementBlock("div", { id }, null, 8, _hoisted_1);
   "#);
 }
 
@@ -36,9 +34,7 @@ fn no_expression() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { id: true };
-  (() => {
-    return _openBlock(), _createElementBlock("div", _hoisted_1);
-  })();
+  _openBlock(), _createElementBlock("div", _hoisted_1);
   "#);
 }
 
@@ -56,9 +52,7 @@ fn shoud_not_error_if_empty_expression() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { arg: "" };
-  (() => {
-    return _openBlock(), _createElementBlock("div", _hoisted_1);
-  })();
+  _openBlock(), _createElementBlock("div", _hoisted_1);
   "#);
 }
 
@@ -76,9 +70,7 @@ fn camel_modifier() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["fooBar"];
-  (() => {
-    return _openBlock(), _createElementBlock("div", { fooBar: id }, null, 8, _hoisted_1);
-  })();
+  _openBlock(), _createElementBlock("div", { fooBar: id }, null, 8, _hoisted_1);
   "#);
 }
 
@@ -96,9 +88,7 @@ fn prop_modifier() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = [".foo-bar"];
-  (() => {
-    return _openBlock(), _createElementBlock("div", { ".foo-bar": id }, null, 40, _hoisted_1);
-  })();
+  _openBlock(), _createElementBlock("div", { ".foo-bar": id }, null, 40, _hoisted_1);
   "#);
 }
 
@@ -116,8 +106,6 @@ fn attr_modifier() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["^foo-bar"];
-  (() => {
-    return _openBlock(), _createElementBlock("div", { "^foo-bar": id }, null, 8, _hoisted_1);
-  })();
+  _openBlock(), _createElementBlock("div", { "^foo-bar": id }, null, 8, _hoisted_1);
   "#);
 }

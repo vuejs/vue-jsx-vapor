@@ -28,13 +28,26 @@ function vueJsxVaporTransform(source) {
   })
 }
 
+function reactTransform(source) {
+  transformSync(source, {
+    plugins: [
+      ['@babel/plugin-transform-react-jsx', { throwIfNamespace: false }],
+    ],
+    filename: 'index.jsx',
+    sourceMaps: false,
+    sourceFileName: 'index.jsx',
+    babelrc: false,
+    configFile: false,
+  })
+}
+
 const source = `export default () => <>${`
   <Comp
     foo={foo}
     ref={foo}
     modelValue={foo}
     onUpdate:modelValue={e => foo = e}
-    onClick={()=> alert(1)}
+    onClick={() => alert(1)}
   >
     { foo
       ? list.map(({item}, index) => <div key={index}>{item}</div>)
@@ -42,7 +55,7 @@ const source = `export default () => <>${`
         ? <span>{bar}</span>
         : <Foo>
             {{
-              default: () => <div>default</div>,
+              default: () => <>default</>,
               bar: ({bar}) => <>{bar}</>
             }}
           </Foo> }
@@ -58,6 +71,11 @@ vueJsxTransform(source)
 console.time('vue-jsx           + babel  ')
 vueJsxTransform(source)
 console.timeEnd('vue-jsx           + babel  ')
+
+reactTransform(source)
+console.time('react             + babel  ')
+reactTransform(source)
+console.timeEnd('react             + babel  ')
 
 rsTransform(source, { interop: true })
 console.time('vue-jsx-vapor.rs  + oxc    ')
@@ -82,6 +100,10 @@ bench.add('vue-jsx-vapor    + babel', () => {
 
 bench.add('vue-jsx          + babel', () => {
   vueJsxTransform(source)
+})
+
+bench.add('react            + babel', () => {
+  reactTransform(source)
 })
 
 bench.add('vue-jsx-vapor.rs + oxc', () => {

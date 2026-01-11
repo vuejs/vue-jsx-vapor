@@ -2,6 +2,7 @@ use common::ast::RootNode;
 use common::directive::Directives;
 use common::expression::parse_expression;
 pub use common::options::TransformOptions;
+use common::text::is_empty_text;
 use common::walk::WalkIdentifiers;
 use common::walk_mut::WalkIdentifiersMut;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
@@ -94,6 +95,26 @@ impl<'a> TransformContext<'a> {
 
   pub fn transform(&'a self, expression: Expression<'a>, source: &'a str) -> Expression<'a> {
     let allocator = self.allocator;
+    if let Expression::JSXFragment(frag) = &expression
+      && let Some(child) = {
+        let mut first_child = None;
+        for child in frag.children.iter() {
+          if !is_empty_text(child) {
+            if first_child.is_some() {
+              first_child = None;
+              break;
+            }
+            first_child = Some(child);
+          }
+        }
+        first_child
+      }
+      && let JSXChild::Text(child) = child
+    {
+      return self
+        .ast
+        .expression_string_literal(child.span, child.value, child.raw);
+    }
     *self.root_node.borrow_mut() = RootNode::from(allocator, expression, false);
     *self.source.borrow_mut() = source;
     unsafe {

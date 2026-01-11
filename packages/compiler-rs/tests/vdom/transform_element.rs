@@ -54,9 +54,7 @@ fn resolve_namespaced_component_from_setup_bindings_inline_const() {
   .code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createBlock(Foo.Example);
-  })();
+  _openBlock(), _createBlock(Foo.Example);
   "#);
 }
 
@@ -76,9 +74,7 @@ fn static_props() {
     id: "foo",
     class: "bar"
   };
-  (() => {
-    return _openBlock(), _createElementBlock("div", _hoisted_1);
-  })();
+  _openBlock(), _createElementBlock("div", _hoisted_1);
   "#)
 }
 
@@ -135,9 +131,7 @@ fn v_bind_obj() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, guardReactiveProps as _guardReactiveProps, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div", _normalizeProps(_guardReactiveProps(obj)), null, 16);
-  })();
+  _openBlock(), _createElementBlock("div", _normalizeProps(_guardReactiveProps(obj)), null, 16);
   "#)
 }
 
@@ -153,9 +147,7 @@ fn v_bind_obj_after_static_prop() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, obj), null, 16);
-  })();
+  _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, obj), null, 16);
   "#)
 }
 
@@ -171,9 +163,7 @@ fn v_bind_obj_before_static_prop() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div", _mergeProps(obj, { id: "foo" }), null, 16);
-  })();
+  _openBlock(), _createElementBlock("div", _mergeProps(obj, { id: "foo" }), null, 16);
   "#)
 }
 
@@ -189,9 +179,7 @@ fn v_bind_obj_between_static_prop() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, obj, { class: "bar" }), null, 16);
-  })();
+  _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, obj, { class: "bar" }), null, 16);
   "#)
 }
 
@@ -207,9 +195,7 @@ fn v_on_obj() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, toHandlers as _toHandlers } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, _toHandlers(obj, true), { class: "bar" }), null, 16);
-  })();
+  _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, _toHandlers(obj, true), { class: "bar" }), null, 16);
   "#)
 }
 
@@ -225,9 +211,7 @@ fn v_on_obj_on_component() {
   .code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, mergeProps as _mergeProps, openBlock as _openBlock, toHandlers as _toHandlers } from "vue";
-  (() => {
-    return _openBlock(), _createBlock(Foo, _mergeProps({ id: "foo" }, _toHandlers(obj), { class: "bar" }), null, 16);
-  })();
+  _openBlock(), _createBlock(Foo, _mergeProps({ id: "foo" }, _toHandlers(obj), { class: "bar" }), null, 16);
   "#)
 }
 
@@ -243,9 +227,7 @@ fn v_on_obj_and_v_bind_obj() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, toHandlers as _toHandlers } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, _toHandlers(handlers, true), obj), null, 16);
-  })();
+  _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, _toHandlers(handlers, true), obj), null, 16);
   "#)
 }
 
@@ -262,9 +244,7 @@ fn should_handle_plain_template_as_normal_element() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { id: "foo" };
-  (() => {
-    return _openBlock(), _createElementBlock("template", _hoisted_1);
-  })();
+  _openBlock(), _createElementBlock("template", _hoisted_1);
   "#)
 }
 
@@ -376,13 +356,11 @@ fn directive_transforms() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
-      vFoo,
-      hello,
-      bar
-    ]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
+    vFoo,
+    hello,
+    bar
+  ]]);
   "#)
 }
 
@@ -398,21 +376,19 @@ fn runtime_directives() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [
-      [vFoo],
-      [vBar, "x"],
-      [
-        vBaz,
-        y,
-        arg,
-        {
-          mod: true,
-          mad: true
-        }
-      ]
-    ]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [
+    [vFoo],
+    [vBar, "x"],
+    [
+      vBaz,
+      y,
+      arg,
+      {
+        mod: true,
+        mad: true
+      }
+    ]
+  ]);
   "#)
 }
 
@@ -429,9 +405,7 @@ fn props_merging_event_handlers() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick"];
-  (() => {
-    return _openBlock(), _createElementBlock("div", { onClick: [a, b] }, null, 8, _hoisted_1);
-  })();
+  _openBlock(), _createElementBlock("div", { onClick: [a, b] }, null, 8, _hoisted_1);
   "#)
 }
 
@@ -448,9 +422,7 @@ fn props_merging_style() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, normalizeStyle as _normalizeStyle, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { style: _normalizeStyle(["color: green", { color: "red" }]) };
-  (() => {
-    return _openBlock(), _createElementBlock("div", _hoisted_1);
-  })();
+  _openBlock(), _createElementBlock("div", _hoisted_1);
   "#)
 }
 
@@ -466,9 +438,7 @@ fn props_merging_class() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div", { class: _normalizeClass(["foo", { bar: isBar }]) }, null, 2);
-  })();
+  _openBlock(), _createElementBlock("div", { class: _normalizeClass(["foo", { bar: isBar }]) }, null, 2);
   "#)
 }
 
@@ -488,9 +458,7 @@ mod patch_flag_analysis {
     .code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-    (() => {
-      return _openBlock(), _createElementBlock("div", null, "foo");
-    })();
+    _openBlock(), _createElementBlock("div", null, "foo");
     "#)
   }
 
@@ -506,9 +474,7 @@ mod patch_flag_analysis {
     .code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
-    (() => {
-      return _openBlock(), _createElementBlock("div", { class: _normalizeClass(foo) }, null, 2);
-    })();
+    _openBlock(), _createElementBlock("div", { class: _normalizeClass(foo) }, null, 2);
     "#)
   }
 
@@ -524,9 +490,7 @@ mod patch_flag_analysis {
     .code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, normalizeStyle as _normalizeStyle, openBlock as _openBlock } from "vue";
-    (() => {
-      return _openBlock(), _createElementBlock("div", { style: _normalizeStyle(foo) }, null, 4);
-    })();
+    _openBlock(), _createElementBlock("div", { style: _normalizeStyle(foo) }, null, 4);
     "#)
   }
 
@@ -543,13 +507,11 @@ mod patch_flag_analysis {
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     const _hoisted_1 = ["foo", "baz"];
-    (() => {
-      return _openBlock(), _createElementBlock("div", {
-        id: "foo",
-        foo: bar,
-        baz: qux
-      }, null, 8, _hoisted_1);
-    })();
+    _openBlock(), _createElementBlock("div", {
+      id: "foo",
+      foo: bar,
+      baz: qux
+    }, null, 8, _hoisted_1);
     "#)
   }
 
@@ -566,15 +528,13 @@ mod patch_flag_analysis {
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, openBlock as _openBlock } from "vue";
     const _hoisted_1 = ["foo", "baz"];
-    (() => {
-      return _openBlock(), _createElementBlock("div", {
-        id: "foo",
-        class: _normalizeClass(cls),
-        style: _normalizeStyle(styl),
-        foo: bar,
-        baz: qux
-      }, null, 14, _hoisted_1);
-    })();
+    _openBlock(), _createElementBlock("div", {
+      id: "foo",
+      class: _normalizeClass(cls),
+      style: _normalizeStyle(styl),
+      foo: bar,
+      baz: qux
+    }, null, 14, _hoisted_1);
     "#)
   }
 
@@ -591,17 +551,15 @@ mod patch_flag_analysis {
     .code;
     assert_snapshot!(code, @r#"
     import { createBlock as _createBlock, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, openBlock as _openBlock } from "vue";
-    (() => {
-      return _openBlock(), _createBlock(Foo, {
-        id: foo,
-        class: _normalizeClass(cls),
-        style: _normalizeStyle(styl)
-      }, null, 8, [
-        "id",
-        "class",
-        "style"
-      ]);
-    })();
+    _openBlock(), _createBlock(Foo, {
+      id: foo,
+      class: _normalizeClass(cls),
+      style: _normalizeStyle(styl)
+    }, null, 8, [
+      "id",
+      "class",
+      "style"
+    ]);
     "#)
   }
 
@@ -617,9 +575,7 @@ mod patch_flag_analysis {
     .code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, guardReactiveProps as _guardReactiveProps, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
-    (() => {
-      return _openBlock(), _createElementBlock("div", _normalizeProps(_guardReactiveProps(foo)), null, 16);
-    })();
+    _openBlock(), _createElementBlock("div", _normalizeProps(_guardReactiveProps(foo)), null, 16);
     "#)
   }
 
@@ -635,9 +591,7 @@ mod patch_flag_analysis {
     .code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
-    (() => {
-      return _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, foo, { class: cls }), null, 16);
-    })();
+    _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, foo, { class: cls }), null, 16);
     "#)
   }
 
@@ -654,9 +608,7 @@ mod patch_flag_analysis {
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     const _hoisted_1 = { ref: "foo" };
-    (() => {
-      return _openBlock(), _createElementBlock("div", _hoisted_1, null, 512);
-    })();
+    _openBlock(), _createElementBlock("div", _hoisted_1, null, 512);
     "#)
   }
 
@@ -672,9 +624,7 @@ mod patch_flag_analysis {
     .code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-    (() => {
-      return _openBlock(), _createElementBlock("div", { ref: foo }, null, 512);
-    })();
+    _openBlock(), _createElementBlock("div", { ref: foo }, null, 512);
     "#)
   }
 
@@ -690,9 +640,7 @@ mod patch_flag_analysis {
     .code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
-    (() => {
-      return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[vFoo]]);
-    })();
+    _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[vFoo]]);
     "#)
   }
 
@@ -709,9 +657,7 @@ mod patch_flag_analysis {
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     const _hoisted_1 = ["onVnodeUpdated"];
-    (() => {
-      return _openBlock(), _createElementBlock("div", { onVnodeUpdated: foo }, null, 8, _hoisted_1);
-    })();
+    _openBlock(), _createElementBlock("div", { onVnodeUpdated: foo }, null, 8, _hoisted_1);
     "#)
   }
 
@@ -728,9 +674,7 @@ mod patch_flag_analysis {
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     const _hoisted_1 = ["onKeyup"];
-    (() => {
-      return _openBlock(), _createElementBlock("div", { onKeyup: foo }, null, 40, _hoisted_1);
-    })();
+    _openBlock(), _createElementBlock("div", { onKeyup: foo }, null, 40, _hoisted_1);
     "#)
   }
 
@@ -747,9 +691,7 @@ mod patch_flag_analysis {
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     const _hoisted_1 = [".id"];
-    (() => {
-      return _openBlock(), _createElementBlock("div", { ".id": id }, null, 40, _hoisted_1);
-    })();
+    _openBlock(), _createElementBlock("div", { ".id": id }, null, 40, _hoisted_1);
     "#)
   }
 
@@ -766,9 +708,7 @@ mod patch_flag_analysis {
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     const _hoisted_1 = ["onKeydown"];
-    (() => {
-      return _openBlock(), _createElementBlock("div", { onKeydown: foo }, null, 40, _hoisted_1);
-    })();
+    _openBlock(), _createElementBlock("div", { onKeydown: foo }, null, 40, _hoisted_1);
     "#)
   }
 }
@@ -845,9 +785,7 @@ fn element_with_dynamic_prop_should_be_forced_into_blocks() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createElementBlock("div", { key: foo }))]);
-  })();
+  _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createElementBlock("div", { key: foo }))]);
   "#)
 }
 
@@ -867,9 +805,7 @@ fn ref_for_marker_on_static_ref() {
     ref_for: true,
     ref: "x"
   };
-  (() => {
-    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", _hoisted_1, null, 512))), 256);
-  })();
+  _openBlock(true), _createElementBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", _hoisted_1, null, 512))), 256);
   "#)
 }
 
@@ -885,12 +821,10 @@ fn ref_for_marker_on_dynamic_ref() {
   .code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
-  (() => {
-    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", {
-      ref_for: true,
-      ref: x
-    }, null, 512))), 256);
-  })();
+  _openBlock(true), _createElementBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", {
+    ref_for: true,
+    ref: x
+  }, null, 512))), 256);
   "#)
 }
 
@@ -906,9 +840,7 @@ fn ref_for_marker_on_v_bind() {
   .code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, renderList as _renderList } from "vue";
-  (() => {
-    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", _mergeProps({ ref_for: true }, x), null, 16))), 256);
-  })();
+  _openBlock(true), _createElementBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", _mergeProps({ ref_for: true }, x), null, 16))), 256);
   "#)
 }
 

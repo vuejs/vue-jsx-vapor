@@ -17,9 +17,7 @@ fn simple_expression() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = { "onUpdate:modelValue": ($event) => model = $event };
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[_vModelText, model]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[_vModelText, model]]);
   "#)
 }
 
@@ -39,9 +37,7 @@ fn simple_expression_for_input_text() {
     type: "text",
     "onUpdate:modelValue": ($event) => model = $event
   };
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[_vModelText, model]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[_vModelText, model]]);
   "#);
 }
 
@@ -61,9 +57,7 @@ fn simple_expression_for_input_radio() {
     type: "radio",
     "onUpdate:modelValue": ($event) => model = $event
   };
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[_vModelRadio, model]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[_vModelRadio, model]]);
   "#);
 }
 
@@ -83,9 +77,7 @@ fn simple_expression_for_input_checkbox() {
     type: "checkbox",
     "onUpdate:modelValue": ($event) => model = $event
   };
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[_vModelCheckbox, model]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[_vModelCheckbox, model]]);
   "#);
 }
 
@@ -102,12 +94,10 @@ fn simple_expression_for_input_dynamic_type() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelDynamic as _vModelDynamic, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = ["type"];
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("input", {
-      type: foo,
-      "onUpdate:modelValue": ($event) => model = $event
-    }, null, 8, _hoisted_1)), [[_vModelDynamic, model]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("input", {
+    type: foo,
+    "onUpdate:modelValue": ($event) => model = $event
+  }, null, 8, _hoisted_1)), [[_vModelDynamic, model]]);
   "#);
 }
 
@@ -123,9 +113,7 @@ fn input_with_dynamic_v_bind() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, vModelDynamic as _vModelDynamic, withDirectives as _withDirectives } from "vue";
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("input", _mergeProps(obj, { "onUpdate:modelValue": ($event) => model = $event }), null, 16)), [[_vModelDynamic, model]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("input", _mergeProps(obj, { "onUpdate:modelValue": ($event) => model = $event }), null, 16)), [[_vModelDynamic, model]]);
   "#);
 }
 
@@ -142,9 +130,7 @@ fn simple_expression_for_select() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelSelect as _vModelSelect, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = { "onUpdate:modelValue": ($event) => model = $event };
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("select", _hoisted_1, null, 512)), [[_vModelSelect, model]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("select", _hoisted_1, null, 512)), [[_vModelSelect, model]]);
   "#);
 }
 
@@ -161,9 +147,7 @@ fn simple_expression_for_textarea() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = { "onUpdate:modelValue": ($event) => model = $event };
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("textarea", _hoisted_1, null, 512)), [[_vModelText, model]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("textarea", _hoisted_1, null, 512)), [[_vModelText, model]]);
   "#);
 }
 
@@ -180,9 +164,7 @@ fn compound_expression() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = ["onUpdate:modelValue"];
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": ($event) => model[index] = $event }, null, 8, _hoisted_1)), [[_vModelText, model[index]]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": ($event) => model[index] = $event }, null, 8, _hoisted_1)), [[_vModelText, model[index]]]);
   "#)
 }
 
@@ -198,12 +180,10 @@ fn component_with_argument() {
   .code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createBlock(Comp, {
-      "foo-value": model,
-      "onUpdate:foo-value": ($event) => model = $event
-    }, null, 8, ["foo-value"]);
-  })();
+  _openBlock(), _createBlock(Comp, {
+    "foo-value": model,
+    "onUpdate:foo-value": ($event) => model = $event
+  }, null, 8, ["foo-value"]);
   "#)
 }
 
@@ -219,12 +199,10 @@ fn component_with_dynamic_argument() {
   .code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createBlock(Comp, _normalizeProps({
-      [value]: model,
-      ["onUpdate:" + value]: ($event) => model = $event
-    }), null, 16);
-  })();
+  _openBlock(), _createBlock(Comp, _normalizeProps({
+    [value]: model,
+    ["onUpdate:" + value]: ($event) => model = $event
+  }), null, 16);
   "#)
 }
 
@@ -241,9 +219,7 @@ fn should_not_cache_update_handler_if_it_refers_v_for_scope_variables() {
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = ["onUpdate:modelValue"];
-  (() => {
-    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": ($event) => foo[i] = $event }, null, 8, _hoisted_1)), [[_vModelText, foo[i]]])), 256);
-  })();
+  _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": ($event) => foo[i] = $event }, null, 8, _hoisted_1)), [[_vModelText, foo[i]]])), 256);
   "#)
 }
 
@@ -280,12 +256,10 @@ fn should_mark_update_handler_dynamic_if_it_refers_slot_scope_variables() {
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, vModelText as _vModelText, withCtx as _withCtx, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = ["onUpdate:modelValue"];
-  (() => {
-    return _openBlock(), _createBlock(Comp, null, {
-      default: _withCtx(({ foo }) => [_withDirectives(_createElementVNode("input", { "onUpdate:modelValue": ($event) => foo.bar = $event }, null, 8, _hoisted_1), [[_vModelText, foo.bar]])]),
-      _: 1
-    });
-  })();
+  _openBlock(), _createBlock(Comp, null, {
+    default: _withCtx(({ foo }) => [_withDirectives(_createElementVNode("input", { "onUpdate:modelValue": ($event) => foo.bar = $event }, null, 8, _hoisted_1), [[_vModelText, foo.bar]])]),
+    _: 1
+  });
   "#)
 }
 
@@ -301,16 +275,14 @@ fn should_generate_model_modifiers_for_component_v_model() {
   .code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createBlock(Comp, {
-      modelValue: foo,
-      "onUpdate:modelValue": ($event) => foo = $event,
-      modelModifiers: {
-        trim: true,
-        "bar-baz": true
-      }
-    }, null, 8, ["modelValue"]);
-  })();
+  _openBlock(), _createBlock(Comp, {
+    modelValue: foo,
+    "onUpdate:modelValue": ($event) => foo = $event,
+    modelModifiers: {
+      trim: true,
+      "bar-baz": true
+    }
+  }, null, 8, ["modelValue"]);
   "#)
 }
 
@@ -326,16 +298,14 @@ fn should_generate_model_modifiers_for_component_v_model_with_arguments() {
   .code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createBlock(Comp, {
-      foo,
-      "onUpdate:foo": ($event) => foo = $event,
-      fooModifiers: { trim: true },
-      bar,
-      "onUpdate:bar": ($event) => bar = $event,
-      barModifiers: { number: true }
-    }, null, 8, ["foo", "bar"]);
-  })();
+  _openBlock(), _createBlock(Comp, {
+    foo,
+    "onUpdate:foo": ($event) => foo = $event,
+    fooModifiers: { trim: true },
+    bar,
+    "onUpdate:bar": ($event) => bar = $event,
+    barModifiers: { number: true }
+  }, null, 8, ["foo", "bar"]);
   "#)
 }
 
@@ -351,13 +321,11 @@ fn should_generate_model_modifiers_dollar_for_component_v_model_model_with_argum
   .code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createBlock(Comp, {
-      model: foo,
-      "onUpdate:model": ($event) => foo = $event,
-      modelModifiers$: { trim: true }
-    }, null, 8, ["model"]);
-  })();
+  _openBlock(), _createBlock(Comp, {
+    model: foo,
+    "onUpdate:model": ($event) => foo = $event,
+    modelModifiers$: { trim: true }
+  }, null, 8, ["model"]);
   "#)
 }
 
@@ -374,14 +342,12 @@ fn modifiers_number() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = { "onUpdate:modelValue": ($event) => model = $event };
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[
-      _vModelText,
-      model,
-      void 0,
-      { number: true }
-    ]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[
+    _vModelText,
+    model,
+    void 0,
+    { number: true }
+  ]]);
   "#);
 }
 
@@ -398,14 +364,12 @@ fn modifiers_trim() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = { "onUpdate:modelValue": ($event) => model = $event };
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[
-      _vModelText,
-      model,
-      void 0,
-      { trim: true }
-    ]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[
+    _vModelText,
+    model,
+    void 0,
+    { trim: true }
+  ]]);
   "#);
 }
 
@@ -422,14 +386,12 @@ fn modifiers_lazy() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = { "onUpdate:modelValue": ($event) => model = $event };
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[
-      _vModelText,
-      model,
-      void 0,
-      { lazy: true }
-    ]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[
+    _vModelText,
+    model,
+    void 0,
+    { lazy: true }
+  ]]);
   "#);
 }
 
@@ -514,9 +476,7 @@ fn should_not_error_on_static_value_binding_alongside_v_model() {
     "onUpdate:modelValue": ($event) => test = $event,
     value: "test"
   };
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[_vModelText, test]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[_vModelText, test]]);
   "#);
 }
 
@@ -533,9 +493,7 @@ fn should_allow_usage_on_custom_element() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("my-input", { "onUpdate:modelValue": ($event) => model = $event }, null, 512)), [[_vModelText, model]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("my-input", { "onUpdate:modelValue": ($event) => model = $event }, null, 512)), [[_vModelText, model]]);
   "#);
 }
 

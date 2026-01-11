@@ -17,9 +17,7 @@ fn basic_v_if() {
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
-  (() => {
-    return ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true);
-  })();
+  ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true);
   "#);
 }
 
@@ -59,9 +57,7 @@ fn component_v_if() {
   .code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, createCommentVNode as _createCommentVNode, openBlock as _openBlock } from "vue";
-  (() => {
-    return ok ? (_openBlock(), _createBlock(Component, { key: 0 })) : _createCommentVNode("", true);
-  })();
+  ok ? (_openBlock(), _createBlock(Component, { key: 0 })) : _createCommentVNode("", true);
   "#);
 }
 
@@ -79,9 +75,7 @@ fn v_if_v_else() {
   import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
   const _hoisted_2 = { key: 1 };
-  (() => {
-    return _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : (_openBlock(), _createElementBlock("p", _hoisted_2))], 64);
-  })();
+  _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : (_openBlock(), _createElementBlock("p", _hoisted_2))], 64);
   "#);
 }
 
@@ -99,9 +93,7 @@ fn v_if_v_else_if() {
   import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
   const _hoisted_2 = { key: 1 };
-  (() => {
-    return _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : orNot ? (_openBlock(), _createElementBlock("p", _hoisted_2)) : _createCommentVNode("", true)], 64);
-  })();
+  _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : orNot ? (_openBlock(), _createElementBlock("p", _hoisted_2)) : _createCommentVNode("", true)], 64);
   "#);
 }
 
@@ -206,9 +198,7 @@ fn user_key() {
   .code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  (() => {
-    return _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", { key: a + 1 })) : (_openBlock(), _createElementBlock("div", { key: a + 1 }))], 64);
-  })();
+  _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", { key: a + 1 })) : (_openBlock(), _createElementBlock("div", { key: a + 1 }))], 64);
   "#)
 }
 
@@ -226,9 +216,7 @@ fn multiple_v_if_that_are_sibling_nodes_should_have_different_keys() {
   import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
   const _hoisted_2 = { key: 1 };
-  (() => {
-    return _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), orNot ? (_openBlock(), _createElementBlock("p", _hoisted_2)) : _createCommentVNode("", true)], 64);
-  })();
+  _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), orNot ? (_openBlock(), _createElementBlock("p", _hoisted_2)) : _createCommentVNode("", true)], 64);
   "#)
 }
 
@@ -249,9 +237,7 @@ fn increasing_key_v_if_v_else_if_v_else() {
   const _hoisted_3 = { key: 2 };
   const _hoisted_4 = { key: 3 };
   const _hoisted_5 = { key: 4 };
-  (() => {
-    return _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : (_openBlock(), _createElementBlock("p", _hoisted_2)), another ? (_openBlock(), _createElementBlock("div", _hoisted_3)) : orNot ? (_openBlock(), _createElementBlock("p", _hoisted_4)) : (_openBlock(), _createElementBlock("p", _hoisted_5))], 64);
-  })();
+  _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : (_openBlock(), _createElementBlock("p", _hoisted_2)), another ? (_openBlock(), _createElementBlock("div", _hoisted_3)) : orNot ? (_openBlock(), _createElementBlock("p", _hoisted_4)) : (_openBlock(), _createElementBlock("p", _hoisted_5))], 64);
   "#)
 }
 
@@ -267,9 +253,7 @@ fn key_injection_only_v_bind() {
   .code;
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, guardReactiveProps as _guardReactiveProps, mergeProps as _mergeProps, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
-  (() => {
-    return ok ? (_openBlock(), _createElementBlock("div", _mergeProps({ key: 0 }, obj), null, 16)) : _createCommentVNode("", true);
-  })();
+  ok ? (_openBlock(), _createElementBlock("div", _mergeProps({ key: 0 }, obj), null, 16)) : _createCommentVNode("", true);
   "#)
 }
 
@@ -285,12 +269,10 @@ fn key_injection_before_v_bind() {
   .code;
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
-  (() => {
-    return ok ? (_openBlock(), _createElementBlock("div", _mergeProps({
-      key: 0,
-      id: "foo"
-    }, obj), null, 16)) : _createCommentVNode("", true);
-  })();
+  ok ? (_openBlock(), _createElementBlock("div", _mergeProps({
+    key: 0,
+    id: "foo"
+  }, obj), null, 16)) : _createCommentVNode("", true);
   "#)
 }
 
@@ -306,9 +288,7 @@ fn key_injection_after_v_bind() {
   .code;
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
-  (() => {
-    return ok ? (_openBlock(), _createElementBlock("div", _mergeProps({ key: 0 }, obj, { id: "foo" }), null, 16)) : _createCommentVNode("", true);
-  })();
+  ok ? (_openBlock(), _createElementBlock("div", _mergeProps({ key: 0 }, obj, { id: "foo" }), null, 16)) : _createCommentVNode("", true);
   "#)
 }
 
@@ -325,9 +305,7 @@ fn key_injection_custom_directive() {
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = { key: 0 };
-  (() => {
-    return ok ? _withDirectives((_openBlock(), _createElementBlock("div", _hoisted_1, null, 512)), [[vFoo]]) : _createCommentVNode("", true);
-  })();
+  ok ? _withDirectives((_openBlock(), _createElementBlock("div", _hoisted_1, null, 512)), [[vFoo]]) : _createCommentVNode("", true);
   "#)
 }
 
@@ -343,9 +321,7 @@ fn avoid_duplicate_keys() {
   .code;
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
-  (() => {
-    return ok ? (_openBlock(), _createElementBlock("div", _mergeProps({ key: "custom_key" }, obj), null, 16)) : _createCommentVNode("", true);
-  })();
+  ok ? (_openBlock(), _createElementBlock("div", _mergeProps({ key: "custom_key" }, obj), null, 16)) : _createCommentVNode("", true);
   "#)
 }
 
@@ -419,8 +395,6 @@ fn v_on_with_v_if() {
   .code;
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, toHandlers as _toHandlers } from "vue";
-  (() => {
-    return true ? (_openBlock(), _createElementBlock("button", _mergeProps({ key: 0 }, _toHandlers({ click: clickEvent }, true)), "w/ v-if", 16)) : _createCommentVNode("", true);
-  })();
+  true ? (_openBlock(), _createElementBlock("button", _mergeProps({ key: 0 }, _toHandlers({ click: clickEvent }, true)), "w/ v-if", 16)) : _createCommentVNode("", true);
   "#)
 }

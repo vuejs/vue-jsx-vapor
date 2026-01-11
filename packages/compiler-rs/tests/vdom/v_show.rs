@@ -16,9 +16,7 @@ fn simple_expression() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vShow as _vShow, withDirectives as _withDirectives } from "vue";
-  (() => {
-    return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[_vShow, foo]]);
-  })();
+  _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[_vShow, foo]]);
   "#)
 }
 

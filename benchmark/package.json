@@ -6,6 +6,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.28.5",
+    "@babel/plugin-transform-react-jsx": "^7.27.1",
     "@vue-jsx-vapor/babel": "2.6.8",
     "@vue-jsx-vapor/compiler-rs": "workspace:*",
     "@vue/babel-plugin-jsx": "^1.5.0",

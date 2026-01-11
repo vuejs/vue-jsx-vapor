@@ -18,9 +18,7 @@ fn should_convert_v_html_to_inner_html() {
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["innerHTML"];
-  (() => {
-    return _openBlock(), _createElementBlock("div", { innerHTML: test }, null, 8, _hoisted_1);
-  })();
+  _openBlock(), _createElementBlock("div", { innerHTML: test }, null, 8, _hoisted_1);
   "#);
 }
 
