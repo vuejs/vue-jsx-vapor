@@ -7,7 +7,7 @@ export interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
   interop?: boolean
-  compile?: CompilerOptions
+  compiler?: CompilerOptions
   sourceMap?: boolean
   /** @default true */
   ref?:

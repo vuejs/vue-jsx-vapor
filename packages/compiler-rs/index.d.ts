@@ -39,7 +39,7 @@ export interface Hmr {
   defineComponentName: Array<string>
 }
 export interface CompilerOptions {
-  /** * Whether to compile components to createComponentWithFallback.
+  /** * Whether compile components to createComponentWithFallback.
    * @default false
    */
   withFallback?: boolean

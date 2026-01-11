@@ -24,7 +24,7 @@ mod transform;
 #[derive(Default)]
 pub struct CompilerOptions {
   /**
-   * Whether to compile components to createComponentWithFallback.
+   * Whether compile components to createComponentWithFallback.
    * @default false
    */
   pub with_fallback: Option<bool>,
