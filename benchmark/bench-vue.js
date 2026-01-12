@@ -14,8 +14,8 @@ function vueTransform(source, options = {}) {
 const source = `export default () => <>${`
   <Comp
     foo={foo}
-    ref={foo}
-    v-model={foo}
+    ref={el => { foo = el }}
+    v-model={model}
     onClick={() => alert(1)}
   >
     <div v-if={foo} v-for={({item}, index) in list} key={index}>
@@ -51,26 +51,6 @@ const vueSource = `<template>${`
   </Comp>`.repeat(10)}
 </template>
 `
-
-vueTransform(vueSource)
-console.time('vue                        ')
-vueTransform(vueSource)
-console.timeEnd('vue                        ')
-
-vueTransform(vueSource, { vapor: true })
-console.time('vue-vapor                  ')
-vueTransform(vueSource, { vapor: true })
-console.timeEnd('vue-vapor                  ')
-
-rsTransform(source)
-console.time('vue-jsx-vapor.rs  + oxc    ')
-rsTransform(source)
-console.timeEnd('vue-jsx-vapor.rs  + oxc    ')
-
-rsTransform(source, { interop: true })
-console.time('vue-jsx.rs        + oxc    ')
-rsTransform(source, { interop: true })
-console.timeEnd('vue-jsx.rs        + oxc    ')
 
 const bench = new Bench()
 

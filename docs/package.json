@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@vue-jsx-vapor/eslint": "workspace:*",
+    "chart.js": "latest",
+    "chartjs-plugin-datalabels": "latest",
     "vue": "catalog:",
     "vue-jsx-vapor": "workspace:*"
   },

@@ -32,8 +32,18 @@ features:
     details: 拥有与 Vue Vapor 同等的性能！
   - icon: 🦀
     title: Rust 编译器
-    details: 基于 Oxc，相比于 Babel 插件 性能提升了20倍。
+    details: 基于 Oxc，相比于 Babel 插件，虚拟DOM 编译速度提升了~30倍，Vapor 编译速度提升了~50倍。
   - icon: ⚙️
     title: ESLint
     details: 提供 ESLint 插件为 vue-jsx-vapor 自动格式化代码。
 ---
+
+## Compiler 基准测试
+
+<script setup>
+import PerformanceChart from '../.vitepress/theme/components/PerformanceChart'
+</script>
+
+<ClientOnly>
+  <PerformanceChart title="每秒运行次数" />
+</ClientOnly>

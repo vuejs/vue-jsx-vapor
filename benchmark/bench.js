@@ -3,6 +3,8 @@ import { transformSync } from '@babel/core'
 import vueJsxVapor from '@vue-jsx-vapor/babel'
 import { transform as rsTransform } from '@vue-jsx-vapor/compiler-rs'
 import vueJsx from '@vue/babel-plugin-jsx'
+import { writeFileSync } from 'node:fs'
+import path from 'node:path'
 import { transformSync as oxcTransformSync } from 'oxc-transform'
 import { Bench } from 'tinybench'
 
@@ -44,13 +46,15 @@ function reactTransform(source) {
 const source = `export default () => <>${`
   <Comp
     foo={foo}
-    ref={foo}
-    modelValue={foo}
-    onUpdate:modelValue={e => foo = e}
+    ref={el => { foo = el }}
+    modelValue={model}
+    onUpdate:modelValue={$event => { model = $event }}
     onClick={() => alert(1)}
   >
     { foo
-      ? list.map(({item}, index) => <div key={index}>{item}</div>)
+      ? list.map(({item}, index) => {
+          return <div key={index}>{item}</div>
+        })
       : bar
         ? <span>{bar}</span>
         : <Foo>
@@ -62,61 +66,72 @@ const source = `export default () => <>${`
   </Comp>`.repeat(10)}
 </>`
 
-vueJsxVaporTransform(source)
-console.time('vue-jsx-vapor     + babel  ')
-vueJsxVaporTransform(source)
-console.timeEnd('vue-jsx-vapor     + babel  ')
-
-vueJsxTransform(source)
-console.time('vue-jsx           + babel  ')
-vueJsxTransform(source)
-console.timeEnd('vue-jsx           + babel  ')
-
-reactTransform(source)
-console.time('react             + babel  ')
-reactTransform(source)
-console.timeEnd('react             + babel  ')
-
-rsTransform(source, { interop: true })
-console.time('vue-jsx-vapor.rs  + oxc    ')
-rsTransform(source)
-console.timeEnd('vue-jsx-vapor.rs  + oxc    ')
-
-rsTransform(source, { interop: true })
-console.time('vue-jsx.rs        + oxc    ')
-rsTransform(source, { interop: true })
-console.timeEnd('vue-jsx.rs        + oxc    ')
-
-oxcTransformSync('index.jsx', source)
-console.time('react             + oxc    ')
-oxcTransformSync('index.jsx', source)
-console.timeEnd('react             + oxc    ')
-
 const bench = new Bench()
 
-bench.add('vue-jsx-vapor    + babel', () => {
+bench.add('vue-jsx-vapor + babel', () => {
   vueJsxVaporTransform(source)
 })
 
-bench.add('vue-jsx          + babel', () => {
+bench.add('vue-jsx + babel', () => {
   vueJsxTransform(source)
 })
 
-bench.add('react            + babel', () => {
+bench.add('react + babel', () => {
   reactTransform(source)
 })
 
-bench.add('vue-jsx-vapor.rs + oxc', () => {
+bench.add('vue-jsx-vapor + oxc', () => {
   rsTransform(source)
 })
 
-bench.add('vue-jsx.rs       + oxc', () => {
+bench.add('vue-jsx + oxc', () => {
   rsTransform(source, { interop: true })
 })
 
-bench.add('react            + oxc', () => {
+bench.add('react + oxc', () => {
   oxcTransformSync('index.jsx', source)
 })
 
 await bench.run()
 console.table(bench.table())
+
+function getGroupName(fullName) {
+  let name = fullName.replace(/['"]/g, '').trim()
+  name = name.replace(' + oxc', '').replace(' + babel', '')
+  return name
+}
+
+const groups = {}
+
+bench.tasks.forEach((t) => {
+  const groupName = getGroupName(t.name)
+  const ops = Math.round(t.result?.hz || 0)
+
+  if (!groups[groupName]) {
+    groups[groupName] = { name: groupName, babel: 0, oxc: 0 }
+  }
+
+  if (t.name.includes('babel')) groups[groupName].babel = ops
+  if (t.name.includes('oxc')) groups[groupName].oxc = ops
+})
+
+const resultList = Object.values(groups).map((item) => {
+  let multiplierText = ''
+  if (item.babel > 0 && item.oxc > 0) {
+    const x = (item.oxc / item.babel).toFixed(1)
+    multiplierText = `${x}x`
+  }
+  return {
+    ...item,
+    multiplierText,
+  }
+})
+
+resultList.sort((a, b) => b.oxc - a.oxc)
+
+const outputPath = path.resolve(
+  import.meta.dirname,
+  '../docs/public/bench-results.json',
+)
+writeFileSync(outputPath, JSON.stringify(resultList, null, 2))
+console.log('Bench data saved to', outputPath)

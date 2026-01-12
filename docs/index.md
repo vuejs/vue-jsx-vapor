@@ -32,8 +32,17 @@ features:
     details: It has the same performance as Vue Vapor!
   - icon: 🦀
     title: Compiler rewritten in Rust
-    details: Support generating Virtual DOM and Vapor. Powered by Oxc, 20x performance improvement over Babel plugin.
+    details: Powered by Oxc, ~30x (Virtual DOM) and ~50x (Vapor) performance improvement over Babel.
   - icon: ⚙️
     title: ESLint
     details: Provide an ESLint plugin for vue-jsx-vapor to automatically format directives and macros.
 ---
+
+## Compiler Benchmark
+<script setup>
+import PerformanceChart from './.vitepress/theme/components/PerformanceChart'
+</script>
+
+<ClientOnly>
+  <PerformanceChart />
+</ClientOnly>
