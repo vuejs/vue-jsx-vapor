@@ -1,20 +1,20 @@
 [
   {
     "name": "react",
-    "babel": 244,
-    "oxc": 14363,
-    "multiplierText": "58.9x"
+    "babel": 250,
+    "oxc": 14453,
+    "multiplierText": "57.8x"
   },
   {
     "name": "vue-jsx",
-    "babel": 195,
-    "oxc": 6012,
-    "multiplierText": "30.8x"
+    "babel": 207,
+    "oxc": 6031,
+    "multiplierText": "29.1x"
   },
   {
     "name": "vue-jsx-vapor",
-    "babel": 100,
-    "oxc": 5124,
-    "multiplierText": "51.2x"
+    "babel": 105,
+    "oxc": 5135,
+    "multiplierText": "48.9x"
   }
 ]

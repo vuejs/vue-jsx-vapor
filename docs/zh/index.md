@@ -41,7 +41,7 @@ features:
 ## Compiler 基准测试
 
 <script setup>
-import PerformanceChart from '../.vitepress/theme/components/PerformanceChart'
+import PerformanceChart from '../.vitepress/theme/components/PerformanceChart.vue'
 </script>
 
 <ClientOnly>

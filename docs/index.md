@@ -40,7 +40,7 @@ features:
 
 ## Compiler Benchmark
 <script setup>
-import PerformanceChart from './.vitepress/theme/components/PerformanceChart'
+import PerformanceChart from './.vitepress/theme/components/PerformanceChart.vue'
 </script>
 
 <ClientOnly>
