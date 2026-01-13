@@ -43,6 +43,7 @@ pub struct RootIRNode<'a> {
   pub component: HashSet<String>,
   pub directive: HashSet<String>,
   pub has_template_ref: bool,
+  pub has_deferred_v_show: bool,
 }
 impl<'a> RootIRNode<'a> {
   pub fn new(source: &'a str) -> Self {
@@ -52,6 +53,7 @@ impl<'a> RootIRNode<'a> {
       directive: HashSet::new(),
       has_template_ref: false,
       root_template_index: None,
+      has_deferred_v_show: false,
     }
   }
 }
@@ -186,6 +188,7 @@ pub struct DirectiveIRNode<'a> {
   pub builtin: Option<bool>,
   pub asset: Option<bool>,
   pub model_type: Option<String>,
+  pub deferred: bool,
 }
 
 #[derive(Debug)]

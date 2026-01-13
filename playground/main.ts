@@ -1,12 +1,12 @@
 import { createApp, createVaporApp, vaporInteropPlugin } from 'vue'
 
-const modules = import.meta.glob<any>('./src/*.tsx')
+const modules = import.meta.glob<any>('./src/**/*.tsx')
 const mod = (
   modules[`./src${location.pathname}.tsx`] || modules['./src/App.tsx']
 )()
 
 mod.then(({ default: mod }) => {
-  if (mod.name === 'vdom') {
+  if (mod.setup && !mod.__vapor) {
     const app = createApp(mod)
     app.mount('#app')
     // @ts-expect-error

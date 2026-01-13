@@ -3,6 +3,7 @@ use common::directive::{Directives, Modifiers};
 use common::expression::SimpleExpressionNode;
 pub use common::options::TransformOptions;
 use oxc_allocator::{Allocator, TakeIn};
+use oxc_ast::AstBuilder;
 use oxc_ast::ast::{
   Expression, JSXChild, JSXClosingFragment, JSXExpressionContainer, JSXFragment, JSXOpeningFragment,
 };
@@ -12,6 +13,7 @@ pub mod transform_children;
 pub mod transform_element;
 pub mod transform_template_ref;
 pub mod transform_text;
+pub mod transform_transition;
 pub mod v_bind;
 pub mod v_for;
 pub mod v_html;
@@ -66,6 +68,7 @@ type GetIndex<'a> = Option<Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>>;
 
 pub struct TransformContext<'a> {
   pub allocator: &'a Allocator,
+  pub ast: AstBuilder<'a>,
   pub index: RefCell<i32>,
 
   pub block: RefCell<BlockIRNode<'a>>,
@@ -102,6 +105,7 @@ impl<'a> TransformContext<'a> {
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
       ir: Rc::new(RefCell::new(RootIRNode::new(""))),
       block: RefCell::new(BlockIRNode::new()),
+      ast: AstBuilder::new(allocator),
       options,
     }
   }

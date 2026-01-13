@@ -43,6 +43,7 @@ pub fn gen_block_content<'a>(
   gen_effects_extra_frag: GenEffectsExtraFrag<'a>,
 ) -> oxc_allocator::Vec<'a, Statement<'a>> {
   let ast = &context.ast;
+  let block_is_none = block.is_none();
   let mut statements = ast.vec();
   let mut reset_block = None;
   let context_block = context_block as *mut BlockIRNode;
@@ -67,6 +68,61 @@ pub fn gen_block_content<'a>(
   }
   if let Some(gen_extra_frag) = gen_effects_extra_frag {
     gen_extra_frag(&mut statements, unsafe { &mut *context_block })
+  }
+
+  if block_is_none && context.ir.has_deferred_v_show {
+    statements.push(
+      ast.statement_expression(
+        SPAN,
+        ast.expression_call(
+          SPAN,
+          ast
+            .member_expression_static(
+              SPAN,
+              ast.expression_identifier(SPAN, "deferredApplyVShows"),
+              ast.identifier_name(SPAN, "forEach"),
+              false,
+            )
+            .into(),
+          NONE,
+          ast.vec1(
+            ast
+              .expression_arrow_function(
+                SPAN,
+                true,
+                false,
+                NONE,
+                ast.formal_parameters(
+                  SPAN,
+                  FormalParameterKind::ArrowFormalParameters,
+                  ast.vec1(ast.plain_formal_parameter(
+                    SPAN,
+                    ast.binding_pattern_binding_identifier(SPAN, "fn"),
+                  )),
+                  NONE,
+                ),
+                NONE,
+                ast.function_body(
+                  SPAN,
+                  ast.vec(),
+                  ast.vec1(ast.statement_expression(
+                    SPAN,
+                    ast.expression_call(
+                      SPAN,
+                      ast.expression_identifier(SPAN, "fn"),
+                      NONE,
+                      ast.vec(),
+                      false,
+                    ),
+                  )),
+                ),
+              )
+              .into(),
+          ),
+          false,
+        ),
+      ),
+    )
   }
 
   let mut return_nodes = unsafe { &mut *context_block }.returns.iter().map(|n| {

@@ -87,7 +87,7 @@ fn transform_component_slot<'a>(
     .filter(|n| {
       !is_empty_text(n)
         && if let JSXChild::Element(n) = n {
-          find_prop(n, Either::A(String::from("v-slot"))).is_none()
+          find_prop(n, vec!["v-slot"]).is_none()
         } else {
           true
         }

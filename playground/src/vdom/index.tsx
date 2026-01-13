@@ -13,7 +13,6 @@ const Comp = (props) => {
 }
 
 export default defineComponent({
-  name: 'vdom',
   setup: () => {
     const model = ref()
     return { model }

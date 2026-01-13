@@ -126,6 +126,7 @@ pub fn transform_v_model<'a>(
         model_type: Some(model_type.to_string()),
         builtin: Some(true),
         asset: None,
+        deferred: false,
       }),
       None,
     )

@@ -119,3 +119,19 @@ impl<'a> RootNode {
     }
   }
 }
+
+pub fn get_first_child<'a, 'b>(
+  children: &'a oxc_allocator::Vec<JSXChild<'b>>,
+) -> Option<&'a JSXChild<'b>> {
+  let mut first_child = None;
+  for child in children.iter() {
+    if !is_empty_text(child) {
+      if first_child.is_some() {
+        first_child = None;
+        break;
+      }
+      first_child = Some(child);
+    }
+  }
+  first_child
+}

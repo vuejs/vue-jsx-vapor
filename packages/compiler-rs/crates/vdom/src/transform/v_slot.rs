@@ -276,7 +276,7 @@ pub fn build_slots<'a>(
         && is_template(prev)
         && find_prop(
           prev,
-          Either::B(vec![String::from("v-if"), String::from("v-else-if")]),
+          vec!["v-if", "v-else-if"],
         )
         .is_some()
         // attach this slot to previous conditional

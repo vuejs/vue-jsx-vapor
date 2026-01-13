@@ -1,8 +1,7 @@
-use common::ast::RootNode;
+use common::ast::{RootNode, get_first_child};
 use common::directive::Directives;
 use common::expression::parse_expression;
 pub use common::options::TransformOptions;
-use common::text::is_empty_text;
 use common::walk::WalkIdentifiers;
 use common::walk_mut::WalkIdentifiersMut;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
@@ -19,6 +18,7 @@ pub mod cache_static;
 pub mod transform_children;
 pub mod transform_element;
 pub mod transform_text;
+pub mod transform_transition;
 pub mod utils;
 pub mod v_bind;
 pub mod v_for;
@@ -96,19 +96,7 @@ impl<'a> TransformContext<'a> {
   pub fn transform(&'a self, expression: Expression<'a>, source: &'a str) -> Expression<'a> {
     let allocator = self.allocator;
     if let Expression::JSXFragment(frag) = &expression
-      && let Some(child) = {
-        let mut first_child = None;
-        for child in frag.children.iter() {
-          if !is_empty_text(child) {
-            if first_child.is_some() {
-              first_child = None;
-              break;
-            }
-            first_child = Some(child);
-          }
-        }
-        first_child
-      }
+      && let Some(child) = get_first_child(&frag.children)
       && let JSXChild::Text(child) = child
     {
       return self

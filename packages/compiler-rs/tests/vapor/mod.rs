@@ -3,6 +3,7 @@ mod transform_children;
 mod transform_element;
 mod transform_template_ref;
 mod transform_text;
+mod transform_transition;
 mod v_bind;
 mod v_for;
 mod v_html;

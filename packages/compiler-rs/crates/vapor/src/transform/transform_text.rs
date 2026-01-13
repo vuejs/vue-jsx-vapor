@@ -209,7 +209,7 @@ fn process_interpolation<'a>(
   } else {
     is_fragment_node(parent_node)
       || matches!(parent_node, JSXChild::Element(parent_node)
-          if find_prop(parent_node, Either::A(String::from("v-slot"))).is_some())
+          if find_prop(parent_node, vec!["v-slot"]).is_some())
   } {
     context.register_operation(
       context_block,

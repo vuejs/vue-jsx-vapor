@@ -19,9 +19,9 @@ use crate::{
     },
   },
   transform::{
-    DirectiveTransformResult, TransformContext, v_bind::transform_v_bind, v_html::transform_v_html,
-    v_model::transform_v_model, v_on::transform_v_on, v_show::transform_v_show,
-    v_text::transform_v_text,
+    DirectiveTransformResult, TransformContext, transform_transition::transform_transition,
+    v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
+    v_on::transform_v_on, v_show::transform_v_show, v_text::transform_v_text,
   },
 };
 
@@ -72,12 +72,16 @@ pub unsafe fn transform_element<'a>(
   }) as Box<dyn FnMut() -> i32>));
 
   let tag = get_tag_name(&node.opening_element.name, context.ir.borrow().source);
+  if matches!(tag.as_ref(), "VaporTransition" | "VaporTransitionGroup") {
+    transform_transition(node, context);
+  }
   let is_custom_element = context.options.is_custom_element.as_ref()(tag.clone());
   let is_component = is_jsx_component(node) && !is_custom_element;
   let _context_block = context_block as *mut BlockIRNode;
   let props_result = build_props(
     directives,
     node,
+    parent_node,
     context,
     unsafe { &mut *_context_block },
     is_component,
@@ -234,6 +238,7 @@ pub struct PropsResult<'a> {
 pub fn build_props<'a>(
   directives: &Directives<'a>,
   node: &'a mut JSXElement<'a>,
+  parent_node: &mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   is_component: bool,
@@ -308,6 +313,7 @@ pub fn build_props<'a>(
           directives,
           prop,
           unsafe { &mut *node },
+          parent_node,
           is_component,
           context,
           unsafe { &mut *context_block },
@@ -361,6 +367,7 @@ pub fn transform_prop<'a>(
   directives: &Directives<'a>,
   prop: &'a mut JSXAttribute<'a>,
   node: &'a mut JSXElement<'a>,
+  parent_node: &mut JSXChild<'a>,
   is_component: bool,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
@@ -424,7 +431,7 @@ pub fn transform_prop<'a>(
     "bind" => return transform_v_bind(prop, node, context, context_block),
     "on" => return transform_v_on(prop, node, context, context_block),
     "model" => return transform_v_model(directives, prop, node, context, context_block),
-    "show" => return transform_v_show(prop, node, context, context_block),
+    "show" => return transform_v_show(prop, context, context_block, parent_node),
     "html" => return transform_v_html(prop, node, context, context_block),
     "text" => return transform_v_text(prop, node, context, context_block),
     _ => (),
@@ -450,6 +457,7 @@ pub fn transform_prop<'a>(
         asset: Some(with_fallback),
         builtin: None,
         model_type: None,
+        deferred: false,
       }),
       Some(Rc::clone(&get_operation_index)),
     )
@@ -483,7 +491,11 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
     }
     let name = prop.key.content.as_str();
     let existing = deduped.iter_mut().find(|i| i.key.content == name);
-    if let Some(existing) = existing {
+    // prop names and event handler names can be the same but serve different purposes
+    // e.g. `:appear="true"` is a prop while `@appear="handler"` is an event handler
+    if let Some(existing) = existing
+      && existing.handler.eq(&prop.handler)
+    {
       if name == "style" || name == "class" {
         for value in prop.values {
           existing.values.push(value)

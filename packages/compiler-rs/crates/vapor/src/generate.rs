@@ -201,6 +201,24 @@ impl<'a> CodegenContext<'a> {
       ))
     }
 
+    if self.ir.has_deferred_v_show {
+      statements.push(Statement::VariableDeclaration(
+        ast.alloc_variable_declaration(
+          SPAN,
+          VariableDeclarationKind::Const,
+          ast.vec1(ast.variable_declarator(
+            SPAN,
+            VariableDeclarationKind::Const,
+            ast.binding_pattern_binding_identifier(SPAN, "deferredApplyVShows"),
+            NONE,
+            Some(ast.expression_array(SPAN, ast.vec())),
+            false,
+          )),
+          false,
+        ),
+      ))
+    }
+
     let context_block = &mut *self.block.borrow_mut() as *mut BlockIRNode;
     statements.extend(gen_block_content(
       None,

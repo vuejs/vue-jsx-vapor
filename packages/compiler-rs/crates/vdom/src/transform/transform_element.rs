@@ -13,8 +13,9 @@ use crate::{
   ast::{NodeTypes, VNodeCall},
   transform::{
     DirectiveTransformResult, Directives, TransformContext, cache_static::get_constant_type,
-    v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
-    v_on::transform_v_on, v_show::transform_v_show, v_slot::build_slots, v_text::transform_v_text,
+    transform_transition::transform_transition, v_bind::transform_v_bind, v_html::transform_v_html,
+    v_model::transform_v_model, v_on::transform_v_on, v_show::transform_v_show,
+    v_slot::build_slots, v_text::transform_v_text,
   },
 };
 
@@ -73,6 +74,9 @@ pub unsafe fn transform_element<'a>(
   // The goal of the transform is to create a codegenNode implementing the
   // VNodeCall interface.
   let mut vnode_tag = get_tag_name(&node.opening_element.name, *context.source.borrow());
+  if matches!(vnode_tag.as_ref(), "Transition" | "TransitionGroup") {
+    transform_transition(node, context);
+  }
   let is_custom_element = context.options.is_custom_element.as_ref()(vnode_tag.clone());
   let is_component = is_jsx_component(node) && !is_custom_element;
   if !is_custom_element
@@ -742,8 +746,8 @@ pub fn build_directive_args<'a>(
   dir_args.push(ast.expression_identifier(SPAN, ast.atom(runtime)));
   let exp_is_none = dir.exp.is_none();
   if let Some(exp) = dir.exp.as_mut() {
-    dir_args.push(if let Some(node) = exp.ast.as_mut() {
-      node.take_in(context.allocator)
+    dir_args.push(if let Some(exp) = exp.ast.as_mut() {
+      context.process_expression(exp).0
     } else {
       ast.expression_string_literal(exp.loc, ast.atom(&exp.content), None)
     });

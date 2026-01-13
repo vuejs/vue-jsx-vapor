@@ -11,7 +11,8 @@ pub fn transform_v_show<'a>(
 ) -> Option<DirectiveTransformResult<'a>> {
   if dir.value.is_none() {
     context.options.on_error.as_ref()(ErrorCodes::VShowNoExpression, dir.span);
-  }
+    return None;
+  };
 
   Some(DirectiveTransformResult {
     props: vec![],

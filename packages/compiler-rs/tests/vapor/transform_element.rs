@@ -398,26 +398,3 @@ fn invalid_html_nesting() {
   })();
   "#);
 }
-
-#[test]
-fn transition_work_with_dynamic_keyed_children() {
-  let code = transform(
-    "<Transition>
-      <h1 key={key}>foo</h1>
-    </Transition>",
-    None,
-  )
-  .code;
-  assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { template as _template } from "vue";
-  const t0 = _template("<h1>foo</h1>");
-  (() => {
-    const n3 = _createComponent(Transition, null, { default: () => {
-      const n1 = t0();
-      return n1;
-    } }, true);
-    return n3;
-  })();
-  "#);
-}

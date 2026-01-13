@@ -1,4 +1,4 @@
-use napi::bindgen_prelude::{Either, Either3};
+use napi::bindgen_prelude::Either3;
 use oxc_ast::ast::{JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXElement};
 use oxc_span::{SPAN, Span};
 
@@ -116,7 +116,7 @@ pub fn resolve_directive<'a>(node: &'a mut JSXAttribute<'a>, source: &'a str) ->
 
 macro_rules! define_find_prop {
   ($fn_name:ident, $node_type: ty, $ret_type: ty, $iter: tt) => {
-    pub fn $fn_name<'a>(node: $node_type, key: Either<String, Vec<String>>) -> Option<$ret_type> {
+    pub fn $fn_name<'a>(node: $node_type, key: Vec<&str>) -> Option<$ret_type> {
       for attr in node.opening_element.attributes.$iter() {
         if let JSXAttributeItem::Attribute(attr) = attr {
           let name = match &attr.name {
@@ -124,12 +124,7 @@ macro_rules! define_find_prop {
             JSXAttributeName::NamespacedName(name) => name.namespace.name.to_string(),
           };
           let name = name.split('_').collect::<Vec<&str>>()[0];
-          if !name.eq("")
-            && match &key {
-              Either::A(s) => s.eq(name),
-              Either::B(s) => s.contains(&name.to_string()),
-            }
-          {
+          if !name.eq("") && key.contains(&name) {
             return Some(attr);
           }
         }

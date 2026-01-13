@@ -4,7 +4,7 @@ import { defineConfig } from 'vite'
 import Inspect from 'vite-plugin-inspect'
 import VueJsxVapor from 'vue-jsx-vapor/vite'
 
-const interops = ['*/vdom.tsx', '*/interop.tsx']
+const interops = ['*/vdom/*.tsx', '*/interop.tsx']
 export default defineConfig({
   plugins: [
     Vue(),
