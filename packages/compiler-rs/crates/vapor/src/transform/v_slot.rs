@@ -139,7 +139,6 @@ fn transform_template_slot<'a>(
   let exit_block = create_slot_block(exp, context, context_block);
 
   let for_parse_result = if let Some(v_for) = directives.v_for.as_mut() {
-    dbg!(&v_for);
     get_for_parse_result(v_for, context)
   } else {
     None

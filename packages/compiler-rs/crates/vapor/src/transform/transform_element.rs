@@ -320,7 +320,7 @@ pub fn build_props<'a>(
           Rc::clone(&get_operation_index),
         ) {
           if is_component && !prop.key.is_static {
-            // v-model:&name&="value"
+            // v-model:$name$="value"
             if !results.is_empty() {
               dynamic_args.push(Either3::A(dedupe_properties(results)));
               results = vec![];
