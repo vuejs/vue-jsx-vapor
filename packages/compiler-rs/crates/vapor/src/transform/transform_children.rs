@@ -1,6 +1,6 @@
 use std::{collections::VecDeque, mem};
 
-use napi::bindgen_prelude::Either16;
+use napi::bindgen_prelude::Either17;
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::ast::JSXChild;
 
@@ -157,7 +157,7 @@ fn register_insertion<'a>(
       // template node due to invalid nesting - generate actual insertion
       context.register_operation(
         context_block,
-        Either16::L(InsertNodeIRNode {
+        Either17::L(InsertNodeIRNode {
           insert_node: true,
           elements: ids.clone(),
           parent,
@@ -168,20 +168,25 @@ fn register_insertion<'a>(
     } else if let Some(operation) = &mut child.operation {
       // block types
       match operation.as_mut() {
-        Either16::A(if_ir_node) => {
+        Either17::A(if_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           if_ir_node.parent = Some(parent);
           if_ir_node.anchor = anchor;
         }
-        Either16::B(for_ir_node) => {
+        Either17::B(for_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           for_ir_node.parent = Some(parent);
           for_ir_node.anchor = anchor;
         }
-        Either16::N(create_component_ir_node) => {
+        Either17::N(create_component_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           create_component_ir_node.parent = Some(parent);
           create_component_ir_node.anchor = anchor;
+        }
+        Either17::Q(key_ir_node) => {
+          let parent = context.reference(&mut context_block.dynamic);
+          key_ir_node.parent = Some(parent);
+          key_ir_node.anchor = anchor;
         }
         _ => (),
       };

@@ -5,6 +5,7 @@ pub mod dom;
 pub mod event;
 pub mod expression;
 pub mod html;
+pub mod key;
 pub mod operation;
 pub mod prop;
 pub mod slot;

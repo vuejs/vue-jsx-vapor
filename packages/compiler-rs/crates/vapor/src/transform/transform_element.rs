@@ -2,7 +2,7 @@ use std::{cell::RefCell, mem, rc::Rc};
 
 use napi::{
   Either,
-  bindgen_prelude::{Either3, Either16},
+  bindgen_prelude::{Either3, Either17},
 };
 use oxc_ast::ast::{
   JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement,
@@ -131,7 +131,7 @@ pub fn transform_native_element<'a>(
       context.register_effect(
         context_block,
         false,
-        Either16::E(SetDynamicPropsIRNode {
+        Either17::E(SetDynamicPropsIRNode {
           set_dynamic_props: true,
           props,
           element,
@@ -157,7 +157,7 @@ pub fn transform_native_element<'a>(
           context.register_effect(
             context_block,
             context.is_operation(values.iter().collect::<Vec<&SimpleExpressionNode>>()),
-            Either16::D(SetPropIRNode {
+            Either17::D(SetPropIRNode {
               set_prop: true,
               prop,
               element,
@@ -212,7 +212,7 @@ pub fn transform_component_element<'a>(
   let dynamic = &mut context_block.dynamic;
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
 
-  dynamic.operation = Some(Box::new(Either16::N(CreateComponentIRNode {
+  dynamic.operation = Some(Box::new(Either17::N(CreateComponentIRNode {
     create_component: true,
     id: context.reference(dynamic),
     tag,
@@ -293,7 +293,7 @@ pub fn build_props<'a>(
               context.register_effect(
                 context_block,
                 context.is_operation(vec![&value]),
-                Either16::F(SetDynamicEventsIRNode {
+                Either17::F(SetDynamicEventsIRNode {
                   set_dynamic_events: true,
                   element,
                   value,
@@ -428,7 +428,7 @@ pub fn transform_prop<'a>(
   };
 
   match name.as_str() {
-    "bind" => return transform_v_bind(prop, node, context, context_block),
+    "bind" => return transform_v_bind(prop, context),
     "on" => return transform_v_on(prop, node, context, context_block),
     "model" => return transform_v_model(directives, prop, node, context, context_block),
     "show" => return transform_v_show(prop, context, context_block, parent_node),
@@ -449,7 +449,7 @@ pub fn transform_prop<'a>(
     let element = context.reference(&mut context_block.dynamic);
     context.register_operation(
       context_block,
-      Either16::M(DirectiveIRNode {
+      Either17::M(DirectiveIRNode {
         directive: true,
         element,
         dir: resolve_directive(prop, context.ir.borrow().source),

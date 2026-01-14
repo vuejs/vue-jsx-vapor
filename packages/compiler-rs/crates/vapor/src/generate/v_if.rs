@@ -19,6 +19,7 @@ pub fn gen_if<'a>(
 ) -> Statement<'a> {
   let ast = &context.ast;
   let IfIRNode {
+    id,
     condition,
     positive,
     negative,
@@ -113,7 +114,7 @@ pub fn gen_if<'a>(
       ast.vec1(ast.variable_declarator(
         SPAN,
         VariableDeclarationKind::Const,
-        ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("n{}", oper.id))),
+        ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("n{}", id))),
         NONE,
         Some(expression),
         false,

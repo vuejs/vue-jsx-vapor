@@ -4,7 +4,7 @@ use common::{
   error::ErrorCodes,
   expression::SimpleExpressionNode,
 };
-use napi::bindgen_prelude::{Either3, Either16};
+use napi::bindgen_prelude::{Either3, Either17};
 use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement};
 
 use crate::{
@@ -94,7 +94,7 @@ pub fn transform_v_on<'a>(
   context.register_effect(
     context_block,
     context.is_operation(vec![&arg]),
-    Either16::H(SetEventIRNode {
+    Either17::H(SetEventIRNode {
       set_event: true,
       element,
       value: exp,

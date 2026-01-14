@@ -1,4 +1,4 @@
-use napi::bindgen_prelude::Either16;
+use napi::bindgen_prelude::Either17;
 use oxc_ast::AstBuilder;
 use oxc_ast::NONE;
 use oxc_ast::ast::Statement;
@@ -42,7 +42,7 @@ pub fn gen_directives_for_element<'a>(
   let mut element = String::new();
   let mut directive_items = ast.vec();
   for item in &mut context_block.operation {
-    if let Either16::M(item) = item
+    if let Either17::M(item) = item
       && item.element == id
       && !item.builtin.unwrap_or(false)
     {

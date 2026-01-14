@@ -1,5 +1,5 @@
 use common::{error::ErrorCodes, expression::SimpleExpressionNode, text::is_empty_text};
-use napi::bindgen_prelude::{Either3, Either16};
+use napi::bindgen_prelude::{Either3, Either17};
 use oxc_ast::ast::{JSXAttribute, JSXElement};
 
 use crate::{
@@ -29,7 +29,7 @@ pub fn transform_v_html<'a>(
   context.register_effect(
     context_block,
     context.is_operation(vec![&exp]),
-    Either16::I(SetHtmlIRNode {
+    Either17::I(SetHtmlIRNode {
       set_html: true,
       element,
       value: exp,

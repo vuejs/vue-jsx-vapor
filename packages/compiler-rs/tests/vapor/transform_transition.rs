@@ -92,14 +92,17 @@ fn transition_work_with_dynamic_keyed_children() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { template as _template } from "vue";
+  import { createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
   const t0 = _template("<h1>foo</h1>");
   (() => {
-    const n3 = _createComponent(VaporTransition, null, { default: () => {
-      const n1 = t0();
+    const n5 = _createComponent(VaporTransition, null, { default: () => {
+      const n1 = _createKeyedFragment(() => foo, () => {
+        const n3 = t0();
+        return n3;
+      });
       return n1;
     } }, true);
-    return n3;
+    return n5;
   })();
   "#);
 }

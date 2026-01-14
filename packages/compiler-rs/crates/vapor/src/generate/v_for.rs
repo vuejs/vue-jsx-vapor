@@ -5,7 +5,7 @@ use common::{
   walk::WalkIdentifiers,
   walk_mut::WalkIdentifiersMut,
 };
-use napi::bindgen_prelude::Either16;
+use napi::bindgen_prelude::Either17;
 use oxc_allocator::CloneIn;
 use oxc_ast::{
   AstKind, NONE,
@@ -765,14 +765,15 @@ fn analyze_variable_scopes<'a>(
 fn get_expression<'a>(effect: &'a IREffect<'a>) -> Option<&'a SimpleExpressionNode<'a>> {
   let operation = effect.operations.first();
   match operation.as_ref().unwrap() {
-    Either16::C(operation) => operation.values.first(),
-    Either16::G(operation) => operation.values.first(),
-    Either16::K(operation) => operation.values.first(),
-    Either16::I(operation) => Some(&operation.value),
-    Either16::H(operation) => operation.value.as_ref(),
-    Either16::F(operation) => Some(&operation.value),
-    Either16::J(operation) => Some(&operation.value),
-    Either16::D(operation) => operation.prop.values.first(),
+    Either17::C(operation) => operation.values.first(),
+    Either17::G(operation) => operation.values.first(),
+    Either17::K(operation) => operation.values.first(),
+    Either17::I(operation) => Some(&operation.value),
+    Either17::H(operation) => operation.value.as_ref(),
+    Either17::F(operation) => Some(&operation.value),
+    Either17::J(operation) => Some(&operation.value),
+    Either17::D(operation) => operation.prop.values.first(),
+    Either17::Q(operation) => Some(&operation.value),
     _ => None,
   }
 }

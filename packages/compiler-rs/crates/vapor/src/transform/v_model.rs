@@ -1,4 +1,4 @@
-use napi::bindgen_prelude::Either16;
+use napi::bindgen_prelude::Either17;
 use oxc_ast::ast::{
   JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElement,
 };
@@ -118,7 +118,7 @@ pub fn transform_v_model<'a>(
     let element = context.reference(&mut context_block.dynamic);
     context.register_operation(
       context_block,
-      Either16::M(DirectiveIRNode {
+      Either17::M(DirectiveIRNode {
         directive: true,
         element,
         dir,

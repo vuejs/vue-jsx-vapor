@@ -1,4 +1,4 @@
-use napi::bindgen_prelude::{Either3, Either16};
+use napi::bindgen_prelude::{Either3, Either17};
 use oxc_ast::ast::JSXChild;
 
 use crate::{
@@ -31,7 +31,7 @@ pub unsafe fn transform_template_ref<'a>(
     if effect {
       context.register_operation(
         context_block,
-        Either16::O(DeclareOldRefIRNode {
+        Either17::O(DeclareOldRefIRNode {
           declare_older_ref: true,
           id,
         }),
@@ -42,7 +42,7 @@ pub unsafe fn transform_template_ref<'a>(
     context.register_effect(
       context_block,
       context.is_operation(vec![&value]),
-      Either16::J(SetTemplateRefIRNode {
+      Either17::J(SetTemplateRefIRNode {
         set_template_ref: true,
         element: id,
         value,

@@ -1,7 +1,7 @@
 use napi::bindgen_prelude::{Either3, Either4};
 use oxc_allocator::TakeIn;
 use oxc_ast::{
-  AstBuilder, NONE,
+  NONE,
   ast::{
     Expression, FormalParameterKind, JSXAttributeItem, JSXAttributeValue, JSXChild, JSXElement,
     ObjectPropertyKind, PropertyKind,
@@ -32,7 +32,7 @@ pub unsafe fn transform_v_slots<'a>(
     return None;
   };
 
-  let ast = AstBuilder::new(context.allocator);
+  let ast = &context.ast;
   let node_ptr = node as *mut oxc_allocator::Box<JSXElement>;
   let is_component = is_jsx_component(node);
   if is_component {

@@ -1,4 +1,4 @@
-use napi::bindgen_prelude::{Either3, Either16};
+use napi::bindgen_prelude::{Either3, Either17};
 use oxc_allocator::TakeIn;
 use oxc_ast::ast::{
   BinaryExpression, Expression, JSXAttribute, JSXAttributeValue, JSXChild, JSXElement,
@@ -56,6 +56,7 @@ pub unsafe fn transform_v_for<'a>(
   let key_prop = if let Some(key_prop) = directives.key.as_mut()
     && let Some(value) = &mut key_prop.value
   {
+    seen.insert(key_prop.span.start);
     Some(SimpleExpressionNode::new(
       Either3::C(value),
       context.ir.borrow().source,
@@ -110,7 +111,7 @@ pub unsafe fn transform_v_for<'a>(
   Some(Box::new(move || {
     let block = exit_block();
 
-    context_block.dynamic.operation = Some(Box::new(Either16::B(ForIRNode {
+    context_block.dynamic.operation = Some(Box::new(Either17::B(ForIRNode {
       id,
       value,
       key,

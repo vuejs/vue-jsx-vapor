@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use napi::{
   Either,
-  bindgen_prelude::{Either3, Either16},
+  bindgen_prelude::{Either3, Either17},
 };
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
@@ -213,7 +213,7 @@ fn process_interpolation<'a>(
   } {
     context.register_operation(
       context_block,
-      Either16::K(CreateNodesIRNode {
+      Either17::K(CreateNodesIRNode {
         create_nodes: true,
         id,
         once,
@@ -226,7 +226,7 @@ fn process_interpolation<'a>(
     *template = template.to_string() + " ";
     context.register_operation(
       context_block,
-      Either16::G(SetNodesIRNode {
+      Either17::G(SetNodesIRNode {
         set_nodes: true,
         element: id,
         once,
@@ -260,7 +260,7 @@ fn process_text_container<'a>(
     let parent = context.reference(&mut context_block.dynamic);
     context.register_operation(
       context_block,
-      Either16::P(GetTextChildIRNode {
+      Either17::P(GetTextChildIRNode {
         get_text_child: true,
         parent,
       }),
@@ -269,7 +269,7 @@ fn process_text_container<'a>(
     let element = context.reference(&mut context_block.dynamic);
     context.register_operation(
       context_block,
-      Either16::G(SetNodesIRNode {
+      Either17::G(SetNodesIRNode {
         set_nodes: true,
         element,
         once: *context.in_v_once.borrow(),
@@ -350,7 +350,7 @@ pub fn process_conditional_expression<'a>(
       unsafe { &mut *_context_block },
       parent_node,
     );
-    context_block.dynamic.operation = Some(Box::new(Either16::A(operation)));
+    context_block.dynamic.operation = Some(Box::new(Either17::A(operation)));
   })
 }
 
@@ -414,7 +414,7 @@ fn process_logical_expression<'a>(
       parent_node,
     );
 
-    context_block.dynamic.operation = Some(Box::new(Either16::A(operation)));
+    context_block.dynamic.operation = Some(Box::new(Either17::A(operation)));
   })
 }
 

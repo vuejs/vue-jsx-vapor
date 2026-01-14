@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use common::directive::{DirectiveNode, Modifiers};
-use napi::{Either, bindgen_prelude::Either16};
+use napi::{Either, bindgen_prelude::Either17};
 
 use common::expression::SimpleExpressionNode;
 
@@ -65,6 +65,15 @@ pub struct IfIRNode<'a> {
   pub positive: BlockIRNode<'a>,
   pub negative: Option<Box<Either<BlockIRNode<'a>, IfIRNode<'a>>>>,
   pub once: bool,
+  pub parent: Option<i32>,
+  pub anchor: Option<i32>,
+}
+
+#[derive(Debug)]
+pub struct KeyIRNode<'a> {
+  pub id: i32,
+  pub value: SimpleExpressionNode<'a>,
+  pub block: BlockIRNode<'a>,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
 }
@@ -218,7 +227,7 @@ pub struct GetTextChildIRNode {
   pub parent: i32,
 }
 
-pub type OperationNode<'a> = Either16<
+pub type OperationNode<'a> = Either17<
   IfIRNode<'a>,
   ForIRNode<'a>,
   SetTextIRNode<'a>,
@@ -235,6 +244,7 @@ pub type OperationNode<'a> = Either16<
   CreateComponentIRNode<'a>,
   DeclareOldRefIRNode,
   GetTextChildIRNode,
+  KeyIRNode<'a>,
 >;
 
 pub enum DynamicFlag {

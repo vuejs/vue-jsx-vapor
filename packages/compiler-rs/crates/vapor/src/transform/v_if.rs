@@ -1,4 +1,4 @@
-use napi::{Either, bindgen_prelude::Either16};
+use napi::{Either, bindgen_prelude::Either17};
 use oxc_allocator::TakeIn;
 use oxc_ast::ast::{Expression, JSXChild, JSXElement};
 use oxc_span::SPAN;
@@ -74,7 +74,7 @@ pub unsafe fn transform_v_if<'a>(
     return Some(Box::new(move || {
       let block = exit_block();
 
-      context_block.dynamic.operation = Some(Box::new(Either16::A(IfIRNode {
+      context_block.dynamic.operation = Some(Box::new(Either17::A(IfIRNode {
         id,
         positive: block,
         once: *context.in_v_once.borrow()
@@ -95,7 +95,7 @@ pub unsafe fn transform_v_if<'a>(
       i -= 1;
       let sibling = siblings.get_mut(i).unwrap() as *mut IRDynamicInfo;
       if let Some(operation) = (unsafe { &mut *sibling }).operation.as_mut()
-        && let Either16::A(operation) = operation.as_mut()
+        && let Either17::A(operation) = operation.as_mut()
       {
         last_if_node = Some(operation);
         break;

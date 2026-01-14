@@ -1,7 +1,7 @@
 use common::{
   check::is_void_tag, error::ErrorCodes, expression::SimpleExpressionNode, text::is_empty_text,
 };
-use napi::bindgen_prelude::{Either3, Either16};
+use napi::bindgen_prelude::{Either3, Either17};
 use oxc_ast::ast::{JSXAttribute, JSXElement};
 
 use crate::{
@@ -42,7 +42,7 @@ pub fn transform_v_text<'a>(
     let parent = context.reference(&mut context_block.dynamic);
     context.register_operation(
       context_block,
-      Either16::P(GetTextChildIRNode {
+      Either17::P(GetTextChildIRNode {
         get_text_child: true,
         parent,
       }),
@@ -52,7 +52,7 @@ pub fn transform_v_text<'a>(
     context.register_effect(
       context_block,
       context.is_operation(vec![&exp]),
-      Either16::C(SetTextIRNode {
+      Either17::C(SetTextIRNode {
         set_text: true,
         values: vec![exp],
         element,

@@ -1,18 +1,13 @@
 use common::{check::is_reserved_prop, expression::SimpleExpressionNode, text::camelize};
 use napi::bindgen_prelude::Either3;
-use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement};
+use oxc_ast::ast::{JSXAttribute, JSXAttributeName};
 use oxc_span::SPAN;
 
-use crate::{
-  ir::index::BlockIRNode,
-  transform::{DirectiveTransformResult, TransformContext},
-};
+use crate::transform::{DirectiveTransformResult, TransformContext};
 
 pub fn transform_v_bind<'a>(
   dir: &'a mut JSXAttribute<'a>,
-  _: &JSXElement,
   context: &'a TransformContext<'a>,
-  _: &mut BlockIRNode,
 ) -> Option<DirectiveTransformResult<'a>> {
   let name_string = match &dir.name {
     JSXAttributeName::Identifier(name) => &name.name.to_string(),
@@ -20,7 +15,16 @@ pub fn transform_v_bind<'a>(
   };
   let name_splited: Vec<&str> = name_string.split("_").collect();
   let modifiers = name_splited[1..].to_vec();
-  let name_string = name_splited[0].to_string();
+  if is_reserved_prop(&name_splited[0]) {
+    return None;
+  }
+
+  let mut arg = SimpleExpressionNode {
+    content: name_splited[0].to_string(),
+    is_static: true,
+    loc: SPAN,
+    ast: None,
+  };
 
   let exp = if let Some(value) = &mut dir.value {
     SimpleExpressionNode::new(Either3::C(value), context.ir.borrow().source)
@@ -32,16 +36,6 @@ pub fn transform_v_bind<'a>(
       ast: None,
     }
   };
-
-  let mut arg = SimpleExpressionNode {
-    content: name_string,
-    is_static: true,
-    loc: SPAN,
-    ast: None,
-  };
-  if is_reserved_prop(&arg.content) {
-    return None;
-  }
 
   if modifiers.contains(&"camel") {
     arg.content = camelize(&arg.content)
