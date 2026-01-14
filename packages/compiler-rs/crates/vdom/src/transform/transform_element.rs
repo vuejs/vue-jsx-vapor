@@ -4,7 +4,7 @@ use oxc_ast::{
   AstBuilder, NONE,
   ast::{
     ArrayExpression, Expression, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild,
-    JSXElement, ObjectProperty, ObjectPropertyKind, PropertyKind,
+    JSXElement, JSXExpression, ObjectProperty, ObjectPropertyKind, PropertyKind,
   },
 };
 use oxc_span::{GetSpan, SPAN, Span};
@@ -378,6 +378,11 @@ pub fn build_props<'a>(
     // static attribute
     match prop {
       JSXAttributeItem::Attribute(prop) => {
+        if let Some(JSXAttributeValue::ExpressionContainer(value)) = &prop.value
+          && matches!(value.expression, JSXExpression::EmptyExpression(_))
+        {
+          continue;
+        }
         let ast = &context.ast;
         let name_splited = match &prop.name {
           JSXAttributeName::Identifier(name) => name.name.as_str(),

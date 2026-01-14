@@ -498,22 +498,6 @@ fn should_allow_usage_on_custom_element() {
 }
 
 #[test]
-fn should_error_if_empty_expression() {
-  let error = RefCell::new(None);
-  transform(
-    r#"<input v-model={} />"#,
-    Some(TransformOptions {
-      interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
-      ..Default::default()
-    }),
-  );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelMalformedExpression));
-}
-
-#[test]
 fn should_error_if_mal_formed_expression() {
   let error = RefCell::new(None);
   transform(

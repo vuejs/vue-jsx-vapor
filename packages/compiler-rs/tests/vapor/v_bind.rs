@@ -30,6 +30,19 @@ fn no_expression() {
 }
 
 #[test]
+fn empty_expression() {
+  let code = transform("<div foo={}></div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const t0 = _template("<div></div>", true);
+  (() => {
+    const n0 = t0();
+    return n0;
+  })();
+  "#);
+}
+
+#[test]
 fn camel_modifier() {
   let code = transform("<div foo-bar_camel={id}/>", None).code;
   assert_snapshot!(code, @r#"

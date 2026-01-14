@@ -6,7 +6,7 @@ use napi::{
 };
 use oxc_ast::ast::{
   JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement,
-  JSXElementName,
+  JSXElementName, JSXExpression,
 };
 use oxc_span::SPAN;
 
@@ -273,6 +273,11 @@ pub fn build_props<'a>(
         continue;
       }
       JSXAttributeItem::Attribute(prop) => {
+        if let Some(JSXAttributeValue::ExpressionContainer(value)) = &prop.value
+          && matches!(value.expression, JSXExpression::EmptyExpression(_))
+        {
+          continue;
+        }
         let span = prop.span;
         if prop.name.get_identifier().name.eq("v-on") {
           // v-on={obj}
