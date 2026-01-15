@@ -1,3 +1,30 @@
+## [3.1.12](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.10...v3.1.12) (2026-01-15)
+
+
+### Bug Fixes
+
+* **compiler:** escape HTML chars ([9a9ae27](https://github.com/vuejs/vue-jsx-vapor/commit/9a9ae272f3746d97edcda58843b5b1d765ba58c2))
+* **compiler:** prevent process JSXEmptyExpression for props ([e67b463](https://github.com/vuejs/vue-jsx-vapor/commit/e67b463a585da05546adfc890575763c09b55435))
+* **compiler:** prevent process value prop as directive ([cc9c31a](https://github.com/vuejs/vue-jsx-vapor/commit/cc9c31a884879740068eb8b6a0413c43f95085a2))
+* **compiler:** wrapping resolveDirective for custom directive ([e1a37b8](https://github.com/vuejs/vue-jsx-vapor/commit/e1a37b858cfd4095d8362b2e2677c467830bcdad))
+
+
+### Features
+
+* **compiler:** support Transition and TransitionGroup ([13bd49b](https://github.com/vuejs/vue-jsx-vapor/commit/13bd49b95be437711252fed6ea8a185a6a2617f9))
+* **hmr:** support defineComponentName option ([1664b82](https://github.com/vuejs/vue-jsx-vapor/commit/1664b82289e353c32c767f0d683ed1103c003777)), closes [#35](https://github.com/vuejs/vue-jsx-vapor/issues/35)
+* **vapor:** support key ([89b502d](https://github.com/vuejs/vue-jsx-vapor/commit/89b502dbc3e5c02e0b1a87cb0c5f6e898d087f29))
+
+
+### Performance Improvements
+
+* **compiler:** remove IIFE that only returns an expression ([ac72506](https://github.com/vuejs/vue-jsx-vapor/commit/ac725066c6ab4bfb4f13f485da0df86367d8cea7))
+* **compiler:** use oxc_ast_visit instead of oxc_traverse ([32b789e](https://github.com/vuejs/vue-jsx-vapor/commit/32b789eb15fbc3560598e0a2070b7227e4817f98))
+* **macros:** add code filter hooks ([fe8d82f](https://github.com/vuejs/vue-jsx-vapor/commit/fe8d82f83b90e9774f10298b345471cac405d8c9))
+* **vapor:** use Direcives struct instead of find_prop ([ede1ab3](https://github.com/vuejs/vue-jsx-vapor/commit/ede1ab3ce2bc40bf55de3dfd25647f6937f72229))
+
+
+
 ## [3.1.11](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.10...v3.1.11) (2026-01-11)
 
 
