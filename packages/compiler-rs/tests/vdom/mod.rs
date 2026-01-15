@@ -1,4 +1,5 @@
 mod cache_static;
+mod custom_directive;
 mod transform_element;
 mod transform_text;
 mod transform_transition;

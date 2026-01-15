@@ -1,6 +1,5 @@
-use std::collections::HashSet;
-
 use common::directive::{DirectiveNode, Modifiers};
+use indexmap::IndexSet;
 use napi::{Either, bindgen_prelude::Either17};
 
 use common::expression::SimpleExpressionNode;
@@ -40,8 +39,8 @@ impl<'a> Default for BlockIRNode<'a> {
 pub struct RootIRNode<'a> {
   pub source: &'a str,
   pub root_template_index: Option<usize>,
-  pub component: HashSet<String>,
-  pub directive: HashSet<String>,
+  pub component: IndexSet<String>,
+  pub directive: IndexSet<String>,
   pub has_template_ref: bool,
   pub has_deferred_v_show: bool,
 }
@@ -49,8 +48,8 @@ impl<'a> RootIRNode<'a> {
   pub fn new(source: &'a str) -> Self {
     RootIRNode {
       source,
-      component: HashSet::new(),
-      directive: HashSet::new(),
+      component: IndexSet::new(),
+      directive: IndexSet::new(),
       has_template_ref: false,
       root_template_index: None,
       has_deferred_v_show: false,

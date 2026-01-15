@@ -14,7 +14,7 @@ use crate::{
 };
 
 use common::{
-  check::{is_built_in_directive, is_directive, is_jsx_component, is_template},
+  check::{get_directive_name, is_built_in_directive, is_jsx_component, is_template},
   text::resolve_jsx_text,
 };
 
@@ -56,7 +56,7 @@ pub unsafe fn transform_text<'a>(
             && !node.opening_element.attributes.iter().any(|p| {
               p.as_attribute()
                 .map(|p| {
-                  is_directive(&p.name.get_identifier().name)
+                  get_directive_name(&p.name.get_identifier().name).is_some()
                     && !is_built_in_directive(&p.name.get_identifier().name[2..])
                 })
                 .unwrap_or_default()

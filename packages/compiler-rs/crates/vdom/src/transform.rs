@@ -4,6 +4,7 @@ use common::expression::parse_expression;
 pub use common::options::TransformOptions;
 use common::walk::WalkIdentifiers;
 use common::walk_mut::WalkIdentifiersMut;
+use indexmap::IndexSet;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
 use oxc_ast::ast::{
   ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, IdentifierReference,
@@ -65,8 +66,8 @@ pub struct TransformContext<'a> {
   pub codegen_map: RefCell<HashMap<Span, NodeTypes<'a>>>,
   pub v_if_map: RefCell<HashMap<Span, (usize, Vec<Span>)>>,
   pub cache_index: RefCell<usize>,
-  pub components: RefCell<HashSet<String>>,
-  pub directives: RefCell<HashSet<String>>,
+  pub components: RefCell<IndexSet<String>>,
+  pub directives: RefCell<IndexSet<String>>,
   pub has_temp: RefCell<bool>,
   pub reference_expressions: RefCell<HashMap<Span, bool>>,
   pub static_expressions: RefCell<Vec<Span>>,
@@ -84,8 +85,8 @@ impl<'a> TransformContext<'a> {
       codegen_map: RefCell::new(HashMap::new()),
       v_if_map: RefCell::new(HashMap::new()),
       cache_index: RefCell::new(0),
-      components: RefCell::new(HashSet::new()),
-      directives: RefCell::new(HashSet::new()),
+      components: RefCell::new(IndexSet::new()),
+      directives: RefCell::new(IndexSet::new()),
       reference_expressions: RefCell::new(HashMap::new()),
       static_expressions: RefCell::new(vec![]),
       has_temp: RefCell::new(false),

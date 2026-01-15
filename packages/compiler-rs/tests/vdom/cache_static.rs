@@ -337,9 +337,12 @@ fn hoist_static_props_for_elements_with_directives() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
+  import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = { id: "foo" };
-  _openBlock(), _createElementBlock("div", null, [_withDirectives(_createElementVNode("div", _hoisted_1, null, 512), [[vFoo]])]);
+  (() => {
+    const _directive_foo = _resolveDirective("foo");
+    return _openBlock(), _createElementBlock("div", null, [_withDirectives(_createElementVNode("div", _hoisted_1, null, 512), [[_directive_foo]])]);
+  })();
   "#);
 }
 
@@ -631,10 +634,11 @@ fn should_not_cache_svg_with_directives() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
+  import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
-    return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _withDirectives(_createElementVNode("svg", null, [_createElementVNode("path", { d: "M2,3H5.5L12" })], -1), [[vFoo]]))]);
+    const _directive_foo = _resolveDirective("foo");
+    return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _withDirectives(_createElementVNode("svg", null, [_createElementVNode("path", { d: "M2,3H5.5L12" })], -1), [[_directive_foo]]))]);
   })();
   "#);
 }

@@ -406,8 +406,11 @@ fn v_for_on_element_with_custom_directive() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, withDirectives as _withDirectives } from "vue";
-  _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[vFoo]])), 256);
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+    const _directive_foo = _resolveDirective("foo");
+    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[_directive_foo]])), 256);
+  })();
   "#)
 }
 

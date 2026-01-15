@@ -22,12 +22,13 @@ use crate::{
 use common::{
   ast::RootNode,
   check::{
-    is_built_in_directive, is_directive, is_event, is_jsx_component, is_reserved_prop, is_template,
+    get_directive_name, is_built_in_directive, is_event, is_jsx_component, is_reserved_prop,
+    is_template,
   },
   directive::{DirectiveNode, resolve_directive},
   error::ErrorCodes,
   patch_flag::PatchFlags,
-  text::{camelize, get_tag_name, to_valid_asset_id},
+  text::{get_tag_name, to_valid_asset_id},
 };
 
 /// # SAFETY
@@ -393,7 +394,7 @@ pub fn build_props<'a>(
         let Some((name, modifiers)) = name_splited.split_first() else {
           unreachable!()
         };
-        if !is_directive(name) && !is_event(name) && *name == "ref" {
+        if get_directive_name(name).is_none() && !is_event(name) && *name == "ref" {
           has_ref = true;
           if let Some(marker) = ref_v_for_marker() {
             properties.push(marker)
@@ -401,11 +402,11 @@ pub fn build_props<'a>(
         }
 
         let dir_name = if is_event(name) {
-          "on".to_string()
-        } else if is_directive(name) {
-          name[2..].to_string()
+          "on"
+        } else if let Some(name) = get_directive_name(name) {
+          name
         } else {
-          "bind".to_string()
+          "bind"
         };
 
         // skip v-slot - it is handled by its dedicated transform.
@@ -452,7 +453,7 @@ pub fn build_props<'a>(
           }
         }
 
-        if let Some(DirectiveTransformResult { props, runtime }) = match dir_name.as_str() {
+        if let Some(DirectiveTransformResult { props, runtime }) = match dir_name {
           "bind" => {
             // #938: elements with dynamic keys should be forced into blocks
             if *name == "key"
@@ -484,13 +485,18 @@ pub fn build_props<'a>(
           "text" => transform_v_text(prop, node, context),
           _ => {
             if !is_built_in_directive(&dir_name) {
-              let runtime = if context.options.with_fallback {
+              let runtime = if dir_name
+                .chars()
+                .nth(1)
+                .map(|c| c.is_uppercase())
+                .unwrap_or_default()
+              {
+                name.to_string()
+              } else {
                 // inject statement for resolving directive
                 context.helper("resolveDirective");
-                context.directives.borrow_mut().insert(dir_name.clone());
+                context.directives.borrow_mut().insert(dir_name.to_string());
                 to_valid_asset_id(&dir_name, "directive")
-              } else {
-                camelize(&format!("v-{dir_name}"))
               };
               runtime_directives.push(
                 build_directive_args(

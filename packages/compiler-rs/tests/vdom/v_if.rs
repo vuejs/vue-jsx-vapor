@@ -303,9 +303,12 @@ fn key_injection_custom_directive() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
+  import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = { key: 0 };
-  ok ? _withDirectives((_openBlock(), _createElementBlock("div", _hoisted_1, null, 512)), [[vFoo]]) : _createCommentVNode("", true);
+  (() => {
+    const _directive_foo = _resolveDirective("foo");
+    return ok ? _withDirectives((_openBlock(), _createElementBlock("div", _hoisted_1, null, 512)), [[_directive_foo]]) : _createCommentVNode("", true);
+  })();
   "#)
 }
 

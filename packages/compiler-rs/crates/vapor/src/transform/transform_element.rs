@@ -28,14 +28,14 @@ use crate::{
 use common::{
   ast::RootNode,
   check::{
-    is_built_in_directive, is_directive, is_event, is_jsx_component, is_reserved_prop, is_template,
-    is_void_tag,
+    get_directive_name, is_built_in_directive, is_event, is_jsx_component, is_reserved_prop,
+    is_template, is_void_tag,
   },
   directive::{Directives, resolve_directive},
   dom::is_valid_html_nesting,
   error::ErrorCodes,
   expression::SimpleExpressionNode,
-  text::{camelize, get_tag_name, get_text_like_value},
+  text::{get_tag_name, get_text_like_value},
 };
 
 /// # SAFETY
@@ -395,7 +395,10 @@ pub fn transform_prop<'a>(
   } else {
     None
   };
-  if !is_directive(name) && !is_event(name) && (prop.value.is_none() || value.is_some()) {
+  if get_directive_name(name).is_none()
+    && !is_event(name)
+    && (prop.value.is_none() || value.is_some())
+  {
     if is_reserved_prop(name) {
       return None;
     }
@@ -424,15 +427,15 @@ pub fn transform_prop<'a>(
     ));
   }
 
-  let mut name = if is_event(name) {
-    "on".to_string()
-  } else if is_directive(name) {
-    name[2..].to_string()
+  let name = if is_event(name) {
+    "on"
+  } else if let Some(name) = get_directive_name(name) {
+    name
   } else {
-    "bind".to_string()
+    "bind"
   };
 
-  match name.as_str() {
+  match name {
     "bind" => return transform_v_bind(prop, context),
     "on" => return transform_v_on(prop, node, context, context_block),
     "model" => return transform_v_model(directives, prop, node, context, context_block),
@@ -442,13 +445,18 @@ pub fn transform_prop<'a>(
     _ => (),
   };
 
-  if !is_built_in_directive(&name) {
-    let with_fallback = context.options.with_fallback;
-    if with_fallback {
-      let directive = &mut context.ir.borrow_mut().directive;
-      directive.insert(name.clone());
+  if !is_built_in_directive(name) {
+    let asset = if name
+      .chars()
+      .nth(1)
+      .map(|c| c.is_uppercase())
+      .unwrap_or_default()
+    {
+      false
     } else {
-      name = camelize(&format!("v-{name}"))
+      let directive = &mut context.ir.borrow_mut().directive;
+      directive.insert(name.to_string());
+      true
     };
 
     let element = context.reference(&mut context_block.dynamic);
@@ -458,8 +466,8 @@ pub fn transform_prop<'a>(
         directive: true,
         element,
         dir: resolve_directive(prop, context.ir.borrow().source),
-        name,
-        asset: Some(with_fallback),
+        name: name.to_string(),
+        asset: Some(asset),
         builtin: None,
         model_type: None,
         deferred: false,

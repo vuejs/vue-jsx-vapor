@@ -355,12 +355,15 @@ fn directive_transforms() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
-  _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
-    vFoo,
-    hello,
-    bar
-  ]]);
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+    const _directive_foo = _resolveDirective("foo");
+    return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
+      _directive_foo,
+      hello,
+      bar
+    ]]);
+  })();
   "#)
 }
 
@@ -375,20 +378,25 @@ fn runtime_directives() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
-  _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [
-    [vFoo],
-    [vBar, "x"],
-    [
-      vBaz,
-      y,
-      arg,
-      {
-        mod: true,
-        mad: true
-      }
-    ]
-  ]);
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+    const _directive_foo = _resolveDirective("foo");
+    const _directive_bar = _resolveDirective("bar");
+    const _directive_baz = _resolveDirective("baz");
+    return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [
+      [_directive_foo],
+      [_directive_bar, "x"],
+      [
+        _directive_baz,
+        y,
+        arg,
+        {
+          mod: true,
+          mad: true
+        }
+      ]
+    ]);
+  })();
   "#)
 }
 
@@ -639,8 +647,11 @@ mod patch_flag_analysis {
     )
     .code;
     assert_snapshot!(code, @r#"
-    import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
-    _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[vFoo]]);
+    import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+    (() => {
+      const _directive_foo = _resolveDirective("foo");
+      return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[_directive_foo]]);
+    })();
     "#)
   }
 
@@ -765,10 +776,11 @@ fn force_block_for_runtime_custom_directive_with_children() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
     const _cache = _createVNodeCache(0);
-    return _withDirectives((_openBlock(), _createElementBlock("div", null, _cache[0] || (_cache[0] = _normalizeVNode("hello", -1)))), [[vFoo]]);
+    const _directive_foo = _resolveDirective("foo");
+    return _withDirectives((_openBlock(), _createElementBlock("div", null, _cache[0] || (_cache[0] = _normalizeVNode("hello", -1)))), [[_directive_foo]]);
   })();
   "#)
 }

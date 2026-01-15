@@ -420,13 +420,28 @@ pub fn is_event(s: &str) -> bool {
       .unwrap_or(false)
 }
 
-pub fn is_directive(s: &str) -> bool {
-  s.starts_with("v-")
-    && s
+pub fn get_directive_name(s: &str) -> Option<&str> {
+  if s.starts_with("v") {
+    if s
+      .chars()
+      .nth(1)
+      .map(|c| c.is_uppercase())
+      .unwrap_or_default()
+    {
+      Some(s)
+    } else if s
       .chars()
       .nth(2)
       .map(|c| c.is_ascii_lowercase())
-      .unwrap_or(false)
+      .unwrap_or_default()
+    {
+      Some(s[2..].as_ref())
+    } else {
+      None
+    }
+  } else {
+    None
+  }
 }
 
 // Checks if the input `node` is a reference to a bound variable.

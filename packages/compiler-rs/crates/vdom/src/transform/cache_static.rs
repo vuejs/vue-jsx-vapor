@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use common::{
-  check::{is_directive, is_jsx_component},
+  check::{get_directive_name, is_jsx_component},
   patch_flag::PatchFlags,
   text::is_empty_text,
   walk::WalkIdentifiers,
@@ -304,7 +304,7 @@ pub fn get_constant_type<'a>(
                   continue;
                 };
                 let name = &p.name.get_identifier().name;
-                if !is_directive(name)
+                if get_directive_name(name).is_none()
                   && let Some(JSXAttributeValue::ExpressionContainer(value)) = p.value.as_ref()
                   && value.expression.span() != SPAN
                 {

@@ -79,7 +79,7 @@ impl<'a> TransformContext<'a> {
       ))
     }
 
-    for name in self.components.borrow_mut().drain() {
+    for name in self.components.borrow_mut().drain(..) {
       statements.push(Statement::VariableDeclaration(
         ast.alloc_variable_declaration(
           SPAN,
@@ -110,7 +110,7 @@ impl<'a> TransformContext<'a> {
       ));
     }
 
-    for name in self.directives.borrow_mut().drain() {
+    for name in self.directives.borrow_mut().drain(..) {
       statements.push(Statement::VariableDeclaration(
         ast.alloc_variable_declaration(
           SPAN,
