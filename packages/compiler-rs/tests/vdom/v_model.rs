@@ -471,16 +471,12 @@ fn should_not_error_on_static_value_binding_alongside_v_model() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
-  const _hoisted_1 = { "onUpdate:modelValue": ($event) => test = $event };
-  (() => {
-    const _directive_lue = _resolveDirective("lue");
-    return _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[_vModelText, test], [
-      _directive_lue,
-      "test",
-      value
-    ]]);
-  })();
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
+  const _hoisted_1 = {
+    "onUpdate:modelValue": ($event) => test = $event,
+    value: "test"
+  };
+  _withDirectives((_openBlock(), _createElementBlock("input", _hoisted_1, null, 512)), [[_vModelText, test]]);
   "#);
 }
 

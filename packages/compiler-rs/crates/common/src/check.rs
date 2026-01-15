@@ -421,27 +421,24 @@ pub fn is_event(s: &str) -> bool {
 }
 
 pub fn get_directive_name(s: &str) -> Option<&str> {
-  if s.starts_with("v") {
-    if s
+  if s.starts_with("v")
+    && s
       .chars()
       .nth(1)
       .map(|c| c.is_uppercase())
       .unwrap_or_default()
-    {
-      Some(s)
-    } else if s
+  {
+    return Some(s);
+  } else if s.starts_with("v-")
+    && s
       .chars()
       .nth(2)
       .map(|c| c.is_ascii_lowercase())
       .unwrap_or_default()
-    {
-      Some(s[2..].as_ref())
-    } else {
-      None
-    }
-  } else {
-    None
+  {
+    return Some(s[2..].as_ref());
   }
+  None
 }
 
 // Checks if the input `node` is a reference to a bound variable.
