@@ -12,13 +12,13 @@ fn basic() {
   import { child as _child, createIf as _createIf, template as _template } from "vue";
   const t0 = _template("<div> </div>");
   (() => {
-    const n0 = _createIf(() => ok, () => {
-      const n2 = t0();
-      const x2 = _child(n2);
-      _setNodes(x2, () => msg);
-      return n2;
-    });
-    return n0;
+  	const n0 = _createIf(() => ok, () => {
+  		const n2 = t0();
+  		const x2 = _child(n2);
+  		_setNodes(x2, () => msg);
+  		return n2;
+  	});
+  	return n0;
   })();
   "#);
 }
@@ -36,19 +36,19 @@ fn template() {
   const t1 = _template("hello");
   const t2 = _template("<p> </p>");
   (() => {
-    const n0 = _createIf(() => ok, () => {
-      const n2 = t0();
-      const n3 = t1();
-      const n4 = t2();
-      const x4 = _child(n4);
-      _renderEffect(() => _setText(x4, _toDisplayString(msg)));
-      return [
-        n2,
-        n3,
-        n4
-      ];
-    });
-    return n0;
+  	const n0 = _createIf(() => ok, () => {
+  		const n2 = t0();
+  		const n3 = t1();
+  		const n4 = t2();
+  		const x4 = _child(n4);
+  		_renderEffect(() => _setText(x4, _toDisplayString(msg)));
+  		return [
+  			n2,
+  			n3,
+  			n4
+  		];
+  	});
+  	return n0;
   })();
   "#);
 }
@@ -64,15 +64,15 @@ fn dedupe_same_template() {
   import { createIf as _createIf, template as _template } from "vue";
   const t0 = _template("<div>hello</div>");
   (() => {
-    const n0 = _createIf(() => ok, () => {
-      const n2 = t0();
-      return n2;
-    });
-    const n3 = _createIf(() => ok, () => {
-      const n5 = t0();
-      return n5;
-    });
-    return [n0, n3];
+  	const n0 = _createIf(() => ok, () => {
+  		const n2 = t0();
+  		return n2;
+  	});
+  	const n3 = _createIf(() => ok, () => {
+  		const n5 = t0();
+  		return n5;
+  	});
+  	return [n0, n3];
   })();
   "#);
 }
@@ -84,11 +84,11 @@ fn component() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf } from "vue";
   (() => {
-    const n0 = _createIf(() => foo, () => {
-      const n2 = _createComponent(Comp);
-      return n2;
-    });
-    return n0;
+  	const n0 = _createIf(() => foo, () => {
+  		const n2 = _createComponent(Comp);
+  		return n2;
+  	});
+  	return n0;
   })();
   "#);
 }
@@ -101,14 +101,14 @@ fn v_if_v_else() {
   const t0 = _template("<div></div>");
   const t1 = _template("<p></p>");
   (() => {
-    const n0 = _createIf(() => ok, () => {
-      const n2 = t0();
-      return n2;
-    }, () => {
-      const n4 = t1();
-      return n4;
-    });
-    return n0;
+  	const n0 = _createIf(() => ok, () => {
+  		const n2 = t0();
+  		return n2;
+  	}, () => {
+  		const n4 = t1();
+  		return n4;
+  	});
+  	return n0;
   })();
   "#);
 }
@@ -121,14 +121,14 @@ fn v_if_v_if_else() {
   const t0 = _template("<div></div>");
   const t1 = _template("<p></p>");
   (() => {
-    const n0 = _createIf(() => ok, () => {
-      const n2 = t0();
-      return n2;
-    }, () => _createIf(() => orNot, () => {
-      const n4 = t1();
-      return n4;
-    }));
-    return n0;
+  	const n0 = _createIf(() => ok, () => {
+  		const n2 = t0();
+  		return n2;
+  	}, () => _createIf(() => orNot, () => {
+  		const n4 = t1();
+  		return n4;
+  	}));
+  	return n0;
   })();
   "#);
 }
@@ -146,17 +146,17 @@ fn v_if_v_else_if_v_else() {
   const t1 = _template("<p></p>");
   const t2 = _template("fine");
   (() => {
-    const n0 = _createIf(() => ok, () => {
-      const n2 = t0();
-      return n2;
-    }, () => _createIf(() => orNot, () => {
-      const n4 = t1();
-      return n4;
-    }, () => {
-      const n7 = t2();
-      return n7;
-    }));
-    return n0;
+  	const n0 = _createIf(() => ok, () => {
+  		const n2 = t0();
+  		return n2;
+  	}, () => _createIf(() => orNot, () => {
+  		const n4 = t1();
+  		return n4;
+  	}, () => {
+  		const n7 = t2();
+  		return n7;
+  	}));
+  	return n0;
   })();
   "#);
 }
@@ -179,21 +179,21 @@ fn v_if_v_if_or_v_elses() {
   const t2 = _template("<span>baz</span>");
   const t3 = _template("<div></div>", true);
   (() => {
-    const n8 = t3();
-    _setInsertionState(n8);
-    const n0 = _createIf(() => "foo", () => {
-      const n2 = t0();
-      return n2;
-    });
-    _setInsertionState(n8);
-    const n3 = _createIf(() => "bar", () => {
-      const n5 = t1();
-      return n5;
-    }, () => {
-      const n7 = t2();
-      return n7;
-    });
-    return n8;
+  	const n8 = t3();
+  	_setInsertionState(n8);
+  	const n0 = _createIf(() => "foo", () => {
+  		const n2 = t0();
+  		return n2;
+  	});
+  	_setInsertionState(n8);
+  	const n3 = _createIf(() => "bar", () => {
+  		const n5 = t1();
+  		return n5;
+  	}, () => {
+  		const n7 = t2();
+  		return n7;
+  	});
+  	return n8;
   })();
   "#);
 }
@@ -219,18 +219,18 @@ fn comment_between_branches() {
   const t2 = _template("fine");
   const t3 = _template("<div>text</div>");
   (() => {
-    const n1 = _createIf(() => ok, () => {
-      const n3 = t0();
-      return n3;
-    }, () => _createIf(() => orNot, () => {
-      const n8 = t1();
-      return n8;
-    }, () => {
-      const n14 = t2();
-      return n14;
-    }));
-    const n18 = t3();
-    return [n1, n18];
+  	const n1 = _createIf(() => ok, () => {
+  		const n3 = t0();
+  		return n3;
+  	}, () => _createIf(() => orNot, () => {
+  		const n8 = t1();
+  		return n8;
+  	}, () => {
+  		const n14 = t2();
+  		return n14;
+  	}));
+  	const n18 = t3();
+  	return [n1, n18];
   })();
   "#);
 }
@@ -246,12 +246,12 @@ fn v_on_with_v_if() {
   import { createIf as _createIf, renderEffect as _renderEffect, setDynamicEvents as _setDynamicEvents, template as _template } from "vue";
   const t0 = _template("<button>w/ v-if</button>");
   (() => {
-    const n0 = _createIf(() => true, () => {
-      const n2 = t0();
-      _renderEffect(() => _setDynamicEvents(n2, { click: clickEvent }));
-      return n2;
-    }, null, true);
-    return n0;
+  	const n0 = _createIf(() => true, () => {
+  		const n2 = t0();
+  		_renderEffect(() => _setDynamicEvents(n2, { click: clickEvent }));
+  		return n2;
+  	}, null, true);
+  	return n0;
   })();
   "#);
 }

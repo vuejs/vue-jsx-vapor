@@ -8,11 +8,11 @@ fn key() {
   import { createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
   const t0 = _template("<div></div>");
   (() => {
-    const n0 = _createKeyedFragment(() => id, () => {
-      const n2 = t0();
-      return n2;
-    });
-    return n0;
+  	const n0 = _createKeyedFragment(() => id, () => {
+  		const n2 = t0();
+  		return n2;
+  	});
+  	return n0;
   })();
   "#);
 }
@@ -24,8 +24,8 @@ fn key_with_v_once() {
   import { template as _template } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-    const n0 = t0();
-    return n0;
+  	const n0 = t0();
+  	return n0;
   })();
   "#,
   );
@@ -38,14 +38,14 @@ fn key_with_v_if() {
   import { createIf as _createIf, createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
   const t0 = _template("<div></div>");
   (() => {
-    const n0 = _createIf(() => id, () => {
-      const n2 = _createKeyedFragment(() => id, () => {
-        const n4 = t0();
-        return n4;
-      });
-      return n2;
-    });
-    return n0;
+  	const n0 = _createIf(() => id, () => {
+  		const n2 = _createKeyedFragment(() => id, () => {
+  			const n4 = t0();
+  			return n4;
+  		});
+  		return n2;
+  	});
+  	return n0;
   })();
   "#);
 }
@@ -66,14 +66,14 @@ fn key_with_anchor_insertion_in_middle() {
   const t0 = _template("<div></div>");
   const t1 = _template("<div><div></div><!><div></div></div>", true);
   (() => {
-    const n4 = t1();
-    const n3 = _next(_child(n4));
-    _setInsertionState(n4, n3);
-    const n0 = _createKeyedFragment(() => 1, () => {
-      const n2 = t0();
-      return n2;
-    });
-    return n4;
+  	const n4 = t1();
+  	const n3 = _next(_child(n4));
+  	_setInsertionState(n4, n3);
+  	const n0 = _createKeyedFragment(() => 1, () => {
+  		const n2 = t0();
+  		return n2;
+  	});
+  	return n4;
   })();
   "#);
 }

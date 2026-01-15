@@ -88,7 +88,7 @@ fn function_expression() {
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick"];
   _openBlock(), _createElementBlock("div", { onClick: function($event) {
-    foo($event);
+  	foo($event);
   } }, null, 8, _hoisted_1);
   "#)
 }
@@ -140,8 +140,8 @@ fn should_not_error_if_no_expression_but_has_modifier() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _openBlock(), _createElementBlock("input", { onClick: _cache[0] || (_cache[0] = _withModifiers(() => {}, ["prevent"])) });
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createElementBlock("input", { onClick: _cache[0] || (_cache[0] = _withModifiers(() => {}, ["prevent"])) });
   })();
   "#);
 }
@@ -173,8 +173,8 @@ fn vue_prefixed_events() {
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onVnodeMounted", "onVnodeBeforeUpdate"];
   _openBlock(), _createElementBlock("div", {
-    onVnodeMounted: onMount,
-    onVnodeBeforeUpdate: onBeforeUpdate
+  	onVnodeMounted: onMount,
+  	onVnodeBeforeUpdate: onBeforeUpdate
   }, null, 8, _hoisted_1);
   "#);
 }
@@ -193,8 +193,8 @@ fn empty_handler() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = _withModifiers(() => {}, ["prevent"])) });
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = _withModifiers(() => {}, ["prevent"])) });
   })();
   "#);
 }
@@ -246,8 +246,8 @@ fn should_not_be_cached_inside_v_once() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementVNode as _createElementVNode, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div", null, [_createElementVNode("div", { onClick: foo }, null, 8, ["onClick"])])).cacheIndex = 0, _setBlockTracking(1), _cache[0]);
+  	const _cache = _createVNodeCache(0);
+  	return _cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div", null, [_createElementVNode("div", { onClick: foo }, null, 8, ["onClick"])])).cacheIndex = 0, _setBlockTracking(1), _cache[0]);
   })();
   "#);
 }
@@ -283,8 +283,8 @@ fn identifier_from_v_slot_should_not_be_cached() {
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   const _hoisted_1 = ["onClick"];
   _openBlock(), _createBlock(Comp, null, {
-    default: _withCtx(({ item }) => [_createElementVNode("div", { onClick: foo(item) }, null, 8, _hoisted_1)]),
-    _: 2
+  	default: _withCtx(({ item }) => [_createElementVNode("div", { onClick: foo(item) }, null, 8, _hoisted_1)]),
+  	_: 2
   }, 1024);
   "#);
 }
@@ -320,8 +320,8 @@ fn should_support_multiple_events_and_modifiers_options() {
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
   const _hoisted_1 = ["onClick", "onKeyup"];
   _openBlock(), _createElementBlock("div", {
-    onClick: _withModifiers(test, ["stop"]),
-    onKeyup: _withKeys(test, ["enter"])
+  	onClick: _withModifiers(test, ["stop"]),
+  	onKeyup: _withKeys(test, ["enter"])
   }, null, 40, _hoisted_1);
   "#);
 }

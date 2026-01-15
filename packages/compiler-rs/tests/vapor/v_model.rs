@@ -11,9 +11,9 @@ fn basic() {
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const t0 = _template("<input>", true);
   (() => {
-    const n0 = t0();
-    _applyTextModel(n0, () => model, (_value) => model = _value);
-    return n0;
+  	const n0 = t0();
+  	_applyTextModel(n0, () => model, (_value) => model = _value);
+  	return n0;
   })();
   "#);
 }
@@ -25,9 +25,9 @@ fn modifiers_number() {
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const t0 = _template("<input>", true);
   (() => {
-    const n0 = t0();
-    _applyTextModel(n0, () => model, (_value) => model = _value, { number: true });
-    return n0;
+  	const n0 = t0();
+  	_applyTextModel(n0, () => model, (_value) => model = _value, { number: true });
+  	return n0;
   })();
   "#);
 }
@@ -39,9 +39,9 @@ fn modifiers_trim() {
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const t0 = _template("<input>", true);
   (() => {
-    const n0 = t0();
-    _applyTextModel(n0, () => model, (_value) => model = _value, { trim: true });
-    return n0;
+  	const n0 = t0();
+  	_applyTextModel(n0, () => model, (_value) => model = _value, { trim: true });
+  	return n0;
   })();
   "#);
 }
@@ -53,9 +53,9 @@ fn modifiers_lazy() {
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const t0 = _template("<input>", true);
   (() => {
-    const n0 = t0();
-    _applyTextModel(n0, () => model, (_value) => model = _value, { lazy: true });
-    return n0;
+  	const n0 = t0();
+  	_applyTextModel(n0, () => model, (_value) => model = _value, { lazy: true });
+  	return n0;
   })();
   "#);
 }
@@ -67,9 +67,9 @@ fn should_support_input_text() {
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const t0 = _template("<input type=\"text\">", true);
   (() => {
-    const n0 = t0();
-    _applyTextModel(n0, () => model, (_value) => model = _value);
-    return n0;
+  	const n0 = t0();
+  	_applyTextModel(n0, () => model, (_value) => model = _value);
+  	return n0;
   })();
   "#);
 }
@@ -81,9 +81,9 @@ fn should_support_input_radio() {
   import { applyRadioModel as _applyRadioModel, template as _template } from "vue";
   const t0 = _template("<input type=\"radio\">", true);
   (() => {
-    const n0 = t0();
-    _applyRadioModel(n0, () => model, (_value) => model = _value);
-    return n0;
+  	const n0 = t0();
+  	_applyRadioModel(n0, () => model, (_value) => model = _value);
+  	return n0;
   })();
   "#);
 }
@@ -95,9 +95,9 @@ fn should_support_input_checkbox() {
   import { applyCheckboxModel as _applyCheckboxModel, template as _template } from "vue";
   const t0 = _template("<input type=\"checkbox\">", true);
   (() => {
-    const n0 = t0();
-    _applyCheckboxModel(n0, () => model, (_value) => model = _value);
-    return n0;
+  	const n0 = t0();
+  	_applyCheckboxModel(n0, () => model, (_value) => model = _value);
+  	return n0;
   })();
   "#);
 }
@@ -109,9 +109,9 @@ fn should_support_select() {
   import { applySelectModel as _applySelectModel, template as _template } from "vue";
   const t0 = _template("<select></select>", true);
   (() => {
-    const n0 = t0();
-    _applySelectModel(n0, () => model, (_value) => model = _value);
-    return n0;
+  	const n0 = t0();
+  	_applySelectModel(n0, () => model, (_value) => model = _value);
+  	return n0;
   })();
   "#);
 }
@@ -123,9 +123,9 @@ fn should_support_textarea() {
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const t0 = _template("<textarea></textarea>", true);
   (() => {
-    const n0 = t0();
-    _applyTextModel(n0, () => model, (_value) => model = _value);
-    return n0;
+  	const n0 = t0();
+  	_applyTextModel(n0, () => model, (_value) => model = _value);
+  	return n0;
   })();
   "#);
 }
@@ -137,10 +137,10 @@ fn should_support_input_dynamic_type() {
   import { applyDynamicModel as _applyDynamicModel, renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
   const t0 = _template("<input>", true);
   (() => {
-    const n0 = t0();
-    _applyDynamicModel(n0, () => model, (_value) => model = _value);
-    _renderEffect(() => _setProp(n0, "type", foo));
-    return n0;
+  	const n0 = t0();
+  	_applyDynamicModel(n0, () => model, (_value) => model = _value);
+  	_renderEffect(() => _setProp(n0, "type", foo));
+  	return n0;
   })();
   "#);
 }
@@ -152,10 +152,10 @@ fn should_support_dynamic_props() {
   import { applyDynamicModel as _applyDynamicModel, renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
   const t0 = _template("<input>", true);
   (() => {
-    const n0 = t0();
-    _applyDynamicModel(n0, () => model, (_value) => model = _value);
-    _renderEffect(() => _setDynamicProps(n0, [obj], true));
-    return n0;
+  	const n0 = t0();
+  	_applyDynamicModel(n0, () => model, (_value) => model = _value);
+  	_renderEffect(() => _setDynamicProps(n0, [obj], true));
+  	return n0;
   })();
   "#);
 }
@@ -167,9 +167,9 @@ fn should_support_member_expression() {
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const t0 = _template("<input>", true);
   (() => {
-    const n0 = t0();
-    _applyTextModel(n0, () => setupRef.child, (_value) => setupRef.child = _value);
-    return n0;
+  	const n0 = t0();
+  	_applyTextModel(n0, () => setupRef.child, (_value) => setupRef.child = _value);
+  	return n0;
   })();
   "#);
 }
@@ -181,17 +181,17 @@ fn should_support_member_expression_with_inline() {
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const t0 = _template("<input>");
   (() => {
-    const n0 = t0();
-    const n1 = t0();
-    const n2 = t0();
-    _applyTextModel(n0, () => setupRef.child, (_value) => setupRef.child = _value);
-    _applyTextModel(n1, () => setupLet.child, (_value) => setupLet.child = _value);
-    _applyTextModel(n2, () => setupMaybeRef.child, (_value) => setupMaybeRef.child = _value);
-    return [
-      n0,
-      n1,
-      n2
-    ];
+  	const n0 = t0();
+  	const n1 = t0();
+  	const n2 = t0();
+  	_applyTextModel(n0, () => setupRef.child, (_value) => setupRef.child = _value);
+  	_applyTextModel(n1, () => setupLet.child, (_value) => setupLet.child = _value);
+  	_applyTextModel(n2, () => setupMaybeRef.child, (_value) => setupMaybeRef.child = _value);
+  	return [
+  		n0,
+  		n1,
+  		n2
+  	];
   })();
   "#);
 }
@@ -323,11 +323,11 @@ fn component() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-    const n0 = _createComponent(Comp, {
-      modelValue: () => foo,
-      "onUpdate:modelValue": () => (_value) => foo = _value
-    }, null, true);
-    return n0;
+  	const n0 = _createComponent(Comp, {
+  		modelValue: () => foo,
+  		"onUpdate:modelValue": () => (_value) => foo = _value
+  	}, null, true);
+  	return n0;
   })();
   "#);
 }
@@ -338,11 +338,11 @@ fn component_with_arguments() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-    const n0 = _createComponent(Comp, {
-      bar: () => foo,
-      "onUpdate:bar": () => (_value) => foo = _value
-    }, null, true);
-    return n0;
+  	const n0 = _createComponent(Comp, {
+  		bar: () => foo,
+  		"onUpdate:bar": () => (_value) => foo = _value
+  	}, null, true);
+  	return n0;
   })();
   "#);
 }
@@ -353,11 +353,11 @@ fn component_with_dynamic_arguments() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-    const n0 = _createComponent(Comp, { $: [() => ({
-      [arg]: foo,
-      ["onUpdate:" + arg]: () => (_value) => foo = _value
-    })] }, null, true);
-    return n0;
+  	const n0 = _createComponent(Comp, { $: [() => ({
+  		[arg]: foo,
+  		["onUpdate:" + arg]: () => (_value) => foo = _value
+  	})] }, null, true);
+  	return n0;
   })();
   "#);
 }
@@ -369,14 +369,14 @@ fn component_with_dynamic_arguments_with_v_for() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor } from "vue";
   (() => {
-    const n0 = _createFor(() => list, (_for_item0) => {
-      const n2 = _createComponent(Comp, { $: [() => ({
-        [_for_item0.value.arg]: foo,
-        ["onUpdate:" + _for_item0.value.arg]: () => (_value) => foo = _value
-      })] });
-      return n2;
-    }, void 0, 2);
-    return n0;
+  	const n0 = _createFor(() => list, (_for_item0) => {
+  		const n2 = _createComponent(Comp, { $: [() => ({
+  			[_for_item0.value.arg]: foo,
+  			["onUpdate:" + _for_item0.value.arg]: () => (_value) => foo = _value
+  		})] });
+  		return n2;
+  	}, void 0, 2);
+  	return n0;
   })();
   "#);
 }
@@ -387,15 +387,15 @@ fn component_should_generate_model_value_modifiers() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-    const n0 = _createComponent(Comp, {
-      modelValue: () => foo,
-      "onUpdate:modelValue": () => (_value) => foo = _value,
-      modelValueModifiers: () => ({
-        trim: true,
-        "bar-baz": true
-      })
-    }, null, true);
-    return n0;
+  	const n0 = _createComponent(Comp, {
+  		modelValue: () => foo,
+  		"onUpdate:modelValue": () => (_value) => foo = _value,
+  		modelValueModifiers: () => ({
+  			trim: true,
+  			"bar-baz": true
+  		})
+  	}, null, true);
+  	return n0;
   })();
   "#);
 }
@@ -410,15 +410,15 @@ fn component_with_arguments_should_generate_model_modifiers() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-    const n0 = _createComponent(Comp, {
-      foo: () => foo,
-      "onUpdate:foo": () => (_value) => foo = _value,
-      fooModifiers: () => ({ trim: true }),
-      bar: () => bar,
-      "onUpdate:bar": () => (_value) => bar = _value,
-      barModifiers: () => ({ number: true })
-    }, null, true);
-    return n0;
+  	const n0 = _createComponent(Comp, {
+  		foo: () => foo,
+  		"onUpdate:foo": () => (_value) => foo = _value,
+  		fooModifiers: () => ({ trim: true }),
+  		bar: () => bar,
+  		"onUpdate:bar": () => (_value) => bar = _value,
+  		barModifiers: () => ({ number: true })
+  	}, null, true);
+  	return n0;
   })();
   "#);
 }
@@ -433,16 +433,16 @@ fn component_with_dynamic_arguments_should_generate_model_modifiers() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-    const n0 = _createComponent(Comp, { $: [() => ({
-      [foo]: foo,
-      ["onUpdate:" + foo]: () => (_value) => foo = _value,
-      [foo + "Modifiers"]: () => ({ trim: true })
-    }), () => ({
-      [bar.value]: bar,
-      ["onUpdate:" + bar.value]: () => (_value) => bar = _value,
-      [bar.value + "Modifiers"]: () => ({ number: true })
-    })] }, null, true);
-    return n0;
+  	const n0 = _createComponent(Comp, { $: [() => ({
+  		[foo]: foo,
+  		["onUpdate:" + foo]: () => (_value) => foo = _value,
+  		[foo + "Modifiers"]: () => ({ trim: true })
+  	}), () => ({
+  		[bar.value]: bar,
+  		["onUpdate:" + bar.value]: () => (_value) => bar = _value,
+  		[bar.value + "Modifiers"]: () => ({ number: true })
+  	})] }, null, true);
+  	return n0;
   })();
   "#);
 }

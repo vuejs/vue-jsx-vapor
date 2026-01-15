@@ -43,8 +43,8 @@ fn empty_expression() {
   import { template as _template } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-    const n0 = t0();
-    return n0;
+  	const n0 = t0();
+  	return n0;
   })();
   "#);
 }

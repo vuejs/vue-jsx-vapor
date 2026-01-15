@@ -11,9 +11,9 @@ fn basic() {
   import { applyVShow as _applyVShow, template as _template } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-    const n0 = t0();
-    _applyVShow(n0, () => foo);
-    return n0;
+  	const n0 = t0();
+  	_applyVShow(n0, () => foo);
+  	return n0;
   })();
   "#);
 }

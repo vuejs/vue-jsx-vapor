@@ -16,8 +16,8 @@ fn static_template() {
   import { template as _template } from "vue";
   const t0 = _template("<div><div>hello</div><input><span></span></div>", true);
   (() => {
-    const n0 = t0();
-    return n0;
+  	const n0 = t0();
+  	return n0;
   })();
   "#);
 }
@@ -28,8 +28,8 @@ fn interpolation() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   (() => {
-    const n0 = _createNodes(1, 2, () => a + b + c);
-    return n0;
+  	const n0 = _createNodes(1, 2, () => a + b + c);
+  	return n0;
   })();
   "#);
 }
@@ -40,8 +40,8 @@ fn on_consecutive_text() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   (() => {
-    const n0 = _createNodes("hello world");
-    return n0;
+  	const n0 = _createNodes("hello world");
+  	return n0;
   })();
   "#);
 }
@@ -54,9 +54,9 @@ fn consecutive_text() {
   import { template as _template } from "vue";
   const t0 = _template("<div></div>");
   (() => {
-    const n2 = t0();
-    const n0 = _createNodes(() => msg, " ");
-    return [n0, n2];
+  	const n2 = t0();
+  	const n0 = _createNodes(() => msg, " ");
+  	return [n0, n2];
   })();
   "#);
 }
@@ -68,8 +68,8 @@ fn escapes_raw_static_text_when_generating_the_template_string() {
   import { template as _template } from "vue";
   const t0 = _template("<code>\xA0&lt;script&gt;</code>", true);
   (() => {
-    const n0 = t0();
-    return n0;
+  	const n0 = t0();
+  	return n0;
   })();
   "#);
 }
@@ -81,8 +81,8 @@ fn text_like() {
   import { template as _template } from "vue";
   const t0 = _template("<div>2foo111</div>", true);
   (() => {
-    const n0 = t0();
-    return n0;
+  	const n0 = t0();
+  	return n0;
   })();
   "#);
 }
@@ -100,19 +100,19 @@ fn conditional_expression() {
   const t0 = _template("<span> </span>");
   const t1 = _template("<div>fail</div>");
   (() => {
-    const n0 = _createIf(() => ok, () => {
-      const n2 = t0();
-      const x2 = _child(n2);
-      _setNodes(x2, () => msg);
-      return n2;
-    }, () => _createIf(() => fail, () => {
-      const n4 = t1();
-      return n4;
-    }, () => {
-      const n6 = _createNodes(null);
-      return n6;
-    }));
-    return n0;
+  	const n0 = _createIf(() => ok, () => {
+  		const n2 = t0();
+  		const x2 = _child(n2);
+  		_setNodes(x2, () => msg);
+  		return n2;
+  	}, () => _createIf(() => fail, () => {
+  		const n4 = t1();
+  		return n4;
+  	}, () => {
+  		const n6 = _createNodes(null);
+  		return n6;
+  	}));
+  	return n0;
   })();
   "#);
 }
@@ -126,26 +126,26 @@ fn multiple_conditional() {
   const t0 = _template(" ");
   const t1 = _template("<span></span>");
   (() => {
-    const n0 = _createIf(() => ok, () => {
-      const n2 = _createNodes(() => ok);
-      return n2;
-    }, () => {
-      const n4 = _createNodes(() => fail);
-      return n4;
-    });
-    const n5 = t0();
-    const n6 = _createIf(() => foo, () => {
-      const n8 = _createNodes(() => foo);
-      return n8;
-    }, () => {
-      const n10 = t1();
-      return n10;
-    });
-    return [
-      n0,
-      n5,
-      n6
-    ];
+  	const n0 = _createIf(() => ok, () => {
+  		const n2 = _createNodes(() => ok);
+  		return n2;
+  	}, () => {
+  		const n4 = _createNodes(() => fail);
+  		return n4;
+  	});
+  	const n5 = t0();
+  	const n6 = _createIf(() => foo, () => {
+  		const n8 = _createNodes(() => foo);
+  		return n8;
+  	}, () => {
+  		const n10 = t1();
+  		return n10;
+  	});
+  	return [
+  		n0,
+  		n5,
+  		n6
+  	];
   })();
   "#);
 }
@@ -158,16 +158,16 @@ fn logical_expression() {
   import { child as _child, createIf as _createIf, template as _template } from "vue";
   const t0 = _template("<div> </div>");
   (() => {
-    const n0 = _createIf(() => ok, () => {
-      const n2 = t0();
-      const x2 = _child(n2);
-      _setNodes(x2, () => msg);
-      return n2;
-    }, () => {
-      const n4 = _createNodes(() => ok);
-      return n4;
-    });
-    return n0;
+  	const n0 = _createIf(() => ok, () => {
+  		const n2 = t0();
+  		const x2 = _child(n2);
+  		_setNodes(x2, () => msg);
+  		return n2;
+  	}, () => {
+  		const n4 = _createNodes(() => ok);
+  		return n4;
+  	});
+  	return n0;
   })();
   "#);
 }
@@ -181,18 +181,18 @@ fn logical_expression_or() {
   const t0 = _template("<div> </div>");
   const t1 = _template("<div></div>", true);
   (() => {
-    const n5 = t1();
-    _setInsertionState(n5);
-    const n0 = _createIf(() => foo, () => {
-      const n2 = _createNodes(() => foo);
-      return n2;
-    }, () => {
-      const n4 = t0();
-      const x4 = _child(n4);
-      _setNodes(x4, () => foo);
-      return n4;
-    });
-    return n5;
+  	const n5 = t1();
+  	_setInsertionState(n5);
+  	const n0 = _createIf(() => foo, () => {
+  		const n2 = _createNodes(() => foo);
+  		return n2;
+  	}, () => {
+  		const n4 = t0();
+  		const x4 = _child(n4);
+  		_setNodes(x4, () => foo);
+  		return n4;
+  	});
+  	return n5;
   })();
   "#)
 }
@@ -206,18 +206,18 @@ fn logical_expression_coalesce() {
   const t0 = _template("<div> </div>");
   const t1 = _template("<div></div>", true);
   (() => {
-    const n5 = t1();
-    _setInsertionState(n5);
-    const n0 = _createIf(() => foo == null, () => {
-      const n2 = t0();
-      const x2 = _child(n2);
-      _setNodes(x2, () => foo);
-      return n2;
-    }, () => {
-      const n4 = _createNodes(() => foo);
-      return n4;
-    });
-    return n5;
+  	const n5 = t1();
+  	_setInsertionState(n5);
+  	const n0 = _createIf(() => foo == null, () => {
+  		const n2 = t0();
+  		const x2 = _child(n2);
+  		_setNodes(x2, () => foo);
+  		return n2;
+  	}, () => {
+  		const n4 = _createNodes(() => foo);
+  		return n4;
+  	});
+  	return n5;
   })();
   "#)
 }
@@ -242,25 +242,25 @@ fn expression_map() {
   const t1 = _template("<span> </span>", true);
   const t2 = _template("<br>", true);
   (() => {
-    const n0 = _createNodes(() => Array.from({ length: count.value }).map((_, index) => {
-      if (index > 1) {
-        return (() => {
-          const n0 = t0();
-          return n0;
-        })();
-      } else {
-        return [(() => {
-          const n0 = t1();
-          const x0 = _child(n0);
-          _setNodes(x0, "(", () => index, ") lt 1");
-          return n0;
-        })(), (() => {
-          const n0 = t2();
-          return n0;
-        })()];
-      }
-    }));
-    return n0;
+  	const n0 = _createNodes(() => Array.from({ length: count.value }).map((_, index) => {
+  		if (index > 1) {
+  			return (() => {
+  				const n0 = t0();
+  				return n0;
+  			})();
+  		} else {
+  			return [(() => {
+  				const n0 = t1();
+  				const x0 = _child(n0);
+  				_setNodes(x0, "(", () => index, ") lt 1");
+  				return n0;
+  			})(), (() => {
+  				const n0 = t2();
+  				return n0;
+  			})()];
+  		}
+  	}));
+  	return n0;
   })();
   "#);
 }

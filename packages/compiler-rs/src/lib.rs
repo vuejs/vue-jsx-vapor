@@ -5,7 +5,7 @@ use napi::{
 };
 use napi_derive::napi;
 use oxc_allocator::Allocator;
-use oxc_codegen::{Codegen, CodegenReturn, IndentChar};
+use oxc_codegen::{Codegen, CodegenReturn};
 use oxc_parser::Parser;
 use oxc_span::{SourceType, Span};
 use std::path::PathBuf;
@@ -137,8 +137,6 @@ pub fn transform<'a>(source: &'a str, options: Option<TransformOptions<'a>>) -> 
       } else {
         None
       },
-      indent_width: 2,
-      indent_char: IndentChar::Space,
       ..CodegenOptions::default()
     })
     .build(&program)

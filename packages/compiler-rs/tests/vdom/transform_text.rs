@@ -46,12 +46,12 @@ fn consecutive_text() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _openBlock(), _createBlock(_Fragment, null, [
-      _normalizeVNode(() => foo),
-      _cache[0] || (_cache[0] = _normalizeVNode(" bar ", -1)),
-      _normalizeVNode(() => baz)
-    ], 64);
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createBlock(_Fragment, null, [
+  		_normalizeVNode(() => foo),
+  		_cache[0] || (_cache[0] = _normalizeVNode(" bar ", -1)),
+  		_normalizeVNode(() => baz)
+  	], 64);
   })();
   "#);
 }
@@ -70,14 +70,14 @@ fn consecutive_text_between_elements() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _openBlock(), _createBlock(_Fragment, null, [
-      _cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1)),
-      _normalizeVNode(() => foo),
-      _cache[1] || (_cache[1] = _normalizeVNode(" bar ", -1)),
-      _normalizeVNode(() => baz),
-      _cache[2] || (_cache[2] = _createElementVNode("div", null, null, -1))
-    ], 64);
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createBlock(_Fragment, null, [
+  		_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1)),
+  		_normalizeVNode(() => foo),
+  		_cache[1] || (_cache[1] = _normalizeVNode(" bar ", -1)),
+  		_normalizeVNode(() => baz),
+  		_cache[2] || (_cache[2] = _createElementVNode("div", null, null, -1))
+  	], 64);
   })();
   "#);
 }
@@ -96,12 +96,12 @@ fn text_between_elements_static() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _openBlock(), _createBlock(_Fragment, null, [..._cache[0] || (_cache[0] = [
-      _createElementVNode("div", null, null, -1),
-      _normalizeVNode("hello", -1),
-      _createElementVNode("div", null, null, -1)
-    ])], 64);
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createBlock(_Fragment, null, [..._cache[0] || (_cache[0] = [
+  		_createElementVNode("div", null, null, -1),
+  		_normalizeVNode("hello", -1),
+  		_createElementVNode("div", null, null, -1)
+  	])], 64);
   })();
   "#);
 }
@@ -120,14 +120,14 @@ fn whitespace_text() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _openBlock(), _createBlock(_Fragment, null, [..._cache[0] || (_cache[0] = [
-      _createElementVNode("div", null, null, -1),
-      _normalizeVNode("hello", -1),
-      _createElementVNode("div", null, null, -1),
-      _normalizeVNode(),
-      _createElementVNode("div", null, null, -1)
-    ])], 64);
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createBlock(_Fragment, null, [..._cache[0] || (_cache[0] = [
+  		_createElementVNode("div", null, null, -1),
+  		_normalizeVNode("hello", -1),
+  		_createElementVNode("div", null, null, -1),
+  		_normalizeVNode(),
+  		_createElementVNode("div", null, null, -1)
+  	])], 64);
   })();
   "#);
 }
@@ -146,16 +146,16 @@ fn consecutive_text_mixed_with_elements() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _openBlock(), _createBlock(_Fragment, null, [
-      _cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1)),
-      _normalizeVNode(() => foo),
-      _cache[1] || (_cache[1] = _normalizeVNode(" bar ", -1)),
-      _normalizeVNode(() => baz),
-      _cache[2] || (_cache[2] = _createElementVNode("div", null, null, -1)),
-      _cache[3] || (_cache[3] = _normalizeVNode("hello", -1)),
-      _cache[4] || (_cache[4] = _createElementVNode("div", null, null, -1))
-    ], 64);
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createBlock(_Fragment, null, [
+  		_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1)),
+  		_normalizeVNode(() => foo),
+  		_cache[1] || (_cache[1] = _normalizeVNode(" bar ", -1)),
+  		_normalizeVNode(() => baz),
+  		_cache[2] || (_cache[2] = _createElementVNode("div", null, null, -1)),
+  		_cache[3] || (_cache[3] = _normalizeVNode("hello", -1)),
+  		_cache[4] || (_cache[4] = _createElementVNode("div", null, null, -1))
+  	], 64);
   })();
   "#);
 }
@@ -174,8 +174,8 @@ fn template_v_for() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createBlock(_Fragment, null, [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))], 64))), 256);
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createBlock(_Fragment, null, [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))], 64))), 256);
   })();
   "#);
 }
@@ -194,8 +194,8 @@ fn element_with_custom_directives_and_only_one_text_child_node() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _directive_foo = _resolveDirective("foo");
-    return _withDirectives((_openBlock(), _createElementBlock("p", null, [_normalizeVNode(() => foo)])), [[_directive_foo]]);
+  	const _directive_foo = _resolveDirective("foo");
+  	return _withDirectives((_openBlock(), _createElementBlock("p", null, [_normalizeVNode(() => foo)])), [[_directive_foo]]);
   })();
   "#);
 }
@@ -218,8 +218,8 @@ fn condition_expression() {
   import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _openBlock(), _createElementBlock("div", null, [foo ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), foo ? (_openBlock(), _createElementBlock("div", { key: 1 }, [_normalizeVNode(() => foo), _cache[0] || (_cache[0] = _normalizeVNode("bar", -1))])) : (_openBlock(), _createBlock(_Fragment, { key: 2 }, [_normalizeVNode(bar)], 64))]);
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createElementBlock("div", null, [foo ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), foo ? (_openBlock(), _createElementBlock("div", { key: 1 }, [_normalizeVNode(() => foo), _cache[0] || (_cache[0] = _normalizeVNode("bar", -1))])) : (_openBlock(), _createBlock(_Fragment, { key: 2 }, [_normalizeVNode(bar)], 64))]);
   })();
   "#)
 }
@@ -238,8 +238,8 @@ fn logical_expression() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
-    let _temp;
-    return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : _normalizeVNode((_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(_temp)], 64)))]);
+  	let _temp;
+  	return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : _normalizeVNode((_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(_temp)], 64)))]);
   })();
   "#)
 }
@@ -258,8 +258,8 @@ fn logical_expression_or() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
-    let _temp;
-    return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp) ? _normalizeVNode((_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(_temp)], 64))) : (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)]))]);
+  	let _temp;
+  	return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp) ? _normalizeVNode((_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(_temp)], 64))) : (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)]))]);
   })();
   "#)
 }
@@ -278,8 +278,8 @@ fn logical_expression_coalesce() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
-    let _temp;
-    return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp == null) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : _normalizeVNode((_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(_temp)], 64)))]);
+  	let _temp;
+  	return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp == null) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : _normalizeVNode((_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(_temp)], 64)))]);
   })();
   "#)
 }

@@ -8,10 +8,10 @@ fn basic() {
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-    const _directive_example = _resolveDirective("example");
-    const n0 = t0();
-    _withVaporDirectives(n0, [[_directive_example]]);
-    return n0;
+  	const _directive_example = _resolveDirective("example");
+  	const n0 = t0();
+  	_withVaporDirectives(n0, [[_directive_example]]);
+  	return n0;
   })();
   "#);
 }
@@ -23,10 +23,10 @@ fn binding_value() {
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-    const _directive_example = _resolveDirective("example");
-    const n0 = t0();
-    _withVaporDirectives(n0, [[_directive_example, () => msg]]);
-    return n0;
+  	const _directive_example = _resolveDirective("example");
+  	const n0 = t0();
+  	_withVaporDirectives(n0, [[_directive_example, () => msg]]);
+  	return n0;
   })();
   "#);
 }
@@ -38,14 +38,14 @@ fn static_parameters() {
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-    const _directive_example = _resolveDirective("example");
-    const n0 = t0();
-    _withVaporDirectives(n0, [[
-      _directive_example,
-      () => msg,
-      "foo"
-    ]]);
-    return n0;
+  	const _directive_example = _resolveDirective("example");
+  	const n0 = t0();
+  	_withVaporDirectives(n0, [[
+  		_directive_example,
+  		() => msg,
+  		"foo"
+  	]]);
+  	return n0;
   })();
   "#);
 }
@@ -57,15 +57,15 @@ fn modifiers() {
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-    const _directive_example = _resolveDirective("example");
-    const n0 = t0();
-    _withVaporDirectives(n0, [[
-      _directive_example,
-      () => msg,
-      void 0,
-      { bar: true }
-    ]]);
-    return n0;
+  	const _directive_example = _resolveDirective("example");
+  	const n0 = t0();
+  	_withVaporDirectives(n0, [[
+  		_directive_example,
+  		() => msg,
+  		void 0,
+  		{ bar: true }
+  	]]);
+  	return n0;
   })();
   "#);
 }
@@ -77,15 +77,15 @@ fn modifiers_with_binding() {
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-    const _directive_example = _resolveDirective("example");
-    const n0 = t0();
-    _withVaporDirectives(n0, [[
-      _directive_example,
-      void 0,
-      void 0,
-      { "foo-bar": true }
-    ]]);
-    return n0;
+  	const _directive_example = _resolveDirective("example");
+  	const n0 = t0();
+  	_withVaporDirectives(n0, [[
+  		_directive_example,
+  		void 0,
+  		void 0,
+  		{ "foo-bar": true }
+  	]]);
+  	return n0;
   })();
   "#);
 }
@@ -97,15 +97,15 @@ fn static_argument_and_modifiers() {
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-    const _directive_example = _resolveDirective("example");
-    const n0 = t0();
-    _withVaporDirectives(n0, [[
-      _directive_example,
-      () => msg,
-      "foo",
-      { bar: true }
-    ]]);
-    return n0;
+  	const _directive_example = _resolveDirective("example");
+  	const n0 = t0();
+  	_withVaporDirectives(n0, [[
+  		_directive_example,
+  		() => msg,
+  		"foo",
+  		{ bar: true }
+  	]]);
+  	return n0;
   })();
   "#);
 }
@@ -117,14 +117,14 @@ fn dynamic_argument() {
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-    const _directive_example = _resolveDirective("example");
-    const n0 = t0();
-    _withVaporDirectives(n0, [[
-      _directive_example,
-      () => msg,
-      foo
-    ]]);
-    return n0;
+  	const _directive_example = _resolveDirective("example");
+  	const n0 = t0();
+  	_withVaporDirectives(n0, [[
+  		_directive_example,
+  		() => msg,
+  		foo
+  	]]);
+  	return n0;
   })();
   "#);
 }
@@ -145,25 +145,25 @@ fn component() {
   import { createIf as _createIf, resolveDirective as _resolveDirective, setInsertionState as _setInsertionState, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const t0 = _template("<div></div>");
   (() => {
-    const _directive_test = _resolveDirective("test");
-    const _directive_hello = _resolveDirective("hello");
-    const n0 = _createComponent(Comp, null, { default: () => {
-      const n2 = _createIf(() => true, () => {
-        const n5 = t0();
-        _setInsertionState(n5);
-        const n4 = _createComponent(Bar);
-        _withVaporDirectives(n4, [[
-          _directive_hello,
-          void 0,
-          void 0,
-          { world: true }
-        ]]);
-        return n5;
-      }, null, true);
-      return n2;
-    } }, true);
-    _withVaporDirectives(n0, [[_directive_test]]);
-    return n0;
+  	const _directive_test = _resolveDirective("test");
+  	const _directive_hello = _resolveDirective("hello");
+  	const n0 = _createComponent(Comp, null, { default: () => {
+  		const n2 = _createIf(() => true, () => {
+  			const n5 = t0();
+  			_setInsertionState(n5);
+  			const n4 = _createComponent(Bar);
+  			_withVaporDirectives(n4, [[
+  				_directive_hello,
+  				void 0,
+  				void 0,
+  				{ world: true }
+  			]]);
+  			return n5;
+  		}, null, true);
+  		return n2;
+  	} }, true);
+  	_withVaporDirectives(n0, [[_directive_test]]);
+  	return n0;
   })();
   "#);
 }
@@ -175,13 +175,13 @@ fn none_resolve_directive() {
   import { template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-    const n0 = t0();
-    _withVaporDirectives(n0, [[
-      vExample,
-      () => msg,
-      "vExample"
-    ]]);
-    return n0;
+  	const n0 = t0();
+  	_withVaporDirectives(n0, [[
+  		vExample,
+  		() => msg,
+  		"vExample"
+  	]]);
+  	return n0;
   })();
   "#);
 }

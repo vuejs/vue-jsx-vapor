@@ -15,12 +15,12 @@ fn basic() {
   import { applyVShow as _applyVShow, template as _template } from "vue";
   const t0 = _template("<h1>foo</h1>");
   (() => {
-    const n3 = _createComponent(VaporTransition, { persisted: () => true }, { default: () => {
-      const n1 = t0();
-      _applyVShow(n1, () => show);
-      return n1;
-    } }, true);
-    return n3;
+  	const n3 = _createComponent(VaporTransition, { persisted: () => true }, { default: () => {
+  		const n1 = t0();
+  		_applyVShow(n1, () => show);
+  		return n1;
+  	} }, true);
+  	return n3;
   })();
   "#);
 }
@@ -39,18 +39,18 @@ fn v_show_with_appear() {
   import { applyVShow as _applyVShow, template as _template } from "vue";
   const t0 = _template("<h1>foo</h1>");
   (() => {
-    const deferredApplyVShows = [];
-    const n3 = _createComponent(VaporTransition, {
-      appear: () => true,
-      onAppear: () => () => {},
-      persisted: () => true
-    }, { default: () => {
-      const n1 = t0();
-      deferredApplyVShows.push(() => _applyVShow(n1, () => show));
-      return n1;
-    } }, true);
-    deferredApplyVShows.forEach((fn) => fn());
-    return n3;
+  	const deferredApplyVShows = [];
+  	const n3 = _createComponent(VaporTransition, {
+  		appear: () => true,
+  		onAppear: () => () => {},
+  		persisted: () => true
+  	}, { default: () => {
+  		const n1 = t0();
+  		deferredApplyVShows.push(() => _applyVShow(n1, () => show));
+  		return n1;
+  	} }, true);
+  	deferredApplyVShows.forEach((fn) => fn());
+  	return n3;
   })();
   "#);
 }
@@ -69,14 +69,14 @@ fn work_with_v_if() {
   import { createIf as _createIf, template as _template } from "vue";
   const t0 = _template("<h1>foo</h1>");
   (() => {
-    const n5 = _createComponent(VaporTransition, null, { default: () => {
-      const n1 = _createIf(() => show, () => {
-        const n3 = t0();
-        return n3;
-      });
-      return n1;
-    } }, true);
-    return n5;
+  	const n5 = _createComponent(VaporTransition, null, { default: () => {
+  		const n1 = _createIf(() => show, () => {
+  			const n3 = t0();
+  			return n3;
+  		});
+  		return n1;
+  	} }, true);
+  	return n5;
   })();
   "#);
 }
@@ -95,14 +95,14 @@ fn transition_work_with_dynamic_keyed_children() {
   import { createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
   const t0 = _template("<h1>foo</h1>");
   (() => {
-    const n5 = _createComponent(VaporTransition, null, { default: () => {
-      const n1 = _createKeyedFragment(() => foo, () => {
-        const n3 = t0();
-        return n3;
-      });
-      return n1;
-    } }, true);
-    return n5;
+  	const n5 = _createComponent(VaporTransition, null, { default: () => {
+  		const n1 = _createKeyedFragment(() => foo, () => {
+  			const n3 = t0();
+  			return n3;
+  		});
+  		return n1;
+  	} }, true);
+  	return n5;
   })();
   "#);
 }

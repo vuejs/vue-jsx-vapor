@@ -18,7 +18,7 @@ pub fn export() {
   foo.__hmrId = "3b6957b69bea9439";
   __VUE_HMR_RUNTIME__.createRecord("3b6957b69bea9439", foo);
   if (import.meta.hot) import.meta.hot.accept((mod) => {
-    __VUE_HMR_RUNTIME__[mod.foo.render || typeof mod.foo === "function" ? "rerender" : "reload"](mod.foo.__hmrId, mod.foo.render || mod.foo);
+  	__VUE_HMR_RUNTIME__[mod.foo.render || typeof mod.foo === "function" ? "rerender" : "reload"](mod.foo.__hmrId, mod.foo.render || mod.foo);
   });
   "#);
 }
@@ -39,7 +39,7 @@ pub fn export_default() {
   __default__.__hmrId = "52164bac249078a3";
   __VUE_HMR_RUNTIME__.createRecord("52164bac249078a3", __default__);
   if (import.meta.hot) import.meta.hot.accept((mod) => {
-    __VUE_HMR_RUNTIME__[mod.default.render || typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default.render || mod.default);
+  	__VUE_HMR_RUNTIME__[mod.default.render || typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default.render || mod.default);
   });
   "#);
 }
@@ -63,7 +63,7 @@ pub fn export_default_with_identifier() {
   Comp.__hmrId = "52164bac249078a3";
   __VUE_HMR_RUNTIME__.createRecord("52164bac249078a3", Comp);
   if (import.meta.hot) import.meta.hot.accept((mod) => {
-    __VUE_HMR_RUNTIME__[mod.default.render || typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default.render || mod.default);
+  	__VUE_HMR_RUNTIME__[mod.default.render || typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default.render || mod.default);
   });
   "#);
 }
@@ -85,7 +85,7 @@ pub fn export_default_with_function_declaration() {
   Comp.__hmrId = "52164bac249078a3";
   __VUE_HMR_RUNTIME__.createRecord("52164bac249078a3", Comp);
   if (import.meta.hot) import.meta.hot.accept((mod) => {
-    __VUE_HMR_RUNTIME__[mod.default.render || typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default.render || mod.default);
+  	__VUE_HMR_RUNTIME__[mod.default.render || typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default.render || mod.default);
   });
   "#);
 }
@@ -122,10 +122,10 @@ pub fn exports() {
   __default__.__hmrId = "52164bac249078a3";
   __VUE_HMR_RUNTIME__.createRecord("52164bac249078a3", __default__);
   if (import.meta.hot) import.meta.hot.accept((mod) => {
-    __VUE_HMR_RUNTIME__[mod.Comp.render || typeof mod.Comp === "function" ? "rerender" : "reload"](mod.Comp.__hmrId, mod.Comp.render || mod.Comp);
-    __VUE_HMR_RUNTIME__[mod.Comp1.render || typeof mod.Comp1 === "function" ? "rerender" : "reload"](mod.Comp1.__hmrId, mod.Comp1.render || mod.Comp1);
-    __VUE_HMR_RUNTIME__[mod.Comp2.render || typeof mod.Comp2 === "function" ? "rerender" : "reload"](mod.Comp2.__hmrId, mod.Comp2.render || mod.Comp2);
-    __VUE_HMR_RUNTIME__[mod.default.render || typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default.render || mod.default);
+  	__VUE_HMR_RUNTIME__[mod.Comp.render || typeof mod.Comp === "function" ? "rerender" : "reload"](mod.Comp.__hmrId, mod.Comp.render || mod.Comp);
+  	__VUE_HMR_RUNTIME__[mod.Comp1.render || typeof mod.Comp1 === "function" ? "rerender" : "reload"](mod.Comp1.__hmrId, mod.Comp1.render || mod.Comp1);
+  	__VUE_HMR_RUNTIME__[mod.Comp2.render || typeof mod.Comp2 === "function" ? "rerender" : "reload"](mod.Comp2.__hmrId, mod.Comp2.render || mod.Comp2);
+  	__VUE_HMR_RUNTIME__[mod.default.render || typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default.render || mod.default);
   });
   "#);
 }
@@ -152,8 +152,8 @@ pub fn exports_with_define_component() {
   __default__.__hmrId = "52164bac249078a3";
   __VUE_HMR_RUNTIME__.createRecord("52164bac249078a3", __default__);
   if (import.meta.hot) import.meta.hot.accept((mod) => {
-    __VUE_HMR_RUNTIME__[mod.Comp.render || typeof mod.Comp === "function" ? "rerender" : "reload"](mod.Comp.__hmrId, mod.Comp.render || mod.Comp);
-    __VUE_HMR_RUNTIME__[mod.default.render || typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default.render || mod.default);
+  	__VUE_HMR_RUNTIME__[mod.Comp.render || typeof mod.Comp === "function" ? "rerender" : "reload"](mod.Comp.__hmrId, mod.Comp.render || mod.Comp);
+  	__VUE_HMR_RUNTIME__[mod.default.render || typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default.render || mod.default);
   });
   "#);
 }
@@ -182,8 +182,8 @@ pub fn custom_define_component_name() {
   __default__.__hmrId = "52164bac249078a3";
   __VUE_HMR_RUNTIME__.createRecord("52164bac249078a3", __default__);
   if (import.meta.hot) import.meta.hot.accept((mod) => {
-    __VUE_HMR_RUNTIME__[mod.Comp.render || typeof mod.Comp === "function" ? "rerender" : "reload"](mod.Comp.__hmrId, mod.Comp.render || mod.Comp);
-    __VUE_HMR_RUNTIME__[mod.default.render || typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default.render || mod.default);
+  	__VUE_HMR_RUNTIME__[mod.Comp.render || typeof mod.Comp === "function" ? "rerender" : "reload"](mod.Comp.__hmrId, mod.Comp.render || mod.Comp);
+  	__VUE_HMR_RUNTIME__[mod.default.render || typeof mod.default === "function" ? "rerender" : "reload"](mod.default.__hmrId, mod.default.render || mod.default);
   });
   "#);
 }

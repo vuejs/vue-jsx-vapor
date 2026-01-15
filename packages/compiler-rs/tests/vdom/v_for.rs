@@ -248,8 +248,8 @@ fn template_v_for_key_expression_prefixing() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: itemKey(item) }, [_cache[0] || (_cache[0] = _normalizeVNode("test", -1))], 64))), 128);
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: itemKey(item) }, [_cache[0] || (_cache[0] = _normalizeVNode("test", -1))], 64))), 128);
   })();
   "#)
 }
@@ -268,8 +268,8 @@ fn template_v_for_key_no_prefixing_on_attribute_key() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: "key" }, [_cache[0] || (_cache[0] = _normalizeVNode("test", -1))], 64))), 128);
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: "key" }, [_cache[0] || (_cache[0] = _normalizeVNode("test", -1))], 64))), 128);
   })();
   "#)
 }
@@ -288,8 +288,8 @@ fn template_v_for_with_multiple_children() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, null, [..._cache[0] || (_cache[0] = [_normalizeVNode("hello", -1), _createElementVNode("span", null, null, -1)])], 64))), 256);
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, null, [..._cache[0] || (_cache[0] = [_normalizeVNode("hello", -1), _createElementVNode("span", null, null, -1)])], 64))), 256);
   })();
   "#)
 }
@@ -357,8 +357,8 @@ fn keyed_template_v_for() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-    const _cache = _createVNodeCache(0);
-    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: item }, [..._cache[0] || (_cache[0] = [_normalizeVNode("hello", -1), _createElementVNode("span", null, null, -1)])], 64))), 128);
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: item }, [..._cache[0] || (_cache[0] = [_normalizeVNode("hello", -1), _createElementVNode("span", null, null, -1)])], 64))), 128);
   })();
   "#)
 }
@@ -408,8 +408,8 @@ fn v_for_on_element_with_custom_directive() {
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
-    const _directive_foo = _resolveDirective("foo");
-    return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[_directive_foo]])), 256);
+  	const _directive_foo = _resolveDirective("foo");
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[_directive_foo]])), 256);
   })();
   "#)
 }

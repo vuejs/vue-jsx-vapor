@@ -8,10 +8,10 @@ fn static_ref() {
   import { createTemplateRefSetter as _createTemplateRefSetter, template as _template } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-    const _setTemplateRef = _createTemplateRefSetter();
-    const n0 = t0();
-    _setTemplateRef(n0, "foo");
-    return n0;
+  	const _setTemplateRef = _createTemplateRefSetter();
+  	const n0 = t0();
+  	_setTemplateRef(n0, "foo");
+  	return n0;
   })();
   "#);
 }
@@ -23,11 +23,11 @@ fn dynamic_ref() {
   import { createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-    const _setTemplateRef = _createTemplateRefSetter();
-    const n0 = t0();
-    let r0;
-    _renderEffect(() => r0 = _setTemplateRef(n0, foo, r0));
-    return n0;
+  	const _setTemplateRef = _createTemplateRefSetter();
+  	const n0 = t0();
+  	let r0;
+  	_renderEffect(() => r0 = _setTemplateRef(n0, foo, r0));
+  	return n0;
   })();
   "#);
 }
@@ -50,18 +50,18 @@ fn function_ref() {
   import { createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
   const t0 = _template("<div></div>");
   (() => {
-    const _setTemplateRef = _createTemplateRefSetter();
-    const n3 = _createComponent(Comp, null, { default: (_slotProps0) => {
-      const n1 = t0();
-      let r1;
-      _renderEffect(() => r1 = _setTemplateRef(n1, (bar) => {
-        foo.value = bar;
-        ({baz: _slotProps0.baz, bar: _slotProps0.baz} = bar);
-        console.log(foo.value, _slotProps0.baz);
-      }, r1));
-      return n1;
-    } }, true);
-    return n3;
+  	const _setTemplateRef = _createTemplateRefSetter();
+  	const n3 = _createComponent(Comp, null, { default: (_slotProps0) => {
+  		const n1 = t0();
+  		let r1;
+  		_renderEffect(() => r1 = _setTemplateRef(n1, (bar) => {
+  			foo.value = bar;
+  			({baz: _slotProps0.baz, bar: _slotProps0.baz} = bar);
+  			console.log(foo.value, _slotProps0.baz);
+  		}, r1));
+  		return n1;
+  	} }, true);
+  	return n3;
   })();
   "#);
 }
@@ -73,14 +73,14 @@ fn ref_v_if() {
   import { createIf as _createIf, createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
   const t0 = _template("<div></div>");
   (() => {
-    const _setTemplateRef = _createTemplateRefSetter();
-    const n0 = _createIf(() => true, () => {
-      const n2 = t0();
-      let r2;
-      _renderEffect(() => r2 = _setTemplateRef(n2, foo, r2));
-      return n2;
-    }, null, true);
-    return n0;
+  	const _setTemplateRef = _createTemplateRefSetter();
+  	const n0 = _createIf(() => true, () => {
+  		const n2 = t0();
+  		let r2;
+  		_renderEffect(() => r2 = _setTemplateRef(n2, foo, r2));
+  		return n2;
+  	}, null, true);
+  	return n0;
   })();
   "#);
 }
@@ -92,18 +92,18 @@ fn ref_v_for() {
   import { createFor as _createFor, createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
   const t0 = _template("<div></div>");
   (() => {
-    const _setTemplateRef = _createTemplateRefSetter();
-    const n0 = _createFor(() => [
-      1,
-      2,
-      3
-    ], (_for_item0) => {
-      const n2 = t0();
-      let r2;
-      _renderEffect(() => r2 = _setTemplateRef(n2, foo, r2, true));
-      return n2;
-    }, void 0, 4);
-    return n0;
+  	const _setTemplateRef = _createTemplateRefSetter();
+  	const n0 = _createFor(() => [
+  		1,
+  		2,
+  		3
+  	], (_for_item0) => {
+  		const n2 = t0();
+  		let r2;
+  		_renderEffect(() => r2 = _setTemplateRef(n2, foo, r2, true));
+  		return n2;
+  	}, void 0, 4);
+  	return n0;
   })();
   "#);
 }
