@@ -1,5 +1,8 @@
 use common::{
-  check::is_void_tag, error::ErrorCodes, expression::SimpleExpressionNode, text::is_empty_text,
+  check::is_void_tag,
+  error::ErrorCodes,
+  expression::SimpleExpressionNode,
+  text::{escape_html, is_empty_text},
 };
 use napi::bindgen_prelude::{Either3, Either17};
 use oxc_ast::ast::{JSXAttribute, JSXElement};
@@ -36,7 +39,7 @@ pub fn transform_v_text<'a>(
 
   let literal = exp.get_literal_expression_value();
   if let Some(literal) = literal {
-    *context.children_template.borrow_mut() = vec![literal];
+    *context.children_template.borrow_mut() = vec![escape_html(literal)];
   } else {
     *context.children_template.borrow_mut() = vec![" ".to_string()];
     let parent = context.reference(&mut context_block.dynamic);

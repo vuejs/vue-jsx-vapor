@@ -23,7 +23,7 @@ use common::{
   check::{is_constant_node, is_fragment_node, is_jsx_component, is_template},
   directive::find_prop,
   expression::SimpleExpressionNode,
-  text::{is_empty_text, is_text_like, resolve_jsx_text},
+  text::{escape_html, is_empty_text, is_text_like, resolve_jsx_text},
 };
 
 /// # SAFETY
@@ -101,7 +101,7 @@ pub unsafe fn transform_text<'a>(
       }
     }
     JSXChild::Text(node) => {
-      let value = resolve_jsx_text(node);
+      let value = escape_html(resolve_jsx_text(node));
       if !value.is_empty() {
         let mut template = context.template.borrow_mut();
         *template = template.to_string() + &value;
@@ -254,7 +254,11 @@ fn process_text_container<'a>(
     .map(|e| e.get_literal_expression_value())
     .collect::<Vec<Option<String>>>();
   if literals.iter().all(|l| l.is_some()) {
-    *context.children_template.borrow_mut() = literals.into_iter().flatten().collect();
+    *context.children_template.borrow_mut() = literals
+      .into_iter()
+      .flatten()
+      .map(escape_html)
+      .collect::<Vec<_>>();
   } else {
     *context.children_template.borrow_mut() = vec![" ".to_string()];
     let parent = context.reference(&mut context_block.dynamic);

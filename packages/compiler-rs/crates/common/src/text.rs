@@ -1,3 +1,4 @@
+use html_escape::decode_html_entities;
 use oxc_ast::ast::{Expression, JSXChild, JSXElementName, JSXExpression, JSXText};
 
 fn is_all_empty_text(s: &str) -> bool {
@@ -43,7 +44,7 @@ pub fn resolve_jsx_text(node: &JSXText) -> String {
   if is_all_empty_text(&node.value) {
     return String::new();
   }
-  let mut value = node.value.to_string();
+  let mut value = decode_html_entities(node.value.as_str()).to_string();
   if start_with_newline_and_spaces(&value) {
     value = value.trim_start().to_owned();
   }
@@ -161,4 +162,36 @@ pub fn is_text_like(node: &JSXChild) -> bool {
   } else {
     matches!(node, JSXChild::Text(_))
   }
+}
+
+pub fn escape_html<'a>(s: String) -> String {
+  let bytes = s.as_bytes();
+  let mut last_index = 0;
+  let mut html = String::new();
+
+  for (index, &byte) in bytes.iter().enumerate() {
+    let escaped = match byte {
+      b'"' => "&quot;",
+      b'&' => "&amp;",
+      b'\'' => "&#39;",
+      b'<' => "&lt;",
+      b'>' => "&gt;",
+      _ => continue,
+    };
+
+    if html.is_empty() {
+      html.reserve(s.len() + 16);
+    }
+
+    html.push_str(&s[last_index..index]);
+    html.push_str(escaped);
+    last_index = index + 1;
+  }
+
+  if last_index == 0 {
+    return s;
+  }
+
+  html.push_str(&s[last_index..]);
+  html
 }

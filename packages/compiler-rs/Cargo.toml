@@ -28,6 +28,7 @@ oxc_codegen = { git = "https://github.com/zhiyuanzmj/oxc", branch = "ast-visit-a
 oxc_span = { git = "https://github.com/zhiyuanzmj/oxc", branch = "ast-visit-ast-kind" }
 phf = "0.13.1"
 indexmap = "2.12.0"
+html-escape = "0.2.13"
 
 vdom = { path = "crates/vdom" }
 vapor = { path = "crates/vapor" }

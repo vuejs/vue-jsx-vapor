@@ -635,7 +635,7 @@ fn implicit_default_slot_with_non_breaking_space() {
     const _cache = _createVNodeCache(0);
     return _openBlock(), _createBlock(Comp, null, {
       header: _withCtx(() => [_cache[0] || (_cache[0] = _normalizeVNode(" Header ", -1))]),
-      default: _withCtx(() => [_cache[1] || (_cache[1] = _normalizeVNode("&nbsp;", -1))]),
+      default: _withCtx(() => [_cache[1] || (_cache[1] = _normalizeVNode(" ", -1))]),
       _: 1
     });
   })();

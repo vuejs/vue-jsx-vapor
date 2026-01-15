@@ -19,3 +19,4 @@ napi-derive = { workspace = true }
 napi = { workspace = true }
 phf = { workspace = true }
 indexmap = { workspace = true }
+html-escape = { workspace = true }

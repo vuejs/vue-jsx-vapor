@@ -63,10 +63,10 @@ fn consecutive_text() {
 
 #[test]
 fn escapes_raw_static_text_when_generating_the_template_string() {
-  let code = transform("<code>&lt;script&gt;</code>", None).code;
+  let code = transform("<code>&nbsp;&lt;script&gt;</code>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const t0 = _template("<code>&lt;script&gt;</code>", true);
+  const t0 = _template("<code>\xA0&lt;script&gt;</code>", true);
   (() => {
     const n0 = t0();
     return n0;
