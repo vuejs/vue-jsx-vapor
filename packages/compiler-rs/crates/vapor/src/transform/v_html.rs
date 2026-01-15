@@ -1,4 +1,6 @@
-use common::{error::ErrorCodes, expression::SimpleExpressionNode, text::is_empty_text};
+use common::{
+  check::is_jsx_component, error::ErrorCodes, expression::SimpleExpressionNode, text::is_empty_text,
+};
 use napi::bindgen_prelude::{Either3, Either17};
 use oxc_ast::ast::{JSXAttribute, JSXElement};
 
@@ -33,6 +35,7 @@ pub fn transform_v_html<'a>(
       set_html: true,
       element,
       value: exp,
+      is_component: is_jsx_component(node),
     }),
     None,
     None,

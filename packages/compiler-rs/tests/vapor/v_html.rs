@@ -19,6 +19,20 @@ fn should_convert_v_html_to_inner_html() {
 }
 
 #[test]
+fn work_with_component() {
+  let code = transform("<Comp v-html={code.value} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { renderEffect as _renderEffect, setBlockHtml as _setBlockHtml } from "vue";
+  (() => {
+  	const n0 = _createComponent(Comp, null, null, true);
+  	_renderEffect(() => _setBlockHtml(n0, code.value));
+  	return n0;
+  })();
+  "#);
+}
+
+#[test]
 fn should_raise_error_and_ignore_children_when_v_html_is_present() {
   let error = RefCell::new(None);
   transform(

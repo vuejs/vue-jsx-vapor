@@ -1,5 +1,5 @@
 use common::{
-  check::is_void_tag,
+  check::{is_jsx_component, is_void_tag},
   error::ErrorCodes,
   expression::SimpleExpressionNode,
   text::{escape_html, is_empty_text},
@@ -43,14 +43,17 @@ pub fn transform_v_text<'a>(
   } else {
     *context.children_template.borrow_mut() = vec![" ".to_string()];
     let parent = context.reference(&mut context_block.dynamic);
-    context.register_operation(
-      context_block,
-      Either17::P(GetTextChildIRNode {
-        get_text_child: true,
-        parent,
-      }),
-      None,
-    );
+    let is_component = is_jsx_component(node);
+    if !is_component {
+      context.register_operation(
+        context_block,
+        Either17::P(GetTextChildIRNode {
+          get_text_child: true,
+          parent,
+        }),
+        None,
+      );
+    }
     let element = context.reference(&mut context_block.dynamic);
     context.register_effect(
       context_block,
@@ -60,6 +63,7 @@ pub fn transform_v_text<'a>(
         values: vec![exp],
         element,
         generated: Some(true),
+        is_component,
       }),
       None,
       None,

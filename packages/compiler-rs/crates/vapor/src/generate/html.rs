@@ -8,17 +8,29 @@ use crate::ir::index::SetHtmlIRNode;
 
 pub fn gen_set_html<'a>(oper: SetHtmlIRNode<'a>, context: &'a CodegenContext<'a>) -> Statement<'a> {
   let ast = &context.ast;
-  let SetHtmlIRNode { value, element, .. } = oper;
+  let SetHtmlIRNode {
+    value,
+    element,
+    is_component,
+    ..
+  } = oper;
 
   ast.statement_expression(
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&context.helper("setHtml"))),
+      ast.expression_identifier(
+        SPAN,
+        ast.atom(&context.helper(if is_component {
+          "setBlockHtml"
+        } else {
+          "setHtml"
+        })),
+      ),
       NONE,
       ast.vec_from_array([
         ast
-          .expression_identifier(SPAN, ast.atom(&format!("n{element}")))
+          .expression_identifier(SPAN, ast.atom(&format!("n{element}",)))
           .into(),
         gen_expression(value, context, None, None).into(),
       ]),

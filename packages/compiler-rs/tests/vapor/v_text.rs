@@ -20,6 +20,20 @@ fn should_convert_v_text_to_set_text() {
 }
 
 #[test]
+fn work_with_component() {
+  let code = transform(r#"<Comp v-text={foo} />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { renderEffect as _renderEffect, setBlockText as _setBlockText, toDisplayString as _toDisplayString } from "vue";
+  (() => {
+  	const n0 = _createComponent(Comp, null, null, true);
+  	_renderEffect(() => _setBlockText(n0, _toDisplayString(foo)));
+  	return n0;
+  })();
+  "#)
+}
+
+#[test]
 fn should_raise_error_and_ignore_children_when_v_text_is_present() {
   let error = RefCell::new(None);
   transform(

@@ -19,6 +19,7 @@ pub fn gen_set_text<'a>(oper: SetTextIRNode<'a>, context: &'a CodegenContext<'a>
     element,
     values,
     generated,
+    is_component,
     ..
   } = oper;
   let mut arguments = ast.vec();
@@ -28,7 +29,11 @@ pub fn gen_set_text<'a>(oper: SetTextIRNode<'a>, context: &'a CodegenContext<'a>
         SPAN,
         ast.atom(&format!(
           "{}{}",
-          if generated.unwrap_or(false) { "x" } else { "n" },
+          if generated.unwrap_or(false) && !is_component {
+            "x"
+          } else {
+            "n"
+          },
           element
         )),
       )
@@ -39,7 +44,14 @@ pub fn gen_set_text<'a>(oper: SetTextIRNode<'a>, context: &'a CodegenContext<'a>
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&context.helper("setText"))),
+      ast.expression_identifier(
+        SPAN,
+        ast.atom(&context.helper(if is_component {
+          "setBlockText"
+        } else {
+          "setText"
+        })),
+      ),
       NONE,
       arguments,
       false,
