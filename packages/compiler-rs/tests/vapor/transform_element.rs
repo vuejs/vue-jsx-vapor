@@ -5,9 +5,8 @@ use insta::assert_snapshot;
 #[test]
 fn component_import_resolve_component() {
   let code = transform(
-    "<Foo/>",
+    "<foo-bar/>",
     Some(TransformOptions {
-      with_fallback: true,
       ..Default::default()
     }),
   )
@@ -16,8 +15,8 @@ fn component_import_resolve_component() {
   import { createComponentWithFallback as _createComponentWithFallback } from "/vue-jsx-vapor/vapor";
   import { resolveComponent as _resolveComponent } from "vue";
   (() => {
-    const _component_Foo = _resolveComponent("Foo");
-    const n0 = _createComponentWithFallback(_component_Foo, null, null, true);
+    const _component_foo_bar = _resolveComponent("foo-bar");
+    const n0 = _createComponentWithFallback(_component_foo_bar, null, null, true);
     return n0;
   })();
   "#);

@@ -39,10 +39,6 @@ export interface Hmr {
   defineComponentName: Array<string>
 }
 export interface CompilerOptions {
-  /** * Whether compile components to createComponentWithFallback.
-   * @default false
-   */
-  withFallback?: boolean
   /** * Separate option for end users to extend the native elements list
    */
   isCustomElement?: (arg: string) => boolean

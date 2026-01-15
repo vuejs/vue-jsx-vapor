@@ -8,7 +8,6 @@ fn basic() {
     r#"<div id={id}/>"#,
     Some(TransformOptions {
       interop: true,
-      with_fallback: true,
       ..Default::default()
     }),
   )
@@ -26,7 +25,6 @@ fn no_expression() {
     r#"<div id />"#,
     Some(TransformOptions {
       interop: true,
-      with_fallback: true,
       ..Default::default()
     }),
   )
@@ -57,7 +55,6 @@ fn shoud_not_error_if_empty_expression() {
     r#"<div arg="" />"#,
     Some(TransformOptions {
       interop: true,
-      with_fallback: true,
       ..Default::default()
     }),
   )
@@ -75,7 +72,6 @@ fn camel_modifier() {
     r#"<div foo-bar_camel={id} />"#,
     Some(TransformOptions {
       interop: true,
-      with_fallback: true,
       ..Default::default()
     }),
   )
@@ -93,7 +89,6 @@ fn prop_modifier() {
     r#"<div foo-bar_prop={id} />"#,
     Some(TransformOptions {
       interop: true,
-      with_fallback: true,
       ..Default::default()
     }),
   )
@@ -111,7 +106,6 @@ fn attr_modifier() {
     r#"<div foo-bar_attr={id} />"#,
     Some(TransformOptions {
       interop: true,
-      with_fallback: true,
       ..Default::default()
     }),
   )

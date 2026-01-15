@@ -80,18 +80,7 @@ pub unsafe fn transform_element<'a>(
   }
   let is_custom_element = context.options.is_custom_element.as_ref()(vnode_tag.clone());
   let is_component = is_jsx_component(node) && !is_custom_element;
-  if !is_custom_element
-    && (is_component
-      && ((context.options.with_fallback
-        && !context.options.helpers.borrow().contains(
-          if let Some(vnode_tag) = vnode_tag.strip_prefix("_") {
-            vnode_tag
-          } else {
-            &vnode_tag
-          },
-        ))
-        || vnode_tag.contains("-")))
-  {
+  if !is_custom_element && is_component && vnode_tag.contains("-") {
     context.helper("resolveComponent");
     context.components.borrow_mut().insert(vnode_tag.clone());
     vnode_tag = to_valid_asset_id(&vnode_tag, "component");

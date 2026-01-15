@@ -5,10 +5,9 @@ use insta::assert_snapshot;
 #[test]
 fn import_resolve_component() {
   let code = transform(
-    r#"<Foo />"#,
+    r#"<foo-bar />"#,
     Some(TransformOptions {
       interop: true,
-      with_fallback: true,
       ..Default::default()
     }),
   )
@@ -16,8 +15,8 @@ fn import_resolve_component() {
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, openBlock as _openBlock, resolveComponent as _resolveComponent } from "vue";
   (() => {
-    const _component_Foo = _resolveComponent("Foo");
-    return _openBlock(), _createBlock(_component_Foo);
+    const _component_foo_bar = _resolveComponent("foo-bar");
+    return _openBlock(), _createBlock(_component_foo_bar);
   })();
   "#);
 }
@@ -28,17 +27,13 @@ fn resolve_namespaced_component_from_setup_bindings() {
     r#"<Foo.Example/>"#,
     Some(TransformOptions {
       interop: true,
-      with_fallback: true,
       ..Default::default()
     }),
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createBlock as _createBlock, openBlock as _openBlock, resolveComponent as _resolveComponent } from "vue";
-  (() => {
-    const _component_Foo46Example = _resolveComponent("Foo.Example");
-    return _openBlock(), _createBlock(_component_Foo46Example);
-  })();
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(Foo.Example);
   "#);
 }
 

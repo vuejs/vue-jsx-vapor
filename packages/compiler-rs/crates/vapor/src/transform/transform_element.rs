@@ -203,7 +203,7 @@ pub fn transform_component_element<'a>(
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) {
-  let asset = context.options.with_fallback || tag.contains("-");
+  let asset = tag.contains("-");
   if asset {
     let component = &mut context.ir.borrow_mut().component;
     component.insert(tag.clone());

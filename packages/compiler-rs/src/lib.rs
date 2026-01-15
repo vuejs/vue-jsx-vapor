@@ -24,11 +24,6 @@ mod transform;
 #[derive(Default)]
 pub struct CompilerOptions {
   /**
-   * Whether compile components to createComponentWithFallback.
-   * @default false
-   */
-  pub with_fallback: Option<bool>,
-  /**
    * Separate option for end users to extend the native elements list
    */
   pub is_custom_element: Option<Function<'static, String, bool>>,
@@ -92,7 +87,6 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       filename,
       source_type: SourceType::from_path(filename).unwrap(),
       source_map: options.source_map.unwrap_or(false),
-      with_fallback: options.with_fallback.unwrap_or(false),
       interop: options.interop.unwrap_or(false),
       hmr: options.hmr.unwrap_or(Either::A(false)),
       ssr: RefCell::new(ssr),
