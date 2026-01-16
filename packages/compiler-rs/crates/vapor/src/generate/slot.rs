@@ -108,7 +108,7 @@ fn gen_dynamic_slots<'a>(
       Either4::C(slot) => {
         gen_conditional_slot(slot, context, unsafe { &mut *context_block }, true).into()
       }
-      Either4::D(slot) => gen_expression(slot.slots, context, None, None).into(),
+      Either4::D(slot) => gen_expression(slot.slots, context, None, false).into(),
     })
   }
   ast.expression_array(SPAN, elements)
@@ -163,7 +163,7 @@ fn gen_basic_dynamic_slot<'a>(
         SPAN,
         PropertyKind::Init,
         ast.property_key_static_identifier(SPAN, ast.atom("name")),
-        gen_expression(slot.name, context, None, None),
+        gen_expression(slot.name, context, None, false),
         false,
         false,
         false,
@@ -208,7 +208,7 @@ fn gen_loop_slot<'a>(
         SPAN,
         PropertyKind::Init,
         ast.property_key_static_identifier(SPAN, ast.atom("name")),
-        gen_expression(name, context, None, None),
+        gen_expression(name, context, None, false),
         false,
         false,
         false,
@@ -230,7 +230,7 @@ fn gen_loop_slot<'a>(
     ast.expression_identifier(SPAN, ast.atom(&context.helper("createForSlots"))),
     NONE,
     ast.vec_from_array([
-      gen_expression(source.unwrap(), context, None, None).into(),
+      gen_expression(source.unwrap(), context, None, false).into(),
       ast
         .expression_arrow_function(
           SPAN,
@@ -310,7 +310,7 @@ fn gen_conditional_slot<'a>(
 
   let expression = ast.expression_conditional(
     SPAN,
-    gen_expression(condition, context, None, None),
+    gen_expression(condition, context, None, false),
     gen_dynamic_slot(positive, context, unsafe { &mut *context_block }, false),
     if let Some(negative) = negative {
       match *negative {

@@ -231,7 +231,7 @@ fn process_interpolation<'a>(
         element: id,
         once,
         values,
-        generated: None,
+        generated: false,
       }),
       None,
     );
@@ -279,7 +279,7 @@ fn process_text_container<'a>(
         once: *context.in_v_once.borrow(),
         values,
         // indicates this node is generated, so prefix should be "x" instead of "n"
-        generated: Some(true),
+        generated: true,
       }),
       None,
     );
@@ -328,7 +328,7 @@ pub fn process_conditional_expression<'a>(
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
   let id = context.reference(dynamic);
   let block = context_block as *mut BlockIRNode;
-  let exit_block = context.create_block(context_node, unsafe { &mut *block }, consequent, None);
+  let exit_block = context.create_block(context_node, unsafe { &mut *block }, consequent, false);
 
   let is_const_test = is_constant_node(&Some(test));
   let test = SimpleExpressionNode::new(Either3::A(test), context.ir.borrow().source);
@@ -384,7 +384,7 @@ fn process_logical_expression<'a>(
   } else {
     (left.clone_in(context.allocator), right)
   };
-  let exit_block = context.create_block(context_node, unsafe { &mut *block }, _left, None);
+  let exit_block = context.create_block(context_node, unsafe { &mut *block }, _left, false);
 
   if node.operator.is_coalesce() {
     let ast = AstBuilder::new(context.allocator);
@@ -442,7 +442,7 @@ fn set_negative<'a>(
         .without_parentheses_mut()
         .get_inner_expression_mut()
         .take_in(context.allocator),
-      None,
+      false,
     );
     context.transform_node(Some(unsafe { &mut *_context_block }), Some(parent_node));
     let block = exit_block();
@@ -485,7 +485,7 @@ fn set_negative<'a>(
         (left.clone_in(context.allocator), right)
       };
     let block = context_block as *mut BlockIRNode;
-    let exit_block = context.create_block(context_node, unsafe { &mut *block }, _left, None);
+    let exit_block = context.create_block(context_node, unsafe { &mut *block }, _left, false);
     context.transform_node(Some(unsafe { &mut *block }), Some(parent_node));
     if unsafe { &mut *node }.operator.is_coalesce() {
       let ast = AstBuilder::new(context.allocator);
@@ -521,7 +521,7 @@ fn set_negative<'a>(
       context_node,
       unsafe { &mut *block },
       node.take_in(context.allocator),
-      None,
+      false,
     );
     context.transform_node(Some(context_block), Some(parent_node));
     let block = exit_block();

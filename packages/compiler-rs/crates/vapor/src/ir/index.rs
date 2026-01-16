@@ -131,7 +131,7 @@ pub struct SetTextIRNode<'a> {
   pub set_text: bool,
   pub element: i32,
   pub values: Vec<SimpleExpressionNode<'a>>,
-  pub generated: Option<bool>,
+  pub generated: bool,
   pub is_component: bool,
 }
 
@@ -141,7 +141,7 @@ pub struct SetNodesIRNode<'a> {
   pub element: i32,
   pub once: bool,
   pub values: Vec<SimpleExpressionNode<'a>>,
-  pub generated: Option<bool>, // whether this is a generated empty text node by `processTextLikeContainer`
+  pub generated: bool, // whether this is a generated empty text node by `processTextLikeContainer`
 }
 
 #[derive(Clone, Debug)]
@@ -195,8 +195,8 @@ pub struct DirectiveIRNode<'a> {
   pub element: i32,
   pub dir: DirectiveNode<'a>,
   pub name: String,
-  pub builtin: Option<bool>,
-  pub asset: Option<bool>,
+  pub builtin: bool,
+  pub asset: bool,
   pub model_type: Option<String>,
   pub deferred: bool,
 }
@@ -269,7 +269,7 @@ pub struct IRDynamicInfo<'a> {
   pub anchor: Option<i32>,
   pub children: Vec<IRDynamicInfo<'a>>,
   pub template: Option<i32>,
-  pub has_dynamic_child: Option<bool>,
+  pub has_dynamic_child: bool,
   pub operation: Option<Box<OperationNode<'a>>>,
 }
 impl<'a> IRDynamicInfo<'a> {
@@ -278,7 +278,7 @@ impl<'a> IRDynamicInfo<'a> {
       flags: DynamicFlag::Referenced as i32,
       children: Vec::new(),
       template: None,
-      has_dynamic_child: None,
+      has_dynamic_child: false,
       operation: None,
       id: None,
       anchor: None,

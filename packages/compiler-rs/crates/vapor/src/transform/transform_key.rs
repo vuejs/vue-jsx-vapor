@@ -46,7 +46,7 @@ pub unsafe fn transform_v_key<'a>(
       node.take_in(context.allocator),
       context.allocator,
     )),
-    None,
+    false,
   );
 
   Some(Box::new(move || {

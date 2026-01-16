@@ -32,7 +32,7 @@ pub fn gen_set_event<'a>(
 
   let key_content = key.content.clone();
   let oper_key_strat = key.loc.start;
-  let name = gen_expression(key, context, None, None);
+  let name = gen_expression(key, context, None, false);
   let event_options = if options.is_empty() && !effect {
     None
   } else {
@@ -137,7 +137,7 @@ pub fn gen_event_handler<'a>(
   let mut handler_exp = if let Some(value) = value
     && !value.content.trim().is_empty()
   {
-    gen_expression(value, context, None, None)
+    gen_expression(value, context, None, false)
   } else {
     ast.expression_arrow_function(
       SPAN,
@@ -237,7 +237,7 @@ pub fn gen_set_dynamic_events<'a>(
         ast
           .expression_identifier(SPAN, ast.atom(&format!("n{}", oper.element)))
           .into(),
-        gen_expression(oper.value, context, None, None).into(),
+        gen_expression(oper.value, context, None, false).into(),
       ]),
       false,
     ),

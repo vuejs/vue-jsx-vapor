@@ -52,11 +52,11 @@ pub fn transform_v_bind<'a>(
   Some(DirectiveTransformResult {
     key: arg,
     value: exp,
-    runtime_camelize: Some(false),
+    runtime_camelize: false,
     modifier,
-    handler: None,
+    handler: false,
     handler_modifiers: None,
-    model: None,
+    model: false,
     model_modifiers: None,
   })
 }

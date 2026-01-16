@@ -69,7 +69,7 @@ pub fn gen_self<'a>(
     );
   }
 
-  if has_dynamic_child.unwrap_or_default() {
+  if has_dynamic_child {
     gen_children(
       statements,
       children,
@@ -111,7 +111,7 @@ fn gen_children<'a>(
     };
 
     let _context_block = context_block as *mut BlockIRNode;
-    if id.is_none() && !child.has_dynamic_child.unwrap_or(false) {
+    if id.is_none() && !child.has_dynamic_child {
       gen_self(statements, child, context, unsafe { &mut *_context_block });
       index += 1;
       continue;
@@ -227,7 +227,7 @@ fn gen_children<'a>(
     statement_index += 1;
 
     let child_children = mem::take(&mut child.children);
-    if id.eq(&child.anchor) && !child.has_dynamic_child.unwrap_or(false) {
+    if id.eq(&child.anchor) && !child.has_dynamic_child {
       gen_self(statements, child, context, unsafe { &mut *_context_block });
     }
 

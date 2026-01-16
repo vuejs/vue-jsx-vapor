@@ -29,11 +29,7 @@ pub fn gen_set_text<'a>(oper: SetTextIRNode<'a>, context: &'a CodegenContext<'a>
         SPAN,
         ast.atom(&format!(
           "{}{}",
-          if generated.unwrap_or(false) && !is_component {
-            "x"
-          } else {
-            "n"
-          },
+          if generated && !is_component { "x" } else { "n" },
           element
         )),
       )
@@ -117,7 +113,7 @@ pub fn gen_set_nodes<'a>(
         SPAN,
         ast.atom(&format!(
           "{}{}",
-          if generated.unwrap_or(false) {
+          if generated {
             "x".to_string()
           } else {
             "n".to_string()
@@ -191,7 +187,7 @@ fn combine_values<'a>(
       && !value.is_static
       && !is_constant_node(&value.ast.as_deref());
     let literal_expression_value = &value.get_literal_expression_value();
-    let exp = gen_expression(value, context, None, Some(should_wrap));
+    let exp = gen_expression(value, context, None, should_wrap);
     if is_set_text && literal_expression_value.is_none() {
       // dynamic, wrap with toDisplayString
       arguments.push(

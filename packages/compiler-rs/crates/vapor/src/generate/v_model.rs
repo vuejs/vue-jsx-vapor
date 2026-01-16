@@ -68,8 +68,10 @@ pub fn gen_v_model<'a>(
                   SPAN,
                   ast.vec(),
                   ast.vec1(
-                    ast
-                      .statement_expression(SPAN, gen_expression(exp.clone(), context, None, None)),
+                    ast.statement_expression(
+                      SPAN,
+                      gen_expression(exp.clone(), context, None, false),
+                    ),
                   ),
                 ),
               )
@@ -143,7 +145,7 @@ pub fn gen_model_handler<'a>(
           exp,
           context,
           Some(ast.expression_identifier(SPAN, ast.atom("_value"))),
-          None,
+          false,
         ),
       )),
     ),

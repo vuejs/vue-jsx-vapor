@@ -64,7 +64,7 @@ pub fn gen_create_component<'a>(
           SPAN,
           ast.expression_identifier(SPAN, ast.atom(&context.helper("resolveDynamicComponent"))),
           NONE,
-          ast.vec1(gen_expression(dynamic, context, None, None).into()),
+          ast.vec1(gen_expression(dynamic, context, None, false).into()),
           false,
         )
         .into()
@@ -85,7 +85,7 @@ pub fn gen_create_component<'a>(
           ast.function_body(
             SPAN,
             ast.vec(),
-            ast.vec1(ast.statement_expression(SPAN, gen_expression(dynamic, context, None, None))),
+            ast.vec1(ast.statement_expression(SPAN, gen_expression(dynamic, context, None, false))),
           ),
         )
         .into()
@@ -104,7 +104,7 @@ pub fn gen_create_component<'a>(
       },
       context,
       None,
-      None,
+      false,
     )
     .into()
   };
@@ -241,8 +241,8 @@ fn gen_dynamic_props<'a>(
       gen_prop(&mut properties, p, context, false);
       expr = Some(ast.expression_object(SPAN, properties));
     } else if let Either3::C(p) = p {
-      let expression = gen_expression(p.value, context, None, None);
-      expr = if p.handler.unwrap_or_default() {
+      let expression = gen_expression(p.value, context, None, false);
+      expr = if p.handler {
         Some(ast.expression_call(
           SPAN,
           ast.expression_identifier(SPAN, ast.atom(&context.helper("toHandlers"))),
@@ -292,8 +292,8 @@ fn gen_prop<'a>(
   is_static: bool,
 ) {
   let ast = &context.ast;
-  let model = prop.model.unwrap_or_default();
-  let handler = prop.handler.unwrap_or_default();
+  let model = prop.model;
+  let handler = prop.handler;
   let Modifiers {
     keys,
     non_keys,
@@ -385,7 +385,7 @@ fn gen_model<'a>(
   let mut properties = ast.vec();
   let is_static = key.is_static;
   let content = key.content.clone();
-  let expression = gen_expression(key, context, None, None);
+  let expression = gen_expression(key, context, None, false);
 
   let modifiers = if let Some(model_modifiers) = model_modifiers
     && !model_modifiers.is_empty()

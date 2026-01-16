@@ -78,7 +78,7 @@ pub unsafe fn transform_v_for<'a>(
       unsafe { &mut *node }.take_in(context.allocator),
       context.allocator,
     )),
-    Some(true),
+    true,
   );
 
   // if v-for is the only child of a parent element, it can go the fast path

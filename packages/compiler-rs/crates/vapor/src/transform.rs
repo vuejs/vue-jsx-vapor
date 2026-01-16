@@ -44,10 +44,10 @@ pub struct DirectiveTransformResult<'a> {
   pub key: SimpleExpressionNode<'a>,
   pub value: SimpleExpressionNode<'a>,
   pub modifier: Option<String>,
-  pub runtime_camelize: Option<bool>,
-  pub handler: Option<bool>,
+  pub runtime_camelize: bool,
+  pub handler: bool,
   pub handler_modifiers: Option<Modifiers>,
-  pub model: Option<bool>,
+  pub model: bool,
   pub model_modifiers: Option<Vec<String>>,
 }
 
@@ -57,10 +57,10 @@ impl<'a> DirectiveTransformResult<'a> {
       key,
       value,
       modifier: None,
-      runtime_camelize: None,
-      handler: None,
+      runtime_camelize: false,
+      handler: false,
       handler_modifiers: None,
-      model: None,
+      model: false,
       model_modifiers: None,
     }
   }
@@ -293,16 +293,12 @@ impl<'a> TransformContext<'a> {
     context_node: &mut JSXChild<'a>,
     context_block: &'a mut BlockIRNode<'a>,
     node: Expression<'a>,
-    is_v_for: Option<bool>,
+    is_v_for: bool,
   ) -> Box<dyn FnOnce() -> BlockIRNode<'a> + 'a> {
     let block = BlockIRNode::new();
     *context_node = self.wrap_fragment(node);
     let _context_block = context_block as *mut BlockIRNode;
-    let exit_block = self.enter_block(
-      unsafe { &mut *_context_block },
-      block,
-      is_v_for.unwrap_or(false),
-    );
+    let exit_block = self.enter_block(unsafe { &mut *_context_block }, block, is_v_for);
     self.reference(&mut context_block.dynamic);
     exit_block
   }

@@ -44,7 +44,7 @@ pub fn gen_directives_for_element<'a>(
   for item in &mut context_block.operation {
     if let Either17::M(item) = item
       && item.element == id
-      && !item.builtin.unwrap_or(false)
+      && !item.builtin
     {
       if element.is_empty() {
         element = item.element.to_string();
@@ -53,14 +53,14 @@ pub fn gen_directives_for_element<'a>(
       let asset = item.asset;
       let directive_var = ast.alloc_identifier_reference(
         SPAN,
-        if asset.unwrap_or(false) {
+        if asset {
           ast.atom(&to_valid_asset_id(name, "directive"))
         } else {
           ast.atom(name)
         },
       );
       let value = if let Some(exp) = item.dir.exp.take() {
-        let expression = gen_expression(exp, context, None, None);
+        let expression = gen_expression(exp, context, None, false);
         Some(ast.alloc_arrow_function_expression(
           SPAN,
           true,
@@ -86,7 +86,7 @@ pub fn gen_directives_for_element<'a>(
         .dir
         .arg
         .take()
-        .map(|arg| gen_expression(arg, context, None, None));
+        .map(|arg| gen_expression(arg, context, None, false));
       let modifiers = if !item.dir.modifiers.is_empty() {
         Some(gen_directive_modifiers(
           item.dir.modifiers.drain(..).map(|m| m.content).collect(),

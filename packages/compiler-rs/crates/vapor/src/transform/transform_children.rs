@@ -74,12 +74,12 @@ pub unsafe fn transform_children<'a>(
       parent_children_template.push(context.template.borrow().to_string());
     }
 
-    if child_dynamic.has_dynamic_child.unwrap_or(false)
+    if child_dynamic.has_dynamic_child
       || child_dynamic.id.is_some()
       || flags & DynamicFlag::NonTemplate as i32 != 0
       || flags & DynamicFlag::Insert as i32 != 0
     {
-      parent_dynamic.has_dynamic_child = Some(true);
+      parent_dynamic.has_dynamic_child = true;
     }
 
     parent_dynamic.children.insert(i, mem::take(child_dynamic));

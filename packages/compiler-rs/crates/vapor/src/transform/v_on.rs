@@ -70,16 +70,16 @@ pub fn transform_v_on<'a>(
     return Some(DirectiveTransformResult {
       key: arg,
       value: exp.unwrap_or_default(),
-      handler: Some(true),
+      handler: true,
       handler_modifiers: Some(Modifiers {
         keys: key_modifiers,
         non_keys: non_key_modifiers,
         options: event_option_modifiers,
       }),
-      model: None,
+      model: false,
       model_modifiers: None,
       modifier: None,
-      runtime_camelize: None,
+      runtime_camelize: false,
     });
   }
 

@@ -69,7 +69,7 @@ pub unsafe fn transform_v_if<'a>(
         unsafe { &mut *node }.take_in(context.allocator),
         context.allocator,
       )),
-      None,
+      false,
     );
     return Some(Box::new(move || {
       let block = exit_block();
@@ -129,7 +129,7 @@ pub unsafe fn transform_v_if<'a>(
       unsafe { &mut *node }.take_in(context.allocator),
       context.allocator,
     )),
-    None,
+    false,
   );
 
   Some(Box::new(move || {

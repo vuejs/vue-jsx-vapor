@@ -26,7 +26,7 @@ pub fn gen_set_template_ref<'a>(
       .expression_identifier(SPAN, ast.atom(&format!("n{element}")))
       .into(),
   );
-  arguments.push(gen_expression(value, context, None, None).into());
+  arguments.push(gen_expression(value, context, None, false).into());
 
   if effect {
     arguments.push(

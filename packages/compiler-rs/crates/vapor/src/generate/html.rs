@@ -32,7 +32,7 @@ pub fn gen_set_html<'a>(oper: SetHtmlIRNode<'a>, context: &'a CodegenContext<'a>
         ast
           .expression_identifier(SPAN, ast.atom(&format!("n{element}",)))
           .into(),
-        gen_expression(value, context, None, None).into(),
+        gen_expression(value, context, None, false).into(),
       ]),
       false,
     ),

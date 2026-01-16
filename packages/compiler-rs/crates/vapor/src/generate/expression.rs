@@ -13,13 +13,12 @@ pub fn gen_expression<'a>(
   node: SimpleExpressionNode<'a>,
   context: &'a CodegenContext<'a>,
   assignment: Option<Expression<'a>>,
-  need_wrap: Option<bool>,
+  need_wrap: bool,
 ) -> Expression<'a> {
   let ast = &context.ast;
 
   let content = &node.content;
   let loc = node.loc;
-  let need_wrap = need_wrap.unwrap_or(false);
 
   if node.is_static {
     return ast.expression_string_literal(loc, ast.atom(content), None);

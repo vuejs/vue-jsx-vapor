@@ -55,7 +55,7 @@ pub fn transform_v_model<'a>(
         }
       },
       value: dir.exp.unwrap(),
-      model: Some(true),
+      model: true,
       model_modifiers: Some(
         dir
           .modifiers
@@ -63,10 +63,10 @@ pub fn transform_v_model<'a>(
           .map(|m| m.content.to_string())
           .collect(),
       ),
-      handler: None,
+      handler: false,
       handler_modifiers: None,
       modifier: None,
-      runtime_camelize: None,
+      runtime_camelize: false,
     });
   }
 
@@ -124,8 +124,8 @@ pub fn transform_v_model<'a>(
         dir,
         name: "model".to_string(),
         model_type: Some(model_type.to_string()),
-        builtin: Some(true),
-        asset: None,
+        builtin: true,
+        asset: false,
         deferred: false,
       }),
       None,

@@ -16,44 +16,43 @@ pub fn gen_v_show<'a>(oper: DirectiveIRNode<'a>, context: &'a CodegenContext<'a>
     ..
   } = oper;
 
-  let mut stmt =
-    ast.statement_expression(
+  let mut stmt = ast.statement_expression(
+    SPAN,
+    ast.expression_call(
       SPAN,
-      ast.expression_call(
-        SPAN,
-        ast.expression_identifier(SPAN, ast.atom(&context.helper("applyVShow"))),
-        NONE,
-        ast.vec_from_array([
-          ast
-            .expression_identifier(SPAN, ast.atom(&format!("n{element}")))
-            .into(),
-          ast
-            .expression_arrow_function(
+      ast.expression_identifier(SPAN, ast.atom(&context.helper("applyVShow"))),
+      NONE,
+      ast.vec_from_array([
+        ast
+          .expression_identifier(SPAN, ast.atom(&format!("n{element}")))
+          .into(),
+        ast
+          .expression_arrow_function(
+            SPAN,
+            true,
+            false,
+            NONE,
+            ast.formal_parameters(
               SPAN,
-              true,
-              false,
+              FormalParameterKind::ArrowFormalParameters,
+              ast.vec(),
               NONE,
-              ast.formal_parameters(
+            ),
+            NONE,
+            ast.function_body(
+              SPAN,
+              ast.vec(),
+              ast.vec1(ast.statement_expression(
                 SPAN,
-                FormalParameterKind::ArrowFormalParameters,
-                ast.vec(),
-                NONE,
-              ),
-              NONE,
-              ast.function_body(
-                SPAN,
-                ast.vec(),
-                ast.vec1(ast.statement_expression(
-                  SPAN,
-                  gen_expression(dir.exp.unwrap(), context, None, None),
-                )),
-              ),
-            )
-            .into(),
-        ]),
-        false,
-      ),
-    );
+                gen_expression(dir.exp.unwrap(), context, None, false),
+              )),
+            ),
+          )
+          .into(),
+      ]),
+      false,
+    ),
+  );
 
   if deferred {
     stmt = ast.statement_expression(

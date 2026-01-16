@@ -35,7 +35,7 @@ pub fn gen_key<'a>(
     ast.function_body(
       SPAN,
       ast.vec(),
-      ast.vec1(ast.statement_expression(SPAN, gen_expression(value, context, None, None))),
+      ast.vec1(ast.statement_expression(SPAN, gen_expression(value, context, None, false))),
     ),
   );
 

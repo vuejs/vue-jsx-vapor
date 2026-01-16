@@ -11,10 +11,10 @@ use crate::ir::index::{BlockIRNode, IRFor};
 pub struct IRProp<'a> {
   pub key: SimpleExpressionNode<'a>,
   pub modifier: Option<String>,
-  pub runtime_camelize: Option<bool>,
-  pub handler: Option<bool>,
+  pub runtime_camelize: bool,
+  pub handler: bool,
   pub handler_modifiers: Option<Modifiers>,
-  pub model: Option<bool>,
+  pub model: bool,
   pub model_modifiers: Option<Vec<String>>,
 
   pub values: Vec<SimpleExpressionNode<'a>>,
@@ -26,7 +26,7 @@ pub type IRPropsStatic<'a> = Vec<IRProp<'a>>;
 #[derive(Clone, Debug)]
 pub struct IRPropsDynamicExpression<'a> {
   pub value: SimpleExpressionNode<'a>,
-  pub handler: Option<bool>,
+  pub handler: bool,
 }
 
 pub type IRProps<'a> = Either3<IRPropsStatic<'a>, IRProp<'a>, IRPropsDynamicExpression<'a>>;

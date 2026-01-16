@@ -62,7 +62,7 @@ pub fn transform_v_text<'a>(
         set_text: true,
         values: vec![exp],
         element,
-        generated: Some(true),
+        generated: true,
         is_component,
       }),
       None,

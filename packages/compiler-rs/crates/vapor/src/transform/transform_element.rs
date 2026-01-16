@@ -268,7 +268,7 @@ pub fn build_props<'a>(
         }
         dynamic_args.push(Either3::C(IRPropsDynamicExpression {
           value,
-          handler: None,
+          handler: false,
         }));
         continue;
       }
@@ -291,7 +291,7 @@ pub fn build_props<'a>(
               }
               dynamic_args.push(Either3::C(IRPropsDynamicExpression {
                 value,
-                handler: Some(true),
+                handler: true,
               }))
             } else {
               let element = context.reference(&mut context_block.dynamic);
@@ -467,8 +467,8 @@ pub fn transform_prop<'a>(
         element,
         dir: resolve_directive(prop, context.ir.borrow().source),
         name: name.to_string(),
-        asset: Some(asset),
-        builtin: None,
+        asset: asset,
+        builtin: false,
         model_type: None,
         deferred: false,
       }),

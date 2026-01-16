@@ -84,7 +84,7 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
   );
   let resolved_helper = get_runtime_helper(&tag, &key.content, modifier);
   if resolved_helper.need_key {
-    arguments.push(gen_expression(key, context, None, None).into());
+    arguments.push(gen_expression(key, context, None, false).into());
   }
   arguments.push(gen_prop_value(values, context).into());
 
@@ -211,7 +211,7 @@ pub fn gen_dynamic_props<'a>(
     match props {
       Either3::A(props) => gen_literal_object_props(props, context).into(),
       Either3::B(prop) => gen_literal_object_props(vec![prop], context).into(),
-      Either3::C(props) => gen_expression(props.value, context, None, None).into(), // {...obj}
+      Either3::C(props) => gen_expression(props.value, context, None, false).into(), // {...obj}
     }
   });
 
@@ -252,7 +252,7 @@ fn gen_literal_object_props<'a>(
           prop.key,
           prop.runtime_camelize,
           prop.modifier,
-          prop.handler.unwrap_or(false),
+          prop.handler,
           prop
             .handler_modifiers
             .map(|i| i.options)
@@ -270,7 +270,7 @@ fn gen_literal_object_props<'a>(
 
 pub fn gen_prop_key<'a>(
   node: SimpleExpressionNode<'a>,
-  runtime_camelize: Option<bool>,
+  runtime_camelize: bool,
   modifier: Option<String>,
   handler: bool,
   options: Vec<String>,
@@ -306,8 +306,8 @@ pub fn gen_prop_key<'a>(
     return ast.property_key_static_identifier(node.loc, ast.atom(key_name));
   }
 
-  let mut key = gen_expression(node, context, None, None);
-  if runtime_camelize.unwrap_or_default() {
+  let mut key = gen_expression(node, context, None, false);
+  if runtime_camelize {
     key = ast.expression_call(
       SPAN,
       ast.expression_identifier(SPAN, ast.atom(&context.helper("camelize"))),
@@ -360,14 +360,14 @@ pub fn gen_prop_value<'a>(
 ) -> Expression<'a> {
   let ast = &context.ast;
   if values.len() == 1 {
-    return gen_expression(values.remove(0), context, None, None);
+    return gen_expression(values.remove(0), context, None, false);
   }
   ast.expression_array(
     SPAN,
     ast.vec_from_iter(
       values
         .into_iter()
-        .map(|value| gen_expression(value, context, None, None).into()),
+        .map(|value| gen_expression(value, context, None, false).into()),
     ),
   )
 }

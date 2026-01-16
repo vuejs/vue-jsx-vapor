@@ -98,7 +98,7 @@ pub fn gen_for<'a>(
     ast.function_body(
       SPAN,
       ast.vec(),
-      ast.vec1(ast.statement_expression(SPAN, gen_expression(source, context, None, None))),
+      ast.vec1(ast.statement_expression(SPAN, gen_expression(source, context, None, false))),
     ),
   );
 
@@ -343,7 +343,7 @@ pub fn gen_for<'a>(
                 SPAN,
                 ast.vec(),
                 ast.vec1(
-                  ast.statement_expression(SPAN, gen_expression(selector, context, None, None)),
+                  ast.statement_expression(SPAN, gen_expression(selector, context, None, false)),
                 ),
               ),
             ),
@@ -459,7 +459,7 @@ pub fn gen_for<'a>(
   let gen_callback =
     if let Some(key_prop) = key_prop {
       let res = context.with_id(
-        || gen_expression(key_prop, context, None, None),
+        || gen_expression(key_prop, context, None, false),
         HashMap::new(),
       );
 
