@@ -57,6 +57,8 @@ pub unsafe fn transform_v_key<'a>(
       block,
       anchor: None,
       parent: None,
+      append: false,
+      last: false,
     })))
   }))
 }

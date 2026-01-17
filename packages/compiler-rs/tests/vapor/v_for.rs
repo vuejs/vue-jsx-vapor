@@ -14,13 +14,13 @@ fn basic() {
   assert_snapshot!(code, @r#"
   _delegateEvents("click");
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, delegateEvents as _delegateEvents, template as _template } from "vue";
+  import { createFor as _createFor, delegateEvents as _delegateEvents, template as _template, txt as _txt } from "vue";
   const t0 = _template("<div> </div>");
   (() => {
   	const n0 = _createFor(() => items, (_for_item0) => {
   		const n2 = t0();
   		n2.$evtclick = () => remove(_for_item0.value);
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_setNodes(x2, () => _for_item0.value);
   		return n2;
   	}, (item) => item.id);
@@ -43,12 +43,12 @@ fn key_only_binding_pattern() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, template as _template } from "vue";
+  import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const t0 = _template("<tr> </tr>");
   (() => {
   	const n0 = _createFor(() => rows, (_for_item0) => {
   		const n2 = t0();
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_setNodes(x2, () => _for_item0.value.id + _for_item0.value.id);
   		return n2;
   	}, (row) => row.id);
@@ -69,13 +69,13 @@ fn selector_pattern1() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { child as _child, createFor as _createFor, setText as _setText, template as _template, toDisplayString as _toDisplayString } from "vue";
+  import { createFor as _createFor, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
   const t0 = _template("<tr> </tr>");
   (() => {
   	let _selector0_0;
   	const n0 = _createFor(() => rows, (_for_item0) => {
   		const n2 = t0();
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_selector0_0(() => {
   			_setText(x2, _toDisplayString(selected === _for_item0.value.id ? "danger" : ""));
   		});
@@ -207,16 +207,16 @@ fn nested_v_for() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, setInsertionState as _setInsertionState, template as _template } from "vue";
+  import { createFor as _createFor, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
   const t0 = _template("<span> </span>");
   const t1 = _template("<div></div>");
   (() => {
   	const n0 = _createFor(() => list, (_for_item0) => {
   		const n5 = t1();
-  		_setInsertionState(n5);
+  		_setInsertionState(n5, null, true);
   		const n2 = _createFor(() => _for_item0.value, (_for_item1) => {
   			const n4 = t0();
-  			const x4 = _child(n4);
+  			const x4 = _txt(n4);
   			_setNodes(x4, () => _for_item1.value + _for_item0.value);
   			return n4;
   		}, void 0, 1);
@@ -236,12 +236,12 @@ fn object_value_key_and_index() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, template as _template } from "vue";
+  import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const t0 = _template("<span> </span>");
   (() => {
   	const n0 = _createFor(() => items, (_for_item0, _for_key0, _for_index0) => {
   		const n2 = t0();
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_setNodes(x2, () => id, () => _for_item0.value, () => _for_index0.value);
   		return n2;
   	}, (value, key, index) => id);
@@ -259,12 +259,12 @@ fn object_de_structured_value() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, template as _template } from "vue";
+  import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const t0 = _template("<span> </span>");
   (() => {
   	const n0 = _createFor(() => items, (_for_item0) => {
   		const n2 = t0();
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_setNodes(x2, () => _for_item0.value.id, () => _for_item0.value.value);
   		return n2;
   	}, ({ id, value }) => id);
@@ -282,12 +282,12 @@ fn object_de_structured_value_with_rest() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, getRestElement as _getRestElement, template as _template } from "vue";
+  import { createFor as _createFor, getRestElement as _getRestElement, template as _template, txt as _txt } from "vue";
   const t0 = _template("<div> </div>");
   (() => {
   	const n0 = _createFor(() => list, (_for_item0, _for_key0) => {
   		const n2 = t0();
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_setNodes(x2, () => _for_item0.value.id + _getRestElement(_for_item0.value, ["id"]) + _for_key0.value);
   		return n2;
   	}, ({ id, ...other }, index) => id);
@@ -305,12 +305,12 @@ fn array_de_structured_value() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, template as _template } from "vue";
+  import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const t0 = _template("<div> </div>");
   (() => {
   	const n0 = _createFor(() => list, (_for_item0, _for_key0) => {
   		const n2 = t0();
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_setNodes(x2, () => _for_item0.value[0] + _for_item0.value[1] + _for_key0.value);
   		return n2;
   	}, ([id, other], index) => id);
@@ -324,12 +324,12 @@ fn array_de_structured_value_with_rest() {
   let code = transform("<div v-for={([id, [foo], {bar}, ...other], index) in list} key={id}>{ id + other + index + foo + bar }</div>", None).code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, template as _template } from "vue";
+  import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const t0 = _template("<div> </div>");
   (() => {
   	const n0 = _createFor(() => list, (_for_item0, _for_key0) => {
   		const n2 = t0();
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_setNodes(x2, () => _for_item0.value[0] + _for_item0.value.slice(3) + _for_key0.value + _for_item0.value[1][0] + _for_item0.value[2].bar);
   		return n2;
   	}, ([id, [foo], {bar}, ...other], index) => id);
@@ -349,12 +349,12 @@ fn aliases_with_complex_expressions() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, template as _template } from "vue";
+  import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const t0 = _template("<div> </div>");
   (() => {
   	const n0 = _createFor(() => list, (_for_item0) => {
   		const n2 = t0();
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_setNodes(x2, () => _for_item0.value.foo + baz + _for_item0.value.baz[0]);
   		return n2;
   	});
@@ -374,15 +374,15 @@ fn fast_remove_flag() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, setInsertionState as _setInsertionState, template as _template } from "vue";
+  import { createFor as _createFor, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
   const t0 = _template("<span> </span>");
   const t1 = _template("<div></div>", true);
   (() => {
   	const n3 = t1();
-  	_setInsertionState(n3);
+  	_setInsertionState(n3, null, true);
   	const n0 = _createFor(() => i, (_for_item0) => {
   		const n2 = t0();
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_setNodes(x2, () => _for_item0.value + i);
   		return n2;
   	}, void 0, 1);
@@ -459,12 +459,12 @@ fn identifiers() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
+  import { createFor as _createFor, renderEffect as _renderEffect, setProp as _setProp, template as _template, txt as _txt } from "vue";
   const t0 = _template("<div> </div>");
   (() => {
   	const n0 = _createFor(() => items, (_for_item0, _for_key0) => {
   		const n2 = t0();
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_setNodes(x2, () => ((item) => {
   			let index = 1;
   			return [item, index];
@@ -492,12 +492,12 @@ fn expression_object() {
     </div>", None).code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
+  import { createFor as _createFor, renderEffect as _renderEffect, setProp as _setProp, template as _template, txt as _txt } from "vue";
   const t0 = _template("<div> </div>");
   (() => {
   	const n0 = _createFor(() => Array.from({ length: count.value }).map((_, id) => ({ id })), (_for_item0, _for_key0) => {
   		const n2 = t0();
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_setNodes(x2, () => _for_item0.value);
   		_renderEffect(() => _setProp(n2, "id", _for_key0.value));
   		return n2;

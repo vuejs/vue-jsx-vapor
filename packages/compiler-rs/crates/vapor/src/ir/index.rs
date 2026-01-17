@@ -66,6 +66,8 @@ pub struct IfIRNode<'a> {
   pub once: bool,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
+  pub append: bool,
+  pub last: bool,
 }
 
 #[derive(Debug)]
@@ -75,6 +77,8 @@ pub struct KeyIRNode<'a> {
   pub block: BlockIRNode<'a>,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
+  pub append: bool,
+  pub last: bool,
 }
 
 #[derive(Debug)]
@@ -100,6 +104,8 @@ pub struct ForIRNode<'a> {
   pub only_child: bool,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
+  pub append: bool,
+  pub last: bool,
 }
 
 #[derive(Debug)]
@@ -214,6 +220,8 @@ pub struct CreateComponentIRNode<'a> {
   pub dynamic: Option<SimpleExpressionNode<'a>>,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
+  pub append: bool,
+  pub last: bool,
 }
 
 #[derive(Debug)]
@@ -271,6 +279,7 @@ pub struct IRDynamicInfo<'a> {
   pub template: Option<i32>,
   pub has_dynamic_child: bool,
   pub operation: Option<Box<OperationNode<'a>>>,
+  pub if_branch: bool,
 }
 impl<'a> IRDynamicInfo<'a> {
   pub fn new() -> Self {
@@ -282,6 +291,7 @@ impl<'a> IRDynamicInfo<'a> {
       operation: None,
       id: None,
       anchor: None,
+      if_branch: false,
     }
   }
 }

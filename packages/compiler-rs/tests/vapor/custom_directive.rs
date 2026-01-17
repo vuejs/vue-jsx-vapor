@@ -150,7 +150,7 @@ fn component() {
   	const n0 = _createComponent(Comp, null, { default: () => {
   		const n2 = _createIf(() => true, () => {
   			const n5 = t0();
-  			_setInsertionState(n5);
+  			_setInsertionState(n5, null, true);
   			const n4 = _createComponent(Bar);
   			_withVaporDirectives(n4, [[
   				_directive_hello,

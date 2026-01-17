@@ -1,7 +1,9 @@
 use std::mem;
 
+use napi::bindgen_prelude::Either17;
 use oxc_ast::NONE;
 use oxc_ast::ast::Argument;
+use oxc_ast::ast::NumberBase;
 use oxc_ast::ast::Statement;
 use oxc_ast::ast::VariableDeclarationKind;
 use oxc_span::SPAN;
@@ -93,11 +95,26 @@ fn gen_children<'a>(
 
   let mut offset = 0;
   let mut prev: Option<(String, i32)> = None;
+  let mut if_branch_count = 0;
+  let mut prepend_count = 0;
 
   let mut index = 0;
   for mut child in children {
+    if let Some(operation) = child.operation.as_ref()
+      && match operation.as_ref() {
+        Either17::A(op) => op.anchor == Some(-1),
+        Either17::B(op) => op.anchor == Some(-1),
+        Either17::N(op) => op.anchor == Some(-1),
+        Either17::Q(op) => op.anchor == Some(-1),
+        _ => false,
+      }
+    {
+      prepend_count += 1;
+    }
     if child.flags & DynamicFlag::NonTemplate as i32 != 0 {
       offset -= 1;
+    } else if child.if_branch {
+      if_branch_count += 1;
     }
 
     let id = if child.flags & DynamicFlag::Referenced as i32 != 0 {
@@ -118,6 +135,7 @@ fn gen_children<'a>(
     }
 
     let element_index = index + offset;
+    let logical_index = element_index - if_branch_count + prepend_count;
     // p for "placeholder" variables that are meant for possible reuse by
     // other access paths
     let variable = if let Some(id) = id {
@@ -134,9 +152,15 @@ fn gen_children<'a>(
           SPAN,
           ast.expression_identifier(SPAN, ast.atom(&context.helper("next"))),
           NONE,
-          ast.vec1(Argument::Identifier(
-            ast.alloc_identifier_reference(SPAN, ast.atom(&prev.0)),
-          )),
+          ast.vec_from_array([
+            Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(&prev.0))),
+            Argument::NumericLiteral(ast.alloc_numeric_literal(
+              SPAN,
+              logical_index as f64,
+              None,
+              NumberBase::Hex,
+            )),
+          ]),
           false,
         )
       } else {
@@ -146,9 +170,18 @@ fn gen_children<'a>(
           NONE,
           ast.vec_from_array([
             Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(&from))),
-            Argument::Identifier(
-              ast.alloc_identifier_reference(SPAN, ast.atom(&element_index.to_string())),
-            ),
+            Argument::NumericLiteral(ast.alloc_numeric_literal(
+              SPAN,
+              element_index as f64,
+              None,
+              NumberBase::Hex,
+            )),
+            Argument::NumericLiteral(ast.alloc_numeric_literal(
+              SPAN,
+              logical_index as f64,
+              None,
+              NumberBase::Hex,
+            )),
           ]),
           false,
         )
@@ -158,9 +191,15 @@ fn gen_children<'a>(
         SPAN,
         ast.expression_identifier(SPAN, ast.atom(&context.helper("child"))),
         NONE,
-        ast.vec1(Argument::Identifier(
-          ast.alloc_identifier_reference(SPAN, ast.atom(&from)),
-        )),
+        ast.vec_from_array([
+          Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(&from))),
+          Argument::NumericLiteral(ast.alloc_numeric_literal(
+            SPAN,
+            logical_index as f64,
+            None,
+            NumberBase::Hex,
+          )),
+        ]),
         false,
       )
     } else {
@@ -174,14 +213,19 @@ fn gen_children<'a>(
             SPAN,
             ast.expression_identifier(SPAN, ast.atom(&context.helper("child"))),
             NONE,
-            ast.vec1(Argument::Identifier(
-              ast.alloc_identifier_reference(SPAN, ast.atom(&from)),
-            )),
+            ast.vec_from_array([
+              Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(&from))),
+              Argument::NumericLiteral(ast.alloc_numeric_literal(
+                SPAN,
+                logical_index as f64,
+                None,
+                NumberBase::Hex,
+              )),
+            ]),
             false,
           ))),
           false,
         )
-        // gen_call(Either::A(context.helper("next")), vec![Either4::D(init)])
       } else if element_index > 1 {
         ast.expression_call(
           SPAN,
@@ -189,9 +233,18 @@ fn gen_children<'a>(
           NONE,
           ast.vec_from_array([
             Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(&from))),
-            Argument::Identifier(
-              ast.alloc_identifier_reference(SPAN, ast.atom(&element_index.to_string())),
-            ),
+            Argument::NumericLiteral(ast.alloc_numeric_literal(
+              SPAN,
+              element_index as f64,
+              None,
+              NumberBase::Hex,
+            )),
+            Argument::NumericLiteral(ast.alloc_numeric_literal(
+              SPAN,
+              logical_index as f64,
+              None,
+              NumberBase::Hex,
+            )),
           ]),
           false,
         )

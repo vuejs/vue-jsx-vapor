@@ -20,8 +20,8 @@ fn basic() {
   const t0 = _template("<div> <span></span></div>", true);
   (() => {
   	const n2 = t0();
-  	const n0 = _child(n2);
-  	const n1 = _next(n0);
+  	const n0 = _child(n2, 0);
+  	const n1 = _next(n0, 1);
   	_setNodes(n0, msg);
   	_setClass(n1, clz);
   	return n2;
@@ -51,7 +51,7 @@ fn on_nested_plain_element() {
   const t0 = _template("<div><div></div></div>", true);
   (() => {
   	const n1 = t0();
-  	const n0 = _child(n1);
+  	const n0 = _child(n1, 0);
   	_setProp(n0, "id", foo);
   	return n1;
   })();
@@ -67,7 +67,7 @@ fn on_component() {
   const t0 = _template("<div></div>", true);
   (() => {
   	const n1 = t0();
-  	_setInsertionState(n1);
+  	_setInsertionState(n1, null, true);
   	const n0 = _createComponent(Comp, { id: () => foo }, null, null, true);
   	return n1;
   })();
@@ -132,16 +132,16 @@ fn with_conditional_expression() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
+  import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
   const t0 = _template("<span> </span>");
   const t1 = _template("<div>fail</div>");
   const t2 = _template("<div></div>", true);
   (() => {
   	const n5 = t2();
-  	_setInsertionState(n5);
+  	_setInsertionState(n5, null, true);
   	const n0 = _createIf(() => ok, () => {
   		const n2 = t0();
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_setNodes(x2, msg);
   		return n2;
   	}, () => {
@@ -183,20 +183,20 @@ fn execution_order() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, next as _next, nthChild as _nthChild, setProp as _setProp, template as _template } from "vue";
+  import { child as _child, next as _next, nthChild as _nthChild, setProp as _setProp, template as _template, txt as _txt } from "vue";
   const t0 = _template("<div><span> </span> <br> <div> </div></div>", true);
   (() => {
   	const n4 = t0();
-  	const n0 = _child(n4);
-  	const n1 = _next(n0);
-  	const n2 = _nthChild(n4, 3);
-  	const n3 = _next(n2);
-  	const x0 = _child(n0);
+  	const n0 = _child(n4, 0);
+  	const n1 = _next(n0, 1);
+  	const n2 = _nthChild(n4, 3, 3);
+  	const n3 = _next(n2, 4);
+  	const x0 = _txt(n0);
   	_setNodes(x0, foo);
   	_setNodes(n1, () => bar);
   	_setNodes(n2, () => baz);
   	_setProp(n3, "foo", true);
-  	const x3 = _child(n3);
+  	const x3 = _txt(n3);
   	_setNodes(x3, () => foo);
   	return n4;
   })();

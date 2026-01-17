@@ -109,6 +109,9 @@ pub unsafe fn transform_element<'a>(
   }))
 }
 
+// keys cannot be a part of the template and need to be set dynamically
+static DYNAMIC_KEYS: [&'static str; 1] = ["indeterminate"];
+
 #[allow(clippy::too_many_arguments)]
 pub fn transform_native_element<'a>(
   tag: String,
@@ -145,7 +148,11 @@ pub fn transform_native_element<'a>(
       for prop in props {
         let key = &prop.key;
         let values = &prop.values;
-        if key.is_static && values.len() == 1 && values[0].is_static {
+        if key.is_static
+          && values.len() == 1
+          && values[0].is_static
+          && !DYNAMIC_KEYS.contains(&key.content.as_str())
+        {
           template += &format!(" {}", key.content);
           if !values[0].content.is_empty() {
             template += &format!("=\"{}\"", values[0].content);
@@ -227,6 +234,8 @@ pub fn transform_component_element<'a>(
     parent: None,
     anchor: None,
     dynamic: None,
+    append: false,
+    last: false,
   })));
 }
 

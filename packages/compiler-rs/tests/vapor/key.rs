@@ -67,8 +67,8 @@ fn key_with_anchor_insertion_in_middle() {
   const t1 = _template("<div><div></div><!><div></div></div>", true);
   (() => {
   	const n4 = t1();
-  	const n3 = _next(_child(n4));
-  	_setInsertionState(n4, n3);
+  	const n3 = _next(_child(n4, 1));
+  	_setInsertionState(n4, n3, true);
   	const n0 = _createKeyedFragment(() => 1, () => {
   		const n2 = t0();
   		return n2;

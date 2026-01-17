@@ -12,11 +12,11 @@ fn basic() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, template as _template } from "vue";
+  import { template as _template, txt as _txt } from "vue";
   const t0 = _template("<div> </div>", true);
   (() => {
   	const n0 = t0();
-  	const x0 = _child(n0);
+  	const x0 = _txt(n0);
   	_setNodes(x0, () => foo, " ", () => bar);
   	return n0;
   })();
@@ -61,17 +61,17 @@ fn children_sibling_references() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, next as _next, renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
+  import { child as _child, next as _next, renderEffect as _renderEffect, setProp as _setProp, template as _template, txt as _txt } from "vue";
   const t0 = _template("<div><p> </p> <p> </p></div>", true);
   (() => {
   	const n3 = t0();
-  	const n0 = _child(n3);
-  	const n1 = _next(n0);
-  	const n2 = _next(n1);
-  	const x0 = _child(n0);
+  	const n0 = _child(n3, 0);
+  	const n1 = _next(n0, 1);
+  	const n2 = _next(n1, 2);
+  	const x0 = _txt(n0);
   	_setNodes(x0, () => first);
   	_setNodes(n1, "123 ", () => second, " 456 ", () => foo);
-  	const x2 = _child(n2);
+  	const x2 = _txt(n2);
   	_setNodes(x2, () => forth);
   	_renderEffect(() => _setProp(n3, "id", id));
   	return n3;
@@ -93,21 +93,21 @@ fn efficient_traversal() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, next as _next, template as _template } from "vue";
+  import { child as _child, next as _next, template as _template, txt as _txt } from "vue";
   const t0 = _template("<div><div>x</div><div><span> </span></div><div><span> </span></div><div><span> </span></div></div>", true);
   (() => {
   	const n3 = t0();
-  	const p0 = _next(_child(n3));
-  	const p1 = _next(p0);
-  	const p2 = _next(p1);
-  	const n2 = _child(p2);
-  	const n1 = _child(p1);
-  	const n0 = _child(p0);
-  	const x0 = _child(n0);
+  	const p0 = _next(_child(n3, 1));
+  	const p1 = _next(p0, 2);
+  	const p2 = _next(p1, 3);
+  	const n2 = _child(p2, 0);
+  	const n1 = _child(p1, 0);
+  	const n0 = _child(p0, 0);
+  	const x0 = _txt(n0);
   	_setNodes(x0, () => ({ msg }));
-  	const x1 = _child(n1);
+  	const x1 = _txt(n1);
   	_setNodes(x1, () => ({ msg }));
-  	const x2 = _child(n2);
+  	const x2 = _txt(n2);
   	_setNodes(x2, () => ({ msg }));
   	return n3;
   })();
@@ -127,12 +127,12 @@ fn efficient_find() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, nthChild as _nthChild, template as _template } from "vue";
+  import { nthChild as _nthChild, template as _template, txt as _txt } from "vue";
   const t0 = _template("<div><div>x</div><div>x</div><div> </div></div>", true);
   (() => {
   	const n1 = t0();
-  	const n0 = _nthChild(n1, 2);
-  	const x0 = _child(n0);
+  	const n0 = _nthChild(n1, 2, 2);
+  	const x0 = _txt(n0);
   	_setNodes(x0, () => msg);
   	return n1;
   })();
@@ -157,8 +157,8 @@ fn anchor_insertion_in_middle() {
   const t1 = _template("<div><div></div><!><div></div></div>", true);
   (() => {
   	const n4 = t1();
-  	const n3 = _next(_child(n4));
-  	_setInsertionState(n4, n3);
+  	const n3 = _next(_child(n4, 1));
+  	_setInsertionState(n4, n3, true);
   	const n0 = _createIf(() => 1, () => {
   		const n2 = t0();
   		return n2;
@@ -179,11 +179,11 @@ fn jsx_component_in_jsx_expression_container() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { child as _child, template as _template } from "vue";
+  import { template as _template, txt as _txt } from "vue";
   const t0 = _template("<div> </div>", true);
   (() => {
   	const n0 = t0();
-  	const x0 = _child(n0);
+  	const x0 = _txt(n0);
   	_setNodes(x0, () => (() => {
   		const n0 = _createComponent(Comp, null, null, true);
   		return n0;
@@ -215,13 +215,13 @@ fn next_child_and_nthchild_should_be_above_the_set_insertion_state() {
   const t1 = _template("<div><div></div><!><div></div><!><div><button></button></div></div>", true);
   (() => {
   	const n6 = t1();
-  	const n5 = _next(_child(n6));
-  	const n7 = _nthChild(n6, 3);
-  	const p0 = _next(n7);
-  	const n4 = _child(p0);
+  	const n5 = _next(_child(n6, 1));
+  	const n7 = _nthChild(n6, 3, 3);
+  	const p0 = _next(n7, 4);
+  	const n4 = _child(p0, 0);
   	_setInsertionState(n6, n5);
   	const n0 = _createComponent(Comp);
-  	_setInsertionState(n6, n7);
+  	_setInsertionState(n6, n7, true);
   	const n1 = _createIf(() => true, () => {
   		const n3 = t0();
   		return n3;

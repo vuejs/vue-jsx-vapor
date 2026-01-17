@@ -8,11 +8,11 @@ use insta::assert_snapshot;
 fn should_convert_v_text_to_set_text() {
   let code = transform("<div v-text={str.value}></div>", None).code;
   assert_snapshot!(code, @r#"
-  import { child as _child, renderEffect as _renderEffect, setText as _setText, template as _template, toDisplayString as _toDisplayString } from "vue";
+  import { renderEffect as _renderEffect, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
   const t0 = _template("<div> </div>", true);
   (() => {
   	const n0 = t0();
-  	const x0 = _child(n0);
+  	const x0 = _txt(n0);
   	_renderEffect(() => _setText(x0, _toDisplayString(str.value)));
   	return n0;
   })();

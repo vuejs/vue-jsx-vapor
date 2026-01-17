@@ -63,12 +63,24 @@ pub fn gen_operation_with_insertion_state<'a>(
   match &oper {
     Either17::A(if_ir_node) => {
       if let Some(parent) = if_ir_node.parent {
-        statements.push(gen_insertion_state(parent, if_ir_node.anchor, context))
+        statements.push(gen_insertion_state(
+          parent,
+          if_ir_node.anchor,
+          if_ir_node.append,
+          if_ir_node.last,
+          context,
+        ))
       }
     }
     Either17::B(for_ir_node) => {
       if let Some(parent) = for_ir_node.parent {
-        statements.push(gen_insertion_state(parent, for_ir_node.anchor, context))
+        statements.push(gen_insertion_state(
+          parent,
+          for_ir_node.anchor,
+          for_ir_node.append,
+          for_ir_node.last,
+          context,
+        ))
       }
     }
     Either17::N(create_component_ir_node) => {
@@ -76,13 +88,21 @@ pub fn gen_operation_with_insertion_state<'a>(
         statements.push(gen_insertion_state(
           parent,
           create_component_ir_node.anchor,
+          create_component_ir_node.append,
+          create_component_ir_node.last,
           context,
         ))
       }
     }
     Either17::Q(key_ir_node) => {
       if let Some(parent) = key_ir_node.parent {
-        statements.push(gen_insertion_state(parent, key_ir_node.anchor, context))
+        statements.push(gen_insertion_state(
+          parent,
+          key_ir_node.anchor,
+          key_ir_node.append,
+          key_ir_node.last,
+          context,
+        ))
       }
     }
     _ => (),
@@ -126,6 +146,8 @@ pub fn gen_operation<'a>(
 pub fn gen_insertion_state<'a>(
   parent: i32,
   anchor: Option<i32>,
+  append: bool,
+  last: bool,
   context: &CodegenContext<'a>,
 ) -> Statement<'a> {
   let ast = &context.ast;
@@ -150,12 +172,32 @@ pub fn gen_insertion_state<'a>(
                 None,
                 NumberBase::Hex,
               ))) // runtime anchor value for prepend
+            } else if append {
+              // null or anchor > 0 for append
+              // anchor > 0 is the logical index of append node - used for locate node during hydration
+              if anchor == 0 {
+                Some(Argument::NullLiteral(ast.alloc_null_literal(SPAN)))
+              } else {
+                Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+                  SPAN,
+                  anchor as f64,
+                  None,
+                  NumberBase::Hex,
+                )))
+              }
             } else {
               Some(Argument::Identifier(ast.alloc_identifier_reference(
                 SPAN,
                 ast.atom(&format!("n{anchor}")),
               )))
             }
+          } else {
+            None
+          },
+          if last {
+            Some(Argument::BooleanLiteral(
+              ast.alloc_boolean_literal(SPAN, true),
+            ))
           } else {
             None
           },

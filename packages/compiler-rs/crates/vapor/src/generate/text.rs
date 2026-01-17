@@ -74,7 +74,7 @@ pub fn gen_get_text_child<'a>(
           Some(
             ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&context.helper("child"))),
+              ast.expression_identifier(SPAN, ast.atom(&context.helper("txt"))),
               NONE,
               ast.vec1(
                 ast

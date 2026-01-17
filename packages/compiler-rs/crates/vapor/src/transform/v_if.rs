@@ -83,9 +83,13 @@ pub unsafe fn transform_v_if<'a>(
         negative: None,
         anchor: None,
         parent: None,
+        append: false,
+        last: false,
       })));
     }));
   }
+
+  context_block.dynamic.if_branch = true;
 
   let siblings = &mut context.parent_dynamic.borrow_mut().children;
   let mut last_if_node = None;
@@ -146,6 +150,8 @@ pub unsafe fn transform_v_if<'a>(
         parent: None,
         anchor: None,
         negative: None,
+        append: false,
+        last: false,
       })))
     }
   }))

@@ -102,18 +102,21 @@ fn process_dynamic_children<'a>(
   context_block: &'a mut BlockIRNode<'a>,
 ) {
   let mut prev_dynamics = VecDeque::new();
-  let mut has_static_template = false;
-
+  let mut static_count = 0;
+  let mut dynamic_count = 0;
+  let mut last_insertion_child = None;
   let children = &mut context_block.dynamic.children as *mut Vec<IRDynamicInfo>;
+
   for (index, child) in unsafe { &mut *children }.iter_mut().enumerate() {
     let flags = child.flags;
     if flags & DynamicFlag::Insert as i32 != 0 {
+      last_insertion_child = Some(unsafe { &mut *(child as *mut IRDynamicInfo) });
       prev_dynamics.push_back(child);
     }
 
     if flags & DynamicFlag::NonTemplate as i32 == 0 {
       if !prev_dynamics.is_empty() {
-        if has_static_template {
+        if static_count > 0 {
           context
             .children_template
             .borrow_mut()
@@ -121,23 +124,44 @@ fn process_dynamic_children<'a>(
           prev_dynamics[0].flags -= DynamicFlag::NonTemplate as i32;
           let anchor = context.increase_id();
           prev_dynamics[0].anchor = Some(anchor);
-          register_insertion(&mut prev_dynamics, context, context_block, Some(anchor));
+          register_insertion(&mut prev_dynamics, context, context_block, anchor, false);
         } else {
           register_insertion(
             &mut prev_dynamics,
             context,
             context_block,
-            Some(-1), /* prepend */
+            -1, /* prepend */
+            false,
           );
         }
+        dynamic_count += prev_dynamics.len();
         prev_dynamics.clear();
       }
-      has_static_template = true;
+      static_count += 1;
     }
   }
 
   if !prev_dynamics.is_empty() {
-    register_insertion(&mut prev_dynamics, context, context_block, None);
+    register_insertion(
+      &mut prev_dynamics,
+      context,
+      context_block,
+      // the logical index of append child
+      (dynamic_count + static_count) as i32,
+      true,
+    );
+  }
+
+  if let Some(last_insertion_child) = last_insertion_child
+    && let Some(operation) = last_insertion_child.operation.as_mut()
+  {
+    match operation.as_mut() {
+      Either17::A(operation) => operation.last = true,
+      Either17::B(operation) => operation.last = true,
+      Either17::N(operation) => operation.last = true,
+      Either17::Q(operation) => operation.last = true,
+      _ => (),
+    };
   }
 }
 
@@ -145,7 +169,8 @@ fn register_insertion<'a>(
   dynamics: &mut VecDeque<&mut IRDynamicInfo>,
   context: &TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
-  anchor: Option<i32>,
+  anchor: i32,
+  append: bool,
 ) {
   let ids = dynamics
     .iter()
@@ -161,7 +186,7 @@ fn register_insertion<'a>(
           insert_node: true,
           elements: ids.clone(),
           parent,
-          anchor,
+          anchor: if append { None } else { Some(anchor) },
         }),
         None,
       );
@@ -171,22 +196,26 @@ fn register_insertion<'a>(
         Either17::A(if_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           if_ir_node.parent = Some(parent);
-          if_ir_node.anchor = anchor;
+          if_ir_node.anchor = Some(anchor);
+          if_ir_node.append = append;
         }
         Either17::B(for_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           for_ir_node.parent = Some(parent);
-          for_ir_node.anchor = anchor;
+          for_ir_node.anchor = Some(anchor);
+          for_ir_node.append = append;
         }
         Either17::N(create_component_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           create_component_ir_node.parent = Some(parent);
-          create_component_ir_node.anchor = anchor;
+          create_component_ir_node.anchor = Some(anchor);
+          create_component_ir_node.append = append;
         }
         Either17::Q(key_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           key_ir_node.parent = Some(parent);
-          key_ir_node.anchor = anchor;
+          key_ir_node.anchor = Some(anchor);
+          key_ir_node.append = append;
         }
         _ => (),
       };

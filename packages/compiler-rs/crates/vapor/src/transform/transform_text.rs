@@ -344,6 +344,8 @@ pub fn process_conditional_expression<'a>(
       negative: None,
       parent: None,
       anchor: None,
+      append: false,
+      last: false,
     };
     let _context_block = context_block as *mut BlockIRNode;
     set_negative(
@@ -406,6 +408,8 @@ fn process_logical_expression<'a>(
       negative: None,
       anchor: None,
       parent: None,
+      append: false,
+      last: false,
     };
     let _context_block = context_block as *mut BlockIRNode;
 
@@ -457,6 +461,8 @@ fn set_negative<'a>(
       negative: None,
       anchor: None,
       parent: None,
+      append: false,
+      last: false,
     };
     set_negative(
       unsafe { &mut *node }.alternate.take_in(context.allocator),
@@ -505,6 +511,8 @@ fn set_negative<'a>(
       negative: None,
       anchor: None,
       parent: None,
+      append: false,
+      last: false,
     };
     set_negative(
       _right,

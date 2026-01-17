@@ -9,12 +9,12 @@ fn basic() {
   let code = transform("<div v-if={ok}>{msg}</div>", None).code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createIf as _createIf, template as _template } from "vue";
+  import { createIf as _createIf, template as _template, txt as _txt } from "vue";
   const t0 = _template("<div> </div>");
   (() => {
   	const n0 = _createIf(() => ok, () => {
   		const n2 = t0();
-  		const x2 = _child(n2);
+  		const x2 = _txt(n2);
   		_setNodes(x2, () => msg);
   		return n2;
   	});
@@ -31,7 +31,7 @@ fn template() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { child as _child, createIf as _createIf, renderEffect as _renderEffect, setText as _setText, template as _template, toDisplayString as _toDisplayString } from "vue";
+  import { createIf as _createIf, renderEffect as _renderEffect, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
   const t0 = _template("<div></div>");
   const t1 = _template("hello");
   const t2 = _template("<p> </p>");
@@ -40,7 +40,7 @@ fn template() {
   		const n2 = t0();
   		const n3 = t1();
   		const n4 = t2();
-  		const x4 = _child(n4);
+  		const x4 = _txt(n4);
   		_renderEffect(() => _setText(x4, _toDisplayString(msg)));
   		return [
   			n2,
@@ -180,12 +180,12 @@ fn v_if_v_if_or_v_elses() {
   const t3 = _template("<div></div>", true);
   (() => {
   	const n8 = t3();
-  	_setInsertionState(n8);
+  	_setInsertionState(n8, null);
   	const n0 = _createIf(() => "foo", () => {
   		const n2 = t0();
   		return n2;
   	});
-  	_setInsertionState(n8);
+  	_setInsertionState(n8, null, true);
   	const n3 = _createIf(() => "bar", () => {
   		const n5 = t1();
   		return n5;
