@@ -4,7 +4,7 @@ use oxc_ast::ast::{Expression, JSXChild, JSXElementName, JSXExpression, JSXText}
 fn is_all_empty_text(s: &str) -> bool {
   let mut has_newline = false;
   for c in s.chars() {
-    if !c.is_whitespace() {
+    if !c.is_ascii_whitespace() {
       return false;
     }
     if c == '\n' || c == '\r' {
@@ -18,7 +18,7 @@ fn start_with_newline_and_spaces(s: &str) -> bool {
   let chars = s.chars();
 
   for c in chars {
-    if c.is_whitespace() && c != '\n' && c != '\r' {
+    if matches!(c, '\t' | '\x0C' | ' ') {
       continue;
     } else {
       return c == '\n' || c == '\r';
@@ -31,7 +31,7 @@ fn ends_with_newline_and_spaces(s: &str) -> bool {
   let chars = s.chars().rev();
 
   for c in chars {
-    if c.is_whitespace() && c != '\n' && c != '\r' {
+    if matches!(c, '\t' | '\x0C' | ' ') {
       continue;
     } else {
       return c == '\n' || c == '\r';
@@ -46,10 +46,14 @@ pub fn resolve_jsx_text(node: &JSXText) -> String {
   }
   let mut value = decode_html_entities(node.value.as_str()).to_string();
   if start_with_newline_and_spaces(&value) {
-    value = value.trim_start().to_owned();
+    value = value
+      .trim_start_matches(|c: char| c.is_ascii_whitespace())
+      .to_owned();
   }
   if ends_with_newline_and_spaces(&value) {
-    value = value.trim_end().to_owned();
+    value = value
+      .trim_end_matches(|c: char| c.is_ascii_whitespace())
+      .to_owned();
   }
   if value.trim().is_empty() {
     return String::from(" ");
