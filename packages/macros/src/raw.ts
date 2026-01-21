@@ -55,10 +55,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
             ...options.defineStyle.alias,
           ],
         },
-        handler(code, id, opt?: { ssr?: boolean }) {
-          if (opt?.ssr) {
-            options.defineComponent.autoReturnFunction = true
-          }
+        handler(code, id) {
           return transformJsxMacros(code, id, importMap, options)
         },
       },

@@ -20,9 +20,7 @@ pub unsafe fn transform_v_memo<'a>(
     && let Some(dir) = directives.v_memo.as_mut()
   {
     let seen = &mut context.seen.borrow_mut();
-    if seen.contains(&dir.span.start)
-      || *context.options.in_v_once.borrow()
-      || context.options.in_ssr
+    if seen.contains(&dir.span.start) || *context.options.in_v_once.borrow() || context.options.ssr
     {
       return None;
     }

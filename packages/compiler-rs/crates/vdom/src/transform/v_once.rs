@@ -16,9 +16,7 @@ pub unsafe fn transform_v_once<'a>(
     && let Some(dir) = directives.v_once.as_ref()
   {
     let seen = &mut context.seen.borrow_mut();
-    if seen.contains(&dir.span.start)
-      || *context.options.in_v_once.borrow()
-      || context.options.in_ssr
+    if seen.contains(&dir.span.start) || *context.options.in_v_once.borrow() || context.options.ssr
     {
       return None;
     }

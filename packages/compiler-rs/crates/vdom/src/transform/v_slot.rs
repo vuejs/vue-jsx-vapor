@@ -96,14 +96,14 @@ pub fn build_slots<'a>(
 
   // If the slot is inside a v-for or another v-slot, force it to be dynamic
   // since it likely uses a scope variable.
-  let mut has_dynamic_slots = if *context.options.ssr.borrow() {
+  let mut has_dynamic_slots = if context.options.ssr {
     *context.options.in_v_slot.borrow() > 0 || *context.options.in_v_for.borrow() > 0
   } else {
     !context.options.identifiers.borrow().is_empty()
   };
   // This can be further optimized to make
   // it dynamic when the slot children use the scope variables.
-  if !*context.options.ssr.borrow() && (has_dynamic_slots || !context.options.optimize_slots) {
+  if !context.options.ssr && (has_dynamic_slots || !context.options.optimize_slots) {
     has_dynamic_slots = context
       .options
       .slot_identifiers

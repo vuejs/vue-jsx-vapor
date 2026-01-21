@@ -134,13 +134,7 @@ export async function transformJsxMacros(
     }
 
     if (macros.defineComponent) {
-      transformDefineComponent(
-        root,
-        propsName,
-        macros,
-        s,
-        options.defineComponent?.autoReturnFunction,
-      )
+      transformDefineComponent(root, propsName, macros, s)
     }
     if (macros.defineModel?.length) {
       macros.defineModel.forEach(({ expression }) => {

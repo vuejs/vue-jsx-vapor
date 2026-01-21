@@ -2,13 +2,13 @@ use std::mem;
 
 use common::options::{RootJsx, TransformOptions};
 use napi::Either;
-use oxc_allocator::{Allocator, TakeIn};
+use oxc_allocator::{Allocator, FromIn, TakeIn};
 use oxc_ast::{
   AstBuilder, AstKind, NONE,
   ast::{Argument, Expression, ImportOrExportKind, Program, Statement, VariableDeclarationKind},
 };
 use oxc_ast_visit::{VisitMut, walk_mut};
-use oxc_span::{GetSpan, SPAN};
+use oxc_span::{Atom, GetSpan, SPAN};
 
 use crate::hmr_or_ssr::HmrOrSsrTransform;
 
@@ -24,31 +24,41 @@ pub struct Transform<'a> {
 impl<'a> Transform<'a> {
   pub fn new(allocator: &'a Allocator, options: &'a TransformOptions<'a>) -> Self {
     *options.on_enter_expression.borrow_mut() = Some(Box::new(|node, parents| unsafe {
-      if !matches!(
+      if options.ssr
+        && let Expression::CallExpression(node) = &mut *node
+        && let Expression::Identifier(callee) = &mut node.callee
+        && callee.name.eq("defineVaporComponent")
+      {
+        callee.name = Atom::from_in("_defineVaporSSRComponent", allocator);
+        options
+          .helpers
+          .borrow_mut()
+          .insert("defineVaporSSRComponent".to_string());
+      } else if matches!(
         &*node,
         Expression::JSXElement(_) | Expression::JSXFragment(_)
       ) {
-        return None;
-      }
-      if options.interop {
-        let mut has_define_vapor_component = false;
-        for parent in parents.iter().rev() {
-          if let AstKind::CallExpression(parent) = parent
-            && let Expression::Identifier(name) = &parent.callee
-          {
-            if name.name == "defineVaporComponent" {
-              has_define_vapor_component = true;
-              break;
-            } else if name.name == "defineComponent" {
-              return Some((node, true));
+        if !options.ssr && options.interop {
+          let mut has_define_vapor_component = false;
+          for parent in parents.iter().rev() {
+            if let AstKind::CallExpression(parent) = parent
+              && let Expression::Identifier(name) = &parent.callee
+            {
+              if name.name == "defineVaporComponent" {
+                has_define_vapor_component = true;
+                break;
+              } else if name.name == "defineComponent" {
+                return Some((node, true));
+              }
             }
           }
+          if !has_define_vapor_component {
+            return Some((node, true));
+          }
         }
-        if !has_define_vapor_component {
-          return Some((node, true));
-        }
+        return Some((node, options.ssr));
       }
-      Some((node, false))
+      None
     }));
 
     *options.on_exit_program.borrow_mut() = Some(Box::new(|mut roots, source| unsafe {
@@ -84,7 +94,7 @@ impl<'a> Transform<'a> {
 
     self.visit_program(program);
 
-    if self.options.in_ssr || !matches!(self.options.hmr, Either::A(false)) {
+    if self.options.ssr || !matches!(self.options.hmr, Either::A(false)) {
       HmrOrSsrTransform::new(self.options).visit(&self.ast, program);
     }
 
@@ -149,6 +159,7 @@ impl<'a> Transform<'a> {
         "createNodes",
         "createComponent",
         "createComponentWithFallback",
+        "defineVaporSSRComponent",
       ]
       .into_iter()
       .filter(|helper| {

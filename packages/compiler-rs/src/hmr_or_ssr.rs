@@ -207,7 +207,7 @@ impl<'a> HmrOrSsrTransform<'a> {
         );
       }
 
-      if self.options.in_ssr {
+      if self.options.ssr && !self.components.is_empty() {
         program.body.insert(
           0,
           Statement::VariableDeclaration(ast.alloc_variable_declaration(
@@ -234,7 +234,7 @@ impl<'a> HmrOrSsrTransform<'a> {
               ast.binding_identifier(SPAN, "ssrRegisterHelper"),
               ImportOrExportKind::Value,
             ))),
-            ast.string_literal(SPAN, "/__vue-jsx-ssr-register-helper", None),
+            ast.string_literal(SPAN, "/vue-jsx-vapor/ssr", None),
             None,
             NONE,
             ImportOrExportKind::Value,

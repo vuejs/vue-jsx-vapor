@@ -412,7 +412,7 @@ pub fn build_props<'a>(
 
         if dir_name == "on" {
           // skip v-on in SSR compilation
-          if *context.options.ssr.borrow() {
+          if context.options.ssr {
             continue;
           }
 
@@ -504,7 +504,7 @@ pub fn build_props<'a>(
             None
           }
         } {
-          if !*context.options.ssr.borrow() {
+          if !context.options.ssr {
             props.iter().for_each(&mut analyze_patch_flag);
           }
           properties.extend(props);
@@ -576,7 +576,7 @@ pub fn build_props<'a>(
   }
 
   // pre-normalize props, SSR is skipped for now
-  if !context.options.in_ssr
+  if !context.options.ssr
     && let Some(props_expression) = &mut props_expression
   {
     match props_expression {

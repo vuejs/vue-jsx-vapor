@@ -346,7 +346,7 @@ pub fn get_constant_type<'a>(
 
               codegen.is_block = false;
               context.helper(&get_vnode_block_helper(
-                context.options.in_ssr,
+                context.options.ssr,
                 is_jsx_component(node),
               ));
             }

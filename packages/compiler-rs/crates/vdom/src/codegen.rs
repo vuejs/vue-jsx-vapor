@@ -263,11 +263,11 @@ impl<'a> TransformContext<'a> {
 
     let call_helper = if is_block {
       get_vnode_block_helper(
-        self.options.in_ssr,
+        self.options.ssr,
         if v_for.is_some() { false } else { is_component },
       )
     } else {
-      get_vnode_helper(self.options.in_ssr, is_component)
+      get_vnode_helper(self.options.ssr, is_component)
     };
     let mut result = ast.expression_call(
       SPAN,

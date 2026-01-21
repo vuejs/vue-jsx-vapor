@@ -19,6 +19,31 @@ import {
 
 // component
 
+export function defineVaporSSRComponent(
+  comp: VaporComponent,
+  extraOptions: VaporComponent,
+): VaporComponent {
+  if (typeof comp === 'function') {
+    return /*@__PURE__*/ (() =>
+      Object.assign({ name: comp.name }, extraOptions, {
+        setup(props: any, ctx: any) {
+          const result = comp(props, ctx)
+          return () => result
+        },
+        __vapor: true,
+      }))()
+  }
+  const setup = comp.setup
+  if (setup) {
+    comp.setup = (props, ctx) => {
+      const result = setup(props, ctx)
+      return () => result
+    }
+  }
+  comp.__vapor = true
+  return comp
+}
+
 type Tail<T extends any[]> = T extends [any, ...infer R] ? R : never
 
 export const createComponent = (
@@ -79,7 +104,7 @@ const createProxyComponent = (
           return normalizeNode(Reflect.apply(target, ctx, args))
         },
         get(target, p, receiver) {
-          if ((i && (i.appContext as any)).vapor && p === '__vapor') {
+          if (i && i.appContext.vapor && p === '__vapor') {
             return true
           }
           return Reflect.get(target, p, receiver)

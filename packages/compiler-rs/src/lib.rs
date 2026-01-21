@@ -76,8 +76,6 @@ pub struct TransformReturn {
 #[cfg(feature = "napi")]
 #[napi]
 pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) -> TransformReturn {
-  use std::cell::RefCell;
-
   let options = options.unwrap_or_default();
   let filename = &options.filename.unwrap_or("index.jsx".to_string());
   let ssr = options.ssr.unwrap_or(false);
@@ -89,8 +87,7 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       source_map: options.source_map.unwrap_or(false),
       interop: options.interop.unwrap_or(false),
       hmr: options.hmr.unwrap_or(Either::A(false)),
-      ssr: RefCell::new(ssr),
-      in_ssr: ssr,
+      ssr: ssr,
       optimize_slots: options.optimize_slots.unwrap_or(false),
       is_custom_element: if let Some(is_custom_element) = options.is_custom_element {
         Box::new(move |tag: String| is_custom_element.call(tag).unwrap())

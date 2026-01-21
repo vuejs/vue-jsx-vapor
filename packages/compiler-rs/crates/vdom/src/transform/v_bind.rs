@@ -28,7 +28,7 @@ pub fn transform_v_bind<'a>(
     arg = camelize(&arg)
   }
 
-  if !context.options.in_ssr {
+  if !context.options.ssr {
     if modifiers.contains(&"prop") {
       arg = format!(".{}", arg);
     } else if modifiers.contains(&"attr") {

@@ -45,22 +45,13 @@ pub struct TransformOptions<'a> {
   pub source_type: SourceType,
   pub interop: bool,
   pub hmr: Either<bool, Hmr>,
-  pub ssr: RefCell<bool>,
+  pub ssr: bool,
   pub in_v_for: RefCell<i32>,
   pub in_v_slot: RefCell<i32>,
   pub in_v_once: RefCell<bool>,
   pub identifiers: RefCell<HashMap<String, i32>>,
   pub slot_identifiers: RefCell<IndexMap<Span, (i32, Vec<String>)>>,
   pub cache_index: RefCell<i32>,
-  /**
-   * Indicates whether the compiler generates code for SSR,
-   * it is always true when generating code for SSR,
-   * regardless of whether we are generating code for SSR's fallback branch,
-   * this means that when the compiler generates code for SSR's fallback branch:
-   *  - context.ssr = false
-   *  - context.inSSR = true
-   */
-  pub in_ssr: bool,
   pub optimize_slots: bool,
 }
 
@@ -78,7 +69,7 @@ impl<'a> Default for TransformOptions<'a> {
       on_error: Box::new(|_, _| {}),
       interop: false,
       hmr: Either::A(false),
-      ssr: RefCell::new(false),
+      ssr: false,
       on_exit_program: RefCell::new(None),
       on_enter_expression: RefCell::new(None),
       in_v_for: RefCell::new(0),
@@ -87,7 +78,6 @@ impl<'a> Default for TransformOptions<'a> {
       identifiers: RefCell::new(HashMap::new()),
       slot_identifiers: RefCell::new(IndexMap::new()),
       cache_index: RefCell::new(0),
-      in_ssr: false,
       optimize_slots: false,
     }
   }

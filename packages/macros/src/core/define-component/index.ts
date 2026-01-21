@@ -9,7 +9,6 @@ import {
   type FunctionalNode,
 } from '../utils'
 import { transformAwait } from './await'
-import { transformReturn } from './return'
 import type { Macros } from '..'
 import type { Node } from '@babel/types'
 import type MagicString from 'magic-string'
@@ -19,7 +18,6 @@ export function transformDefineComponent(
   propsName: string,
   macros: Macros,
   s: MagicString,
-  autoReturnFunction = false,
 ): void {
   if (!macros.defineComponent) return
 
@@ -132,9 +130,6 @@ export function transformDefineComponent(
   }
 
   transformAwait(root, s)
-  if (autoReturnFunction) {
-    transformReturn(root, s)
-  }
 }
 
 function getWalkedIds(root: FunctionalNode, propsName: string) {
