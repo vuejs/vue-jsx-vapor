@@ -1,9 +1,4 @@
-import {
-  defineComponent,
-  defineVaporComponent,
-  nextTick,
-  unref,
-} from 'vue'
+import { defineComponent, defineVaporComponent, nextTick, unref } from 'vue'
 
 const $ = unref
 

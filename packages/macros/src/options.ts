@@ -11,7 +11,7 @@ const REGEX_NODE_MODULES: RegExp = /node_modules/
 const REGEX_SRC_FILE: RegExp = /\.[cm]?[jt]sx?$/
 const REGEX_SETUP_SFC: RegExp = /\.setup\.[cm]?[jt]sx?$/
 
-type DefineComponentOptions = { alias?: string[]; autoReturnFunction?: boolean }
+type DefineComponentOptions = { alias?: string[] }
 type DefineModelOptions = { alias?: string[] }
 type DefineExposeOptions = { alias?: string[] }
 type DefineSlotsOptions = { alias?: string[] }
