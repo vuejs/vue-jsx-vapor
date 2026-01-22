@@ -270,3 +270,27 @@ fn expression_map() {
   })();
   "#);
 }
+
+#[test]
+fn expression_with_comment() {
+  let code = transform(
+    r#"<div>
+      {foo}
+      {/**/}
+      <a></a>
+    </div>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { child as _child, template as _template } from "vue";
+  const t0 = _template("<div> <a></a></div>", true);
+  (() => {
+  	const n1 = t0();
+  	const n0 = _child(n1, 0);
+  	_setNodes(n0, () => foo);
+  	return n1;
+  })();
+  "#)
+}

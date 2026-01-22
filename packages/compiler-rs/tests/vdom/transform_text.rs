@@ -283,3 +283,27 @@ fn logical_expression_coalesce() {
   })();
   "#)
 }
+
+#[test]
+fn expression_with_comment() {
+  let code = transform(
+    r#"<div>
+      {foo}
+      {/**/}
+      <a></a>
+    </div>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createElementBlock("div", null, [_normalizeVNode(() => foo), _cache[0] || (_cache[0] = _createElementVNode("a", null, null, -1))]);
+  })();
+  "#)
+}

@@ -148,19 +148,19 @@ fn component() {
   	const _directive_test = _resolveDirective("test");
   	const _directive_hello = _resolveDirective("hello");
   	const n0 = _createComponent(Comp, null, { default: () => {
-  		const n2 = _createIf(() => true, () => {
-  			const n5 = t0();
-  			_setInsertionState(n5, null, true);
-  			const n4 = _createComponent(Bar);
-  			_withVaporDirectives(n4, [[
+  		const n1 = _createIf(() => true, () => {
+  			const n4 = t0();
+  			_setInsertionState(n4, null, true);
+  			const n3 = _createComponent(Bar);
+  			_withVaporDirectives(n3, [[
   				_directive_hello,
   				void 0,
   				void 0,
   				{ world: true }
   			]]);
-  			return n5;
+  			return n4;
   		}, null, true);
-  		return n2;
+  		return n1;
   	} }, true);
   	_withVaporDirectives(n0, [[_directive_test]]);
   	return n0;

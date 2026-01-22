@@ -219,18 +219,18 @@ fn comment_between_branches() {
   const t2 = _template("fine");
   const t3 = _template("<div>text</div>");
   (() => {
-  	const n1 = _createIf(() => ok, () => {
-  		const n3 = t0();
-  		return n3;
+  	const n0 = _createIf(() => ok, () => {
+  		const n2 = t0();
+  		return n2;
   	}, () => _createIf(() => orNot, () => {
-  		const n8 = t1();
-  		return n8;
+  		const n4 = t1();
+  		return n4;
   	}, () => {
-  		const n14 = t2();
-  		return n14;
+  		const n7 = t2();
+  		return n7;
   	}));
-  	const n18 = t3();
-  	return [n1, n18];
+  	const n9 = t3();
+  	return [n0, n9];
   })();
   "#);
 }

@@ -54,6 +54,6 @@ pub fn ssr_define_vapor_component() {
   assert_snapshot!(code, @r#"
   import { defineVaporSSRComponent as _defineVaporSSRComponent } from "/vue-jsx-vapor/vapor";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
-  const Comp = defineVaporSSRComponent(() => (_openBlock(), _createBlock("div")));
+  const Comp = _defineVaporSSRComponent(() => (_openBlock(), _createBlock("div")));
   "#);
 }

@@ -80,20 +80,20 @@ fn on_component_named_slot_multiple() {
   import { template as _template } from "vue";
   const t0 = _template("foo");
   (() => {
-  	const n10 = _createComponent(Comp, null, {
+  	const n5 = _createComponent(Comp, null, {
   		left: () => {
-  			const n1 = t0();
-  			return n1;
+  			const n0 = t0();
+  			return n0;
   		},
   		right: () => {
-  			const n6 = _createComponent(Comp, null, { left: () => {
-  				const n5 = t0();
-  				return n5;
+  			const n3 = _createComponent(Comp, null, { left: () => {
+  				const n2 = t0();
+  				return n2;
   			} });
-  			return n6;
+  			return n3;
   		}
   	}, true);
-  	return n10;
+  	return n5;
   })();
   "#);
 }
@@ -135,18 +135,18 @@ fn named_slots_with_implicit_default_slot() {
   const t1 = _template("bar");
   const t2 = _template("<span></span>");
   (() => {
-  	const n6 = _createComponent(Comp, null, {
+  	const n4 = _createComponent(Comp, null, {
   		one: () => {
-  			const n1 = t0();
-  			return n1;
+  			const n0 = t0();
+  			return n0;
   		},
   		default: () => {
-  			const n3 = t1();
-  			const n4 = t2();
-  			return [n3, n4];
+  			const n2 = t1();
+  			const n3 = t2();
+  			return [n2, n3];
   		}
   	}, true);
-  	return n6;
+  	return n4;
   })();
   "#);
 }
@@ -167,18 +167,18 @@ fn named_slots_with_comment() {
   const t0 = _template("foo");
   const t1 = _template("<span></span>");
   (() => {
-  	const n8 = _createComponent(Comp, null, {
+  	const n4 = _createComponent(Comp, null, {
   		one: () => {
-  			const n3 = t0();
-  			return n3;
+  			const n0 = t0();
+  			return n0;
   		},
   		default: () => {
-  			const n5 = t0();
-  			const n6 = t1();
-  			return [n5, n6];
+  			const n2 = t0();
+  			const n3 = t1();
+  			return [n2, n3];
   		}
   	}, true);
-  	return n8;
+  	return n4;
   })();
   "#);
 }
@@ -200,15 +200,15 @@ fn nested_slots_scoping() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n11 = _createComponent(Comp, null, { default: (_slotProps0) => {
-  		const n5 = _createComponent(Inner, null, { default: (_slotProps1) => {
-  			const n3 = _createNodes(() => _slotProps0.foo + _slotProps1.bar + baz);
-  			return n3;
+  	const n4 = _createComponent(Comp, null, { default: (_slotProps0) => {
+  		const n1 = _createComponent(Inner, null, { default: (_slotProps1) => {
+  			const n0 = _createNodes(() => _slotProps0.foo + _slotProps1.bar + baz);
+  			return n0;
   		} });
-  		const n7 = _createNodes(() => _slotProps0.foo + bar + baz);
-  		return [n5, n7];
+  		const n2 = _createNodes(() => _slotProps0.foo + bar + baz);
+  		return [n1, n2];
   	} }, true);
-  	return n11;
+  	return n4;
   })();
   "#);
 }
@@ -225,14 +225,14 @@ fn dynamic_slots_name() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n4 = _createComponent(Comp, null, { $: [() => ({
+  	const n2 = _createComponent(Comp, null, { $: [() => ({
   		name,
   		fn: () => {
-  			const n1 = _createNodes(() => foo);
-  			return n1;
+  			const n0 = _createNodes(() => foo);
+  			return n0;
   		}
   	})] }, true);
-  	return n4;
+  	return n2;
   })();
   "#);
 }
@@ -250,14 +250,14 @@ fn dynamic_slots_name_with_v_for() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createForSlots as _createForSlots } from "vue";
   (() => {
-  	const n4 = _createComponent(Comp, null, { $: [() => _createForSlots(list, (item) => ({
+  	const n2 = _createComponent(Comp, null, { $: [() => _createForSlots(list, (item) => ({
   		name: item,
   		fn: (_slotProps0) => {
-  			const n1 = _createNodes(() => _slotProps0.bar);
-  			return n1;
+  			const n0 = _createNodes(() => _slotProps0.bar);
+  			return n0;
   		}
   	}))] }, true);
-  	return n4;
+  	return n2;
   })();
   "#);
 }
@@ -282,32 +282,32 @@ fn dynamic_slots_name_with_v_if_and_v_else_if() {
   const t2 = _template("other condition");
   const t3 = _template("else condition");
   (() => {
-  	const n13 = _createComponent(Comp, null, { $: [() => condition ? {
+  	const n8 = _createComponent(Comp, null, { $: [() => condition ? {
   		name: "condition",
   		fn: () => {
-  			const n1 = t0();
-  			return n1;
+  			const n0 = t0();
+  			return n0;
   		}
   	} : anotherCondition ? {
   		name: "condition",
   		fn: (_slotProps0) => {
-  			const n4 = t1();
-  			return n4;
+  			const n2 = t1();
+  			return n2;
   		}
   	} : otherCondition ? {
   		name: "condition",
   		fn: () => {
-  			const n7 = t2();
-  			return n7;
+  			const n4 = t2();
+  			return n4;
   		}
   	} : {
   		name: "condition",
   		fn: () => {
-  			const n10 = t3();
-  			return n10;
+  			const n6 = t3();
+  			return n6;
   		}
   	}] }, true);
-  	return n13;
+  	return n8;
   })();
   "#);
 }
@@ -324,10 +324,10 @@ fn quote_slot_name() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n3 = _createComponent(Comp, null, { "nav-bar-title-before": () => {
+  	const n1 = _createComponent(Comp, null, { "nav-bar-title-before": () => {
   		return null;
   	} }, true);
-  	return n3;
+  	return n1;
   })();
   "#);
 }

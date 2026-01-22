@@ -389,11 +389,11 @@ fn invalid_html_nesting() {
   (() => {
   	const n1 = t1();
   	const n0 = t0();
-  	const n4 = t2();
   	const n3 = t2();
+  	const n2 = t2();
   	insert(n0, n1);
-  	insert(n3, n4);
-  	return [n1, n4];
+  	insert(n2, n3);
+  	return [n1, n3];
   })();
   "#);
 }

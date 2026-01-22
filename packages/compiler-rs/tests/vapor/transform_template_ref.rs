@@ -51,17 +51,17 @@ fn function_ref() {
   const t0 = _template("<div></div>");
   (() => {
   	const _setTemplateRef = _createTemplateRefSetter();
-  	const n3 = _createComponent(Comp, null, { default: (_slotProps0) => {
-  		const n1 = t0();
-  		let r1;
-  		_renderEffect(() => r1 = _setTemplateRef(n1, (bar) => {
+  	const n1 = _createComponent(Comp, null, { default: (_slotProps0) => {
+  		const n0 = t0();
+  		let r0;
+  		_renderEffect(() => r0 = _setTemplateRef(n0, (bar) => {
   			foo.value = bar;
   			({baz: _slotProps0.baz, bar: _slotProps0.baz} = bar);
   			console.log(foo.value, _slotProps0.baz);
-  		}, r1));
-  		return n1;
+  		}, r0));
+  		return n0;
   	} }, true);
-  	return n3;
+  	return n1;
   })();
   "#);
 }

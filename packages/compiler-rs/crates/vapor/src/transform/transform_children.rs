@@ -2,7 +2,7 @@ use std::{collections::VecDeque, mem};
 
 use napi::bindgen_prelude::Either17;
 use oxc_allocator::{CloneIn, TakeIn};
-use oxc_ast::ast::JSXChild;
+use oxc_ast::ast::{JSXChild, JSXExpression};
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, InsertNodeIRNode},
@@ -12,6 +12,7 @@ use crate::{
 use common::{
   ast::RootNode,
   check::{is_fragment_node, is_jsx_component},
+  text::is_empty_text,
 };
 
 /// # SAFETY
@@ -36,17 +37,24 @@ pub unsafe fn transform_children<'a>(
     JSXChild::Element(node) => &mut node.children,
     JSXChild::Fragment(node) => &mut node.children,
     _ => unreachable!(),
-  } as *mut oxc_allocator::Vec<JSXChild>;
+  };
+  children.retain_mut(|child| !is_empty_text(child));
+  let children_ptr = children as *mut oxc_allocator::Vec<JSXChild>;
   let mut parent_children_template = context.children_template.take();
   let grand_parent_dynamic = context
     .parent_dynamic
     .replace(mem::take(&mut context_block.dynamic));
   let _context_block = context_block as *mut BlockIRNode;
   let mut i = 0;
-  while let Some(child) = unsafe { &mut *children }.get_mut(i) {
+  while let Some(child) = children.get_mut(i) {
     let exit_context = context.create(
-      if let Some(next) = unsafe { &mut *children }.get_mut(i + 1)
-        && let JSXChild::ExpressionContainer(_) = next
+      if let JSXChild::Text(_) = child
+        && let Some(next) = unsafe { &mut *children_ptr }.get_mut(1)
+        && let JSXChild::ExpressionContainer(exp) = next
+        && !matches!(
+          exp.expression,
+          JSXExpression::ConditionalExpression(_) | JSXExpression::LogicalExpression(_)
+        )
       {
         child.clone_in(context.allocator)
       } else {

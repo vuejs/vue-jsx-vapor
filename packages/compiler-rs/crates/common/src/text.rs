@@ -154,13 +154,11 @@ pub fn get_text_like_value(node: &Expression, exclude_number: bool) -> Option<St
 }
 
 pub fn is_text_like(node: &JSXChild) -> bool {
-  if let JSXChild::ExpressionContainer(node) = node {
+  if let JSXChild::ExpressionContainer(node) = node
+    && let Some(expression) = node.expression.as_expression()
+  {
     !matches!(
-      node
-        .expression
-        .to_expression()
-        .without_parentheses()
-        .get_inner_expression(),
+      expression.without_parentheses().get_inner_expression(),
       Expression::ConditionalExpression(_) | Expression::LogicalExpression(_)
     )
   } else {

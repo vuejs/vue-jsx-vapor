@@ -37,11 +37,11 @@ fn function_expression_children() {
   import { template as _template } from "vue";
   const t0 = _template("<div></div>", true);
   (() => {
-  	const n2 = _createComponent(Comp, null, { $: [{ default: () => (() => {
+  	const n0 = _createComponent(Comp, null, { $: [{ default: () => (() => {
   		const n0 = t0();
   		return n0;
   	})() }] }, true);
-  	return n2;
+  	return n0;
   })();
   "#);
 }
@@ -60,11 +60,11 @@ fn object_expression_children() {
   import { template as _template } from "vue";
   const t0 = _template("foo");
   (() => {
-  	const n2 = _createComponent(Comp, null, { $: [{ default: () => (() => {
+  	const n0 = _createComponent(Comp, null, { $: [{ default: () => (() => {
   		const n0 = t0();
   		return n0;
   	})() }] }, true);
-  	return n2;
+  	return n0;
   })();
   "#);
 }
@@ -83,11 +83,11 @@ fn object_expression_children_with_computed_property() {
   import { template as _template } from "vue";
   const t0 = _template("foo");
   (() => {
-  	const n2 = _createComponent(Comp, null, { $: [() => ({ [foo]: () => (() => {
+  	const n0 = _createComponent(Comp, null, { $: [() => ({ [foo]: () => (() => {
   		const n0 = t0();
   		return n0;
   	})() })] }, true);
-  	return n2;
+  	return n0;
   })();
   "#);
 }
@@ -111,24 +111,24 @@ fn v_slot_with_v_slots() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n5 = _createComponent(Comp, null, { default: (_slotProps0) => {
-  		const n2 = _createComponent(Comp, { bar: () => _slotProps0.bar }, { $: [{
+  	const n2 = _createComponent(Comp, null, { default: (_slotProps0) => {
+  		const n0 = _createComponent(Comp, { bar: () => _slotProps0.bar }, { $: [{
   			bar: _slotProps0.bar,
   			default: ({ foo }) => (() => {
-  				const n1 = _createNodes(() => foo + bar, () => (() => {
+  				const n0 = _createNodes(() => foo + bar, () => (() => {
   					const n2 = _createComponent(Comp, null, { default: (_slotProps0) => {
   						const n0 = _createNodes(() => bar, () => _slotProps0.baz);
   						return n0;
   					} }, true);
   					return n2;
   				})());
-  				return n1;
+  				return n0;
   			})()
   		}] });
-  		const n3 = _createNodes(() => _slotProps0.bar);
-  		return [n2, n3];
+  		const n1 = _createNodes(() => _slotProps0.bar);
+  		return [n0, n1];
   	} }, true);
-  	return n5;
+  	return n2;
   })();
   "#);
 }

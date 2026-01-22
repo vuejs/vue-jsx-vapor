@@ -191,9 +191,9 @@ fn number_value() {
   import { template as _template } from "vue";
   const t0 = _template("<div depth=\"0\"></div>");
   (() => {
-  	const n1 = t0();
-  	const n3 = _createComponent(Comp, { depth: () => 0 });
-  	return [n1, n3];
+  	const n0 = t0();
+  	const n1 = _createComponent(Comp, { depth: () => 0 });
+  	return [n0, n1];
   })();
   "#);
 }

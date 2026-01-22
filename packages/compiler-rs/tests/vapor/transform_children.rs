@@ -17,7 +17,7 @@ fn basic() {
   (() => {
   	const n0 = t0();
   	const x0 = _txt(n0);
-  	_setNodes(x0, () => foo, " ", () => bar);
+  	_setNodes(x0, "", () => foo, " ", () => bar, "");
   	return n0;
   })();
   "#);
@@ -30,8 +30,8 @@ fn comments() {
   import { template as _template } from "vue";
   const t0 = _template("<div></div>");
   (() => {
-  	const n1 = t0();
-  	return n1;
+  	const n0 = t0();
+  	return n0;
   })();
   "#);
 }
@@ -70,7 +70,7 @@ fn children_sibling_references() {
   	const n2 = _next(n1, 2);
   	const x0 = _txt(n0);
   	_setNodes(x0, () => first);
-  	_setNodes(n1, "123 ", () => second, " 456 ", () => foo);
+  	_setNodes(n1, () => second, " 456 ", () => foo);
   	const x2 = _txt(n2);
   	_setNodes(x2, () => forth);
   	_renderEffect(() => _setProp(n3, "id", id));
@@ -184,10 +184,10 @@ fn jsx_component_in_jsx_expression_container() {
   (() => {
   	const n0 = t0();
   	const x0 = _txt(n0);
-  	_setNodes(x0, () => (() => {
+  	_setNodes(x0, "", () => (() => {
   		const n0 = _createComponent(Comp, null, null, true);
   		return n0;
-  	})());
+  	})(), "");
   	return n0;
   })();
   "#);
@@ -212,7 +212,7 @@ fn next_child_and_nthchild_should_be_above_the_set_insertion_state() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { child as _child, createIf as _createIf, next as _next, nthChild as _nthChild, renderEffect as _renderEffect, setInsertionState as _setInsertionState, setProp as _setProp, template as _template } from "vue";
   const t0 = _template("<div></div>");
-  const t1 = _template("<div><div></div><!><div></div><!><div><button></button></div></div>", true);
+  const t1 = _template("<div><div></div><!><!><div></div><div><button></button></div></div>", true);
   (() => {
   	const n6 = t1();
   	const n5 = _next(_child(n6, 1));
