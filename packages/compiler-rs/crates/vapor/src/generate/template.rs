@@ -95,7 +95,6 @@ fn gen_children<'a>(
 
   let mut offset = 0;
   let mut prev: Option<(String, i32)> = None;
-  let mut if_branch_count = 0;
   let mut prepend_count = 0;
 
   let mut index = 0;
@@ -113,8 +112,6 @@ fn gen_children<'a>(
     }
     if child.flags & DynamicFlag::NonTemplate as i32 != 0 {
       offset -= 1;
-    } else if child.if_branch {
-      if_branch_count += 1;
     }
 
     let id = if child.flags & DynamicFlag::Referenced as i32 != 0 {
@@ -135,7 +132,7 @@ fn gen_children<'a>(
     }
 
     let element_index = index + offset;
-    let logical_index = element_index - if_branch_count + prepend_count;
+    let logical_index = element_index + prepend_count;
     // p for "placeholder" variables that are meant for possible reuse by
     // other access paths
     let variable = if let Some(id) = id {

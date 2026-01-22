@@ -279,7 +279,6 @@ pub struct IRDynamicInfo<'a> {
   pub template: Option<i32>,
   pub has_dynamic_child: bool,
   pub operation: Option<Box<OperationNode<'a>>>,
-  pub if_branch: bool,
 }
 impl<'a> IRDynamicInfo<'a> {
   pub fn new() -> Self {
@@ -291,7 +290,6 @@ impl<'a> IRDynamicInfo<'a> {
       operation: None,
       id: None,
       anchor: None,
-      if_branch: false,
     }
   }
 }

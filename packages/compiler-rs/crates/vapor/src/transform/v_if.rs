@@ -89,8 +89,6 @@ pub unsafe fn transform_v_if<'a>(
     }));
   }
 
-  context_block.dynamic.if_branch = true;
-
   let siblings = &mut context.parent_dynamic.borrow_mut().children;
   let mut last_if_node = None;
   if !siblings.is_empty() {
