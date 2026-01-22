@@ -38,7 +38,6 @@ pub unsafe fn transform_children<'a>(
     JSXChild::Fragment(node) => &mut node.children,
     _ => unreachable!(),
   };
-  children.retain_mut(|child| !is_empty_text(child));
   let children_ptr = children as *mut oxc_allocator::Vec<JSXChild>;
   let mut parent_children_template = context.children_template.take();
   let grand_parent_dynamic = context
@@ -47,6 +46,10 @@ pub unsafe fn transform_children<'a>(
   let _context_block = context_block as *mut BlockIRNode;
   let mut i = 0;
   while let Some(child) = children.get_mut(i) {
+    if is_empty_text(child) {
+      children.remove(i);
+      continue;
+    }
     let exit_context = context.create(
       if let JSXChild::Text(_) = child
         && let Some(next) = unsafe { &mut *children_ptr }.get_mut(1)

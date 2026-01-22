@@ -17,7 +17,7 @@ fn basic() {
   (() => {
   	const n0 = t0();
   	const x0 = _txt(n0);
-  	_setNodes(x0, "", () => foo, " ", () => bar, "");
+  	_setNodes(x0, () => foo, " ", () => bar);
   	return n0;
   })();
   "#);
@@ -184,10 +184,10 @@ fn jsx_component_in_jsx_expression_container() {
   (() => {
   	const n0 = t0();
   	const x0 = _txt(n0);
-  	_setNodes(x0, "", () => (() => {
+  	_setNodes(x0, () => (() => {
   		const n0 = _createComponent(Comp, null, null, true);
   		return n0;
-  	})(), "");
+  	})());
   	return n0;
   })();
   "#);
