@@ -1,3 +1,21 @@
+## [3.1.13](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.12...v3.1.13) (2026-01-22)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** remove empty_text child ([bf87609](https://github.com/vuejs/vue-jsx-vapor/commit/bf8760972b3cf550a27560b6fbea741927835d46))
+* **compiler:** preserve non-breaking spaces in JSX ([c104e6a](https://github.com/vuejs/vue-jsx-vapor/commit/c104e6afe44f10f9539201cd911d35bc5fa9b00a))
+* **compiler:** regist ssr moduels for defineVaporSSRComponent ([f4d25a7](https://github.com/vuejs/vue-jsx-vapor/commit/f4d25a79ce4c771e41bfffb9b55814634e123b41))
+
+
+### Features
+
+* **compiler/vapor:** hydration ([e3722c6](https://github.com/vuejs/vue-jsx-vapor/commit/e3722c675ad26046ede23859dfb555e49990db9b))
+* **compiler/vapor:** v-html and v-text work with component ([24d8cd8](https://github.com/vuejs/vue-jsx-vapor/commit/24d8cd8595519739d6c18d173921928df74422e7))
+* support hydration ([3f235d9](https://github.com/vuejs/vue-jsx-vapor/commit/3f235d9d3d5cc5caaeccc907230539e749d2ff1e))
+
+
+
 ## [3.1.12](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.10...v3.1.12) (2026-01-15)
 
 
