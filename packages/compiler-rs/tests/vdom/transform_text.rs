@@ -219,7 +219,7 @@ fn condition_expression() {
   const _hoisted_1 = { key: 0 };
   (() => {
   	const _cache = _createVNodeCache(0);
-  	return _openBlock(), _createElementBlock("div", null, [foo ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), foo ? (_openBlock(), _createElementBlock("div", { key: 1 }, [_normalizeVNode(() => foo), _cache[0] || (_cache[0] = _normalizeVNode("bar", -1))])) : (_openBlock(), _createBlock(_Fragment, { key: 2 }, [_normalizeVNode(bar)], 64))]);
+  	return _openBlock(), _createElementBlock("div", null, [foo ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), foo ? (_openBlock(), _createElementBlock("div", { key: 1 }, [_normalizeVNode(() => foo), _cache[0] || (_cache[0] = _normalizeVNode("bar", -1))])) : (_openBlock(), _createBlock(_Fragment, { key: 2 }, [_normalizeVNode(() => bar)], 64))]);
   })();
   "#)
 }

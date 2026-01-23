@@ -182,6 +182,10 @@ fn transform_logical_expression<'a>(
     .or_default();
   let key = v_if_map.0;
   v_if_map.0 += 2;
+  context
+    .static_expressions
+    .borrow_mut()
+    .push(node.left.span());
   transform_branch(&mut node.right, key, parent, context);
 
   // {foo() ?? bar} => (_temp = foo(), _temp == null) ? bar : _temp
@@ -254,7 +258,6 @@ fn transform_branch<'a>(
 ) {
   let ast = &context.ast;
   let span = exp.span();
-  context.static_expressions.borrow_mut().push(span);
   let mut branch = if let Expression::JSXElement(branch) = exp {
     JSXChild::Element(branch.take_in_box(context.allocator))
   } else {
