@@ -68,6 +68,12 @@
       "require": "./dist/nuxt.cjs",
       "import": "./dist/nuxt.js"
     },
+    "./bun": {
+      "types": "./dist/bun.d.ts",
+      "jsx-vapor-dev": "./src/bun.ts",
+      "require": "./dist/bun.cjs",
+      "import": "./dist/bun.js"
+    },
     "./api": {
       "types": "./dist/api.d.ts",
       "jsx-vapor-dev": "./src/api.ts",

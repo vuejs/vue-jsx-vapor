@@ -89,6 +89,12 @@
       "require": "./dist/rolldown.cjs",
       "import": "./dist/rolldown.js"
     },
+    "./bun": {
+      "types": "./dist/bun.d.ts",
+      "jsx-vapor-dev": "./src/bun.ts",
+      "require": "./dist/bun.cjs",
+      "import": "./dist/bun.js"
+    },
     "./unplugin": {
       "types": "./dist/unplugin.d.ts",
       "jsx-vapor-dev": "./src/unplugin.ts",
