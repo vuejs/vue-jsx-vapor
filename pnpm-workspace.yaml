@@ -6,12 +6,12 @@ packages:
 
 defines:
   - &vue-macros ^3.1.2
-  - &ts-macro ^0.3.6
+  - &ts-macro ^0.3.7
   - &vue 3.6.0-alpha.7
 
 catalog:
-  '@nuxt/kit': ^3.20.2
-  '@nuxt/schema': ^3.20.2
+  '@nuxt/kit': ^3.21.0
+  '@nuxt/schema': ^3.21.0
 
   '@vue/shared': *vue
 
@@ -24,8 +24,8 @@ catalog:
   '@types/hash-sum': ^1.0.2
   hash-sum: ^2.0.0
   ts-macro: *ts-macro
-  unplugin: ^2.3.11
-  unplugin-utils: ^0.2.5
-  vite: ^8.0.0-beta.5
-  vitest: ^3.2.4
+  unplugin: ^3.0.0
+  unplugin-utils: ^0.3.1
+  vite: ^8.0.0-beta.9
+  vitest: ^4.0.18
   vue: *vue

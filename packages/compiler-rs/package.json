@@ -60,11 +60,11 @@
     "flamegraph": "CARGO_PROFILE_RELEASE_STRIP=false CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --bench bench_vdom --no-default-features"
   },
   "devDependencies": {
-    "@emnapi/core": "^1.7.1",
-    "@emnapi/runtime": "^1.7.1",
-    "@napi-rs/cli": "^3.5.0",
-    "@napi-rs/wasm-runtime": "^1.1.0",
+    "@emnapi/core": "^1.8.1",
+    "@emnapi/runtime": "^1.8.1",
+    "@napi-rs/cli": "^3.5.1",
+    "@napi-rs/wasm-runtime": "^1.1.1",
     "@taplo/cli": "^0.7.0",
-    "emnapi": "^1.7.1"
+    "emnapi": "^1.8.1"
   }
 }

@@ -5,13 +5,13 @@
     "bench:vue": "node ./bench-vue.js"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.5",
-    "@babel/plugin-transform-react-jsx": "^7.27.1",
+    "@babel/core": "^7.28.6",
+    "@babel/plugin-transform-react-jsx": "^7.28.6",
     "@vue-jsx-vapor/babel": "2.6.8",
     "@vue-jsx-vapor/compiler-rs": "workspace:*",
-    "@vue/babel-plugin-jsx": "^1.5.0",
-    "oxc-transform": "^0.102.0",
-    "tinybench": "^5.1.0",
+    "@vue/babel-plugin-jsx": "^2.0.1",
+    "oxc-transform": "^0.110.0",
+    "tinybench": "^6.0.0",
     "vue": "catalog:"
   }
 }
