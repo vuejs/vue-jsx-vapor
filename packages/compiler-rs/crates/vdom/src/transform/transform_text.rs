@@ -228,22 +228,10 @@ fn transform_logical_expression<'a>(
     if node.operator.is_and() || node.operator.is_coalesce() {
       node.right.take_in(ast.allocator)
     } else {
-      ast.expression_call(
-        SPAN,
-        ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeVNode"))),
-        NONE,
-        ast.vec1(node.left.take_in(ast.allocator).into()),
-        false,
-      )
+      node.left.take_in(ast.allocator)
     },
     if node.operator.is_and() || node.operator.is_coalesce() {
-      ast.expression_call(
-        SPAN,
-        ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeVNode"))),
-        NONE,
-        ast.vec1(node.left.take_in(ast.allocator).into()),
-        false,
-      )
+      node.left.take_in(ast.allocator)
     } else {
       node.right.take_in(ast.allocator)
     },
