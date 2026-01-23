@@ -59,7 +59,7 @@ pub unsafe fn transform_v_for<'a>(
     seen.insert(key_prop.span.start);
     Some(SimpleExpressionNode::new(
       Either3::C(value),
-      context.ir.borrow().source,
+      context.source_text,
     ))
   } else {
     None
@@ -162,22 +162,22 @@ pub fn get_for_parse_result<'a>(
         let expressions = &mut left.expressions as *mut oxc_allocator::Vec<Expression>;
         value = unsafe { &mut *expressions }
           .get_mut(0)
-          .map(|e| SimpleExpressionNode::new(Either3::A(e), context.ir.borrow().source));
+          .map(|e| SimpleExpressionNode::new(Either3::A(e), context.source_text));
         key = unsafe { &mut *expressions }
           .get_mut(1)
-          .map(|e| SimpleExpressionNode::new(Either3::A(e), context.ir.borrow().source));
+          .map(|e| SimpleExpressionNode::new(Either3::A(e), context.source_text));
         index = unsafe { &mut *expressions }
           .get_mut(2)
-          .map(|e| SimpleExpressionNode::new(Either3::A(e), context.ir.borrow().source));
+          .map(|e| SimpleExpressionNode::new(Either3::A(e), context.source_text));
       } else {
         value = Some(SimpleExpressionNode::new(
           Either3::A(left),
-          context.ir.borrow().source,
+          context.source_text,
         ));
       };
       source = Some(SimpleExpressionNode::new(
         Either3::A(&mut unsafe { &mut *expression }.right),
-        context.ir.borrow().source,
+        context.source_text,
       ));
     }
   } else {

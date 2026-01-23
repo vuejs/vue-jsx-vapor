@@ -35,7 +35,7 @@ pub unsafe fn transform_v_slot<'a>(
   let dir = unsafe { &mut *(directives as *mut Directives) }
     .v_slot
     .as_mut()
-    .map(|dir| resolve_directive(dir, context.ir.borrow().source));
+    .map(|dir| resolve_directive(dir, context.source_text));
   let is_component = is_jsx_component(unsafe { &*node });
   let is_slot_template = is_template(unsafe { &*node })
     && if let JSXChild::Element(parent_node) = parent_node
@@ -146,12 +146,12 @@ fn transform_template_slot<'a>(
   let v_if_dir = directives
     .v_if
     .as_mut()
-    .map(|v_if| resolve_directive(v_if, context.ir.borrow().source));
+    .map(|v_if| resolve_directive(v_if, context.source_text));
   let v_else_dir = directives
     .v_else
     .as_mut()
     .or(directives.v_else_if.as_mut())
-    .map(|v_else| resolve_directive(v_else, context.ir.borrow().source));
+    .map(|v_else| resolve_directive(v_else, context.source_text));
 
   Box::new(move || {
     let slots = &mut unsafe { &mut *_context_block }.slots;

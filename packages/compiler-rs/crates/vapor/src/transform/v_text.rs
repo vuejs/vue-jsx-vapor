@@ -19,7 +19,7 @@ pub fn transform_v_text<'a>(
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let exp = if let Some(value) = &mut dir.value {
-    SimpleExpressionNode::new(Either3::C(value), context.ir.borrow().source)
+    SimpleExpressionNode::new(Either3::C(value), context.source_text)
   } else {
     context.options.on_error.as_ref()(ErrorCodes::VTextNoExpression, dir.span);
     SimpleExpressionNode::default()

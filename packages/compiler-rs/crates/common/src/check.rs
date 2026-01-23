@@ -643,7 +643,7 @@ pub fn is_referenced_identifier<'a>(id: &IdentifierReference, parents: &Vec<AstK
   ) {
     true
   } else if let AstKind::ObjectProperty(_parent) = parent {
-    _parent.key.span().eq(&id.span) && is_in_desctructure_assignment(&parent, parents)
+    _parent.key.span().eq(&id.span) && is_in_desctructure_assignment(parent, parents)
   } else {
     false
   }

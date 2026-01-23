@@ -71,7 +71,7 @@ pub unsafe fn transform_element<'a>(
     current
   }) as Box<dyn FnMut() -> i32>));
 
-  let tag = get_tag_name(&node.opening_element.name, context.ir.borrow().source);
+  let tag = get_tag_name(&node.opening_element.name, context.source_text);
   if matches!(tag.as_ref(), "VaporTransition" | "VaporTransitionGroup") {
     transform_transition(node, context);
   }
@@ -110,7 +110,7 @@ pub unsafe fn transform_element<'a>(
 }
 
 // keys cannot be a part of the template and need to be set dynamically
-static DYNAMIC_KEYS: [&'static str; 1] = ["indeterminate"];
+static DYNAMIC_KEYS: [&str; 1] = ["indeterminate"];
 
 #[allow(clippy::too_many_arguments)]
 pub fn transform_native_element<'a>(
@@ -244,6 +244,7 @@ pub struct PropsResult<'a> {
   pub props: Either<Vec<IRProps<'a>>, IRPropsStatic<'a>>,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn build_props<'a>(
   directives: &Directives<'a>,
   node: &'a mut JSXElement<'a>,
@@ -269,8 +270,7 @@ pub fn build_props<'a>(
   for prop in props {
     match prop {
       JSXAttributeItem::SpreadAttribute(prop) => {
-        let value =
-          SimpleExpressionNode::new(Either3::A(&mut prop.argument), context.ir.borrow().source);
+        let value = SimpleExpressionNode::new(Either3::A(&mut prop.argument), context.source_text);
         if !results.is_empty() {
           dynamic_args.push(Either3::A(dedupe_properties(results)));
           results = vec![];
@@ -291,8 +291,7 @@ pub fn build_props<'a>(
         if prop.name.get_identifier().name.eq("v-on") {
           // v-on={obj}
           if let Some(prop_value) = &mut prop.value {
-            let value =
-              SimpleExpressionNode::new(Either3::C(prop_value), context.ir.borrow().source);
+            let value = SimpleExpressionNode::new(Either3::C(prop_value), context.source_text);
             if is_component {
               if !results.is_empty() {
                 dynamic_args.push(Either3::A(dedupe_properties(results)));
@@ -377,6 +376,7 @@ pub fn build_props<'a>(
   }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn transform_prop<'a>(
   directives: &Directives<'a>,
   prop: &'a mut JSXAttribute<'a>,
@@ -438,10 +438,8 @@ pub fn transform_prop<'a>(
 
   let name = if is_event(name) {
     "on"
-  } else if let Some(name) = get_directive_name(name) {
-    name
   } else {
-    "bind"
+    get_directive_name(name).unwrap_or("bind")
   };
 
   match name {
@@ -474,9 +472,9 @@ pub fn transform_prop<'a>(
       Either17::M(DirectiveIRNode {
         directive: true,
         element,
-        dir: resolve_directive(prop, context.ir.borrow().source),
+        dir: resolve_directive(prop, context.source_text),
         name: name.to_string(),
-        asset: asset,
+        asset,
         builtin: false,
         model_type: None,
         deferred: false,

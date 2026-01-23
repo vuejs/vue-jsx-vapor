@@ -33,28 +33,29 @@ use crate::{
 };
 
 pub struct CodegenContext<'a> {
+  pub source_text: &'a str,
   pub options: &'a TransformOptions<'a>,
   pub identifiers: RefCell<HashMap<String, Vec<Expression<'a>>>>,
-  pub ir: RootIRNode<'a>,
+  pub ir: RootIRNode,
   pub block: RefCell<BlockIRNode<'a>>,
   pub scope_level: RefCell<i32>,
-  pub ast: AstBuilder<'a>,
+  pub ast: &'a AstBuilder<'a>,
 }
 
 impl<'a> CodegenContext<'a> {
   pub fn new(context: &'a TransformContext<'a>) -> CodegenContext<'a> {
     let ir = context.ir.take();
     let block = context.block.take();
-    let ast = AstBuilder::new(context.allocator);
     *context.options.in_v_for.borrow_mut() = *context.in_v_for.borrow();
     *context.options.in_v_once.borrow_mut() = *context.in_v_once.borrow();
     CodegenContext {
+      source_text: context.source_text,
       options: context.options,
       identifiers: RefCell::new(HashMap::new()),
       block: RefCell::new(block),
       scope_level: RefCell::new(0),
       ir,
-      ast,
+      ast: context.ast,
     }
   }
 

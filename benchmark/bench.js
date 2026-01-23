@@ -105,7 +105,7 @@ const groups = {}
 
 bench.tasks.forEach((t) => {
   const groupName = getGroupName(t.name)
-  const ops = Math.round(t.result?.hz || 0)
+  const ops = Math.round(t.result.throughput.mean || 0)
 
   if (!groups[groupName]) {
     groups[groupName] = { name: groupName, babel: 0, oxc: 0 }

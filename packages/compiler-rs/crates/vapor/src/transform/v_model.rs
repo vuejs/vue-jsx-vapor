@@ -23,7 +23,7 @@ pub fn transform_v_model<'a>(
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
-  let dir = resolve_directive(_dir, context.ir.borrow().source);
+  let dir = resolve_directive(_dir, context.source_text);
 
   let Some(exp) = &dir.exp else {
     context.options.on_error.as_ref()(ErrorCodes::VModelNoExpression, dir.loc);
@@ -74,7 +74,7 @@ pub fn transform_v_model<'a>(
     context.options.on_error.as_ref()(ErrorCodes::VModelArgOnElement, dir.loc);
   }
 
-  let tag = get_tag_name(&node.opening_element.name, context.ir.borrow().source);
+  let tag = get_tag_name(&node.opening_element.name, context.source_text);
   let is_custom_element = context.options.is_custom_element.as_ref()(tag.to_string());
   let mut model_type = "text";
   // TODO let runtimeDirective: VaporHelper | undefined = 'vModelText'

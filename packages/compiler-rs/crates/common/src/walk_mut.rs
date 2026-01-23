@@ -1,12 +1,9 @@
-use oxc_allocator::TakeIn;
-use oxc_ast::{
-  AstBuilder,
-  ast::{
-    ArrowFunctionExpression, AssignmentTargetMaybeDefault, AssignmentTargetProperty,
-    BindingIdentifier, BindingPattern, BlockStatement, CatchClause, Expression, ForInStatement,
-    ForOfStatement, ForStatement, ForStatementInit, ForStatementLeft, Function, FunctionBody,
-    Statement, VariableDeclarationKind,
-  },
+use oxc_allocator::{FromIn, TakeIn};
+use oxc_ast::ast::{
+  ArrowFunctionExpression, AssignmentTargetMaybeDefault, AssignmentTargetProperty,
+  AssignmentTargetPropertyProperty, BindingIdentifier, BindingPattern, BlockStatement, CatchClause,
+  Expression, ForInStatement, ForOfStatement, ForStatement, ForStatementInit, ForStatementLeft,
+  Function, FunctionBody, IdentifierName, PropertyKey, Statement, VariableDeclarationKind,
 };
 use oxc_ast_visit::{
   VisitMut,
@@ -44,23 +41,14 @@ pub struct WalkIdentifiersMut<'a> {
   known_ids: HashMap<String, u32>,
   on_identifier: OnIdentifier<'a>,
   scope_ids_map: HashMap<Span, HashSet<String>>,
-  pub ast: &'a AstBuilder<'a>,
-  pub source_text: &'a str,
   pub options: &'a TransformOptions<'a>,
   pub parents: Vec<AstKind<'a>>,
   pub roots: Vec<RootJsx<'a>>,
 }
 
 impl<'a> WalkIdentifiersMut<'a> {
-  pub fn new(
-    on_identifier: OnIdentifier<'a>,
-    ast: &'a AstBuilder<'a>,
-    source_text: &'a str,
-    options: &'a TransformOptions<'a>,
-  ) -> Self {
+  pub fn new(on_identifier: OnIdentifier<'a>, options: &'a TransformOptions<'a>) -> Self {
     Self {
-      ast,
-      source_text,
       options,
       on_identifier,
       known_ids: HashMap::new(),
@@ -130,7 +118,7 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
       let node_ref = node as *mut _;
       self.roots.push(RootJsx {
         node_ref,
-        node: unsafe { &mut *node_ref }.take_in(self.ast.allocator),
+        node: unsafe { &mut *node_ref }.take_in(&self.options.allocator),
         vdom,
       });
     }
@@ -138,25 +126,34 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
   }
 
   fn visit_assignment_target_property(&mut self, node: &mut AssignmentTargetProperty<'a>) {
-    let ast = self.ast;
     match node {
       // ;({ baz } = bar)
       AssignmentTargetProperty::AssignmentTargetPropertyIdentifier(id) => {
         if let Some(replacer) = self.on_identifier_reference(&mut id.binding) {
-          *node = ast.assignment_target_property_assignment_target_property_property(
-            SPAN,
-            ast.property_key_static_identifier(id.binding.span, id.binding.name),
-            match replacer {
-              Expression::Identifier(replacer) => {
-                AssignmentTargetMaybeDefault::AssignmentTargetIdentifier(replacer)
-              }
-              Expression::StaticMemberExpression(replacer) => {
-                AssignmentTargetMaybeDefault::StaticMemberExpression(replacer)
-              }
-              _ => unimplemented!(),
-            },
-            false,
-          );
+          *node =
+            AssignmentTargetProperty::AssignmentTargetPropertyProperty(oxc_allocator::Box::new_in(
+              AssignmentTargetPropertyProperty {
+                span: SPAN,
+                name: PropertyKey::StaticIdentifier(oxc_allocator::Box::from_in(
+                  IdentifierName {
+                    span: id.binding.span,
+                    name: id.binding.name,
+                  },
+                  &self.options.allocator,
+                )),
+                binding: match replacer {
+                  Expression::Identifier(replacer) => {
+                    AssignmentTargetMaybeDefault::AssignmentTargetIdentifier(replacer)
+                  }
+                  Expression::StaticMemberExpression(replacer) => {
+                    AssignmentTargetMaybeDefault::StaticMemberExpression(replacer)
+                  }
+                  _ => unimplemented!(),
+                },
+                computed: false,
+              },
+              &self.options.allocator,
+            ));
         };
       }
       // ;({ baz: baz } = bar)
@@ -303,7 +300,7 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
     if let Some(on_exit_program) = self.options.on_exit_program.borrow().as_ref()
       && self.parents.is_empty()
     {
-      on_exit_program(std::mem::take(&mut self.roots), self.source_text);
+      on_exit_program(std::mem::take(&mut self.roots));
     }
   }
 }

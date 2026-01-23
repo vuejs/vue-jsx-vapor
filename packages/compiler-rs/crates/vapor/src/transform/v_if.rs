@@ -42,7 +42,7 @@ pub unsafe fn transform_v_if<'a>(
   }
   seen.insert(start);
 
-  let mut dir = resolve_directive(dir, context.ir.borrow().source);
+  let mut dir = resolve_directive(dir, context.source_text);
   if dir.name != "else"
     && (dir.exp.is_none() || dir.exp.as_ref().unwrap().content.trim().is_empty())
   {

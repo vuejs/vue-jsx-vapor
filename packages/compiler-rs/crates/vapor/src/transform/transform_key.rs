@@ -18,12 +18,8 @@ pub unsafe fn transform_v_key<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  let Some(key) = directives.key.as_mut() else {
-    return None;
-  };
-  let Some(value) = key.value.as_mut() else {
-    return None;
-  };
+  let key = directives.key.as_mut()?;
+  let value = key.value.as_mut()?;
 
   let seen = &mut context.seen.borrow_mut();
   let start = key.span.start;
@@ -32,7 +28,7 @@ pub unsafe fn transform_v_key<'a>(
   }
   seen.insert(start);
 
-  let value = SimpleExpressionNode::new(Either3::C(value), &context.ir.borrow().source);
+  let value = SimpleExpressionNode::new(Either3::C(value), context.source_text);
 
   let dynamic = &mut context_block.dynamic;
   dynamic.flags = DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;

@@ -2,18 +2,17 @@ use std::mem;
 
 use common::options::{RootJsx, TransformOptions};
 use napi::Either;
-use oxc_allocator::{Allocator, FromIn, TakeIn};
+use oxc_allocator::{FromIn, TakeIn};
 use oxc_ast::{
   AstBuilder, AstKind, NONE,
   ast::{Argument, Expression, ImportOrExportKind, Program, Statement, VariableDeclarationKind},
 };
 use oxc_ast_visit::{VisitMut, walk_mut};
-use oxc_span::{Atom, GetSpan, SPAN};
+use oxc_span::{Atom, SPAN};
 
 use crate::hmr_or_ssr::HmrOrSsrTransform;
 
 pub struct Transform<'a> {
-  allocator: &'a Allocator,
   ast: AstBuilder<'a>,
   source_text: &'a str,
   roots: Vec<RootJsx<'a>>,
@@ -22,14 +21,16 @@ pub struct Transform<'a> {
 }
 
 impl<'a> Transform<'a> {
-  pub fn new(allocator: &'a Allocator, options: &'a TransformOptions<'a>) -> Self {
+  pub fn new(options: &'a TransformOptions<'a>) -> Self {
+    let ast = AstBuilder::new(&options.allocator);
+    let ast_ptr = &ast as *const _;
     *options.on_enter_expression.borrow_mut() = Some(Box::new(|node, parents| unsafe {
       if options.ssr
         && let Expression::CallExpression(node) = &mut *node
         && let Expression::Identifier(callee) = &mut node.callee
         && callee.name.eq("defineVaporComponent")
       {
-        callee.name = Atom::from_in("_defineVaporSSRComponent", allocator);
+        callee.name = Atom::from_in("_defineVaporSSRComponent", &options.allocator);
         options
           .helpers
           .borrow_mut()
@@ -61,29 +62,26 @@ impl<'a> Transform<'a> {
       None
     }));
 
-    *options.on_exit_program.borrow_mut() = Some(Box::new(|mut roots, source| unsafe {
+    *options.on_exit_program.borrow_mut() = Some(Box::new(move |mut roots| unsafe {
       for root in roots.drain(..) {
         if root.vdom {
           use vdom::transform::TransformContext;
           let transform_context: *mut TransformContext =
-            &mut TransformContext::new(allocator, options);
-          let source_text = &source[..root.node.span().end as usize];
-          *root.node_ref = (&*transform_context).transform(root.node, source_text);
+            &mut TransformContext::new(options, &*ast_ptr);
+          *root.node_ref = (&*transform_context).transform(root.node);
         } else {
           use vapor::transform::TransformContext;
           let transform_context: *mut TransformContext =
-            &mut TransformContext::new(allocator, options);
-          let source_text = &source[..root.node.span().end as usize];
-          *root.node_ref = (&*transform_context).transform(root.node, source_text);
+            &mut TransformContext::new(options, &*ast_ptr);
+          *root.node_ref = (&*transform_context).transform(root.node);
         }
       }
     }));
 
     Self {
-      allocator,
+      ast,
       source_text: "",
       roots: vec![],
-      ast: AstBuilder::new(allocator),
       options,
       parents: vec![],
     }
@@ -93,16 +91,16 @@ impl<'a> Transform<'a> {
     self.source_text = program.source_text;
 
     self.visit_program(program);
+    let ast = &self.ast;
 
     if self.options.ssr || !matches!(self.options.hmr, Either::A(false)) {
-      HmrOrSsrTransform::new(self.options).visit(&self.ast, program);
+      HmrOrSsrTransform::new(self.options).visit(ast, program);
     }
 
     if let Some(on_exit_program) = self.options.on_exit_program.borrow().as_ref() {
-      on_exit_program(mem::take(&mut self.roots), self.source_text);
+      on_exit_program(mem::take(&mut self.roots));
     }
 
-    let ast = &self.ast;
     let mut statements = vec![];
     let delegates = self.options.delegates.take();
     if !delegates.is_empty() {
@@ -306,7 +304,7 @@ impl<'a> VisitMut<'a> for Transform<'a> {
     {
       self.roots.push(RootJsx {
         node_ref,
-        node: unsafe { &mut *node_ref }.take_in(self.allocator),
+        node: unsafe { &mut *node_ref }.take_in(&self.options.allocator),
         vdom,
       });
     }

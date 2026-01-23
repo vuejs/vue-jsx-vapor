@@ -88,7 +88,7 @@ pub fn build_slots<'a>(
 ) -> (Expression<'a>, bool, Vec<String>) {
   let ast = &context.ast;
   let _node = node as *mut JSXElement;
-  let tag_name = get_tag_name(&node.opening_element.name, *context.source.borrow());
+  let tag_name = get_tag_name(&node.opening_element.name, context.source_text);
   let is_fragment = tag_name == "Fragment" || tag_name == "_Fragment";
   let mut slots_properties = ast.vec();
   let mut dynamic_slots = ast.vec();
@@ -204,7 +204,7 @@ pub fn build_slots<'a>(
     let slot_props = if let Some(JSXAttributeValue::ExpressionContainer(value)) = &slot_dir.value {
       expression_to_params(
         value.expression.to_expression(),
-        *context.source.borrow(),
+        context.source_text,
         context.allocator,
         context.options.source_type,
       )
@@ -407,7 +407,7 @@ pub fn build_slots<'a>(
                   ast.vec1(
                     expression_to_params(
                       value.expression.to_expression(),
-                      *context.source.borrow(),
+                      context.source_text,
                       context.allocator,
                       context.options.source_type,
                     )

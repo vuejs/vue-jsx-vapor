@@ -166,7 +166,7 @@ pub fn is_text_like(node: &JSXChild) -> bool {
   }
 }
 
-pub fn escape_html<'a>(s: String) -> String {
+pub fn escape_html(s: String) -> String {
   let bytes = s.as_bytes();
   let mut last_index = 0;
   let mut html = String::new();

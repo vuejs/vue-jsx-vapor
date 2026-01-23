@@ -1,10 +1,7 @@
-use oxc_ast::{
-  AstBuilder,
-  ast::{
-    ArrowFunctionExpression, BindingIdentifier, BindingPattern, BlockStatement, CatchClause,
-    Expression, ForInStatement, ForOfStatement, ForStatement, ForStatementInit, ForStatementLeft,
-    Function, FunctionBody, Statement, VariableDeclarationKind,
-  },
+use oxc_ast::ast::{
+  ArrowFunctionExpression, BindingIdentifier, BindingPattern, BlockStatement, CatchClause,
+  Expression, ForInStatement, ForOfStatement, ForStatement, ForStatementInit, ForStatementLeft,
+  Function, FunctionBody, Statement, VariableDeclarationKind,
 };
 use oxc_ast_visit::{Visit, walk};
 use std::collections::{HashMap, HashSet};
@@ -13,10 +10,7 @@ use napi::bindgen_prelude::Either3;
 use oxc_ast::{AstKind, ast::IdentifierReference};
 use oxc_span::{SPAN, Span};
 
-use crate::{
-  check::is_referenced_identifier,
-  options::{RootJsx, TransformOptions},
-};
+use crate::{check::is_referenced_identifier, options::RootJsx};
 
 type OnIdentifier<'a> = Box<
   dyn FnMut(&IdentifierReference<'a>, Option<&AstKind<'a>>, &Vec<AstKind<'a>>, bool, bool) + 'a,
@@ -32,24 +26,13 @@ pub struct WalkIdentifiers<'a> {
   known_ids: HashMap<String, u32>,
   on_identifier: OnIdentifier<'a>,
   scope_ids_map: HashMap<Span, HashSet<String>>,
-  pub ast: &'a AstBuilder<'a>,
-  pub source_text: &'a str,
-  pub options: &'a TransformOptions<'a>,
   pub parents: Vec<AstKind<'a>>,
   pub roots: Vec<RootJsx<'a>>,
 }
 
 impl<'a> WalkIdentifiers<'a> {
-  pub fn new(
-    on_identifier: OnIdentifier<'a>,
-    ast: &'a AstBuilder<'a>,
-    source_text: &'a str,
-    options: &'a TransformOptions<'a>,
-  ) -> Self {
+  pub fn new(on_identifier: OnIdentifier<'a>) -> Self {
     Self {
-      ast,
-      source_text,
-      options,
       on_identifier,
       known_ids: HashMap::new(),
       scope_ids_map: HashMap::new(),

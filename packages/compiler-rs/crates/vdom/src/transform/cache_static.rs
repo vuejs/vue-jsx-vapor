@@ -393,14 +393,9 @@ pub fn get_constant_type<'a>(
           has_ref = true;
         } else {
           let has_ref_ptr = &mut has_ref as *mut bool;
-          WalkIdentifiers::new(
-            Box::new(move |_, _, _, _, _| {
-              *unsafe { &mut *has_ref_ptr } = true;
-            }),
-            &context.ast,
-            *context.source.borrow(),
-            context.options,
-          )
+          WalkIdentifiers::new(Box::new(move |_, _, _, _, _| {
+            *unsafe { &mut *has_ref_ptr } = true;
+          }))
           .visit(node);
         }
         if has_ref {

@@ -416,7 +416,7 @@ pub fn create_for_loop_params<'a>(
           } else {
             expression_to_params(
               &value,
-              *context.source.borrow(),
+              context.source_text,
               context.allocator,
               context.options.source_type,
             )

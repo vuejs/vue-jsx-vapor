@@ -50,11 +50,9 @@ pub fn gen_expression<'a>(
     WalkIdentifiersMut::new(
       Box::new(|id, _, _, _, _| {
         let span = id.span();
-        let content = span.source_text(context.ir.source);
+        let content = span.source_text(context.source_text);
         Some(gen_identifier(content, context, span, None))
       }),
-      &context.ast,
-      context.ir.source,
       context.options,
     )
     .visit(ast);

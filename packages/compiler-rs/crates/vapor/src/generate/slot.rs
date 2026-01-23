@@ -195,7 +195,6 @@ fn gen_loop_slot<'a>(
     key,
     index,
     source,
-    ..
   } = _loop.unwrap();
   let raw_value = value.map(|value| value.content);
   let raw_key = key.map(|key| key.content);
@@ -377,8 +376,6 @@ fn gen_slot_block_with_props<'a>(
             unsafe { &mut *ids_of_props }.insert(id.name.to_string());
             None
           }),
-          &context.ast,
-          context.ir.source,
           context.options,
         )
         .visit(ast);

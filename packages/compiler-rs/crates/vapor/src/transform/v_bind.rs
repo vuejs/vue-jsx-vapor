@@ -15,7 +15,7 @@ pub fn transform_v_bind<'a>(
   };
   let name_splited: Vec<&str> = name_string.split("_").collect();
   let modifiers = name_splited[1..].to_vec();
-  if is_reserved_prop(&name_splited[0]) {
+  if is_reserved_prop(name_splited[0]) {
     return None;
   }
 
@@ -27,7 +27,7 @@ pub fn transform_v_bind<'a>(
   };
 
   let exp = if let Some(value) = &mut dir.value {
-    SimpleExpressionNode::new(Either3::C(value), context.ir.borrow().source)
+    SimpleExpressionNode::new(Either3::C(value), context.source_text)
   } else {
     SimpleExpressionNode {
       content: String::from("true"),

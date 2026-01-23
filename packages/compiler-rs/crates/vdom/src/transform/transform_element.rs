@@ -74,7 +74,7 @@ pub unsafe fn transform_element<'a>(
 
   // The goal of the transform is to create a codegenNode implementing the
   // VNodeCall interface.
-  let mut vnode_tag = get_tag_name(&node.opening_element.name, *context.source.borrow());
+  let mut vnode_tag = get_tag_name(&node.opening_element.name, context.source_text);
   if matches!(vnode_tag.as_ref(), "Transition" | "TransitionGroup") {
     transform_transition(node, context);
   }
@@ -392,10 +392,8 @@ pub fn build_props<'a>(
 
         let dir_name = if is_event(name) {
           "on"
-        } else if let Some(name) = get_directive_name(name) {
-          name
         } else {
-          "bind"
+          get_directive_name(name).unwrap_or("bind")
         };
 
         // skip v-slot - it is handled by its dedicated transform.
@@ -473,7 +471,7 @@ pub fn build_props<'a>(
           "html" => transform_v_html(prop, node, context),
           "text" => transform_v_text(prop, node, context),
           _ => {
-            if !is_built_in_directive(&dir_name) {
+            if !is_built_in_directive(dir_name) {
               let runtime = if dir_name
                 .chars()
                 .nth(1)
@@ -485,11 +483,11 @@ pub fn build_props<'a>(
                 // inject statement for resolving directive
                 context.helper("resolveDirective");
                 context.directives.borrow_mut().insert(dir_name.to_string());
-                to_valid_asset_id(&dir_name, "directive")
+                to_valid_asset_id(dir_name, "directive")
               };
               runtime_directives.push(
                 build_directive_args(
-                  resolve_directive(prop, *context.source.borrow()),
+                  resolve_directive(prop, context.source_text),
                   context,
                   &runtime,
                 )

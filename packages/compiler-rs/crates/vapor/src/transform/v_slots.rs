@@ -133,7 +133,7 @@ pub unsafe fn transform_v_slots<'a>(
           }
         }
       }
-      let slots = SimpleExpressionNode::new(Either3::A(expression), context.ir.borrow().source);
+      let slots = SimpleExpressionNode::new(Either3::A(expression), context.source_text);
       Some(Box::new(move || {
         context_block.slots = vec![Either4::D(IRSlotsExpression {
           slot_type: IRSlotType::EXPRESSION,

@@ -4,9 +4,9 @@ use napi::{
   bindgen_prelude::{Function, Object},
 };
 use napi_derive::napi;
-use oxc_allocator::Allocator;
 use oxc_codegen::{Codegen, CodegenReturn};
 use oxc_parser::Parser;
+// use oxc_semantic::SemanticBuilder;
 use oxc_span::{SourceType, Span};
 use std::path::PathBuf;
 
@@ -92,7 +92,7 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       source_map: options.source_map.unwrap_or(false),
       interop: options.interop.unwrap_or(false),
       hmr: options.hmr.unwrap_or(Either::A(false)),
-      ssr: ssr,
+      ssr,
       optimize_slots: options.optimize_slots.unwrap_or(false),
       runtime_module_name: options.runtime_module_name,
       is_custom_element: if let Some(is_custom_element) = options.is_custom_element {
@@ -121,22 +121,22 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
 pub fn transform<'a>(source: &'a str, options: Option<TransformOptions<'a>>) -> CodegenReturn {
   use oxc_codegen::CodegenOptions;
   let options = options.unwrap_or_default();
-  let filename = options.filename;
-  let source_map = options.source_map;
-  let source_type = options.source_type;
-  let allocator = Allocator::default();
-  let allocator = &allocator as *const Allocator;
-  let mut program = Parser::new(unsafe { &*allocator }, source, source_type)
-    .parse()
-    .program;
-  Transform::new(unsafe { &*allocator }, unsafe {
-    &*(&options as *const TransformOptions)
-  })
-  .visit(&mut program);
+  *options.source_text.borrow_mut() = source;
+  let mut program = Parser::new(
+    unsafe { &*(&options.allocator as *const _) },
+    source,
+    options.source_type,
+  )
+  .parse()
+  .program;
+  // *options.semantic.borrow_mut() = SemanticBuilder::new()
+  //   .build(unsafe { &*(&program as *const _) })
+  //   .semantic;
+  Transform::new(unsafe { &*(&options as *const _) }).visit(&mut program);
   Codegen::new()
     .with_options(CodegenOptions {
-      source_map_path: if source_map {
-        Some(PathBuf::from(&filename))
+      source_map_path: if options.source_map {
+        Some(PathBuf::from(&options.filename))
       } else {
         None
       },

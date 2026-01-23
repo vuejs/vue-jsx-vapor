@@ -54,14 +54,14 @@ pub fn transform_v_model<'a>(
     .options
     .identifiers
     .borrow()
-    .contains_key(exp.span().source_text(*context.source.borrow()))
+    .contains_key(exp.span().source_text(context.source_text))
   {
     context.options.on_error.as_ref()(ErrorCodes::VModelOnScopeVariable, exp.span());
     return None;
   }
 
-  let dir = resolve_directive(_dir, *context.source.borrow());
-  let tag = get_tag_name(&node.opening_element.name, *context.source.borrow());
+  let dir = resolve_directive(_dir, context.source_text);
+  let tag = get_tag_name(&node.opening_element.name, context.source_text);
   let is_custom_element = context.options.is_custom_element.as_ref()(tag.to_string());
   let is_component = is_jsx_component(node) && !is_custom_element;
 

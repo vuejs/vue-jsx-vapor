@@ -5,9 +5,8 @@ use napi::{
   bindgen_prelude::{Either3, Either17},
 };
 use oxc_allocator::{CloneIn, TakeIn};
-use oxc_ast::{
-  AstBuilder,
-  ast::{BinaryOperator, ConditionalExpression, Expression, JSXChild, LogicalExpression},
+use oxc_ast::ast::{
+  BinaryOperator, ConditionalExpression, Expression, JSXChild, LogicalExpression,
 };
 use oxc_span::{GetSpan, SPAN};
 
@@ -299,7 +298,7 @@ fn process_text_like_expressions<'a>(
     }
     values.push(SimpleExpressionNode::new(
       Either3::B(node),
-      context.ir.borrow().source,
+      context.source_text,
     ))
   }
   values
@@ -331,7 +330,7 @@ pub fn process_conditional_expression<'a>(
   let exit_block = context.create_block(context_node, unsafe { &mut *block }, consequent, false);
 
   let is_const_test = is_constant_node(&Some(test));
-  let test = SimpleExpressionNode::new(Either3::A(test), context.ir.borrow().source);
+  let test = SimpleExpressionNode::new(Either3::A(test), context.source_text);
 
   Box::new(move || {
     let block = exit_block();
@@ -389,7 +388,7 @@ fn process_logical_expression<'a>(
   let exit_block = context.create_block(context_node, unsafe { &mut *block }, _left, false);
 
   if node.operator.is_coalesce() {
-    let ast = AstBuilder::new(context.allocator);
+    let ast = &context.ast;
     *left = ast.expression_binary(
       SPAN,
       left.take_in(context.allocator),
@@ -404,7 +403,7 @@ fn process_logical_expression<'a>(
       id,
       positive: block,
       once: *context.in_v_once.borrow() || is_constant_node(&Some(left)),
-      condition: SimpleExpressionNode::new(Either3::A(left), context.ir.borrow().source),
+      condition: SimpleExpressionNode::new(Either3::A(left), context.source_text),
       negative: None,
       anchor: None,
       parent: None,
@@ -454,7 +453,7 @@ fn set_negative<'a>(
       id: -1,
       condition: SimpleExpressionNode::new(
         Either3::A(&mut unsafe { &mut *node }.test),
-        context.ir.borrow().source,
+        context.source_text,
       ),
       positive: block,
       once: *context.in_v_once.borrow() || is_constant_node(&Some(&unsafe { &*node }.test)),
@@ -494,7 +493,7 @@ fn set_negative<'a>(
     let exit_block = context.create_block(context_node, unsafe { &mut *block }, _left, false);
     context.transform_node(Some(unsafe { &mut *block }), Some(parent_node));
     if unsafe { &mut *node }.operator.is_coalesce() {
-      let ast = AstBuilder::new(context.allocator);
+      let ast = &context.ast;
       *left = ast.expression_binary(
         SPAN,
         left.take_in(context.allocator),
@@ -506,7 +505,7 @@ fn set_negative<'a>(
     let mut negative = IfIRNode {
       id: -1,
       once: *context.in_v_once.borrow() || is_constant_node(&Some(left)),
-      condition: SimpleExpressionNode::new(Either3::A(left), context.ir.borrow().source),
+      condition: SimpleExpressionNode::new(Either3::A(left), context.source_text),
       positive: block,
       negative: None,
       anchor: None,

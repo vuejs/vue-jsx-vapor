@@ -1,4 +1,6 @@
 use napi_derive::napi;
+use oxc_allocator::Allocator;
+use oxc_semantic::Semantic;
 use std::{
   cell::RefCell,
   collections::{BTreeSet, HashMap},
@@ -17,7 +19,7 @@ pub struct RootJsx<'a> {
   pub vdom: bool,
 }
 
-type OnExitProgram<'a> = Box<dyn Fn(Vec<RootJsx<'a>>, &'a str) + 'a>;
+type OnExitProgram<'a> = Box<dyn Fn(Vec<RootJsx<'a>>) + 'a>;
 type OnEnterExpression<'a> =
   Box<dyn Fn(*mut Expression<'a>, &Vec<AstKind>) -> Option<(*mut Expression<'a>, bool)> + 'a>;
 
@@ -32,6 +34,8 @@ pub struct Hmr {
 }
 
 pub struct TransformOptions<'a> {
+  pub allocator: Allocator,
+  pub semantic: RefCell<Semantic<'a>>,
   pub templates: RefCell<Vec<(String, bool)>>,
   pub helpers: RefCell<BTreeSet<String>>,
   pub delegates: RefCell<BTreeSet<String>>,
@@ -42,6 +46,7 @@ pub struct TransformOptions<'a> {
   pub on_enter_expression: RefCell<Option<OnEnterExpression<'a>>>,
   pub source_map: bool,
   pub filename: &'a str,
+  pub source_text: RefCell<&'a str>,
   pub source_type: SourceType,
   pub interop: bool,
   pub hmr: Either<bool, Hmr>,
@@ -59,6 +64,9 @@ pub struct TransformOptions<'a> {
 impl<'a> Default for TransformOptions<'a> {
   fn default() -> Self {
     Self {
+      allocator: Allocator::default(),
+      semantic: RefCell::new(Semantic::default()),
+      source_text: RefCell::new(""),
       filename: "index.jsx",
       source_type: SourceType::jsx(),
       templates: RefCell::new(vec![]),

@@ -58,10 +58,10 @@ pub struct TransformContext<'a> {
 
   pub seen: Rc<RefCell<HashSet<u32>>>,
 
-  pub source: RefCell<&'a str>,
+  pub source_text: &'a str,
   pub root_node: RefCell<JSXChild<'a>>,
 
-  pub ast: AstBuilder<'a>,
+  pub ast: &'a AstBuilder<'a>,
   pub constant_cache: RefCell<HashMap<Span, ConstantTypes>>,
   pub codegen_map: RefCell<HashMap<Span, NodeTypes<'a>>>,
   pub v_if_map: RefCell<HashMap<Span, (usize, Vec<Span>)>>,
@@ -74,13 +74,14 @@ pub struct TransformContext<'a> {
 }
 
 impl<'a> TransformContext<'a> {
-  pub fn new(allocator: &'a Allocator, options: &'a TransformOptions<'a>) -> Self {
+  pub fn new(options: &'a TransformOptions<'a>, ast: &'a AstBuilder<'a>) -> Self {
+    let allocator = &options.allocator;
     TransformContext {
       allocator,
       seen: Rc::new(RefCell::new(HashSet::new())),
       root_node: RefCell::new(RootNode::new(allocator)),
-      source: RefCell::new(""),
-      ast: AstBuilder::new(allocator),
+      source_text: *options.source_text.borrow(),
+      ast,
       constant_cache: RefCell::new(HashMap::new()),
       codegen_map: RefCell::new(HashMap::new()),
       v_if_map: RefCell::new(HashMap::new()),
@@ -94,7 +95,7 @@ impl<'a> TransformContext<'a> {
     }
   }
 
-  pub fn transform(&'a self, expression: Expression<'a>, source: &'a str) -> Expression<'a> {
+  pub fn transform(&'a self, expression: Expression<'a>) -> Expression<'a> {
     let allocator = self.allocator;
     if let Expression::JSXFragment(frag) = &expression
       && let Some(child) = get_first_child(&frag.children)
@@ -105,7 +106,6 @@ impl<'a> TransformContext<'a> {
         .expression_string_literal(child.span, child.value, child.raw);
     }
     *self.root_node.borrow_mut() = RootNode::from(allocator, expression, false);
-    *self.source.borrow_mut() = source;
     unsafe {
       self.transform_node(self.root_node.as_ptr(), None);
     }
@@ -357,8 +357,6 @@ impl<'a> TransformContext<'a> {
           *unsafe { &mut *has_ref_ptr } = true;
           None
         }),
-        &self.ast,
-        *self.source.borrow(),
         self.options,
       )
       .visit(&mut value);
@@ -406,19 +404,14 @@ impl<'a> TransformContext<'a> {
           .or_insert(1);
       }
       _ => {
-        WalkIdentifiers::new(
-          Box::new(move |id, _, _, _, _| {
-            let name = id.name.to_string();
-            unsafe { &mut *ids_ptr }.push(name.clone());
-            unsafe { &mut *identifiers }
-              .entry(name)
-              .and_modify(|v| *v += 1)
-              .or_insert(1);
-          }),
-          &self.ast,
-          *self.source.borrow(),
-          self.options,
-        )
+        WalkIdentifiers::new(Box::new(move |id, _, _, _, _| {
+          let name = id.name.to_string();
+          unsafe { &mut *ids_ptr }.push(name.clone());
+          unsafe { &mut *identifiers }
+            .entry(name)
+            .and_modify(|v| *v += 1)
+            .or_insert(1);
+        }))
         .visit(exp);
       }
     };

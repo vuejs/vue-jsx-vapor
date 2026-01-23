@@ -18,7 +18,7 @@ pub fn transform_v_show<'a>(
   context_block: &'a mut BlockIRNode<'a>,
   parent_node: &mut JSXChild,
 ) -> Option<DirectiveTransformResult<'a>> {
-  let mut dir = resolve_directive(_dir, context.ir.borrow().source);
+  let mut dir = resolve_directive(_dir, context.source_text);
   if dir.exp.is_none() {
     context.options.on_error.as_ref()(ErrorCodes::VShowNoExpression, dir.loc);
     dir.exp = Some(SimpleExpressionNode::default())
@@ -28,11 +28,7 @@ pub fn transform_v_show<'a>(
   let mut should_deferred = false;
   if let JSXChild::Element(parent_node) = parent_node {
     should_deferred = matches!(
-      get_tag_name(
-        &parent_node.opening_element.name,
-        context.ir.borrow().source
-      )
-      .as_str(),
+      get_tag_name(&parent_node.opening_element.name, context.source_text).as_str(),
       "VaporTransition" | "VaporTransitionGroup"
     ) && find_prop(parent_node, vec!["appear"]).is_some();
 

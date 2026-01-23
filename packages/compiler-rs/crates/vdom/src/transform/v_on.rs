@@ -25,7 +25,7 @@ pub fn transform_v_on<'a>(
   let (name, name_loc) = match &dir.name {
     JSXAttributeName::Identifier(name) => (name.name.as_ref(), name.span),
     JSXAttributeName::NamespacedName(name) => {
-      (name.span.source_text(*context.source.borrow()), name.span)
+      (name.span.source_text(context.source_text), name.span)
     }
   };
   let replaced = format!("{}{}", name[2..3].to_lowercase(), &name[3..]);

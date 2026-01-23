@@ -70,7 +70,8 @@ type GetIndex<'a> = Option<Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>>;
 
 pub struct TransformContext<'a> {
   pub allocator: &'a Allocator,
-  pub ast: AstBuilder<'a>,
+  pub source_text: &'a str,
+  pub ast: &'a AstBuilder<'a>,
   pub index: RefCell<i32>,
 
   pub block: RefCell<BlockIRNode<'a>>,
@@ -86,16 +87,18 @@ pub struct TransformContext<'a> {
 
   global_id: RefCell<i32>,
 
-  pub ir: Rc<RefCell<RootIRNode<'a>>>,
+  pub ir: Rc<RefCell<RootIRNode>>,
   pub node: RefCell<JSXChild<'a>>,
 
   pub parent_dynamic: RefCell<IRDynamicInfo<'a>>,
 }
 
 impl<'a> TransformContext<'a> {
-  pub fn new(allocator: &'a Allocator, options: &'a TransformOptions<'a>) -> Self {
+  pub fn new(options: &'a TransformOptions<'a>, ast: &'a AstBuilder<'a>) -> Self {
+    let allocator = &options.allocator;
     TransformContext {
       allocator,
+      source_text: *options.source_text.borrow(),
       index: RefCell::new(0),
       template: RefCell::new(String::new()),
       children_template: RefCell::new(Vec::new()),
@@ -105,16 +108,16 @@ impl<'a> TransformContext<'a> {
       global_id: RefCell::new(0),
       node: RefCell::new(RootNode::new(allocator)),
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
-      ir: Rc::new(RefCell::new(RootIRNode::new(""))),
+      ir: Rc::new(RefCell::new(RootIRNode::new())),
       block: RefCell::new(BlockIRNode::new()),
-      ast: AstBuilder::new(allocator),
+      ast,
       options,
     }
   }
 
-  pub fn transform(&'a self, expression: Expression<'a>, source: &'a str) -> Expression<'a> {
+  pub fn transform(&'a self, expression: Expression<'a>) -> Expression<'a> {
     let allocator = self.allocator;
-    let ir = RootIRNode::new(source);
+    let ir = RootIRNode::new();
     *self.node.borrow_mut() = RootNode::from(allocator, expression, true);
     *self.block.borrow_mut() = BlockIRNode::new();
     *self.ir.borrow_mut() = ir;
@@ -339,7 +342,7 @@ impl<'a> TransformContext<'a> {
       let block = context_block as *mut BlockIRNode;
       let mut exit_fns = vec![];
 
-      let is_root = RootNode::is_root(&*self.node.borrow());
+      let is_root = RootNode::is_root(&self.node.borrow());
       if !is_root {
         let context = self as *const TransformContext;
         let node = &mut *self.node.borrow_mut() as *mut _;

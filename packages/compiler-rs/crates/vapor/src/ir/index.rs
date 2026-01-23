@@ -36,18 +36,16 @@ impl<'a> Default for BlockIRNode<'a> {
 }
 
 #[derive(Debug, Default)]
-pub struct RootIRNode<'a> {
-  pub source: &'a str,
+pub struct RootIRNode {
   pub root_template_index: Option<usize>,
   pub component: IndexSet<String>,
   pub directive: IndexSet<String>,
   pub has_template_ref: bool,
   pub has_deferred_v_show: bool,
 }
-impl<'a> RootIRNode<'a> {
-  pub fn new(source: &'a str) -> Self {
+impl RootIRNode {
+  pub fn new() -> Self {
     RootIRNode {
-      source,
       component: IndexSet::new(),
       directive: IndexSet::new(),
       has_template_ref: false,

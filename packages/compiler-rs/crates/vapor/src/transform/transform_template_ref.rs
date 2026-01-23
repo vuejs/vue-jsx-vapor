@@ -24,7 +24,7 @@ pub unsafe fn transform_template_ref<'a>(
   };
   context.ir.borrow_mut().has_template_ref = true;
 
-  let value = SimpleExpressionNode::new(Either3::C(value), context.ir.borrow().source);
+  let value = SimpleExpressionNode::new(Either3::C(value), context.source_text);
   Some(Box::new(move || {
     let id = context.reference(&mut context_block.dynamic);
     let effect = !value.is_constant_expression();

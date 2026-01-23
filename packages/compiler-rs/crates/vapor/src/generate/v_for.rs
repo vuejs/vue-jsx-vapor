@@ -226,13 +226,11 @@ pub fn gen_for<'a>(
             }
           }
           unsafe { &mut *_id_map }.insert(
-            id.span().source_text(context.ir.source).to_string(),
+            id.span().source_text(context.source_text).to_string(),
             Some(path),
           );
           None
         }),
-        &context.ast,
-        context.ir.source,
         context.options,
       )
       .visit(_ast);
@@ -643,7 +641,7 @@ fn match_patterns<'a>(
         && let Some(ast) = &get_expression(unsafe { &*effect_ptr }).unwrap().ast
         && key_prop
           .content
-          .eq(ast.span().source_text(context.ir.source))
+          .eq(ast.span().source_text(context.source_text))
       {
         key_only_binding_patterns.push(effect);
       } else {
@@ -666,7 +664,6 @@ fn match_selector_pattern<'a>(
   id_map: &HashMap<String, Option<Expression<'a>>>,
   context: &'a CodegenContext<'a>,
 ) -> Option<SimpleExpressionNode<'a>> {
-  let source = context.ir.source;
   if effect.operations.len() != 1 {
     return None;
   }
@@ -687,8 +684,10 @@ fn match_selector_pattern<'a>(
       ) {
         let left = &ast.left;
         let right = &ast.right;
-        let left_is_key = key.eq(&source[left.span().start as usize..left.span().end as usize]);
-        let right_is_key = key.eq(&source[right.span().start as usize..right.span().end as usize]);
+        let left_is_key =
+          key.eq(&context.source_text[left.span().start as usize..left.span().end as usize]);
+        let right_is_key =
+          key.eq(&context.source_text[right.span().start as usize..right.span().end as usize]);
         if left_is_key
           && !right_is_key
           && analyze_variable_scopes(right, id_map, context).is_empty()
@@ -710,17 +709,12 @@ fn match_selector_pattern<'a>(
 
     let mut has_extra_id = false;
     let _has_extra_id = &mut has_extra_id as *mut bool;
-    WalkIdentifiers::new(
-      Box::new(move |id, _, _, _, _| {
-        let start = id.span.start;
-        if start != key.start && start != selector.start {
-          *unsafe { &mut *_has_extra_id } = true
-        }
-      }),
-      &context.ast,
-      context.ir.source,
-      context.options,
-    )
+    WalkIdentifiers::new(Box::new(move |id, _, _, _, _| {
+      let start = id.span.start;
+      if start != key.start && start != selector.start {
+        *unsafe { &mut *_has_extra_id } = true
+      }
+    }))
     .visit(ast);
 
     if !has_extra_id {
@@ -746,17 +740,12 @@ fn analyze_variable_scopes<'a>(
   let mut locals = vec![];
   let _locals = &mut locals as *mut Vec<String>;
   let _id_map = id_map as *const HashMap<String, Option<Expression>>;
-  WalkIdentifiers::new(
-    Box::new(move |id, _, _, _, _| unsafe {
-      let name = id.name.to_string();
-      if !is_globally_allowed(&name) && (&*_id_map).get(&name).is_some() {
-        (&mut *_locals).push(name);
-      }
-    }),
-    &context.ast,
-    context.ir.source,
-    context.options,
-  )
+  WalkIdentifiers::new(Box::new(move |id, _, _, _, _| unsafe {
+    let name = id.name.to_string();
+    if !is_globally_allowed(&name) && (&*_id_map).get(&name).is_some() {
+      (&mut *_locals).push(name);
+    }
+  }))
   .visit(&ast.clone_in(context.ast.allocator));
 
   locals

@@ -23,7 +23,7 @@ pub fn transform_v_on<'a>(
   let (name, name_loc) = match &dir.name {
     JSXAttributeName::Identifier(name) => (name.name.as_ref(), name.span),
     JSXAttributeName::NamespacedName(name) => {
-      (name.span.source_text(context.ir.borrow().source), name.span)
+      (name.span.source_text(context.source_text), name.span)
     }
   };
   let replaced = format!("{}{}", name[2..3].to_lowercase(), &name[3..]);
@@ -44,7 +44,7 @@ pub fn transform_v_on<'a>(
   };
   let exp = value
     .as_mut()
-    .map(|value| SimpleExpressionNode::new(Either3::C(value), context.ir.borrow().source));
+    .map(|value| SimpleExpressionNode::new(Either3::C(value), context.source_text));
 
   let Modifiers {
     keys: key_modifiers,
