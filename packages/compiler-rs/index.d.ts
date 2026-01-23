@@ -73,6 +73,10 @@ export interface CompilerOptions {
    * @default false
    */
   optimizeSlots?: boolean
+  /** * Customize where to import runtime helpers from vue-jsx-vapor.
+   * If not specified, defaults to the virtual module path (e.g., `/vue-jsx-vapor/vapor`).
+   */
+  runtimeModuleName?: string
 }
 
 export declare function transform(source: string, options?: CompilerOptions | undefined | null): TransformReturn

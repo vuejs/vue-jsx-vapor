@@ -64,6 +64,11 @@ pub struct CompilerOptions {
    * @default false
    */
   pub optimize_slots: Option<bool>,
+  /**
+   * Customize where to import runtime helpers from vue-jsx-vapor.
+   * If not specified, defaults to the virtual module path (e.g., `/vue-jsx-vapor/vapor`).
+   */
+  pub runtime_module_name: Option<String>,
 }
 
 #[cfg(feature = "napi")]
@@ -89,6 +94,7 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       hmr: options.hmr.unwrap_or(Either::A(false)),
       ssr: ssr,
       optimize_slots: options.optimize_slots.unwrap_or(false),
+      runtime_module_name: options.runtime_module_name,
       is_custom_element: if let Some(is_custom_element) = options.is_custom_element {
         Box::new(move |tag: String| is_custom_element.call(tag).unwrap())
           as Box<dyn Fn(String) -> bool>

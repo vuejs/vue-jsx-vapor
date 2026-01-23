@@ -147,7 +147,17 @@ impl<'a> Transform<'a> {
               ImportOrExportKind::Value,
             )
           }))),
-          ast.string_literal(SPAN, ast.atom("/vue-jsx-vapor/vdom"), None),
+          ast.string_literal(
+            SPAN,
+            ast.atom(
+              if let Some(runtime_module_name) = &self.options.runtime_module_name {
+                runtime_module_name.as_str()
+              } else {
+                "/vue-jsx-vapor/vdom"
+              },
+            ),
+            None,
+          ),
           None,
           NONE,
           ImportOrExportKind::Value,
@@ -182,7 +192,17 @@ impl<'a> Transform<'a> {
               ImportOrExportKind::Value,
             )
           }))),
-          ast.string_literal(SPAN, ast.atom("/vue-jsx-vapor/vapor"), None),
+          ast.string_literal(
+            SPAN,
+            ast.atom(
+              if let Some(runtime_module_name) = &self.options.runtime_module_name {
+                runtime_module_name.as_str()
+              } else {
+                "/vue-jsx-vapor/vapor"
+              },
+            ),
+            None,
+          ),
           None,
           NONE,
           ImportOrExportKind::Value,

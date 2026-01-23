@@ -14,7 +14,7 @@ export const config = (options: UserConfig = {}) =>
     define: {
       __DEV__: 'true',
     },
-    plugins: [Raw()],
+    plugins: [Raw({ transform: true })],
     outputOptions: {
       exports: 'named',
     },

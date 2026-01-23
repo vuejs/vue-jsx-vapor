@@ -6,7 +6,7 @@ use std::{
 
 use indexmap::IndexMap;
 use napi::Either;
-use oxc_ast::{AstKind, ast::Expression};
+use oxc_ast::{ast::Expression, AstKind};
 use oxc_span::{SourceType, Span};
 
 use crate::error::ErrorCodes;
@@ -53,6 +53,7 @@ pub struct TransformOptions<'a> {
   pub slot_identifiers: RefCell<IndexMap<Span, (i32, Vec<String>)>>,
   pub cache_index: RefCell<i32>,
   pub optimize_slots: bool,
+  pub runtime_module_name: Option<String>,
 }
 
 impl<'a> Default for TransformOptions<'a> {
@@ -79,6 +80,7 @@ impl<'a> Default for TransformOptions<'a> {
       slot_identifiers: RefCell::new(IndexMap::new()),
       cache_index: RefCell::new(0),
       optimize_slots: false,
+      runtime_module_name: None,
     }
   }
 }

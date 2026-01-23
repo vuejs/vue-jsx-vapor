@@ -235,7 +235,17 @@ impl<'a> HmrOrSsrTransform<'a> {
               ast.binding_identifier(SPAN, "ssrRegisterHelper"),
               ImportOrExportKind::Value,
             ))),
-            ast.string_literal(SPAN, "/vue-jsx-vapor/ssr", None),
+            ast.string_literal(
+              SPAN,
+              ast.atom(
+                if let Some(runtime_module_name) = &self.options.runtime_module_name {
+                  runtime_module_name.as_str()
+                } else {
+                  "/vue-jsx-vapor/ssr"
+                },
+              ),
+              None,
+            ),
             None,
             NONE,
             ImportOrExportKind::Value,

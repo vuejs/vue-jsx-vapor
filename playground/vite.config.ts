@@ -12,10 +12,16 @@ export default defineConfig({
       include: interops,
       interop: true,
       macros: true,
+      compiler: {
+        runtimeModuleName: 'vue-jsx-vapor',
+      },
     }),
     VueJsxVapor({
       exclude: interops,
       macros: true,
+      compiler: {
+        runtimeModuleName: 'vue-jsx-vapor',
+      },
     }),
     DefineRender({
       vapor: true,
