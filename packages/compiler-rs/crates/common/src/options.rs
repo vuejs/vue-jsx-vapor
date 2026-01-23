@@ -6,7 +6,7 @@ use std::{
 
 use indexmap::IndexMap;
 use napi::Either;
-use oxc_ast::{ast::Expression, AstKind};
+use oxc_ast::{AstKind, ast::Expression};
 use oxc_span::{SourceType, Span};
 
 use crate::error::ErrorCodes;

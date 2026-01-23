@@ -2,7 +2,7 @@ use compiler_rs::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
-pub fn export() {
+pub fn runtime_module_name() {
   let code = transform(
     "<div>{foo}</div>",
     Some(TransformOptions {
