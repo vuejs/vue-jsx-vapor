@@ -1,3 +1,18 @@
+## [3.1.14](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.13...v3.1.14) (2026-01-23)
+
+
+### Bug Fixes
+
+* **compiler/vdom:** prevent mark condition expression as static ([a6c0cb5](https://github.com/vuejs/vue-jsx-vapor/commit/a6c0cb53481089f53b421134cb8d6bff427d83db))
+
+
+### Features
+
+* **compiler:** support custom runtimeModuleName ([fa772d1](https://github.com/vuejs/vue-jsx-vapor/commit/fa772d1fa2aee6fd39ee2bab23255cf02847a2f6))
+* support bun plugin ([00aa94b](https://github.com/vuejs/vue-jsx-vapor/commit/00aa94b69c19611926d0b669d79be6d8af6bc075))
+
+
+
 ## [3.1.13](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.12...v3.1.13) (2026-01-22)
 
 

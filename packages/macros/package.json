@@ -1,7 +1,7 @@
 {
   "name": "@vue-jsx-vapor/macros",
   "type": "module",
-  "version": "3.1.13",
+  "version": "3.1.14",
   "description": "Macros for Vue JSX Vapor",
   "license": "MIT",
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
