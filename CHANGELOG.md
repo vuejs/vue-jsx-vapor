@@ -1,3 +1,17 @@
+## [3.1.15](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.14...v3.1.15) (2026-01-24)
+
+
+### Bug Fixes
+
+* **runtime:** expose SSR ([9c8ff33](https://github.com/vuejs/vue-jsx-vapor/commit/9c8ff33412738c165e72f45bf69d81a15e7110e7))
+
+
+### Features
+
+* **compiler/vapor:** support svg and MathML ([98f47f4](https://github.com/vuejs/vue-jsx-vapor/commit/98f47f4ac93d8fec5439d1d17d74f2deaac39e10))
+
+
+
 ## [3.1.14](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.13...v3.1.14) (2026-01-23)
 
 
