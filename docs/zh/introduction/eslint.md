@@ -45,7 +45,7 @@ import vueJsxVapor from '@vue-jsx-vapor/eslint'
 export default [
   vueJsxVapor({
     rules: {
-      'vue-jsx-vapor/jsx-sort-props': ['error', {
+      'vue-jsx-vapor/jsx-sort-props': [2, {
         reservedFirst: ['v-if', 'v-for'],
         reservedLast: ['v-slot'],
       }]
