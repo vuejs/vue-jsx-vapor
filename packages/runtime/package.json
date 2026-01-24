@@ -46,9 +46,7 @@
     "test": "vitest"
   },
   "peerDependencies": {
-    "vue": "^3.6.0-alpha.2"
-  },
-  "devDependencies": {
+    "vue": "^3.6.0-alpha.2",
     "csstype": "^3.2.3"
   }
 }

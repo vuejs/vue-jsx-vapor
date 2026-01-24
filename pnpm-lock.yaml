@@ -239,13 +239,12 @@ importers:
 
   packages/runtime:
     dependencies:
-      vue:
-        specifier: ^3.6.0-alpha.2
-        version: 3.6.0-alpha.2(typescript@5.9.3)
-    devDependencies:
       csstype:
         specifier: ^3.2.3
         version: 3.2.3
+      vue:
+        specifier: ^3.6.0-alpha.2
+        version: 3.6.0-alpha.2(typescript@5.9.3)
 
   packages/vue-jsx-vapor:
     dependencies:
