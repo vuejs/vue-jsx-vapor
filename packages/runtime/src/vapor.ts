@@ -19,19 +19,19 @@ import {
 
 // component
 
+/*@__NO_SIDE_EFFECTS__*/
 export function defineVaporSSRComponent(
   comp: VaporComponent,
   extraOptions: VaporComponent,
 ): VaporComponent {
   if (typeof comp === 'function') {
-    return /*@__PURE__*/ (() =>
-      Object.assign({ name: comp.name }, extraOptions, {
-        setup(props: any, ctx: any) {
-          const result = comp(props, ctx)
-          return () => result
-        },
-        __vapor: true,
-      }))()
+    return Object.assign({ name: comp.name }, extraOptions, {
+      setup(props: any, ctx: any) {
+        const result = comp(props, ctx)
+        return () => result
+      },
+      __vapor: true,
+    })
   }
   const setup = comp.setup
   if (setup) {
@@ -46,6 +46,7 @@ export function defineVaporSSRComponent(
 
 type Tail<T extends any[]> = T extends [any, ...infer R] ? R : never
 
+/*@__NO_SIDE_EFFECTS__*/
 export const createComponent = (
   type: VaporComponent | typeof Fragment,
   ...args: Tail<Parameters<typeof _createComponent>>
@@ -53,6 +54,7 @@ export const createComponent = (
   return createProxyComponent(_createComponent, type, ...args)
 }
 
+/*@__NO_SIDE_EFFECTS__*/
 export const createComponentWithFallback = (
   type: VaporComponent | typeof Fragment,
   ...args: Tail<Parameters<typeof _createComponentWithFallback>>
@@ -132,6 +134,7 @@ export type NodeArrayChildren = Array<NodeArrayChildren | NodeChildAtom>
 
 export type NodeChild = NodeChildAtom | NodeArrayChildren
 
+/*@__NO_SIDE_EFFECTS__*/
 export function normalizeNode(node: NodeChild): Block {
   if (node == null || typeof node === 'boolean') {
     return document.createComment('')
@@ -145,6 +148,7 @@ export function normalizeNode(node: NodeChild): Block {
   }
 }
 
+/*@__NO_SIDE_EFFECTS__*/
 export function isBlock(val: NonNullable<unknown>): val is Block {
   return (
     val instanceof Node ||
@@ -237,11 +241,13 @@ function resolveValues(values: any[] = [], _anchor?: Node) {
   return frag
 }
 
+/*@__NO_SIDE_EFFECTS__*/
 export function setNodes(anchor: Node, ...values: any[]) {
   const resolvedValues = resolveValues(values, anchor)
   anchor.parentNode && insert(resolvedValues, anchor.parentNode, anchor)
 }
 
+/*@__NO_SIDE_EFFECTS__*/
 export function createNodes(...values: any[]) {
   return resolveValues(values)
 }

@@ -133,6 +133,7 @@ export function h<P>(
   children?: NodeChild | RawSlots,
 ): Block
 
+/*@__NO_SIDE_EFFECTS__*/
 export function h(type: any, propsOrChildren?: any, children?: any) {
   const l = arguments.length
   if (l === 2) {

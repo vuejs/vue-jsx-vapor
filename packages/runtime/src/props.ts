@@ -1,6 +1,7 @@
 import { proxyRefs, toRefs, useAttrs } from 'vue'
 import * as Vue from 'vue'
 
+/*@__NO_SIDE_EFFECTS__*/
 export function getCurrentInstance():
   | import('vue').GenericComponentInstance
   | null {
@@ -20,6 +21,7 @@ export function getCurrentInstance():
  * })
  * ```
  */
+/*@__NO_SIDE_EFFECTS__*/
 export function useProps() {
   const i = getCurrentInstance()
   return i!.props
@@ -37,6 +39,7 @@ export function useProps() {
  *   const fullProps = useFullProps() // = useAttrs() + useProps()
  * })
  */
+/*@__NO_SIDE_EFFECTS__*/
 export function useFullProps() {
   return proxyRefs({
     ...toRefs(useProps()),

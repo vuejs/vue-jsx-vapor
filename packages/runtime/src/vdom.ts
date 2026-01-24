@@ -23,6 +23,7 @@ export function createVNodeCache(index: number) {
   }
 }
 
+/*@__NO_SIDE_EFFECTS__*/
 export function normalizeVNode(value: any = ' ', flag = 1): VNode {
   let create: any = createVNode
   const isFunction = typeof value === 'function'
