@@ -65,3 +65,6 @@ jobs:
 
       - name: Docs Build
         run: nr docs:build
+
+      - name: Playground Build
+        run: nr play:build

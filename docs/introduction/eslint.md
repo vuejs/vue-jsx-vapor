@@ -29,7 +29,7 @@ import vueJsxVapor from '@vue-jsx-vapor/eslint'
 export default [
   vueJsxVapor({
     rules: {
-      'vue-jsx-vapor/define-style': ['error', { tabWidth: 2 }]
+      'vue-jsx-vapor/define-style': [1, { tabWidth: 2 }]
     }
   })
 ]
