@@ -1,6 +1,7 @@
 export * from './h'
 export * from './jsx'
 export * from './props'
+export * from './ssr'
 export * from './vapor'
 export * from './vdom'
 export { shallowRef as useRef } from 'vue'
