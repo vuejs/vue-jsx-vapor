@@ -127,7 +127,7 @@ pub fn gen_block_content<'a>(
 
   let mut return_nodes = unsafe { &mut *context_block }.returns.iter().map(|n| {
     ast
-      .expression_identifier(SPAN, ast.atom(&format!("n{n}")))
+      .expression_identifier(SPAN, ast.atom(&format!("_n{n}")))
       .into()
   });
   statements.push(ast.statement_return(

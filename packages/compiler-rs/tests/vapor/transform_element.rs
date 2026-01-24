@@ -16,8 +16,8 @@ fn component_import_resolve_component() {
   import { resolveComponent as _resolveComponent } from "vue";
   (() => {
   	const _component_foo_bar = _resolveComponent("foo-bar");
-  	const n0 = _createComponentWithFallback(_component_foo_bar, null, null, true);
-  	return n0;
+  	const _n0 = _createComponentWithFallback(_component_foo_bar, null, null, true);
+  	return _n0;
   })();
   "#);
 }
@@ -28,8 +28,8 @@ fn component_resolve_namespaced_component() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n0 = _createComponent(Foo.Example, null, null, true);
-  	return n0;
+  	const _n0 = _createComponent(Foo.Example, null, null, true);
+  	return _n0;
   })();
   "#);
 }
@@ -46,8 +46,8 @@ fn component_generate_single_root_component() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n0 = _createComponent(Comp, null, null, true);
-  	return n0;
+  	const _n0 = _createComponent(Comp, null, null, true);
+  	return _n0;
   })();
   "#);
 }
@@ -58,11 +58,11 @@ fn component_generate_multi_root_component() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const t0 = _template("123");
+  const _t0 = _template("123");
   (() => {
-  	const n0 = _createComponent(Comp);
-  	const n1 = t0();
-  	return [n0, n1];
+  	const _n0 = _createComponent(Comp);
+  	const _n1 = _t0();
+  	return [_n0, _n1];
   })();
   "#);
 }
@@ -73,8 +73,8 @@ fn component_fragment_should_not_mark_as_single_root() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n0 = _createComponent(Comp);
-  	return n0;
+  	const _n0 = _createComponent(Comp);
+  	return _n0;
   })();
   "#);
 }
@@ -86,11 +86,11 @@ fn component_v_for_should_not_mark_as_single_root() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor } from "vue";
   (() => {
-  	const n0 = _createFor(() => items, (_for_item0) => {
-  		const n2 = _createComponent(Comp);
-  		return n2;
+  	const _n0 = _createFor(() => items, (_for_item0) => {
+  		const _n2 = _createComponent(Comp);
+  		return _n2;
   	}, (item) => item, 2);
-  	return n0;
+  	return _n0;
   })();
   "#);
 }
@@ -101,11 +101,11 @@ fn component_static_props() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n0 = _createComponent(Foo, {
+  	const _n0 = _createComponent(Foo, {
   		id: () => "foo",
   		class: () => "bar"
   	}, null, true);
-  	return n0;
+  	return _n0;
   })();
   "#);
 }
@@ -122,11 +122,11 @@ fn component_dynamic_props_after_static_prop() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n0 = _createComponent(Foo, {
+  	const _n0 = _createComponent(Foo, {
   		id: () => "foo",
   		$: [() => obj]
   	}, null, true);
-  	return n0;
+  	return _n0;
   })();
   "#);
 }
@@ -137,8 +137,8 @@ fn component_dynamic_props_before_static_prop() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n0 = _createComponent(Foo, { $: [() => obj, { id: () => "foo" }] }, null, true);
-  	return n0;
+  	const _n0 = _createComponent(Foo, { $: [() => obj, { id: () => "foo" }] }, null, true);
+  	return _n0;
   })();
   "#);
 }
@@ -149,11 +149,11 @@ fn component_dynamic_props_between_static_prop() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n0 = _createComponent(Foo, {
+  	const _n0 = _createComponent(Foo, {
   		id: () => "foo",
   		$: [() => obj, { class: () => "bar" }]
   	}, null, true);
-  	return n0;
+  	return _n0;
   })();
   "#);
 }
@@ -168,8 +168,8 @@ fn component_props_merging_style() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n0 = _createComponent(Foo, { style: () => ["color: green", { color: "red" }] }, null, true);
-  	return n0;
+  	const _n0 = _createComponent(Foo, { style: () => ["color: green", { color: "red" }] }, null, true);
+  	return _n0;
   })();
   "#);
 }
@@ -180,8 +180,8 @@ fn component_props_merging_class() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n0 = _createComponent(Foo, { class: () => ["foo", { bar: isBar }] }, null, true);
-  	return n0;
+  	const _n0 = _createComponent(Foo, { class: () => ["foo", { bar: isBar }] }, null, true);
+  	return _n0;
   })();
   "#);
 }
@@ -193,8 +193,8 @@ fn component_v_on() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { toHandlers as _toHandlers } from "vue";
   (() => {
-  	const n0 = _createComponent(Foo, { $: [() => _toHandlers(obj)] }, null, true);
-  	return n0;
+  	const _n0 = _createComponent(Foo, { $: [() => _toHandlers(obj)] }, null, true);
+  	return _n0;
   })();
   "#);
 }
@@ -205,8 +205,8 @@ fn component_event_with_once_modifier() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n0 = _createComponent(Foo, { onFooOnce: () => bar }, null, true);
-  	return n0;
+  	const _n0 = _createComponent(Foo, { onFooOnce: () => bar }, null, true);
+  	return _n0;
   })();
   "#);
 }
@@ -219,8 +219,8 @@ fn component_with_fallback() {
   import { resolveComponent as _resolveComponent } from "vue";
   (() => {
   	const _component_foo_bar = _resolveComponent("foo-bar");
-  	const n0 = _createComponentWithFallback(_component_foo_bar, null, null, true);
-  	return n0;
+  	const _n0 = _createComponentWithFallback(_component_foo_bar, null, null, true);
+  	return _n0;
   })();
   "#);
 }
@@ -230,10 +230,10 @@ fn static_props() {
   let code = transform("<div id=\"foo\" class=\"bar\" />", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const t0 = _template("<div id=\"foo\" class=\"bar\"></div>", true);
+  const _t0 = _template("<div id=\"foo\" class=\"bar\"></div>", true);
   (() => {
-  	const n0 = t0();
-  	return n0;
+  	const _n0 = _t0();
+  	return _n0;
   })();
   "#);
 }
@@ -243,10 +243,10 @@ fn props_children() {
   let code = transform("<div id=\"foo\"><span/></div>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const t0 = _template("<div id=\"foo\"><span></span></div>", true);
+  const _t0 = _template("<div id=\"foo\"><span></span></div>", true);
   (() => {
-  	const n0 = t0();
-  	return n0;
+  	const _n0 = _t0();
+  	return _n0;
   })();
   "#);
 }
@@ -256,11 +256,11 @@ fn dynamic_props() {
   let code = transform("<div {...obj} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const t0 = _template("<div></div>", true);
+  const _t0 = _template("<div></div>", true);
   (() => {
-  	const n0 = t0();
-  	_renderEffect(() => _setDynamicProps(n0, [obj], true));
-  	return n0;
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [obj], true));
+  	return _n0;
   })();
   "#);
 }
@@ -270,11 +270,11 @@ fn dynamic_props_after_static_prop() {
   let code = transform("<div id=\"foo\" {...obj} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const t0 = _template("<div></div>", true);
+  const _t0 = _template("<div></div>", true);
   (() => {
-  	const n0 = t0();
-  	_renderEffect(() => _setDynamicProps(n0, [{ id: "foo" }, obj], true));
-  	return n0;
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [{ id: "foo" }, obj], true));
+  	return _n0;
   })();
   "#);
 }
@@ -284,11 +284,11 @@ fn dynamic_props_before_static_prop() {
   let code = transform("<div {...obj} id=\"foo\" />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const t0 = _template("<div></div>", true);
+  const _t0 = _template("<div></div>", true);
   (() => {
-  	const n0 = t0();
-  	_renderEffect(() => _setDynamicProps(n0, [obj, { id: "foo" }], true));
-  	return n0;
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [obj, { id: "foo" }], true));
+  	return _n0;
   })();
   "#);
 }
@@ -298,15 +298,15 @@ fn dynamic_props_between_static_prop() {
   let code = transform("<div id=\"foo\" {...obj} class=\"bar\" />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const t0 = _template("<div></div>", true);
+  const _t0 = _template("<div></div>", true);
   (() => {
-  	const n0 = t0();
-  	_renderEffect(() => _setDynamicProps(n0, [
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [
   		{ id: "foo" },
   		obj,
   		{ class: "bar" }
   	], true));
-  	return n0;
+  	return _n0;
   })();
   "#);
 }
@@ -317,12 +317,12 @@ fn props_merging_event_handlers() {
   assert_snapshot!(code, @r#"
   _delegateEvents("click");
   import { delegate as _delegate, delegateEvents as _delegateEvents, template as _template, withKeys as _withKeys } from "vue";
-  const t0 = _template("<div></div>", true);
+  const _t0 = _template("<div></div>", true);
   (() => {
-  	const n0 = t0();
-  	_delegate(n0, "click", _withKeys(a, ["foo"]));
-  	_delegate(n0, "click", _withKeys(b, ["bar"]));
-  	return n0;
+  	const _n0 = _t0();
+  	_delegate(_n0, "click", _withKeys(a, ["foo"]));
+  	_delegate(_n0, "click", _withKeys(b, ["bar"]));
+  	return _n0;
   })();
   "#);
 }
@@ -336,11 +336,11 @@ fn props_merging_style() {
   .code;
   assert_snapshot!(code, @r#"
   import { setStyle as _setStyle, template as _template } from "vue";
-  const t0 = _template("<div></div>", true);
+  const _t0 = _template("<div></div>", true);
   (() => {
-  	const n0 = t0();
-  	_setStyle(n0, ["color: green", { color: "red" }]);
-  	return n0;
+  	const _n0 = _t0();
+  	_setStyle(_n0, ["color: green", { color: "red" }]);
+  	return _n0;
   })();
   "#);
 }
@@ -350,11 +350,11 @@ fn props_merging_class() {
   let code = transform("<div class=\"foo\" class={{ bar: isBar }} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
-  const t0 = _template("<div></div>", true);
+  const _t0 = _template("<div></div>", true);
   (() => {
-  	const n0 = t0();
-  	_renderEffect(() => _setClass(n0, ["foo", { bar: isBar }]));
-  	return n0;
+  	const _n0 = _t0();
+  	_renderEffect(() => _setClass(_n0, ["foo", { bar: isBar }]));
+  	return _n0;
   })();
   "#);
 }
@@ -364,11 +364,11 @@ fn v_on() {
   let code = transform("<div v-on={obj} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicEvents as _setDynamicEvents, template as _template } from "vue";
-  const t0 = _template("<div></div>", true);
+  const _t0 = _template("<div></div>", true);
   (() => {
-  	const n0 = t0();
-  	_renderEffect(() => _setDynamicEvents(n0, obj));
-  	return n0;
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicEvents(_n0, obj));
+  	return _n0;
   })();
   "#);
 }
@@ -383,17 +383,17 @@ fn invalid_html_nesting() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const t0 = _template("<div>123</div>");
-  const t1 = _template("<p></p>");
-  const t2 = _template("<form></form>");
+  const _t0 = _template("<div>123</div>");
+  const _t1 = _template("<p></p>");
+  const _t2 = _template("<form></form>");
   (() => {
-  	const n1 = t1();
-  	const n0 = t0();
-  	const n3 = t2();
-  	const n2 = t2();
-  	insert(n0, n1);
-  	insert(n2, n3);
-  	return [n1, n3];
+  	const _n1 = _t1();
+  	const _n0 = _t0();
+  	const _n3 = _t2();
+  	const _n2 = _t2();
+  	insert(_n0, _n1);
+  	insert(_n2, _n3);
+  	return [_n1, _n3];
   })();
   "#);
 }

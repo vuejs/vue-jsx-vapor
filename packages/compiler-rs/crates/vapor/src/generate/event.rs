@@ -88,7 +88,7 @@ pub fn gen_set_event<'a>(
           oxc_ast::ast::AssignmentOperator::Assign,
           AssignmentTarget::StaticMemberExpression(ast.alloc_static_member_expression(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&format!("n{element}"))),
+            ast.expression_identifier(SPAN, ast.atom(&format!("_n{element}"))),
             ast.identifier_name(SPAN, ast.atom(&format!("$evt{key_content}"))),
             false,
           )),
@@ -101,7 +101,7 @@ pub fn gen_set_event<'a>(
   let mut arguments = ast.vec();
   arguments.push(
     ast
-      .expression_identifier(SPAN, ast.atom(&format!("n{element}")))
+      .expression_identifier(SPAN, ast.atom(&format!("_n{element}")))
       .into(),
   );
   arguments.push(name.into());
@@ -235,7 +235,7 @@ pub fn gen_set_dynamic_events<'a>(
       NONE,
       ast.vec_from_array([
         ast
-          .expression_identifier(SPAN, ast.atom(&format!("n{}", oper.element)))
+          .expression_identifier(SPAN, ast.atom(&format!("_n{}", oper.element)))
           .into(),
         gen_expression(oper.value, context, None, false).into(),
       ]),

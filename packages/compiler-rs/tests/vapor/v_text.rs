@@ -9,12 +9,12 @@ fn should_convert_v_text_to_set_text() {
   let code = transform("<div v-text={str.value}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
-  const t0 = _template("<div> </div>", true);
+  const _t0 = _template("<div> </div>", true);
   (() => {
-  	const n0 = t0();
-  	const x0 = _txt(n0);
-  	_renderEffect(() => _setText(x0, _toDisplayString(str.value)));
-  	return n0;
+  	const _n0 = _t0();
+  	const _x0 = _txt(_n0);
+  	_renderEffect(() => _setText(_x0, _toDisplayString(str.value)));
+  	return _n0;
   })();
   "#);
 }
@@ -26,9 +26,9 @@ fn work_with_component() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { renderEffect as _renderEffect, setBlockText as _setBlockText, toDisplayString as _toDisplayString } from "vue";
   (() => {
-  	const n0 = _createComponent(Comp, null, null, true);
-  	_renderEffect(() => _setBlockText(n0, _toDisplayString(foo)));
-  	return n0;
+  	const _n0 = _createComponent(Comp, null, null, true);
+  	_renderEffect(() => _setBlockText(_n0, _toDisplayString(foo)));
+  	return _n0;
   })();
   "#)
 }

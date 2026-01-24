@@ -22,7 +22,7 @@ pub fn gen_insert_node<'a>(oper: InsertNodeIRNode, context: &CodegenContext<'a>)
           SPAN,
           ast.vec_from_iter(elements.into_iter().map(|element| {
             ast
-              .expression_identifier(SPAN, ast.atom(&format!("n{}", element)))
+              .expression_identifier(SPAN, ast.atom(&format!("_n{}", element)))
               .into()
           })),
         )
@@ -31,21 +31,21 @@ pub fn gen_insert_node<'a>(oper: InsertNodeIRNode, context: &CodegenContext<'a>)
   } else {
     arguments.push(
       ast
-        .expression_identifier(SPAN, ast.atom(&format!("n{}", elements[0])))
+        .expression_identifier(SPAN, ast.atom(&format!("_n{}", elements[0])))
         .into(),
     )
   }
 
   arguments.push(
     ast
-      .expression_identifier(SPAN, ast.atom(&format!("n{parent}")))
+      .expression_identifier(SPAN, ast.atom(&format!("_n{parent}")))
       .into(),
   );
 
   if let Some(anchor) = anchor {
     arguments.push(
       ast
-        .expression_identifier(SPAN, ast.atom(&format!("n{anchor}")))
+        .expression_identifier(SPAN, ast.atom(&format!("_n{anchor}")))
         .into(),
     );
   }

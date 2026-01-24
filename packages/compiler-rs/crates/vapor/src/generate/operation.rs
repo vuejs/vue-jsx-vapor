@@ -161,7 +161,7 @@ pub fn gen_insertion_state<'a>(
         [
           Some(Argument::Identifier(ast.alloc_identifier_reference(
             SPAN,
-            ast.atom(&format!("n{}", parent)),
+            ast.atom(&format!("_n{}", parent)),
           ))),
           if let Some(anchor) = anchor {
             if anchor == -1 {
@@ -188,7 +188,7 @@ pub fn gen_insertion_state<'a>(
             } else {
               Some(Argument::Identifier(ast.alloc_identifier_reference(
                 SPAN,
-                ast.atom(&format!("n{anchor}")),
+                ast.atom(&format!("_n{anchor}")),
               )))
             }
           } else {

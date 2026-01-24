@@ -14,11 +14,11 @@ fn basic() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n0 = _createComponent(Comp, null, { $: [{ default: ({ foo }) => (() => {
-  		const n0 = _createNodes(() => foo + bar);
-  		return n0;
+  	const _n0 = _createComponent(Comp, null, { $: [{ default: ({ foo }) => (() => {
+  		const _n0 = _createNodes(() => foo + bar);
+  		return _n0;
   	})() }] }, true);
-  	return n0;
+  	return _n0;
   })();
   "#);
 }
@@ -35,13 +35,13 @@ fn function_expression_children() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const t0 = _template("<div></div>", true);
+  const _t0 = _template("<div></div>", true);
   (() => {
-  	const n0 = _createComponent(Comp, null, { $: [{ default: () => (() => {
-  		const n0 = t0();
-  		return n0;
+  	const _n0 = _createComponent(Comp, null, { $: [{ default: () => (() => {
+  		const _n0 = _t0();
+  		return _n0;
   	})() }] }, true);
-  	return n0;
+  	return _n0;
   })();
   "#);
 }
@@ -58,13 +58,13 @@ fn object_expression_children() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const t0 = _template("foo");
+  const _t0 = _template("foo");
   (() => {
-  	const n0 = _createComponent(Comp, null, { $: [{ default: () => (() => {
-  		const n0 = t0();
-  		return n0;
+  	const _n0 = _createComponent(Comp, null, { $: [{ default: () => (() => {
+  		const _n0 = _t0();
+  		return _n0;
   	})() }] }, true);
-  	return n0;
+  	return _n0;
   })();
   "#);
 }
@@ -81,13 +81,13 @@ fn object_expression_children_with_computed_property() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const t0 = _template("foo");
+  const _t0 = _template("foo");
   (() => {
-  	const n0 = _createComponent(Comp, null, { $: [() => ({ [foo]: () => (() => {
-  		const n0 = t0();
-  		return n0;
+  	const _n0 = _createComponent(Comp, null, { $: [() => ({ [foo]: () => (() => {
+  		const _n0 = _t0();
+  		return _n0;
   	})() })] }, true);
-  	return n0;
+  	return _n0;
   })();
   "#);
 }
@@ -111,24 +111,24 @@ fn v_slot_with_v_slots() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const n2 = _createComponent(Comp, null, { default: (_slotProps0) => {
-  		const n0 = _createComponent(Comp, { bar: () => _slotProps0.bar }, { $: [{
+  	const _n2 = _createComponent(Comp, null, { default: (_slotProps0) => {
+  		const _n0 = _createComponent(Comp, { bar: () => _slotProps0.bar }, { $: [{
   			bar: _slotProps0.bar,
   			default: ({ foo }) => (() => {
-  				const n0 = _createNodes(() => foo + bar, () => (() => {
-  					const n2 = _createComponent(Comp, null, { default: (_slotProps0) => {
-  						const n0 = _createNodes(() => bar, () => _slotProps0.baz);
-  						return n0;
+  				const _n0 = _createNodes(() => foo + bar, () => (() => {
+  					const _n2 = _createComponent(Comp, null, { default: (_slotProps0) => {
+  						const _n0 = _createNodes(() => bar, () => _slotProps0.baz);
+  						return _n0;
   					} }, true);
-  					return n2;
+  					return _n2;
   				})());
-  				return n0;
+  				return _n0;
   			})()
   		}] });
-  		const n1 = _createNodes(() => _slotProps0.bar);
-  		return [n0, n1];
+  		const _n1 = _createNodes(() => _slotProps0.bar);
+  		return [_n0, _n1];
   	} }, true);
-  	return n2;
+  	return _n2;
   })();
   "#);
 }

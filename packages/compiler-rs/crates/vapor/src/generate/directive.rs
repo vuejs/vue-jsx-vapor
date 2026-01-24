@@ -141,7 +141,7 @@ pub fn gen_directives_for_element<'a>(
       NONE,
       ast.vec_from_array([
         Argument::Identifier(
-          ast.alloc_identifier_reference(SPAN, ast.atom(&format!("n{}", element))),
+          ast.alloc_identifier_reference(SPAN, ast.atom(&format!("_n{}", element))),
         ),
         Argument::ArrayExpression(directives),
       ]),

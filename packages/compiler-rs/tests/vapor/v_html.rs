@@ -9,11 +9,11 @@ fn should_convert_v_html_to_inner_html() {
   let code = transform("<div v-html={code.value}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setHtml as _setHtml, template as _template } from "vue";
-  const t0 = _template("<div></div>", true);
+  const _t0 = _template("<div></div>", true);
   (() => {
-  	const n0 = t0();
-  	_renderEffect(() => _setHtml(n0, code.value));
-  	return n0;
+  	const _n0 = _t0();
+  	_renderEffect(() => _setHtml(_n0, code.value));
+  	return _n0;
   })();
   "#);
 }
@@ -25,9 +25,9 @@ fn work_with_component() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { renderEffect as _renderEffect, setBlockHtml as _setBlockHtml } from "vue";
   (() => {
-  	const n0 = _createComponent(Comp, null, null, true);
-  	_renderEffect(() => _setBlockHtml(n0, code.value));
-  	return n0;
+  	const _n0 = _createComponent(Comp, null, null, true);
+  	_renderEffect(() => _setBlockHtml(_n0, code.value));
+  	return _n0;
   })();
   "#);
 }

@@ -79,7 +79,7 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
   let mut arguments = ast.vec();
   arguments.push(
     ast
-      .expression_identifier(SPAN, ast.atom(&format!("n{}", oper.element)))
+      .expression_identifier(SPAN, ast.atom(&format!("_n{}", oper.element)))
       .into(),
   );
   let resolved_helper = get_runtime_helper(&tag, &key.content, modifier);
@@ -218,7 +218,7 @@ pub fn gen_dynamic_props<'a>(
   let mut arguments = ast.vec();
   arguments.push(
     ast
-      .expression_identifier(SPAN, ast.atom(&format!("n{}", oper.element)))
+      .expression_identifier(SPAN, ast.atom(&format!("_n{}", oper.element)))
       .into(),
   );
   arguments.push(ast.expression_array(SPAN, ast.vec_from_iter(values)).into());

@@ -139,7 +139,7 @@ pub fn gen_create_component<'a>(
       ast.vec1(ast.variable_declarator(
         SPAN,
         VariableDeclarationKind::Const,
-        ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("n{id}"))),
+        ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_n{id}"))),
         NONE,
         Some(ast.expression_call(
           SPAN,

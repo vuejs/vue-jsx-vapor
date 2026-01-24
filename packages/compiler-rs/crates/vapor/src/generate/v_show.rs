@@ -24,7 +24,7 @@ pub fn gen_v_show<'a>(oper: DirectiveIRNode<'a>, context: &'a CodegenContext<'a>
       NONE,
       ast.vec_from_array([
         ast
-          .expression_identifier(SPAN, ast.atom(&format!("n{element}")))
+          .expression_identifier(SPAN, ast.atom(&format!("_n{element}")))
           .into(),
         ast
           .expression_arrow_function(

@@ -23,7 +23,7 @@ pub fn gen_set_template_ref<'a>(
   let mut arguments = ast.vec();
   arguments.push(
     ast
-      .expression_identifier(SPAN, ast.atom(&format!("n{element}")))
+      .expression_identifier(SPAN, ast.atom(&format!("_n{element}")))
       .into(),
   );
   arguments.push(gen_expression(value, context, None, false).into());
@@ -31,7 +31,7 @@ pub fn gen_set_template_ref<'a>(
   if effect {
     arguments.push(
       ast
-        .expression_identifier(SPAN, ast.atom(&format!("r{element}")))
+        .expression_identifier(SPAN, ast.atom(&format!("_r{element}")))
         .into(),
     );
   } else if ref_for {
@@ -55,7 +55,7 @@ pub fn gen_set_template_ref<'a>(
         SPAN,
         AssignmentOperator::Assign,
         AssignmentTarget::AssignmentTargetIdentifier(
-          ast.alloc_identifier_reference(SPAN, ast.atom(&format!("r{element}"))),
+          ast.alloc_identifier_reference(SPAN, ast.atom(&format!("_r{element}"))),
         ),
         right,
       ),
@@ -76,7 +76,7 @@ pub fn gen_declare_old_ref<'a>(
     ast.vec1(ast.variable_declarator(
       SPAN,
       VariableDeclarationKind::Let,
-      ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("r{}", oper.id))),
+      ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_r{}", oper.id))),
       NONE,
       None,
       false,

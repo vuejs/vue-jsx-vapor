@@ -41,11 +41,11 @@ pub fn gen_self<'a>(
         ast.vec1(ast.variable_declarator(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("n{id}"))),
+          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_n{id}"))),
           NONE,
           Some(ast.expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&format!("t{template}"))),
+            ast.expression_identifier(SPAN, ast.atom(&format!("_t{template}"))),
             NONE,
             ast.vec(),
             false,
@@ -78,7 +78,7 @@ pub fn gen_self<'a>(
       context,
       context_block,
       statements.len(),
-      format!("n{}", id.unwrap_or(0)),
+      format!("_n{}", id.unwrap_or(0)),
     );
   }
 }
@@ -136,11 +136,11 @@ fn gen_children<'a>(
     // p for "placeholder" variables that are meant for possible reuse by
     // other access paths
     let variable = if let Some(id) = id {
-      format!("n{id}")
+      format!("_n{id}")
     } else {
       let temp_id = context_block.temp_id;
       context_block.temp_id = temp_id + 1;
-      format!("p{}", temp_id)
+      format!("_p{}", temp_id)
     };
 
     let expression_call = if let Some(prev) = prev {

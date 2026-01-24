@@ -30,7 +30,7 @@ pub fn gen_set_html<'a>(oper: SetHtmlIRNode<'a>, context: &'a CodegenContext<'a>
       NONE,
       ast.vec_from_array([
         ast
-          .expression_identifier(SPAN, ast.atom(&format!("n{element}",)))
+          .expression_identifier(SPAN, ast.atom(&format!("_n{element}",)))
           .into(),
         gen_expression(value, context, None, false).into(),
       ]),

@@ -46,7 +46,7 @@ pub fn gen_v_model<'a>(
         [
           Some(
             ast
-              .expression_identifier(SPAN, ast.atom(&format!("n{element}")))
+              .expression_identifier(SPAN, ast.atom(&format!("_n{element}")))
               .into(),
           ),
           // getter

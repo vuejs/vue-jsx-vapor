@@ -242,7 +242,7 @@ impl<'a> Transform<'a> {
             ast.vec1(ast.variable_declarator(
               SPAN,
               VariableDeclarationKind::Const,
-              ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("t{index}"))),
+              ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_t{index}"))),
               NONE,
               Some(ast.expression_call(
                 SPAN,

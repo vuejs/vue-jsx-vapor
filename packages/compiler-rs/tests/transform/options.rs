@@ -14,12 +14,12 @@ pub fn runtime_module_name() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "vue-jsx-vapor";
   import { template as _template, txt as _txt } from "vue";
-  const t0 = _template("<div> </div>", true);
+  const _t0 = _template("<div> </div>", true);
   (() => {
-  	const n0 = t0();
-  	const x0 = _txt(n0);
-  	_setNodes(x0, () => foo);
-  	return n0;
+  	const _n0 = _t0();
+  	const _x0 = _txt(_n0);
+  	_setNodes(_x0, () => foo);
+  	return _n0;
   })();
   "#);
 }

@@ -29,7 +29,11 @@ pub fn gen_set_text<'a>(oper: SetTextIRNode<'a>, context: &'a CodegenContext<'a>
         SPAN,
         ast.atom(&format!(
           "{}{}",
-          if generated && !is_component { "x" } else { "n" },
+          if generated && !is_component {
+            "_x"
+          } else {
+            "_n"
+          },
           element
         )),
       )
@@ -69,7 +73,7 @@ pub fn gen_get_text_child<'a>(
         ast.variable_declarator(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("x{}", oper.parent))),
+          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_x{}", oper.parent))),
           NONE,
           Some(
             ast.expression_call(
@@ -78,7 +82,7 @@ pub fn gen_get_text_child<'a>(
               NONE,
               ast.vec1(
                 ast
-                  .expression_identifier(SPAN, ast.atom(&format!("n{}", oper.parent)))
+                  .expression_identifier(SPAN, ast.atom(&format!("_n{}", oper.parent)))
                   .into(),
               ),
               false,
@@ -114,9 +118,9 @@ pub fn gen_set_nodes<'a>(
         ast.atom(&format!(
           "{}{}",
           if generated {
-            "x".to_string()
+            "_x".to_string()
           } else {
-            "n".to_string()
+            "_n".to_string()
           },
           element
         )),
@@ -156,7 +160,7 @@ pub fn gen_create_nodes<'a>(
     ast.vec1(ast.variable_declarator(
       SPAN,
       VariableDeclarationKind::Const,
-      ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("n{id}"))),
+      ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_n{id}"))),
       NONE,
       Some(ast.expression_call(
         SPAN,
