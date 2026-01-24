@@ -19,45 +19,55 @@ use common::check::is_svg_tag;
 pub struct HelperConfig {
   name: String,
   need_key: bool,
+  is_svg: bool,
 }
 
-fn helpers(name: &str) -> HelperConfig {
+fn helpers(name: &str, is_svg: bool) -> HelperConfig {
   match name {
     "setText" => HelperConfig {
       name: "setText".to_string(),
       need_key: false,
+      is_svg,
     },
     "setHtml" => HelperConfig {
       name: "setHtml".to_string(),
       need_key: false,
+      is_svg,
     },
     "setClass" => HelperConfig {
       name: "setClass".to_string(),
       need_key: false,
+      is_svg,
     },
     "setStyle" => HelperConfig {
       name: "setStyle".to_string(),
       need_key: false,
+      is_svg,
     },
     "setValue" => HelperConfig {
       name: "setValue".to_string(),
       need_key: false,
+      is_svg,
     },
     "setAttr" => HelperConfig {
       name: "setAttr".to_string(),
       need_key: true,
+      is_svg,
     },
     "setProp" => HelperConfig {
       name: "setProp".to_string(),
       need_key: true,
+      is_svg,
     },
     "setDOMProp" => HelperConfig {
       name: "setDOMProp".to_string(),
       need_key: true,
+      is_svg,
     },
     "setDynamicProps" => HelperConfig {
       name: "setDynamicProps".to_string(),
       need_key: true,
+      is_svg,
     },
     _ => panic!("Unsupported helper name"),
   }
@@ -87,6 +97,9 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
     arguments.push(gen_expression(key, context, None, false).into());
   }
   arguments.push(gen_prop_value(values, context).into());
+  if resolved_helper.is_svg {
+    arguments.push(ast.expression_boolean_literal(SPAN, true).into());
+  }
 
   ast.statement_expression(
     SPAN,
@@ -110,19 +123,24 @@ fn get_runtime_helper(tag: &str, key: &str, modifier: Option<String>) -> HelperC
       if let Some(result) = get_special_helper(key, &tag_name) {
         result
       } else {
-        helpers("setDOMProp")
+        helpers("setDOMProp", false)
       }
     } else {
-      helpers("setAttr")
+      helpers("setAttr", false)
     };
   }
 
-  // 1. special handling for value / style / class / textContent /  innerHTML
+  // 1. SVG: always attribute
+  if is_svg_tag(tag) {
+    return helpers("setAttr", true);
+  }
+
+  // 2. special handling for value / style / class / textContent /  innerHTML
   if let Some(helper) = get_special_helper(key, &tag_name) {
     return helper;
   };
 
-  // 2. Aria DOM properties shared between all Elements in
+  // 3. Aria DOM properties shared between all Elements in
   //    https://developer.mozilla.org/en-US/docs/Web/API/Element
   if key.starts_with("aria")
     && key
@@ -131,24 +149,18 @@ fn get_runtime_helper(tag: &str, key: &str, modifier: Option<String>) -> HelperC
       .map(|c| c.is_ascii_uppercase())
       .unwrap_or(false)
   {
-    return helpers("setDOMProp");
-  }
-
-  // 3. SVG: always attribute
-  if is_svg_tag(tag) {
-    // TODO pass svg flag
-    return helpers("setAttr");
+    return helpers("setDOMProp", false);
   }
 
   // 4. respect shouldSetAsAttr used in vdom and setDynamicProp for consistency
   //    also fast path for presence of hyphen (covers data-* and aria-*)
   if should_set_as_attr(&tag_name, key) || key.contains("-") {
-    return helpers("setAttr");
+    return helpers("setAttr", false);
   }
 
   // 5. Fallback to setDOMProp, which has a runtime `key in el` check to
   // ensure behavior consistency with vdom
-  helpers("setProp")
+  helpers("setProp", false)
 }
 
 // The following attributes must be set as attribute
@@ -192,11 +204,11 @@ fn can_set_value_directly(tag_name: &str) -> bool {
 fn get_special_helper(key_name: &str, tag_name: &str) -> Option<HelperConfig> {
   // special case for 'value' property
   match key_name {
-    "value" if can_set_value_directly(tag_name) => Some(helpers("setValue")),
-    "class" => Some(helpers("setClass")),
-    "style" => Some(helpers("setStyle")),
-    "innerHTML" => Some(helpers("setHtml")),
-    "textContent" => Some(helpers("setText")),
+    "value" if can_set_value_directly(tag_name) => Some(helpers("setValue", false)),
+    "class" => Some(helpers("setClass", false)),
+    "style" => Some(helpers("setStyle", false)),
+    "innerHTML" => Some(helpers("setHtml", false)),
+    "textContent" => Some(helpers("setText", false)),
     _ => None,
   }
 }
@@ -207,6 +219,7 @@ pub fn gen_dynamic_props<'a>(
   context: &'a CodegenContext<'a>,
 ) -> Statement<'a> {
   let ast = &context.ast;
+  let is_svg = is_svg_tag(&oper.tag);
   let values = oper.props.into_iter().map(|props| {
     match props {
       Either3::A(props) => gen_literal_object_props(props, context).into(),
@@ -223,6 +236,11 @@ pub fn gen_dynamic_props<'a>(
   );
   arguments.push(ast.expression_array(SPAN, ast.vec_from_iter(values)).into());
   if oper.root {
+    arguments.push(ast.expression_boolean_literal(SPAN, true).into());
+  } else if is_svg {
+    arguments.push(ast.expression_boolean_literal(SPAN, false).into());
+  }
+  if is_svg {
     arguments.push(ast.expression_boolean_literal(SPAN, true).into());
   }
   ast.statement_expression(

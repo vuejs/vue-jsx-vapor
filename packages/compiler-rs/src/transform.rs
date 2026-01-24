@@ -236,32 +236,58 @@ impl<'a> Transform<'a> {
           let template_literal =
             Argument::StringLiteral(ast.alloc_string_literal(SPAN, ast.atom(&template.0), None));
 
-          Statement::VariableDeclaration(ast.alloc_variable_declaration(
-            SPAN,
-            VariableDeclarationKind::Const,
-            ast.vec1(ast.variable_declarator(
+          Statement::VariableDeclaration(
+            ast.alloc_variable_declaration(
               SPAN,
               VariableDeclarationKind::Const,
-              ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_t{index}"))),
-              NONE,
-              Some(ast.expression_call(
-                SPAN,
-                ast.expression_identifier(SPAN, ast.atom("_template")),
-                NONE,
-                if template.1 {
-                  ast.vec_from_array([
-                    template_literal,
-                    Argument::BooleanLiteral(ast.alloc_boolean_literal(SPAN, template.1)),
-                  ])
-                } else {
-                  oxc_allocator::Vec::from_array_in([template_literal], ast.allocator)
-                },
-                false,
-              )),
+              ast.vec1(
+                ast.variable_declarator(
+                  SPAN,
+                  VariableDeclarationKind::Const,
+                  ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_t{index}"))),
+                  NONE,
+                  Some(
+                    ast.expression_call(
+                      SPAN,
+                      ast.expression_identifier(SPAN, ast.atom("_template")),
+                      NONE,
+                      ast.vec_from_iter(
+                        [
+                          Some(template_literal),
+                          if template.1 {
+                            Some(ast.expression_boolean_literal(SPAN, template.1).into())
+                          } else if template.2 > 0 {
+                            Some(ast.expression_boolean_literal(SPAN, false).into())
+                          } else {
+                            None
+                          },
+                          if template.2 > 0 {
+                            Some(
+                              ast
+                                .expression_numeric_literal(
+                                  SPAN,
+                                  template.2 as f64,
+                                  None,
+                                  oxc_ast::ast::NumberBase::Hex,
+                                )
+                                .into(),
+                            )
+                          } else {
+                            None
+                          },
+                        ]
+                        .into_iter()
+                        .flatten(),
+                      ),
+                      false,
+                    ),
+                  ),
+                  false,
+                ),
+              ),
               false,
-            )),
-            false,
-          ))
+            ),
+          )
         })
         .collect::<Vec<_>>();
       statements.extend(template_statements);

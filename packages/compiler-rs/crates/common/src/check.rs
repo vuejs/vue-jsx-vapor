@@ -288,6 +288,57 @@ pub fn is_svg_tag(tag_name: &str) -> bool {
   SVG_TAGS.contains(tag_name)
 }
 
+// https://www.w3.org/TR/mathml4/ (content elements excluded)
+static MATH_TAGS: phf::Set<&'static str> = phf_set! {
+  "annotation",
+  "annotation-xml",
+  "maction",
+  "maligngroup",
+  "malignmark",
+  "math",
+  "menclose",
+  "merror",
+  "mfenced",
+  "mfrac",
+  "mfraction",
+  "mglyph",
+  "mi",
+  "mlabeledtr",
+  "mlongdiv",
+  "mmultiscripts",
+  "mn",
+  "mo",
+  "mover",
+  "mpadded",
+  "mphantom",
+  "mprescripts",
+  "mrow",
+  "ms",
+  "mscarries",
+  "mscarry",
+  "msgroup",
+  "msline",
+  "mspace",
+  "msqrt",
+  "msrow",
+  "mstack",
+  "mstyle",
+  "msub",
+  "msubsup",
+  "msup",
+  "mtable",
+  "mtd",
+  "mtext",
+  "mtr",
+  "munder",
+  "munderover",
+  "none",
+  "semantics"
+};
+pub fn is_math_ml_tag(tag_name: &str) -> bool {
+  MATH_TAGS.contains(tag_name)
+}
+
 pub fn is_jsx_component<'a>(node: &'a JSXElement<'a>) -> bool {
   match &node.opening_element.name {
     JSXElementName::Identifier(name) => !is_html_tag(&name.name) && !is_svg_tag(&name.name),

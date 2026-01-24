@@ -397,3 +397,39 @@ fn invalid_html_nesting() {
   })();
   "#);
 }
+
+#[test]
+fn svg() {
+  let code = transform(r#"<svg><circle r="40"></circle></svg>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<svg><circle r=\"40\"></circle></svg>", true, 1);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#)
+}
+
+#[test]
+fn math_ml() {
+  let code = transform(r#"<math><mrow><mi>x</mi></mrow></math>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("x");
+  const _t1 = _template("<math></math>", true, 2);
+  (() => {
+  	const _n3 = _t1();
+  	_setInsertionState(_n3, null, true);
+  	const _n2 = _createComponent(mrow, null, { default: () => {
+  		const _n1 = _createComponent(mi, null, { default: () => {
+  			const _n0 = _t0();
+  			return _n0;
+  		} });
+  		return _n1;
+  	} });
+  	return _n3;
+  })();
+  "#)
+}

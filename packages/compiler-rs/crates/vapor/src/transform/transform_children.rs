@@ -12,7 +12,7 @@ use crate::{
 use common::{
   ast::RootNode,
   check::{is_fragment_node, is_jsx_component},
-  text::is_empty_text,
+  text::{get_tag_name, is_empty_text},
 };
 
 /// # SAFETY
@@ -50,6 +50,7 @@ pub unsafe fn transform_children<'a>(
       children.remove(i);
       continue;
     }
+    let mut tag = String::new();
     let exit_context = context.create(
       if let JSXChild::Text(_) = child
         && let Some(next) = unsafe { &mut *children_ptr }.get_mut(1)
@@ -61,6 +62,9 @@ pub unsafe fn transform_children<'a>(
       {
         child.clone_in(context.allocator)
       } else {
+        if let JSXChild::Element(child) = child {
+          tag = get_tag_name(&child.opening_element.name, context.source_text)
+        }
         child.take_in(context.allocator)
       },
       i as i32,
@@ -75,7 +79,7 @@ pub unsafe fn transform_children<'a>(
     let child_dynamic = &mut context_block.dynamic;
     let flags = child_dynamic.flags;
     if is_fragment_or_component {
-      context.register_template(child_dynamic);
+      context.register_template(child_dynamic, Some(tag));
       context.reference(child_dynamic);
 
       if flags & DynamicFlag::NonTemplate as i32 == 0 || flags & DynamicFlag::Insert as i32 != 0 {

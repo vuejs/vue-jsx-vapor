@@ -197,3 +197,31 @@ fn number_value() {
   })();
   "#);
 }
+
+#[test]
+fn class_with_svg_elements() {
+  let code = transform(r#"<svg class={cls}/>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setAttr as _setAttr, template as _template } from "vue";
+  const _t0 = _template("<svg></svg>", true, 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setAttr(_n0, "class", cls, true));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn bind_with_svg_elements() {
+  let code = transform(r#"<svg {...obj}/>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
+  const _t0 = _template("<svg></svg>", true, 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [obj], true, true));
+  	return _n0;
+  })();
+  "#);
+}

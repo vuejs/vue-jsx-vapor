@@ -38,7 +38,7 @@ use crate::{
   },
 };
 
-use common::check::{is_constant_node, is_template};
+use common::check::{is_constant_node, is_math_ml_tag, is_svg_tag, is_template};
 
 pub struct DirectiveTransformResult<'a> {
   pub key: SimpleExpressionNode<'a>,
@@ -198,7 +198,7 @@ impl<'a> TransformContext<'a> {
     context_block.operation.insert(index, operation);
   }
 
-  pub fn push_template(&self, content: String) -> i32 {
+  pub fn push_template(&self, content: String, tag: Option<String>) -> i32 {
     let ir = self.ir.borrow_mut();
     let root_template_index = ir.root_template_index;
     let len = self.options.templates.borrow().len();
@@ -212,16 +212,31 @@ impl<'a> TransformContext<'a> {
     if let Some(existing) = existing {
       return existing as i32;
     }
-    self.options.templates.borrow_mut().push((content, root));
+    let namespace = if let Some(tag) = tag {
+      if is_svg_tag(&tag) {
+        1
+      } else if is_math_ml_tag(&tag) {
+        2
+      } else {
+        0
+      }
+    } else {
+      0
+    };
+    self
+      .options
+      .templates
+      .borrow_mut()
+      .push((content, root, namespace));
     len as i32
   }
 
-  pub fn register_template(&self, dynamic: &mut IRDynamicInfo) -> i32 {
+  pub fn register_template(&self, dynamic: &mut IRDynamicInfo, tag: Option<String>) -> i32 {
     let template = self.template.borrow();
     if template.is_empty() {
       return -1;
     }
-    let id = self.push_template(template.clone());
+    let id = self.push_template(template.clone(), tag);
     dynamic.template = Some(id);
     id
   }
@@ -243,7 +258,7 @@ impl<'a> TransformContext<'a> {
 
     (Box::new(move || {
       // exit
-      self.register_template(&mut context_block.dynamic);
+      self.register_template(&mut context_block.dynamic, None);
       let return_block = mem::take(context_block);
       *context_block = block;
       *self.template.borrow_mut() = template;
@@ -429,7 +444,7 @@ impl<'a> TransformContext<'a> {
       }
 
       if is_root {
-        self.register_template(&mut context_block.dynamic);
+        self.register_template(&mut context_block.dynamic, None);
       }
     }
   }

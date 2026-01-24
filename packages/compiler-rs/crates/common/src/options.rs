@@ -36,7 +36,7 @@ pub struct Hmr {
 pub struct TransformOptions<'a> {
   pub allocator: Allocator,
   pub semantic: RefCell<Semantic<'a>>,
-  pub templates: RefCell<Vec<(String, bool)>>,
+  pub templates: RefCell<Vec<(String, bool, i32)>>,
   pub helpers: RefCell<BTreeSet<String>>,
   pub delegates: RefCell<BTreeSet<String>>,
   pub hoists: RefCell<Vec<Expression<'a>>>,

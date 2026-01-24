@@ -139,6 +139,7 @@ pub fn transform_native_element<'a>(
           props,
           element,
           root: single_root,
+          tag: tag.clone(),
         }),
         Some(get_effect_index),
         Some(get_operation_index),
@@ -196,7 +197,7 @@ pub fn transform_native_element<'a>(
   {
     let dynamic = &mut context_block.dynamic;
     context.reference(dynamic);
-    dynamic.template = Some(context.push_template(template));
+    dynamic.template = Some(context.push_template(template, Some(tag)));
     dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
   } else {
     *context.template.borrow_mut() = format!("{}{}", context.template.borrow(), template);
