@@ -8,10 +8,7 @@ use common::{
 };
 
 /// # SAFETY
-pub unsafe fn transform_children<'a>(
-  node: &mut JSXChild<'a>,
-  context: &'a TransformContext<'a>,
-) -> Option<Box<dyn FnOnce() + 'a>> {
+pub unsafe fn transform_children<'a>(node: &mut JSXChild<'a>, context: &'a TransformContext<'a>) {
   unsafe {
     let is_fragment_or_component = is_fragment_node(node)
       || match node {
@@ -20,7 +17,7 @@ pub unsafe fn transform_children<'a>(
       };
 
     if !matches!(&node, JSXChild::Element(_)) && !is_fragment_or_component {
-      return None;
+      return;
     }
 
     let children = match node {
@@ -36,6 +33,5 @@ pub unsafe fn transform_children<'a>(
         true
       }
     });
-    None
   }
 }

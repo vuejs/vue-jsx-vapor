@@ -18,6 +18,7 @@ use std::{cell::RefCell, collections::HashSet, rc::Rc};
 pub mod cache_static;
 pub mod transform_children;
 pub mod transform_element;
+pub mod transform_slot_outlet;
 pub mod transform_text;
 pub mod transform_transition;
 pub mod utils;

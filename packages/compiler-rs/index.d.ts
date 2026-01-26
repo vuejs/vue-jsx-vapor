@@ -11,6 +11,7 @@ export declare const enum ErrorCodes {
   VForNoExpression = 31,
   VForMalformedExpression = 32,
   VOnNoExpression = 35,
+  VSlotUnexpectedDirectiveOnSlotOutlet = 36,
   VSlotMixedSlotUsage = 37,
   VSlotDuplicateSlotNames = 38,
   VSlotExtraneousDefaultSlotChildren = 39,

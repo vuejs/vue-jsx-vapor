@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use common::{
   check::{get_directive_name, is_jsx_component},
   patch_flag::PatchFlags,
-  text::is_empty_text,
+  text::{get_tag_name, is_empty_text},
   walk::WalkIdentifiers,
 };
 use napi::{Either, bindgen_prelude::Either3};
@@ -33,6 +33,7 @@ pub fn cache_static<'a>(
     && children.len() == 1
     && let JSXChild::Element(child) = &children[0]
     && !is_jsx_component(child)
+    && get_tag_name(&child.opening_element.name, context.source_text) != "slot"
   {
     true
   } else {

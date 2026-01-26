@@ -13,9 +13,9 @@ use crate::{
   ast::{NodeTypes, VNodeCall},
   transform::{
     DirectiveTransformResult, Directives, TransformContext, cache_static::get_constant_type,
-    transform_transition::transform_transition, v_bind::transform_v_bind, v_html::transform_v_html,
-    v_model::transform_v_model, v_on::transform_v_on, v_show::transform_v_show,
-    v_slot::build_slots, v_text::transform_v_text,
+    transform_slot_outlet::transform_slot_outlet, transform_transition::transform_transition,
+    v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
+    v_on::transform_v_on, v_show::transform_v_show, v_slot::build_slots, v_text::transform_v_text,
   },
 };
 
@@ -75,6 +75,10 @@ pub unsafe fn transform_element<'a>(
   // The goal of the transform is to create a codegenNode implementing the
   // VNodeCall interface.
   let mut vnode_tag = get_tag_name(&node.opening_element.name, context.source_text);
+  if vnode_tag == "slot" {
+    transform_slot_outlet(directives, node.as_mut(), &*context);
+    return None;
+  }
   if matches!(vnode_tag.as_ref(), "Transition" | "TransitionGroup") {
     transform_transition(node, context);
   }

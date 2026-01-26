@@ -12,6 +12,7 @@ pub enum ErrorCodes {
   VForNoExpression = 31,
   VForMalformedExpression = 32,
   VOnNoExpression = 35,
+  VSlotUnexpectedDirectiveOnSlotOutlet = 36,
   VSlotMixedSlotUsage = 37,
   VSlotDuplicateSlotNames = 38,
   VSlotExtraneousDefaultSlotChildren = 39,
@@ -48,6 +49,10 @@ pub static ERROR_MESSAGES: LazyLock<HashMap<ErrorCodes, &str>> = LazyLock::new(|
       "v-for has invalid expression.",
     ),
     (ErrorCodes::VOnNoExpression, "v-on is missing expression."),
+    (
+      ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet,
+      "Unexpected custom directive on <slot> outlet.",
+    ),
     (
       ErrorCodes::VSlotMixedSlotUsage,
       "Mixed v-slot usage on both the component and nested <template>. When there are multiple named slots, all slots should use <template> syntax to avoid scope ambiguity.",
