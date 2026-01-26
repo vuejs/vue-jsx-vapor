@@ -162,5 +162,5 @@ fn process_slot_outlet<'a>(
     }
   }
 
-  return (slot_name, slot_props);
+  (slot_name, slot_props)
 }

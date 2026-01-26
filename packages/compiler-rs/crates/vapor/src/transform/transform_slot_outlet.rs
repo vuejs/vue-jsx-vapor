@@ -13,7 +13,8 @@ use common::{
   directive::Directives, error::ErrorCodes, expression::SimpleExpressionNode, text::is_empty_text,
 };
 
-pub fn transform_slot_outlet<'a>(
+/// # SAFETY
+pub unsafe fn transform_slot_outlet<'a>(
   directives: &Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
@@ -91,11 +92,7 @@ pub fn transform_slot_outlet<'a>(
   });
 
   Some(Box::new(move || {
-    let fallback = if let Some(exit_block) = exit_block {
-      Some(exit_block())
-    } else {
-      None
-    };
+    let fallback = exit_block.map(|exit_block| exit_block());
     context_block.dynamic.operation = Some(Box::new(OperationNode::SlotOutletNode(
       SlotOutletNodeIRNode {
         id,

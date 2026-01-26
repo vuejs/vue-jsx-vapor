@@ -71,15 +71,17 @@ pub unsafe fn transform_element<'a>(
 
   let tag = get_tag_name(&node.opening_element.name, context.source_text);
   if tag == "slot" {
-    return transform_slot_outlet(
-      directives,
-      context_node,
-      context,
-      context_block,
-      parent_node,
-      get_effect_index,
-      get_operation_index,
-    );
+    return unsafe {
+      transform_slot_outlet(
+        directives,
+        context_node,
+        context,
+        context_block,
+        parent_node,
+        get_effect_index,
+        get_operation_index,
+      )
+    };
   } else if matches!(tag.as_ref(), "VaporTransition" | "VaporTransitionGroup") {
     transform_transition(node, context);
   }
