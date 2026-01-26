@@ -205,7 +205,7 @@ fn condition_expression() {
   let code = transform(
     r#"<div>
       <div v-if={foo}/>
-      {foo ? <div>{foo}bar</div> : bar}
+      {foo ? (<div>{foo}bar</div>) : bar}
     </div>"#,
     Some(TransformOptions {
       interop: true,
@@ -227,7 +227,7 @@ fn condition_expression() {
 #[test]
 fn logical_expression() {
   let code = transform(
-    r#"<div>{foo && <div>{foo}</div>}</div>"#,
+    r#"<div>{foo && (<div>{foo}</div>)}</div>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -247,7 +247,7 @@ fn logical_expression() {
 #[test]
 fn logical_expression_or() {
   let code = transform(
-    r#"<div>{foo || <div>{foo}</div>}</div>"#,
+    r#"<div>{foo || (<div>{foo}</div>)}</div>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -267,7 +267,7 @@ fn logical_expression_or() {
 #[test]
 fn logical_expression_coalesce() {
   let code = transform(
-    r#"<div>{foo ?? <div>{foo}</div>}</div>"#,
+    r#"<div>{foo ?? (<div>{foo}</div>)}</div>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()

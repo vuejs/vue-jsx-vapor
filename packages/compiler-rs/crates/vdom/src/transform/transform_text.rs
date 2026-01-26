@@ -245,6 +245,7 @@ fn transform_branch<'a>(
   context: &'a TransformContext<'a>,
 ) {
   let ast = &context.ast;
+  let exp = exp.without_parentheses_mut().get_inner_expression_mut();
   let span = exp.span();
   let mut branch = if let Expression::JSXElement(branch) = exp {
     JSXChild::Element(branch.take_in_box(context.allocator))
