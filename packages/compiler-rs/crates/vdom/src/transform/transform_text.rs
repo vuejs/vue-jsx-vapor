@@ -98,7 +98,7 @@ pub unsafe fn transform_text<'a>(
             *exp =
               transform_logical_expression(logical_exp, unsafe { &mut *context_node }, context);
             continue;
-          } else if exp.is_literal() || context.static_expressions.borrow().contains(&exp.span()) {
+          } else if exp.is_literal() {
             call_args.push(
               context
                 .process_expression(child.expression.to_expression_mut())
@@ -182,10 +182,6 @@ fn transform_logical_expression<'a>(
     .or_default();
   let key = v_if_map.0;
   v_if_map.0 += 2;
-  context
-    .static_expressions
-    .borrow_mut()
-    .push(node.left.span());
   transform_branch(&mut node.right, key, parent, context);
 
   // {foo() ?? bar} => (_temp = foo(), _temp == null) ? bar : _temp

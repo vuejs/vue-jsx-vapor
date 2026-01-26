@@ -72,7 +72,6 @@ pub struct TransformContext<'a> {
   pub has_temp: RefCell<bool>,
   pub has_slot: RefCell<bool>,
   pub reference_expressions: RefCell<HashMap<Span, bool>>,
-  pub static_expressions: RefCell<Vec<Span>>,
 }
 
 impl<'a> TransformContext<'a> {
@@ -91,7 +90,6 @@ impl<'a> TransformContext<'a> {
       components: RefCell::new(IndexSet::new()),
       directives: RefCell::new(IndexSet::new()),
       reference_expressions: RefCell::new(HashMap::new()),
-      static_expressions: RefCell::new(vec![]),
       has_temp: RefCell::new(false),
       has_slot: RefCell::new(false),
       options,

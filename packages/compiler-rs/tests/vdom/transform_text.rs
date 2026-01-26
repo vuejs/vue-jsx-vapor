@@ -239,7 +239,7 @@ fn logical_expression() {
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
   	let _temp;
-  	return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : (_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(_temp)], 64))]);
+  	return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : (_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(() => _temp)], 64))]);
   })();
   "#)
 }
@@ -259,7 +259,7 @@ fn logical_expression_or() {
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
   	let _temp;
-  	return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp) ? (_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(_temp)], 64)) : (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)]))]);
+  	return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp) ? (_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(() => _temp)], 64)) : (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)]))]);
   })();
   "#)
 }
@@ -279,7 +279,7 @@ fn logical_expression_coalesce() {
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
   	let _temp;
-  	return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp == null) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : (_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(_temp)], 64))]);
+  	return _openBlock(), _createElementBlock("div", null, [(_temp = foo, _temp == null) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_normalizeVNode(() => foo)])) : (_openBlock(), _createBlock(_Fragment, { key: 1 }, [_normalizeVNode(() => _temp)], 64))]);
   })();
   "#)
 }
