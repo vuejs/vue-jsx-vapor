@@ -416,19 +416,19 @@ fn math_ml() {
   let code = transform(r#"<math><mrow><mi>x</mi></mrow></math>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { setInsertionState as _setInsertionState, template as _template } from "vue";
+  import { setInsertionState as _setInsertionState, template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("x");
   const _t1 = _template("<math></math>", true, 2);
   (() => {
   	const _n3 = _t1();
   	_setInsertionState(_n3, null, true);
-  	const _n2 = _createComponent(mrow, null, { default: () => {
+  	const _n2 = _createComponent(mrow, null, { default: _withVaporCtx(() => {
   		const _n1 = _createComponent(mi, null, { default: () => {
   			const _n0 = _t0();
   			return _n0;
   		} });
   		return _n1;
-  	} });
+  	}) });
   	return _n3;
   })();
   "#)

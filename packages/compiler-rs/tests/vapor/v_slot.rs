@@ -77,7 +77,7 @@ fn on_component_named_slot_multiple() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { template as _template } from "vue";
+  import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("foo");
   (() => {
   	const _n5 = _createComponent(Comp, null, {
@@ -85,13 +85,13 @@ fn on_component_named_slot_multiple() {
   			const _n0 = _t0();
   			return _n0;
   		},
-  		right: () => {
+  		right: _withVaporCtx(() => {
   			const _n3 = _createComponent(Comp, null, { left: () => {
   				const _n2 = _t0();
   				return _n2;
   			} });
   			return _n3;
-  		}
+  		})
   	}, true);
   	return _n5;
   })();
@@ -199,15 +199,16 @@ fn nested_slots_scoping() {
   .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n4 = _createComponent(Comp, null, { default: (_slotProps0) => {
+  	const _n4 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
   		const _n1 = _createComponent(Inner, null, { default: (_slotProps1) => {
   			const _n0 = _createNodes(() => _slotProps0.foo + _slotProps1.bar + baz);
   			return _n0;
   		} });
   		const _n2 = _createNodes(() => _slotProps0.foo + bar + baz);
   		return [_n1, _n2];
-  	} }, true);
+  	}) }, true);
   	return _n4;
   })();
   "#);
@@ -337,11 +338,12 @@ fn nested_component_slot() {
   let code = transform("<A><B/></A>", None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n1 = _createComponent(A, null, { default: () => {
+  	const _n1 = _createComponent(A, null, { default: _withVaporCtx(() => {
   		const _n0 = _createComponent(B);
   		return _n0;
-  	} }, true);
+  	}) }, true);
   	return _n1;
   })();
   "#);

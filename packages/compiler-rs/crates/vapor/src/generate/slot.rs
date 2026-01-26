@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use indexmap::IndexMap;
-use napi::bindgen_prelude::{Either, Either4};
+use napi::bindgen_prelude::{Either, Either4, Either17};
 use oxc_ast::{
   NONE,
   ast::{Expression, FormalParameterKind, PropertyKind},
@@ -12,7 +12,7 @@ use crate::{
   generate::{CodegenContext, block::gen_block, expression::gen_expression},
   ir::{
     component::{IRSlotDynamicBasic, IRSlotDynamicConditional, IRSlots},
-    index::{BlockIRNode, IRFor},
+    index::{BlockIRNode, IRDynamicInfo, IRFor, IfIRNode, OperationNode},
   },
 };
 
@@ -408,7 +408,9 @@ fn gen_slot_block_with_props<'a>(
     );
   }
 
-  let block_fn = context.with_id(
+  let needs_vapor_ctx = has_component_or_slot_in_block(&oper);
+
+  let mut block_fn = context.with_id(
     || {
       gen_block(
         oper,
@@ -425,5 +427,97 @@ fn gen_slot_block_with_props<'a>(
   if let Some(exit_scope) = exit_scope {
     exit_scope();
   };
+
+  if needs_vapor_ctx {
+    // wrap with withVaporCtx to track slot owner for:
+    // 1. createSlot to get correct rawSlots in forwarded slots
+    // 2. scopeId inheritance for components created inside slots
+    // Skip if slot content has no components or slot outlets
+    block_fn = ast.expression_call(
+      SPAN,
+      ast.expression_identifier(SPAN, ast.atom(&context.helper("withVaporCtx"))),
+      NONE,
+      ast.vec1(block_fn.into()),
+      false,
+    );
+  }
+
   block_fn
+}
+
+/**
+ * Check if a slot block needs withVaporCtx wrapper.
+ * Returns true if the block contains:
+ * - Component creation (needs scopeId inheritance)
+ * - Slot outlet (needs rawSlots from slot owner)
+ */
+fn has_component_or_slot_in_block(block: &BlockIRNode) -> bool {
+  // Check operations array
+  if has_component_or_slot_in_operations(&block.operation) {
+    return true;
+  }
+  // Check dynamic children (components are often stored here)
+  has_component_or_slot_in_dynamic(&block.dynamic)
+}
+
+fn has_component_or_slot_in_dynamic(dynamic: &IRDynamicInfo) -> bool {
+  // Check operation in this dynamic node
+  if let Some(operation) = &dynamic.operation {
+    match operation.as_ref() {
+      Either17::A(op) => {
+        if has_component_or_slot_in_if(op) {
+          return true;
+        }
+      }
+      Either17::B(op) => {
+        if has_component_or_slot_in_block(&op.render) {
+          return true;
+        }
+      }
+      Either17::N(_) => return true,
+      _ => (),
+    }
+  }
+  // Recursively check children
+  for child in dynamic.children.iter() {
+    if has_component_or_slot_in_dynamic(child) {
+      return true;
+    }
+  }
+  false
+}
+
+fn has_component_or_slot_in_operations(operations: &Vec<OperationNode>) -> bool {
+  for op in operations.iter() {
+    match op {
+      Either17::N(_) => return true,
+      Either17::A(op) => {
+        if has_component_or_slot_in_if(op) {
+          return true;
+        }
+      }
+      Either17::B(op) => {
+        if has_component_or_slot_in_block(&op.render) {
+          return true;
+        }
+      }
+      _ => (),
+    }
+  }
+  false
+}
+
+fn has_component_or_slot_in_if(node: &IfIRNode) -> bool {
+  if has_component_or_slot_in_block(&node.positive) {
+    return true;
+  }
+  if let Some(negative) = &node.negative {
+    return match negative.as_ref() {
+      // BlockIRNode
+      Either::A(block) => has_component_or_slot_in_block(block),
+      // nested IfIRNode
+      Either::B(if_ir_node) => has_component_or_slot_in_if(if_ir_node),
+    };
+  }
+  false
 }
