@@ -399,6 +399,25 @@ fn invalid_html_nesting() {
 }
 
 #[test]
+fn custom_element() {
+  let code = transform(
+    r#"<my-custom-element></my-custom-element>"#,
+    Some(TransformOptions {
+      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createPlainElement as _createPlainElement } from "vue";
+  (() => {
+  	const _n0 = _createPlainElement("my-custom-element", null, null, true);
+  	return _n0;
+  })();
+  "#)
+}
+
+#[test]
 fn svg() {
   let code = transform(r#"<svg><circle r="40"></circle></svg>"#, None).code;
   assert_snapshot!(code, @r#"
@@ -415,21 +434,11 @@ fn svg() {
 fn math_ml() {
   let code = transform(r#"<math><mrow><mi>x</mi></mrow></math>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { setInsertionState as _setInsertionState, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("x");
-  const _t1 = _template("<math></math>", true, 2);
+  import { template as _template } from "vue";
+  const _t0 = _template("<math><mrow><mi>x</mi></mrow></math>", true, 2);
   (() => {
-  	const _n3 = _t1();
-  	_setInsertionState(_n3, null, true);
-  	const _n2 = _createComponent(mrow, null, { default: _withVaporCtx(() => {
-  		const _n1 = _createComponent(mi, null, { default: _withVaporCtx(() => {
-  			const _n0 = _t0();
-  			return _n0;
-  		}) });
-  		return _n1;
-  	}) });
-  	return _n3;
+  	const _n0 = _t0();
+  	return _n0;
   })();
   "#)
 }

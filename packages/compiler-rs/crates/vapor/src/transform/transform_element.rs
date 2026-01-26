@@ -83,8 +83,10 @@ pub unsafe fn transform_element<'a>(
   } else if matches!(tag.as_ref(), "VaporTransition" | "VaporTransitionGroup") {
     transform_transition(node, context);
   }
+  // treat custom elements as components because the template helper cannot
+  // resolve them properly; they require creation via createElement
   let is_custom_element = context.options.is_custom_element.as_ref()(tag.clone());
-  let is_component = is_jsx_component(node) && !is_custom_element;
+  let is_component = is_jsx_component(node, context.options) || is_custom_element;
   let _context_block = context_block as *mut BlockIRNode;
   let props_result = build_props(
     directives,
@@ -98,11 +100,18 @@ pub unsafe fn transform_element<'a>(
     Rc::clone(&get_operation_index),
   );
 
-  let single_root = RootNode::is_single_root(parent_node);
+  let single_root = RootNode::is_single_root(parent_node) || is_custom_element;
 
   Some(Box::new(move || {
     if is_component {
-      transform_component_element(tag, props_result, single_root, context, context_block);
+      transform_component_element(
+        tag,
+        props_result,
+        single_root,
+        is_custom_element,
+        context,
+        context_block,
+      );
     } else {
       transform_native_element(
         tag,
@@ -217,10 +226,11 @@ pub fn transform_component_element<'a>(
   tag: String,
   props_result: PropsResult<'a>,
   single_root: bool,
+  is_custom_element: bool,
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) {
-  let asset = tag.contains("-");
+  let asset = tag.contains("-") && !is_custom_element;
   if asset {
     let component = &mut context.ir.borrow_mut().component;
     component.insert(tag.clone());
@@ -242,6 +252,7 @@ pub fn transform_component_element<'a>(
       root: single_root && *context.in_v_for.borrow() == 0,
       slots: mem::take(&mut context_block.slots),
       once: *context.in_v_once.borrow(),
+      is_custom_element,
       parent: None,
       anchor: None,
       dynamic: None,

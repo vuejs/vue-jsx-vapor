@@ -40,7 +40,7 @@ pub fn transform_v_model<'a>(
     return None;
   }
 
-  let is_component = is_jsx_component(node);
+  let is_component = is_jsx_component(node, context.options);
   if is_component {
     return Some(DirectiveTransformResult {
       key: if let Some(arg) = dir.arg {

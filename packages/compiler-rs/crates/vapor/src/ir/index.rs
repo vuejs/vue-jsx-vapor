@@ -217,6 +217,7 @@ pub struct CreateComponentIRNode<'a> {
   pub root: bool,
   pub once: bool,
   pub dynamic: Option<SimpleExpressionNode<'a>>,
+  pub is_custom_element: bool,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
   pub append: bool,

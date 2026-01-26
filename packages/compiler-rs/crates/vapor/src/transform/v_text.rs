@@ -43,7 +43,7 @@ pub fn transform_v_text<'a>(
   } else {
     *context.children_template.borrow_mut() = vec![" ".to_string()];
     let parent = context.reference(&mut context_block.dynamic);
-    let is_component = is_jsx_component(node);
+    let is_component = is_jsx_component(node, context.options);
     if !is_component {
       context.register_operation(
         context_block,

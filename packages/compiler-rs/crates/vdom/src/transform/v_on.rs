@@ -46,7 +46,7 @@ pub fn transform_v_on<'a>(
   // handler processing
   let mut exp = if let Some(JSXAttributeValue::ExpressionContainer(value)) = value {
     let (exp, has_scope_ref) = context.process_expression(value.expression.to_expression_mut());
-    let is_component = is_jsx_component(node);
+    let is_component = is_jsx_component(node, context.options);
     let is_member_exp = exp.is_member_expression() || matches!(exp, Expression::Identifier(_));
     should_cache = !(*context.options.in_v_once.borrow()
       || has_scope_ref

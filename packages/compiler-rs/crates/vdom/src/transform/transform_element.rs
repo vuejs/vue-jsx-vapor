@@ -83,9 +83,8 @@ pub unsafe fn transform_element<'a>(
   if matches!(vnode_tag.as_ref(), "Transition" | "TransitionGroup") {
     transform_transition(node, context);
   }
-  let is_custom_element = context.options.is_custom_element.as_ref()(vnode_tag.clone());
-  let is_component = is_jsx_component(node) && !is_custom_element;
-  if !is_custom_element && is_component && vnode_tag.contains("-") {
+  let is_component = is_jsx_component(node, context.options);
+  if is_component && vnode_tag.contains("-") {
     context.helper("resolveComponent");
     context.components.borrow_mut().insert(vnode_tag.clone());
     vnode_tag = to_valid_asset_id(&vnode_tag, "component");

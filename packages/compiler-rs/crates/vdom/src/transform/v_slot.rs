@@ -48,7 +48,7 @@ pub unsafe fn track_slot_scopes<'a>(
     let JSXChild::Element(node) = node else {
       return None;
     };
-    let is_component = is_jsx_component(node);
+    let is_component = is_jsx_component(node, context.options);
     if is_component || is_template(node) {
       // We are only checking non-empty v-slot here
       // since we only care about slots that introduce scope variables.

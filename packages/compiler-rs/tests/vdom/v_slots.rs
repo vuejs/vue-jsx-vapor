@@ -17,7 +17,7 @@ fn v_slots_basic() {
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
-  const _hoisted_1 = ["onClick"];
+  const _hoisted_1 = ["onUpdate:modelValue", "onClick"];
   _openBlock(), _createBlock(Comp, null, { default: ({ foo }) => (_openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(() => _withDirectives((_openBlock(), _createElementBlock("input", {
   	"onUpdate:modelValue": ($event) => bar = $event,
   	onClick: () => foo
@@ -58,7 +58,7 @@ fn object_expression_children() {
   .code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
-  const _hoisted_1 = ["onClick"];
+  const _hoisted_1 = ["onUpdate:modelValue", "onClick"];
   _openBlock(), _createBlock(Comp, null, { default: ({ foo }) => _withDirectives((_openBlock(), _createElementBlock("input", {
   	"onUpdate:modelValue": ($event) => bar = $event,
   	onClick: () => foo

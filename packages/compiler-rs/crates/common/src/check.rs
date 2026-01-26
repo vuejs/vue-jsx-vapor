@@ -8,7 +8,7 @@ use oxc_ast::{
 use oxc_span::GetSpan;
 use phf::phf_set;
 
-use crate::expression::is_globally_allowed;
+use crate::{expression::is_globally_allowed, options::TransformOptions, text::get_tag_name};
 
 pub fn is_template<'a>(node: &'a JSXElement<'a>) -> bool {
   if let JSXElementName::Identifier(name) = &node.opening_element.name {
@@ -339,11 +339,12 @@ pub fn is_math_ml_tag(tag_name: &str) -> bool {
   MATH_TAGS.contains(tag_name)
 }
 
-pub fn is_jsx_component<'a>(node: &'a JSXElement<'a>) -> bool {
-  match &node.opening_element.name {
-    JSXElementName::Identifier(name) => !is_html_tag(&name.name) && !is_svg_tag(&name.name),
-    _ => true,
+pub fn is_jsx_component<'a>(node: &'a JSXElement<'a>, options: &TransformOptions) -> bool {
+  let tag_name = get_tag_name(&node.opening_element.name, *options.source_text.borrow());
+  if options.is_custom_element.as_ref()(tag_name.to_string()) {
+    return false;
   }
+  !is_html_tag(&tag_name) && !is_svg_tag(&tag_name) && !is_math_ml_tag(&tag_name)
 }
 
 pub fn is_fragment_node(node: &JSXChild) -> bool {

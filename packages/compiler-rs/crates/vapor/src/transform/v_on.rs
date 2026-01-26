@@ -18,7 +18,7 @@ pub fn transform_v_on<'a>(
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
-  let is_component = is_jsx_component(node);
+  let is_component = is_jsx_component(node, context.options);
 
   let (name, name_loc) = match &dir.name {
     JSXAttributeName::Identifier(name) => (name.name.as_ref(), name.span),

@@ -62,8 +62,7 @@ pub fn transform_v_model<'a>(
 
   let dir = resolve_directive(_dir, context.source_text);
   let tag = get_tag_name(&node.opening_element.name, context.source_text);
-  let is_custom_element = context.options.is_custom_element.as_ref()(tag.to_string());
-  let is_component = is_jsx_component(node) && !is_custom_element;
+  let is_component = is_jsx_component(node, context.options);
 
   let arg_is_some = dir.arg.is_some();
   let mut computed = false;
@@ -243,6 +242,7 @@ pub fn transform_v_model<'a>(
   }
 
   let mut runtime_name = None;
+  let is_custom_element = context.options.is_custom_element.as_ref()(tag.to_string());
   if matches!(tag.as_str(), "input" | "textarea" | "select") || is_custom_element {
     let mut directive_to_use = "vModelText";
     let mut is_invalid_type = false;

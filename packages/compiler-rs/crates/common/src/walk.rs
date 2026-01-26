@@ -1,9 +1,9 @@
 use oxc_ast::ast::{
-  ArrowFunctionExpression, BindingIdentifier, BindingPattern, BlockStatement, CatchClause,
-  Expression, ForInStatement, ForOfStatement, ForStatement, ForStatementInit, ForStatementLeft,
-  Function, FunctionBody, Statement, VariableDeclarationKind,
+  ArrowFunctionExpression, AssignmentTarget, BindingIdentifier, BindingPattern, BlockStatement,
+  CatchClause, Expression, ForInStatement, ForOfStatement, ForStatement, ForStatementInit,
+  ForStatementLeft, Function, FunctionBody, Statement, VariableDeclarationKind,
 };
-use oxc_ast_visit::{Visit, walk};
+use oxc_ast_visit::{Visit, walk, walk::walk_assignment_target};
 use std::collections::{HashMap, HashSet};
 
 use napi::bindgen_prelude::Either3;
@@ -67,6 +67,21 @@ impl<'a> Visit<'a> for WalkIdentifiers<'a> {
       self.on_identifier_reference(id);
     }
     walk::walk_expression(self, node);
+  }
+
+  fn visit_assignment_target(&mut self, node: &AssignmentTarget<'a>) {
+    if let AssignmentTarget::AssignmentTargetIdentifier(id) = node {
+      self.on_identifier_reference(id);
+    } else if let AssignmentTarget::StaticMemberExpression(node) = node
+      && let Expression::Identifier(id) = node.get_first_object()
+    {
+      self.on_identifier_reference(id);
+    } else if let AssignmentTarget::ComputedMemberExpression(node) = node
+      && let Expression::Identifier(id) = &node.object
+    {
+      self.on_identifier_reference(id);
+    }
+    walk_assignment_target(self, node);
   }
 
   fn visit_function(&mut self, node: &Function<'a>, flags: oxc_semantic::ScopeFlags) {

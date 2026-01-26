@@ -65,8 +65,8 @@ pub unsafe fn transform_v_for<'a>(
     None
   };
 
-  let is_component =
-    is_jsx_component(unsafe { &*node }) || is_template_with_single_component(unsafe { &*node });
+  let is_component = is_jsx_component(unsafe { &*node }, context.options)
+    || is_template_with_single_component(unsafe { &*node }, context);
   let dynamic = &mut context_block.dynamic;
   let id = context.reference(dynamic);
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
@@ -85,7 +85,7 @@ pub unsafe fn transform_v_for<'a>(
   // when the entire list is emptied
   let mut only_child = false;
   if let JSXChild::Element(parent_node) = parent_node
-    && !is_jsx_component(parent_node)
+    && !is_jsx_component(parent_node, context.options)
   {
     let index = *context.index.borrow() as usize;
     for (i, child) in parent_node.children.iter().enumerate() {
@@ -192,7 +192,10 @@ pub fn get_for_parse_result<'a>(
   })
 }
 
-fn is_template_with_single_component<'a>(node: &'a JSXElement<'a>) -> bool {
+fn is_template_with_single_component<'a>(
+  node: &'a JSXElement<'a>,
+  context: &TransformContext,
+) -> bool {
   let non_comment_children = node
     .children
     .iter()
@@ -200,5 +203,5 @@ fn is_template_with_single_component<'a>(node: &'a JSXElement<'a>) -> bool {
     .collect::<Vec<_>>();
 
   non_comment_children.len() == 1
-    && matches!(non_comment_children[0],JSXChild::Element(child)if is_jsx_component(child))
+    && matches!(non_comment_children[0],JSXChild::Element(child) if is_jsx_component(child,context.options))
 }

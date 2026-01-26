@@ -47,6 +47,7 @@ pub fn gen_create_component<'a>(
     id,
     dynamic,
     asset,
+    is_custom_element,
     ..
   } = operation;
 
@@ -57,7 +58,11 @@ pub fn gen_create_component<'a>(
   } else {
     false
   };
-  let tag = if let Some(dynamic) = dynamic {
+  let tag = if is_custom_element {
+    ast
+      .expression_string_literal(SPAN, ast.atom(&tag), None)
+      .into()
+  } else if let Some(dynamic) = dynamic {
     if dynamic.is_static {
       ast
         .expression_call(
@@ -147,6 +152,8 @@ pub fn gen_create_component<'a>(
             SPAN,
             ast.atom(&context.helper(if is_dynamic {
               "createDynamicComponent"
+            } else if is_custom_element {
+              "createPlainElement"
             } else if asset {
               "createComponentWithFallback"
             } else {

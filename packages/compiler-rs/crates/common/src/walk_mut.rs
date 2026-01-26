@@ -1,13 +1,14 @@
 use oxc_allocator::{FromIn, TakeIn};
 use oxc_ast::ast::{
-  ArrowFunctionExpression, AssignmentTargetMaybeDefault, AssignmentTargetProperty,
-  AssignmentTargetPropertyProperty, BindingIdentifier, BindingPattern, BlockStatement, CatchClause,
-  Expression, ForInStatement, ForOfStatement, ForStatement, ForStatementInit, ForStatementLeft,
-  Function, FunctionBody, IdentifierName, PropertyKey, Statement, VariableDeclarationKind,
+  ArrowFunctionExpression, AssignmentTarget, AssignmentTargetMaybeDefault,
+  AssignmentTargetProperty, AssignmentTargetPropertyProperty, BindingIdentifier, BindingPattern,
+  BlockStatement, CatchClause, Expression, ForInStatement, ForOfStatement, ForStatement,
+  ForStatementInit, ForStatementLeft, Function, FunctionBody, IdentifierName, PropertyKey,
+  Statement, VariableDeclarationKind,
 };
 use oxc_ast_visit::{
   VisitMut,
-  walk_mut::{self, walk_expression},
+  walk_mut::{self, walk_assignment_target, walk_expression},
 };
 use std::collections::{HashMap, HashSet};
 
@@ -123,6 +124,34 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
       });
     }
     walk_expression(self, node);
+  }
+
+  fn visit_assignment_target(&mut self, node: &mut AssignmentTarget<'a>) {
+    if let AssignmentTarget::AssignmentTargetIdentifier(id) = node {
+      self.on_identifier_reference(id);
+    } else if let AssignmentTarget::StaticMemberExpression(node) = node
+      && let Expression::Identifier(id) = {
+        let mut object = &mut node.object;
+        loop {
+          match object {
+            Expression::StaticMemberExpression(member) => {
+              object = &mut member.object;
+              continue;
+            }
+            _ => {}
+          }
+          break;
+        }
+        object
+      }
+    {
+      self.on_identifier_reference(id);
+    } else if let AssignmentTarget::ComputedMemberExpression(node) = node
+      && let Expression::Identifier(id) = &mut node.object
+    {
+      self.on_identifier_reference(id);
+    }
+    walk_assignment_target(self, node);
   }
 
   fn visit_assignment_target_property(&mut self, node: &mut AssignmentTargetProperty<'a>) {

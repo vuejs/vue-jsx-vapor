@@ -26,7 +26,7 @@ pub unsafe fn transform_v_memo<'a>(
     }
     seen.insert(dir.span.start);
     let mut value = dir.value.take()?;
-    let is_component = is_jsx_component(node);
+    let is_component = is_jsx_component(node, context.options);
     return Some(Box::new(move || {
       let codegen_map = &mut context.codegen_map.borrow_mut();
       if let Some(NodeTypes::VNodeCall(mut codegen)) = codegen_map.remove(&node.span) {
