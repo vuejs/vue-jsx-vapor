@@ -62,7 +62,7 @@ pub unsafe fn track_slot_scopes<'a>(
             .options
             .slot_identifiers
             .borrow_mut()
-            .insert(node.span, (0, identifiers.clone()));
+            .insert(node.span, (0, identifiers.clone(), false));
         }
         *context.options.in_v_slot.borrow_mut() += 1;
         return Some(Box::new(move || {
@@ -74,7 +74,7 @@ pub unsafe fn track_slot_scopes<'a>(
           .options
           .slot_identifiers
           .borrow_mut()
-          .insert(node.span, (0, vec![]));
+          .insert(node.span, (0, vec![], false));
       }
     }
     None
@@ -537,6 +537,10 @@ pub fn build_slots<'a>(
 
   let slot_flag = if has_dynamic_slots {
     SlotFlags::DYNAMIC
+  } else if let Some(slot_static) = context.options.slot_identifiers.borrow().get(&node.span)
+    && slot_static.2
+  {
+    SlotFlags::FORWARDED
   } else {
     SlotFlags::STABLE
   };

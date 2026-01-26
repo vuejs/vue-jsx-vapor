@@ -75,6 +75,21 @@ fn on_component() {
 }
 
 #[test]
+fn on_slot_outlet() {
+  let code = transform(r#"<div><slot v-once /></div>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createSlot as _createSlot, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<div></div>", true);
+  (() => {
+  	const _n1 = _t0();
+  	_setInsertionState(_n1, null, true);
+  	const _n0 = _createSlot("default", void 0, false, true);
+  	return _n1;
+  })();
+  "#)
+}
+
+#[test]
 fn inside_v_once() {
   let code = transform("<div v-once><div v-once/></div>", None).code;
   assert_snapshot!(code, @r#"

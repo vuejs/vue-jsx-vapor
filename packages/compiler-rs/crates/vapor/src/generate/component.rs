@@ -167,7 +167,7 @@ pub fn gen_create_component<'a>(
   }
 }
 
-fn gen_raw_props<'a>(
+pub fn gen_raw_props<'a>(
   mut props: Vec<IRProps<'a>>,
   context: &'a CodegenContext<'a>,
 ) -> Option<Expression<'a>> {

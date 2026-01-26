@@ -12,6 +12,7 @@ use crate::generate::html::gen_set_html;
 use crate::generate::key::gen_key;
 use crate::generate::prop::gen_dynamic_props;
 use crate::generate::prop::gen_set_prop;
+use crate::generate::slot_outlet::gen_slot_outlet;
 use crate::generate::template_ref::gen_declare_old_ref;
 use crate::generate::template_ref::gen_set_template_ref;
 use crate::generate::text::gen_create_nodes;
@@ -93,6 +94,17 @@ pub fn gen_operation_with_insertion_state<'a>(
         ))
       }
     }
+    OperationNode::SlotOutletNode(slot_outlet_ir_node) => {
+      if let Some(parent) = slot_outlet_ir_node.parent {
+        statements.push(gen_insertion_state(
+          parent,
+          slot_outlet_ir_node.anchor,
+          slot_outlet_ir_node.append,
+          slot_outlet_ir_node.last,
+          context,
+        ))
+      }
+    }
     OperationNode::Key(key_ir_node) => {
       if let Some(parent) = key_ir_node.parent {
         statements.push(gen_insertion_state(
@@ -138,7 +150,9 @@ pub fn gen_operation<'a>(
     OperationNode::CreateComponent(oper) => {
       gen_create_component(statements, oper, context, context_block)
     }
-    OperationNode::SlotOutletNode(_) => (),
+    OperationNode::SlotOutletNode(oper) => {
+      statements.push(gen_slot_outlet(oper, context, context_block))
+    }
     OperationNode::DeclareOldRef(oper) => statements.push(gen_declare_old_ref(oper, context)),
     OperationNode::GetTextChild(oper) => statements.push(gen_get_text_child(oper, context)),
     OperationNode::Key(oper) => statements.push(gen_key(oper, context, context_block)),

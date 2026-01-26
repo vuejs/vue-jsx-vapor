@@ -79,6 +79,30 @@ impl<'a> TransformContext<'a> {
       ))
     }
 
+    if *self.has_slot.borrow() {
+      statements.push(Statement::VariableDeclaration(
+        ast.alloc_variable_declaration(
+          SPAN,
+          VariableDeclarationKind::Let,
+          ast.vec1(ast.variable_declarator(
+            SPAN,
+            VariableDeclarationKind::Let,
+            ast.binding_pattern_binding_identifier(SPAN, "_slots"),
+            NONE,
+            Some(ast.expression_call(
+              SPAN,
+              ast.expression_identifier(SPAN, ast.atom(&self.helper("useSlots"))),
+              NONE,
+              ast.vec(),
+              false,
+            )),
+            false,
+          )),
+          false,
+        ),
+      ))
+    }
+
     for name in self.components.borrow_mut().drain(..) {
       statements.push(Statement::VariableDeclaration(
         ast.alloc_variable_declaration(

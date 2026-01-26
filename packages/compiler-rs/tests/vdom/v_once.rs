@@ -63,6 +63,27 @@ fn on_component() {
 }
 
 #[test]
+fn on_slot_outlet() {
+  let code = transform(
+    r#"<div><slot v-once /></div>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, renderSlot as _renderSlot, setBlockTracking as _setBlockTracking, useSlots as _useSlots } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache(0);
+  	let _slots = _useSlots();
+  	return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _renderSlot(_slots, "default")).cacheIndex = 0, _setBlockTracking(1), _cache[0])]);
+  })();
+  "#)
+}
+
+#[test]
 fn inside_v_once() {
   // v-once inside v-once should not be cached
   let code = transform(

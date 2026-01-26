@@ -3,8 +3,9 @@ use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   AstBuilder, NONE,
   ast::{
-    ArrayExpression, Expression, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild,
-    JSXElement, JSXExpression, ObjectProperty, ObjectPropertyKind, PropertyKind,
+    ArrayExpression, Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName,
+    JSXAttributeValue, JSXChild, JSXElement, JSXExpression, ObjectProperty, ObjectPropertyKind,
+    PropertyKind,
   },
 };
 use oxc_span::{GetSpan, SPAN, Span};
@@ -102,7 +103,13 @@ pub unsafe fn transform_element<'a>(
       && (vnode_tag == "svg" || vnode_tag == "foreignObject" || vnode_tag == "math"));
 
   let _node = node as *mut oxc_allocator::Box<JSXElement>;
-  let props_build_result = build_props(directives, unsafe { &mut *_node }, context, is_component);
+  let props_build_result = build_props(
+    directives,
+    unsafe { &mut *_node },
+    context,
+    is_component,
+    false,
+  );
 
   let vnode_props = props_build_result.props;
   let mut vnode_children = None;
@@ -245,6 +252,7 @@ pub struct PropsResult<'a> {
   pub patch_flag: i32,
   pub dynamic_prop_names: Vec<String>,
   pub should_use_block: bool,
+  pub name_prop: Option<JSXAttribute<'a>>,
 }
 
 pub fn build_props<'a>(
@@ -252,10 +260,12 @@ pub fn build_props<'a>(
   node: &'a mut JSXElement<'a>,
   context: &'a TransformContext<'a>,
   is_component: bool,
+  collect_name: bool,
 ) -> PropsResult<'a> {
   let ast = &context.ast;
   let _node = node as *mut JSXElement;
   let props = &mut (unsafe { &mut *_node }).opening_element.attributes;
+  let mut name_prop = None;
   if props.is_empty() {
     return PropsResult {
       props: None,
@@ -263,6 +273,7 @@ pub fn build_props<'a>(
       patch_flag: 0,
       dynamic_prop_names: vec![],
       should_use_block: false,
+      name_prop,
     };
   }
 
@@ -387,6 +398,10 @@ pub fn build_props<'a>(
         let Some((name, modifiers)) = name_splited.split_first() else {
           unreachable!()
         };
+        if collect_name && *name == "name" {
+          name_prop = Some(prop.take_in(context.allocator));
+          continue;
+        }
         if get_directive_name(name).is_none() && !is_event(name) && *name == "ref" {
           has_ref = true;
           if let Some(marker) = ref_v_for_marker() {
@@ -679,6 +694,7 @@ pub fn build_props<'a>(
     patch_flag,
     dynamic_prop_names,
     should_use_block,
+    name_prop,
   }
 }
 

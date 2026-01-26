@@ -423,10 +423,10 @@ fn math_ml() {
   	const _n3 = _t1();
   	_setInsertionState(_n3, null, true);
   	const _n2 = _createComponent(mrow, null, { default: _withVaporCtx(() => {
-  		const _n1 = _createComponent(mi, null, { default: () => {
+  		const _n1 = _createComponent(mi, null, { default: _withVaporCtx(() => {
   			const _n0 = _t0();
   			return _n0;
-  		} });
+  		}) });
   		return _n1;
   	}) });
   	return _n3;

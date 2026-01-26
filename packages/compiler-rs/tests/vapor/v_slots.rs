@@ -117,10 +117,10 @@ fn v_slot_with_v_slots() {
   			bar: _slotProps0.bar,
   			default: ({ foo }) => (() => {
   				const _n0 = _createNodes(() => foo + bar, () => (() => {
-  					const _n2 = _createComponent(Comp, null, { default: (_slotProps0) => {
+  					const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
   						const _n0 = _createNodes(() => bar, () => _slotProps0.baz);
   						return _n0;
-  					} }, true);
+  					}) }, true);
   					return _n2;
   				})());
   				return _n0;

@@ -94,6 +94,36 @@ fn component() {
 }
 
 #[test]
+fn template_v_if_with_single_slot_child() {
+  let code = transform(r#"<template v-if={ok}><slot/></template>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, createSlot as _createSlot } from "vue";
+  (() => {
+  	const _n0 = _createIf(() => ok, () => {
+  		const _n2 = _createSlot("default");
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_if_on_slot() {
+  let code = transform(r#"<slot v-if="ok"></slot>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, createSlot as _createSlot } from "vue";
+  (() => {
+  	const _n0 = _createIf(() => "ok", () => {
+  		const _n2 = _createSlot("default");
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn v_if_v_else() {
   let code = transform("<><div v-if={ok}/><p v-else/></>", None).code;
   assert_snapshot!(code, @r#"

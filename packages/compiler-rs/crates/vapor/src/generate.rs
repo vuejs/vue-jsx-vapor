@@ -9,6 +9,7 @@ pub mod key;
 pub mod operation;
 pub mod prop;
 pub mod slot;
+pub mod slot_outlet;
 pub mod template;
 pub mod template_ref;
 pub mod text;

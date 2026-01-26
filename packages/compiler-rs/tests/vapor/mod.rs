@@ -2,6 +2,7 @@ mod custom_directive;
 mod key;
 mod transform_children;
 mod transform_element;
+mod transform_slot_outlet;
 mod transform_template_ref;
 mod transform_text;
 mod transform_transition;

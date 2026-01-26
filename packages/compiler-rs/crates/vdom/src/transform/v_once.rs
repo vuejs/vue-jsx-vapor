@@ -30,14 +30,18 @@ pub unsafe fn transform_v_once<'a>(
     return Some(Box::new(move || {
       *context.options.in_v_once.borrow_mut() = false;
       let codegen_map = &mut context.codegen_map.borrow_mut();
-      if let Some(NodeTypes::VNodeCall(mut codegen)) = codegen_map.remove(&node_span) {
-        codegen.is_block = false;
-        let codegen = NodeTypes::CacheExpression(context.cache(
-          context.gen_vnode_call(codegen, codegen_map),
-          true,
-          true,
-          false,
-        ));
+      if let Some(mut codegen) = codegen_map.remove(&node_span) {
+        if let NodeTypes::VNodeCall(mut vnode_call) = codegen {
+          vnode_call.is_block = false;
+          codegen = NodeTypes::CacheExpression(context.cache(
+            context.gen_vnode_call(vnode_call, codegen_map),
+            true,
+            true,
+            false,
+          ));
+        } else if let NodeTypes::CacheExpression(exp) = codegen {
+          codegen = NodeTypes::CacheExpression(context.cache(exp, true, true, false));
+        }
         codegen_map.insert(node_span, codegen);
       }
     }));

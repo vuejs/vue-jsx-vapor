@@ -295,6 +295,25 @@ fn template_v_for_with_multiple_children() {
 }
 
 #[test]
+fn template_v_for_with_slotlet() {
+  let code = transform(
+    r#"<template v-for={item in items}><slot/></template>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  (() => {
+  	let _slots = _useSlots();
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, null, [_renderSlot(_slots, "default")], 64))), 256);
+  })();
+  "#)
+}
+
+#[test]
 fn template_v_for_with_slot() {
   let code = transform(
     r#"<template v-for={item in items}><slots.default /></template>"#,
@@ -324,6 +343,25 @@ fn template_v_for_key_injection_with_single_child() {
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   const _hoisted_1 = ["id"];
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, { key: item.id }, [_createElementVNode("span", { id: item.id }, null, 8, _hoisted_1)], 64))), 128);
+  "#)
+}
+
+#[test]
+fn v_for_on_slotlet() {
+  let code = transform(
+    r#"<slot v-for={item in items}></slot>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  (() => {
+  	let _slots = _useSlots();
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => _renderSlot(_slots, "default")), 256);
+  })();
   "#)
 }
 

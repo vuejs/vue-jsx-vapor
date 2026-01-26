@@ -396,15 +396,15 @@ fn on_component() {
   let code = transform("<Comp v-for={item in list}>{item}</Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createFor as _createFor, template as _template } from "vue";
+  import { createFor as _createFor, template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template(" ");
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
-  		const _n3 = _createComponent(Comp, null, { default: () => {
+  		const _n3 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
   			const _n2 = _t0();
   			_setNodes(_n2, () => _for_item0.value);
   			return _n2;
-  		} });
+  		}) });
   		return _n3;
   	}, void 0, 2);
   	return _n0;
@@ -421,15 +421,15 @@ fn on_template_with_single_component_child() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createFor as _createFor, template as _template } from "vue";
+  import { createFor as _createFor, template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template(" ");
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
-  		const _n3 = _createComponent(Comp, null, { default: () => {
+  		const _n3 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
   			const _n2 = _t0();
   			_setNodes(_n2, () => _for_item0.value);
   			return _n2;
-  		} });
+  		}) });
   		return _n3;
   	}, void 0, 2);
   	return _n0;
@@ -505,6 +505,40 @@ fn expression_object() {
   	return _n0;
   })();
   "#);
+}
+
+#[test]
+fn template_v_for_with_slotlet() {
+  let code = transform(
+    r#"<template v-for={item in items}><slot/></template>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createFor as _createFor, createSlot as _createSlot } from "vue";
+  (() => {
+  	const _n0 = _createFor(() => items, (_for_item0) => {
+  		const _n2 = _createSlot("default");
+  		return _n2;
+  	}, void 0, 2);
+  	return _n0;
+  })();
+  "#)
+}
+
+#[test]
+fn v_for_on_slotlet() {
+  let code = transform(r#"<slot v-for={item in items}></slot>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createFor as _createFor, createSlot as _createSlot } from "vue";
+  (() => {
+  	const _n0 = _createFor(() => items, (_for_item0) => {
+  		const _n2 = _createSlot("default");
+  		return _n2;
+  	}, void 0, 2);
+  	return _n0;
+  })();
+  "#)
 }
 
 #[test]

@@ -495,6 +495,119 @@ fn named_slot_with_v_for() {
 }
 
 #[test]
+fn slot_tag_only() {
+  let code = transform(
+    r#"<Comp><slot /></Comp>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createBlock as _createBlock, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
+  (() => {
+  	let _slots = _useSlots();
+  	return _openBlock(), _createBlock(Comp, null, {
+  		default: _withCtx(() => [_renderSlot(_slots, "default")]),
+  		_: 3
+  	});
+  })();
+  "#);
+}
+
+#[test]
+fn slot_tag_with_v_if() {
+  let code = transform(
+    r#"<Comp><slot v-if={ok} /></Comp>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createBlock as _createBlock, createCommentVNode as _createCommentVNode, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
+  (() => {
+  	let _slots = _useSlots();
+  	return _openBlock(), _createBlock(Comp, null, {
+  		default: _withCtx(() => [ok ? _renderSlot(_slots, "default") : _createCommentVNode("", true)]),
+  		_: 2
+  	}, 1024);
+  })();
+  "#);
+}
+
+#[test]
+fn slot_tag_with_v_for() {
+  let code = transform(
+    r#"<Comp><slot v-for={a in b} /></Comp>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
+  (() => {
+  	let _slots = _useSlots();
+  	return _openBlock(), _createBlock(Comp, null, {
+  		default: _withCtx(() => [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(b, (a) => _renderSlot(_slots, "default")), 256))]),
+  		_: 3
+  	});
+  })();
+  "#);
+}
+
+#[test]
+fn slot_tag_with_template() {
+  let code = transform(
+    r#"<Comp><template><slot /></template></Comp>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
+  (() => {
+  	let _slots = _useSlots();
+  	return _openBlock(), _createBlock(Comp, null, {
+  		default: _withCtx(() => [_createElementVNode("template", null, [_renderSlot(_slots, "default")])]),
+  		_: 3
+  	});
+  })();
+  "#);
+}
+
+#[test]
+fn slot_tag_with_nested_component() {
+  let code = transform(
+    r#"<Comp><Comp><slot/></Comp></Comp>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
+  (() => {
+  	let _slots = _useSlots();
+  	return _openBlock(), _createBlock(Comp, null, {
+  		default: _withCtx(() => [_createVNode(Comp, null, {
+  			default: _withCtx(() => [_renderSlot(_slots, "default")]),
+  			_: 3
+  		})]),
+  		_: 3
+  	});
+  })();
+  "#);
+}
+
+#[test]
 fn error_on_extraneous_children_with_named_default_slot() {
   let error = RefCell::new(None);
   transform(

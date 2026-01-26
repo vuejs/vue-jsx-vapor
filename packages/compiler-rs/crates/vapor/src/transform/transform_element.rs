@@ -16,9 +16,10 @@ use crate::{
     },
   },
   transform::{
-    DirectiveTransformResult, TransformContext, transform_transition::transform_transition,
-    v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
-    v_on::transform_v_on, v_show::transform_v_show, v_text::transform_v_text,
+    DirectiveTransformResult, TransformContext, transform_slot_outlet::transform_slot_outlet,
+    transform_transition::transform_transition, v_bind::transform_v_bind, v_html::transform_v_html,
+    v_model::transform_v_model, v_on::transform_v_on, v_show::transform_v_show,
+    v_text::transform_v_text,
   },
 };
 
@@ -69,7 +70,17 @@ pub unsafe fn transform_element<'a>(
   }) as Box<dyn FnMut() -> i32>));
 
   let tag = get_tag_name(&node.opening_element.name, context.source_text);
-  if matches!(tag.as_ref(), "VaporTransition" | "VaporTransitionGroup") {
+  if tag == "slot" {
+    return transform_slot_outlet(
+      directives,
+      context_node,
+      context,
+      context_block,
+      parent_node,
+      get_effect_index,
+      get_operation_index,
+    );
+  } else if matches!(tag.as_ref(), "VaporTransition" | "VaporTransitionGroup") {
     transform_transition(node, context);
   }
   let is_custom_element = context.options.is_custom_element.as_ref()(tag.clone());
@@ -82,6 +93,7 @@ pub unsafe fn transform_element<'a>(
     context,
     unsafe { &mut *_context_block },
     is_component,
+    false,
     Rc::clone(&get_effect_index),
     Rc::clone(&get_operation_index),
   );
@@ -242,6 +254,7 @@ pub fn transform_component_element<'a>(
 pub struct PropsResult<'a> {
   pub dynamic: bool,
   pub props: Either<Vec<IRProps<'a>>, IRPropsStatic<'a>>,
+  pub name_prop: Option<&'a mut JSXAttribute<'a>>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -252,15 +265,18 @@ pub fn build_props<'a>(
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   is_component: bool,
+  collect_name: bool,
   get_effect_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
   get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
 ) -> PropsResult<'a> {
   let node = node as *mut JSXElement;
   let props = &mut (unsafe { &mut *node }).opening_element.attributes;
+  let mut name_prop = None;
   if props.is_empty() {
     return PropsResult {
       dynamic: false,
       props: Either::B(vec![]),
+      name_prop: None,
     };
   }
 
@@ -288,7 +304,8 @@ pub fn build_props<'a>(
           continue;
         }
         let span = prop.span;
-        if prop.name.get_identifier().name.eq("v-on") {
+        let prop_name = prop.name.get_identifier().name;
+        if prop_name.eq("v-on") {
           // v-on={obj}
           if let Some(prop_value) = &mut prop.value {
             let value = SimpleExpressionNode::new(Either3::C(prop_value), context.source_text);
@@ -318,6 +335,9 @@ pub fn build_props<'a>(
           } else {
             context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, span);
           }
+          continue;
+        } else if collect_name && prop_name == "name" {
+          name_prop = Some(prop.as_mut());
           continue;
         }
 
@@ -367,12 +387,14 @@ pub fn build_props<'a>(
     return PropsResult {
       dynamic: true,
       props: Either::A(dynamic_args),
+      name_prop,
     };
   }
 
   PropsResult {
     dynamic: false,
     props: Either::B(dedupe_properties(results)),
+    name_prop,
   }
 }
 

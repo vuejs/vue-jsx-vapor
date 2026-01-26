@@ -7,6 +7,9 @@ const Comp = (props) => {
   return (
     <div>
       Virtual Dom Component:{props.model}
+      <slot foo="foo">
+        <div>{props.foo}</div>
+      </slot>
       <slots.default foo={'foo'}></slots.default>
     </div>
   )

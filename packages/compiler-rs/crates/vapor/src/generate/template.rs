@@ -104,6 +104,7 @@ fn gen_children<'a>(
         OperationNode::If(op) => op.anchor == Some(-1),
         OperationNode::For(op) => op.anchor == Some(-1),
         OperationNode::CreateComponent(op) => op.anchor == Some(-1),
+        OperationNode::SlotOutletNode(op) => op.anchor == Some(-1),
         OperationNode::Key(op) => op.anchor == Some(-1),
         _ => false,
       }

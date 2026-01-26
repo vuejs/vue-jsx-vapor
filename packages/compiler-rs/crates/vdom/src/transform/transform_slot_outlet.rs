@@ -1,8 +1,12 @@
-use common::{directive::Directives, error::ErrorCodes, text::get_tag_name};
+use common::{
+  directive::Directives,
+  error::ErrorCodes,
+  text::{get_tag_name, is_empty_text},
+};
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
-  ast::{Expression, JSXAttributeItem, JSXChild, JSXElement},
+  ast::{Expression, JSXChild, JSXElement},
 };
 use oxc_span::{GetSpan, SPAN};
 
@@ -26,6 +30,10 @@ pub fn transform_slot_outlet<'a>(
     return None;
   }
 
+  for value in &mut context.options.slot_identifiers.borrow_mut().values_mut() {
+    value.2 = true;
+  }
+
   let ast = context.ast;
   let node_span = node.span;
   let (slot_name, slot_props) =
@@ -40,13 +48,10 @@ pub fn transform_slot_outlet<'a>(
         [
           Some(
             ast
-              .expression_call(
-                SPAN,
-                ast.expression_identifier(SPAN, ast.atom(&context.helper("useSlots"))),
-                NONE,
-                ast.vec(),
-                false,
-              )
+              .expression_identifier(SPAN, {
+                *context.has_slot.borrow_mut() = true;
+                "_slots"
+              })
               .into(),
           ),
           Some(slot_name.into()),
@@ -57,7 +62,13 @@ pub fn transform_slot_outlet<'a>(
           } else {
             None
           },
-          if !node.children.is_empty() {
+          if node
+            .children
+            .iter()
+            .filter(|child| !is_empty_text(child))
+            .count()
+            != 0
+          {
             let mut fragment = ast.jsx_child_fragment(
               node_span,
               ast.jsx_opening_fragment(SPAN),
@@ -127,23 +138,18 @@ fn process_slot_outlet<'a>(
   let mut slot_props = None;
 
   let props = &mut node.opening_element.attributes;
-  props.retain_mut(|p| match p {
-    JSXAttributeItem::Attribute(p) => {
-      if p.name.get_identifier().name.eq("name")
-        && let Some(value) = &mut p.value
-      {
-        slot_name = context.jsx_attribute_value_to_expression(value);
-        return false;
-      }
-      true
-    }
-    JSXAttributeItem::SpreadAttribute(_) => true,
-  });
-
   if !props.is_empty() {
     let PropsResult {
-      props, directives, ..
-    } = build_props(directives, node, context, false);
+      props,
+      directives,
+      mut name_prop,
+      ..
+    } = build_props(directives, node, context, false, true);
+    if let Some(name_prop) = &mut name_prop
+      && let Some(value) = &mut name_prop.value
+    {
+      slot_name = context.jsx_attribute_value_to_expression(value);
+    }
     slot_props = props;
 
     if let Some(directives) = directives

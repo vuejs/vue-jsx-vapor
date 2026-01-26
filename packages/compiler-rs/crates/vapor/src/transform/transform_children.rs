@@ -173,6 +173,7 @@ fn process_dynamic_children<'a>(
       OperationNode::If(operation) => operation.last = true,
       OperationNode::For(operation) => operation.last = true,
       OperationNode::CreateComponent(operation) => operation.last = true,
+      OperationNode::SlotOutletNode(operation) => operation.last = true,
       OperationNode::Key(operation) => operation.last = true,
       _ => (),
     };
@@ -224,6 +225,12 @@ fn register_insertion<'a>(
           create_component_ir_node.parent = Some(parent);
           create_component_ir_node.anchor = Some(anchor);
           create_component_ir_node.append = append;
+        }
+        OperationNode::SlotOutletNode(slot_outlet_ir_node) => {
+          let parent = context.reference(&mut context_block.dynamic);
+          slot_outlet_ir_node.parent = Some(parent);
+          slot_outlet_ir_node.anchor = Some(anchor);
+          slot_outlet_ir_node.append = append;
         }
         OperationNode::Key(key_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);

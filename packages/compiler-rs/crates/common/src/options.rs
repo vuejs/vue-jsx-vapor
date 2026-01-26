@@ -55,7 +55,7 @@ pub struct TransformOptions<'a> {
   pub in_v_slot: RefCell<i32>,
   pub in_v_once: RefCell<bool>,
   pub identifiers: RefCell<HashMap<String, i32>>,
-  pub slot_identifiers: RefCell<IndexMap<Span, (i32, Vec<String>)>>,
+  pub slot_identifiers: RefCell<IndexMap<Span, (i32, Vec<String>, bool)>>,
   pub cache_index: RefCell<i32>,
   pub optimize_slots: bool,
   pub runtime_module_name: Option<String>,

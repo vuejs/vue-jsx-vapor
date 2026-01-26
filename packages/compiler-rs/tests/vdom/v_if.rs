@@ -46,6 +46,44 @@ fn template_v_if() {
 }
 
 #[test]
+fn template_v_if_with_single_slot_child() {
+  let code = transform(
+    r#"<template v-if={ok}><slot/></template>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  (() => {
+  	let _slots = _useSlots();
+  	return _openBlock(), _createBlock(_Fragment, null, ok ? (_openBlock(), _createBlock(_Fragment, { key: 0 }, [_renderSlot(_slots, "default")], 64)) : _createCommentVNode("", true));
+  })();
+  "#);
+}
+
+#[test]
+fn v_if_on_slot() {
+  let code = transform(
+    r#"<slot v-if="ok"></slot>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createCommentVNode as _createCommentVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  (() => {
+  	let _slots = _useSlots();
+  	return "ok" ? _renderSlot(_slots, "default") : _createCommentVNode("", true);
+  })();
+  "#);
+}
+
+#[test]
 fn component_v_if() {
   let code = transform(
     r#"<Component v-if={ok}></Component>"#,

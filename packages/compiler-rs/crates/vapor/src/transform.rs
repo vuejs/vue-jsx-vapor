@@ -12,6 +12,7 @@ use std::{cell::RefCell, collections::HashSet, mem, rc::Rc};
 pub mod transform_children;
 pub mod transform_element;
 pub mod transform_key;
+pub mod transform_slot_outlet;
 pub mod transform_template_ref;
 pub mod transform_text;
 pub mod transform_transition;

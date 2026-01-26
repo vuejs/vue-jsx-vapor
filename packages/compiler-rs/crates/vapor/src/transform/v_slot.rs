@@ -285,5 +285,5 @@ fn create_slot_block<'a>(
   let mut block = BlockIRNode::new();
   block.props = props;
 
-  (context.enter_block(context_block, block, false)) as _
+  context.enter_block(context_block, block, false)
 }
