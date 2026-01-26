@@ -1,4 +1,3 @@
-use napi::bindgen_prelude::Either17;
 use oxc_ast::NONE;
 use oxc_ast::ast::{Argument, NumberBase, Statement};
 use oxc_span::SPAN;
@@ -34,7 +33,7 @@ pub fn gen_operations<'a>(
   let event_opers = opers
     .iter()
     .filter_map(|op| {
-      if let Either17::H(op) = op {
+      if let OperationNode::SetEvent(op) = op {
         Some(op.clone())
       } else {
         None
@@ -61,7 +60,7 @@ pub fn gen_operation_with_insertion_state<'a>(
   event_opers: &Vec<SetEventIRNode>,
 ) {
   match &oper {
-    Either17::A(if_ir_node) => {
+    OperationNode::If(if_ir_node) => {
       if let Some(parent) = if_ir_node.parent {
         statements.push(gen_insertion_state(
           parent,
@@ -72,7 +71,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         ))
       }
     }
-    Either17::B(for_ir_node) => {
+    OperationNode::For(for_ir_node) => {
       if let Some(parent) = for_ir_node.parent {
         statements.push(gen_insertion_state(
           parent,
@@ -83,7 +82,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         ))
       }
     }
-    Either17::N(create_component_ir_node) => {
+    OperationNode::CreateComponent(create_component_ir_node) => {
       if let Some(parent) = create_component_ir_node.parent {
         statements.push(gen_insertion_state(
           parent,
@@ -94,7 +93,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         ))
       }
     }
-    Either17::Q(key_ir_node) => {
+    OperationNode::Key(key_ir_node) => {
       if let Some(parent) = key_ir_node.parent {
         statements.push(gen_insertion_state(
           parent,
@@ -119,27 +118,30 @@ pub fn gen_operation<'a>(
   event_opers: &Vec<SetEventIRNode>,
 ) {
   match oper {
-    Either17::A(oper) => statements.push(gen_if(oper, context, context_block, false)),
-    Either17::B(oper) => gen_for(statements, oper, context, context_block),
-    Either17::C(oper) => statements.push(gen_set_text(oper, context)),
-    Either17::D(oper) => statements.push(gen_set_prop(oper, context)),
-    Either17::E(oper) => statements.push(gen_dynamic_props(oper, context)),
-    Either17::F(oper) => statements.push(gen_set_dynamic_events(oper, context)),
-    Either17::G(oper) => statements.push(gen_set_nodes(oper, context)),
-    Either17::H(oper) => statements.push(gen_set_event(oper, context, event_opers)),
-    Either17::I(oper) => statements.push(gen_set_html(oper, context)),
-    Either17::J(oper) => statements.push(gen_set_template_ref(oper, context)),
-    Either17::K(oper) => statements.push(gen_create_nodes(oper, context)),
-    Either17::L(oper) => statements.push(gen_insert_node(oper, context)),
-    Either17::M(oper) => {
+    OperationNode::If(oper) => statements.push(gen_if(oper, context, context_block, false)),
+    OperationNode::For(oper) => gen_for(statements, oper, context, context_block),
+    OperationNode::SetText(oper) => statements.push(gen_set_text(oper, context)),
+    OperationNode::SetProp(oper) => statements.push(gen_set_prop(oper, context)),
+    OperationNode::SetDynamicProps(oper) => statements.push(gen_dynamic_props(oper, context)),
+    OperationNode::SetDynamicEvents(oper) => statements.push(gen_set_dynamic_events(oper, context)),
+    OperationNode::SetNodes(oper) => statements.push(gen_set_nodes(oper, context)),
+    OperationNode::SetEvent(oper) => statements.push(gen_set_event(oper, context, event_opers)),
+    OperationNode::SetHtml(oper) => statements.push(gen_set_html(oper, context)),
+    OperationNode::SetTemplateRef(oper) => statements.push(gen_set_template_ref(oper, context)),
+    OperationNode::CreateNodes(oper) => statements.push(gen_create_nodes(oper, context)),
+    OperationNode::InsertNode(oper) => statements.push(gen_insert_node(oper, context)),
+    OperationNode::Directive(oper) => {
       if let Some(statement) = gen_builtin_directive(oper, context) {
         statements.push(statement)
       }
     }
-    Either17::N(oper) => gen_create_component(statements, oper, context, context_block),
-    Either17::O(oper) => statements.push(gen_declare_old_ref(oper, context)),
-    Either17::P(oper) => statements.push(gen_get_text_child(oper, context)),
-    Either17::Q(oper) => statements.push(gen_key(oper, context, context_block)),
+    OperationNode::CreateComponent(oper) => {
+      gen_create_component(statements, oper, context, context_block)
+    }
+    OperationNode::SlotOutletNode(_) => (),
+    OperationNode::DeclareOldRef(oper) => statements.push(gen_declare_old_ref(oper, context)),
+    OperationNode::GetTextChild(oper) => statements.push(gen_get_text_child(oper, context)),
+    OperationNode::Key(oper) => statements.push(gen_key(oper, context, context_block)),
   }
 }
 

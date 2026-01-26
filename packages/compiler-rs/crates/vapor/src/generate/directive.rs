@@ -1,4 +1,3 @@
-use napi::bindgen_prelude::Either17;
 use oxc_ast::AstBuilder;
 use oxc_ast::NONE;
 use oxc_ast::ast::Statement;
@@ -14,6 +13,7 @@ use crate::generate::v_model::gen_v_model;
 use crate::generate::v_show::gen_v_show;
 use crate::ir::index::BlockIRNode;
 use crate::ir::index::DirectiveIRNode;
+use crate::ir::index::OperationNode;
 use common::check::is_simple_identifier;
 use common::text::to_valid_asset_id;
 
@@ -42,7 +42,7 @@ pub fn gen_directives_for_element<'a>(
   let mut element = String::new();
   let mut directive_items = ast.vec();
   for item in &mut context_block.operation {
-    if let Either17::M(item) = item
+    if let OperationNode::Directive(item) = item
       && item.element == id
       && !item.builtin
     {

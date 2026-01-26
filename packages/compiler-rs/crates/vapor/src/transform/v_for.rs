@@ -1,11 +1,11 @@
-use napi::bindgen_prelude::{Either3, Either17};
+use napi::bindgen_prelude::Either3;
 use oxc_allocator::TakeIn;
 use oxc_ast::ast::{
   BinaryExpression, Expression, JSXAttribute, JSXAttributeValue, JSXChild, JSXElement,
 };
 
 use crate::{
-  ir::index::{BlockIRNode, DynamicFlag, ForIRNode, IRFor},
+  ir::index::{BlockIRNode, DynamicFlag, ForIRNode, IRFor, OperationNode},
   transform::TransformContext,
 };
 use common::{
@@ -111,7 +111,7 @@ pub unsafe fn transform_v_for<'a>(
   Some(Box::new(move || {
     let block = exit_block();
 
-    context_block.dynamic.operation = Some(Box::new(Either17::B(ForIRNode {
+    context_block.dynamic.operation = Some(Box::new(OperationNode::For(ForIRNode {
       id,
       value,
       key,

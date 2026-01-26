@@ -1,11 +1,11 @@
 use common::{
   check::is_jsx_component, error::ErrorCodes, expression::SimpleExpressionNode, text::is_empty_text,
 };
-use napi::bindgen_prelude::{Either3, Either17};
+use napi::bindgen_prelude::Either3;
 use oxc_ast::ast::{JSXAttribute, JSXElement};
 
 use crate::{
-  ir::index::{BlockIRNode, SetHtmlIRNode},
+  ir::index::{BlockIRNode, OperationNode, SetHtmlIRNode},
   transform::{DirectiveTransformResult, TransformContext},
 };
 
@@ -31,7 +31,7 @@ pub fn transform_v_html<'a>(
   context.register_effect(
     context_block,
     context.is_operation(vec![&exp]),
-    Either17::I(SetHtmlIRNode {
+    OperationNode::SetHtml(SetHtmlIRNode {
       set_html: true,
       element,
       value: exp,

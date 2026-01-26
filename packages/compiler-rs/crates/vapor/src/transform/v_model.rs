@@ -1,11 +1,10 @@
-use napi::bindgen_prelude::Either17;
 use oxc_ast::ast::{
   JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElement,
 };
 use oxc_span::SPAN;
 
 use crate::{
-  ir::index::{BlockIRNode, DirectiveIRNode},
+  ir::index::{BlockIRNode, DirectiveIRNode, OperationNode},
   transform::{DirectiveTransformResult, TransformContext},
 };
 use common::{
@@ -118,7 +117,7 @@ pub fn transform_v_model<'a>(
     let element = context.reference(&mut context_block.dynamic);
     context.register_operation(
       context_block,
-      Either17::M(DirectiveIRNode {
+      OperationNode::Directive(DirectiveIRNode {
         directive: true,
         element,
         dir,

@@ -1,6 +1,6 @@
 use common::directive::{DirectiveNode, Modifiers};
 use indexmap::IndexSet;
-use napi::{Either, bindgen_prelude::Either17};
+use napi::Either;
 
 use common::expression::SimpleExpressionNode;
 
@@ -224,6 +224,20 @@ pub struct CreateComponentIRNode<'a> {
 }
 
 #[derive(Debug)]
+pub struct SlotOutletNodeIRNode<'a> {
+  pub id: i32,
+  pub name: SimpleExpressionNode<'a>,
+  pub props: Vec<IRProps<'a>>,
+  pub fallback: Option<BlockIRNode<'a>>,
+  pub no_slotted: bool,
+  pub once: bool,
+  pub parent: Option<i32>,
+  pub anchor: Option<i32>,
+  pub append: bool,
+  pub last: bool,
+}
+
+#[derive(Debug)]
 pub struct DeclareOldRefIRNode {
   pub declare_older_ref: bool,
   pub id: i32,
@@ -235,25 +249,27 @@ pub struct GetTextChildIRNode {
   pub parent: i32,
 }
 
-pub type OperationNode<'a> = Either17<
-  IfIRNode<'a>,
-  ForIRNode<'a>,
-  SetTextIRNode<'a>,
-  SetPropIRNode<'a>,
-  SetDynamicPropsIRNode<'a>,
-  SetDynamicEventsIRNode<'a>,
-  SetNodesIRNode<'a>,
-  SetEventIRNode<'a>,
-  SetHtmlIRNode<'a>,
-  SetTemplateRefIRNode<'a>,
-  CreateNodesIRNode<'a>,
-  InsertNodeIRNode,
-  DirectiveIRNode<'a>,
-  CreateComponentIRNode<'a>,
-  DeclareOldRefIRNode,
-  GetTextChildIRNode,
-  KeyIRNode<'a>,
->;
+#[derive(Debug)]
+pub enum OperationNode<'a> {
+  If(IfIRNode<'a>),
+  For(ForIRNode<'a>),
+  SetText(SetTextIRNode<'a>),
+  SetProp(SetPropIRNode<'a>),
+  SetDynamicProps(SetDynamicPropsIRNode<'a>),
+  SetDynamicEvents(SetDynamicEventsIRNode<'a>),
+  SetNodes(SetNodesIRNode<'a>),
+  SetHtml(SetHtmlIRNode<'a>),
+  SetEvent(SetEventIRNode<'a>),
+  SetTemplateRef(SetTemplateRefIRNode<'a>),
+  CreateNodes(CreateNodesIRNode<'a>),
+  InsertNode(InsertNodeIRNode),
+  Directive(DirectiveIRNode<'a>),
+  CreateComponent(CreateComponentIRNode<'a>),
+  SlotOutletNode(SlotOutletNodeIRNode<'a>),
+  DeclareOldRef(DeclareOldRefIRNode),
+  GetTextChild(GetTextChildIRNode),
+  Key(KeyIRNode<'a>),
+}
 
 pub enum DynamicFlag {
   None = 0,

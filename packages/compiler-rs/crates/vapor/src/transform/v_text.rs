@@ -4,11 +4,11 @@ use common::{
   expression::SimpleExpressionNode,
   text::{escape_html, is_empty_text},
 };
-use napi::bindgen_prelude::{Either3, Either17};
+use napi::bindgen_prelude::Either3;
 use oxc_ast::ast::{JSXAttribute, JSXElement};
 
 use crate::{
-  ir::index::{BlockIRNode, GetTextChildIRNode, SetTextIRNode},
+  ir::index::{BlockIRNode, GetTextChildIRNode, OperationNode, SetTextIRNode},
   transform::{DirectiveTransformResult, TransformContext},
 };
 
@@ -47,7 +47,7 @@ pub fn transform_v_text<'a>(
     if !is_component {
       context.register_operation(
         context_block,
-        Either17::P(GetTextChildIRNode {
+        OperationNode::GetTextChild(GetTextChildIRNode {
           get_text_child: true,
           parent,
         }),
@@ -58,7 +58,7 @@ pub fn transform_v_text<'a>(
     context.register_effect(
       context_block,
       context.is_operation(vec![&exp]),
-      Either17::C(SetTextIRNode {
+      OperationNode::SetText(SetTextIRNode {
         set_text: true,
         values: vec![exp],
         element,

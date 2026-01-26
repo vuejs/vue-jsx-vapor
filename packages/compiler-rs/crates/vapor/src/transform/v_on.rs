@@ -4,11 +4,11 @@ use common::{
   error::ErrorCodes,
   expression::SimpleExpressionNode,
 };
-use napi::bindgen_prelude::{Either3, Either17};
+use napi::bindgen_prelude::Either3;
 use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement};
 
 use crate::{
-  ir::index::{BlockIRNode, SetEventIRNode},
+  ir::index::{BlockIRNode, OperationNode, SetEventIRNode},
   transform::{DirectiveTransformResult, TransformContext},
 };
 
@@ -94,7 +94,7 @@ pub fn transform_v_on<'a>(
   context.register_effect(
     context_block,
     context.is_operation(vec![&arg]),
-    Either17::H(SetEventIRNode {
+    OperationNode::SetEvent(SetEventIRNode {
       set_event: true,
       element,
       value: exp,

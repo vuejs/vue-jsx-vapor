@@ -1,4 +1,4 @@
-use napi::bindgen_prelude::{Either3, Either17};
+use napi::bindgen_prelude::Either3;
 use oxc_allocator::TakeIn;
 use oxc_ast::ast::{Expression, JSXChild};
 
@@ -47,14 +47,15 @@ pub unsafe fn transform_v_key<'a>(
 
   Some(Box::new(move || {
     let block = exit_block();
-    context_block.dynamic.operation = Some(Box::new(Either17::Q(KeyIRNode {
-      id,
-      value,
-      block,
-      anchor: None,
-      parent: None,
-      append: false,
-      last: false,
-    })))
+    context_block.dynamic.operation =
+      Some(Box::new(crate::ir::index::OperationNode::Key(KeyIRNode {
+        id,
+        value,
+        block,
+        anchor: None,
+        parent: None,
+        append: false,
+        last: false,
+      })))
   }))
 }

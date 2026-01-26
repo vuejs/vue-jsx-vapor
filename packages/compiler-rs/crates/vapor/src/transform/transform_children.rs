@@ -1,11 +1,10 @@
 use std::{collections::VecDeque, mem};
 
-use napi::bindgen_prelude::Either17;
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::ast::{JSXChild, JSXExpression};
 
 use crate::{
-  ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, InsertNodeIRNode},
+  ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, InsertNodeIRNode, OperationNode},
   transform::TransformContext,
 };
 
@@ -171,10 +170,10 @@ fn process_dynamic_children<'a>(
     && let Some(operation) = last_insertion_child.operation.as_mut()
   {
     match operation.as_mut() {
-      Either17::A(operation) => operation.last = true,
-      Either17::B(operation) => operation.last = true,
-      Either17::N(operation) => operation.last = true,
-      Either17::Q(operation) => operation.last = true,
+      OperationNode::If(operation) => operation.last = true,
+      OperationNode::For(operation) => operation.last = true,
+      OperationNode::CreateComponent(operation) => operation.last = true,
+      OperationNode::Key(operation) => operation.last = true,
       _ => (),
     };
   }
@@ -197,7 +196,7 @@ fn register_insertion<'a>(
       // template node due to invalid nesting - generate actual insertion
       context.register_operation(
         context_block,
-        Either17::L(InsertNodeIRNode {
+        OperationNode::InsertNode(InsertNodeIRNode {
           insert_node: true,
           elements: ids.clone(),
           parent,
@@ -208,25 +207,25 @@ fn register_insertion<'a>(
     } else if let Some(operation) = &mut child.operation {
       // block types
       match operation.as_mut() {
-        Either17::A(if_ir_node) => {
+        OperationNode::If(if_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           if_ir_node.parent = Some(parent);
           if_ir_node.anchor = Some(anchor);
           if_ir_node.append = append;
         }
-        Either17::B(for_ir_node) => {
+        OperationNode::For(for_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           for_ir_node.parent = Some(parent);
           for_ir_node.anchor = Some(anchor);
           for_ir_node.append = append;
         }
-        Either17::N(create_component_ir_node) => {
+        OperationNode::CreateComponent(create_component_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           create_component_ir_node.parent = Some(parent);
           create_component_ir_node.anchor = Some(anchor);
           create_component_ir_node.append = append;
         }
-        Either17::Q(key_ir_node) => {
+        OperationNode::Key(key_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           key_ir_node.parent = Some(parent);
           key_ir_node.anchor = Some(anchor);

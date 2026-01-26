@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use indexmap::IndexMap;
-use napi::bindgen_prelude::{Either, Either4, Either17};
+use napi::bindgen_prelude::{Either, Either4};
 use oxc_ast::{
   NONE,
   ast::{Expression, FormalParameterKind, PropertyKind},
@@ -464,17 +464,22 @@ fn has_component_or_slot_in_dynamic(dynamic: &IRDynamicInfo) -> bool {
   // Check operation in this dynamic node
   if let Some(operation) = &dynamic.operation {
     match operation.as_ref() {
-      Either17::A(op) => {
+      OperationNode::If(op) => {
         if has_component_or_slot_in_if(op) {
           return true;
         }
       }
-      Either17::B(op) => {
+      OperationNode::For(op) => {
         if has_component_or_slot_in_block(&op.render) {
           return true;
         }
       }
-      Either17::N(_) => return true,
+      OperationNode::Key(key) => {
+        if has_component_or_slot_in_block(&key.block) {
+          return true;
+        }
+      }
+      OperationNode::CreateComponent(_) => return true,
       _ => (),
     }
   }
@@ -490,17 +495,22 @@ fn has_component_or_slot_in_dynamic(dynamic: &IRDynamicInfo) -> bool {
 fn has_component_or_slot_in_operations(operations: &Vec<OperationNode>) -> bool {
   for op in operations.iter() {
     match op {
-      Either17::N(_) => return true,
-      Either17::A(op) => {
+      OperationNode::If(op) => {
         if has_component_or_slot_in_if(op) {
           return true;
         }
       }
-      Either17::B(op) => {
+      OperationNode::For(op) => {
         if has_component_or_slot_in_block(&op.render) {
           return true;
         }
       }
+      OperationNode::Key(op) => {
+        if has_component_or_slot_in_block(&op.block) {
+          return true;
+        }
+      }
+      OperationNode::CreateComponent(_) => return true,
       _ => (),
     }
   }

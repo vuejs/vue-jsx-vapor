@@ -1,6 +1,5 @@
 use std::mem;
 
-use napi::bindgen_prelude::Either17;
 use oxc_ast::NONE;
 use oxc_ast::ast::Argument;
 use oxc_ast::ast::NumberBase;
@@ -14,6 +13,7 @@ use crate::generate::operation::gen_operation_with_insertion_state;
 use crate::ir::index::BlockIRNode;
 use crate::ir::index::DynamicFlag;
 use crate::ir::index::IRDynamicInfo;
+use crate::ir::index::OperationNode;
 
 pub fn gen_self<'a>(
   statements: &mut oxc_allocator::Vec<'a, Statement<'a>>,
@@ -101,10 +101,10 @@ fn gen_children<'a>(
   for mut child in children {
     if let Some(operation) = child.operation.as_ref()
       && match operation.as_ref() {
-        Either17::A(op) => op.anchor == Some(-1),
-        Either17::B(op) => op.anchor == Some(-1),
-        Either17::N(op) => op.anchor == Some(-1),
-        Either17::Q(op) => op.anchor == Some(-1),
+        OperationNode::If(op) => op.anchor == Some(-1),
+        OperationNode::For(op) => op.anchor == Some(-1),
+        OperationNode::CreateComponent(op) => op.anchor == Some(-1),
+        OperationNode::Key(op) => op.anchor == Some(-1),
         _ => false,
       }
     {

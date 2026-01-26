@@ -1,8 +1,8 @@
-use napi::bindgen_prelude::{Either3, Either17};
+use napi::bindgen_prelude::Either3;
 use oxc_ast::ast::JSXChild;
 
 use crate::{
-  ir::index::{BlockIRNode, DeclareOldRefIRNode, SetTemplateRefIRNode},
+  ir::index::{BlockIRNode, DeclareOldRefIRNode, OperationNode, SetTemplateRefIRNode},
   transform::TransformContext,
 };
 use common::{check::is_fragment_node, directive::Directives, expression::SimpleExpressionNode};
@@ -31,7 +31,7 @@ pub unsafe fn transform_template_ref<'a>(
     if effect {
       context.register_operation(
         context_block,
-        Either17::O(DeclareOldRefIRNode {
+        OperationNode::DeclareOldRef(DeclareOldRefIRNode {
           declare_older_ref: true,
           id,
         }),
@@ -42,7 +42,7 @@ pub unsafe fn transform_template_ref<'a>(
     context.register_effect(
       context_block,
       context.is_operation(vec![&value]),
-      Either17::J(SetTemplateRefIRNode {
+      OperationNode::SetTemplateRef(SetTemplateRefIRNode {
         set_template_ref: true,
         element: id,
         value,

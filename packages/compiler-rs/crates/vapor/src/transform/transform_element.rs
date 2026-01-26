@@ -1,9 +1,6 @@
 use std::{cell::RefCell, mem, rc::Rc};
 
-use napi::{
-  Either,
-  bindgen_prelude::{Either3, Either17},
-};
+use napi::{Either, bindgen_prelude::Either3};
 use oxc_ast::ast::{
   JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement,
   JSXElementName, JSXExpression,
@@ -14,8 +11,8 @@ use crate::{
   ir::{
     component::{IRProp, IRProps, IRPropsDynamicExpression, IRPropsStatic},
     index::{
-      BlockIRNode, CreateComponentIRNode, DirectiveIRNode, DynamicFlag, SetDynamicEventsIRNode,
-      SetDynamicPropsIRNode, SetPropIRNode,
+      BlockIRNode, CreateComponentIRNode, DirectiveIRNode, DynamicFlag, OperationNode,
+      SetDynamicEventsIRNode, SetDynamicPropsIRNode, SetPropIRNode,
     },
   },
   transform::{
@@ -134,7 +131,7 @@ pub fn transform_native_element<'a>(
       context.register_effect(
         context_block,
         false,
-        Either17::E(SetDynamicPropsIRNode {
+        OperationNode::SetDynamicProps(SetDynamicPropsIRNode {
           set_dynamic_props: true,
           props,
           element,
@@ -165,7 +162,7 @@ pub fn transform_native_element<'a>(
           context.register_effect(
             context_block,
             context.is_operation(values.iter().collect::<Vec<&SimpleExpressionNode>>()),
-            Either17::D(SetPropIRNode {
+            OperationNode::SetProp(SetPropIRNode {
               set_prop: true,
               prop,
               element,
@@ -220,24 +217,26 @@ pub fn transform_component_element<'a>(
   let dynamic = &mut context_block.dynamic;
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
 
-  dynamic.operation = Some(Box::new(Either17::N(CreateComponentIRNode {
-    create_component: true,
-    id: context.reference(dynamic),
-    tag,
-    props: match props_result.props {
-      Either::A(props) => props,
-      Either::B(props) => vec![Either3::A(props)],
+  dynamic.operation = Some(Box::new(OperationNode::CreateComponent(
+    CreateComponentIRNode {
+      create_component: true,
+      id: context.reference(dynamic),
+      tag,
+      props: match props_result.props {
+        Either::A(props) => props,
+        Either::B(props) => vec![Either3::A(props)],
+      },
+      asset,
+      root: single_root && *context.in_v_for.borrow() == 0,
+      slots: mem::take(&mut context_block.slots),
+      once: *context.in_v_once.borrow(),
+      parent: None,
+      anchor: None,
+      dynamic: None,
+      append: false,
+      last: false,
     },
-    asset,
-    root: single_root && *context.in_v_for.borrow() == 0,
-    slots: mem::take(&mut context_block.slots),
-    once: *context.in_v_once.borrow(),
-    parent: None,
-    anchor: None,
-    dynamic: None,
-    append: false,
-    last: false,
-  })));
+  )));
 }
 
 pub struct PropsResult<'a> {
@@ -307,7 +306,7 @@ pub fn build_props<'a>(
               context.register_effect(
                 context_block,
                 context.is_operation(vec![&value]),
-                Either17::F(SetDynamicEventsIRNode {
+                OperationNode::SetDynamicEvents(SetDynamicEventsIRNode {
                   set_dynamic_events: true,
                   element,
                   value,
@@ -470,7 +469,7 @@ pub fn transform_prop<'a>(
     let element = context.reference(&mut context_block.dynamic);
     context.register_operation(
       context_block,
-      Either17::M(DirectiveIRNode {
+      OperationNode::Directive(DirectiveIRNode {
         directive: true,
         element,
         dir: resolve_directive(prop, context.source_text),

@@ -5,7 +5,6 @@ use common::{
   walk::WalkIdentifiers,
   walk_mut::WalkIdentifiersMut,
 };
-use napi::bindgen_prelude::Either17;
 use oxc_allocator::CloneIn;
 use oxc_ast::{
   AstKind, NONE,
@@ -22,7 +21,7 @@ use crate::{
   generate::{
     CodegenContext, block::gen_block_content, expression::gen_expression, operation::gen_operation,
   },
-  ir::index::{BlockIRNode, ForIRNode, IREffect},
+  ir::index::{BlockIRNode, ForIRNode, IREffect, OperationNode},
 };
 
 /**
@@ -754,15 +753,15 @@ fn analyze_variable_scopes<'a>(
 fn get_expression<'a>(effect: &'a IREffect<'a>) -> Option<&'a SimpleExpressionNode<'a>> {
   let operation = effect.operations.first();
   match operation.as_ref().unwrap() {
-    Either17::C(operation) => operation.values.first(),
-    Either17::G(operation) => operation.values.first(),
-    Either17::K(operation) => operation.values.first(),
-    Either17::I(operation) => Some(&operation.value),
-    Either17::H(operation) => operation.value.as_ref(),
-    Either17::F(operation) => Some(&operation.value),
-    Either17::J(operation) => Some(&operation.value),
-    Either17::D(operation) => operation.prop.values.first(),
-    Either17::Q(operation) => Some(&operation.value),
+    OperationNode::SetText(operation) => operation.values.first(),
+    OperationNode::SetNodes(operation) => operation.values.first(),
+    OperationNode::CreateNodes(operation) => operation.values.first(),
+    OperationNode::SetHtml(operation) => Some(&operation.value),
+    OperationNode::SetEvent(operation) => operation.value.as_ref(),
+    OperationNode::SetDynamicEvents(operation) => Some(&operation.value),
+    OperationNode::SetTemplateRef(operation) => Some(&operation.value),
+    OperationNode::SetProp(operation) => operation.prop.values.first(),
+    OperationNode::Key(operation) => Some(&operation.value),
     _ => None,
   }
 }

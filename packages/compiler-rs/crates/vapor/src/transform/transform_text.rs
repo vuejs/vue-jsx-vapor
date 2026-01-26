@@ -1,9 +1,6 @@
 use std::collections::HashSet;
 
-use napi::{
-  Either,
-  bindgen_prelude::{Either3, Either17},
-};
+use napi::{Either, bindgen_prelude::Either3};
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::ast::{
   BinaryOperator, ConditionalExpression, Expression, JSXChild, LogicalExpression,
@@ -12,7 +9,8 @@ use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   ir::index::{
-    BlockIRNode, CreateNodesIRNode, DynamicFlag, GetTextChildIRNode, IfIRNode, SetNodesIRNode,
+    BlockIRNode, CreateNodesIRNode, DynamicFlag, GetTextChildIRNode, IfIRNode, OperationNode,
+    SetNodesIRNode,
   },
   transform::TransformContext,
 };
@@ -212,7 +210,7 @@ fn process_interpolation<'a>(
   } {
     context.register_operation(
       context_block,
-      Either17::K(CreateNodesIRNode {
+      OperationNode::CreateNodes(CreateNodesIRNode {
         create_nodes: true,
         id,
         once,
@@ -225,7 +223,7 @@ fn process_interpolation<'a>(
     *template = template.to_string() + " ";
     context.register_operation(
       context_block,
-      Either17::G(SetNodesIRNode {
+      OperationNode::SetNodes(SetNodesIRNode {
         set_nodes: true,
         element: id,
         once,
@@ -263,7 +261,7 @@ fn process_text_container<'a>(
     let parent = context.reference(&mut context_block.dynamic);
     context.register_operation(
       context_block,
-      Either17::P(GetTextChildIRNode {
+      OperationNode::GetTextChild(GetTextChildIRNode {
         get_text_child: true,
         parent,
       }),
@@ -272,7 +270,7 @@ fn process_text_container<'a>(
     let element = context.reference(&mut context_block.dynamic);
     context.register_operation(
       context_block,
-      Either17::G(SetNodesIRNode {
+      OperationNode::SetNodes(SetNodesIRNode {
         set_nodes: true,
         element,
         once: *context.in_v_once.borrow(),
@@ -355,7 +353,7 @@ pub fn process_conditional_expression<'a>(
       unsafe { &mut *_context_block },
       parent_node,
     );
-    context_block.dynamic.operation = Some(Box::new(Either17::A(operation)));
+    context_block.dynamic.operation = Some(Box::new(OperationNode::If(operation)));
   })
 }
 
@@ -421,7 +419,7 @@ fn process_logical_expression<'a>(
       parent_node,
     );
 
-    context_block.dynamic.operation = Some(Box::new(Either17::A(operation)));
+    context_block.dynamic.operation = Some(Box::new(OperationNode::If(operation)));
   })
 }
 
