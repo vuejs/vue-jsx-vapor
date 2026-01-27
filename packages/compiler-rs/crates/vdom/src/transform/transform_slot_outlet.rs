@@ -32,8 +32,8 @@ pub unsafe fn transform_slot_outlet<'a>(
     return None;
   }
 
-  for value in &mut context.options.slot_identifiers.borrow_mut().values_mut() {
-    value.2 = true;
+  for value in &mut context.options.slot_scopes.borrow_mut().values_mut() {
+    value.forwarded = true;
   }
 
   let ast = context.ast;

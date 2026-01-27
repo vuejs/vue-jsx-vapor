@@ -12,7 +12,7 @@ const Comp = (props: { foo: string }, { slots }) => {
   )
 }
 
-const CompSlotout = (props: { foo: string }, { slots }) => {
+const CompSlotout = (props: { foo: string }) => {
   return (
     <slot foo={props.foo}>
       <div>default slot</div>

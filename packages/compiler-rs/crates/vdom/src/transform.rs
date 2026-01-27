@@ -321,7 +321,7 @@ impl<'a> TransformContext<'a> {
         None
       } {
         if !self.options.optimize_slots {
-          self.add_slot_identifiers(id);
+          self.add_slot_scopes(id);
         } else if self
           .options
           .identifiers
@@ -330,7 +330,7 @@ impl<'a> TransformContext<'a> {
           .is_some()
         {
           has_scope_ref = true;
-          self.add_slot_identifiers(id);
+          self.add_slot_scopes(id);
         }
         has_ref = true;
         self
@@ -344,7 +344,7 @@ impl<'a> TransformContext<'a> {
       WalkIdentifiersMut::new(
         Box::new(move |id, _, _, _, _| {
           if !self.options.optimize_slots {
-            self.add_slot_identifiers(id);
+            self.add_slot_scopes(id);
           } else if self
             .options
             .identifiers
@@ -353,7 +353,7 @@ impl<'a> TransformContext<'a> {
             .is_some()
           {
             *unsafe { &mut *has_scope_ref_ptr } = true;
-            self.add_slot_identifiers(id);
+            self.add_slot_scopes(id);
           }
           *unsafe { &mut *has_ref_ptr } = true;
           None
@@ -369,15 +369,15 @@ impl<'a> TransformContext<'a> {
     }
   }
 
-  fn add_slot_identifiers(&self, id: &IdentifierReference) {
-    let slot_identifiers = &mut self.options.slot_identifiers.borrow_mut();
-    if let Some(last_slot) = slot_identifiers.last()
-      && last_slot.1.1.contains(&id.name.to_string())
+  fn add_slot_scopes(&self, id: &IdentifierReference) {
+    let slot_scopes = &mut self.options.slot_scopes.borrow_mut();
+    if let Some(last_slot) = slot_scopes.last()
+      && last_slot.1.identifiers.contains(&id.name.to_string())
     {
       return;
     }
-    for value in slot_identifiers.values_mut() {
-      value.0 += 1;
+    for value in slot_scopes.values_mut() {
+      value.seen += 1;
     }
   }
 

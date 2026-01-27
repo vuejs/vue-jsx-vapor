@@ -1,4 +1,4 @@
-import { defineVaporCustomElement, ref } from 'vue'
+import { defineVaporCustomElement } from 'vue'
 
 const Comp = defineVaporCustomElement(() => {
   return (

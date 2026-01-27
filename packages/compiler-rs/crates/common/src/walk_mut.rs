@@ -133,12 +133,9 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
       && let Expression::Identifier(id) = {
         let mut object = &mut node.object;
         loop {
-          match object {
-            Expression::StaticMemberExpression(member) => {
-              object = &mut member.object;
-              continue;
-            }
-            _ => {}
+          if let Expression::StaticMemberExpression(member) = object {
+            object = &mut member.object;
+            continue;
           }
           break;
         }

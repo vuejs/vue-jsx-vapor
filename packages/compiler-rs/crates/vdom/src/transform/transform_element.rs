@@ -77,7 +77,7 @@ pub unsafe fn transform_element<'a>(
   // VNodeCall interface.
   let mut vnode_tag = get_tag_name(&node.opening_element.name, context.source_text);
   if vnode_tag == "slot" {
-    unsafe { transform_slot_outlet(directives, context_node, &*context) };
+    unsafe { transform_slot_outlet(directives, context_node, context) };
     return None;
   }
   if matches!(vnode_tag.as_ref(), "Transition" | "TransitionGroup") {
@@ -238,7 +238,7 @@ pub unsafe fn transform_element<'a>(
     if is_component {
       context
         .options
-        .slot_identifiers
+        .slot_scopes
         .borrow_mut()
         .shift_remove(&node_span);
     }

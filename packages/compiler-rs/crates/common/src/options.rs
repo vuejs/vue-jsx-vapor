@@ -33,6 +33,12 @@ pub struct Hmr {
   pub define_component_name: Vec<String>,
 }
 
+pub struct SlotScope {
+  pub seen: i32,
+  pub identifiers: Vec<String>,
+  pub forwarded: bool,
+}
+
 pub struct TransformOptions<'a> {
   pub allocator: Allocator,
   pub semantic: RefCell<Semantic<'a>>,
@@ -55,7 +61,7 @@ pub struct TransformOptions<'a> {
   pub in_v_slot: RefCell<i32>,
   pub in_v_once: RefCell<bool>,
   pub identifiers: RefCell<HashMap<String, i32>>,
-  pub slot_identifiers: RefCell<IndexMap<Span, (i32, Vec<String>, bool)>>,
+  pub slot_scopes: RefCell<IndexMap<Span, SlotScope>>,
   pub cache_index: RefCell<i32>,
   pub optimize_slots: bool,
   pub runtime_module_name: Option<String>,
@@ -85,7 +91,7 @@ impl<'a> Default for TransformOptions<'a> {
       in_v_slot: RefCell::new(0),
       in_v_once: RefCell::new(false),
       identifiers: RefCell::new(HashMap::new()),
-      slot_identifiers: RefCell::new(IndexMap::new()),
+      slot_scopes: RefCell::new(IndexMap::new()),
       cache_index: RefCell::new(0),
       optimize_slots: false,
       runtime_module_name: None,

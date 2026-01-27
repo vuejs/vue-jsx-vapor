@@ -5,6 +5,7 @@ use common::{
   directive::{Directives, find_prop},
   error::ErrorCodes,
   expression::expression_to_params,
+  options::SlotScope,
   patch_flag::SlotFlags,
   text::get_tag_name,
 };
@@ -58,11 +59,14 @@ pub unsafe fn track_slot_scopes<'a>(
           identifiers = context.add_identifiers(&Some(slot_props.expression.to_expression()));
         }
         if is_component {
-          context
-            .options
-            .slot_identifiers
-            .borrow_mut()
-            .insert(node.span, (0, identifiers.clone(), false));
+          context.options.slot_scopes.borrow_mut().insert(
+            node.span,
+            SlotScope {
+              seen: 0,
+              identifiers: identifiers.clone(),
+              forwarded: false,
+            },
+          );
         }
         *context.options.in_v_slot.borrow_mut() += 1;
         return Some(Box::new(move || {
@@ -70,11 +74,14 @@ pub unsafe fn track_slot_scopes<'a>(
           context.remove_identifiers(identifiers);
         }));
       } else if is_component {
-        context
-          .options
-          .slot_identifiers
-          .borrow_mut()
-          .insert(node.span, (0, vec![], false));
+        context.options.slot_scopes.borrow_mut().insert(
+          node.span,
+          SlotScope {
+            seen: 0,
+            identifiers: vec![],
+            forwarded: false,
+          },
+        );
       }
     }
     None
@@ -106,10 +113,10 @@ pub fn build_slots<'a>(
   if !context.options.ssr && (has_dynamic_slots || !context.options.optimize_slots) {
     has_dynamic_slots = context
       .options
-      .slot_identifiers
+      .slot_scopes
       .borrow()
       .get(&node.span)
-      .map(|n| n.0 > 0)
+      .map(|n| n.seen > 0)
       .unwrap_or_default();
   }
 
@@ -537,8 +544,8 @@ pub fn build_slots<'a>(
 
   let slot_flag = if has_dynamic_slots {
     SlotFlags::DYNAMIC
-  } else if let Some(slot_static) = context.options.slot_identifiers.borrow().get(&node.span)
-    && slot_static.2
+  } else if let Some(slot_static) = context.options.slot_scopes.borrow().get(&node.span)
+    && slot_static.forwarded
   {
     SlotFlags::FORWARDED
   } else {
