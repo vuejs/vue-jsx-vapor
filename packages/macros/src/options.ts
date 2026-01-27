@@ -43,6 +43,8 @@ export function resolveOptions(options: Options): OptionsResolved {
       alias: options.defineComponent?.alias ?? [
         'defineComponent',
         'defineVaporComponent',
+        'defineCustomElement',
+        'defineVaporCustomElement',
       ],
     },
     defineModel: { alias: options.defineModel?.alias ?? ['defineModel'] },

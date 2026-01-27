@@ -77,13 +77,13 @@ pub unsafe fn transform_element<'a>(
   // VNodeCall interface.
   let mut vnode_tag = get_tag_name(&node.opening_element.name, context.source_text);
   if vnode_tag == "slot" {
-    transform_slot_outlet(directives, node.as_mut(), &*context);
+    unsafe { transform_slot_outlet(directives, context_node, &*context) };
     return None;
   }
   if matches!(vnode_tag.as_ref(), "Transition" | "TransitionGroup") {
     transform_transition(node, context);
   }
-  let is_component = is_jsx_component(node, context.options);
+  let is_component = is_jsx_component(node, false, context.options);
   if is_component && vnode_tag.contains("-") {
     context.helper("resolveComponent");
     context.components.borrow_mut().insert(vnode_tag.clone());

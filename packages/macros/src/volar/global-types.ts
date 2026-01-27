@@ -33,16 +33,8 @@ export function getGlobalTypes(
   const defineModel = options.defineModel.alias.map((alias) =>
     alias === 'defineModel' ? 'defineModel' : `defineModel: ${alias}`,
   )
-  const defineComponent = options.defineComponent.alias.map((alias) =>
-    ['defineComponent', 'defineVaporComponent'].includes(alias)
-      ? ''
-      : `defineComponent: ${alias}`,
-  )
-  const VueMacros = [...defineModel, ...defineComponent]
-    .filter(Boolean)
-    .join(',')
   return `
-${VueMacros ? `declare const { ${VueMacros} }: typeof import('vue');` : ''}
+${defineModel.length ? `declare const { ${defineModel.join(',')} }: typeof import('vue');` : ''}
 ${defineSlots}
 ${defineExpose}
 ${defineStyle}

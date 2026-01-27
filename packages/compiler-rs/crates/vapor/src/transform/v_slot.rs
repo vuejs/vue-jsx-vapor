@@ -36,10 +36,10 @@ pub unsafe fn transform_v_slot<'a>(
     .v_slot
     .as_mut()
     .map(|dir| resolve_directive(dir, context.source_text));
-  let is_component = is_jsx_component(unsafe { &*node }, context.options);
+  let is_component = is_jsx_component(unsafe { &*node }, true, context.options);
   let is_slot_template = is_template(unsafe { &*node })
     && if let JSXChild::Element(parent_node) = parent_node
-      && is_jsx_component(parent_node, context.options)
+      && is_jsx_component(parent_node, false, context.options)
     {
       true
     } else {

@@ -28,7 +28,7 @@ impl<'a> Transform<'a> {
       if options.ssr
         && let Expression::CallExpression(node) = &mut *node
         && let Expression::Identifier(callee) = &mut node.callee
-        && callee.name.eq("defineVaporComponent")
+        && ["defineVaporComponent", "defineVaporCustomElement"].contains(&callee.name.as_ref())
       {
         callee.name = Atom::from_in("_defineVaporSSRComponent", &options.allocator);
         options
@@ -45,10 +45,11 @@ impl<'a> Transform<'a> {
             if let AstKind::CallExpression(parent) = parent
               && let Expression::Identifier(name) = &parent.callee
             {
-              if name.name == "defineVaporComponent" {
+              if ["defineVaporComponent", "defineVaporCustomElement"].contains(&name.name.as_ref())
+              {
                 has_define_vapor_component = true;
                 break;
-              } else if name.name == "defineComponent" {
+              } else if ["defineComponent", "defineCustomElement"].contains(&name.name.as_ref()) {
                 return Some((node, true));
               }
             }

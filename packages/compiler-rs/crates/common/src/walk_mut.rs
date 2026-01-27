@@ -85,10 +85,10 @@ impl<'a> WalkIdentifiersMut<'a> {
         if let AstKind::CallExpression(parent) = parent
           && let Expression::Identifier(name) = &parent.callee
         {
-          if name.name == "defineVaporComponent" {
+          if ["defineVaporComponent", "defineVaporCustomElement"].contains(&name.name.as_ref()) {
             has_define_vapor_component = true;
             break;
-          } else if name.name == "defineComponent" {
+          } else if ["defineComponent", "defineCustomElement"].contains(&name.name.as_ref()) {
             return Some(true);
           }
         }

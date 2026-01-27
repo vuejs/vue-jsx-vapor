@@ -65,7 +65,7 @@ pub unsafe fn transform_v_for<'a>(
     None
   };
 
-  let is_component = is_jsx_component(unsafe { &*node }, context.options)
+  let is_component = is_jsx_component(unsafe { &*node }, true, context.options)
     || is_template_with_single_component(unsafe { &*node }, context);
   let dynamic = &mut context_block.dynamic;
   let id = context.reference(dynamic);
@@ -85,7 +85,7 @@ pub unsafe fn transform_v_for<'a>(
   // when the entire list is emptied
   let mut only_child = false;
   if let JSXChild::Element(parent_node) = parent_node
-    && !is_jsx_component(parent_node, context.options)
+    && !is_jsx_component(parent_node, true, context.options)
   {
     let index = *context.index.borrow() as usize;
     for (i, child) in parent_node.children.iter().enumerate() {
@@ -203,5 +203,7 @@ fn is_template_with_single_component<'a>(
     .collect::<Vec<_>>();
 
   non_comment_children.len() == 1
-    && matches!(non_comment_children[0],JSXChild::Element(child) if is_jsx_component(child,context.options))
+    && matches!(non_comment_children[0], JSXChild::Element(child)
+      if is_jsx_component(child, true, context.options)
+    )
 }

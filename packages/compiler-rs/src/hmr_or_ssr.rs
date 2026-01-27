@@ -39,6 +39,8 @@ impl<'a> HmrOrSsrTransform<'a> {
         vec![
           String::from("defineComponent"),
           String::from("defineVaporComponent"),
+          String::from("defineElement"),
+          String::from("defineVaporCustomElement"),
           String::from("_defineVaporSSRComponent"),
         ]
       },

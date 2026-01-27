@@ -401,7 +401,32 @@ fn invalid_html_nesting() {
 #[test]
 fn custom_element() {
   let code = transform(
-    r#"<my-custom-element></my-custom-element>"#,
+    r#"<my-custom-element>{foo}</my-custom-element>"#,
+    Some(TransformOptions {
+      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createPlainElement as _createPlainElement, template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template(" ");
+  (() => {
+  	const _n1 = _createPlainElement("my-custom-element", null, { default: _withVaporCtx(() => {
+  		const _n0 = _t0();
+  		_setNodes(_n0, () => foo);
+  		return _n0;
+  	}) }, true);
+  	return _n1;
+  })();
+  "#)
+}
+
+#[test]
+fn custom_element_with_v_model() {
+  let code = transform(
+    r#"<my-custom-element v-model={foo}></my-custom-element>"#,
     Some(TransformOptions {
       is_custom_element: Box::new(|tag| tag == "my-custom-element"),
       ..Default::default()
@@ -411,7 +436,70 @@ fn custom_element() {
   assert_snapshot!(code, @r#"
   import { createPlainElement as _createPlainElement } from "vue";
   (() => {
+  	const _n0 = _createPlainElement("my-custom-element", {
+  		modelValue: () => foo,
+  		"onUpdate:modelValue": () => (_value) => foo = _value
+  	}, null, true);
+  	return _n0;
+  })();
+  "#)
+}
+
+#[test]
+fn custom_element_with_v_on() {
+  let code = transform(
+    r#"<my-custom-element onFoo={foo}></my-custom-element>"#,
+    Some(TransformOptions {
+      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createPlainElement as _createPlainElement } from "vue";
+  (() => {
+  	const _n0 = _createPlainElement("my-custom-element", { onFoo: () => foo }, null, true);
+  	return _n0;
+  })();
+  "#)
+}
+
+#[test]
+fn custom_element_with_v_html() {
+  let code = transform(
+    r#"<my-custom-element v-html={foo}></my-custom-element>"#,
+    Some(TransformOptions {
+      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createPlainElement as _createPlainElement, renderEffect as _renderEffect, setHtml as _setHtml } from "vue";
+  (() => {
   	const _n0 = _createPlainElement("my-custom-element", null, null, true);
+  	_renderEffect(() => _setHtml(_n0, foo));
+  	return _n0;
+  })();
+  "#)
+}
+
+#[test]
+fn custom_element_with_v_text() {
+  let code = transform(
+    r#"<my-custom-element v-text={foo}></my-custom-element>"#,
+    Some(TransformOptions {
+      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createPlainElement as _createPlainElement, renderEffect as _renderEffect, setText as _setText, toDisplayString as _toDisplayString, txt as _txt } from "vue";
+  (() => {
+  	const _n0 = _createPlainElement("my-custom-element", null, null, true);
+  	const _x0 = _txt(_n0);
+  	_renderEffect(() => _setText(_x0, _toDisplayString(foo)));
   	return _n0;
   })();
   "#)

@@ -35,7 +35,7 @@ pub fn transform_v_html<'a>(
       set_html: true,
       element,
       value: exp,
-      is_component: is_jsx_component(node, context.options),
+      is_component: is_jsx_component(node, false, context.options),
     }),
     None,
     None,

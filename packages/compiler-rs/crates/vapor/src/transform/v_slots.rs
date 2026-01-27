@@ -34,7 +34,7 @@ pub unsafe fn transform_v_slots<'a>(
 
   let ast = &context.ast;
   let node_ptr = node as *mut oxc_allocator::Box<JSXElement>;
-  let is_component = is_jsx_component(node, context.options);
+  let is_component = is_jsx_component(node, true, context.options);
   if is_component {
     let mut first_child_index = None;
     for (i, child) in unsafe { &mut *node_ptr }.children.iter().enumerate() {
@@ -74,7 +74,7 @@ pub unsafe fn transform_v_slots<'a>(
   }
 
   if let Some(dir) = directives.v_slots.as_mut() {
-    if !is_jsx_component(unsafe { &*node_ptr }, context.options) {
+    if !is_jsx_component(unsafe { &*node_ptr }, true, context.options) {
       context.options.on_error.as_ref()(ErrorCodes::VSlotMisplaced, unsafe { &*node_ptr }.span);
       return None;
     }

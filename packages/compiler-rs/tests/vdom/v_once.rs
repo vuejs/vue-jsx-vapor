@@ -77,7 +77,7 @@ fn on_slot_outlet() {
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, renderSlot as _renderSlot, setBlockTracking as _setBlockTracking, useSlots as _useSlots } from "vue";
   (() => {
   	const _cache = _createVNodeCache(0);
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _renderSlot(_slots, "default")).cacheIndex = 0, _setBlockTracking(1), _cache[0])]);
   })();
   "#)

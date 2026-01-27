@@ -11,20 +11,22 @@ use oxc_ast::{
 use oxc_span::{GetSpan, SPAN};
 
 use crate::{
-  ast::{NodeTypes, VNodeCallChildren},
+  ast::NodeTypes,
   transform::{
     TransformContext,
-    cache_static::cache_static_children,
-    transform_children::transform_children,
     transform_element::{PropsResult, build_props},
   },
 };
 
-pub fn transform_slot_outlet<'a>(
+/// # SAFETY
+pub unsafe fn transform_slot_outlet<'a>(
   directives: &mut Directives<'a>,
-  node: &mut JSXElement<'a>,
+  context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
+  let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
+    return None;
+  };
   let tag = get_tag_name(&node.opening_element.name, context.source_text);
   if tag != "slot" {
     return None;
@@ -36,8 +38,11 @@ pub fn transform_slot_outlet<'a>(
 
   let ast = context.ast;
   let node_span = node.span;
-  let (slot_name, slot_props) =
-    process_slot_outlet(directives, unsafe { &mut *(node as *mut _) }, context);
+  let (slot_name, slot_props) = process_slot_outlet(
+    directives,
+    unsafe { &mut *(node.as_mut() as *mut _) },
+    context,
+  );
 
   let expression = NodeTypes::CacheExpression(
     ast.expression_call(
@@ -76,40 +81,42 @@ pub fn transform_slot_outlet<'a>(
               ast.jsx_closing_fragment(SPAN),
             );
             unsafe {
-              transform_children(&mut fragment, context);
+              context.transform_node(&mut fragment, Some(&mut *context_node));
             }
-            let mut children = if let JSXChild::Fragment(fragment) = &mut fragment {
-              fragment.children.take_in(context.allocator)
-            } else {
-              ast.vec()
-            };
             let codegen_map = &mut context.codegen_map.borrow_mut();
-            cache_static_children(None, &mut children, context, codegen_map, false);
-            Some(
-              ast
-                .expression_arrow_function(
-                  node.span,
-                  true,
-                  false,
-                  NONE,
-                  ast.formal_parameters(
-                    SPAN,
-                    oxc_ast::ast::FormalParameterKind::ArrowFormalParameters,
-                    ast.vec(),
+            if let Some(NodeTypes::VNodeCall(mut vnode_call)) = codegen_map.remove(&node_span) {
+              Some(
+                ast
+                  .expression_arrow_function(
+                    node.span,
+                    true,
+                    false,
                     NONE,
-                  ),
-                  NONE,
-                  ast.function_body(
-                    SPAN,
-                    ast.vec(),
-                    ast.vec1(ast.statement_expression(
+                    ast.formal_parameters(
                       SPAN,
-                      context.gen_node_list(VNodeCallChildren::B(&mut children), codegen_map),
-                    )),
-                  ),
-                )
-                .into(),
-            )
+                      oxc_ast::ast::FormalParameterKind::ArrowFormalParameters,
+                      ast.vec(),
+                      NONE,
+                    ),
+                    NONE,
+                    ast.function_body(
+                      SPAN,
+                      ast.vec(),
+                      ast.vec1(ast.statement_expression(
+                        SPAN,
+                        if let Some(children) = vnode_call.children.take() {
+                          context.gen_node_list(children, codegen_map)
+                        } else {
+                          ast.expression_null_literal(SPAN)
+                        },
+                      )),
+                    ),
+                  )
+                  .into(),
+              )
+            } else {
+              None
+            }
           } else {
             None
           },

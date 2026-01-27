@@ -339,10 +339,14 @@ pub fn is_math_ml_tag(tag_name: &str) -> bool {
   MATH_TAGS.contains(tag_name)
 }
 
-pub fn is_jsx_component<'a>(node: &'a JSXElement<'a>, options: &TransformOptions) -> bool {
+pub fn is_jsx_component<'a>(
+  node: &'a JSXElement<'a>,
+  custom_element_is_component: bool,
+  options: &TransformOptions,
+) -> bool {
   let tag_name = get_tag_name(&node.opening_element.name, *options.source_text.borrow());
   if options.is_custom_element.as_ref()(tag_name.to_string()) {
-    return false;
+    return custom_element_is_component;
   }
   !is_html_tag(&tag_name) && !is_svg_tag(&tag_name) && !is_math_ml_tag(&tag_name)
 }

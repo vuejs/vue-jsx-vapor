@@ -18,7 +18,7 @@ fn default_slot_outlet() {
   assert_snapshot!(code, @r#"
   import { renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _renderSlot(_slots, "default", {});
   })();
   "#);
@@ -27,7 +27,7 @@ fn default_slot_outlet() {
 #[test]
 fn statically_named_slot_outlet() {
   let code = transform(
-    r#"<slot name="foo" />"#,
+    r#"<slot name="foo">foo</slot>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -35,10 +35,12 @@ fn statically_named_slot_outlet() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	let _slots = _useSlots();
-  	return _renderSlot(_slots, "foo");
+  	const _cache = _createVNodeCache(0);
+  	const _slots = _useSlots();
+  	return _renderSlot(_slots, "foo", {}, () => [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))]);
   })();
   "#);
 }
@@ -56,7 +58,7 @@ fn dynamically_named_slot_outlet() {
   assert_snapshot!(code, @r#"
   import { renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _renderSlot(_slots, foo);
   })();
   "#);
@@ -75,7 +77,7 @@ fn default_slot_outlet_with_props() {
   assert_snapshot!(code, @r#"
   import { renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _renderSlot(_slots, "default", {
   		foo: "bar",
   		baz: qux,
@@ -98,7 +100,7 @@ fn statically_named_slot_outlet_with_props() {
   assert_snapshot!(code, @r#"
   import { renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _renderSlot(_slots, "foo", {
   		foo: "bar",
   		baz: qux
@@ -120,7 +122,7 @@ fn dynamically_named_slot_outlet_with_props() {
   assert_snapshot!(code, @r#"
   import { renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _renderSlot(_slots, foo, {
   		foo: "bar",
   		baz: qux
@@ -141,10 +143,10 @@ fn default_slot_outlet_with_fallback() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
   	const _cache = _createVNodeCache(0);
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _renderSlot(_slots, "default", {}, () => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]);
   })();
   "#);
@@ -162,10 +164,10 @@ fn named_slot_outlet_with_fallback() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
   	const _cache = _createVNodeCache(0);
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _renderSlot(_slots, "foo", {}, () => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]);
   })();
   "#);
@@ -183,10 +185,10 @@ fn default_slot_outlet_with_props_and_fallback() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
   	const _cache = _createVNodeCache(0);
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _renderSlot(_slots, "default", { foo: bar }, () => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]);
   })();
   "#);
@@ -204,10 +206,10 @@ fn named_slot_outlet_with_props_and_fallback() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
   	const _cache = _createVNodeCache(0);
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _renderSlot(_slots, "foo", { foo: bar }, () => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]);
   })();
   "#);

@@ -83,10 +83,10 @@ impl<'a> TransformContext<'a> {
       statements.push(Statement::VariableDeclaration(
         ast.alloc_variable_declaration(
           SPAN,
-          VariableDeclarationKind::Let,
+          VariableDeclarationKind::Const,
           ast.vec1(ast.variable_declarator(
             SPAN,
-            VariableDeclarationKind::Let,
+            VariableDeclarationKind::Const,
             ast.binding_pattern_binding_identifier(SPAN, "_slots"),
             NONE,
             Some(ast.expression_call(

@@ -307,7 +307,7 @@ fn template_v_for_with_slotlet() {
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createBlock(_Fragment, null, [_renderSlot(_slots, "default")], 64))), 256);
   })();
   "#)
@@ -359,7 +359,7 @@ fn v_for_on_slotlet() {
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => _renderSlot(_slots, "default")), 256);
   })();
   "#)

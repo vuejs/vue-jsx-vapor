@@ -23,7 +23,7 @@ pub unsafe fn transform_children<'a>(
   let is_fragment_or_component = RootNode::is_root(node)
     || is_fragment_node(node)
     || match node {
-      JSXChild::Element(node) => is_jsx_component(node, context.options),
+      JSXChild::Element(node) => is_jsx_component(node, true, context.options),
       _ => false,
     };
 

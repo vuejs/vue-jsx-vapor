@@ -720,6 +720,98 @@ mod patch_flag_analysis {
 }
 
 #[test]
+fn custom_element() {
+  let code = transform(
+    r#"<my-custom-element>foo</my-custom-element>"#,
+    Some(TransformOptions {
+      interop: true,
+      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createElementBlock("my-custom-element", null, "foo");
+  "#)
+}
+
+#[test]
+fn custom_element_with_v_model() {
+  let code = transform(
+    r#"<my-custom-element v-model={foo}></my-custom-element>"#,
+    Some(TransformOptions {
+      interop: true,
+      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["modelValue", "onUpdate:modelValue"];
+  _openBlock(), _createElementBlock("my-custom-element", {
+  	modelValue: foo,
+  	"onUpdate:modelValue": ($event) => foo = $event
+  }, null, 8, _hoisted_1);
+  "#)
+}
+
+#[test]
+fn custom_element_with_v_on() {
+  let code = transform(
+    r#"<my-custom-element onFoo={foo}></my-custom-element>"#,
+    Some(TransformOptions {
+      interop: true,
+      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["onFoo"];
+  _openBlock(), _createElementBlock("my-custom-element", { onFoo: foo }, null, 40, _hoisted_1);
+  "#)
+}
+
+#[test]
+fn custom_element_with_v_html() {
+  let code = transform(
+    r#"<my-custom-element v-html={foo}></my-custom-element>"#,
+    Some(TransformOptions {
+      interop: true,
+      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["innerHTML"];
+  _openBlock(), _createElementBlock("my-custom-element", { innerHTML: foo }, null, 8, _hoisted_1);
+  "#)
+}
+
+#[test]
+fn custom_element_with_v_text() {
+  let code = transform(
+    r#"<my-custom-element v-text={foo}></my-custom-element>"#,
+    Some(TransformOptions {
+      interop: true,
+      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
+  const _hoisted_1 = ["textContent"];
+  _openBlock(), _createElementBlock("my-custom-element", { textContent: _toDisplayString(foo) }, null, 8, _hoisted_1);
+  "#)
+}
+
+#[test]
 fn svg_should_be_forced_into_blocks() {
   let code = transform(
     r#"<div><svg/></div>"#,

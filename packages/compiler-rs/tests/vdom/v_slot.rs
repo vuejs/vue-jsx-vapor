@@ -507,7 +507,7 @@ fn slot_tag_only() {
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _openBlock(), _createBlock(Comp, null, {
   		default: _withCtx(() => [_renderSlot(_slots, "default")]),
   		_: 3
@@ -529,7 +529,7 @@ fn slot_tag_with_v_if() {
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, createCommentVNode as _createCommentVNode, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _openBlock(), _createBlock(Comp, null, {
   		default: _withCtx(() => [ok ? _renderSlot(_slots, "default") : _createCommentVNode("", true)]),
   		_: 2
@@ -551,7 +551,7 @@ fn slot_tag_with_v_for() {
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _openBlock(), _createBlock(Comp, null, {
   		default: _withCtx(() => [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(b, (a) => _renderSlot(_slots, "default")), 256))]),
   		_: 3
@@ -573,7 +573,7 @@ fn slot_tag_with_template() {
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _openBlock(), _createBlock(Comp, null, {
   		default: _withCtx(() => [_createElementVNode("template", null, [_renderSlot(_slots, "default")])]),
   		_: 3
@@ -595,7 +595,7 @@ fn slot_tag_with_nested_component() {
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _openBlock(), _createBlock(Comp, null, {
   		default: _withCtx(() => [_createVNode(Comp, null, {
   			default: _withCtx(() => [_renderSlot(_slots, "default")]),

@@ -52,7 +52,7 @@ pub unsafe fn transform_text<'a>(
           // to avoid accidentally overwriting the DOM elements added
           // by the user through custom directives.
           !is_template(node)
-            && !is_jsx_component(node, context.options)
+            && !is_jsx_component(node, false, context.options)
             && !node.opening_element.attributes.iter().any(|p| {
               p.as_attribute()
                 .map(|p| {

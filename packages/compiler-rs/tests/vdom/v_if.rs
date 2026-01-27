@@ -58,7 +58,7 @@ fn template_v_if_with_single_slot_child() {
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return _openBlock(), _createBlock(_Fragment, null, ok ? (_openBlock(), _createBlock(_Fragment, { key: 0 }, [_renderSlot(_slots, "default")], 64)) : _createCommentVNode("", true));
   })();
   "#);
@@ -77,7 +77,7 @@ fn v_if_on_slot() {
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	let _slots = _useSlots();
+  	const _slots = _useSlots();
   	return "ok" ? _renderSlot(_slots, "default") : _createCommentVNode("", true);
   })();
   "#);

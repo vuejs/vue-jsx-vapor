@@ -62,7 +62,7 @@ pub fn transform_v_model<'a>(
 
   let dir = resolve_directive(_dir, context.source_text);
   let tag = get_tag_name(&node.opening_element.name, context.source_text);
-  let is_component = is_jsx_component(node, context.options);
+  let is_component = is_jsx_component(node, true, context.options);
 
   let arg_is_some = dir.arg.is_some();
   let mut computed = false;

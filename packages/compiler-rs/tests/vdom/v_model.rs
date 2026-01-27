@@ -498,9 +498,12 @@ fn should_allow_usage_on_custom_element() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
-  const _hoisted_1 = ["onUpdate:modelValue"];
-  _withDirectives((_openBlock(), _createElementBlock("my-input", { "onUpdate:modelValue": ($event) => model = $event }, null, 8, _hoisted_1)), [[_vModelText, model]]);
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["modelValue", "onUpdate:modelValue"];
+  _openBlock(), _createElementBlock("my-input", {
+  	modelValue: model,
+  	"onUpdate:modelValue": ($event) => model = $event
+  }, null, 8, _hoisted_1);
   "#);
 }
 

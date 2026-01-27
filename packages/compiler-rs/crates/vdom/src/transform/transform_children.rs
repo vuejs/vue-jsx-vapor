@@ -12,7 +12,7 @@ pub unsafe fn transform_children<'a>(node: &mut JSXChild<'a>, context: &'a Trans
   unsafe {
     let is_fragment_or_component = is_fragment_node(node)
       || match node {
-        JSXChild::Element(node) => is_jsx_component(node, context.options),
+        JSXChild::Element(node) => is_jsx_component(node, false, context.options),
         _ => false,
       };
 

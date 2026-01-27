@@ -40,7 +40,7 @@ pub unsafe fn transform_text<'a>(
   }
 
   match node {
-    JSXChild::Element(node) if !is_jsx_component(node, context.options) => {
+    JSXChild::Element(node) if !is_jsx_component(node, true, context.options) => {
       let is_template = is_template(node);
       let children = &mut node.children.iter_mut().collect() as *mut _;
       process_children(

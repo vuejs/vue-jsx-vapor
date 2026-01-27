@@ -21,7 +21,7 @@ pub unsafe fn transform_v_slots<'a>(
 
   let node_span = node.span;
   let node_ptr = node as *mut oxc_allocator::Box<JSXElement>;
-  let is_component = is_jsx_component(node, context.options);
+  let is_component = is_jsx_component(node, false, context.options);
   if is_component {
     let mut first_child_index = None;
     for (i, child) in unsafe { &mut *node_ptr }.children.iter().enumerate() {

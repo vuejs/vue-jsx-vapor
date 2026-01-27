@@ -14,13 +14,17 @@ export default defineConfig({
       macros: true,
       compiler: {
         runtimeModuleName: 'vue-jsx-vapor',
+        isCustomElement: (tag) => tag.includes('-'),
       },
     }),
     VueJsxVapor({
       exclude: interops,
-      macros: true,
+      macros: {
+        exclude: interops,
+      },
       compiler: {
         runtimeModuleName: 'vue-jsx-vapor',
+        isCustomElement: (tag) => tag.includes('-'),
       },
     }),
     DefineRender({

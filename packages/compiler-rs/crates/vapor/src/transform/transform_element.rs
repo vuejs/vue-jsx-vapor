@@ -88,7 +88,7 @@ pub unsafe fn transform_element<'a>(
   // treat custom elements as components because the template helper cannot
   // resolve them properly; they require creation via createElement
   let is_custom_element = context.options.is_custom_element.as_ref()(tag.clone());
-  let is_component = is_jsx_component(node, context.options) || is_custom_element;
+  let is_component = is_jsx_component(node, true, context.options);
   let _context_block = context_block as *mut BlockIRNode;
   let props_result = build_props(
     directives,

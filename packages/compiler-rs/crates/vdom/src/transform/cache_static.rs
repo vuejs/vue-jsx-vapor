@@ -32,7 +32,7 @@ pub fn cache_static<'a>(
   let single_root = if let JSXChild::Fragment(_) = node
     && children.len() == 1
     && let JSXChild::Element(child) = &children[0]
-    && !is_jsx_component(child, context.options)
+    && !is_jsx_component(child, false, context.options)
     && get_tag_name(&child.opening_element.name, context.source_text) != "slot"
   {
     true
@@ -66,7 +66,7 @@ pub fn cache_static_children<'a>(
     let child_span = child.span();
     // only plain elements & text calls are eligible for caching.
     if let JSXChild::Element(child) = child
-      && !is_jsx_component(child, context.options)
+      && !is_jsx_component(child, false, context.options)
     {
       let contant_type = if do_not_hoist_node {
         ConstantTypes::NotConstant
@@ -133,7 +133,7 @@ pub fn cache_static_children<'a>(
 
     // walk further
     if let JSXChild::Element(child) = unsafe { &*child_ptr } {
-      let is_component = is_jsx_component(child, context.options);
+      let is_component = is_jsx_component(child, false, context.options);
       if is_component {
         *context.options.in_v_slot.borrow_mut() += 1;
       }
@@ -238,7 +238,7 @@ pub fn get_constant_type<'a>(
   match &node {
     Either::A(node) => match node {
       JSXChild::Element(node) => {
-        if is_jsx_component(node, context.options) {
+        if is_jsx_component(node, false, context.options) {
           return ConstantTypes::NotConstant;
         }
         if let Some(cached) = context.constant_cache.borrow().get(&node_span) {
@@ -348,7 +348,7 @@ pub fn get_constant_type<'a>(
               codegen.is_block = false;
               context.helper(&get_vnode_block_helper(
                 context.options.ssr,
-                is_jsx_component(node, context.options),
+                is_jsx_component(node, false, context.options),
               ));
             }
 

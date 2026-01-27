@@ -21,17 +21,6 @@ export function transformDefineComponent(
 ): void {
   if (!macros.defineComponent) return
 
-  const defineComponentName = s.slice(
-    macros.defineComponent.callee.start!,
-    macros.defineComponent.callee.end!,
-  )
-  if (
-    defineComponentName &&
-    !['defineComponent', 'defineVaporComponent'].includes(defineComponentName)
-  ) {
-    importHelperFn(s, 'defineComponent', defineComponentName)
-  }
-
   let hasRestProp = false
   const props: Record<string, string | null> = {}
   if (root.params[0]) {
