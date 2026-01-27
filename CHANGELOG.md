@@ -1,3 +1,22 @@
+## [3.1.16](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.15...v3.1.16) (2026-01-27)
+
+
+### Bug Fixes
+
+* **compiler/vdom:** prevent generate redundant normalizeVNode when with ([f83bf65](https://github.com/vuejs/vue-jsx-vapor/commit/f83bf65da63bc45a626115ad257149bb732768d9)), closes [#42](https://github.com/vuejs/vue-jsx-vapor/issues/42)
+* **compiler:** prevent mark _temp as static for LogicalExpression ([f5ef8f5](https://github.com/vuejs/vue-jsx-vapor/commit/f5ef8f5c30c3518df49e9bbb4ba534539ea0ccc4)), closes [#41](https://github.com/vuejs/vue-jsx-vapor/issues/41)
+
+
+### Features
+
+* **compiler/vapor:** add withVaporCtx helper to manage currentInstance ([47929f9](https://github.com/vuejs/vue-jsx-vapor/commit/47929f9ec95f3fcd8782b85b1544f190c44376e3))
+* **compiler/vapor:** support defineVaporCustomElement ([420c903](https://github.com/vuejs/vue-jsx-vapor/commit/420c9036a6d0470b9391b039d403c0c1e318a933))
+* **compiler/vapor:** support slot ([1e0767b](https://github.com/vuejs/vue-jsx-vapor/commit/1e0767b84ff5e69f930003e3d921e9af0d523deb))
+* **compiler/vdom:** support slot ([9b3d7e8](https://github.com/vuejs/vue-jsx-vapor/commit/9b3d7e85a9c53658815b15076b6bf7a7613284bc))
+* support custom-element ([82dd87f](https://github.com/vuejs/vue-jsx-vapor/commit/82dd87f195121c636728b7b783a1c2831596980a))
+
+
+
 ## [3.1.15](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.14...v3.1.15) (2026-01-24)
 
 
