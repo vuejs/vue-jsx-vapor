@@ -1,3 +1,19 @@
+## [3.1.17](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.16...v3.1.17) (2026-01-28)
+
+
+### Bug Fixes
+
+* **compiler/vdom:** merge v-model and onUpdate handlers ([501dfb6](https://github.com/vuejs/vue-jsx-vapor/commit/501dfb64a2cc49c963cb83b7109618b1cf564965)), closes [#43](https://github.com/vuejs/vue-jsx-vapor/issues/43)
+* **macros:** use proxy slots to keep reactivity ([e834f13](https://github.com/vuejs/vue-jsx-vapor/commit/e834f13af78a7b789db2027061536f61ad7a37c1))
+* **runtime:** remove __NO_SIDE_EFFECTS__ flag ([41d6e8d](https://github.com/vuejs/vue-jsx-vapor/commit/41d6e8d9cc686b87da3993fcbc49807fc5dc8823))
+
+
+### Features
+
+* **macros/volar:** support auto infer slot type ([c1325cd](https://github.com/vuejs/vue-jsx-vapor/commit/c1325cdd2c87f5f269b0c29ee2588f277b82d50a))
+
+
+
 ## [3.1.16](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.15...v3.1.16) (2026-01-27)
 
 
