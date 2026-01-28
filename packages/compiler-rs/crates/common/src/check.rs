@@ -467,7 +467,10 @@ pub fn is_reserved_prop(name: &str) -> bool {
   RESERVED_PROP.contains(name)
 }
 
-pub fn is_event(s: &str) -> bool {
+pub fn is_event(mut s: &str) -> bool {
+  if s.starts_with("\"") {
+    s = &s[1..];
+  }
   s.starts_with("on")
     && s
       .chars()

@@ -402,6 +402,31 @@ fn modifiers_lazy() {
 }
 
 #[test]
+fn v_model_with_event() {
+  let code = transform(
+    r#"<>
+      <Comp v-model={model} onUpdate:modelValue={foo} />
+      <Comp onUpdate:modelValue={foo} v-model={model} />
+    </>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(_Fragment, null, [_createVNode(Comp, {
+  	modelValue: model,
+  	"onUpdate:modelValue": [($event) => model = $event, foo]
+  }, null, 8, ["modelValue", "onUpdate:modelValue"]), _createVNode(Comp, {
+  	"onUpdate:modelValue": [foo, ($event) => model = $event],
+  	modelValue: model
+  }, null, 8, ["onUpdate:modelValue", "modelValue"])], 64);
+  "#);
+}
+
+#[test]
 fn should_raise_error_if_plain_elements_with_argument() {
   let error = RefCell::new(None);
   transform(
