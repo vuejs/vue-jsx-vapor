@@ -325,7 +325,7 @@ pub fn build_props<'a>(
       // dedicated fast path.
       name.to_lowercase() != "onclick" &&
       // omit v-model handlers
-      name != "onUpdate:modelValue" &&
+      name != "\"onUpdate:modelValue\"" &&
       // omit onVnodeXXX hooks
       !is_reserved_prop(&name)
       {
