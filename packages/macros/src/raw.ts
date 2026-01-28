@@ -2,6 +2,8 @@ import { transformJsxMacros } from './core'
 import {
   useModelHelperCode,
   useModelHelperId,
+  useSlotsHelperCode,
+  useSlotsHelperId,
   withDefaultsHelperCode,
   withDefaultsHelperId,
 } from './core/helper'
@@ -22,7 +24,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
       resolveId: {
         filter: {
           id: {
-            include: [useModelHelperId, withDefaultsHelperId],
+            include: [useModelHelperId, withDefaultsHelperId, useSlotsHelperId],
           },
         },
         handler(id) {
@@ -32,12 +34,13 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
       load: {
         filter: {
           id: {
-            include: [useModelHelperId, withDefaultsHelperId],
+            include: [useModelHelperId, withDefaultsHelperId, useSlotsHelperId],
           },
         },
         handler(id) {
           if (id === useModelHelperId) return useModelHelperCode
           if (id === withDefaultsHelperId) return withDefaultsHelperCode
+          if (id === useSlotsHelperId) return useSlotsHelperCode
         },
       },
 
