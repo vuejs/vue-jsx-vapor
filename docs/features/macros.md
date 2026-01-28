@@ -79,9 +79,9 @@ VueJsxVapor({
 - Automatically collects used props to the defineVaporComponent's props option.
 
 ```tsx twoslash
-import { defineVaporComponent, nextTick, Suspense, useAttrs } from 'vue'
+import { defineComponent, nextTick, Suspense, useAttrs } from 'vue'
 
-const Comp = defineVaporComponent(
+const Comp = defineComponent(
   async (props: {
     foo?: string
     bar?: string
@@ -107,8 +107,8 @@ export default () => (
 ::: details Compiled Code
 
 ```tsx
-import { defineVaporComponent, useAttrs, withAsyncContext } from 'vue'
-defineVaporComponent(
+import { defineComponent, useAttrs, withAsyncContext } from 'vue'
+defineComponent(
   async (props) => {
     let __temp, __restore
     ;([__temp, __restore] = withAsyncContext(() => nextTick())),

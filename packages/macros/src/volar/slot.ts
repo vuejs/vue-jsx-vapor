@@ -2,16 +2,13 @@ import type { TransformOptions } from '.'
 import type { Code } from 'ts-macro'
 
 export function transformSlot(
-  node: import('typescript').Node,
+  slotNode:
+    | import('typescript').JsxOpeningElement
+    | import('typescript').JsxSelfClosingElement,
   options: TransformOptions,
 ) {
   const { ts, codes, ast } = options
-  const slotNode = ts.isJsxElement(node)
-    ? node.openingElement
-    : ts.isJsxSelfClosingElement(node)
-      ? node
-      : null
-  if (slotNode?.tagName.getText(ast) === 'slot') {
+  if (slotNode.tagName.getText(ast) === 'slot') {
     let nameProp: Code[] = ['default']
     const props: Code[] = []
     let has_directive = false
@@ -65,7 +62,7 @@ export function transformSlot(
       }
     })
     if (has_directive) {
-      return false
+      return
     }
     codes.replaceRange(
       slotNode.attributes.pos,
@@ -76,6 +73,5 @@ export function transformSlot(
       ...props,
       '}})}',
     )
-    return true
   }
 }

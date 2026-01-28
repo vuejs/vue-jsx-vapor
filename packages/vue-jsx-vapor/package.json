@@ -187,6 +187,7 @@
   "devDependencies": {
     "@nuxt/kit": "catalog:",
     "@nuxt/schema": "catalog:",
-    "@vue-macros/volar": "catalog:"
+    "@vue-macros/volar": "catalog:",
+    "vue": "catalog:"
   }
 }

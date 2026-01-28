@@ -80,9 +80,9 @@ VueJsxVapor({
 - 自动收集使用到的 props 到 `defineVaporComponent` 的 `props` 选项中。
 
 ```tsx twoslash
-import { defineVaporComponent, nextTick, Suspense, useAttrs } from 'vue'
+import { defineComponent, nextTick, Suspense, useAttrs } from 'vue'
 
-const Comp = defineVaporComponent(
+const Comp = defineComponent(
   async (props: {
     foo?: string
     bar?: string
@@ -108,8 +108,8 @@ export default () => (
 ::: details 编译后代码
 
 ```tsx
-import { defineVaporComponent, useAttrs, withAsyncContext } from 'vue'
-defineVaporComponent(
+import { defineComponent, useAttrs, withAsyncContext } from 'vue'
+defineComponent(
   async (props) => {
     let __temp, __restore
     ;([__temp, __restore] = withAsyncContext(() => nextTick())),

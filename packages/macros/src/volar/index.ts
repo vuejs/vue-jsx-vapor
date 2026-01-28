@@ -1,6 +1,5 @@
 import { getText, type TsmVirtualCode } from 'ts-macro'
 import { transformDefineComponent } from './define-component'
-import { transformSlot } from './slot'
 import type { OptionsResolved } from '../options'
 
 export { getGlobalTypes } from './global-types'
@@ -24,7 +23,10 @@ export type JsxMacros = {
   defineExpose?: string
   defineStyle?: DefineStyle[]
   defineComponent?: import('typescript').CallExpression
-  slot?: boolean
+  slots?: (
+    | import('typescript').JsxOpeningElement
+    | import('typescript').JsxSelfClosingElement
+  )[]
 }
 
 export type RootKey =
@@ -205,7 +207,8 @@ export function getRootMap(options: TransformOptions): RootMap {
           codes.replaceRange(
             expression.getStart(ast),
             expression.getStart(ast),
-            `__slots = `,
+            variableDeclaration ? '// @ts-ignore\n__slots;\n' : '',
+            `const __slots = `,
           )
           rootMap.get(root)!.defineSlots = `Partial<typeof __slots>`
         } else if (options.defineExpose.alias.includes(macroName)) {
@@ -220,9 +223,14 @@ export function getRootMap(options: TransformOptions): RootMap {
       }
     }
 
-    if (prevRoot && transformSlot(node, options)) {
+    const slotNode = ts.isJsxElement(node)
+      ? node.openingElement
+      : ts.isJsxSelfClosingElement(node)
+        ? node
+        : null
+    if (prevRoot && slotNode?.tagName.getText(ast) === 'slot') {
       if (!rootMap.has(prevRoot)) rootMap.set(prevRoot, {})
-      rootMap.get(prevRoot)!.slot = true
+      ;(rootMap.get(prevRoot)!.slots ??= []).push(slotNode)
     }
 
     node.forEachChild((child) => {

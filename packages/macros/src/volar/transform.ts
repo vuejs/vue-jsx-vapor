@@ -1,4 +1,5 @@
 import { transformDefineStyle } from './define-style'
+import { transformSlot } from './slot'
 import type { RootMap, TransformOptions } from '.'
 
 export function transformJsxMacros(
@@ -52,10 +53,11 @@ export function transformJsxMacros(
       codes.replaceRange(root.end, root.end, `)){ return `, result, '}')
     }
 
-    if (macros.slot && !macros.defineSlots) {
+    if (macros.slots && !macros.defineSlots) {
       macros.defineSlots = 'ResolveSlots<(typeof __slots)[number]>'
       const start = root.body.getStart(ast)
-      codes.replaceRange(start + 1, start + 1, 'let __slots = [];\n')
+      codes.replaceRange(start + 1, start + 1, 'let __slots = [];')
+      macros.slots.map((node) => transformSlot(node, options))
     }
 
     root.body.forEachChild((node) => {

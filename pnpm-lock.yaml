@@ -281,9 +281,6 @@ importers:
       vite:
         specifier: '>=3'
         version: 6.3.5(@types/node@25.0.10)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.39.0)(tsx@4.19.2)(yaml@2.8.2)
-      vue:
-        specifier: ^3
-        version: 3.5.26(typescript@5.9.3)
       webpack:
         specifier: ^4 || ^5
         version: 5.99.9(esbuild@0.25.5)
@@ -296,7 +293,10 @@ importers:
         version: 3.21.0
       '@vue-macros/volar':
         specifier: 'catalog:'
-        version: 3.1.2(patch_hash=0c8e80125adad1ff087195b3b3c1aad5bb1392f1c5dfe7d84145c322591206c0)(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))
+        version: 3.1.2(patch_hash=0c8e80125adad1ff087195b3b3c1aad5bb1392f1c5dfe7d84145c322591206c0)(typescript@5.9.3)(vue@3.6.0-alpha.7(typescript@5.9.3))
+      vue:
+        specifier: 'catalog:'
+        version: 3.6.0-alpha.7(typescript@5.9.3)
 
   playground:
     devDependencies:
@@ -7586,22 +7586,12 @@ snapshots:
       ast-kit: 2.2.0
       source-map-js: 1.2.1
 
-  '@vue-macros/boolean-prop@3.1.2(vue@3.5.26(typescript@5.9.3))':
+  '@vue-macros/boolean-prop@3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))':
     dependencies:
-      '@vue-macros/common': 3.1.2(vue@3.5.26(typescript@5.9.3))
+      '@vue-macros/common': 3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))
       '@vue/compiler-core': 3.5.26
     transitivePeerDependencies:
       - vue
-
-  '@vue-macros/common@3.1.2(vue@3.5.26(typescript@5.9.3))':
-    dependencies:
-      '@vue/compiler-sfc': 3.5.26
-      ast-kit: 2.2.0
-      local-pkg: 1.1.2
-      magic-string-ast: 1.0.3
-      unplugin-utils: 0.3.1
-    optionalDependencies:
-      vue: 3.5.26(typescript@5.9.3)
 
   '@vue-macros/common@3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))':
     dependencies:
@@ -7613,9 +7603,9 @@ snapshots:
     optionalDependencies:
       vue: 3.6.0-alpha.7(typescript@5.9.3)
 
-  '@vue-macros/config@3.1.2(vue@3.5.26(typescript@5.9.3))':
+  '@vue-macros/config@3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))':
     dependencies:
-      '@vue-macros/common': 3.1.2(vue@3.5.26(typescript@5.9.3))
+      '@vue-macros/common': 3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))
       quansync: 0.2.11
       unconfig: 7.3.3
     transitivePeerDependencies:
@@ -7627,27 +7617,27 @@ snapshots:
       unplugin: 2.3.11
       vue: 3.6.0-alpha.7(typescript@5.9.3)
 
-  '@vue-macros/short-bind@3.1.2(vue@3.5.26(typescript@5.9.3))':
+  '@vue-macros/short-bind@3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))':
     dependencies:
-      '@vue-macros/common': 3.1.2(vue@3.5.26(typescript@5.9.3))
+      '@vue-macros/common': 3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))
       '@vue/compiler-core': 3.5.26
     transitivePeerDependencies:
       - vue
 
-  '@vue-macros/short-vmodel@3.1.2(vue@3.5.26(typescript@5.9.3))':
+  '@vue-macros/short-vmodel@3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))':
     dependencies:
-      '@vue-macros/common': 3.1.2(vue@3.5.26(typescript@5.9.3))
+      '@vue-macros/common': 3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))
       '@vue/compiler-core': 3.5.26
     transitivePeerDependencies:
       - vue
 
-  '@vue-macros/volar@3.1.2(patch_hash=0c8e80125adad1ff087195b3b3c1aad5bb1392f1c5dfe7d84145c322591206c0)(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))':
+  '@vue-macros/volar@3.1.2(patch_hash=0c8e80125adad1ff087195b3b3c1aad5bb1392f1c5dfe7d84145c322591206c0)(typescript@5.9.3)(vue@3.6.0-alpha.7(typescript@5.9.3))':
     dependencies:
-      '@vue-macros/boolean-prop': 3.1.2(vue@3.5.26(typescript@5.9.3))
-      '@vue-macros/common': 3.1.2(vue@3.5.26(typescript@5.9.3))
-      '@vue-macros/config': 3.1.2(vue@3.5.26(typescript@5.9.3))
-      '@vue-macros/short-bind': 3.1.2(vue@3.5.26(typescript@5.9.3))
-      '@vue-macros/short-vmodel': 3.1.2(vue@3.5.26(typescript@5.9.3))
+      '@vue-macros/boolean-prop': 3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))
+      '@vue-macros/common': 3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))
+      '@vue-macros/config': 3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))
+      '@vue-macros/short-bind': 3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))
+      '@vue-macros/short-vmodel': 3.1.2(vue@3.6.0-alpha.7(typescript@5.9.3))
       '@vue/language-core': 3.0.8(typescript@5.9.3)
       '@vue/shared': 3.5.26
       muggle-string: 0.4.1
@@ -7821,7 +7811,7 @@ snapshots:
       '@volar/language-core': 2.4.23
       '@vue/compiler-dom': 3.5.26
       '@vue/compiler-vue2': 2.7.16
-      '@vue/shared': 3.5.26
+      '@vue/shared': 3.5.27
       alien-signals: 2.0.5
       muggle-string: 0.4.1
       path-browserify: 1.0.1
@@ -7833,7 +7823,7 @@ snapshots:
     dependencies:
       '@volar/language-core': 2.4.27
       '@vue/compiler-dom': 3.5.26
-      '@vue/shared': 3.5.26
+      '@vue/shared': 3.5.27
       alien-signals: 3.1.2
       muggle-string: 0.4.1
       path-browserify: 1.0.1
