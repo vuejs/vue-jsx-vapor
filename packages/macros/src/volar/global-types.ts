@@ -38,5 +38,10 @@ ${defineModel.length ? `declare const { ${defineModel.join(',')} }: typeof impor
 ${defineSlots}
 ${defineExpose}
 ${defineStyle}
+type ResolveSlots<T> = {
+  [K in keyof T]?: T[K] extends Record<string, any>
+    ? (props: T[K]) => any
+    : T[K]
+};
 `
 }

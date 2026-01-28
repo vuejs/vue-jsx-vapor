@@ -13,7 +13,11 @@ export function transformJsxMacros(
       transformDefineStyle(defaultStyle, defineStyleIndex++, root, options),
     )
 
-    if (!root?.body || (Object.keys(macros).length === 1 && macros.defineStyle))
+    if (
+      !root?.body ||
+      ts.isExpression(root.body) ||
+      (Object.keys(macros).length === 1 && macros.defineStyle)
+    )
       continue
 
     const asyncModifier = root.modifiers?.find(
@@ -46,6 +50,12 @@ export function transformJsxMacros(
     } else {
       codes.replaceRange(root.body.getStart(ast), root.body.getStart(ast), '=>')
       codes.replaceRange(root.end, root.end, `)){ return `, result, '}')
+    }
+
+    if (macros.slot && !macros.defineSlots) {
+      macros.defineSlots = 'ResolveSlots<(typeof __slots)[number]>'
+      const start = root.body.getStart(ast)
+      codes.replaceRange(start + 1, start + 1, 'let __slots = [];\n')
     }
 
     root.body.forEachChild((node) => {

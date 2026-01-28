@@ -12,7 +12,7 @@ const Comp = (props: { foo: string }, { slots }) => {
   )
 }
 
-const CompSlotout = (props: { foo: string }) => {
+const CompSlotlet = (props: { foo: string }) => {
   return (
     <slot foo={props.foo}>
       <div>default slot</div>
@@ -53,9 +53,9 @@ export default () => {
           <Comp foo={foo.value} v-slot:$slotName_value$={scope}>
             <div>{scope.foo}</div>
           </Comp>
-          <CompSlotout foo={foo.value} v-slot={scope}>
+          <CompSlotlet foo={foo.value} v-slot={scope}>
             <div>{scope.foo}</div>
-          </CompSlotout>
+          </CompSlotlet>
         </fieldset>
       </div>
     </>

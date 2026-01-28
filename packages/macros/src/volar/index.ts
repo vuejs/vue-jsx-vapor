@@ -1,5 +1,6 @@
 import { getText, type TsmVirtualCode } from 'ts-macro'
 import { transformDefineComponent } from './define-component'
+import { transformSlot } from './slot'
 import type { OptionsResolved } from '../options'
 
 export { getGlobalTypes } from './global-types'
@@ -23,6 +24,7 @@ export type JsxMacros = {
   defineExpose?: string
   defineStyle?: DefineStyle[]
   defineComponent?: import('typescript').CallExpression
+  slot?: boolean
 }
 
 export type RootKey =
@@ -99,6 +101,7 @@ function getMacro(
 export function getRootMap(options: TransformOptions): RootMap {
   const { ts, ast, codes } = options
   const rootMap: RootMap = new Map()
+  let prevRoot: RootKey
 
   function walk(
     node: import('typescript').Node,
@@ -111,6 +114,7 @@ export function getRootMap(options: TransformOptions): RootMap {
         ts.isFunctionDeclaration(parents[1]))
         ? parents[1]
         : undefined
+    if (root) prevRoot = root
 
     if (
       root &&
@@ -201,8 +205,7 @@ export function getRootMap(options: TransformOptions): RootMap {
           codes.replaceRange(
             expression.getStart(ast),
             expression.getStart(ast),
-            variableDeclaration ? '// @ts-ignore\n__slots;\n' : '',
-            `const __slots = `,
+            `__slots = `,
           )
           rootMap.get(root)!.defineSlots = `Partial<typeof __slots>`
         } else if (options.defineExpose.alias.includes(macroName)) {
@@ -215,6 +218,11 @@ export function getRootMap(options: TransformOptions): RootMap {
           rootMap.get(root)!.defineExpose = `typeof __exposed`
         }
       }
+    }
+
+    if (prevRoot && transformSlot(node, options)) {
+      if (!rootMap.has(prevRoot)) rootMap.set(prevRoot, {})
+      rootMap.get(prevRoot)!.slot = true
     }
 
     node.forEachChild((child) => {
