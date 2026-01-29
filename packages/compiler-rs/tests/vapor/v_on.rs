@@ -89,7 +89,7 @@ fn event_modifier() {
   	_n7.$evtcontextmenu = _withModifiers(handleEvent, ["right"]);
   	_n8.$evtclick = _withModifiers(handleEvent, ["left"]);
   	_n9.$evtmouseup = _withModifiers(handleEvent, ["middle"]);
-  	_n10.$evtcontextmenu = _withKeys(_withModifiers(handleEvent, ["right"]), ["enter"]);
+  	_n10.$evtcontextmenu = _withModifiers(handleEvent, ["right"]);
   	_n11.$evtkeyup = _withKeys(handleEvent, ["enter"]);
   	_n12.$evtkeyup = _withKeys(handleEvent, ["tab"]);
   	_n13.$evtkeyup = _withKeys(handleEvent, ["delete"]);

@@ -212,6 +212,19 @@ fn component_event_with_once_modifier() {
 }
 
 #[test]
+fn component_event_with_multiple_modifier_and_event_options() {
+  let code = transform("<Foo onFoo_enter_stop_prevent_capture_once={bar} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withModifiers as _withModifiers } from "vue";
+  (() => {
+  	const _n0 = _createComponent(Foo, { onFooCaptureOnce: () => _withModifiers(bar, ["stop", "prevent"]) }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn component_with_fallback() {
   let code = transform("<foo-bar />", None).code;
   assert_snapshot!(code, @r#"
@@ -316,12 +329,12 @@ fn props_merging_event_handlers() {
   let code = transform("<div onClick_foo={a} onClick_bar={b} />", None).code;
   assert_snapshot!(code, @r#"
   _delegateEvents("click");
-  import { delegate as _delegate, delegateEvents as _delegateEvents, template as _template, withKeys as _withKeys } from "vue";
+  import { delegate as _delegate, delegateEvents as _delegateEvents, template as _template } from "vue";
   const _t0 = _template("<div></div>", true);
   (() => {
   	const _n0 = _t0();
-  	_delegate(_n0, "click", _withKeys(a, ["foo"]));
-  	_delegate(_n0, "click", _withKeys(b, ["bar"]));
+  	_delegate(_n0, "click", a);
+  	_delegate(_n0, "click", b);
   	return _n0;
   })();
   "#);

@@ -1,5 +1,5 @@
 use common::{
-  check::{is_delegated_events, is_jsx_component},
+  check::{is_delegated_events, is_jsx_component, is_keyboard_event},
   directive::{Modifiers, resolve_modifiers},
   error::ErrorCodes,
   expression::SimpleExpressionNode,
@@ -47,7 +47,7 @@ pub fn transform_v_on<'a>(
     .map(|value| SimpleExpressionNode::new(Either3::C(value), context.source_text));
 
   let Modifiers {
-    keys: key_modifiers,
+    keys: mut key_modifiers,
     non_keys: non_key_modifiers,
     options: event_option_modifiers,
   } = resolve_modifiers(&arg.content, modifiers);
@@ -64,6 +64,12 @@ pub fn transform_v_on<'a>(
   }
   if non_key_modifiers.iter().any(|modifier| modifier == "right") && is_static_click {
     arg.content = "contextmenu".to_string();
+  }
+
+  // don't gen keys guard for non-keyboard events
+  // if event name is dynamic, always wrap with keys guard
+  if !key_modifiers.is_empty() && !is_keyboard_event(&arg.content) {
+    key_modifiers.clear();
   }
 
   if is_component {
