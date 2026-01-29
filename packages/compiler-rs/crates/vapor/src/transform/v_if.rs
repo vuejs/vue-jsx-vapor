@@ -1,7 +1,7 @@
 use napi::Either;
 use oxc_allocator::TakeIn;
 use oxc_ast::ast::{Expression, JSXChild, JSXElement};
-use oxc_span::SPAN;
+use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, IfIRNode, OperationNode},
@@ -9,6 +9,7 @@ use crate::{
 };
 
 use common::{
+  ast::RootNode,
   check::{is_constant_node, is_template},
   directive::{Directives, resolve_directive},
   error::ErrorCodes,
@@ -21,6 +22,7 @@ pub unsafe fn transform_v_if<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
+  parent_node: &mut JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
@@ -71,6 +73,11 @@ pub unsafe fn transform_v_if<'a>(
       )),
       false,
     );
+    if RootNode::is_root(parent_node)
+      && let JSXChild::Fragment(node) = unsafe { &mut *context_node }
+    {
+      node.span = parent_node.span();
+    }
     return Some(Box::new(move || {
       let block = exit_block();
 

@@ -107,7 +107,7 @@ fn with_v_if() {
   let code = transform("<div v-if={expr} v-once />", None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div></div>", true);
   (() => {
   	const _n0 = _createIf(() => expr, () => {
   		const _n2 = _t0();

@@ -259,7 +259,7 @@ fn dynamic_props() {
   const _t0 = _template("<div></div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setDynamicProps(_n0, [obj], true));
+  	_renderEffect(() => _setDynamicProps(_n0, [obj]));
   	return _n0;
   })();
   "#);
@@ -273,7 +273,7 @@ fn dynamic_props_after_static_prop() {
   const _t0 = _template("<div></div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setDynamicProps(_n0, [{ id: "foo" }, obj], true));
+  	_renderEffect(() => _setDynamicProps(_n0, [{ id: "foo" }, obj]));
   	return _n0;
   })();
   "#);
@@ -287,7 +287,7 @@ fn dynamic_props_before_static_prop() {
   const _t0 = _template("<div></div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setDynamicProps(_n0, [obj, { id: "foo" }], true));
+  	_renderEffect(() => _setDynamicProps(_n0, [obj, { id: "foo" }]));
   	return _n0;
   })();
   "#);
@@ -305,7 +305,7 @@ fn dynamic_props_between_static_prop() {
   		{ id: "foo" },
   		obj,
   		{ class: "bar" }
-  	], true));
+  	]));
   	return _n0;
   })();
   "#);

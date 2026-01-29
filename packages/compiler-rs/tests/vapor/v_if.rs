@@ -10,7 +10,7 @@ fn basic() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>");
+  const _t0 = _template("<div> </div>", true);
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
@@ -85,7 +85,7 @@ fn component() {
   import { createIf as _createIf } from "vue";
   (() => {
   	const _n0 = _createIf(() => foo, () => {
-  		const _n2 = _createComponent(Comp);
+  		const _n2 = _createComponent(Comp, null, null, true);
   		return _n2;
   	});
   	return _n0;
@@ -274,7 +274,7 @@ fn v_on_with_v_if() {
   .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, renderEffect as _renderEffect, setDynamicEvents as _setDynamicEvents, template as _template } from "vue";
-  const _t0 = _template("<button>w/ v-if</button>");
+  const _t0 = _template("<button>w/ v-if</button>", true);
   (() => {
   	const _n0 = _createIf(() => true, () => {
   		const _n2 = _t0();

@@ -102,7 +102,7 @@ pub unsafe fn transform_element<'a>(
     Rc::clone(&get_operation_index),
   );
 
-  let single_root = RootNode::is_single_root(parent_node) || is_custom_element;
+  let single_root = RootNode::is_single_root(parent_node);
 
   Some(Box::new(move || {
     if is_component {
@@ -158,7 +158,6 @@ pub fn transform_native_element<'a>(
           set_dynamic_props: true,
           props,
           element,
-          root: single_root,
           tag: tag.clone(),
         }),
         Some(get_effect_index),
@@ -190,7 +189,6 @@ pub fn transform_native_element<'a>(
               prop,
               element,
               tag: tag.clone(),
-              root: single_root,
             }),
             Some(Rc::clone(&get_effect_index)),
             Some(Rc::clone(&get_operation_index)),
@@ -251,7 +249,7 @@ pub fn transform_component_element<'a>(
         Either::B(props) => vec![Either3::A(props)],
       },
       asset,
-      root: single_root && *context.in_v_for.borrow() == 0,
+      root: single_root,
       slots: mem::take(&mut context_block.slots),
       once: *context.in_v_once.borrow(),
       is_custom_element,

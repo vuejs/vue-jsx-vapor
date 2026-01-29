@@ -154,7 +154,7 @@ fn should_support_dynamic_props() {
   (() => {
   	const _n0 = _t0();
   	_applyDynamicModel(_n0, () => model, (_value) => model = _value);
-  	_renderEffect(() => _setDynamicProps(_n0, [obj], true));
+  	_renderEffect(() => _setDynamicProps(_n0, [obj]));
   	return _n0;
   })();
   "#);

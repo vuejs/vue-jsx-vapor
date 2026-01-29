@@ -235,11 +235,6 @@ pub fn gen_dynamic_props<'a>(
       .into(),
   );
   arguments.push(ast.expression_array(SPAN, ast.vec_from_iter(values)).into());
-  if oper.root {
-    arguments.push(ast.expression_boolean_literal(SPAN, true).into());
-  } else if is_svg {
-    arguments.push(ast.expression_boolean_literal(SPAN, false).into());
-  }
   if is_svg {
     arguments.push(ast.expression_boolean_literal(SPAN, true).into());
   }

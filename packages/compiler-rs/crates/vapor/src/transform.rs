@@ -374,8 +374,13 @@ impl<'a> TransformContext<'a> {
           if (directives.v_if.is_some()
             || directives.v_else_if.is_some()
             || directives.v_else.is_some())
-            && let Some(on_exit) =
-              transform_v_if(&mut *directives_ptr, node, &*context, &mut *block)
+            && let Some(on_exit) = transform_v_if(
+              &mut *directives_ptr,
+              node,
+              &*context,
+              &mut *block,
+              &mut *parent_node,
+            )
           {
             exit_fns.push(on_exit);
           };

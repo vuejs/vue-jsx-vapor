@@ -220,7 +220,7 @@ fn bind_with_svg_elements() {
   const _t0 = _template("<svg></svg>", true, 1);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setDynamicProps(_n0, [obj], true, true));
+  	_renderEffect(() => _setDynamicProps(_n0, [obj], true));
   	return _n0;
   })();
   "#);

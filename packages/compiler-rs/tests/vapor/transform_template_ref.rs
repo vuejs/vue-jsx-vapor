@@ -71,7 +71,7 @@ fn ref_v_if() {
   let code = transform("<div ref={foo} v-if={true} />", None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div></div>", true);
   (() => {
   	const _setTemplateRef = _createTemplateRefSetter();
   	const _n0 = _createIf(() => true, () => {
