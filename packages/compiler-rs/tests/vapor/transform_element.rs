@@ -159,6 +159,18 @@ fn component_dynamic_props_between_static_prop() {
 }
 
 #[test]
+fn component_props_merging_event_handlers() {
+  let code = transform("<Foo onClick_foo={a} onClick_bar={e => b(e)} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Foo, { onClick: () => [a, (e) => b(e)] }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn component_props_merging_style() {
   let code = transform(
     "<Foo style=\"color: green\" style={{ color: 'red' }} />",

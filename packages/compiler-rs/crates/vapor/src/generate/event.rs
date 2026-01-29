@@ -63,7 +63,7 @@ pub fn gen_set_event<'a>(
     }));
     Some(ast.expression_object(SPAN, properties))
   };
-  let handler = gen_event_handler(context, value, keys, non_keys, false);
+  let handler = gen_event_handler(context, vec![value], keys, non_keys, false);
 
   if delegate {
     // key is static
@@ -127,32 +127,40 @@ pub fn gen_set_event<'a>(
 
 pub fn gen_event_handler<'a>(
   context: &'a CodegenContext<'a>,
-  value: Option<SimpleExpressionNode<'a>>,
+  values: Vec<Option<SimpleExpressionNode<'a>>>,
   keys: Vec<String>,
   non_keys: Vec<String>,
   // passed as component prop - need additional wrap
   extra_wrap: bool,
 ) -> Expression<'a> {
   let ast = &context.ast;
-  let mut handler_exp = if let Some(value) = value
-    && !value.content.trim().is_empty()
-  {
-    gen_expression(value, context, None, false)
-  } else {
-    ast.expression_arrow_function(
-      SPAN,
-      false,
-      false,
-      NONE,
-      ast.formal_parameters(
+  let mut values = values.into_iter().map(|value| {
+    if let Some(value) = value
+      && !value.content.trim().is_empty()
+    {
+      gen_expression(value, context, None, false)
+    } else {
+      ast.expression_arrow_function(
         SPAN,
-        FormalParameterKind::ArrowFormalParameters,
-        ast.vec(),
+        false,
+        false,
         NONE,
-      ),
-      NONE,
-      ast.function_body(SPAN, ast.vec(), ast.vec()),
-    )
+        ast.formal_parameters(
+          SPAN,
+          FormalParameterKind::ArrowFormalParameters,
+          ast.vec(),
+          NONE,
+        ),
+        NONE,
+        ast.function_body(SPAN, ast.vec(), ast.vec()),
+      )
+    }
+  });
+
+  let mut handler_exp = if values.len() > 1 {
+    ast.expression_array(SPAN, ast.vec_from_iter(values.map(|value| value.into())))
+  } else {
+    values.next().unwrap()
   };
 
   if !non_keys.is_empty() {

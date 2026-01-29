@@ -549,7 +549,7 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
     if let Some(existing) = existing
       && existing.handler.eq(&prop.handler)
     {
-      if name == "style" || name == "class" {
+      if name == "style" || name == "class" || prop.handler {
         for value in prop.values {
           existing.values.push(value)
         }

@@ -310,7 +310,7 @@ fn gen_prop<'a>(
     non_keys: vec![],
     options: vec![],
   });
-  let mut values = mem::take(&mut prop.values);
+  let values = mem::take(&mut prop.values);
 
   let model_modifiers = prop.model_modifiers.take();
   let model = if model {
@@ -327,7 +327,7 @@ fn gen_prop<'a>(
   let value = if handler {
     gen_event_handler(
       context,
-      Some(values.remove(0)),
+      values.into_iter().map(Some).collect(),
       keys,
       non_keys,
       true, /* wrap handlers passed to components */
