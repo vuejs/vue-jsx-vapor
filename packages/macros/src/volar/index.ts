@@ -116,20 +116,38 @@ export function getRootMap(options: TransformOptions): RootMap {
         ts.isFunctionDeclaration(parents[1]))
         ? parents[1]
         : undefined
-    if (root) prevRoot = root
-
-    if (
-      root &&
-      parents[2] &&
-      ts.isCallExpression(parents[2]) &&
-      !parents[2].typeArguments &&
-      options.defineComponent.alias.includes(parents[2].expression.getText(ast))
-    ) {
-      if (!rootMap.has(root)) rootMap.set(root, {})
-      if (!rootMap.get(root)!.defineComponent) {
-        rootMap.get(root)!.defineComponent = parents[2]
-        transformDefineComponent(parents[2], parents[3], options)
+    function getDefineComponentCaller(node: import('typescript').Node) {
+      if (!node) return
+      if (ts.isVariableDeclaration(node) && node.initializer) {
+        node = node.initializer
       }
+      if (
+        ts.isCallExpression(node) &&
+        !node.typeArguments &&
+        options.defineComponent.alias.includes(node.expression.getText(ast))
+      ) {
+        return node
+      }
+    }
+    if (root) {
+      const caller = getDefineComponentCaller(parents[2])
+      if (caller) {
+        if (!rootMap.has(root)) rootMap.set(root, {})
+        if (!rootMap.get(root)!.defineComponent) {
+          rootMap.get(root)!.defineComponent = caller
+          transformDefineComponent(caller, parents[3], options)
+        }
+      }
+    }
+
+    const fnRoot =
+      ts.isArrowFunction(node) ||
+      ts.isFunctionExpression(node) ||
+      ts.isFunctionDeclaration(node)
+        ? node
+        : undefined
+    if (fnRoot && !getDefineComponentCaller(parents[3])) {
+      prevRoot = fnRoot
     }
 
     const macro = getMacro(node, ts, options)

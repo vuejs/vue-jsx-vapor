@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { defineVaporComponent, ref } from 'vue'
 
 const Comp = (props: { foo: string }, { slots }) => {
   return (
@@ -19,6 +19,14 @@ const CompSlotlet = (props: { foo: string }) => {
     </slot>
   )
 }
+
+const CompSlotlet1 = defineVaporComponent((props: { foo: string }) => {
+  return (
+    <slot foo={props.foo}>
+      <div>default slot</div>
+    </slot>
+  )
+})
 
 const slots = {
   default: (scope) => <div>{scope.foo}</div>,
@@ -56,6 +64,9 @@ export default () => {
           <CompSlotlet foo={foo.value} v-slot={scope}>
             <div>{scope.foo}</div>
           </CompSlotlet>
+          <CompSlotlet1 foo={foo.value} v-slot={scope}>
+            <div>{scope.foo}</div>
+          </CompSlotlet1>
         </fieldset>
       </div>
     </>

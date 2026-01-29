@@ -67,7 +67,7 @@ export function transformSlot(
     codes.replaceRange(
       slotNode.attributes.pos,
       slotNode.attributes.end,
-      ' {...(__slots[0] = { ',
+      ' {...(__slots = { ...__slots || {}, ',
       ...nameProp,
       ': { ',
       ...props,

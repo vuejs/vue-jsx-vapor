@@ -54,9 +54,9 @@ export function transformJsxMacros(
     }
 
     if (macros.slots && !macros.defineSlots) {
-      macros.defineSlots = 'ResolveSlots<(typeof __slots)[number]>'
+      macros.defineSlots = '__ResolveSlots<typeof __slots>'
       const start = root.body.getStart(ast)
-      codes.replaceRange(start + 1, start + 1, 'let __slots = [];')
+      codes.replaceRange(start + 1, start + 1, 'let __slots;')
       macros.slots.map((node) => transformSlot(node, options))
     }
 
@@ -88,18 +88,25 @@ export function transformJsxMacros(
         }
 
         const isDefineComponent =
-          macros.defineComponent?.expression.getText(ast) === 'defineComponent'
+          macros.defineComponent &&
+          ['defineComponent', 'defineCustomElement'].includes(
+            macros.defineComponent.expression.getText(ast),
+          )
         codes.replaceRange(
           node.getStart(ast),
           node.expression.getStart(ast),
           'const ',
-          [`__render`, node.getStart(ast) - 1, { verification: true }],
-          isDefineComponent ? ': () => JSX.Element' : '',
-          ' = ',
+          [`__rndr`, node.getStart(ast), { verification: true }],
+          isDefineComponent
+            ? macros.slots
+              ? ' = ('
+              : ': () => JSX.Element = '
+            : ' = ',
         )
         codes.replaceRange(
           node.expression.end,
           node.expression.end,
+          isDefineComponent && macros.slots ? ')()' : '',
           `
 return {} as {
   props: {${props.join(', ')}},
@@ -110,7 +117,7 @@ return {} as {
     expose: (exposed: ${macros.defineExpose ?? 'Record<string, any>'}) => void,
     attrs: Record<string, any>
   },
-  render: ${isDefineComponent ? `ReturnType<` : ''}typeof __render${isDefineComponent ? '>' : ''}
+  render: ${isDefineComponent ? `ReturnType<` : ''}typeof __rndr${isDefineComponent ? '>' : ''}
 }`,
         )
       }
