@@ -123,6 +123,34 @@ fn on_component_dynamically_named_slot() {
 }
 
 #[test]
+fn nested_component_should_not_inherit_parent_slots() {
+  let code = transform(
+    "<Comp>
+      <template v-slot:header></template>
+      <Bar />
+    </Comp>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, {
+  		header: _withVaporCtx(() => {
+  			return null;
+  		}),
+  		default: _withVaporCtx(() => {
+  			const _n1 = _createComponent(Bar);
+  			return _n1;
+  		})
+  	}, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
 fn named_slots_with_implicit_default_slot() {
   let code = transform(
     "<Comp>

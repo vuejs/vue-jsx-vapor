@@ -89,13 +89,22 @@ pub unsafe fn transform_element<'a>(
   // resolve them properly; they require creation via createElement
   let is_custom_element = context.options.is_custom_element.as_ref()(tag.clone());
   let is_component = is_jsx_component(node, true, context.options);
-  let _context_block = context_block as *mut BlockIRNode;
+
+  // If the element is a component, we need to isolate its slots context.
+  // This ensures that slots defined for this component are not accidentally
+  // inherited by its children components.
+  let mut parent_slots = None;
+  if is_component {
+    parent_slots = Some(context_block.slots.drain(..).collect::<Vec<_>>());
+  }
+
+  let context_block_ptr = context_block as *mut BlockIRNode;
   let props_result = build_props(
     directives,
     node,
     parent_node,
     context,
-    unsafe { &mut *_context_block },
+    unsafe { &mut *context_block_ptr },
     is_component,
     false,
     Rc::clone(&get_effect_index),
@@ -125,6 +134,10 @@ pub unsafe fn transform_element<'a>(
         Rc::clone(&get_effect_index),
         Rc::clone(&get_operation_index),
       );
+    }
+
+    if let Some(parent_slots) = parent_slots {
+      unsafe { &mut *context_block_ptr }.slots = parent_slots;
     }
   }))
 }
