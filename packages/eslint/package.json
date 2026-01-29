@@ -1,7 +1,7 @@
 {
   "name": "@vue-jsx-vapor/eslint",
   "type": "module",
-  "version": "3.1.17",
+  "version": "3.1.18",
   "description": "Vue JSX Vapor ESLint Plugin",
   "license": "MIT",
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",

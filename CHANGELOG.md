@@ -1,3 +1,21 @@
+## [3.1.18](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.17...v3.1.18) (2026-01-29)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** more accurate fallthrough attr support ([4c571ef](https://github.com/vuejs/vue-jsx-vapor/commit/4c571eff62574629c493813e73040013fd1a5349))
+* **compiler/vapor:** only apply v-on key modifiers to keyboard events ([1bb06d8](https://github.com/vuejs/vue-jsx-vapor/commit/1bb06d8d1dc954f538200a664a63b40f666ba83e))
+* **compiler/vapor:** prevent nested components from inheriting parent ([f5539ec](https://github.com/vuejs/vue-jsx-vapor/commit/f5539ec85bab110fc90073f8de8848a71c063cd1))
+* **volar/jsx-element:** refine type inference ([dc21389](https://github.com/vuejs/vue-jsx-vapor/commit/dc21389ecd0dedb29e7e37c0983d8cc238c5d44f))
+
+
+### Features
+
+* **compiler/vapor:** support merging multiple event handlers on ([4471831](https://github.com/vuejs/vue-jsx-vapor/commit/447183183fbb2ab523928974a1a5a868c7672f63))
+* **macros/volar:** support auto infer slot types for defineComponent ([1f7f474](https://github.com/vuejs/vue-jsx-vapor/commit/1f7f4741f00db342c13e772b5f82b1c12d643107))
+
+
+
 ## [3.1.17](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.16...v3.1.17) (2026-01-28)
 
 
