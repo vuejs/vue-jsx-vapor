@@ -30,8 +30,6 @@ pub fn gen_builtin_directive<'a>(
 
 /**
  * user directives via `withVaporDirectives`
- * TODO the compiler side is implemented but no runtime support yet
- * it was removed due to perf issues
  */
 pub fn gen_directives_for_element<'a>(
   id: i32,

@@ -94,7 +94,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         ))
       }
     }
-    OperationNode::SlotOutletNode(slot_outlet_ir_node) => {
+    OperationNode::SlotOutlet(slot_outlet_ir_node) => {
       if let Some(parent) = slot_outlet_ir_node.parent {
         statements.push(gen_insertion_state(
           parent,
@@ -150,7 +150,7 @@ pub fn gen_operation<'a>(
     OperationNode::CreateComponent(oper) => {
       gen_create_component(statements, oper, context, context_block)
     }
-    OperationNode::SlotOutletNode(oper) => {
+    OperationNode::SlotOutlet(oper) => {
       statements.push(gen_slot_outlet(oper, context, context_block))
     }
     OperationNode::DeclareOldRef(oper) => statements.push(gen_declare_old_ref(oper, context)),

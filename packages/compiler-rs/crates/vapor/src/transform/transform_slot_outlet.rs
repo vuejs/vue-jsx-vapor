@@ -6,7 +6,7 @@ use oxc_ast::ast::{JSXChild, JSXElement};
 use oxc_span::SPAN;
 
 use crate::{
-  ir::index::{BlockIRNode, DynamicFlag, OperationNode, SlotOutletNodeIRNode},
+  ir::index::{BlockIRNode, DynamicFlag, OperationNode, SlotOutletIRNode},
   transform::{TransformContext, transform_element::build_props},
 };
 use common::{
@@ -93,20 +93,18 @@ pub unsafe fn transform_slot_outlet<'a>(
 
   Some(Box::new(move || {
     let fallback = exit_block.map(|exit_block| exit_block());
-    context_block.dynamic.operation = Some(Box::new(OperationNode::SlotOutletNode(
-      SlotOutletNodeIRNode {
-        id,
-        name: slot_name,
-        props: ir_props,
-        fallback,
-        no_slotted: false,
-        once: *context.in_v_once.borrow(),
-        parent: None,
-        anchor: None,
-        append: false,
-        last: false,
-      },
-    )));
+    context_block.dynamic.operation = Some(Box::new(OperationNode::SlotOutlet(SlotOutletIRNode {
+      id,
+      name: slot_name,
+      props: ir_props,
+      fallback,
+      no_slotted: false,
+      once: *context.in_v_once.borrow(),
+      parent: None,
+      anchor: None,
+      append: false,
+      last: false,
+    })));
   }))
 }
 

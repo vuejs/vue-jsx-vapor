@@ -223,7 +223,7 @@ pub struct CreateComponentIRNode<'a> {
 }
 
 #[derive(Debug)]
-pub struct SlotOutletNodeIRNode<'a> {
+pub struct SlotOutletIRNode<'a> {
   pub id: i32,
   pub name: SimpleExpressionNode<'a>,
   pub props: Vec<IRProps<'a>>,
@@ -264,7 +264,7 @@ pub enum OperationNode<'a> {
   InsertNode(InsertNodeIRNode),
   Directive(DirectiveIRNode<'a>),
   CreateComponent(CreateComponentIRNode<'a>),
-  SlotOutletNode(SlotOutletNodeIRNode<'a>),
+  SlotOutlet(SlotOutletIRNode<'a>),
   DeclareOldRef(DeclareOldRefIRNode),
   GetTextChild(GetTextChildIRNode),
   Key(KeyIRNode<'a>),

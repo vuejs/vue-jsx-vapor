@@ -6,15 +6,15 @@ use crate::generate::CodegenContext;
 use crate::generate::block::gen_block;
 use crate::generate::component::gen_raw_props;
 use crate::generate::expression::gen_expression;
-use crate::ir::index::{BlockIRNode, SlotOutletNodeIRNode};
+use crate::ir::index::{BlockIRNode, SlotOutletIRNode};
 
 pub fn gen_slot_outlet<'a>(
-  oper: SlotOutletNodeIRNode<'a>,
+  oper: SlotOutletIRNode<'a>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Statement<'a> {
   let ast = &context.ast;
-  let SlotOutletNodeIRNode {
+  let SlotOutletIRNode {
     id,
     name,
     fallback,
