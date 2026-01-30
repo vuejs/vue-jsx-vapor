@@ -288,7 +288,7 @@ fn expression_with_comment() {
   const _t0 = _template("<div> <a></a></div>", true);
   (() => {
   	const _n1 = _t0();
-  	const _n0 = _child(_n1, 0);
+  	const _n0 = _child(_n1);
   	_setNodes(_n0, () => foo);
   	return _n1;
   })();

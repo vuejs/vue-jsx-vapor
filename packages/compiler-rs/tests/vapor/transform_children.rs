@@ -65,7 +65,7 @@ fn children_sibling_references() {
   const _t0 = _template("<div><p> </p> <p> </p></div>", true);
   (() => {
   	const _n3 = _t0();
-  	const _n0 = _child(_n3, 0);
+  	const _n0 = _child(_n3);
   	const _n1 = _next(_n0, 1);
   	const _n2 = _next(_n1, 2);
   	const _x0 = _txt(_n0);
@@ -100,9 +100,9 @@ fn efficient_traversal() {
   	const _p0 = _next(_child(_n3, 1));
   	const _p1 = _next(_p0, 2);
   	const _p2 = _next(_p1, 3);
-  	const _n2 = _child(_p2, 0);
-  	const _n1 = _child(_p1, 0);
-  	const _n0 = _child(_p0, 0);
+  	const _n2 = _child(_p2);
+  	const _n1 = _child(_p1);
+  	const _n0 = _child(_p0);
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, () => ({ msg }));
   	const _x1 = _txt(_n1);
@@ -218,7 +218,7 @@ fn next_child_and_nthchild_should_be_above_the_set_insertion_state() {
   	const _n5 = _next(_child(_n6, 1));
   	const _n7 = _nthChild(_n6, 3, 3);
   	const _p0 = _next(_n7, 4);
-  	const _n4 = _child(_p0, 0);
+  	const _n4 = _child(_p0);
   	_setInsertionState(_n6, _n5);
   	const _n0 = _createComponent(Comp);
   	_setInsertionState(_n6, _n7, true);

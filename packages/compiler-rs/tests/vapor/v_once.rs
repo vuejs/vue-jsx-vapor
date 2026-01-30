@@ -20,7 +20,7 @@ fn basic() {
   const _t0 = _template("<div> <span></span></div>", true);
   (() => {
   	const _n2 = _t0();
-  	const _n0 = _child(_n2, 0);
+  	const _n0 = _child(_n2);
   	const _n1 = _next(_n0, 1);
   	_setNodes(_n0, msg);
   	_setClass(_n1, clz);
@@ -51,7 +51,7 @@ fn on_nested_plain_element() {
   const _t0 = _template("<div><div></div></div>", true);
   (() => {
   	const _n1 = _t0();
-  	const _n0 = _child(_n1, 0);
+  	const _n0 = _child(_n1);
   	_setProp(_n0, "id", foo);
   	return _n1;
   })();
@@ -202,7 +202,7 @@ fn execution_order() {
   const _t0 = _template("<div><span> </span> <br> <div> </div></div>", true);
   (() => {
   	const _n4 = _t0();
-  	const _n0 = _child(_n4, 0);
+  	const _n0 = _child(_n4);
   	const _n1 = _next(_n0, 1);
   	const _n2 = _nthChild(_n4, 3, 3);
   	const _n3 = _next(_n2, 4);

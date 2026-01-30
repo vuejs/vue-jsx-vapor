@@ -189,15 +189,25 @@ fn gen_children<'a>(
         SPAN,
         ast.expression_identifier(SPAN, ast.atom(&context.helper("child"))),
         NONE,
-        ast.vec_from_array([
-          Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(&from))),
-          Argument::NumericLiteral(ast.alloc_numeric_literal(
-            SPAN,
-            logical_index as f64,
-            None,
-            NumberBase::Hex,
-          )),
-        ]),
+        ast.vec_from_iter(
+          [
+            Some(Argument::Identifier(
+              ast.alloc_identifier_reference(SPAN, ast.atom(&from)),
+            )),
+            if logical_index != 0 {
+              Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+                SPAN,
+                logical_index as f64,
+                None,
+                NumberBase::Hex,
+              )))
+            } else {
+              None
+            },
+          ]
+          .into_iter()
+          .flatten(),
+        ),
         false,
       )
     } else {
