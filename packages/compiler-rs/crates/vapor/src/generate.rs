@@ -1,5 +1,6 @@
 pub mod block;
 pub mod component;
+pub mod destructure;
 pub mod directive;
 pub mod dom;
 pub mod event;
@@ -21,6 +22,7 @@ pub mod v_show;
 use std::{cell::RefCell, collections::HashMap, mem};
 
 use common::{options::TransformOptions, text::to_valid_asset_id};
+use oxc_allocator::TakeIn;
 use oxc_ast::{
   AstBuilder, NONE,
   ast::{Argument, Expression, FormalParameterKind, Statement, VariableDeclarationKind},
@@ -68,21 +70,17 @@ impl<'a> CodegenContext<'a> {
   pub fn with_id(
     &self,
     _fn: impl FnOnce() -> Expression<'a>,
-    mut id_map: HashMap<String, Option<Expression<'a>>>,
+    mut id_map: HashMap<String, Expression<'a>>,
   ) -> Expression<'a> {
     for (id, value) in id_map.iter_mut() {
       let mut identifiers = self.identifiers.borrow_mut();
       if identifiers.get(id).is_none() {
         identifiers.insert(id.clone(), vec![]);
       }
-      identifiers.get_mut(id).unwrap().insert(
-        0,
-        if value.is_some() {
-          value.take().unwrap()
-        } else {
-          self.ast.expression_identifier(SPAN, self.ast.atom(id))
-        },
-      );
+      identifiers
+        .get_mut(id)
+        .unwrap()
+        .insert(0, value.take_in(self.ast.allocator));
     }
 
     let ret = _fn();

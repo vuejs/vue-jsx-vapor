@@ -1,17 +1,15 @@
-use std::{collections::HashMap, ops::Deref};
+use std::collections::HashMap;
 
 use common::{
   expression::{SimpleExpressionNode, is_globally_allowed},
   walk::WalkIdentifiers,
-  walk_mut::WalkIdentifiersMut,
 };
 use oxc_allocator::CloneIn;
 use oxc_ast::{
-  AstKind, NONE,
+  NONE,
   ast::{
     Argument, AssignmentOperator, AssignmentTarget, BinaryExpression, BinaryOperator, Expression,
-    FormalParameterKind, NumberBase, ObjectPropertyKind, PropertyKey, Statement,
-    VariableDeclarationKind,
+    FormalParameterKind, NumberBase, Statement, VariableDeclarationKind,
   },
 };
 use oxc_ast_visit::Visit;
@@ -102,191 +100,50 @@ pub fn gen_for<'a>(
   );
 
   let (depth, exit_scope) = context.enter_scope();
-  let mut id_map: HashMap<String, Option<Expression>> = HashMap::new();
   let item_var = format!("_for_item{depth}");
-  id_map.insert(item_var.clone(), None);
-
-  let _id_map = &mut id_map as *mut HashMap<String, Option<Expression>>;
-  let _item_var = item_var.clone();
-  // construct a id -> accessor path map.
-  // e.g. `{ x: { y: [z] }}` -> `Map{ 'z' => '.x.y[0]' }`
-  if !raw_value.is_empty() {
-    if let Some(_ast) = value_ast
-      && !matches!(_ast, Expression::Identifier(_))
-    {
-      WalkIdentifiersMut::new(
-        Box::new(move |id, _, parent_stack, _, _| {
-          let mut path = ast
-            .member_expression_static(
-              id.span(),
-              ast.expression_identifier(SPAN, ast.atom(&_item_var)),
-              ast.identifier_name(SPAN, "value"),
-              false,
-            )
-            .into();
-          for i in 0..parent_stack.len() {
-            let parent = parent_stack[i];
-            let child = parent_stack.get(i + 1);
-            let child_is_spread = if let Some(child) = child {
-              matches!(child, AstKind::SpreadElement(_))
-            } else {
-              false
-            };
-
-            if let AstKind::ObjectProperty(parent) = parent {
-              if let PropertyKey::StringLiteral(key) = &parent.key {
-                path = ast
-                  .member_expression_computed(
-                    SPAN,
-                    path,
-                    ast.expression_identifier(SPAN, key.value),
-                    false,
-                  )
-                  .into();
-              } else if let PropertyKey::StaticIdentifier(key) = &parent.key {
-                // non-computed, can only be identifier
-                path = ast
-                  .member_expression_static(SPAN, path, key.deref().clone_in(ast.allocator), false)
-                  .into()
-              }
-            } else if let AstKind::ArrayExpression(parent) = &parent {
-              let index = parent
-                .elements
-                .iter()
-                .position(|element| {
-                  if let Some(child) = child {
-                    element.span().eq(&child.span())
-                  } else {
-                    element.span().eq(&id.span())
-                  }
-                })
-                .unwrap();
-              if child_is_spread {
-                path = ast.expression_call(
-                  SPAN,
-                  ast
-                    .member_expression_static(SPAN, path, ast.identifier_name(SPAN, "slice"), false)
-                    .into(),
-                  NONE,
-                  ast.vec1(Argument::NumericLiteral(ast.alloc_numeric_literal(
-                    SPAN,
-                    index as f64,
-                    None,
-                    NumberBase::Hex,
-                  ))),
-                  false,
-                );
-              } else {
-                path = ast
-                  .member_expression_computed(
-                    SPAN,
-                    path,
-                    ast.expression_numeric_literal(SPAN, index as f64, None, NumberBase::Hex),
-                    false,
-                  )
-                  .into();
-              }
-            } else if let AstKind::ObjectExpression(parent) = &parent
-              && child_is_spread
-            {
-              let properties = &parent.properties;
-              unsafe { &mut *_id_map }.insert("getRestElement".to_string(), None);
-              path = ast.expression_call(
-                SPAN,
-                ast.expression_identifier(SPAN, ast.atom(&context.helper("getRestElement"))),
-                NONE,
-                ast.vec_from_array([
-                  path.into(),
-                  ast
-                    .expression_array(
-                      SPAN,
-                      ast.vec_from_iter(properties.iter().filter_map(|p| {
-                        if let ObjectPropertyKind::ObjectProperty(p) = p {
-                          Some(if let PropertyKey::StringLiteral(key) = &p.key {
-                            ast.expression_string_literal(SPAN, key.value, None).into()
-                          } else {
-                            ast
-                              .expression_string_literal(
-                                SPAN,
-                                ast.atom(&p.key.name().unwrap()),
-                                None,
-                              )
-                              .into()
-                          })
-                        } else {
-                          None
-                        }
-                      })),
-                    )
-                    .into(),
-                ]),
-                false,
-              );
-            }
-          }
-          unsafe { &mut *_id_map }.insert(
-            id.span().source_text(context.source_text).to_string(),
-            Some(path),
-          );
-          None
-        }),
-        context.options,
+  let mut id_map = context.parse_value_destructure(
+    value_ast,
+    ast
+      .member_expression_static(
+        SPAN,
+        ast.expression_identifier(SPAN, ast.atom(&item_var)),
+        ast.identifier_name(SPAN, "value"),
+        false,
       )
-      .visit(_ast);
-    } else {
-      id_map.insert(
-        raw_value.clone(),
-        Some(
-          ast
-            .member_expression_static(
-              value_span,
-              ast.expression_identifier(SPAN, ast.atom(&item_var)),
-              ast.identifier_name(SPAN, "value"),
-              false,
-            )
-            .into(),
-        ),
-      );
-    }
-  }
+      .into(),
+  );
 
   let mut args: Vec<String> = vec![];
   args.push(item_var);
   if let Some(raw_key) = raw_key.clone() {
     let key_var = format!("_for_key{depth}");
-    args.push(key_var.clone());
     id_map.insert(
       raw_key,
-      Some(
-        ast
-          .member_expression_static(
-            key_span,
-            ast.expression_identifier(SPAN, ast.atom(&key_var)),
-            ast.identifier_name(SPAN, "value"),
-            false,
-          )
-          .into(),
-      ),
+      ast
+        .member_expression_static(
+          key_span,
+          ast.expression_identifier(SPAN, ast.atom(&key_var)),
+          ast.identifier_name(SPAN, "value"),
+          false,
+        )
+        .into(),
     );
-    id_map.insert(key_var, None);
+    args.push(key_var);
   }
   if let Some(raw_index) = raw_index.clone() {
     let index_var = format!("_for_index{depth}");
-    args.push(index_var.clone());
     id_map.insert(
       raw_index,
-      Some(
-        ast
-          .member_expression_static(
-            index_span,
-            ast.expression_identifier(SPAN, ast.atom(&index_var)),
-            ast.identifier_name(SPAN, "value"),
-            false,
-          )
-          .into(),
-      ),
+      ast
+        .member_expression_static(
+          index_span,
+          ast.expression_identifier(SPAN, ast.atom(&index_var)),
+          ast.identifier_name(SPAN, "value"),
+          false,
+        )
+        .into(),
     );
-    id_map.insert(index_var.to_string(), None);
+    args.push(index_var);
   }
 
   let (effect_patterns, selector_patterns, key_only_binding_patterns) =
@@ -614,7 +471,7 @@ pub fn gen_for<'a>(
 fn match_patterns<'a>(
   render: &mut BlockIRNode<'a>,
   key_prop: &Option<SimpleExpressionNode<'a>>,
-  id_map: &HashMap<String, Option<Expression<'a>>>,
+  id_map: &HashMap<String, Expression<'a>>,
   context: &'a CodegenContext<'a>,
 ) -> (
   Vec<IREffect<'a>>,
@@ -660,7 +517,7 @@ fn match_patterns<'a>(
 fn match_selector_pattern<'a>(
   effect: &'a IREffect<'a>,
   key: &str,
-  id_map: &HashMap<String, Option<Expression<'a>>>,
+  id_map: &HashMap<String, Expression<'a>>,
   context: &'a CodegenContext<'a>,
 ) -> Option<SimpleExpressionNode<'a>> {
   if effect.operations.len() != 1 {
@@ -733,12 +590,12 @@ fn match_selector_pattern<'a>(
 
 fn analyze_variable_scopes<'a>(
   ast: &Expression,
-  id_map: &HashMap<String, Option<Expression<'a>>>,
+  id_map: &HashMap<String, Expression<'a>>,
   context: &'a CodegenContext<'a>,
 ) -> Vec<String> {
   let mut locals = vec![];
   let _locals = &mut locals as *mut Vec<String>;
-  let _id_map = id_map as *const HashMap<String, Option<Expression>>;
+  let _id_map = id_map as *const HashMap<String, Expression>;
   WalkIdentifiers::new(Box::new(move |id, _, _, _, _| unsafe {
     let name = id.name.to_string();
     if !is_globally_allowed(&name) && (&*_id_map).get(&name).is_some() {

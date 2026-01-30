@@ -151,6 +151,126 @@ fn nested_component_should_not_inherit_parent_slots() {
 }
 
 #[test]
+fn slot_prop_alias_uses_original_key() {
+  let code = transform(
+    r#"<Comp><template v-slot:default={{ msg: msg1 }}>{ msg1 }</template></Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  		const _n0 = _createNodes(() => _slotProps0.msg);
+  		return _n0;
+  	}) }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_prop_nested_destructuring() {
+  let code = transform(
+    r#"<Comp><template v-slot:default={{ foo: { bar: baz } }}>{ baz }</template></Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  		const _n0 = _createNodes(() => _slotProps0.foo.bar);
+  		return _n0;
+  	}) }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_prop_computed_key_destructuring() {
+  let code = transform(
+    r#"<Comp><template v-slot:default={{ [key.value]: val }}>{{ val }}</template></Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  		const _n0 = _createNodes(() => ({ val: _slotProps0[key.value] }));
+  		return _n0;
+  	}) }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_prop_rest_destructuring() {
+  let code = transform(
+    r#"<Comp><template v-slot:default={{ foo, ...rest }}>{ rest.bar }</template></Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { getRestElement as _getRestElement, withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  		const _n0 = _createNodes(() => _getRestElement(_slotProps0, ["foo"]).bar);
+  		return _n0;
+  	}) }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_prop_array_rest_destructuring() {
+  let code = transform(
+    r#"<Comp><template v-slot:default={{ arr: [first, ...rest] }}>{ rest[0] }</template></Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  		const _n0 = _createNodes(() => _slotProps0.arr.slice(1)[0]);
+  		return _n0;
+  	}) }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_prop_rest_with_computed_keys_preserved() {
+  let code = transform(
+    r#"<Comp><template v-slot:default={{ foo, [key]: val, ...rest }}>{ foo + rest.other }</template></Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { getRestElement as _getRestElement, withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  		const _n0 = _createNodes(() => _slotProps0.foo + _getRestElement(_slotProps0, ["foo", _slotProps0[key]]).other);
+  		return _n0;
+  	}) }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
 fn named_slots_with_implicit_default_slot() {
   let code = transform(
     "<Comp>

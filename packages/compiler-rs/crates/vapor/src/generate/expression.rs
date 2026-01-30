@@ -3,7 +3,7 @@ use oxc_ast::{
   NONE,
   ast::{AssignmentOperator, AssignmentTarget, Expression, FormalParameterKind},
 };
-use oxc_span::{GetSpan, SPAN, Span};
+use oxc_span::{GetSpan, GetSpanMut, SPAN, Span};
 
 use crate::generate::CodegenContext;
 
@@ -112,7 +112,9 @@ pub fn gen_identifier<'a>(
     && !id_map.is_empty()
     && let Some(replacement) = id_map.first()
   {
-    return replacement.clone_in(ast.allocator);
+    let mut replacement = replacement.clone_in(ast.allocator);
+    *replacement.span_mut() = loc;
+    return replacement;
   }
 
   if let Some(assignment) = assignment {

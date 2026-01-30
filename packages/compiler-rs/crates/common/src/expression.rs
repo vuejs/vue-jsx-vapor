@@ -200,7 +200,11 @@ pub fn parse_expression<'a>(
   Parser::new(
     allocator,
     Atom::from_in(
-      &format!("/*{}*/({})", ".".repeat(span.start as usize - 5), source),
+      &if span == SPAN {
+        format!("{}", source)
+      } else {
+        format!("/*{}*/({})", ".".repeat(span.start as usize - 5), source)
+      },
       allocator,
     )
     .as_str(),

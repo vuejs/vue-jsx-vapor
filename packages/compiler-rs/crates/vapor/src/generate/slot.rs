@@ -1,5 +1,3 @@
-use std::collections::{HashMap, HashSet};
-
 use indexmap::IndexMap;
 use napi::bindgen_prelude::{Either, Either4};
 use oxc_ast::{
@@ -16,7 +14,7 @@ use crate::{
   },
 };
 
-use common::{check::is_simple_identifier, walk_mut::WalkIdentifiersMut};
+use common::check::is_simple_identifier;
 
 pub fn gen_raw_slots<'a>(
   mut slots: Vec<IRSlots<'a>>,
@@ -354,59 +352,34 @@ fn gen_slot_block_with_props<'a>(
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Expression<'a> {
-  let mut is_destructure_assignment = false;
   let mut props_name = String::new();
   let mut props_loc = SPAN;
+  let mut props_ast = None;
   let mut exit_scope = None;
-  let mut ids_of_props = HashSet::new();
 
   if let Some(props) = oper.props.take() {
-    let raw_props = props.content.clone();
     props_loc = props.loc;
     if let Some(ast) = &props.ast
       && let Expression::ObjectExpression(_) = ast.without_parentheses().get_inner_expression()
     {
-      is_destructure_assignment = true;
+      props_ast = props.ast;
       let scope = context.enter_scope();
       props_name = format!("_slotProps{}", scope.0);
-      if let Some(ast) = props.ast {
-        let ids_of_props = &mut ids_of_props as *mut HashSet<String>;
-        WalkIdentifiersMut::new(
-          Box::new(move |id, _, _, _, _| {
-            unsafe { &mut *ids_of_props }.insert(id.name.to_string());
-            None
-          }),
-          context.options,
-        )
-        .visit(ast);
-      }
       exit_scope = Some(scope.1);
     } else {
-      props_name = raw_props.clone();
-      ids_of_props.insert(raw_props);
+      props_name = props.content;
     }
   }
 
-  let mut id_map = HashMap::new();
+  let ast = context.ast;
+  let id_map = context.parse_value_destructure(
+    props_ast,
+    context
+      .ast
+      .expression_identifier(SPAN, ast.atom(&props_name)),
+  );
 
   let ast = &context.ast;
-  for id in ids_of_props {
-    id_map.insert(
-      id.clone(),
-      if is_destructure_assignment {
-        Some(Expression::StaticMemberExpression(
-          ast.alloc_static_member_expression(
-            SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&props_name)),
-            ast.identifier_name(SPAN, ast.atom(&id)),
-            false,
-          ),
-        ))
-      } else {
-        None
-      },
-    );
-  }
 
   let block_fn = context.with_id(
     || {
@@ -414,10 +387,14 @@ fn gen_slot_block_with_props<'a>(
         oper,
         context,
         context_block,
-        ast.vec1(ast.plain_formal_parameter(
-          SPAN,
-          ast.binding_pattern_binding_identifier(props_loc, ast.atom(&props_name)),
-        )),
+        if props_name.is_empty() {
+          ast.vec()
+        } else {
+          ast.vec1(ast.plain_formal_parameter(
+            SPAN,
+            ast.binding_pattern_binding_identifier(props_loc, ast.atom(&props_name)),
+          ))
+        },
       )
     },
     id_map,
