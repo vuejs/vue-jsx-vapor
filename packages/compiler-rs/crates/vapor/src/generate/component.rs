@@ -254,7 +254,11 @@ fn gen_dynamic_props<'a>(
           SPAN,
           ast.expression_identifier(SPAN, ast.atom(&context.helper("toHandlers"))),
           NONE,
-          ast.vec1(expression.into()),
+          ast.vec_from_array([
+            expression.into(),
+            ast.expression_boolean_literal(SPAN, false).into(), // preserveCaseIfNecessary: false, not needed for component
+            ast.expression_boolean_literal(SPAN, true).into(),  // wrap handler values in functions
+          ]),
           false,
         ))
       } else {

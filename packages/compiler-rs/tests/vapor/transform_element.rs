@@ -205,7 +205,7 @@ fn component_v_on() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { toHandlers as _toHandlers } from "vue";
   (() => {
-  	const _n0 = _createComponent(Foo, { $: [() => _toHandlers(obj)] }, null, true);
+  	const _n0 = _createComponent(Foo, { $: [() => _toHandlers(obj, false, true)] }, null, true);
   	return _n0;
   })();
   "#);
