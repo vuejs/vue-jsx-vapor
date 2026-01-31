@@ -63,7 +63,7 @@ pub fn gen_set_event<'a>(
     }));
     Some(ast.expression_object(SPAN, properties))
   };
-  let handler = gen_event_handler(context, vec![value], keys, non_keys, false);
+  let handler = gen_event_handler(context, vec![value], &keys, &non_keys, false);
 
   if delegate {
     // key is static
@@ -128,8 +128,8 @@ pub fn gen_set_event<'a>(
 pub fn gen_event_handler<'a>(
   context: &'a CodegenContext<'a>,
   values: Vec<Option<SimpleExpressionNode<'a>>>,
-  keys: Vec<String>,
-  non_keys: Vec<String>,
+  keys: &Vec<String>,
+  non_keys: &Vec<String>,
   // passed as component prop - need additional wrap
   extra_wrap: bool,
 ) -> Expression<'a> {
@@ -173,9 +173,9 @@ pub fn gen_event_handler<'a>(
         ast
           .expression_array(
             SPAN,
-            ast.vec_from_iter(non_keys.into_iter().map(|key| {
+            ast.vec_from_iter(non_keys.iter().map(|key| {
               ast
-                .expression_string_literal(SPAN, ast.atom(&key), None)
+                .expression_string_literal(SPAN, ast.atom(key), None)
                 .into()
             })),
           )
@@ -195,9 +195,9 @@ pub fn gen_event_handler<'a>(
         ast
           .expression_array(
             SPAN,
-            ast.vec_from_iter(keys.into_iter().map(|key| {
+            ast.vec_from_iter(keys.iter().map(|key| {
               ast
-                .expression_string_literal(SPAN, ast.atom(&key), None)
+                .expression_string_literal(SPAN, ast.atom(key), None)
                 .into()
             })),
           )

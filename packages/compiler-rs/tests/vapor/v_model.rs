@@ -403,7 +403,7 @@ fn component_should_generate_model_value_modifiers() {
 #[test]
 fn component_with_arguments_should_generate_model_modifiers() {
   let code = transform(
-    "<Comp v-model:foo_trim={foo} v-model:bar_number={bar} />",
+    "<Comp v-model:foo_trim={foo} v-model:foo-bar_number={bar} />",
     None,
   )
   .code;
@@ -414,9 +414,9 @@ fn component_with_arguments_should_generate_model_modifiers() {
   		foo: () => foo,
   		"onUpdate:foo": () => (_value) => foo = _value,
   		fooModifiers: () => ({ trim: true }),
-  		bar: () => bar,
-  		"onUpdate:bar": () => (_value) => bar = _value,
-  		barModifiers: () => ({ number: true })
+  		"onUpdate:foo-bar": () => (_value) => bar = _value,
+  		"foo-bar": () => bar,
+  		"foo-barModifiers": () => ({ number: true })
   	}, null, true);
   	return _n0;
   })();
@@ -442,6 +442,25 @@ fn component_with_dynamic_arguments_should_generate_model_modifiers() {
   		["onUpdate:" + bar.value]: () => (_value) => bar = _value,
   		[bar.value + "Modifiers"]: () => ({ number: true })
   	})] }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn component_v_model_should_merge_with_explicit() {
+  let code = transform(
+    "<Comp v-model={counter} onUpdate:modelValue={onUpdate} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, {
+  		modelValue: () => counter,
+  		"onUpdate:modelValue": () => [(_value) => counter = _value, onUpdate]
+  	}, null, true);
   	return _n0;
   })();
   "#);

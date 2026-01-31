@@ -1,7 +1,10 @@
 use std::mem;
 
+use common::check::is_simple_identifier;
 use common::directive::Modifiers;
 use common::expression::SimpleExpressionNode;
+use common::text::capitalize;
+use indexmap::IndexMap;
 use napi::bindgen_prelude::Either3;
 use oxc_allocator::CloneIn;
 use oxc_ast::NONE;
@@ -9,6 +12,7 @@ use oxc_ast::ast::BinaryOperator;
 use oxc_ast::ast::Expression;
 use oxc_ast::ast::FormalParameterKind;
 use oxc_ast::ast::ObjectPropertyKind;
+use oxc_ast::ast::PropertyKey;
 use oxc_ast::ast::PropertyKind;
 use oxc_ast::ast::Statement;
 use oxc_ast::ast::VariableDeclarationKind;
@@ -28,7 +32,6 @@ use crate::ir::component::IRProps;
 use crate::ir::component::IRPropsStatic;
 use crate::ir::index::BlockIRNode;
 use crate::ir::index::CreateComponentIRNode;
-use common::text::camelize;
 use common::text::to_valid_asset_id;
 
 pub fn gen_create_component<'a>(
@@ -205,6 +208,36 @@ pub fn gen_raw_props<'a>(
   }
 }
 
+struct HandlerGroup<'a> {
+  pub key_frag: PropertyKey<'a>,
+  pub handlers: Vec<Expression<'a>>,
+  index: usize,
+}
+fn add_handler<'a>(
+  handler_groups: &mut IndexMap<String, HandlerGroup<'a>>,
+  properties: &mut oxc_allocator::Vec<ObjectPropertyKind>,
+  key_name: String,
+  key_frag: PropertyKey<'a>,
+  handler_exp: Expression<'a>,
+) {
+  if handler_groups.get_mut(&key_name).is_none() {
+    let index = properties.len();
+    handler_groups.insert(
+      key_name.clone(),
+      HandlerGroup {
+        key_frag,
+        index,
+        handlers: vec![],
+      },
+    );
+  }
+  handler_groups
+    .get_mut(&key_name)
+    .unwrap()
+    .handlers
+    .push(handler_exp);
+}
+
 fn gen_static_props<'a>(
   props: IRPropsStatic<'a>,
   context: &'a CodegenContext<'a>,
@@ -212,10 +245,128 @@ fn gen_static_props<'a>(
 ) -> Expression<'a> {
   let ast = &context.ast;
   let mut properties = ast.vec();
-  let _properties = &mut properties as *mut oxc_allocator::Vec<ObjectPropertyKind>;
-  for prop in props {
-    gen_prop(unsafe { &mut *_properties }, prop, context, true)
+  let mut handler_groups = IndexMap::new();
+
+  for mut prop in props {
+    if prop.handler {
+      let key_name = format!("\"on{}\"", capitalize(prop.key.content.clone()));
+      if key_name.is_empty() {
+        // dynamic key handlers are emitted as-is
+        gen_prop(&mut properties, prop, context, true);
+        continue;
+      }
+
+      let Modifiers {
+        keys,
+        non_keys,
+        options,
+      } = prop.handler_modifiers.unwrap_or(Modifiers {
+        keys: vec![],
+        non_keys: vec![],
+        options: vec![],
+      });
+
+      let key_frag = gen_prop_key(
+        prop.key,
+        prop.runtime_camelize,
+        prop.modifier,
+        prop.handler,
+        options,
+        context,
+      );
+      let has_modifiers = !keys.is_empty() || !non_keys.is_empty();
+      if has_modifiers || prop.values.len() <= 1 {
+        let handler_exp = gen_event_handler(
+          context,
+          prop.values.into_iter().map(Some).collect(),
+          &keys,
+          &non_keys,
+          false,
+        );
+        add_handler(
+          &mut handler_groups,
+          &mut properties,
+          key_name,
+          key_frag,
+          handler_exp,
+        );
+      } else {
+        // no modifiers: flatten multiple handler values
+        for value in prop.values.drain(..) {
+          let handler_exp = gen_event_handler(context, vec![Some(value)], &keys, &non_keys, false);
+          add_handler(
+            &mut handler_groups,
+            &mut properties,
+            key_name.clone(),
+            key_frag.clone_in(ast.allocator),
+            handler_exp,
+          );
+        }
+      }
+      continue;
+    }
+
+    // v-model on component: synthesize onUpdate:* and modifiers props, and
+    // dedupe/merge with user provided @update:* handlers.
+    if prop.model {
+      let mut prop_clone = prop.clone();
+      prop_clone.model = false;
+      // normal (non-handler) props
+      gen_prop(&mut properties, prop_clone, context, true);
+      gen_model(
+        Some(&mut handler_groups),
+        &mut properties,
+        prop.key,
+        prop.values.remove(0),
+        prop.model_modifiers,
+        context,
+      );
+    } else {
+      gen_prop(&mut properties, prop, context, true);
+    }
   }
+
+  // fill handler placeholders
+  for mut group in handler_groups.into_values() {
+    let handler_value = if group.handlers.len() > 1 {
+      ast.expression_array(
+        SPAN,
+        ast.vec_from_iter(group.handlers.into_iter().map(|e| e.into())),
+      )
+    } else {
+      group.handlers.remove(0)
+    };
+    properties.insert(
+      group.index,
+      ast.object_property_kind_object_property(
+        SPAN,
+        PropertyKind::Init,
+        group.key_frag,
+        ast.expression_arrow_function(
+          SPAN,
+          true,
+          false,
+          NONE,
+          ast.formal_parameters(
+            SPAN,
+            FormalParameterKind::ArrowFormalParameters,
+            ast.vec(),
+            NONE,
+          ),
+          NONE,
+          ast.function_body(
+            SPAN,
+            ast.vec(),
+            ast.vec1(ast.statement_expression(SPAN, handler_value)),
+          ),
+        ),
+        false,
+        false,
+        false,
+      ),
+    );
+  }
+
   if let Some(dynamic_props) = dynamic_props {
     properties.push(ast.object_property_kind_object_property(
       SPAN,
@@ -318,12 +469,16 @@ fn gen_prop<'a>(
 
   let model_modifiers = prop.model_modifiers.take();
   let model = if model {
-    Some(gen_model(
+    let mut properties = ast.vec();
+    gen_model(
+      None,
+      &mut properties,
       prop.key.clone(),
       values[0].clone(),
       model_modifiers,
       context,
-    ))
+    );
+    Some(properties)
   } else {
     None
   };
@@ -332,8 +487,8 @@ fn gen_prop<'a>(
     gen_event_handler(
       context,
       values.into_iter().map(Some).collect(),
-      keys,
-      non_keys,
+      &keys,
+      &non_keys,
       true, /* wrap handlers passed to components */
     )
   } else {
@@ -387,28 +542,35 @@ fn gen_prop<'a>(
 }
 
 fn gen_model<'a>(
+  handler_groups: Option<&mut IndexMap<String, HandlerGroup<'a>>>,
+  properties: &mut oxc_allocator::Vec<ObjectPropertyKind<'a>>,
   key: SimpleExpressionNode<'a>,
   value: SimpleExpressionNode<'a>,
   model_modifiers: Option<Vec<String>>,
   context: &'a CodegenContext<'a>,
-) -> oxc_allocator::Vec<'a, ObjectPropertyKind<'a>> {
-  let ast = &context.ast;
-  let mut properties = ast.vec();
+) {
+  let ast = context.ast;
+
+  // modelModifiers prop
   let is_static = key.is_static;
   let content = key.content.clone();
-  let expression = gen_expression(key, context, None, false);
-
   let modifiers = if let Some(model_modifiers) = model_modifiers
     && !model_modifiers.is_empty()
   {
-    let modifers_key = if is_static {
-      ast
-        .property_key_static_identifier(SPAN, ast.atom(&format!("{}Modifiers", camelize(&content))))
+    let modifers_key = if key.is_static {
+      ast.property_key_static_identifier(
+        SPAN,
+        ast.atom(&if is_simple_identifier(&content) {
+          format!("{}Modifiers", &content)
+        } else {
+          format!("\"{}Modifiers\"", &content)
+        }),
+      )
     } else {
       ast
         .expression_binary(
           SPAN,
-          expression.clone_in(context.ast.allocator),
+          gen_expression(key.clone(), context, None, false).into(),
           BinaryOperator::Addition,
           ast.expression_string_literal(SPAN, ast.atom("Modifiers"), None),
         )
@@ -446,52 +608,86 @@ fn gen_model<'a>(
     None
   };
 
-  let name = if is_static {
-    ast.property_key_static_identifier(
-      SPAN,
-      ast.atom(&format!("\"onUpdate:{}\"", camelize(&content))),
-    )
+  // onUpdate:* handler
+  let handler_value = gen_model_handler(value, context);
+  if is_static {
+    let key_name = format!("\"onUpdate:{}\"", key.content);
+    let key_frag = ast.property_key_static_identifier(key.loc, ast.atom(&key_name));
+    if let Some(handler_groups) = handler_groups {
+      add_handler(
+        handler_groups,
+        properties,
+        key_name,
+        key_frag,
+        handler_value,
+      );
+    } else {
+      properties.push(ast.object_property_kind_object_property(
+        SPAN,
+        PropertyKind::Init,
+        key_frag,
+        ast.expression_arrow_function(
+          SPAN,
+          true,
+          false,
+          NONE,
+          ast.formal_parameters(
+            SPAN,
+            FormalParameterKind::ArrowFormalParameters,
+            ast.vec(),
+            NONE,
+          ),
+          NONE,
+          ast.function_body(
+            SPAN,
+            ast.vec(),
+            ast.vec1(ast.statement_expression(SPAN, handler_value)),
+          ),
+        ),
+        false,
+        false,
+        false,
+      ));
+    }
   } else {
-    ast
-      .expression_binary(
+    properties.push(
+      ast.object_property_kind_object_property(
         SPAN,
-        ast.expression_string_literal(SPAN, ast.atom("onUpdate:"), None),
-        BinaryOperator::Addition,
-        expression,
-      )
-      .into()
+        PropertyKind::Init,
+        ast
+          .expression_binary(
+            SPAN,
+            ast.expression_string_literal(SPAN, ast.atom("onUpdate:"), None),
+            BinaryOperator::Addition,
+            gen_expression(key.clone(), context, None, false),
+          )
+          .into(),
+        ast.expression_arrow_function(
+          SPAN,
+          true,
+          false,
+          NONE,
+          ast.formal_parameters(
+            SPAN,
+            FormalParameterKind::ArrowFormalParameters,
+            ast.vec(),
+            NONE,
+          ),
+          NONE,
+          ast.function_body(
+            SPAN,
+            ast.vec(),
+            ast.vec1(ast.statement_expression(SPAN, handler_value)),
+          ),
+        ),
+        false,
+        false,
+        !is_static,
+      ),
+    );
   };
-
-  let handler = gen_model_handler(value, context);
-  properties.push(ast.object_property_kind_object_property(
-    SPAN,
-    PropertyKind::Init,
-    name,
-    ast.expression_arrow_function(
-      SPAN,
-      true,
-      false,
-      NONE,
-      ast.formal_parameters(
-        SPAN,
-        FormalParameterKind::ArrowFormalParameters,
-        ast.vec(),
-        NONE,
-      ),
-      NONE,
-      ast.function_body(
-        SPAN,
-        ast.vec(),
-        ast.vec1(ast.statement_expression(SPAN, handler)),
-      ),
-    ),
-    false,
-    false,
-    !is_static,
-  ));
 
   if let Some(modifiers) = modifiers {
     properties.push(modifiers)
   }
-  properties
 }

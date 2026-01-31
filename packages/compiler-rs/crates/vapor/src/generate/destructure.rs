@@ -10,15 +10,6 @@ use oxc_span::{GetSpan, SPAN};
 
 use crate::generate::CodegenContext;
 
-pub struct DestructureMapValue {
-  pub path: String,
-  pub dynamic: bool,
-  pub helper: String,
-  pub helper_args: String,
-}
-
-pub type DestructureMap = HashMap<String, Option<DestructureMapValue>>;
-
 impl<'a> CodegenContext<'a> {
   // construct a id -> accessor path map.
   // e.g. `{ x: { y: [z] }}` -> `Map{ 'z' => '.x.y[0]' }`
