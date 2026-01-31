@@ -9,7 +9,7 @@ fn basic() {
   let code = transform("<div v-show={foo} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyVShow as _applyVShow, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
   	_applyVShow(_n0, () => foo);

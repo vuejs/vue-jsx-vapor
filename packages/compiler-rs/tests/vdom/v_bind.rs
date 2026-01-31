@@ -41,7 +41,7 @@ fn empty_expression() {
   let code = transform("<div foo={}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
   	return _n0;

@@ -10,7 +10,7 @@ fn implicit_default_slot() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div>");
   (() => {
   	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
   		const _n0 = _t0();
@@ -284,7 +284,7 @@ fn named_slots_with_implicit_default_slot() {
   import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("foo");
   const _t1 = _template("bar");
-  const _t2 = _template("<span></span>");
+  const _t2 = _template("<span>");
   (() => {
   	const _n4 = _createComponent(Comp, null, {
   		one: _withVaporCtx(() => {
@@ -316,7 +316,7 @@ fn named_slots_with_comment() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("foo");
-  const _t1 = _template("<span></span>");
+  const _t1 = _template("<span>");
   (() => {
   	const _n4 = _createComponent(Comp, null, {
   		one: _withVaporCtx(() => {
@@ -562,7 +562,7 @@ fn slot_tag_with_template() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createSlot as _createSlot, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<template></template>");
+  const _t0 = _template("<template>");
   (() => {
   	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
   		const _n1 = _t0();

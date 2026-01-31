@@ -94,118 +94,16 @@ pub fn is_constant_node(node: &Option<&Expression>) -> bool {
 
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element
 static HTML_TAGS: phf::Set<&'static str> = phf_set! {
-    "html",
-    "body",
-    "base",
-    "head",
-    "link",
-    "meta",
-    "style",
-    "title",
-    "address",
-    "article",
-    "aside",
-    "footer",
-    "header",
-    "hgroup",
-    "h1",
-    "h2",
-    "h3",
-    "h4",
-    "h5",
-    "h6",
-    "nav",
-    "section",
-    "div",
-    "dd",
-    "dl",
-    "dt",
-    "figcaption",
-    "figure",
-    "picture",
-    "hr",
-    "img",
-    "li",
-    "main",
-    "math",
-    "ol",
-    "p",
-    "pre",
-    "ul",
-    "a",
-    "b",
-    "abbr",
-    "bdi",
-    "bdo",
-    "br",
-    "cite",
-    "code",
-    "data",
-    "dfn",
-    "em",
-    "i",
-    "kbd",
-    "mark",
-    "q",
-    "rp",
-    "rt",
-    "ruby",
-    "s",
-    "samp",
-    "small",
-    "span",
-    "strong",
-    "sub",
-    "sup",
-    "time",
-    "u",
-    "var",
-    "wbr",
-    "area",
-    "audio",
-    "map",
-    "track",
-    "video",
-    "embed",
-    "object",
-    "param",
-    "source",
-    "canvas",
-    "script",
-    "noscript",
-    "del",
-    "ins",
-    "caption",
-    "col",
-    "colgroup",
-    "table",
-    "thead",
-    "tbody",
-    "td",
-    "th",
-    "tr",
-    "button",
-    "datalist",
-    "fieldset",
-    "form",
-    "input",
-    "label",
-    "legend",
-    "meter",
-    "optgroup",
-    "option",
-    "output",
-    "progress",
-    "select",
-    "textarea",
-    "details",
-    "dialog",
-    "menu",
-    "summary",
-    "template",
-    "blockquote",
-    "iframe",
-    "tfoot",
+  "html", "body", "base", "head", "link", "meta", "style", "title", "address", "article", "aside",
+  "footer", "header", "hgroup", "h1", "h2", "h3", "h4", "h5", "h6", "nav", "section", "div",
+  "dd", "dl", "dt", "figcaption", "figure", "picture", "hr", "img", "li", "main", "math", "ol",
+  "p", "pre", "ul", "a", "b", "abbr", "bdi", "bdo", "br", "cite", "code", "data", "dfn", "em",
+  "i", "kbd", "mark", "q", "rp", "rt", "ruby", "s", "samp", "small", "span", "strong", "sub", "sup",
+  "time", "u", "var", "wbr", "area", "audio", "map", "track", "video", "embed", "object", "param",
+  "source", "canvas", "script", "noscript", "del", "ins", "caption", "col", "colgroup",
+  "table", "thead", "tbody", "td", "th", "tr", "button", "datalist", "fieldset", "form", "input",
+  "label", "legend", "meter", "optgroup", "option", "output", "progress", "select", "textarea", "details",
+  "dialog", "menu", "summary", "template", "blockquote", "iframe", "tfoot",
 };
 pub fn is_html_tag(tag_name: &str) -> bool {
   HTML_TAGS.contains(tag_name)
@@ -213,76 +111,14 @@ pub fn is_html_tag(tag_name: &str) -> bool {
 
 // https://developer.mozilla.org/en-US/docs/Web/SVG/Element
 static SVG_TAGS: phf::Set<&'static str> = phf_set! {
-    "svg",
-    "animate",
-    "animateMotion",
-    "animateTransform",
-    "circle",
-    "clipPath",
-    "color-profile",
-    "defs",
-    "desc",
-    "discard",
-    "ellipse",
-    "feBlend",
-    "feColorMatrix",
-    "feComponentTransfer",
-    "feComposite",
-    "feConvolveMatrix",
-    "feDiffuseLighting",
-    "feDisplacementMap",
-    "feDistantLight",
-    "feDropShadow",
-    "feFlood",
-    "feFuncA",
-    "feFuncB",
-    "feFuncG",
-    "feFuncR",
-    "feGaussianBlur",
-    "feImage",
-    "feMerge",
-    "feMergeNode",
-    "feMorphology",
-    "feOffset",
-    "fePointLight",
-    "feSpecularLighting",
-    "feSpotLight",
-    "feTile",
-    "feTurbulence",
-    "filter",
-    "foreignObject",
-    "g",
-    "hatch",
-    "hatchpath",
-    "image",
-    "line",
-    "linearGradient",
-    "marker",
-    "mask",
-    "mesh",
-    "meshgradient",
-    "meshpatch",
-    "meshrow",
-    "metadata",
-    "mpath",
-    "path",
-    "pattern",
-    "polygon",
-    "polyline",
-    "radialGradient",
-    "rect",
-    "set",
-    "solidcolor",
-    "stop",
-    "switch",
-    "symbol",
-    "text",
-    "textPath",
-    "title",
-    "tspan",
-    "unknown",
-    "use",
-    "view",
+  "svg", "animate", "animateMotion", "animateTransform", "circle", "clipPath", "color-profile", "defs", "desc",
+  "discard", "ellipse", "feBlend", "feColorMatrix", "feComponentTransfer",  "feComposite", "feConvolveMatrix",
+  "feDiffuseLighting", "feDisplacementMap", "feDistantLight", "feDropShadow", "feFlood", "feFuncA", "feFuncB",
+  "feFuncG", "feFuncR", "feGaussianBlur", "feImage", "feMerge", "feMergeNode", "feMorphology", "feOffset", "fePointLight",
+  "feSpecularLighting", "feSpotLight", "feTile", "feTurbulence", "filter", "foreignObject", "g", "hatch", "hatchpath",
+  "image", "line", "linearGradient", "marker", "mask", "mesh", "meshgradient", "meshpatch", "meshrow", "metadata",
+  "mpath", "path", "pattern", "polygon", "polyline", "radialGradient", "rect", "set", "solidcolor", "stop",
+  "switch", "symbol", "text", "textPath", "title", "tspan", "unknown", "use", "view",
 };
 pub fn is_svg_tag(tag_name: &str) -> bool {
   SVG_TAGS.contains(tag_name)
@@ -290,50 +126,11 @@ pub fn is_svg_tag(tag_name: &str) -> bool {
 
 // https://www.w3.org/TR/mathml4/ (content elements excluded)
 static MATH_TAGS: phf::Set<&'static str> = phf_set! {
-  "annotation",
-  "annotation-xml",
-  "maction",
-  "maligngroup",
-  "malignmark",
-  "math",
-  "menclose",
-  "merror",
-  "mfenced",
-  "mfrac",
-  "mfraction",
-  "mglyph",
-  "mi",
-  "mlabeledtr",
-  "mlongdiv",
-  "mmultiscripts",
-  "mn",
-  "mo",
-  "mover",
-  "mpadded",
-  "mphantom",
-  "mprescripts",
-  "mrow",
-  "ms",
-  "mscarries",
-  "mscarry",
-  "msgroup",
-  "msline",
-  "mspace",
-  "msqrt",
-  "msrow",
-  "mstack",
-  "mstyle",
-  "msub",
-  "msubsup",
-  "msup",
-  "mtable",
-  "mtd",
-  "mtext",
-  "mtr",
-  "munder",
-  "munderover",
-  "none",
-  "semantics"
+  "annotation", "annotation-xml", "maction", "maligngroup", "malignmark", "math", "menclose",
+  "merror", "mfenced", "mfrac", "mfraction", "mglyph", "mi", "mlabeledtr", "mlongdiv", "mmultiscripts",
+  "mn", "mo", "mover", "mpadded", "mphantom", "mprescripts", "mrow", "ms", "mscarries", "mscarry",
+  "msgroup", "msline", "mspace", "msqrt", "msrow", "mstack", "mstyle", "msub", "msubsup", "msup",
+  "mtable", "mtd", "mtext", "mtr", "munder", "munderover", "none", "semantics"
 };
 pub fn is_math_ml_tag(tag_name: &str) -> bool {
   MATH_TAGS.contains(tag_name)
@@ -360,11 +157,54 @@ pub fn is_fragment_node(node: &JSXChild) -> bool {
 }
 
 static VOID_TAGS: phf::Set<&'static str> = phf_set! {
-    "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source",
-    "track", "wbr",
+  "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source",
+  "track", "wbr",
 };
 pub fn is_void_tag(tag_name: &str) -> bool {
   VOID_TAGS.contains(tag_name)
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#formatting
+static FORMATTING_TAGS: phf::Set<&'static str> = phf_set! {
+  "a", "b", "big", "code", "em", "font", "i", "nobr", "s", "small", "strike", "strong",
+  "tt", "u",
+};
+pub fn is_formatting_tag(tag_name: &str) -> bool {
+  FORMATTING_TAGS.contains(tag_name)
+}
+
+// Elements that always require explicit closing tags due to HTML parsing rules.
+// These include:
+// - Formatting elements (a, b, i, etc.) - handled by FORMATTING_TAGS
+// - Elements with special parsing rules
+// - Scope boundary elements
+static ALWAYS_CLOSE_TAGS: phf::Set<&'static str> = phf_set! {
+  "title", "style", "script", "noscript", "template", // raw text / special parsing
+  "object", "table", "button", "textarea", "select", "iframe", "fieldset", // scope boundary / form elements
+};
+pub fn is_always_close_tag(tag_name: &str) -> bool {
+  ALWAYS_CLOSE_TAGS.contains(tag_name)
+}
+
+// Inline elements
+static INLINE_TAGS: phf::Set<&'static str> = phf_set! {
+  "a", "abbr", "acronym", "b", "bdi", "bdo", "big", "br", "button" , "canvas", "cite", "code", "data", "datalist",
+  "del", "dfn", "em", "embed", "i", "iframe", "img", "input", "ins", "kbd", "label", "map", "mark", "meter",
+  "noscript", "object", "output", "picture", "progress", "q", "ruby", "s", "samp", "script", "select",
+  "small", "span", "strong", "sub", "sup", "svg", "textarea", "time", "u", "tt", "var", "video",
+};
+pub fn is_inline_tag(tag_name: &str) -> bool {
+  INLINE_TAGS.contains(tag_name)
+}
+
+// Block elements
+static BLOCK_TAGS: phf::Set<&'static str> = phf_set! {
+  "address", "article", "aside", "blockquote", "dd", "details", "dialog", "div", "dl" , "dt", "fieldset",
+  "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup", "hr", "li",
+  "main", "menu", "nav", "ol", "p", "pre", "section", "table", "ul",
+};
+pub fn is_block_tag(tag_name: &str) -> bool {
+  BLOCK_TAGS.contains(tag_name)
 }
 
 static BUILD_IN_DIRECTIVE: phf::Set<&'static str> = phf_set! {
@@ -397,28 +237,10 @@ pub fn is_simple_identifier(s: &str) -> bool {
 
 // events
 static DELEGATED_EVENTS: phf::Set<&'static str> = phf_set! {
-    "beforeinput",
-    "click",
-    "dblclick",
-    "contextmenu",
-    "focusin",
-    "focusout",
-    "input",
-    "keydown",
-    "keyup",
-    "mousedown",
-    "mousemove",
-    "mouseout",
-    "mouseover",
-    "mouseup",
-    "pointerdown",
-    "pointermove",
-    "pointerout",
-    "pointerover",
-    "pointerup",
-    "touchend",
-    "touchmove",
-    "touchstart"
+  "beforeinput", "click", "dblclick", "contextmenu", "focusin", "focusout", "input",
+  "keydown", "keyup", "mousedown", "mousemove", "mouseout", "mouseover", "mouseup",
+  "pointerdown", "pointermove", "pointerout", "pointerover", "pointerup",
+  "touchend", "touchmove", "touchstart",
 };
 
 pub fn is_delegated_events(s: &str) -> bool {

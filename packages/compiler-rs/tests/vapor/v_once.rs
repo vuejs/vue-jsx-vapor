@@ -17,7 +17,7 @@ fn basic() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { child as _child, next as _next, setClass as _setClass, template as _template } from "vue";
-  const _t0 = _template("<div> <span></span></div>", true);
+  const _t0 = _template("<div> <span>", true);
   (() => {
   	const _n2 = _t0();
   	const _n0 = _child(_n2);
@@ -34,7 +34,7 @@ fn as_root_node() {
   let code = transform("<div id={foo} v-once />", None).code;
   assert_snapshot!(code, @r#"
   import { setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
   	_setProp(_n0, "id", foo);
@@ -48,7 +48,7 @@ fn on_nested_plain_element() {
   let code = transform("<div><div id={foo} v-once /></div>", None).code;
   assert_snapshot!(code, @r#"
   import { child as _child, setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div><div></div></div>", true);
+  const _t0 = _template("<div><div>", true);
   (() => {
   	const _n1 = _t0();
   	const _n0 = _child(_n1);
@@ -64,7 +64,7 @@ fn on_component() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n1 = _t0();
   	_setInsertionState(_n1, null, true);
@@ -79,7 +79,7 @@ fn on_slot_outlet() {
   let code = transform(r#"<div><slot v-once /></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n1 = _t0();
   	_setInsertionState(_n1, null, true);
@@ -94,7 +94,7 @@ fn inside_v_once() {
   let code = transform("<div v-once><div v-once/></div>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div><div></div></div>", true);
+  const _t0 = _template("<div><div>", true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -107,7 +107,7 @@ fn with_v_if() {
   let code = transform("<div v-if={expr} v-once />", None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _createIf(() => expr, () => {
   		const _n2 = _t0();
@@ -123,8 +123,8 @@ fn with_v_if_else() {
   let code = transform("<><div v-if={expr} v-once /><p v-else/></>", None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("<div></div>");
-  const _t1 = _template("<p></p>");
+  const _t0 = _template("<div>");
+  const _t1 = _template("<p>");
   (() => {
   	const _n0 = _createIf(() => expr, () => {
   		const _n2 = _t0();
@@ -148,9 +148,9 @@ fn with_conditional_expression() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<span> </span>");
-  const _t1 = _template("<div>fail</div>");
-  const _t2 = _template("<div></div>", true);
+  const _t0 = _template("<span> ");
+  const _t1 = _template("<div>fail");
+  const _t2 = _template("<div>", true);
   (() => {
   	const _n5 = _t2();
   	_setInsertionState(_n5, null, true);
@@ -173,7 +173,7 @@ fn with_v_for() {
   let code = transform("<div v-for={i in list} v-once />", None).code;
   assert_snapshot!(code, @r#"
   import { createFor as _createFor, template as _template } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div>");
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n2 = _t0();
@@ -199,7 +199,7 @@ fn execution_order() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { child as _child, next as _next, nthChild as _nthChild, setProp as _setProp, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div><span> </span> <br> <div> </div></div>", true);
+  const _t0 = _template("<div><span> </span> <br> <div> ", true);
   (() => {
   	const _n4 = _t0();
   	const _n0 = _child(_n4);

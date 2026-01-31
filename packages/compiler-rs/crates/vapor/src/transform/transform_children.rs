@@ -32,8 +32,12 @@ pub unsafe fn transform_children<'a>(
   }
 
   let _node = node as *mut _;
+  let mut parent_tag_name = String::new();
   let children = match node {
-    JSXChild::Element(node) => &mut node.children,
+    JSXChild::Element(node) => {
+      parent_tag_name = get_tag_name(&node.opening_element.name, context.source_text);
+      &mut node.children
+    }
     JSXChild::Fragment(node) => &mut node.children,
     _ => unreachable!(),
   };
@@ -44,15 +48,22 @@ pub unsafe fn transform_children<'a>(
     .replace(mem::take(&mut context_block.dynamic));
   let _context_block = context_block as *mut BlockIRNode;
   let mut i = 0;
+  if let Some(last) = children.last()
+    && is_empty_text(last)
+  {
+    children.pop();
+  }
+  let mut children_len = children.len();
   while let Some(child) = children.get_mut(i) {
     if is_empty_text(child) {
       children.remove(i);
+      children_len -= 1;
       continue;
     }
     let mut tag = String::new();
     let exit_context = context.create(
       if let JSXChild::Text(_) = child
-        && let Some(next) = unsafe { &mut *children_ptr }.get_mut(1)
+        && let Some(next) = unsafe { &mut *children_ptr }.get_mut(i + 1)
         && let JSXChild::ExpressionContainer(exp) = next
         && !matches!(
           exp.expression,
@@ -62,11 +73,17 @@ pub unsafe fn transform_children<'a>(
         child.clone_in(context.allocator)
       } else {
         if let JSXChild::Element(child) = child {
-          tag = get_tag_name(&child.opening_element.name, context.source_text)
+          tag = get_tag_name(&child.opening_element.name, context.source_text);
         }
         child.take_in(context.allocator)
       },
       i as i32,
+      if !parent_tag_name.is_empty() {
+        children_len == i + 1
+      } else {
+        true
+      },
+      &parent_tag_name,
       unsafe { &mut *_context_block },
     );
     context.transform_node(

@@ -14,7 +14,7 @@ pub fn runtime_module_name() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "vue-jsx-vapor";
   import { template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>", true);
+  const _t0 = _template("<div> ", true);
   (() => {
   	const _n0 = _t0();
   	const _x0 = _txt(_n0);

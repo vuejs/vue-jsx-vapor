@@ -107,7 +107,7 @@ fn should_support_select() {
   let code = transform("<select v-model={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applySelectModel as _applySelectModel, template as _template } from "vue";
-  const _t0 = _template("<select></select>", true);
+  const _t0 = _template("<select>", true);
   (() => {
   	const _n0 = _t0();
   	_applySelectModel(_n0, () => model, (_value) => model = _value);
@@ -121,7 +121,7 @@ fn should_support_textarea() {
   let code = transform("<textarea v-model={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
-  const _t0 = _template("<textarea></textarea>", true);
+  const _t0 = _template("<textarea>", true);
   (() => {
   	const _n0 = _t0();
   	_applyTextModel(_n0, () => model, (_value) => model = _value);

@@ -15,7 +15,7 @@ fn basic() {
   _delegateEvents("click");
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, delegateEvents as _delegateEvents, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>");
+  const _t0 = _template("<div> ");
   (() => {
   	const _n0 = _createFor(() => items, (_for_item0) => {
   		const _n2 = _t0();
@@ -44,7 +44,7 @@ fn key_only_binding_pattern() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<tr> </tr>");
+  const _t0 = _template("<tr> ");
   (() => {
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
@@ -70,7 +70,7 @@ fn selector_pattern1() {
   .code;
   assert_snapshot!(code, @r#"
   import { createFor as _createFor, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
-  const _t0 = _template("<tr> </tr>");
+  const _t0 = _template("<tr> ");
   (() => {
   	let _selector0_0;
   	const _n0 = _createFor(() => rows, (_for_item0) => {
@@ -101,7 +101,7 @@ fn selector_pattern2() {
   .code;
   assert_snapshot!(code, @r#"
   import { createFor as _createFor, setClass as _setClass, template as _template } from "vue";
-  const _t0 = _template("<tr></tr>");
+  const _t0 = _template("<tr>");
   (() => {
   	let _selector0_0;
   	const _n0 = _createFor(() => rows, (_for_item0) => {
@@ -132,7 +132,7 @@ fn selector_pattern3() {
   .code;
   assert_snapshot!(code, @r#"
   import { createFor as _createFor, renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
-  const _t0 = _template("<tr></tr>");
+  const _t0 = _template("<tr>");
   (() => {
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
@@ -157,7 +157,7 @@ fn selector_pattern4() {
   .code;
   assert_snapshot!(code, @r#"
   import { createFor as _createFor, setClass as _setClass, template as _template } from "vue";
-  const _t0 = _template("<tr></tr>");
+  const _t0 = _template("<tr>");
   (() => {
   	let _selector0_0;
   	const _n0 = _createFor(() => rows, (_for_item0) => {
@@ -183,7 +183,7 @@ fn multi_effect() {
   .code;
   assert_snapshot!(code, @r#"
   import { createFor as _createFor, renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div>");
   (() => {
   	const _n0 = _createFor(() => items, (_for_item0, _for_key0) => {
   		const _n2 = _t0();
@@ -208,8 +208,8 @@ fn nested_v_for() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<span> </span>");
-  const _t1 = _template("<div></div>");
+  const _t0 = _template("<span> ");
+  const _t1 = _template("<div>");
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n5 = _t1();
@@ -237,7 +237,7 @@ fn object_value_key_and_index() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<span> </span>");
+  const _t0 = _template("<span> ");
   (() => {
   	const _n0 = _createFor(() => items, (_for_item0, _for_key0, _for_index0) => {
   		const _n2 = _t0();
@@ -260,7 +260,7 @@ fn object_de_structured_value() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<span> </span>");
+  const _t0 = _template("<span> ");
   (() => {
   	const _n0 = _createFor(() => items, (_for_item0) => {
   		const _n2 = _t0();
@@ -283,7 +283,7 @@ fn object_de_structured_value_with_rest() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, getRestElement as _getRestElement, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>");
+  const _t0 = _template("<div> ");
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0, _for_key0) => {
   		const _n2 = _t0();
@@ -306,7 +306,7 @@ fn array_de_structured_value() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>");
+  const _t0 = _template("<div> ");
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0, _for_key0) => {
   		const _n2 = _t0();
@@ -325,7 +325,7 @@ fn array_de_structured_value_with_rest() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>");
+  const _t0 = _template("<div> ");
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0, _for_key0) => {
   		const _n2 = _t0();
@@ -350,7 +350,7 @@ fn aliases_with_complex_expressions() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>");
+  const _t0 = _template("<div> ");
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n2 = _t0();
@@ -375,8 +375,8 @@ fn fast_remove_flag() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<span> </span>");
-  const _t1 = _template("<div></div>", true);
+  const _t0 = _template("<span> ");
+  const _t1 = _template("<div>", true);
   (() => {
   	const _n3 = _t1();
   	_setInsertionState(_n3, null, true);
@@ -460,7 +460,7 @@ fn identifiers() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, renderEffect as _renderEffect, setProp as _setProp, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>");
+  const _t0 = _template("<div> ");
   (() => {
   	const _n0 = _createFor(() => items, (_for_item0, _for_key0) => {
   		const _n2 = _t0();
@@ -493,7 +493,7 @@ fn expression_object() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, renderEffect as _renderEffect, setProp as _setProp, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>");
+  const _t0 = _template("<div> ");
   (() => {
   	const _n0 = _createFor(() => Array.from({ length: count.value }).map((_, id) => ({ id })), (_for_item0, _for_key0) => {
   		const _n2 = _t0();

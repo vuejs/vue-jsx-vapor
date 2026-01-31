@@ -6,7 +6,7 @@ fn basic() {
   let code = transform("<div v-example></div>", None).code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _directive_example = _resolveDirective("example");
   	const _n0 = _t0();
@@ -21,7 +21,7 @@ fn binding_value() {
   let code = transform("<div v-example={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _directive_example = _resolveDirective("example");
   	const _n0 = _t0();
@@ -36,7 +36,7 @@ fn static_parameters() {
   let code = transform("<div v-example:foo={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _directive_example = _resolveDirective("example");
   	const _n0 = _t0();
@@ -55,7 +55,7 @@ fn modifiers() {
   let code = transform("<div v-example_bar={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _directive_example = _resolveDirective("example");
   	const _n0 = _t0();
@@ -75,7 +75,7 @@ fn modifiers_with_binding() {
   let code = transform("<div v-example_foo-bar></div>", None).code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _directive_example = _resolveDirective("example");
   	const _n0 = _t0();
@@ -95,7 +95,7 @@ fn static_argument_and_modifiers() {
   let code = transform("<div v-example:foo_bar={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _directive_example = _resolveDirective("example");
   	const _n0 = _t0();
@@ -115,7 +115,7 @@ fn dynamic_argument() {
   let code = transform("<div v-example:$foo$={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _directive_example = _resolveDirective("example");
   	const _n0 = _t0();
@@ -143,7 +143,7 @@ fn component() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, resolveDirective as _resolveDirective, setInsertionState as _setInsertionState, template as _template, withVaporCtx as _withVaporCtx, withVaporDirectives as _withVaporDirectives } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div>");
   (() => {
   	const _directive_test = _resolveDirective("test");
   	const _directive_hello = _resolveDirective("hello");
@@ -173,7 +173,7 @@ fn none_resolve_directive() {
   let code = transform("<div vExample={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
   	_withVaporDirectives(_n0, [[

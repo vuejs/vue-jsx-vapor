@@ -26,8 +26,8 @@ use crate::{
 use common::{
   ast::RootNode,
   check::{
-    get_directive_name, is_built_in_directive, is_event, is_jsx_component, is_reserved_prop,
-    is_template, is_void_tag,
+    get_directive_name, is_always_close_tag, is_block_tag, is_built_in_directive, is_event,
+    is_formatting_tag, is_jsx_component, is_reserved_prop, is_template, is_void_tag,
   },
   directive::{Directives, resolve_directive},
   dom::is_valid_html_nesting,
@@ -212,8 +212,7 @@ pub fn transform_native_element<'a>(
   }
 
   template += &format!(">{}", context.children_template.borrow().join(""));
-  // TODO remove unnecessary close tag, e.g. if it's the last element of the template
-  if !is_void_tag(&tag) {
+  if !is_void_tag(&tag) && !can_omit_end_tag(&tag, parent_node, context) {
     template += &format!("</{}>", tag)
   }
 
@@ -233,6 +232,42 @@ pub fn transform_native_element<'a>(
   } else {
     *context.template.borrow_mut() = format!("{}{}", context.template.borrow(), template);
   }
+}
+
+fn can_omit_end_tag(tag: &str, parent_node: &JSXChild, context: &TransformContext) -> bool {
+  // Root-level elements generate dedicated templates
+  // so closing tags can be omitted
+  if RootNode::is_single_root(parent_node) {
+    return true;
+  }
+
+  // Elements in the alwaysClose list cannot have their end tags omitted
+  // unless they are on the rightmost path.
+  if is_always_close_tag(tag) && !*context.is_on_rightmost_path.borrow() {
+    return false;
+  }
+
+  // Formatting tags and same-name nested tags require explicit closing
+  // unless on the rightmost path of the tree:
+  // - Formatting tags: https://html.spec.whatwg.org/multipage/parsing.html#reconstruct-the-active-formatting-elements
+  // - Same-name tags: parent's close tag would incorrectly close the child
+  if is_formatting_tag(tag)
+    || if let JSXChild::Element(parent_node) = parent_node {
+      get_tag_name(&parent_node.opening_element.name, context.source_text) == tag
+    } else {
+      false
+    }
+  {
+    return *context.is_on_rightmost_path.borrow();
+  }
+
+  // For inline element containing block element, if the inline ancestor
+  // is not on rightmost path, the block must close to avoid parsing issues
+  if is_block_tag(tag) && *context.has_inline_ancestor_needing_close.borrow() {
+    return false;
+  }
+
+  *context.is_last_effective_child.borrow()
 }
 
 pub fn transform_component_element<'a>(

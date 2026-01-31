@@ -23,9 +23,9 @@ fn basic() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, template as _template } from "vue";
-  const _t0 = _template("<span></span>", true);
-  const _t1 = _template("<div></div>");
-  const _t2 = _template("<div></div>", true);
+  const _t0 = _template("<span>", true);
+  const _t1 = _template("<div>");
+  const _t2 = _template("<div>", true);
   const A = defineComponent(() => {
   	defineVaporComponent(() => (() => {
   		const _n0 = _t0();

@@ -35,7 +35,7 @@ fn function_expression_children() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _createComponent(Comp, null, { $: [{ default: () => (() => {
   		const _n0 = _t0();

@@ -9,7 +9,7 @@ fn should_convert_v_html_to_inner_html() {
   let code = transform("<div v-html={code.value}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setHtml as _setHtml, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setHtml(_n0, code.value));

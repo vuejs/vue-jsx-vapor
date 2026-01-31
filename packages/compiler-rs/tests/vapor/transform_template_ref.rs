@@ -6,7 +6,7 @@ fn static_ref() {
   let code = transform("<div ref=\"foo\" />", None).code;
   assert_snapshot!(code, @r#"
   import { createTemplateRefSetter as _createTemplateRefSetter, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _setTemplateRef = _createTemplateRefSetter();
   	const _n0 = _t0();
@@ -21,7 +21,7 @@ fn dynamic_ref() {
   let code = transform("<div ref={foo} />", None).code;
   assert_snapshot!(code, @r#"
   import { createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _setTemplateRef = _createTemplateRefSetter();
   	const _n0 = _t0();
@@ -48,7 +48,7 @@ fn function_ref() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div>");
   (() => {
   	const _setTemplateRef = _createTemplateRefSetter();
   	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
@@ -71,7 +71,7 @@ fn ref_v_if() {
   let code = transform("<div ref={foo} v-if={true} />", None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _setTemplateRef = _createTemplateRefSetter();
   	const _n0 = _createIf(() => true, () => {
@@ -90,7 +90,7 @@ fn ref_v_for() {
   let code = transform("<div ref={foo} v-for={item in [1,2,3]} />", None).code;
   assert_snapshot!(code, @r#"
   import { createFor as _createFor, createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div>");
   (() => {
   	const _setTemplateRef = _createTemplateRefSetter();
   	const _n0 = _createFor(() => [

@@ -9,7 +9,7 @@ fn should_convert_v_text_to_set_text() {
   let code = transform("<div v-text={str.value}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>", true);
+  const _t0 = _template("<div> ", true);
   (() => {
   	const _n0 = _t0();
   	const _x0 = _txt(_n0);

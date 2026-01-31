@@ -13,7 +13,7 @@ fn basic() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>", true);
+  const _t0 = _template("<div> ", true);
   (() => {
   	const _n0 = _t0();
   	const _x0 = _txt(_n0);
@@ -28,7 +28,7 @@ fn comments() {
   let code = transform("<>{/*foo*/}<div>{/*bar*/}</div></>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div>");
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -62,7 +62,7 @@ fn children_sibling_references() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { child as _child, next as _next, renderEffect as _renderEffect, setProp as _setProp, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div><p> </p> <p> </p></div>", true);
+  const _t0 = _template("<div><p> </p> <p> ", true);
   (() => {
   	const _n3 = _t0();
   	const _n0 = _child(_n3);
@@ -70,7 +70,7 @@ fn children_sibling_references() {
   	const _n2 = _next(_n1, 2);
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, () => first);
-  	_setNodes(_n1, () => second, " 456 ", () => foo);
+  	_setNodes(_n1, "123 ", () => second, " 456 ", () => foo);
   	const _x2 = _txt(_n2);
   	_setNodes(_x2, () => forth);
   	_renderEffect(() => _setProp(_n3, "id", id));
@@ -94,7 +94,7 @@ fn efficient_traversal() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { child as _child, next as _next, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div><div>x</div><div><span> </span></div><div><span> </span></div><div><span> </span></div></div>", true);
+  const _t0 = _template("<div><div>x</div><div><span> </div><div><span> </div><div><span> ", true);
   (() => {
   	const _n3 = _t0();
   	const _p0 = _next(_child(_n3, 1));
@@ -128,7 +128,7 @@ fn efficient_find() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { nthChild as _nthChild, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div><div>x</div><div>x</div><div> </div></div>", true);
+  const _t0 = _template("<div><div>x</div><div>x</div><div> ", true);
   (() => {
   	const _n1 = _t0();
   	const _n0 = _nthChild(_n1, 2, 2);
@@ -153,8 +153,8 @@ fn anchor_insertion_in_middle() {
   // ensure the insertion anchor is generated before the insertion statement
   assert_snapshot!(code, @r#"
   import { child as _child, createIf as _createIf, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div></div>");
-  const _t1 = _template("<div><div></div><!><div></div></div>", true);
+  const _t0 = _template("<div>");
+  const _t1 = _template("<div><div></div><!><div>", true);
   (() => {
   	const _n4 = _t1();
   	const _n3 = _next(_child(_n4, 1));
@@ -180,7 +180,7 @@ fn jsx_component_in_jsx_expression_container() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>", true);
+  const _t0 = _template("<div> ", true);
   (() => {
   	const _n0 = _t0();
   	const _x0 = _txt(_n0);
@@ -211,8 +211,8 @@ fn next_child_and_nthchild_should_be_above_the_set_insertion_state() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { child as _child, createIf as _createIf, next as _next, nthChild as _nthChild, renderEffect as _renderEffect, setInsertionState as _setInsertionState, setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div></div>");
-  const _t1 = _template("<div><div></div><!><!><div></div><div><button></button></div></div>", true);
+  const _t0 = _template("<div>");
+  const _t1 = _template("<div><div></div><!><!><div></div><div><button>", true);
   (() => {
   	const _n6 = _t1();
   	const _n5 = _next(_child(_n6, 1));

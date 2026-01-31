@@ -14,7 +14,7 @@ fn static_template() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div><div>hello</div><input><span></span></div>", true);
+  const _t0 = _template("<div><div>hello</div><input><span>", true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -52,7 +52,7 @@ fn consecutive_text() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div>");
   (() => {
   	const _n2 = _t0();
   	const _n0 = _createNodes(() => msg, " ");
@@ -72,7 +72,7 @@ fn escapes_raw_static_text_when_generating_the_template_string() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<code>\xA0&lt;script&gt;\xA0</code>", true);
+  const _t0 = _template("<code>\xA0&lt;script&gt;\xA0", true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -85,7 +85,7 @@ fn text_like() {
   let code = transform("<div>{ (2) }{`foo${1}`}{1}{1n}</div>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div>2foo111</div>", true);
+  const _t0 = _template("<div>2foo111", true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -103,8 +103,8 @@ fn conditional_expression() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<span> </span>");
-  const _t1 = _template("<div>fail</div>");
+  const _t0 = _template("<span> ");
+  const _t1 = _template("<div>fail");
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
@@ -130,7 +130,7 @@ fn multiple_conditional() {
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template } from "vue";
   const _t0 = _template(" ");
-  const _t1 = _template("<span></span>");
+  const _t1 = _template("<span>");
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _createNodes(() => ok);
@@ -162,7 +162,7 @@ fn logical_expression() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>");
+  const _t0 = _template("<div> ");
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
@@ -184,8 +184,8 @@ fn logical_expression_or() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>");
-  const _t1 = _template("<div></div>", true);
+  const _t0 = _template("<div> ");
+  const _t1 = _template("<div>", true);
   (() => {
   	const _n5 = _t1();
   	_setInsertionState(_n5, null, true);
@@ -209,8 +209,8 @@ fn logical_expression_coalesce() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> </div>");
-  const _t1 = _template("<div></div>", true);
+  const _t0 = _template("<div> ");
+  const _t1 = _template("<div>", true);
   (() => {
   	const _n5 = _t1();
   	_setInsertionState(_n5, null, true);
@@ -244,8 +244,8 @@ fn expression_map() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div>1</div>", true);
-  const _t1 = _template("<span> </span>", true);
+  const _t0 = _template("<div>1", true);
+  const _t1 = _template("<span> ", true);
   const _t2 = _template("<br>", true);
   (() => {
   	const _n0 = _createNodes(() => Array.from({ length: count.value }).map((_, index) => {
@@ -285,7 +285,7 @@ fn expression_with_comment() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { child as _child, template as _template } from "vue";
-  const _t0 = _template("<div> <a></a></div>", true);
+  const _t0 = _template("<div> <a>", true);
   (() => {
   	const _n1 = _t0();
   	const _n0 = _child(_n1);

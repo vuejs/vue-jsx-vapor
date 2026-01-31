@@ -96,7 +96,7 @@ fn default_slot_outlet_with_fallback() {
   let code = transform(r#"<slot><div /></slot>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot, template as _template } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div>");
   (() => {
   	const _n0 = _createSlot("default", null, () => {
   		const _n1 = _t0();
@@ -112,7 +112,7 @@ fn named_slot_outlet_with_fallback() {
   let code = transform(r#"<slot name="foo"><div /></slot>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot, template as _template } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div>");
   (() => {
   	const _n0 = _createSlot("foo", null, () => {
   		const _n1 = _t0();
@@ -128,7 +128,7 @@ fn default_slot_outlet_with_props_and_fallback() {
   let code = transform(r#"<slot foo={bar}><div /></slot>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot, template as _template } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div>");
   (() => {
   	const _n0 = _createSlot("default", { foo: () => bar }, () => {
   		const _n1 = _t0();
@@ -144,7 +144,7 @@ fn named_slot_outlet_with_props_and_fallback() {
   let code = transform(r#"<slot name="foo" foo={bar}><div /></slot>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot, template as _template } from "vue";
-  const _t0 = _template("<div></div>");
+  const _t0 = _template("<div>");
   (() => {
   	const _n0 = _createSlot("foo", { foo: () => bar }, () => {
   		const _n1 = _t0();

@@ -255,7 +255,7 @@ fn static_props() {
   let code = transform("<div id=\"foo\" class=\"bar\" />", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div id=\"foo\" class=\"bar\"></div>", true);
+  const _t0 = _template("<div id=\"foo\" class=\"bar\">", true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -268,7 +268,7 @@ fn props_children() {
   let code = transform("<div id=\"foo\"><span/></div>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div id=\"foo\"><span></span></div>", true);
+  const _t0 = _template("<div id=\"foo\"><span>", true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -281,7 +281,7 @@ fn dynamic_props() {
   let code = transform("<div {...obj} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [obj]));
@@ -295,7 +295,7 @@ fn dynamic_props_after_static_prop() {
   let code = transform("<div id=\"foo\" {...obj} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [{ id: "foo" }, obj]));
@@ -309,7 +309,7 @@ fn dynamic_props_before_static_prop() {
   let code = transform("<div {...obj} id=\"foo\" />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [obj, { id: "foo" }]));
@@ -323,7 +323,7 @@ fn dynamic_props_between_static_prop() {
   let code = transform("<div id=\"foo\" {...obj} class=\"bar\" />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [
@@ -342,7 +342,7 @@ fn props_merging_event_handlers() {
   assert_snapshot!(code, @r#"
   _delegateEvents("click");
   import { delegate as _delegate, delegateEvents as _delegateEvents, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
   	_delegate(_n0, "click", a);
@@ -361,7 +361,7 @@ fn props_merging_style() {
   .code;
   assert_snapshot!(code, @r#"
   import { setStyle as _setStyle, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
   	_setStyle(_n0, ["color: green", { color: "red" }]);
@@ -375,7 +375,7 @@ fn props_merging_class() {
   let code = transform("<div class=\"foo\" class={{ bar: isBar }} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClass(_n0, ["foo", { bar: isBar }]));
@@ -389,7 +389,7 @@ fn v_on() {
   let code = transform("<div v-on={obj} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicEvents as _setDynamicEvents, template as _template } from "vue";
-  const _t0 = _template("<div></div>", true);
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicEvents(_n0, obj));
@@ -408,9 +408,9 @@ fn invalid_html_nesting() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div>123</div>");
-  const _t1 = _template("<p></p>");
-  const _t2 = _template("<form></form>");
+  const _t0 = _template("<div>123");
+  const _t1 = _template("<p>");
+  const _t2 = _template("<form>");
   (() => {
   	const _n1 = _t1();
   	const _n0 = _t0();
@@ -535,7 +535,7 @@ fn svg() {
   let code = transform(r#"<svg><circle r="40"></circle></svg>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<svg><circle r=\"40\"></circle></svg>", true, 1);
+  const _t0 = _template("<svg><circle r=\"40\">", true, 1);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -548,7 +548,7 @@ fn math_ml() {
   let code = transform(r#"<math><mrow><mi>x</mi></mrow></math>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<math><mrow><mi>x</mi></mrow></math>", true, 2);
+  const _t0 = _template("<math><mrow><mi>x", true, 2);
   (() => {
   	const _n0 = _t0();
   	return _n0;
