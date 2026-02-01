@@ -23,9 +23,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
 
       resolveId: {
         filter: {
-          id: {
-            include: [useModelHelperId, withDefaultsHelperId, useSlotsHelperId],
-          },
+          id: /^\/vue-jsx-vapor\/macros\//,
         },
         handler(id) {
           return id

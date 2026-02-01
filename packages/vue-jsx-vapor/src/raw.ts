@@ -53,7 +53,7 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
       },
       resolveId: {
         filter: {
-          id: [ssrHelperId, propsHelperId, vdomHelperId, vaporHelperId],
+          id: /^\/vue-jsx-vapor\//,
         },
         handler: (id) => id,
       },
