@@ -1,3 +1,19 @@
+## [3.1.19](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.18...v3.1.19) (2026-02-01)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** add key for transition if-branches ([f711dc6](https://github.com/vuejs/vue-jsx-vapor/commit/f711dc64a102cb43e5592d107800ed10b89b7170))
+* **compiler/vapor:** do not escape quotes in root-level text nodes ([d843400](https://github.com/vuejs/vue-jsx-vapor/commit/d8434007b043b0b541d3e149a93c0b5244dceb47))
+* **compiler/vapor:** enhance v-slot prop destructuring support ([5c7ef06](https://github.com/vuejs/vue-jsx-vapor/commit/5c7ef0652ca0aaf29489b531db2e4ce29a4fe2af))
+* **compiler/vapor:** merge component v-model onUpdate handlers ([01ed414](https://github.com/vuejs/vue-jsx-vapor/commit/01ed414171ac4ca338e05c093c58c42ed2efd7f9))
+* **compiler/vapor:** prevent event handler execution during emits lookup ([946fa2f](https://github.com/vuejs/vue-jsx-vapor/commit/946fa2fd5e5a2819e6365592d2ce6604b894ba43))
+* **compiler/vapor:** support v-if and v-for on the same <template> ([33d97ef](https://github.com/vuejs/vue-jsx-vapor/commit/33d97ef9aa874ebce359b372f2d6346d0418e3fd))
+* **compiler/vapor:** wrap handler values in functions for dynamic v-on ([514a200](https://github.com/vuejs/vue-jsx-vapor/commit/514a200e937fc040e21befcf8dd20513d8976ac6))
+* use regex instead of string for filter.id ([f54d685](https://github.com/vuejs/vue-jsx-vapor/commit/f54d6852570b4406eb9ddf2bfa0e2ff31c5dbaca))
+
+
+
 ## [3.1.18](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.17...v3.1.18) (2026-01-29)
 
 
