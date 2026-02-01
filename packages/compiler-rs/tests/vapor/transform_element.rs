@@ -357,7 +357,7 @@ fn static_props_escapes_double_quotes_in_value() {
 #[test]
 fn static_props_mixed_quoting_with_boolean_attribute() {
   let code = transform(
-    r#"<div title="has whitespace" inert="" data-targets="foo>bar" />"#,
+    r#"<div title="has whitespace" inert data-targets="foo>bar" />"#,
     None,
   )
   .code;

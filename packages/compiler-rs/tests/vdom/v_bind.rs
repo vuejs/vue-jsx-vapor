@@ -31,7 +31,7 @@ fn no_expression() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = { id: true };
+  const _hoisted_1 = { id: "" };
   _openBlock(), _createElementBlock("div", _hoisted_1);
   "#);
 }

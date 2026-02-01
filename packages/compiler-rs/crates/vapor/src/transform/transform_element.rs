@@ -528,8 +528,12 @@ pub fn transform_prop<'a>(
         }
       } else {
         SimpleExpressionNode {
-          content: "true".to_string(),
-          is_static: false,
+          content: if is_component {
+            String::from("true")
+          } else {
+            String::new()
+          },
+          is_static: !is_component,
           ast: None,
           loc: SPAN,
         }
