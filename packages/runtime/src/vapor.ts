@@ -27,6 +27,7 @@ export function defineVaporSSRComponent(
   if (typeof comp === 'function') {
     return Object.assign({ name: comp.name }, extraOptions, {
       setup(props: any, ctx: any) {
+        // @ts-ignore
         const result = comp(props, ctx)
         return () => result
       },
