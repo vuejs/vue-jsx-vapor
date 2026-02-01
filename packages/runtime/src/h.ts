@@ -14,7 +14,6 @@ import type {
   EmitsOptions,
   Fragment,
   FunctionalComponent,
-  RawSlots,
   Suspense,
   SuspenseProps,
   Teleport,
@@ -36,8 +35,6 @@ type HTMLElementEventHandler = {
   ) => any
 }
 
-type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N
-
 type RawProps = Record<string, any>
 
 type ResolveProps<T> = T extends null | undefined ? T : (() => T) | T
@@ -53,7 +50,7 @@ export function h<K extends keyof HTMLElementTagNameMap>(
 export function h<K extends keyof HTMLElementTagNameMap>(
   type: K,
   props?: ResolveProps<RawProps & HTMLElementEventHandler> | null,
-  children?: NodeChild | RawSlots,
+  children?: NodeChild,
 ): Block
 
 // custom element
@@ -61,7 +58,7 @@ export function h(type: string, children?: NodeChild): Block
 export function h(
   type: string,
   props?: ResolveProps<RawProps> | null,
-  children?: NodeChild | RawSlots,
+  children?: NodeChild,
 ): Block
 
 // text/comment
@@ -87,7 +84,7 @@ export function h(
 export function h(
   type: typeof Teleport,
   props: RawProps & TeleportProps,
-  children: NodeChild | RawSlots,
+  children: NodeChild,
 ): Block
 
 // suspense
@@ -95,7 +92,7 @@ export function h(type: typeof Suspense, children?: NodeChild): Block
 export function h(
   type: typeof Suspense,
   props?: ResolveProps<RawProps & SuspenseProps> | null,
-  children?: NodeChild | RawSlots,
+  children?: NodeChild,
 ): Block
 
 // functional component
@@ -107,7 +104,7 @@ export function h<
 >(
   type: FunctionalComponent<P, E, S>,
   props?: ResolveProps<(RawProps & P) | ({} extends P ? null : never)>,
-  children?: NodeChild | IfAny<S, RawSlots, S>,
+  children?: NodeChild,
 ): Block
 
 // catch all types
@@ -130,7 +127,7 @@ export function h<P>(
     | Constructor<P>
     | DefineComponent<P>,
   props?: ResolveProps<(RawProps & P) | ({} extends P ? null : never)>,
-  children?: NodeChild | RawSlots,
+  children?: NodeChild,
 ): Block
 
 /*@__NO_SIDE_EFFECTS__*/
