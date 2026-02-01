@@ -54,6 +54,63 @@ fn template() {
 }
 
 #[test]
+fn template_v_if_with_v_for() {
+  let code = transform(
+    r#"<template v-if={arr.length > 0} v-for={(item, index) in arr} key={index}>
+      <div>item: { item }</div>
+    </template>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, createIf as _createIf, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n0 = _createIf(() => arr.length > 0, () => {
+  		const _n2 = _createFor(() => arr, (_for_item0, _for_key0) => {
+  			const _n4 = _t0();
+  			const _x4 = _txt(_n4);
+  			_setNodes(_x4, "item: ", () => _for_item0.value);
+  			return _n4;
+  		}, (item, index) => index, 1);
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn template_v_if_with_key() {
+  let code = transform(
+    r#"<template v-if={arr.length > 0} key={index}>
+      <div>item: { item }</div>
+    </template>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, createKeyedFragment as _createKeyedFragment, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  const _t1 = _template("<template>");
+  (() => {
+  	const _n0 = _createIf(() => arr.length > 0, () => {
+  		const _n2 = _createKeyedFragment(() => index, () => {
+  			const _n4 = _t0();
+  			const _x4 = _txt(_n4);
+  			_setNodes(_x4, "item: ", () => item);
+  			return _n4;
+  		});
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn dedupe_same_template() {
   let code = transform(
     "<><div v-if={ok}>hello</div><div v-if={ok}>hello</div></>",

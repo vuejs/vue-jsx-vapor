@@ -3,10 +3,8 @@ use common::directive::{Directives, Modifiers};
 use common::expression::SimpleExpressionNode;
 pub use common::options::TransformOptions;
 use oxc_allocator::{Allocator, TakeIn};
-use oxc_ast::AstBuilder;
-use oxc_ast::ast::{
-  Expression, JSXChild, JSXClosingFragment, JSXExpressionContainer, JSXFragment, JSXOpeningFragment,
-};
+use oxc_ast::ast::{Expression, JSXAttributeItem, JSXChild, JSXElement};
+use oxc_ast::{AstBuilder, NONE};
 use oxc_span::{GetSpan, SPAN};
 use std::{cell::RefCell, collections::HashSet, mem, rc::Rc};
 pub mod transform_children;
@@ -285,38 +283,65 @@ impl<'a> TransformContext<'a> {
   }
 
   pub fn wrap_fragment(&self, mut node: Expression<'a>) -> JSXChild<'a> {
+    let ast = self.ast;
     if let Expression::JSXFragment(node) = node {
       JSXChild::Fragment(node)
     } else if let Expression::JSXElement(node) = &mut node
       && is_template(node)
     {
-      JSXChild::Element(oxc_allocator::Box::new_in(
-        node.take_in(self.allocator),
-        self.allocator,
-      ))
-    } else {
-      JSXChild::Fragment(oxc_allocator::Box::new_in(
-        JSXFragment {
-          span: SPAN,
-          opening_fragment: JSXOpeningFragment { span: SPAN },
-          closing_fragment: JSXClosingFragment { span: SPAN },
-          children: oxc_allocator::Vec::from_array_in(
-            [match node {
-              Expression::JSXElement(node) => JSXChild::Element(node),
-              Expression::JSXFragment(node) => JSXChild::Fragment(node),
-              _ => JSXChild::ExpressionContainer(oxc_allocator::Box::new_in(
-                JSXExpressionContainer {
-                  span: node.span(),
-                  expression: node.into(),
-                },
-                self.allocator,
-              )),
-            }],
-            self.allocator,
+      let node_ptr = node.as_mut() as *mut JSXElement;
+      let mut directives = Directives::new(unsafe { &mut *node_ptr });
+      if (directives.v_if.is_some()
+        || directives.v_else_if.is_some()
+        || directives.v_else.is_some())
+        && (directives.v_for.is_some() || directives.key.is_some())
+      {
+        if let Some(dir) = directives
+          .v_if
+          .as_mut()
+          .or(directives.v_else_if.as_mut().or(directives.v_else.as_mut()))
+        {
+          node.opening_element.attributes =
+            ast.vec1(JSXAttributeItem::Attribute(dir.take_in_box(self.allocator)));
+        }
+
+        node.children = ast.vec1(
+          self.ast.jsx_child_element(
+            SPAN,
+            ast.jsx_opening_element(
+              SPAN,
+              ast.jsx_element_name_identifier(SPAN, "template"),
+              NONE,
+              ast.vec_from_iter(
+                [
+                  directives
+                    .v_for
+                    .map(|v_for| JSXAttributeItem::Attribute(v_for.take_in_box(self.allocator))),
+                  directives
+                    .key
+                    .map(|key| JSXAttributeItem::Attribute(key.take_in_box(self.allocator))),
+                ]
+                .into_iter()
+                .flatten(),
+              ),
+            ),
+            node.children.take_in(self.allocator),
+            Some(ast.jsx_closing_element(SPAN, ast.jsx_element_name_identifier(SPAN, "template"))),
           ),
-        },
-        self.allocator,
-      ))
+        );
+      }
+      JSXChild::Element(node.take_in_box(self.allocator))
+    } else {
+      ast.jsx_child_fragment(
+        SPAN,
+        ast.jsx_opening_fragment(SPAN),
+        ast.vec1(match node {
+          Expression::JSXElement(node) => JSXChild::Element(node),
+          Expression::JSXFragment(node) => JSXChild::Fragment(node),
+          _ => ast.jsx_child_expression_container(node.span(), node.into()),
+        }),
+        ast.jsx_closing_fragment(SPAN),
+      )
     }
   }
 
