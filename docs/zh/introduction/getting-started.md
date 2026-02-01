@@ -25,7 +25,7 @@
 pnpm add vue-jsx-vapor
 
 # 运行时
-pnpm add vue@3.6.0-alpha.2
+pnpm add vue@3.6.0-beta.5
 ```
 
 ## 配置

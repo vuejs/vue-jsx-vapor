@@ -47,6 +47,6 @@
   },
   "peerDependencies": {
     "csstype": "^3.2.3",
-    "vue": "^3.6.0-alpha.2"
+    "vue": "catalog:"
   }
 }
