@@ -81,6 +81,67 @@ fn escapes_raw_static_text_when_generating_the_template_string() {
 }
 
 #[test]
+fn should_not_escape_quotes_in_root_level_text_nodes() {
+  let code = transform(r#"<>Howdy y'all</>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("Howdy y'all");
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn should_not_escape_double_quotes_in_root_level_text_nodes() {
+  let code = transform(r#"<>Say "hello"</>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("Say \"hello\"");
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn should_not_escape_quotes_in_template_v_if_text() {
+  // Text inside <template> tag also goes through createNode()
+  let code = transform(r#"<template v-if="ok">Howdy y'all</template>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("Howdy y'all");
+  (() => {
+  	const _n0 = _createIf(() => "ok", () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn should_not_escape_quotes_in_component_slot_text() {
+  // Text inside component (slot content) also goes through createNode()
+  let code = transform("<Comp>Howdy y'all</Comp>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template("Howdy y'all");
+  (() => {
+  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _t0();
+  		return _n0;
+  	}) }, true);
+  	return _n1;
+  })();
+  "#);
+}
+
+#[test]
 fn text_like() {
   let code = transform("<div>{ (2) }{`foo${1}`}{1}{1n}</div>", None).code;
   assert_snapshot!(code, @r#"

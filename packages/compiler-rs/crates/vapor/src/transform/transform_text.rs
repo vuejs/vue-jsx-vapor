@@ -20,7 +20,7 @@ use common::{
   check::{is_constant_node, is_fragment_node, is_jsx_component, is_template},
   directive::find_prop,
   expression::SimpleExpressionNode,
-  text::{escape_html, is_empty_text, is_text_like, resolve_jsx_text},
+  text::{escape_html, get_tag_name, is_empty_text, is_text_like, resolve_jsx_text},
 };
 
 /// # SAFETY
@@ -98,7 +98,21 @@ pub unsafe fn transform_text<'a>(
       }
     }
     JSXChild::Text(node) => {
-      let value = escape_html(resolve_jsx_text(node));
+      // Check if this is a root-level text node (parent is ROOT or fragment)
+      // Root-level text nodes go through createNode() which doesn't need escaping
+      // Element children go through innerHTML which needs escaping
+      let is_root_text = RootNode::is_root(parent_node)
+        || if let JSXChild::Element(parent_node) = parent_node {
+          is_jsx_component(parent_node, true, context.options)
+            || get_tag_name(&parent_node.opening_element.name, context.source_text) == "template"
+        } else {
+          false
+        };
+      let value = if is_root_text {
+        resolve_jsx_text(node)
+      } else {
+        escape_html(resolve_jsx_text(node))
+      };
       if !value.is_empty() {
         let mut template = context.template.borrow_mut();
         *template = template.to_string() + &value;
