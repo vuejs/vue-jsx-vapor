@@ -2,7 +2,7 @@ use napi::bindgen_prelude::Either3;
 use oxc_ast::ast::JSXChild;
 
 use crate::{
-  ir::index::{BlockIRNode, DeclareOldRefIRNode, OperationNode, SetTemplateRefIRNode},
+  ir::index::{BlockIRNode, OperationNode, SetTemplateRefIRNode},
   transform::TransformContext,
 };
 use common::{check::is_fragment_node, directive::Directives, expression::SimpleExpressionNode};
@@ -27,17 +27,6 @@ pub unsafe fn transform_template_ref<'a>(
   let value = SimpleExpressionNode::new(Either3::C(value), context.source_text);
   Some(Box::new(move || {
     let id = context.reference(&mut context_block.dynamic);
-    let effect = !value.is_constant_expression();
-    if effect {
-      context.register_operation(
-        context_block,
-        OperationNode::DeclareOldRef(DeclareOldRefIRNode {
-          declare_older_ref: true,
-          id,
-        }),
-        None,
-      );
-    }
 
     context.register_effect(
       context_block,
@@ -47,7 +36,6 @@ pub unsafe fn transform_template_ref<'a>(
         element: id,
         value,
         ref_for: *context.in_v_for.borrow() != 0,
-        effect,
       }),
       None,
       None,

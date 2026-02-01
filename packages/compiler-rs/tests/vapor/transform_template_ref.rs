@@ -25,8 +25,7 @@ fn dynamic_ref() {
   (() => {
   	const _setTemplateRef = _createTemplateRefSetter();
   	const _n0 = _t0();
-  	let _r0;
-  	_renderEffect(() => _r0 = _setTemplateRef(_n0, foo, _r0));
+  	_renderEffect(() => _setTemplateRef(_n0, foo));
   	return _n0;
   })();
   "#);
@@ -53,12 +52,11 @@ fn function_ref() {
   	const _setTemplateRef = _createTemplateRefSetter();
   	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
   		const _n0 = _t0();
-  		let _r0;
-  		_renderEffect(() => _r0 = _setTemplateRef(_n0, (bar) => {
+  		_renderEffect(() => _setTemplateRef(_n0, (bar) => {
   			foo.value = bar;
   			({baz: _slotProps0.baz, bar: _slotProps0.baz} = bar);
   			console.log(foo.value, _slotProps0.baz);
-  		}, _r0));
+  		}));
   		return _n0;
   	}) }, true);
   	return _n1;
@@ -76,8 +74,7 @@ fn ref_v_if() {
   	const _setTemplateRef = _createTemplateRefSetter();
   	const _n0 = _createIf(() => true, () => {
   		const _n2 = _t0();
-  		let _r2;
-  		_renderEffect(() => _r2 = _setTemplateRef(_n2, foo, _r2));
+  		_renderEffect(() => _setTemplateRef(_n2, foo));
   		return _n2;
   	}, null, true);
   	return _n0;
@@ -99,8 +96,7 @@ fn ref_v_for() {
   		3
   	], (_for_item0) => {
   		const _n2 = _t0();
-  		let _r2;
-  		_renderEffect(() => _r2 = _setTemplateRef(_n2, foo, _r2, true));
+  		_renderEffect(() => _setTemplateRef(_n2, foo, true));
   		return _n2;
   	}, void 0, 4);
   	return _n0;

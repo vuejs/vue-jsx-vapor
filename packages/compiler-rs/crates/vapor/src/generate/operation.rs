@@ -13,7 +13,6 @@ use crate::generate::key::gen_key;
 use crate::generate::prop::gen_dynamic_props;
 use crate::generate::prop::gen_set_prop;
 use crate::generate::slot_outlet::gen_slot_outlet;
-use crate::generate::template_ref::gen_declare_old_ref;
 use crate::generate::template_ref::gen_set_template_ref;
 use crate::generate::text::gen_create_nodes;
 use crate::generate::text::gen_get_text_child;
@@ -153,7 +152,6 @@ pub fn gen_operation<'a>(
     OperationNode::SlotOutlet(oper) => {
       statements.push(gen_slot_outlet(oper, context, context_block))
     }
-    OperationNode::DeclareOldRef(oper) => statements.push(gen_declare_old_ref(oper, context)),
     OperationNode::GetTextChild(oper) => statements.push(gen_get_text_child(oper, context)),
     OperationNode::Key(oper) => statements.push(gen_key(oper, context, context_block)),
   }

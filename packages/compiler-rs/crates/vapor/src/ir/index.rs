@@ -173,7 +173,6 @@ pub struct SetTemplateRefIRNode<'a> {
   pub element: i32,
   pub value: SimpleExpressionNode<'a>,
   pub ref_for: bool,
-  pub effect: bool,
 }
 
 #[derive(Debug)]
@@ -237,12 +236,6 @@ pub struct SlotOutletIRNode<'a> {
 }
 
 #[derive(Debug)]
-pub struct DeclareOldRefIRNode {
-  pub declare_older_ref: bool,
-  pub id: i32,
-}
-
-#[derive(Debug)]
 pub struct GetTextChildIRNode {
   pub get_text_child: bool,
   pub parent: i32,
@@ -265,7 +258,6 @@ pub enum OperationNode<'a> {
   Directive(DirectiveIRNode<'a>),
   CreateComponent(CreateComponentIRNode<'a>),
   SlotOutlet(SlotOutletIRNode<'a>),
-  DeclareOldRef(DeclareOldRefIRNode),
   GetTextChild(GetTextChildIRNode),
   Key(KeyIRNode<'a>),
 }
