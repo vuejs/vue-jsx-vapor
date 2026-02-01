@@ -102,6 +102,7 @@ pub unsafe fn transform_slot_outlet<'a>(
       once: *context.in_v_once.borrow(),
       parent: None,
       anchor: None,
+      logical_index: None,
       append: false,
       last: false,
     })));

@@ -323,6 +323,7 @@ pub fn transform_component_element<'a>(
       is_custom_element,
       parent: None,
       anchor: None,
+      logical_index: None,
       dynamic: None,
       append: false,
       last: false,

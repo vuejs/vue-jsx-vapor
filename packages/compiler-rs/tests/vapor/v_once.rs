@@ -67,7 +67,7 @@ fn on_component() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n1 = _t0();
-  	_setInsertionState(_n1, null, true);
+  	_setInsertionState(_n1, null, 0, true);
   	const _n0 = _createComponent(Comp, { id: () => foo }, null, null, true);
   	return _n1;
   })();
@@ -82,7 +82,7 @@ fn on_slot_outlet() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n1 = _t0();
-  	_setInsertionState(_n1, null, true);
+  	_setInsertionState(_n1, null, 0, true);
   	const _n0 = _createSlot("default", void 0, false, true);
   	return _n1;
   })();
@@ -153,7 +153,7 @@ fn with_conditional_expression() {
   const _t2 = _template("<div>", true);
   (() => {
   	const _n5 = _t2();
-  	_setInsertionState(_n5, null, true);
+  	_setInsertionState(_n5, null, 0, true);
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
   		const _x2 = _txt(_n2);

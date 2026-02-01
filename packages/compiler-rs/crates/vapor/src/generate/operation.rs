@@ -65,6 +65,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         statements.push(gen_insertion_state(
           parent,
           if_ir_node.anchor,
+          if_ir_node.logical_index,
           if_ir_node.append,
           if_ir_node.last,
           context,
@@ -76,6 +77,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         statements.push(gen_insertion_state(
           parent,
           for_ir_node.anchor,
+          for_ir_node.logical_index,
           for_ir_node.append,
           for_ir_node.last,
           context,
@@ -87,6 +89,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         statements.push(gen_insertion_state(
           parent,
           create_component_ir_node.anchor,
+          create_component_ir_node.logical_index,
           create_component_ir_node.append,
           create_component_ir_node.last,
           context,
@@ -98,6 +101,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         statements.push(gen_insertion_state(
           parent,
           slot_outlet_ir_node.anchor,
+          slot_outlet_ir_node.logical_index,
           slot_outlet_ir_node.append,
           slot_outlet_ir_node.last,
           context,
@@ -109,6 +113,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         statements.push(gen_insertion_state(
           parent,
           key_ir_node.anchor,
+          key_ir_node.logical_index,
           key_ir_node.append,
           key_ir_node.last,
           context,
@@ -160,6 +165,7 @@ pub fn gen_operation<'a>(
 pub fn gen_insertion_state<'a>(
   parent: i32,
   anchor: Option<i32>,
+  logical_index: Option<i32>,
   append: bool,
   last: bool,
   context: &CodegenContext<'a>,
@@ -187,24 +193,23 @@ pub fn gen_insertion_state<'a>(
                 NumberBase::Hex,
               ))) // runtime anchor value for prepend
             } else if append {
-              // null or anchor > 0 for append
-              // anchor > 0 is the logical index of append node - used for locate node during hydration
-              if anchor == 0 {
-                Some(Argument::NullLiteral(ast.alloc_null_literal(SPAN)))
-              } else {
-                Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
-                  SPAN,
-                  anchor as f64,
-                  None,
-                  NumberBase::Hex,
-                )))
-              }
+              Some(Argument::NullLiteral(ast.alloc_null_literal(SPAN)))
             } else {
               Some(Argument::Identifier(ast.alloc_identifier_reference(
                 SPAN,
                 ast.atom(&format!("_n{anchor}")),
               )))
             }
+          } else {
+            None
+          },
+          if let Some(logical_index) = logical_index {
+            Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+              SPAN,
+              logical_index as f64,
+              None,
+              NumberBase::Hex,
+            )))
           } else {
             None
           },

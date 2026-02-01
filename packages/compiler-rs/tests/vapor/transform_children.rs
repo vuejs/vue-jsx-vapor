@@ -97,7 +97,7 @@ fn efficient_traversal() {
   const _t0 = _template("<div><div>x</div><div><span> </div><div><span> </div><div><span> ", true);
   (() => {
   	const _n3 = _t0();
-  	const _p0 = _next(_child(_n3, 1));
+  	const _p0 = _next(_child(_n3), 1);
   	const _p1 = _next(_p0, 2);
   	const _p2 = _next(_p1, 3);
   	const _n2 = _child(_p2);
@@ -157,8 +157,8 @@ fn anchor_insertion_in_middle() {
   const _t1 = _template("<div><div></div><!><div>", true);
   (() => {
   	const _n4 = _t1();
-  	const _n3 = _next(_child(_n4, 1));
-  	_setInsertionState(_n4, _n3, true);
+  	const _n3 = _next(_child(_n4), 1);
+  	_setInsertionState(_n4, _n3, 1, true);
   	const _n0 = _createIf(() => 1, () => {
   		const _n2 = _t0();
   		return _n2;
@@ -212,16 +212,16 @@ fn next_child_and_nthchild_should_be_above_the_set_insertion_state() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { child as _child, createIf as _createIf, next as _next, nthChild as _nthChild, renderEffect as _renderEffect, setInsertionState as _setInsertionState, setProp as _setProp, template as _template } from "vue";
   const _t0 = _template("<div>");
-  const _t1 = _template("<div><div></div><!><!><div></div><div><button>", true);
+  const _t1 = _template("<div><div></div><!><div></div><!><div><button>", true);
   (() => {
   	const _n6 = _t1();
-  	const _n5 = _next(_child(_n6, 1));
+  	const _n5 = _next(_child(_n6), 1);
   	const _n7 = _nthChild(_n6, 3, 3);
   	const _p0 = _next(_n7, 4);
   	const _n4 = _child(_p0);
-  	_setInsertionState(_n6, _n5);
+  	_setInsertionState(_n6, _n5, 1);
   	const _n0 = _createComponent(Comp);
-  	_setInsertionState(_n6, _n7, true);
+  	_setInsertionState(_n6, _n7, 3, true);
   	const _n1 = _createIf(() => true, () => {
   		const _n3 = _t0();
   		return _n3;

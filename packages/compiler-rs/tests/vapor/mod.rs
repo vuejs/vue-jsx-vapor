@@ -1,6 +1,7 @@
 mod abbreviation;
 mod custom_directive;
 mod key;
+mod logical_index;
 mod transform_children;
 mod transform_element;
 mod transform_slot_outlet;

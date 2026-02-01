@@ -124,6 +124,7 @@ pub unsafe fn transform_v_for<'a>(
       only_child,
       parent: None,
       anchor: None,
+      logical_index: None,
       append: false,
       last: false,
     })));

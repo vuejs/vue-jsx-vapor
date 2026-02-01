@@ -64,6 +64,7 @@ pub struct IfIRNode<'a> {
   pub once: bool,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
+  pub logical_index: Option<i32>,
   pub append: bool,
   pub last: bool,
 }
@@ -75,6 +76,7 @@ pub struct KeyIRNode<'a> {
   pub block: BlockIRNode<'a>,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
+  pub logical_index: Option<i32>,
   pub append: bool,
   pub last: bool,
 }
@@ -102,6 +104,7 @@ pub struct ForIRNode<'a> {
   pub only_child: bool,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
+  pub logical_index: Option<i32>,
   pub append: bool,
   pub last: bool,
 }
@@ -217,6 +220,7 @@ pub struct CreateComponentIRNode<'a> {
   pub is_custom_element: bool,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
+  pub logical_index: Option<i32>,
   pub append: bool,
   pub last: bool,
 }
@@ -231,6 +235,7 @@ pub struct SlotOutletIRNode<'a> {
   pub once: bool,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
+  pub logical_index: Option<i32>,
   pub append: bool,
   pub last: bool,
 }
@@ -281,6 +286,9 @@ pub struct IRDynamicInfo<'a> {
   pub id: Option<i32>,
   pub flags: i32,
   pub anchor: Option<i32>,
+  // logical index of this node among siblings (including dynamic nodes)
+  // used during hydration to locate the correct DOM node
+  pub logical_index: Option<i32>,
   pub children: Vec<IRDynamicInfo<'a>>,
   pub template: Option<i32>,
   pub has_dynamic_child: bool,
@@ -296,6 +304,7 @@ impl<'a> IRDynamicInfo<'a> {
       operation: None,
       id: None,
       anchor: None,
+      logical_index: None,
     }
   }
 }

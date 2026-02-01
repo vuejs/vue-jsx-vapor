@@ -13,7 +13,6 @@ use crate::generate::operation::gen_operation_with_insertion_state;
 use crate::ir::index::BlockIRNode;
 use crate::ir::index::DynamicFlag;
 use crate::ir::index::IRDynamicInfo;
-use crate::ir::index::OperationNode;
 
 pub fn gen_self<'a>(
   statements: &mut oxc_allocator::Vec<'a, Statement<'a>>,
@@ -95,22 +94,9 @@ fn gen_children<'a>(
 
   let mut offset = 0;
   let mut prev: Option<(String, i32)> = None;
-  let mut prepend_count = 0;
 
   let mut index = 0;
   for mut child in children {
-    if let Some(operation) = child.operation.as_ref()
-      && match operation.as_ref() {
-        OperationNode::If(op) => op.anchor == Some(-1),
-        OperationNode::For(op) => op.anchor == Some(-1),
-        OperationNode::CreateComponent(op) => op.anchor == Some(-1),
-        OperationNode::SlotOutlet(op) => op.anchor == Some(-1),
-        OperationNode::Key(op) => op.anchor == Some(-1),
-        _ => false,
-      }
-    {
-      prepend_count += 1;
-    }
     if child.flags & DynamicFlag::NonTemplate as i32 != 0 {
       offset -= 1;
     }
@@ -133,7 +119,7 @@ fn gen_children<'a>(
     }
 
     let element_index = index + offset;
-    let logical_index = element_index + prepend_count;
+    let logical_index = child.logical_index;
     // p for "placeholder" variables that are meant for possible reuse by
     // other access paths
     let variable = if let Some(id) = id {
@@ -150,15 +136,25 @@ fn gen_children<'a>(
           SPAN,
           ast.expression_identifier(SPAN, ast.atom(&context.helper("next"))),
           NONE,
-          ast.vec_from_array([
-            Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(&prev.0))),
-            Argument::NumericLiteral(ast.alloc_numeric_literal(
-              SPAN,
-              logical_index as f64,
-              None,
-              NumberBase::Hex,
-            )),
-          ]),
+          ast.vec_from_iter(
+            [
+              Some(Argument::Identifier(
+                ast.alloc_identifier_reference(SPAN, ast.atom(&prev.0)),
+              )),
+              if let Some(logical_index) = logical_index {
+                Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+                  SPAN,
+                  logical_index as f64,
+                  None,
+                  NumberBase::Hex,
+                )))
+              } else {
+                None
+              },
+            ]
+            .into_iter()
+            .flatten(),
+          ),
           false,
         )
       } else {
@@ -166,21 +162,31 @@ fn gen_children<'a>(
           SPAN,
           ast.expression_identifier(SPAN, ast.atom(&context.helper("nthChild"))),
           NONE,
-          ast.vec_from_array([
-            Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(&from))),
-            Argument::NumericLiteral(ast.alloc_numeric_literal(
-              SPAN,
-              element_index as f64,
-              None,
-              NumberBase::Hex,
-            )),
-            Argument::NumericLiteral(ast.alloc_numeric_literal(
-              SPAN,
-              logical_index as f64,
-              None,
-              NumberBase::Hex,
-            )),
-          ]),
+          ast.vec_from_iter(
+            [
+              Some(Argument::Identifier(
+                ast.alloc_identifier_reference(SPAN, ast.atom(&from)),
+              )),
+              Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+                SPAN,
+                element_index as f64,
+                None,
+                NumberBase::Hex,
+              ))),
+              if let Some(logical_index) = logical_index {
+                Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+                  SPAN,
+                  logical_index as f64,
+                  None,
+                  NumberBase::Hex,
+                )))
+              } else {
+                None
+              },
+            ]
+            .into_iter()
+            .flatten(),
+          ),
           false,
         )
       }
@@ -194,7 +200,9 @@ fn gen_children<'a>(
             Some(Argument::Identifier(
               ast.alloc_identifier_reference(SPAN, ast.atom(&from)),
             )),
-            if logical_index != 0 {
+            if let Some(logical_index) = logical_index
+              && logical_index != 0
+            {
               Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
                 SPAN,
                 logical_index as f64,
@@ -217,21 +225,31 @@ fn gen_children<'a>(
           SPAN,
           ast.expression_identifier(SPAN, ast.atom(&context.helper("next"))),
           NONE,
-          ast.vec1(Argument::CallExpression(ast.alloc_call_expression(
-            SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&context.helper("child"))),
-            NONE,
-            ast.vec_from_array([
-              Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(&from))),
-              Argument::NumericLiteral(ast.alloc_numeric_literal(
+          ast.vec_from_iter(
+            [
+              Some(Argument::CallExpression(ast.alloc_call_expression(
                 SPAN,
-                logical_index as f64,
-                None,
-                NumberBase::Hex,
-              )),
-            ]),
-            false,
-          ))),
+                ast.expression_identifier(SPAN, ast.atom(&context.helper("child"))),
+                NONE,
+                ast.vec1(Argument::Identifier(
+                  ast.alloc_identifier_reference(SPAN, ast.atom(&from)),
+                )),
+                false,
+              ))),
+              if let Some(logical_index) = logical_index {
+                Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+                  SPAN,
+                  logical_index as f64,
+                  None,
+                  NumberBase::Hex,
+                )))
+              } else {
+                None
+              },
+            ]
+            .into_iter()
+            .flatten(),
+          ),
           false,
         )
       } else if element_index > 1 {
@@ -239,21 +257,31 @@ fn gen_children<'a>(
           SPAN,
           ast.expression_identifier(SPAN, ast.atom(&context.helper("nthChild"))),
           NONE,
-          ast.vec_from_array([
-            Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(&from))),
-            Argument::NumericLiteral(ast.alloc_numeric_literal(
-              SPAN,
-              element_index as f64,
-              None,
-              NumberBase::Hex,
-            )),
-            Argument::NumericLiteral(ast.alloc_numeric_literal(
-              SPAN,
-              logical_index as f64,
-              None,
-              NumberBase::Hex,
-            )),
-          ]),
+          ast.vec_from_iter(
+            [
+              Some(Argument::Identifier(
+                ast.alloc_identifier_reference(SPAN, ast.atom(&from)),
+              )),
+              Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+                SPAN,
+                element_index as f64,
+                None,
+                NumberBase::Hex,
+              ))),
+              if let Some(logical_index) = logical_index {
+                Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+                  SPAN,
+                  logical_index as f64,
+                  None,
+                  NumberBase::Hex,
+                )))
+              } else {
+                None
+              },
+            ]
+            .into_iter()
+            .flatten(),
+          ),
           false,
         )
       } else {

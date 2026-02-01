@@ -150,7 +150,7 @@ fn component() {
   	const _n0 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
   		const _n1 = _createIf(() => true, () => {
   			const _n4 = _t0();
-  			_setInsertionState(_n4, null, true);
+  			_setInsertionState(_n4, null, 0, true);
   			const _n3 = _createComponent(Bar);
   			_withVaporDirectives(_n3, [[
   				_directive_hello,

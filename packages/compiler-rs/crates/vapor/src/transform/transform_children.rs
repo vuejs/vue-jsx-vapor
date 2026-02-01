@@ -138,20 +138,27 @@ fn process_dynamic_children<'a>(
   let mut last_insertion_child = None;
   let children = &mut context_block.dynamic.children as *mut Vec<IRDynamicInfo>;
 
+  // Track logical index for each child.
+  // logicalIndex represents the position in SSR DOM, used during hydration
+  // to locate the correct DOM node. Each child (static element, component,
+  // v-if/v-else-if/v-else chain, v-for, slot) counts as one logical unit.
+  let mut logical_index = 0;
+
   for (index, child) in unsafe { &mut *children }.iter_mut().enumerate() {
     let flags = child.flags;
+    let child_ptr = child as *mut IRDynamicInfo;
     if flags & DynamicFlag::Insert as i32 != 0 {
-      last_insertion_child = Some(unsafe { &mut *(child as *mut IRDynamicInfo) });
+      child.logical_index = Some(logical_index);
+      last_insertion_child = Some(unsafe { &mut *child_ptr });
       prev_dynamics.push_back(child);
+      logical_index += 1;
     }
 
     if flags & DynamicFlag::NonTemplate as i32 == 0 {
+      unsafe { &mut *child_ptr }.logical_index = Some(logical_index);
       if !prev_dynamics.is_empty() {
         if static_count > 0 {
-          context
-            .children_template
-            .borrow_mut()
-            .insert(index - prev_dynamics.len(), "<!>".to_string());
+          context.children_template.borrow_mut()[index - prev_dynamics.len()] = "<!>".to_string();
           prev_dynamics[0].flags -= DynamicFlag::NonTemplate as i32;
           let anchor = context.increase_id();
           prev_dynamics[0].anchor = Some(anchor);
@@ -169,6 +176,7 @@ fn process_dynamic_children<'a>(
         prev_dynamics.clear();
       }
       static_count += 1;
+      logical_index += 1;
     }
   }
 
@@ -209,6 +217,7 @@ fn register_insertion<'a>(
     .filter_map(|child| child.id)
     .collect::<Vec<i32>>();
   for child in dynamics {
+    let logical_index = child.logical_index;
     if child.template.is_some() {
       let parent = context.reference(&mut context_block.dynamic);
       // template node due to invalid nesting - generate actual insertion
@@ -229,30 +238,35 @@ fn register_insertion<'a>(
           let parent = context.reference(&mut context_block.dynamic);
           if_ir_node.parent = Some(parent);
           if_ir_node.anchor = Some(anchor);
+          if_ir_node.logical_index = logical_index;
           if_ir_node.append = append;
         }
         OperationNode::For(for_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           for_ir_node.parent = Some(parent);
           for_ir_node.anchor = Some(anchor);
+          for_ir_node.logical_index = logical_index;
           for_ir_node.append = append;
         }
         OperationNode::CreateComponent(create_component_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           create_component_ir_node.parent = Some(parent);
           create_component_ir_node.anchor = Some(anchor);
+          create_component_ir_node.logical_index = logical_index;
           create_component_ir_node.append = append;
         }
         OperationNode::SlotOutlet(slot_outlet_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           slot_outlet_ir_node.parent = Some(parent);
           slot_outlet_ir_node.anchor = Some(anchor);
+          slot_outlet_ir_node.logical_index = logical_index;
           slot_outlet_ir_node.append = append;
         }
         OperationNode::Key(key_ir_node) => {
           let parent = context.reference(&mut context_block.dynamic);
           key_ir_node.parent = Some(parent);
           key_ir_node.anchor = Some(anchor);
+          key_ir_node.logical_index = logical_index;
           key_ir_node.append = append;
         }
         _ => (),

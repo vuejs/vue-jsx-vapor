@@ -249,7 +249,7 @@ fn logical_expression_or() {
   const _t1 = _template("<div>", true);
   (() => {
   	const _n5 = _t1();
-  	_setInsertionState(_n5, null, true);
+  	_setInsertionState(_n5, null, 0, true);
   	const _n0 = _createIf(() => foo, () => {
   		const _n2 = _createNodes(() => foo);
   		return _n2;
@@ -274,7 +274,7 @@ fn logical_expression_coalesce() {
   const _t1 = _template("<div>", true);
   (() => {
   	const _n5 = _t1();
-  	_setInsertionState(_n5, null, true);
+  	_setInsertionState(_n5, null, 0, true);
   	const _n0 = _createIf(() => foo == null, () => {
   		const _n2 = _t0();
   		const _x2 = _txt(_n2);
