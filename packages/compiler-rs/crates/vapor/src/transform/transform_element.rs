@@ -178,6 +178,9 @@ pub fn transform_native_element<'a>(
       )
     }
     Either::B(props) => {
+      // tracks if previous attribute was quoted, allowing space omission
+      // e.g. `class="foo"id="bar"` is valid, `class=foo id=bar` needs space
+      let mut prev_was_quoted = false;
       for prop in props {
         let key = &prop.key;
         let values = &prop.values;
@@ -186,9 +189,26 @@ pub fn transform_native_element<'a>(
           && values[0].is_static
           && !DYNAMIC_KEYS.contains(&key.content.as_str())
         {
-          template += &format!(" {}", key.content);
-          if !values[0].content.is_empty() {
-            template += &format!("=\"{}\"", values[0].content);
+          if !prev_was_quoted {
+            template += " "
+          }
+          let value = values[0].content.clone();
+          template += &key.content;
+
+          if !value.is_empty() {
+            // The attribute value can remain unquoted if it doesn't contain ASCII whitespace
+            // or any of " ' ` = < or >.
+            // https://html.spec.whatwg.org/multipage/introduction.html#intro-early-example
+            prev_was_quoted = value.contains(|c: char| {
+              c.is_whitespace() || matches!(c, '"' | '\'' | '`' | '=' | '<' | '>')
+            });
+            template += &if prev_was_quoted {
+              format!(r#"="{}""#, value.replace("\"", "&quot;"))
+            } else {
+              format!("={}", value)
+            };
+          } else {
+            prev_was_quoted = false;
           }
         } else {
           dynamic_props.push(key.content.clone());

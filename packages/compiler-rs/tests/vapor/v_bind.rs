@@ -31,10 +31,10 @@ fn no_expression() {
 
 #[test]
 fn empty_expression() {
-  let code = transform("<div foo={}></div>", None).code;
+  let code = transform(r#"<div foo={} bar=""></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div bar>", true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -152,7 +152,7 @@ fn with_constant_value() {
   .code;
   assert_snapshot!(code, @r#"
   import { setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div e=\"2\" f=\"foo1\" g=\"1\" h=\"1\">", true);
+  const _t0 = _template("<div e=2 f=foo1 g=1 h=1>", true);
   (() => {
   	const _n0 = _t0();
   	_setProp(_n0, "a", void 0);
@@ -189,7 +189,7 @@ fn number_value() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("<div depth=\"0\">");
+  const _t0 = _template("<div depth=0>");
   (() => {
   	const _n0 = _t0();
   	const _n1 = _createComponent(Comp, { depth: () => 0 });

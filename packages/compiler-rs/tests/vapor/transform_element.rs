@@ -251,11 +251,136 @@ fn component_with_fallback() {
 }
 
 #[test]
-fn static_props() {
+fn static_props_unquoted_when_value_has_no_special_chars() {
   let code = transform("<div id=\"foo\" class=\"bar\" />", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div id=\"foo\" class=\"bar\">", true);
+  const _t0 = _template("<div id=foo class=bar>", true);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_props_quoted_when_value_contains_whitespace() {
+  let code = transform(r#"<div title="has whitespace" />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div title=\"has whitespace\">", true);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_props_quoted_when_value_contains_right_angle_bracket() {
+  let code = transform(r#"<div data-expr="a>b" />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div data-expr=\"a>b\">", true);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_props_quoted_when_value_contains_left_angle_bracket() {
+  let code = transform(r#"<div data-expr="a<b" />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div data-expr=\"a<b\">", true);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_props_quoted_when_value_contains_equal_bracket() {
+  let code = transform(r#"<div data-expr="a=b" />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div data-expr=\"a=b\">", true);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_props_quoted_when_value_contains_single_quote() {
+  let code = transform(r#"<div title="it's" />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div title=\"it's\">", true);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_props_quoted_when_value_contains_backtick() {
+  let code = transform(r#"<div title="foo`bar" />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div title=\"foo`bar\">", true);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_props_escapes_double_quotes_in_value() {
+  let code = transform(r#"<div title='say "hello"' />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div title=\"say &quot;hello&quot;\">", true);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_props_mixed_quoting_with_boolean_attribute() {
+  let code = transform(
+    r#"<div title="has whitespace" inert="" data-targets="foo>bar" />"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div title=\"has whitespace\"inert data-targets=\"foo>bar\">", true);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_props_space_omitted_after_quoted_attribute() {
+  let code = transform(
+    r#"<div title="has whitespace" alt='"contains quotes"' data-targets="foo>bar" />"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div title=\"has whitespace\"alt=\"&quot;contains quotes&quot;\"data-targets=\"foo>bar\">", true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -268,7 +393,7 @@ fn props_children() {
   let code = transform("<div id=\"foo\"><span/></div>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div id=\"foo\"><span>", true);
+  const _t0 = _template("<div id=foo><span>", true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -535,7 +660,7 @@ fn svg() {
   let code = transform(r#"<svg><circle r="40"></circle></svg>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<svg><circle r=\"40\">", true, 1);
+  const _t0 = _template("<svg><circle r=40>", true, 1);
   (() => {
   	const _n0 = _t0();
   	return _n0;

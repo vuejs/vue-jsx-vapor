@@ -65,7 +65,7 @@ fn should_support_input_text() {
   let code = transform("<input type=\"text\" v-model={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
-  const _t0 = _template("<input type=\"text\">", true);
+  const _t0 = _template("<input type=text>", true);
   (() => {
   	const _n0 = _t0();
   	_applyTextModel(_n0, () => model, (_value) => model = _value);
@@ -79,7 +79,7 @@ fn should_support_input_radio() {
   let code = transform("<input type=\"radio\" v-model={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyRadioModel as _applyRadioModel, template as _template } from "vue";
-  const _t0 = _template("<input type=\"radio\">", true);
+  const _t0 = _template("<input type=radio>", true);
   (() => {
   	const _n0 = _t0();
   	_applyRadioModel(_n0, () => model, (_value) => model = _value);
@@ -93,7 +93,7 @@ fn should_support_input_checkbox() {
   let code = transform("<input type=\"checkbox\" v-model={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyCheckboxModel as _applyCheckboxModel, template as _template } from "vue";
-  const _t0 = _template("<input type=\"checkbox\">", true);
+  const _t0 = _template("<input type=checkbox>", true);
   (() => {
   	const _n0 = _t0();
   	_applyCheckboxModel(_n0, () => model, (_value) => model = _value);
