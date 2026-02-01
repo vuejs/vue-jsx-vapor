@@ -1,6 +1,7 @@
 use napi::Either;
 use oxc_ast::NONE;
 use oxc_ast::ast::FormalParameterKind;
+use oxc_ast::ast::NumberBase;
 use oxc_ast::ast::Statement;
 use oxc_ast::ast::VariableDeclarationKind;
 use oxc_span::SPAN;
@@ -24,6 +25,7 @@ pub fn gen_if<'a>(
     positive,
     negative,
     once,
+    index,
     ..
   } = oper;
 
@@ -55,6 +57,7 @@ pub fn gen_if<'a>(
   );
 
   let mut negative_arg = None;
+  let mut negative_is_some = false;
   if let Some(negative) = negative {
     let negative = *negative;
     negative_arg = Some(match negative {
@@ -78,6 +81,7 @@ pub fn gen_if<'a>(
         ),
       ),
     });
+    negative_is_some = true;
   }
 
   let expression = ast.expression_call(
@@ -97,6 +101,20 @@ pub fn gen_if<'a>(
         },
         if once {
           Some(ast.expression_boolean_literal(SPAN, true).into())
+        } else if index.is_some() && negative_is_some {
+          Some(ast.expression_boolean_literal(SPAN, false).into())
+        } else {
+          None
+        },
+        // index is only used when the branch can change in Transition
+        if let Some(index) = index
+          && negative_is_some
+        {
+          Some(
+            ast
+              .expression_numeric_literal(SPAN, index as f64, None, NumberBase::Hex)
+              .into(),
+          )
         } else {
           None
         },

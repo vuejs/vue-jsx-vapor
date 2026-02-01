@@ -62,6 +62,7 @@ pub struct IfIRNode<'a> {
   pub positive: BlockIRNode<'a>,
   pub negative: Option<Box<Either<BlockIRNode<'a>, IfIRNode<'a>>>>,
   pub once: bool,
+  pub index: Option<i32>,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,

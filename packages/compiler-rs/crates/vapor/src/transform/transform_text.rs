@@ -350,6 +350,7 @@ pub fn process_conditional_expression<'a>(
     let mut operation = IfIRNode {
       id,
       positive: block,
+      index: context.next_if_index(parent_node),
       once: *context.in_v_once.borrow() || is_const_test,
       condition: test,
       negative: None,
@@ -415,6 +416,7 @@ fn process_logical_expression<'a>(
     let mut operation = IfIRNode {
       id,
       positive: block,
+      index: context.next_if_index(parent_node),
       once: *context.in_v_once.borrow() || is_constant_node(&Some(left)),
       condition: SimpleExpressionNode::new(Either3::A(left), context.source_text),
       negative: None,
@@ -470,6 +472,7 @@ fn set_negative<'a>(
         context.source_text,
       ),
       positive: block,
+      index: context.next_if_index(parent_node),
       once: *context.in_v_once.borrow() || is_constant_node(&Some(&unsafe { &*node }.test)),
       negative: None,
       anchor: None,
@@ -522,6 +525,7 @@ fn set_negative<'a>(
       once: *context.in_v_once.borrow() || is_constant_node(&Some(left)),
       condition: SimpleExpressionNode::new(Either3::A(left), context.source_text),
       positive: block,
+      index: context.next_if_index(parent_node),
       negative: None,
       anchor: None,
       logical_index: None,

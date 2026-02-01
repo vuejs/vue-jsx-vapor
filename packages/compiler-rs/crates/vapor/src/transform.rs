@@ -2,6 +2,7 @@ use common::ast::RootNode;
 use common::directive::{Directives, Modifiers};
 use common::expression::SimpleExpressionNode;
 pub use common::options::TransformOptions;
+use common::text::get_tag_name;
 use oxc_allocator::{Allocator, TakeIn};
 use oxc_ast::ast::{Expression, JSXAttributeItem, JSXChild, JSXElement};
 use oxc_ast::{AstBuilder, NONE};
@@ -95,6 +96,7 @@ pub struct TransformContext<'a> {
   pub has_inline_ancestor_needing_close: RefCell<bool>,
 
   global_id: RefCell<i32>,
+  if_index: RefCell<i32>,
 
   pub ir: Rc<RefCell<RootIRNode>>,
   pub node: RefCell<JSXChild<'a>>,
@@ -118,6 +120,7 @@ impl<'a> TransformContext<'a> {
       is_on_rightmost_path: RefCell::new(true),
       has_inline_ancestor_needing_close: RefCell::new(false),
       global_id: RefCell::new(0),
+      if_index: RefCell::new(0),
       node: RefCell::new(RootNode::new(allocator)),
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
       ir: Rc::new(RefCell::new(RootIRNode::new())),
@@ -152,6 +155,21 @@ impl<'a> TransformContext<'a> {
     let id = self.increase_id();
     dynamic.id = Some(id);
     id
+  }
+
+  pub fn next_if_index(&self, parent_node: &JSXChild) -> Option<i32> {
+    if let JSXChild::Element(parent_node) = parent_node
+      && matches!(
+        get_tag_name(&parent_node.opening_element.name, self.source_text).as_str(),
+        "Transition" | "VaporTransition"
+      )
+    {
+      let if_index = *self.if_index.borrow();
+      *self.if_index.borrow_mut() += 1;
+      Some(if_index)
+    } else {
+      None
+    }
   }
 
   pub fn is_operation(&self, expressions: Vec<&SimpleExpressionNode>) -> bool {
