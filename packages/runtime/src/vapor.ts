@@ -1,21 +1,11 @@
 import {
-  createComponent as _createComponent,
-  createComponentWithFallback as _createComponentWithFallback,
-  createTextNode,
-  // @ts-ignore
-  currentInstance,
   EffectScope,
   Fragment,
   getCurrentInstance,
-  insert,
-  isFragment,
-  isVaporComponent,
-  remove,
-  renderEffect,
-  VaporFragment,
   type Block,
   type VaporComponent,
 } from 'vue'
+import * as Vue from 'vue'
 
 // component
 
@@ -49,14 +39,14 @@ type Tail<T extends any[]> = T extends [any, ...infer R] ? R : never
 
 export const createComponent = (
   type: VaporComponent | typeof Fragment,
-  ...args: Tail<Parameters<typeof _createComponent>>
+  ...args: Tail<Parameters<typeof Vue.createComponent>>
 ) => {
-  return createProxyComponent(_createComponent, type, ...args)
+  return createProxyComponent(Vue.createComponent, type, ...args)
 }
 
 export const createComponentWithFallback = (
   type: VaporComponent | typeof Fragment,
-  ...args: Tail<Parameters<typeof _createComponentWithFallback>>
+  ...args: Tail<Parameters<typeof Vue.createComponentWithFallback>>
 ) => {
   const slots = args[1]
   if (
@@ -68,20 +58,20 @@ export const createComponentWithFallback = (
     const defaultSlot = slots.default
     slots.default = () => {
       return createProxyComponent(
-        _createComponentWithFallback,
+        Vue.createComponentWithFallback,
         defaultSlot,
         null,
         null,
       )
     }
   }
-  return createProxyComponent(_createComponentWithFallback, type, ...args)
+  return createProxyComponent(Vue.createComponentWithFallback, type, ...args)
 }
 
 const createProxyComponent = (
   createComponent:
-    | typeof _createComponent
-    | typeof _createComponentWithFallback,
+    | typeof Vue.createComponent
+    | typeof Vue.createComponentWithFallback,
   type: VaporComponent | typeof Fragment,
   props: any,
   ...args: any[]
@@ -91,7 +81,8 @@ const createProxyComponent = (
     props = null
   }
 
-  const i = currentInstance || getCurrentInstance()
+  // @ts-ignore
+  const i = Vue.currentInstance || getCurrentInstance()
   // @ts-ignore #24
   if (!type.__proxyed) {
     if (typeof type === 'function') {
@@ -105,6 +96,7 @@ const createProxyComponent = (
           return normalizeNode(Reflect.apply(target, ctx, args))
         },
         get(target, p, receiver) {
+          if (p === '__proxyed') return true
           if (i && i.appContext.vapor && p === '__vapor') {
             return true
           }
@@ -116,10 +108,12 @@ const createProxyComponent = (
         apply(target, ctx, args) {
           return normalizeNode(Reflect.apply(target, ctx, args))
         },
+        get(target, p, receiver) {
+          if (p === '__proxyed') return true
+          return Reflect.get(target, p, receiver)
+        },
       })
     }
-    // @ts-ignore
-    type.__proxyed = true
   }
 
   return createComponent(type as VaporComponent, props, ...args)
@@ -142,7 +136,7 @@ export function normalizeNode(node: NodeChild): Block {
     return node
   } else {
     // strings and numbers
-    return createTextNode(String(node))
+    return document.createTextNode(String(node))
   }
 }
 
@@ -150,8 +144,8 @@ export function isBlock(val: NonNullable<unknown>): val is Block {
   return (
     val instanceof Node ||
     Array.isArray(val) ||
-    isVaporComponent(val) ||
-    isFragment(val)
+    Vue.isVaporComponent(val) ||
+    Vue.isFragment(val)
   )
 }
 
@@ -161,16 +155,16 @@ function createFragment(
   nodes: Block,
   anchor: Node | undefined = document.createTextNode(''),
 ) {
-  const frag = new VaporFragment(nodes)
+  const frag = new Vue.VaporFragment(nodes)
   frag.anchor = anchor
   return frag
 }
 
 function normalizeBlock(node: any, anchor?: Node): Block {
-  if (node instanceof Node || isFragment(node)) {
+  if (node instanceof Node || Vue.isFragment(node)) {
     anchor && (anchor.textContent = '')
     return node
-  } else if (isVaporComponent(node)) {
+  } else if (Vue.isVaporComponent(node)) {
     anchor && (anchor.textContent = '')
     return createFragment(node, anchor)
   } else if (Array.isArray(node)) {
@@ -193,16 +187,16 @@ function normalizeBlock(node: any, anchor?: Node): Block {
 function resolveValue(current: Block, value: any, _anchor?: Node) {
   const node = normalizeBlock(value, _anchor)
   if (current) {
-    if (isFragment(current)) {
+    if (Vue.isFragment(current)) {
       const { anchor } = current
       if (anchor && anchor.parentNode) {
-        remove(current.nodes, anchor.parentNode)
-        insert(node, anchor.parentNode, anchor)
+        Vue.remove(current.nodes, anchor.parentNode)
+        Vue.insert(node, anchor.parentNode, anchor)
         !_anchor && anchor.parentNode.removeChild(anchor)
       }
     } else if (current instanceof Node) {
-      if (isFragment(node) && current.parentNode) {
-        insert(node, current.parentNode, current)
+      if (Vue.isFragment(node) && current.parentNode) {
+        Vue.insert(node, current.parentNode, current)
         current.parentNode.removeChild(current)
       } else if (node instanceof Node) {
         if (current.nodeType === 3 && node.nodeType === 3) {
@@ -224,7 +218,7 @@ function resolveValues(values: any[] = [], _anchor?: Node) {
   for (const [index, value] of values.entries()) {
     const anchor = index === values.length - 1 ? _anchor : undefined
     if (typeof value === 'function') {
-      renderEffect(() => {
+      Vue.renderEffect(() => {
         if (scopes[index]) scopes[index].stop()
         scopes[index] = new EffectScope()
         nodes[index] = scopes[index].run(() =>
@@ -240,7 +234,7 @@ function resolveValues(values: any[] = [], _anchor?: Node) {
 
 export function setNodes(anchor: Node, ...values: any[]) {
   const resolvedValues = resolveValues(values, anchor)
-  anchor.parentNode && insert(resolvedValues, anchor.parentNode, anchor)
+  anchor.parentNode && Vue.insert(resolvedValues, anchor.parentNode, anchor)
 }
 
 export function createNodes(...values: any[]) {
