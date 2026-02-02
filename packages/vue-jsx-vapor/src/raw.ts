@@ -18,6 +18,7 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
   let root = ''
   let needHMR = false
   let needSourceMap = options.sourceMap || false
+  const helperId = /^\/vue-jsx-vapor\//
   return [
     ...(options.macros === false
       ? []
@@ -53,13 +54,13 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
       },
       resolveId: {
         filter: {
-          id: /^\/vue-jsx-vapor\//,
+          id: helperId,
         },
         handler: (id) => id,
       },
       load: {
         filter: {
-          id: [ssrHelperId, propsHelperId, vdomHelperId, vaporHelperId],
+          id: helperId,
         },
         handler(id) {
           if (id === ssrHelperId) return ssrHelperCode

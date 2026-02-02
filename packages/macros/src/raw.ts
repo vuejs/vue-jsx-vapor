@@ -14,7 +14,8 @@ import type { UnpluginOptions } from 'unplugin'
 const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
   const options = resolveOptions(userOptions)
   const importMap = new Map()
-  const defineStyleRegex = /^\/vue-jsx-vapor\/macros\/define-style/
+  const macrosHelperId = /^\/vue-jsx-vapor\/macros\//
+  const defineStyleHelperId = /^\/vue-jsx-vapor\/macros\/define-style/
 
   return [
     {
@@ -23,7 +24,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
 
       resolveId: {
         filter: {
-          id: /^\/vue-jsx-vapor\/macros\//,
+          id: macrosHelperId,
         },
         handler(id) {
           return id
@@ -31,9 +32,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
       },
       load: {
         filter: {
-          id: {
-            include: [useModelHelperId, withDefaultsHelperId, useSlotsHelperId],
-          },
+          id: macrosHelperId,
         },
         handler(id) {
           if (id === useModelHelperId) return useModelHelperCode
@@ -66,7 +65,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
 
       resolveId: {
         filter: {
-          id: defineStyleRegex,
+          id: defineStyleHelperId,
         },
         handler(id) {
           return id
@@ -74,7 +73,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
       },
       load: {
         filter: {
-          id: defineStyleRegex,
+          id: defineStyleHelperId,
         },
         handler(id) {
           return importMap.get(id)
@@ -83,7 +82,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
 
       transform: {
         filter: {
-          id: defineStyleRegex,
+          id: defineStyleHelperId,
         },
         handler(code, id) {
           return transformStyle(code, id, options)
