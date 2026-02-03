@@ -18,7 +18,6 @@ use crate::{
 use common::{
   ast::RootNode,
   check::{is_constant_node, is_fragment_node, is_jsx_component, is_template},
-  directive::find_prop,
   expression::SimpleExpressionNode,
   text::{escape_html, get_tag_name, is_empty_text, is_text_like, resolve_jsx_text},
 };
@@ -207,20 +206,21 @@ fn process_interpolation<'a>(
 
   let nodes = nodes as *mut Vec<&mut JSXChild>;
   let values = process_text_like_expressions(unsafe { &mut *nodes }, context, seen);
-  let dynamic = &mut context_block.dynamic;
   if values.is_empty() {
-    dynamic.flags |= DynamicFlag::NonTemplate as i32;
     return;
   }
 
-  let id = context.reference(dynamic);
+  let id = context.reference(&mut context_block.dynamic);
   let once = *context.in_v_once.borrow();
   if if RootNode::is_root(parent_node) {
     true
   } else {
     is_fragment_node(parent_node)
-      || matches!(parent_node, JSXChild::Element(parent_node)
-          if find_prop(parent_node, vec!["v-slot"]).is_some())
+      || if let JSXChild::Element(parent_node) = parent_node {
+        is_jsx_component(parent_node, true, context.options)
+      } else {
+        false
+      }
   } {
     context.register_operation(
       context_block,

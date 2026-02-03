@@ -162,13 +162,10 @@ function createFragment(
 
 function normalizeBlock(node: any, anchor?: Node): Block {
   if (node instanceof Node || Vue.isFragment(node)) {
-    anchor && (anchor.textContent = '')
     return node
   } else if (Vue.isVaporComponent(node)) {
-    anchor && (anchor.textContent = '')
     return createFragment(node, anchor)
   } else if (Array.isArray(node)) {
-    anchor && (anchor.textContent = '')
     return createFragment(
       node.map((i) => normalizeBlock(i)),
       anchor,
@@ -184,20 +181,32 @@ function normalizeBlock(node: any, anchor?: Node): Block {
   }
 }
 
-function resolveValue(current: Block, value: any, _anchor?: Node) {
-  const node = normalizeBlock(value, _anchor)
+function resolveValue(current: Block | undefined, value: any, anchor?: Node) {
+  anchor =
+    anchor ||
+    (current instanceof Node && current.nodeType === 3 ? current : undefined)
+  const node = normalizeBlock(value, anchor)
   if (current) {
     if (Vue.isFragment(current)) {
-      const { anchor } = current
-      if (anchor && anchor.parentNode) {
-        Vue.remove(current.nodes, anchor.parentNode)
-        Vue.insert(node, anchor.parentNode, anchor)
-        !_anchor && anchor.parentNode.removeChild(anchor)
+      if (current.anchor && current.anchor.parentNode) {
+        Vue.remove(current.nodes, current.anchor.parentNode)
+        Vue.insert(node, current.anchor.parentNode, current.anchor)
+        !anchor && current.anchor.parentNode.removeChild(current.anchor)
+        // @ts-ignore
+        if (current.scope) current.scope.stop()
       }
     } else if (current instanceof Node) {
+      if (
+        current.nodeType === 3 &&
+        (!(node instanceof Node) || node.nodeType !== 3)
+      ) {
+        current.textContent = ''
+      }
       if (Vue.isFragment(node) && current.parentNode) {
         Vue.insert(node, current.parentNode, current)
-        current.parentNode.removeChild(current)
+        if (!anchor || current.nodeType !== 3) {
+          current.parentNode.removeChild(current)
+        }
       } else if (node instanceof Node) {
         if (current.nodeType === 3 && node.nodeType === 3) {
           current.textContent = node.textContent
@@ -213,7 +222,6 @@ function resolveValue(current: Block, value: any, _anchor?: Node) {
 
 function resolveValues(values: any[] = [], _anchor?: Node) {
   const nodes: Block[] = []
-  const frag = createFragment(nodes, _anchor)
   const scopes: EffectScope[] = []
   for (const [index, value] of values.entries()) {
     const anchor = index === values.length - 1 ? _anchor : undefined
@@ -229,7 +237,7 @@ function resolveValues(values: any[] = [], _anchor?: Node) {
       nodes[index] = resolveValue(nodes[index], value, anchor)
     }
   }
-  return frag
+  return nodes
 }
 
 export function setNodes(anchor: Node, ...values: any[]) {

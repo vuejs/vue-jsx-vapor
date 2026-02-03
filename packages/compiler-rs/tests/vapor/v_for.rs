@@ -395,14 +395,12 @@ fn fast_remove_flag() {
 fn on_component() {
   let code = transform("<Comp v-for={item in list}>{item}</Comp>", None).code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createFor as _createFor, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template(" ");
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n3 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
-  			const _n2 = _t0();
-  			_setNodes(_n2, () => _for_item0.value);
+  			const _n2 = _createNodes(() => _for_item0.value);
   			return _n2;
   		}) });
   		return _n3;
@@ -420,14 +418,12 @@ fn on_template_with_single_component_child() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createFor as _createFor, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template(" ");
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n3 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
-  			const _n2 = _t0();
-  			_setNodes(_n2, () => _for_item0.value);
+  			const _n2 = _createNodes(() => _for_item0.value);
   			return _n2;
   		}) });
   		return _n3;

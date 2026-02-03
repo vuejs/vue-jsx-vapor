@@ -587,13 +587,11 @@ fn custom_element() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { createPlainElement as _createPlainElement, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template(" ");
+  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { createPlainElement as _createPlainElement, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
   	const _n1 = _createPlainElement("my-custom-element", null, { default: _withVaporCtx(() => {
-  		const _n0 = _t0();
-  		_setNodes(_n0, () => foo);
+  		const _n0 = _createNodes(() => foo);
   		return _n0;
   	}) }, true);
   	return _n1;

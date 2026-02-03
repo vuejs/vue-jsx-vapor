@@ -355,3 +355,35 @@ fn expression_with_comment() {
   })();
   "#)
 }
+
+#[test]
+fn slot_interpolation() {
+  let code = transform(r#"<Comp>{Hello}</Comp>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _createNodes(() => Hello);
+  		return _n0;
+  	}) }, true);
+  	return _n1;
+  })();
+  "#)
+}
+
+#[test]
+fn slot_literal_interpolation() {
+  let code = transform(r#"<Comp>{ "Hello" }</Comp>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _createNodes("Hello");
+  		return _n0;
+  	}) }, true);
+  	return _n1;
+  })();
+  "#)
+}
