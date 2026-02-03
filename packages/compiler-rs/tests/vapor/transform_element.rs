@@ -706,3 +706,24 @@ fn math_ml() {
   })();
   "#)
 }
+
+#[test]
+fn fragment_in_fragment() {
+  let code = transform(r#"<>foo<>bar</>baz</>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("foo");
+  const _t1 = _template("bar");
+  const _t2 = _template("baz");
+  (() => {
+  	const _n0 = _t0();
+  	const _n1 = _t1();
+  	const _n2 = _t2();
+  	return [
+  		_n0,
+  		_n1,
+  		_n2
+  	];
+  })();
+  "#)
+}

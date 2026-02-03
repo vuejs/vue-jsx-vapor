@@ -962,3 +962,27 @@ fn keep_alive() {
   })();
   "#)
 }
+
+#[test]
+fn fragment_in_fragment() {
+  let code = transform(
+    r#"<>foo<>bar</>baz</>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createBlock(_Fragment, null, [
+  		_cache[1] || (_cache[1] = _normalizeVNode("foo", -1)),
+  		_createVNode(_Fragment, null, [_cache[0] || (_cache[0] = _normalizeVNode("bar", -1))], 64),
+  		_cache[2] || (_cache[2] = _normalizeVNode("baz", -1))
+  	], 64);
+  })();
+  "#)
+}

@@ -59,6 +59,10 @@ pub unsafe fn transform_children<'a>(
       children.remove(i);
       children_len -= 1;
       continue;
+    } else if let JSXChild::Fragment(child) = child {
+      children_len += child.children.len();
+      unsafe { &mut *children_ptr }.splice(i..i + 1, child.children.take_in(context.allocator));
+      continue;
     }
     let mut tag = String::new();
     let exit_context = context.create(
