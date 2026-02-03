@@ -84,7 +84,7 @@ pub fn gen_self<'a>(
 
 fn gen_children<'a>(
   statements: &mut oxc_allocator::Vec<'a, Statement<'a>>,
-  children: Vec<IRDynamicInfo<'a>>,
+  mut children: Vec<IRDynamicInfo<'a>>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   mut statement_index: usize,
@@ -95,10 +95,15 @@ fn gen_children<'a>(
   let mut offset = 0;
   let mut prev: Option<(String, i32)> = None;
 
-  let mut index = 0;
-  for mut child in children {
+  let _context_block = context_block as *mut BlockIRNode;
+  for (index, mut child) in children.drain(..).enumerate() {
     if child.flags & DynamicFlag::NonTemplate as i32 != 0 {
       offset -= 1;
+    }
+
+    if child.flags & DynamicFlag::Insert as i32 != 0 && child.template.is_some() {
+      gen_self(statements, child, context, unsafe { &mut *_context_block });
+      continue;
     }
 
     let id = if child.flags & DynamicFlag::Referenced as i32 != 0 {
@@ -111,14 +116,12 @@ fn gen_children<'a>(
       None
     };
 
-    let _context_block = context_block as *mut BlockIRNode;
     if id.is_none() && !child.has_dynamic_child {
       gen_self(statements, child, context, unsafe { &mut *_context_block });
-      index += 1;
       continue;
     }
 
-    let element_index = index + offset;
+    let element_index = index as i32 + offset;
     let logical_index = child.logical_index;
     // p for "placeholder" variables that are meant for possible reuse by
     // other access paths
@@ -336,7 +339,5 @@ fn gen_children<'a>(
       statement_index,
       variable,
     );
-
-    index += 1;
   }
 }

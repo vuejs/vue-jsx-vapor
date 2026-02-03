@@ -549,6 +549,34 @@ fn invalid_html_nesting() {
 }
 
 #[test]
+fn invalid_table_nesting_with_dynamic_child() {
+  let code = transform(
+    "<table>
+      <tr>
+        <td>{msg}</td>
+      </tr>
+    </table>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { child as _child, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<tr><td> ");
+  const _t1 = _template("<table>", true);
+  (() => {
+  	const _n2 = _t1();
+  	const _n1 = _t0();
+  	const _n0 = _child(_n1);
+  	const _x0 = _txt(_n0);
+  	_setNodes(_x0, () => msg);
+  	insert(_n1, _n2);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
 fn custom_element() {
   let code = transform(
     r#"<my-custom-element>{foo}</my-custom-element>"#,
