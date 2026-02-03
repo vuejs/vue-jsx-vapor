@@ -1,3 +1,19 @@
+## [3.1.20](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.19...v3.1.20) (2026-02-03)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** handle invalid table nesting with dynamic child ([712ec26](https://github.com/vuejs/vue-jsx-vapor/commit/712ec26e030218cbdc680a60788deebb8b3c53dc))
+* **compiler:** use createNodes instead of setNodes for fragment ([37be7f2](https://github.com/vuejs/vue-jsx-vapor/commit/37be7f247ae665144d1751d3765aaeed102377dd))
+* use regex instead of string for filterId ([fac1483](https://github.com/vuejs/vue-jsx-vapor/commit/fac1483ae372eaa45b4ae8acfc6ae56e8b658a1f))
+
+
+### Features
+
+* **compiler/vapor:** support nested fragments ([38d2925](https://github.com/vuejs/vue-jsx-vapor/commit/38d29252a42f40f5ba70d06ef06e517ef0b022ab))
+
+
+
 ## [3.1.19](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.18...v3.1.19) (2026-02-01)
 
 
