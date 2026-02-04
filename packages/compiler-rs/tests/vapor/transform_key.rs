@@ -77,3 +77,36 @@ fn key_with_anchor_insertion_in_middle() {
   })();
   "#);
 }
+
+#[test]
+fn key_in_component() {
+  let code = transform("<Comp><div key={key} /></Comp>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createKeyedFragment as _createKeyedFragment, template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n3 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _createKeyedFragment(() => key, () => {
+  			const _n2 = _t0();
+  			return _n2;
+  		});
+  		return _n0;
+  	}) }, true);
+  	return _n3;
+  })();
+  "#);
+}
+
+#[test]
+fn static_key() {
+  let code = transform("<div key={1} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div>", true);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}

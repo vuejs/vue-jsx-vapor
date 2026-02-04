@@ -9,7 +9,7 @@ use crate::{
 use common::{directive::Directives, expression::SimpleExpressionNode};
 
 /// # SAFETY
-pub unsafe fn transform_v_key<'a>(
+pub unsafe fn transform_key<'a>(
   directives: &'a mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
@@ -29,6 +29,9 @@ pub unsafe fn transform_v_key<'a>(
   seen.insert(start);
 
   let value = SimpleExpressionNode::new(Either3::C(value), context.source_text);
+  if value.is_constant_expression() {
+    return None;
+  }
 
   let dynamic = &mut context_block.dynamic;
   dynamic.flags = DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;

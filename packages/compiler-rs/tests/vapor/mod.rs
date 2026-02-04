@@ -1,9 +1,9 @@
 mod abbreviation;
 mod custom_directive;
-mod key;
 mod logical_index;
 mod transform_children;
 mod transform_element;
+mod transform_key;
 mod transform_slot_outlet;
 mod transform_template_ref;
 mod transform_text;

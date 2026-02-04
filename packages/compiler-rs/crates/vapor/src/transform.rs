@@ -27,7 +27,7 @@ pub mod v_slots;
 pub mod v_text;
 
 use crate::generate::CodegenContext;
-use crate::transform::transform_key::transform_v_key;
+use crate::transform::transform_key::transform_key;
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, OperationNode, RootIRNode},
   transform::{
@@ -488,8 +488,7 @@ impl<'a> TransformContext<'a> {
             exit_fns.push(on_exit);
           } else if directives.key.is_some()
             && !*(&*context).in_v_once.borrow()
-            && let Some(on_exit) =
-              transform_v_key(&mut *directives_ptr, node, &*context, &mut *block)
+            && let Some(on_exit) = transform_key(&mut *directives_ptr, node, &*context, &mut *block)
           {
             exit_fns.push(on_exit);
           };
