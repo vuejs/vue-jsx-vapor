@@ -101,15 +101,14 @@ pub fn gen_if<'a>(
         },
         if once {
           Some(ast.expression_boolean_literal(SPAN, true).into())
-        } else if index.is_some() && negative_is_some {
+        } else if negative_is_some {
           Some(ast.expression_boolean_literal(SPAN, false).into())
         } else {
           None
         },
-        // index is only used when the branch can change in Transition
-        if let Some(index) = index
-          && negative_is_some
-        {
+        // index is only used when the branch can change
+        // for transition keys and keep-alive caching
+        if negative_is_some {
           Some(
             ast
               .expression_numeric_literal(SPAN, index as f64, None, NumberBase::Hex)

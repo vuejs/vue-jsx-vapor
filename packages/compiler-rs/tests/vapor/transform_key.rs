@@ -55,7 +55,7 @@ fn key_with_anchor_insertion_in_middle() {
   let code = transform(
     "<div>
       <div></div>
-      <div key={1}></div>
+      <div key={foo}></div>
       <div></div>
     </div>",
     None,
@@ -69,7 +69,7 @@ fn key_with_anchor_insertion_in_middle() {
   	const _n4 = _t1();
   	const _n3 = _next(_child(_n4), 1);
   	_setInsertionState(_n4, _n3, 1, true);
-  	const _n0 = _createKeyedFragment(() => 1, () => {
+  	const _n0 = _createKeyedFragment(() => foo, () => {
   		const _n2 = _t0();
   		return _n2;
   	});

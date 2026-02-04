@@ -132,7 +132,7 @@ fn with_v_if_else() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, true);
+  	}, true, 0);
   	return _n0;
   })();
   "#);
@@ -162,7 +162,7 @@ fn with_conditional_expression() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, true);
+  	}, true, 0);
   	return _n5;
   })();
   "#);

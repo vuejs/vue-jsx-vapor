@@ -618,7 +618,7 @@ fn set_insertion_state_scenarios_v_if_with_v_else_should_share_same_logical_inde
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	});
+  	}, false, 0);
   	return _n6;
   })();
   "#);
@@ -656,7 +656,7 @@ fn set_insertion_state_scenarios_v_if_with_v_else_if_and_v_else_should_share_sam
   	}, () => {
   		const _n6 = _t2();
   		return _n6;
-  	}));
+  	}, false, 1), false, 0);
   	return _n8;
   })();
   "#);
@@ -687,7 +687,7 @@ fn set_insertion_state_scenarios_v_if_and_v_else_prepend() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	});
+  	}, false, 0);
   	return _n5;
   })();
   "#);
@@ -718,7 +718,7 @@ fn set_insertion_state_scenarios_v_if_and_v_else_append() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	});
+  	}, false, 0);
   	return _n5;
   })();
   "#);
@@ -751,7 +751,7 @@ fn set_insertion_state_scenarios_v_if_and_v_else_followed_by_component() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	});
+  	}, false, 0);
   	_setInsertionState(_n6, null, 2, true);
   	const _n5 = _createComponent(Comp);
   	return _n6;
@@ -788,7 +788,7 @@ fn set_insertion_state_scenarios_component_followed_by_v_if_v_else() {
   	}, () => {
   		const _n5 = _t1();
   		return _n5;
-  	});
+  	}, false, 0);
   	return _n6;
   })();
   "#);
@@ -823,7 +823,7 @@ fn set_insertion_state_scenarios_component_and_v_if_v_else_and_component() {
   	}, () => {
   		const _n5 = _t1();
   		return _n5;
-  	});
+  	}, false, 0);
   	_setInsertionState(_n7, null, 2, true);
   	const _n6 = _createComponent(Comp2);
   	return _n7;

@@ -84,7 +84,7 @@ pub unsafe fn transform_v_if<'a>(
       context_block.dynamic.operation = Some(Box::new(OperationNode::If(IfIRNode {
         id,
         positive: block,
-        index: context.next_if_index(parent_node),
+        index: context.next_if_index(),
         once: *context.in_v_once.borrow()
           || is_constant_node(&dir.exp.as_ref().unwrap().ast.as_deref()),
         condition: dir.exp.unwrap(),
@@ -151,7 +151,7 @@ pub unsafe fn transform_v_if<'a>(
       last_if_node.negative = Some(Box::new(Either::B(IfIRNode {
         id: -1,
         positive: block,
-        index: context.next_if_index(parent_node),
+        index: context.next_if_index(),
         once: *context.in_v_once.borrow()
           || is_constant_node(&dir.exp.as_ref().unwrap().ast.as_deref()),
         condition: dir.exp.unwrap(),

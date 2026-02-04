@@ -178,7 +178,7 @@ fn conditional_expression() {
   	}, () => {
   		const _n6 = _createNodes(null);
   		return _n6;
-  	}));
+  	}, false, 1), false, 0);
   	return _n0;
   })();
   "#);
@@ -199,7 +199,7 @@ fn multiple_conditional() {
   	}, () => {
   		const _n4 = _createNodes(() => fail);
   		return _n4;
-  	});
+  	}, false, 0);
   	const _n5 = _t0();
   	const _n6 = _createIf(() => foo, () => {
   		const _n8 = _createNodes(() => foo);
@@ -207,7 +207,7 @@ fn multiple_conditional() {
   	}, () => {
   		const _n10 = _t1();
   		return _n10;
-  	});
+  	}, false, 1);
   	return [
   		_n0,
   		_n5,
@@ -233,7 +233,7 @@ fn logical_expression() {
   	}, () => {
   		const _n4 = _createNodes(() => ok);
   		return _n4;
-  	});
+  	}, false, 0);
   	return _n0;
   })();
   "#);
@@ -258,7 +258,7 @@ fn logical_expression_or() {
   		const _x4 = _txt(_n4);
   		_setNodes(_x4, () => foo);
   		return _n4;
-  	});
+  	}, false, 0);
   	return _n5;
   })();
   "#)
@@ -283,7 +283,7 @@ fn logical_expression_coalesce() {
   	}, () => {
   		const _n4 = _createNodes(() => foo);
   		return _n4;
-  	});
+  	}, false, 0);
   	return _n5;
   })();
   "#)

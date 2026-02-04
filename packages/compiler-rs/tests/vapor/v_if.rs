@@ -194,7 +194,7 @@ fn v_if_v_else() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	});
+  	}, false, 0);
   	return _n0;
   })();
   "#);
@@ -214,7 +214,7 @@ fn v_if_v_if_else() {
   	}, () => _createIf(() => orNot, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}));
+  	}), false, 0);
   	return _n0;
   })();
   "#);
@@ -242,7 +242,7 @@ fn v_if_v_else_if_v_else() {
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	}));
+  	}, false, 1), false, 0);
   	return _n0;
   })();
   "#);
@@ -279,7 +279,7 @@ fn v_if_v_if_or_v_elses() {
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	});
+  	}, false, 1);
   	return _n8;
   })();
   "#);
@@ -315,7 +315,7 @@ fn comment_between_branches() {
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	}));
+  	}, false, 1), false, 0);
   	const _n9 = _t3();
   	return [_n0, _n9];
   })();
