@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Repl, serialize } from 'jsx-repl'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 const props = defineProps({
   src: {
@@ -10,6 +10,12 @@ const props = defineProps({
 })
 
 const src = ref(serialize(props.src))
+watch(
+  () => props.src,
+  () => {
+    src.value = serialize(props.src)
+  },
+)
 </script>
 
 <template>
