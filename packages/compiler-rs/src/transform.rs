@@ -17,50 +17,47 @@ pub struct Transform<'a> {
   source_text: &'a str,
   roots: Vec<RootJsx<'a>>,
   options: &'a TransformOptions<'a>,
-  parents: Vec<AstKind<'a>>,
 }
 
 impl<'a> Transform<'a> {
   pub fn new(options: &'a TransformOptions<'a>) -> Self {
     let ast = AstBuilder::new(&options.allocator);
     let ast_ptr = &ast as *const _;
-    *options.on_enter_expression.borrow_mut() = Some(Box::new(|node, parents| unsafe {
-      if options.ssr
-        && let Expression::CallExpression(node) = &mut *node
+    *options.on_enter_expression.borrow_mut() = Some(Box::new(|node| unsafe {
+      if let Expression::CallExpression(node) = &mut *node
         && let Expression::Identifier(callee) = &mut node.callee
-        && ["defineVaporComponent", "defineVaporCustomElement"].contains(&callee.name.as_ref())
+        && matches!(
+          callee.name.as_str(),
+          "defineVaporComponent" | "defineVaporCustomElement"
+        )
       {
-        callee.name = Atom::from_in("_defineVaporSSRComponent", &options.allocator);
-        options
-          .helpers
-          .borrow_mut()
-          .insert("defineVaporSSRComponent".to_string());
+        if options.ssr {
+          callee.name = Atom::from_in("_defineVaporSSRComponent", &options.allocator);
+          options
+            .helpers
+            .borrow_mut()
+            .insert("defineVaporSSRComponent".to_string());
+        }
+        *options.in_vapor.borrow_mut() += 1;
       } else if matches!(
         &*node,
         Expression::JSXElement(_) | Expression::JSXFragment(_)
       ) {
-        if !options.ssr && options.interop {
-          let mut has_define_vapor_component = false;
-          for parent in parents.iter().rev() {
-            if let AstKind::CallExpression(parent) = parent
-              && let Expression::Identifier(name) = &parent.callee
-            {
-              if ["defineVaporComponent", "defineVaporCustomElement"].contains(&name.name.as_ref())
-              {
-                has_define_vapor_component = true;
-                break;
-              } else if ["defineComponent", "defineCustomElement"].contains(&name.name.as_ref()) {
-                return Some((node, true));
-              }
-            }
-          }
-          if !has_define_vapor_component {
-            return Some((node, true));
-          }
+        if !options.ssr && options.interop && *options.in_vapor.borrow() < 1 {
+          return Some((node, true));
         }
         return Some((node, options.ssr));
       }
       None
+    }));
+
+    *options.on_leave_expression.borrow_mut() = Some(Box::new(|node| {
+      if node
+        .callee_name()
+        .is_some_and(|name| matches!(name, "defineVaporComponent" | "defineVaporCustomElement"))
+      {
+        *options.in_vapor.borrow_mut() -= 1;
+      }
     }));
 
     *options.on_exit_program.borrow_mut() = Some(Box::new(move |mut roots| unsafe {
@@ -84,7 +81,6 @@ impl<'a> Transform<'a> {
       source_text: "",
       roots: vec![],
       options,
-      parents: vec![],
     }
   }
 
@@ -327,7 +323,7 @@ impl<'a> Transform<'a> {
 impl<'a> VisitMut<'a> for Transform<'a> {
   fn visit_expression(&mut self, node: &mut Expression<'a>) {
     if let Some(on_enter_expression) = self.options.on_enter_expression.borrow().as_ref()
-      && let Some((node_ref, vdom)) = on_enter_expression(node, &self.parents)
+      && let Some((node_ref, vdom)) = on_enter_expression(node)
     {
       self.roots.push(RootJsx {
         node_ref,
@@ -337,11 +333,11 @@ impl<'a> VisitMut<'a> for Transform<'a> {
     }
     walk_mut::walk_expression(self, node);
   }
-
-  fn enter_node(&mut self, kind: AstKind<'a>) {
-    self.parents.push(kind);
-  }
-  fn leave_node(&mut self, _: oxc_ast::AstKind<'a>) {
-    self.parents.pop();
+  fn leave_node(&mut self, node: AstKind<'a>) {
+    if let AstKind::CallExpression(node) = node
+      && let Some(on_leave_expression) = self.options.on_leave_expression.borrow().as_ref()
+    {
+      on_leave_expression(node)
+    };
   }
 }

@@ -8,7 +8,7 @@ use std::{
 
 use indexmap::IndexMap;
 use napi::Either;
-use oxc_ast::{AstKind, ast::Expression};
+use oxc_ast::ast::{CallExpression, Expression};
 use oxc_span::{SourceType, Span};
 
 use crate::error::ErrorCodes;
@@ -21,7 +21,8 @@ pub struct RootJsx<'a> {
 
 type OnExitProgram<'a> = Box<dyn Fn(Vec<RootJsx<'a>>) + 'a>;
 type OnEnterExpression<'a> =
-  Box<dyn Fn(*mut Expression<'a>, &Vec<AstKind>) -> Option<(*mut Expression<'a>, bool)> + 'a>;
+  Box<dyn Fn(*mut Expression<'a>) -> Option<(*mut Expression<'a>, bool)> + 'a>;
+type OnLeaveExpression<'a> = Box<dyn Fn(&CallExpression) + 'a>;
 
 #[napi(object)]
 pub struct Hmr {
@@ -50,6 +51,7 @@ pub struct TransformOptions<'a> {
   pub on_error: Box<dyn Fn(ErrorCodes, Span) + 'a>,
   pub on_exit_program: RefCell<Option<OnExitProgram<'a>>>,
   pub on_enter_expression: RefCell<Option<OnEnterExpression<'a>>>,
+  pub on_leave_expression: RefCell<Option<OnLeaveExpression<'a>>>,
   pub source_map: bool,
   pub filename: &'a str,
   pub source_text: RefCell<&'a str>,
@@ -60,6 +62,7 @@ pub struct TransformOptions<'a> {
   pub in_v_for: RefCell<i32>,
   pub in_v_slot: RefCell<i32>,
   pub in_v_once: RefCell<bool>,
+  pub in_vapor: RefCell<i32>,
   pub identifiers: RefCell<HashMap<String, i32>>,
   pub slot_scopes: RefCell<IndexMap<Span, SlotScope>>,
   pub cache_index: RefCell<i32>,
@@ -87,9 +90,11 @@ impl<'a> Default for TransformOptions<'a> {
       ssr: false,
       on_exit_program: RefCell::new(None),
       on_enter_expression: RefCell::new(None),
+      on_leave_expression: RefCell::new(None),
       in_v_for: RefCell::new(0),
       in_v_slot: RefCell::new(0),
       in_v_once: RefCell::new(false),
+      in_vapor: RefCell::new(0),
       identifiers: RefCell::new(HashMap::new()),
       slot_scopes: RefCell::new(IndexMap::new()),
       cache_index: RefCell::new(0),

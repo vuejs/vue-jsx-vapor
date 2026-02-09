@@ -75,31 +75,6 @@ impl<'a> WalkIdentifiersMut<'a> {
     }
   }
 
-  pub fn on_visit_expression(&self, node: &mut Expression<'a>) -> Option<bool> {
-    if !matches!(node, Expression::JSXElement(_) | Expression::JSXFragment(_)) {
-      return None;
-    }
-    if self.options.interop {
-      let mut has_define_vapor_component = false;
-      for parent in self.parents.iter().rev() {
-        if let AstKind::CallExpression(parent) = parent
-          && let Expression::Identifier(name) = &parent.callee
-        {
-          if ["defineVaporComponent", "defineVaporCustomElement"].contains(&name.name.as_ref()) {
-            has_define_vapor_component = true;
-            break;
-          } else if ["defineComponent", "defineCustomElement"].contains(&name.name.as_ref()) {
-            return Some(true);
-          }
-        }
-      }
-      if !has_define_vapor_component {
-        return Some(true);
-      }
-    }
-    Some(false)
-  }
-
   pub fn visit(&mut self, it: &mut Expression<'a>) {
     self.visit_expression(it);
   }
@@ -115,8 +90,9 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
       if let Some(replacer) = self.on_identifier_reference(id) {
         *node = replacer;
       }
-    } else if let Some(vdom) = self.on_visit_expression(node) {
-      let node_ref = node as *mut _;
+    } else if let Some(on_enter_expression) = self.options.on_enter_expression.borrow().as_ref()
+      && let Some((node_ref, vdom)) = on_enter_expression(node)
+    {
       self.roots.push(RootJsx {
         node_ref,
         node: unsafe { &mut *node_ref }.take_in(&self.options.allocator),
@@ -322,6 +298,12 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
         }
       }
     }
+
+    if let AstKind::CallExpression(node) = kind
+      && let Some(on_leave_expression) = self.options.on_leave_expression.borrow().as_ref()
+    {
+      on_leave_expression(node)
+    };
 
     if let Some(on_exit_program) = self.options.on_exit_program.borrow().as_ref()
       && self.parents.is_empty()

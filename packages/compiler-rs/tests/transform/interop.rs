@@ -38,8 +38,8 @@ fn basic() {
   });
   const B = defineVaporComponent(() => {
   	const C = defineComponent(() => (() => {
-  		const _cache = _createVNodeCache(1);
-  		return _openBlock(), _createBlock(_Fragment, null, [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))], 64);
+  		const _n0 = _t1();
+  		return _n0;
   	})());
   	const D = (() => {
   		const _n2 = _t1();

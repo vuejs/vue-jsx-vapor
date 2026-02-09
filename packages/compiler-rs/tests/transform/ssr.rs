@@ -57,3 +57,23 @@ pub fn ssr_define_vapor_component() {
   const Comp = _defineVaporSSRComponent(() => (_openBlock(), _createBlock("div")));
   "#);
 }
+
+#[test]
+pub fn ssr_slots() {
+  let code = transform(
+    "<Comp>
+      {{
+        default: () => <div />
+      }}
+    </Comp>",
+    Some(TransformOptions {
+      ssr: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(Comp, null, { default: () => (_openBlock(), _createBlock("div")) }, 1024);
+  "#);
+}
