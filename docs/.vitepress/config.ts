@@ -74,50 +74,63 @@ export default defineConfig({
     logo: '/logo.svg',
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Features', link: '/features/directives' },
+      {
+        text: 'Features',
+        link: '/features/directives',
+        activeMatch: 'features',
+      },
+      { text: 'Tutorial', link: '/tutorial/step-1', activeMatch: 'tutorial' },
       { text: 'Playground', link: 'https://repl.zmjs.dev/vuejs/vue-jsx-vapor' },
     ],
 
-    sidebar: [
-      {
-        text: 'Introduction',
-        items: [
-          {
-            text: 'Getting Started',
-            link: `/introduction/getting-started`,
-          },
-          {
-            text: 'Interop',
-            link: `/introduction/interop`,
-          },
-          {
-            text: 'Migration',
-            link: `/introduction/migration`,
-          },
-          {
-            text: 'ESLint',
-            link: `/introduction/eslint`,
-          },
-        ],
-      },
-      {
-        text: 'Features',
-        items: [
-          {
-            text: 'Directives',
-            link: '/features/directives',
-          },
-          {
-            text: 'Macros',
-            link: '/features/macros',
-          },
-          {
-            text: 'useRef',
-            link: '/features/use-ref',
-          },
-        ],
-      },
-    ],
+    sidebar: {
+      '/': [
+        {
+          text: 'Introduction',
+          items: [
+            {
+              text: 'Getting Started',
+              link: '/introduction/getting-started',
+            },
+            {
+              text: 'Interop',
+              link: '/introduction/interop',
+            },
+            {
+              text: 'Migration',
+              link: '/introduction/migration',
+            },
+            {
+              text: 'ESLint',
+              link: '/introduction/eslint',
+            },
+          ],
+        },
+        {
+          text: 'Features',
+          items: [
+            {
+              text: 'Directives',
+              link: '/features/directives',
+            },
+            {
+              text: 'Macros',
+              link: '/features/macros',
+            },
+            {
+              text: 'useRef',
+              link: '/features/use-ref',
+            },
+          ],
+        },
+      ],
+      '/tutorial/': [
+        {
+          text: 'Tutorial',
+          items: [{ text: '1. Getting Started', link: '/tutorial/step-1/' }],
+        },
+      ],
+    },
 
     socialLinks: [
       { icon: 'discord', link: 'https://discord.gg/hMnyhpJH' },
@@ -138,7 +151,7 @@ export default defineConfig({
             plugins: [vueJsxVapor({ macros: true })],
           },
         }),
-      }),
+      }) as any,
     ],
   },
 })

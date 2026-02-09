@@ -14,8 +14,8 @@ hero:
       text: Get Started
       link: /introduction/getting-started
     - theme: alt
-      text: Features
-      link: /features/directives
+      text: Tutorial
+      link: /tutorial/step-1
 
 features:
   - icon: ⚒️ ️

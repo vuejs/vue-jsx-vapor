@@ -12,11 +12,12 @@
     "chart.js": "latest",
     "chartjs-plugin-datalabels": "latest",
     "vue": "catalog:",
-    "vue-jsx-vapor": "workspace:*"
+    "vue-jsx-vapor": "workspace:*",
+    "jsx-repl": "0.0.5"
   },
   "devDependencies": {
     "@shikijs/vitepress-twoslash": "^3.21.0",
     "@ts-macro/twoslash": "^0.0.5",
-    "vitepress": "2.0.0-alpha.5"
+    "vitepress": "2.0.0-alpha.16"
   }
 }
