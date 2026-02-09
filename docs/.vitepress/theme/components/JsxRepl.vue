@@ -1,11 +1,15 @@
 <script setup lang="ts">
-// @ts-ignore
-import { Repl } from 'jsx-repl'
-import { ref } from 'vue'
+import { defineAsyncComponent, ref } from 'vue'
 
 const props = defineProps({
-  src: String,
-  resolvedSrc: String,
+  src: {
+    type: Object,
+    required: true,
+  },
+  resolvedSrc: {
+    type: Object,
+    required: true,
+  },
   next: String,
 })
 
@@ -15,6 +19,10 @@ function onResolved() {
   resolved.value = !resolved.value
   src.value = resolved.value ? props.resolvedSrc : props.src
 }
+
+const Repl = defineAsyncComponent({
+  loader: () => import('./Repl.vue'),
+})
 </script>
 
 <template>
@@ -30,7 +38,9 @@ function onResolved() {
         <a v-if="next" :href="next" style="text-decoration: unset">Next →</a>
       </div>
     </div>
-    <Repl v-model="src" auto-save layout="vertical" slim preview-theme />
+    <ClientOnly>
+      <Repl :src />
+    </ClientOnly>
   </div>
 </template>
 
@@ -71,14 +81,6 @@ function onResolved() {
   margin-bottom: 34px;
   padding-top: 10px;
   border-top: 1px solid var(--vp-c-gray-1);
-}
-
-.jsx-repl {
-  margin-left: auto;
-  margin-top: -34px;
-  border: 1px solid var(--border);
-  width: 100%;
-  height: 100%;
 }
 
 .repl-container {

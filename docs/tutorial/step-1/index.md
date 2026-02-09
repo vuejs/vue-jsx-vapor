@@ -7,19 +7,18 @@ next: false
 # Getting Started
   
 <script setup>
-import { serialize } from 'jsx-repl'
 import appCode from './app.tsx?raw'
 import appResolvedCode from './app-resolved.tsx?raw'
 import files from '../template'
 
-const src = serialize({
+const src = {
   ...files,
   'src/App.tsx': appCode,
-})
-const resolvedSrc = serialize({
+}
+const resolvedSrc = {
   ...files,
   'src/App.tsx': appResolvedCode,
-})
+}
 </script>
 
 <jsx-repl :src :resolved-src next="/tutorial/step-2">
