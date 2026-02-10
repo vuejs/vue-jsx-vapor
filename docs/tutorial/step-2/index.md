@@ -35,8 +35,8 @@ There are 3 main differences between JSX and HTML:
 ```jsx
 <>
   <h1>Title</h1>
-  <h2>Sub Title</h1>
-<>
+  <h2>Sub Title</h2>
+</>
 ```
 
 3. JSX doesn't support HTML Comments `<!--...-->` or special tags like `<!DOCTYPE>`. Use JSX comments `{/*...*/}` instead, and they won't render to HTML.
