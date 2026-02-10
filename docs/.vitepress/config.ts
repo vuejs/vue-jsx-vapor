@@ -127,7 +127,10 @@ export default defineConfig({
       '/tutorial/': [
         {
           text: 'Tutorial',
-          items: [{ text: '1. Getting Started', link: '/tutorial/step-1/' }],
+          items: [
+            { text: '1. Getting Started', link: '/tutorial/step-1/' },
+            { text: '2. Introduction JSX', link: '/tutorial/step-2/' },
+          ],
         },
       ],
     },

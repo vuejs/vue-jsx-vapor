@@ -6,7 +6,7 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  resolvedSrc: {
+  solvedSrc: {
     type: Object,
     required: true,
   },
@@ -14,10 +14,10 @@ const props = defineProps({
 })
 
 const src = ref(props.src)
-const resolved = ref(false)
-function onResolved() {
-  resolved.value = !resolved.value
-  src.value = resolved.value ? props.resolvedSrc : props.src
+const solved = ref(false)
+function onSolved() {
+  solved.value = !solved.value
+  src.value = solved.value ? props.solvedSrc : props.src
 }
 
 const Repl = defineAsyncComponent({
@@ -32,8 +32,8 @@ const Repl = defineAsyncComponent({
         <slot foo="foo" />
       </div>
       <div class="repl-bottom">
-        <button class="repl-button" @click="onResolved">
-          {{ resolved ? 'Reset' : 'Resolve' }}
+        <button class="repl-button" @click="onSolved">
+          {{ solved ? 'Reset' : 'Solve' }}
         </button>
         <a v-if="next" :href="next" style="text-decoration: unset">Next →</a>
       </div>

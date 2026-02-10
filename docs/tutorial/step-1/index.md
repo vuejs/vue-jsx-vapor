@@ -8,20 +8,20 @@ next: false
   
 <script setup>
 import appCode from './app.tsx?raw'
-import appResolvedCode from './app-resolved.tsx?raw'
+import appSolvedCode from './app-solved.tsx?raw'
 import files from '../template'
 
 const src = {
   ...files,
   'src/App.tsx': appCode,
 }
-const resolvedSrc = {
+const solvedSrc = {
   ...files,
-  'src/App.tsx': appResolvedCode,
+  'src/App.tsx': appSolvedCode,
 }
 </script>
 
-<jsx-repl :src :resolved-src next="/tutorial/step-2">
+<jsx-repl :src :solved-src next="/tutorial/step-2">
 
 Welcome to the Vue JSX Vapor tutorial!
 
