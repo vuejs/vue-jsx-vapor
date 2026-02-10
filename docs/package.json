@@ -11,7 +11,7 @@
     "@vue-jsx-vapor/eslint": "workspace:*",
     "chart.js": "latest",
     "chartjs-plugin-datalabels": "latest",
-    "jsx-repl": "0.0.7",
+    "jsx-repl": "0.0.9",
     "vue": "catalog:",
     "vue-jsx-vapor": "workspace:*"
   },

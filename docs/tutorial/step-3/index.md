@@ -26,23 +26,40 @@ const solvedSrc = {
 
 <jsx-repl :src :solved-src next="/tutorial/step-4">
 
-We use `{ }` to binding props:
+We use `{ }` to dynamically bind a prop, or use the spread operator `{...}` to bind multiple props:
 ```jsx
-<div id={id} />
+<>
+  <div id={id} />
+  {/* multiple bindings */}
+  <div {...{ id, ...otherProps }} />
+</>
 ````
 
-## Class Binding
-Now, try to add a dynamic `class` binding to the `<h1>`, using the `titleStyle` variable as its value. if it's bound correctly, the text should turn red.
-
-## Event Binding
-In JSX, event handlers are usually written as `on` followed by a capitalized letter. 
-`vue-jsx-vapor` also supports [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#event-modifiers) that start with `_` :
+## Style Bindings
+We can use string, object or array expression to conditionally bind styles:
 ```tsx
-<form onSubmit_prevent={submit}>
-  <input onKeyup_enter={submit} />
-</form>
+export default (props: { hidden: boolean }) => (
+  <>
+    <h1 style={`display: ${ props.hidden ? 'none' : 'block' }`}>h1</h1>
+    <h2 style={{ display: props.hidden ? 'none': undefined }}>h2</h2>
+    <h3 style={[ props.hidden && 'display: none;' ]}>h3</h3>
+  </>
+)
 ```
 
-Now, try to add a event handler `onClick` binding to the `<h1>`, using the `onClick` variable as its value. and then click the `h1`.
+## Class Bindings
+We can use string, object or array expression to conditionally bind classes:
+
+```tsx
+export default (props: { hidden: boolean }) => (
+  <>
+    <h1 style={props.hidden && 'hidden'}>h1</h1>
+    <h2 class={{ 'hidden': props.hidden }}>h2</h2>
+    <h3 class={[ props.hidden && 'hidden' ]}>h3</h3>
+  </>
+)
+```
+
+Now, try to add a dynamic `class` binding to the `<h1>`, using the `titleClass` variable as its value. if it's bound correctly, the text should turn red.
 
 </jsx-repl>

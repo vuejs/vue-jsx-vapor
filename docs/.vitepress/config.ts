@@ -131,6 +131,8 @@ export default defineConfig({
             { text: '1. Getting Started', link: '/tutorial/step-1/' },
             { text: '2. Introduction JSX', link: '/tutorial/step-2/' },
             { text: '3. Props Bindings', link: '/tutorial/step-3/' },
+            { text: '4. Event Bindings', link: '/tutorial/step-4/' },
+            { text: '5. Conditional Rendering', link: '/tutorial/step-5/' },
           ],
         },
       ],
