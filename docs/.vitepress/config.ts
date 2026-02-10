@@ -130,6 +130,7 @@ export default defineConfig({
           items: [
             { text: '1. Getting Started', link: '/tutorial/step-1/' },
             { text: '2. Introduction JSX', link: '/tutorial/step-2/' },
+            { text: '3. Props Bindings', link: '/tutorial/step-3/' },
           ],
         },
       ],
