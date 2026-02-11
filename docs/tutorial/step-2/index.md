@@ -28,11 +28,13 @@ const apps  = {
 JSX is the HTML-like syntax that allow you embed dynamic expressions using `{ }` to reference variables and functions.
 In this example, we include the string `name` in our JSX using `{name}` inside a div, and we render a JSX element that was directly assigned to the `a` variable.
 
-There are 3 main differences between JSX and HTML:
+There are 4 main differences between JSX and HTML:
 
 1. JSX requires all elements to be closed, so even HTML void elements like `input` and `br` must be self-closing (e.g. `<input />`, `<br />`).
 
-2. JSX usually requires a single root Element. To represent multiple top-level elements, wrap them in a Fragment element (`<>...</>`), or use a Fragment component with props (`<Fragment key={key}>...</Fragment>`).
+2. JSX component names should use PascalCase (e.g., `<MyComp />`) instead of kebab-case names like `<my-comp />`. And prop names should use camelCase (e.g., `fooBar`) instead of kebab-case `foo-bar`.
+
+3. JSX usually requires a single root Element. To represent multiple top-level elements, wrap them in a Fragment element (`<>...</>`), or use a Fragment component with props (`<Fragment key={key}>...</Fragment>`).
 
 ```jsx
 <>
@@ -41,7 +43,7 @@ There are 3 main differences between JSX and HTML:
 </>
 ```
 
-3. JSX doesn't support HTML Comments `<!--...-->` or special tags like `<!DOCTYPE>`. Use JSX comments `{/*...*/}` instead, and they won't render to HTML.
+4. JSX doesn't support HTML Comments `<!--...-->` or special tags like `<!DOCTYPE>`. Use JSX comments `{/*...*/}` instead, and they won't render to HTML.
 
 Now, try to the use `name` variable in JSX, and update the variable `a` to `<a href="#">link</a>`.
 

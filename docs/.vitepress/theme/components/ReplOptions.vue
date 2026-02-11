@@ -24,10 +24,9 @@ watch(
       interop.toString(),
     )
 
-    props.files['ts-macro.config.ts'] = props.files['vite.config.ts'].replace(
-      /(?<=interop: )(true|false)/,
-      interop.toString(),
-    )
+    props.files['ts-macro.config.ts'] = props.files[
+      'ts-macro.config.ts'
+    ].replace(/(?<=interop: )(true|false)/, interop.toString())
 
     props.files['src/index.html'] = interop ? interopHtmlCode : htmlCode
 
