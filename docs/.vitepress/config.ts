@@ -134,6 +134,7 @@ export default defineConfig({
             { text: '4. Event Bindings', link: '/tutorial/step-4/' },
             { text: '5. Conditional Rendering', link: '/tutorial/step-5/' },
             { text: '6. List Rendering', link: '/tutorial/step-6/' },
+            { text: '7. Components', link: '/tutorial/step-7/' },
           ],
         },
       ],
