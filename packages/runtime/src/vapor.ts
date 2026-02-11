@@ -96,7 +96,6 @@ const createProxyComponent = (
           return normalizeNode(Reflect.apply(target, ctx, args))
         },
         get(target, p, receiver) {
-          if (p === '__proxyed') return true
           if (i && i.appContext.vapor && p === '__vapor') {
             return true
           }
@@ -108,12 +107,10 @@ const createProxyComponent = (
         apply(target, ctx, args) {
           return normalizeNode(Reflect.apply(target, ctx, args))
         },
-        get(target, p, receiver) {
-          if (p === '__proxyed') return true
-          return Reflect.get(target, p, receiver)
-        },
       })
     }
+    // @ts-ignore
+    type.__proxyed = true
   }
 
   return createComponent(type as VaporComponent, props, ...args)
