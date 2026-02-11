@@ -95,9 +95,11 @@ watch(
         >
       </template>
     </div>
-    <button class="repl-button" @click="solved = !solved">
-      {{ solved ? 'Reset' : 'Solve' }}
-    </button>
+    <div class="repl-options-right">
+      <button class="repl-button" @click="solved = !solved">
+        {{ solved ? 'Reset' : 'Solve' }}
+      </button>
+    </div>
   </div>
 </template>
 
@@ -109,7 +111,6 @@ watch(
   border-radius: 8px;
   font-weight: 600;
   font-size: 14px;
-  margin-left: auto;
 }
 
 .repl-options {
@@ -126,6 +127,13 @@ watch(
   font-size: 14px;
   font-weight: 600;
   margin-right: auto;
+}
+
+.repl-options-right {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  font-weight: 600;
 }
 
 .prefer-interop .vt-switch-check,

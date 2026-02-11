@@ -71,7 +71,7 @@ export default () => {
 
 But this component can't be used in Vue templates, since templates automatically unwrap refs.
 
-2. Enable the macros feature and wrap the component in a `defineVaporComponent` or `defineComponent` (for Virtual DOM). It will automatically convert the deconstruct props to a `__props`, and prefix each used prop with `__props.`.
+2. Enable the macros option and wrap the component in a `defineVaporComponent` or `defineComponent` (for Virtual DOM). It will automatically convert the deconstruct props to a `__props`, and prefix each used prop with `__props.`.
 
 ```jsx
 const Comp = defineVaporComponent(({ foo }) => {

@@ -20,7 +20,7 @@ watch(
 </script>
 
 <template>
-  <Repl v-model="src" auto-save layout="vertical" slim preview-theme />
+  <Repl v-model="src" auto-save slim preview-theme />
 </template>
 
 <style>

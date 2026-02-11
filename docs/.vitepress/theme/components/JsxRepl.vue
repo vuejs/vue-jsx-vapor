@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineAsyncComponent, ref, watch, type PropType } from 'vue'
+import { defineAsyncComponent, onMounted, ref, watch, type PropType } from 'vue'
 import ReplOptions from './ReplOptions.vue'
 import { useRouteQuery } from './utils'
 
@@ -60,13 +60,26 @@ function setApp() {
   )
 }
 
+const layout = ref('vertical')
+onMounted(() => {
+  const mql = globalThis.matchMedia('(max-width: 960px)')
+  const updateLayout = () => {
+    layout.value = mql.matches ? 'horizontal' : 'vertical'
+  }
+  updateLayout()
+  mql.addEventListener('change', updateLayout)
+})
+
 const Repl = defineAsyncComponent({
   loader: () => import('./Repl.vue'),
 })
 </script>
 
 <template>
-  <div class="repl-container">
+  <div
+    class="repl-container"
+    :style="{ 'flex-direction': layout === 'vertical' ? 'row' : 'column' }"
+  >
     <div class="repl-left">
       <div class="repl-content">
         <slot foo="foo" />
@@ -85,7 +98,7 @@ const Repl = defineAsyncComponent({
         :apps
       />
       <ClientOnly>
-        <Repl :files />
+        <Repl :files :layout />
       </ClientOnly>
     </div>
   </div>
@@ -98,6 +111,17 @@ const Repl = defineAsyncComponent({
 .VPDoc .content {
   padding: 0 !important;
   margin-top: -20px;
+}
+
+.repl-container {
+  display: flex;
+  gap: 20px;
+  height: calc(100vh - 132px - 48px);
+}
+@media (min-width: 1280px) {
+  .repl-container {
+    height: calc(100vh - 132px);
+  }
 }
 
 .repl-left {
@@ -132,17 +156,6 @@ const Repl = defineAsyncComponent({
   border-top: 1px solid var(--vp-c-gray-1);
   a {
     text-decoration: unset;
-  }
-}
-
-.repl-container {
-  display: flex;
-  gap: 20px;
-  height: calc(100vh - 132px - 48px);
-}
-@media (min-width: 1280px) {
-  .repl-container {
-    height: calc(100vh - 132px);
   }
 }
 </style>
