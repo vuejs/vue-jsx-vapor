@@ -1,3 +1,15 @@
+## [3.1.21](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.20...v3.1.21) (2026-02-11)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** always set index for if IR ([eef760d](https://github.com/vuejs/vue-jsx-vapor/commit/eef760de21af736c05c3e68348aeb7bd9c1a2f0e))
+* **compiler/vapor:** skip static key ([505db7e](https://github.com/vuejs/vue-jsx-vapor/commit/505db7e3d2b1231e6f39e3f421bedbd343c95cd4))
+* **compiler:** ensure JSX is compiled to Vapor in defineVaporComponent ([148746b](https://github.com/vuejs/vue-jsx-vapor/commit/148746b4f257e7248d72f1134613ecd30bcc0db1))
+* **runtime:** set __proxyed for createProxyComponent directly ([e6de6aa](https://github.com/vuejs/vue-jsx-vapor/commit/e6de6aa4da01afe76b3fd1d0f6e431506ad7e3ae))
+
+
+
 ## [3.1.20](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.19...v3.1.20) (2026-02-03)
 
 

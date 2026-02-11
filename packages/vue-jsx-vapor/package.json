@@ -1,7 +1,7 @@
 {
   "name": "vue-jsx-vapor",
   "type": "module",
-  "version": "3.1.20",
+  "version": "3.1.21",
   "description": "Vapor Mode of Vue JSX",
   "license": "MIT",
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
