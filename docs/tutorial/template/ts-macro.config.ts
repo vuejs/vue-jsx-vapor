@@ -5,6 +5,7 @@ export default {
   plugins: [
     vueJsxVapor({
       macros: true,
+      interop: false,
     }),
   ],
 }

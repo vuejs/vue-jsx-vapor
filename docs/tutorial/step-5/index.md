@@ -9,19 +9,21 @@ next: false
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
-import files from '../template'
+import appInteropCode from './app-interop.tsx?raw'
+import appInteropSolvedCode from './app-interop-solved.tsx?raw'
+import { getDefaultFiles } from '../template'
+import { ref } from 'vue'
 
-const src = {
-  ...files,
-  'src/App.tsx': appCode,
-}
-const solvedSrc = {
-  ...files,
-  'src/App.tsx': appSolvedCode,
+const files = ref(getDefaultFiles())
+const apps  = {
+  app: { 'src/App.tsx': appCode },
+  solved: { 'src/App.tsx': appSolvedCode },
+  interop: { 'src/App.tsx': appInteropCode },
+  interopSolved: { 'src/App.tsx': appInteropSolvedCode }
 }
 </script>
 
-<jsx-repl :src :solved-src next="/tutorial/step-5">
+<jsx-repl :files :apps prev="/tutorial/step-4" next="/tutorial/step-6">
 
 We can use ternaries `{ a ? b : c }` or boolean expressions `{ a && b }` to control rendering:
 

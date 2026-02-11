@@ -3,18 +3,19 @@ import { Repl, serialize } from 'jsx-repl'
 import { ref, watch } from 'vue'
 
 const props = defineProps({
-  src: {
+  files: {
     type: Object,
     required: true,
   },
 })
 
-const src = ref(serialize(props.src))
+const src = ref(serialize(props.files))
 watch(
-  () => props.src,
+  () => props.files,
   () => {
-    src.value = serialize(props.src)
+    src.value = serialize(props.files)
   },
+  { deep: true },
 )
 </script>
 
@@ -25,7 +26,6 @@ watch(
 <style>
 .jsx-repl {
   margin-left: auto;
-  margin-top: -34px;
   border: 1px solid var(--border);
   width: 100%;
   height: 100%;

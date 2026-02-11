@@ -1,23 +1,48 @@
 <script setup lang="ts">
-import { defineAsyncComponent, ref } from 'vue'
+import { defineAsyncComponent, ref, watch, type PropType } from 'vue'
+import ReplOptions from './ReplOptions.vue'
+import { useRouteQuery } from './utils'
 
 const props = defineProps({
-  src: {
+  files: {
     type: Object,
     required: true,
   },
-  solvedSrc: {
-    type: Object,
+  apps: {
+    type: Object as PropType<{
+      app: object
+      solved: object
+      interop: object
+      interopSolved: object
+    }>,
     required: true,
   },
+  prev: String,
   next: String,
 })
 
-const src = ref(props.src)
 const solved = ref(false)
-function onSolved() {
-  solved.value = !solved.value
-  src.value = solved.value ? props.solvedSrc : props.src
+const interop = useRouteQuery<boolean>('interop', false)
+watch(
+  () => [interop.value, solved.value],
+  () => {
+    setApp()
+  },
+  { immediate: true },
+)
+function setApp() {
+  Object.assign(
+    props.files,
+    props.apps[
+      interop.value
+        ? solved.value
+          ? 'interopSolved'
+          : 'interop'
+        : solved.value
+          ? 'solved'
+          : 'app'
+    ],
+  )
 }
 
 const Repl = defineAsyncComponent({
@@ -32,15 +57,16 @@ const Repl = defineAsyncComponent({
         <slot foo="foo" />
       </div>
       <div class="repl-bottom">
-        <button class="repl-button" @click="onSolved">
-          {{ solved ? 'Reset' : 'Solve' }}
-        </button>
-        <a v-if="next" :href="next" style="text-decoration: unset">Next →</a>
+        <a v-show="prev" :href="prev">← Prev</a>
+        <a v-show="next" :href="next" style="margin-left: auto">Next →</a>
       </div>
     </div>
-    <ClientOnly>
-      <Repl :src />
-    </ClientOnly>
+    <div class="repl-right">
+      <ReplOptions v-model:interop="interop" v-model:solved="solved" :files />
+      <ClientOnly>
+        <Repl :files />
+      </ClientOnly>
+    </div>
   </div>
 </template>
 
@@ -59,19 +85,18 @@ const Repl = defineAsyncComponent({
   flex-direction: column;
 }
 
+.repl-right {
+  margin-top: -34px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  z-index: 1;
+}
+
 .repl-content {
   flex: 1;
   overflow: auto;
-}
-
-.repl-button {
-  background-color: var(--vp-c-brand);
-  color: var(--vp-c-bg);
-  padding: 4px 12px 3px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  margin-right: auto;
 }
 
 .repl-bottom {
@@ -81,6 +106,9 @@ const Repl = defineAsyncComponent({
   margin-bottom: 34px;
   padding-top: 10px;
   border-top: 1px solid var(--vp-c-gray-1);
+  a {
+    text-decoration: unset;
+  }
 }
 
 .repl-container {

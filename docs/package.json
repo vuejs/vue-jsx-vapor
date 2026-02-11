@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@vue-jsx-vapor/eslint": "workspace:*",
+    "@vue/theme": "^2.3.0",
     "chart.js": "latest",
     "chartjs-plugin-datalabels": "latest",
     "jsx-repl": "0.0.9",

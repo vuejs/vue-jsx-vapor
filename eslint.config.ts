@@ -20,6 +20,8 @@ export default [
       'unicorn/prefer-code-point',
       'unicorn/no-array-sort',
       '@eslint-community/eslint-comments/no-unlimited-disable',
+      'vue/no-mutating-props',
+      'vue/no-dupe-keys',
     )
     .append([
       {

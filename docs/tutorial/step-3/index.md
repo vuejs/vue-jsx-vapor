@@ -9,22 +9,22 @@ next: false
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
+import appInteropCode from './app-interop.tsx?raw'
+import appInteropSolvedCode from './app-interop-solved.tsx?raw'
 import cssCode from './main.css?raw'
-import files from '../template'
+import { getDefaultFiles } from '../template'
+import { ref } from 'vue'
 
-const src = {
-  ...files,
-  'src/App.tsx': appCode,
-  'src/main.css': cssCode,
-}
-const solvedSrc = {
-  ...files,
-  'src/App.tsx': appSolvedCode,
-  'src/main.css': cssCode,
+const files = ref({ ...getDefaultFiles(), 'src/main.css': cssCode })
+const apps  = {
+  app: { 'src/App.tsx': appCode },
+  solved: { 'src/App.tsx': appSolvedCode },
+  interop: { 'src/App.tsx': appInteropCode },
+  interopSolved: { 'src/App.tsx': appInteropSolvedCode }
 }
 </script>
 
-<jsx-repl :src :solved-src next="/tutorial/step-4">
+<jsx-repl :files :apps prev="/tutorial/step-2" next="/tutorial/step-4">
 
 We use `{ }` to dynamically bind a prop, or use the spread operator `{...}` to bind multiple props:
 ```jsx
