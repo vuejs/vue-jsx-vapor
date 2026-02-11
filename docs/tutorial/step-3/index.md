@@ -4,7 +4,7 @@ prev: false
 next: false
 ---
 
-# Props Bindings
+# Attribute Bindings
   
 <script setup>
 import appCode from './app.tsx?raw'
@@ -26,13 +26,15 @@ const apps  = {
 
 <jsx-repl :files :apps prev="/tutorial/step-2" next="/tutorial/step-4">
 
-We use `{ }` to dynamically bind a prop, or use the spread operator `{...}` to bind multiple props:
+We use `{ }` to dynamically bind a prop, or use the spread operator `{...}` to bind multiple attributes:
 ```jsx
-<>
-  <div id={id} />
-  {/* multiple bindings */}
-  <div {...{ id, ...otherProps }} />
-</>
+export default (props) => (
+  <>
+    <div id={props.id} />
+    {/* multiple bindings */}
+    <div {...props} />
+  </>
+)
 ````
 
 ## Style Bindings

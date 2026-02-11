@@ -130,11 +130,12 @@ export default defineConfig({
           items: [
             { text: '1. Getting Started', link: '/tutorial/step-1/' },
             { text: '2. Introduction JSX', link: '/tutorial/step-2/' },
-            { text: '3. Props Bindings', link: '/tutorial/step-3/' },
+            { text: '3. Attribute Bindings', link: '/tutorial/step-3/' },
             { text: '4. Event Bindings', link: '/tutorial/step-4/' },
             { text: '5. Conditional Rendering', link: '/tutorial/step-5/' },
             { text: '6. List Rendering', link: '/tutorial/step-6/' },
             { text: '7. Components', link: '/tutorial/step-7/' },
+            { text: '8. Props', link: '/tutorial/step-8/' },
           ],
         },
       ],

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { VTSwitch } from '@vue/theme'
-import { watch } from 'vue'
+import { watch, type PropType } from 'vue'
 // @ts-ignore
 import interopHtmlCode from '../../../tutorial/template/index-interop.html?raw'
 // @ts-ignore
@@ -11,22 +11,43 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  apps: {
+    type: Object as PropType<{
+      app: object
+      solved: object
+      interop?: object
+      interopSolved?: object
+      macros?: object
+      macrosSolved?: object
+      interopMacros?: object
+      interopMacrosSolved?: object
+    }>,
+    required: true,
+  },
 })
 
 const solved = defineModel<boolean>('solved', { required: true })
 const interop = defineModel<boolean>('interop', { required: true })
+const macros = defineModel<boolean>('macros', { required: true })
 
 watch(
-  () => [interop.value, solved.value],
-  ([interop]) => {
+  () => [interop.value, macros.value, solved.value],
+  ([interop, macros]) => {
     props.files['vite.config.ts'] = props.files['vite.config.ts'].replace(
       /(?<=interop: )(true|false)/,
       interop.toString(),
+    )
+    props.files['vite.config.ts'] = props.files['vite.config.ts'].replace(
+      /(?<=macros: )(true|false)/,
+      macros.toString(),
     )
 
     props.files['ts-macro.config.ts'] = props.files[
       'ts-macro.config.ts'
     ].replace(/(?<=interop: )(true|false)/, interop.toString())
+    props.files['ts-macro.config.ts'] = props.files[
+      'ts-macro.config.ts'
+    ].replace(/(?<=macros: )(true|false)/, macros.toString())
 
     props.files['src/index.html'] = interop ? interopHtmlCode : htmlCode
 
@@ -44,18 +65,35 @@ watch(
 <template>
   <div class="repl-options">
     <div class="repl-options-left">
-      <VTSwitch
-        aria-label="prefer interop api"
-        :class="{ 'prefer-interop': interop }"
-        :aria-checked="interop"
-        @click="interop = !interop"
-      />
-      <label
-        style="cursor: pointer"
-        :style="{ opacity: interop === false ? '60%' : undefined }"
-        @click="interop = !interop"
-        >Interop</label
-      >
+      <template v-if="!!apps.interop">
+        <VTSwitch
+          aria-label="prefer interop option"
+          :class="{ 'prefer-interop': interop }"
+          :aria-checked="interop"
+          @click="interop = !interop"
+        />
+        <label
+          style="cursor: pointer"
+          :style="{ opacity: interop === false ? '60%' : undefined }"
+          @click="interop = !interop"
+          >Interop</label
+        >
+      </template>
+
+      <template v-if="!!apps.macros">
+        <VTSwitch
+          aria-label="prefer macros option"
+          :class="{ 'prefer-macros': macros }"
+          :aria-checked="macros"
+          @click="macros = !macros"
+        />
+        <label
+          style="cursor: pointer"
+          :style="{ opacity: macros === false ? '60%' : undefined }"
+          @click="macros = !macros"
+          >Macros</label
+        >
+      </template>
     </div>
     <button class="repl-button" @click="solved = !solved">
       {{ solved ? 'Reset' : 'Solve' }}
@@ -84,16 +122,18 @@ watch(
 
 .repl-options-left {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   font-size: 14px;
   font-weight: 600;
   margin-right: auto;
 }
 
-.prefer-interop .vt-switch-check {
+.prefer-interop .vt-switch-check,
+.prefer-macros .vt-switch-check {
   transform: translateX(18px);
 }
-.prefer-interop.vt-switch {
+.prefer-interop.vt-switch,
+.prefer-macros.vt-switch {
   background-color: var(--vp-c-brand);
 }
 </style>
