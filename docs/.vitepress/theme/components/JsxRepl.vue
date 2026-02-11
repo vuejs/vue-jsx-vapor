@@ -101,12 +101,15 @@ const Repl = defineAsyncComponent({
 }
 
 .repl-left {
+  flex: 1;
   overflow: auto;
   display: flex;
   flex-direction: column;
 }
 
 .repl-right {
+  flex: 1;
+  overflow: hidden;
   margin-top: -34px;
   display: flex;
   flex-direction: column;
@@ -133,8 +136,7 @@ const Repl = defineAsyncComponent({
 }
 
 .repl-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 20px;
   height: calc(100vh - 132px - 48px);
 }
