@@ -23,7 +23,7 @@ const apps  = {
 }
 </script>
 
-<jsx-repl :files :apps next="/tutorial/step-2">
+<jsx-repl :files :apps next="/tutorial/step-2/">
 
 Welcome to the Vue JSX Vapor tutorial!
 

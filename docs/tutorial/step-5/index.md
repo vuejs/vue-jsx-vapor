@@ -23,7 +23,7 @@ const apps  = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-4" next="/tutorial/step-6">
+<jsx-repl :files :apps prev="/tutorial/step-4/" next="/tutorial/step-6/">
 
 We can use ternaries `{ a ? b : c }` or boolean expressions `{ a && b }` to control rendering:
 

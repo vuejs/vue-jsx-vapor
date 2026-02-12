@@ -23,7 +23,7 @@ const apps  = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-3" next="/tutorial/step-5">
+<jsx-repl :files :apps prev="/tutorial/step-3/" next="/tutorial/step-5/">
 
 In JSX, event handlers are usually written as `on` followed by a capitalized letter. You can also use `v-on` directive to bind multiple event handlers without the `on` prefix.
 

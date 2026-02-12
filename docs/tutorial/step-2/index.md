@@ -23,7 +23,7 @@ const apps  = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-1" next="/tutorial/step-3">
+<jsx-repl :files :apps prev="/tutorial/step-1/" next="/tutorial/step-3/">
 
 JSX is the HTML-like syntax that allow you embed dynamic expressions using `{ }` to reference variables and functions.
 In this example, we include the string `name` in our JSX using `{name}` inside a div, and we render a JSX element that was directly assigned to the `a` variable.

@@ -31,7 +31,7 @@ const apps = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-5" next="/tutorial/step-7">
+<jsx-repl :files :apps prev="/tutorial/step-7" next="/tutorial/step-9">
 
 The props are provided in the first parameter of the functional component.
 

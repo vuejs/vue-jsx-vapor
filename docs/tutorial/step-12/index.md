@@ -17,7 +17,7 @@ const apps  = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-11">
+<jsx-repl :files :apps prev="/tutorial/step-11/">
 
 You have finished the tutorial!
 

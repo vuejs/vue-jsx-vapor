@@ -31,7 +31,7 @@ const apps = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-5" next="/tutorial/step-7">
+<jsx-repl :files :apps prev="/tutorial/step-9/" next="/tutorial/step-11/">
 
 There are cases where it could be useful if a slot's content can make use of data from both the parent scope and the child scope. we have two ways to achieve that:
 

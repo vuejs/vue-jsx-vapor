@@ -31,7 +31,7 @@ const apps = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-5" next="/tutorial/step-7">
+<jsx-repl :files :apps prev="/tutorial/step-10/" next="/tutorial/step-12/">
 
 There are cases where it could be useful if you want to access a child's state. we have two ways to expose it:
 

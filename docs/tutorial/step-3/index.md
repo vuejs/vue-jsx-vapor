@@ -24,7 +24,7 @@ const apps  = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-2" next="/tutorial/step-4">
+<jsx-repl :files :apps prev="/tutorial/step-2/" next="/tutorial/step-4/">
 
 We use `{ }` to dynamically bind a prop, or use the spread operator `{...}` to bind multiple attributes:
 ```jsx

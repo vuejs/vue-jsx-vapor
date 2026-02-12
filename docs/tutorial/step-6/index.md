@@ -23,7 +23,7 @@ const apps  = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-4" next="/tutorial/step-6">
+<jsx-repl :files :apps prev="/tutorial/step-5/" next="/tutorial/step-7">
 
 We can use `map(...)` to render a list if performance is not a concern.
 
