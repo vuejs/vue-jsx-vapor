@@ -8,6 +8,9 @@ const Comp = defineComponent({
       double,
     }
   },
+  render() {
+    return <span>{this.count} x 2 = </span>
+  },
 })
 
 export default defineComponent(() => {

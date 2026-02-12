@@ -8,7 +8,7 @@ const Comp = (
   expose({
     double,
   })
-  return []
+  return <span>{props.count} x 2 = </span>
 }
 
 export default () => {

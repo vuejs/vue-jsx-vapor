@@ -5,7 +5,7 @@ const Comp = defineComponent((props: { count: number }) => {
   defineExpose({
     double,
   })
-  return () => <></>
+  return () => <span>{props.count} x 2 = </span>
 })
 
 export default defineComponent(() => {

@@ -394,7 +394,7 @@ fn fragment_with_interpolation() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const _n0 = _createNodes("Message: ", "Hello", "?");
+  	const _n0 = _createNodes("Message: ", "Hello", "!");
   	return _n0;
   })();
   "#)
