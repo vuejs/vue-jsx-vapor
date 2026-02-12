@@ -74,7 +74,7 @@ export default () => (
 Note that slot expressions are treated as dynamic slots. If you want better performance, use `v-slot` instead.
 :::
 
-3. Using the `v-slot` directive in `<Comp>` for multiple slots just like Vue templates:
+3. Using the `v-slot` directive in `<Comp>` for multiple slots just like Vue template:
 ```jsx
 export default () => (
   <Comp v-slot={{ foo }}>
@@ -83,7 +83,7 @@ export default () => (
 )
 ```
 
-4. We can also use the `v-slot` directive in `<Comp>` just like Vue templates:
+4. We can also use the `v-slot` directive in `<Comp>` just like Vue template:
 ```jsx
 export default () => (
   <Comp>

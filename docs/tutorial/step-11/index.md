@@ -33,7 +33,7 @@ const apps = {
 
 <jsx-repl :files :apps prev="/tutorial/step-10/" next="/tutorial/step-12/">
 
-There are cases where it could be useful if you want to access a child's state. we have two ways to expose it:
+If you want to access a child component's state from the parent component, there are two ways to expose it:
 
 1. Use the expose function provided in the second context parameter of the functional component.
 ```jsx
@@ -80,7 +80,7 @@ export default () => {
 ```
 
 ::: tip
-We can also use the `useRef` api from `vue-jsx-vapor` to receive exposed state. It's a `shallowRef` alias that can automatically infer component expose types.
+We can also use the `useRef` api from `vue-jsx-vapor` to receive exposed state. It's a `shallowRef` alias that can automatically infer the component's exposed types.
 
 ```tsx twoslash
 import { computed } from 'vue'

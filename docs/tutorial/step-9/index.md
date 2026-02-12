@@ -33,7 +33,7 @@ const apps = {
 
 <jsx-repl :files :apps prev="/tutorial/step-8/" next="/tutorial/step-10/">
 
-In addition to passing data via props, the parent component can also pass down template fragments to the child via slots:
+In addition to passing data via props, the parent component can also pass JSX to the child via slots:
 
 ```jsx
 <Comp>

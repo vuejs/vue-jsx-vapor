@@ -1,11 +1,11 @@
 import { defineComponent, ref } from 'vue'
 
-const Comp = defineComponent(
-  ({ foo }) => {
+const Comp = defineComponent({
+  setup: ({ foo }) => {
     return () => <div>{foo}</div>
   },
-  { props: ['foo'] },
-)
+  props: ['foo'],
+})
 
 export default defineComponent(() => {
   const foo = ref(1)
