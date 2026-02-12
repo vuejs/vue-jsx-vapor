@@ -65,6 +65,7 @@ pub unsafe fn transform_children<'a>(
       continue;
     }
     let mut tag = String::new();
+    let mut next_is_interpolation = false;
     let exit_context = context.create(
       if let JSXChild::Text(_) = child
         && let Some(next) = unsafe { &mut *children_ptr }.get_mut(i + 1)
@@ -74,6 +75,7 @@ pub unsafe fn transform_children<'a>(
           JSXExpression::ConditionalExpression(_) | JSXExpression::LogicalExpression(_)
         )
       {
+        next_is_interpolation = true;
         child.clone_in(context.allocator)
       } else {
         if let JSXChild::Element(child) = child {
@@ -99,11 +101,14 @@ pub unsafe fn transform_children<'a>(
     let child_dynamic = &mut context_block.dynamic;
     let flags = child_dynamic.flags;
     if is_fragment_or_component {
-      context.register_template(child_dynamic, Some(tag));
-      context.reference(child_dynamic);
-
-      if flags & DynamicFlag::NonTemplate as i32 == 0 || flags & DynamicFlag::Insert as i32 != 0 {
-        context_block.returns.push(child_dynamic.id.unwrap());
+      if next_is_interpolation {
+        context.template.borrow_mut().clear();
+      } else {
+        context.register_template(child_dynamic, Some(tag));
+        context.reference(child_dynamic);
+        if flags & DynamicFlag::NonTemplate as i32 == 0 || flags & DynamicFlag::Insert as i32 != 0 {
+          context_block.returns.push(child_dynamic.id.unwrap());
+        }
       }
     } else {
       parent_children_template.push(context.template.borrow().to_string());

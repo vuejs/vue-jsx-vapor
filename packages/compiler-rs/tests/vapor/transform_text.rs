@@ -387,3 +387,15 @@ fn slot_literal_interpolation() {
   })();
   "#)
 }
+
+#[test]
+fn fragment_with_interpolation() {
+  let code = transform(r#"<>Message: { "Hello" }!</>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createNodes("Message: ", "Hello", "?");
+  	return _n0;
+  })();
+  "#)
+}
