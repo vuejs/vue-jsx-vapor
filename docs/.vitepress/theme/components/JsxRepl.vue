@@ -11,7 +11,7 @@ const props = defineProps({
   apps: {
     type: Object as PropType<{
       app: object
-      solved: object
+      solved?: object
       interop?: object
       interopSolved?: object
       macros?: object
@@ -91,6 +91,7 @@ const Repl = defineAsyncComponent({
     </div>
     <div class="repl-right">
       <ReplOptions
+        v-if="apps.solved"
         v-model:interop="interop"
         v-model:solved="solved"
         v-model:macros="macros"

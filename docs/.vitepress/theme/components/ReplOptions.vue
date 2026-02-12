@@ -14,7 +14,7 @@ const props = defineProps({
   apps: {
     type: Object as PropType<{
       app: object
-      solved: object
+      solved?: object
       interop?: object
       interopSolved?: object
       macros?: object
