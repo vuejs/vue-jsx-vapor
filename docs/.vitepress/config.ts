@@ -136,6 +136,7 @@ export default defineConfig({
             { text: '6. List Rendering', link: '/tutorial/step-6/' },
             { text: '7. Components', link: '/tutorial/step-7/' },
             { text: '8. Props', link: '/tutorial/step-8/' },
+            { text: '9. Slots', link: '/tutorial/step-9/' },
           ],
         },
       ],

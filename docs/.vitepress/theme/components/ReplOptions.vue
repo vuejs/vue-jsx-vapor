@@ -96,7 +96,15 @@ watch(
       </template>
     </div>
     <div class="repl-options-right">
-      <button class="repl-button" @click="solved = !solved">
+      <button
+        class="repl-button"
+        :style="{
+          'background-color': solved
+            ? 'var(--vp-c-green)'
+            : 'var(--vp-c-brand)',
+        }"
+        @click="solved = !solved"
+      >
         {{ solved ? 'Reset' : 'Solve' }}
       </button>
     </div>
@@ -105,7 +113,6 @@ watch(
 
 <style>
 .repl-button {
-  background-color: var(--vp-c-brand);
   color: var(--vp-c-bg);
   padding: 4px 12px 3px;
   border-radius: 8px;

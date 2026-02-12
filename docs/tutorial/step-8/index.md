@@ -33,7 +33,7 @@ const apps = {
 
 <jsx-repl :files :apps prev="/tutorial/step-5" next="/tutorial/step-7">
 
-The props are defined in the first parameter of the functional component.
+The props are provided in the first parameter of the functional component.
 
 ```jsx
 const Comp = (props) => (
@@ -84,8 +84,9 @@ const Comp = defineVaporComponent((__props) => {
   return <div>{__props.foo}</div>
 })
 ```
-Then the `foo` prop will regain reactivity.
+Then the `foo` prop will regain reactivity.\
+[More details](/features/macros.html#definecomponent-definevaporcomponent)
 
-Now try it yourself - make the `foo` prop reactivity.
+Currently we are not passing any slot content to the `<Child>` component, so you should see the fallback content. Let's provide some slot content to the child while making use of the parent's msg state.
 
 </jsx-repl>
