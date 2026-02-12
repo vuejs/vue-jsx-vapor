@@ -87,6 +87,6 @@ const Comp = defineVaporComponent((__props) => {
 Then the `foo` prop will regain reactivity.\
 [More details](/features/macros.html#definecomponent-definevaporcomponent)
 
-Currently we are not passing any slot content to the `<Child>` component, so you should see the fallback content. Let's provide some slot content to the child while making use of the parent's msg state.
+Now try it yourself - make the `foo` prop reactivity.
 
 </jsx-repl>

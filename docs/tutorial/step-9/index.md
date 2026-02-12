@@ -59,10 +59,20 @@ const Comp = (props, { slots }) => {
 }
 ```
 
+> Named slot
+```jsx
+const Comp = (props, { slots }) => {
+  return [
+    <slot>Fallback content</slot>,
+    <slot name="title">Title fallback content</slot>
+  ]
+}
+```
+
 3. Enable the macros option and use the `defineSlots` macro to define slots with fallback content.
 
 ```jsx
-const Comp = (props, { slots }) => {
+const Comp = (props) => {
   const slots = defineSlots({
     default: () => <>Fallback content</>
   })
@@ -70,6 +80,6 @@ const Comp = (props, { slots }) => {
 }
 ```
 
-Now try it yourself - make the `foo` prop reactivity.
+Currently we are not passing any slot content to the `<Comp>` component, so you should see the fallback content. Let's provide some slot content to the Comp while making use of the parent's msg state.
 
 </jsx-repl>
