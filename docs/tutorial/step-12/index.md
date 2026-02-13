@@ -4,7 +4,7 @@ prev: false
 next: false
 ---
 
-# Yoou Did it!
+# You Did it!
   
 <script setup>
 import appCode from './app.tsx?raw'
