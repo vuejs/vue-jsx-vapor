@@ -1,3 +1,16 @@
+## [3.1.22](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.21...v3.1.22) (2026-02-13)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** prevent generate template when fragment has ([997d963](https://github.com/vuejs/vue-jsx-vapor/commit/997d9630ee850915a9cc8c09aaa7e8d2104bd1ec))
+* **compiler:** remove unused defineVaporComponent for SSR ([9639575](https://github.com/vuejs/vue-jsx-vapor/commit/963957534f49b3c1c3e1e6434bb5b1e33616395b))
+* **hmr:** use reload instead of rerender for functional component ([d3f65fb](https://github.com/vuejs/vue-jsx-vapor/commit/d3f65fb4befca08f30c89e02e56f93f36684e2ef))
+* **macros/volar:** unwrapRef for exposed ([60b6c63](https://github.com/vuejs/vue-jsx-vapor/commit/60b6c6396300f309450689805a9b79dfbf9c621c))
+* **macros/volar:** use defineVaporComponent instead of functional component ([33bf5ce](https://github.com/vuejs/vue-jsx-vapor/commit/33bf5ce931ba2b7fc9cbd4982d98b9f4559a30a1))
+
+
+
 ## [3.1.21](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.20...v3.1.21) (2026-02-11)
 
 
