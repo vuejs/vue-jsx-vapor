@@ -1,13 +1,13 @@
 # Getting Started
 
-`vue-jsx-vapor` is a Vapor Mode of `vue-jsx`. It supports all directives and most macros of Vue.
+Vue JSX Vapor is a `Vue JSX Compiler` inspired by `Vue Compiler`, written in Rust 🦀, and powered by Oxc. It supports generating Virtual DOM and Vapor Mode.
 
 We assume you are already familiar with the basic usages of Vue before you continue.
 
-## Requirements
+## Setup
 
-- Vue `>= v3.6`.
-- VSCode extension [TS Macro](https://marketplace.visualstudio.com/items?itemName=zhiyuanzmj.vscode-ts-macro) and install `@ts-macro/tsc` instead of `tsc` to typecheck.
+- Vapor Mode requires Vue >= 3.6. For interop in Virtual DOM projects, Vue >= 3.0 is enough.
+- If you use directives or macros, we recommend installing the VSCode extension [TS Macro](https://marketplace.visualstudio.com/items?itemName=zhiyuanzmj.vscode-ts-macro) to enable the Volar plugin for TSX and install `@ts-macro/tsc` instead of `tsc` for type checking.
   ```json
   // package.json
   {
@@ -25,7 +25,7 @@ We assume you are already familiar with the basic usages of Vue before you conti
 pnpm add vue-jsx-vapor
 
 # runtime
-pnpm add vue@3.6.0-beta.5
+pnpm add vue@3.6.0-beta.6
 ```
 
 ## Setup
@@ -62,9 +62,7 @@ export default defineConfig({
 
 ### Volar plugin
 
-Since `vue-jsx-vapor` supports Vue directives and Vue macros, so need to install the [TS Macro](https://marketplace.visualstudio.com/items?itemName=zhiyuanzmj.vscode-ts-macro) VSCode plugin to load the `vue-jsx-vapor/volar` plugin for type support.
-
-The `TS Macro` VSCode plugin will automatically loads the `vue-jsx-vapor/volar` by analyzing `vite.config.ts` and shares the user configuration of the `vue-jsx-vapor/vite` plugin, without the need to manually configure `ts-macro.config.ts`.
+The `TS Macro` VSCode plugin automatically loads the `vue-jsx-vapor/volar` by analyzing `vite.config.ts` and shares the user configuration of the `vue-jsx-vapor/vite` plugin, so you don't need to configure `ts-macro.config.ts` manually.
 
 ::: details manually configuration
 ::: code-group
@@ -86,3 +84,4 @@ export default {
 ## Templates
 
 - [vitesse-jsx-vapor](https://github.com/zhiyuanzmj/vitesse-jsx-vapor)
+- [vue-jsx-vapor-ssr](https://github.com/zhiyuanzmj/vue-jsx-vapor-ssr)

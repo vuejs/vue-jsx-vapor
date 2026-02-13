@@ -37,7 +37,7 @@ We can use `map(...)` to render a list if performance is not a concern.
 
 ## `v-for` directive
 
-We can use also the `v-for` directive to render a list that has the same performance as Vue template:
+We can also use the `v-for` directive to render a list that has the same performance as Vue template:
 
 ```jsx
 <ul>
