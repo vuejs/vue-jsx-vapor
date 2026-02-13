@@ -114,7 +114,7 @@ return {} as {
     root.parameters[1]?.type ? `${root.parameters[1].type.getText(ast)} & ` : ''
   }{
     slots: ${macros.defineSlots ?? '{}'},
-    expose: (exposed: ${macros.defineExpose ?? 'Record<string, any>'}) => void,
+    expose: (exposed: import('vue').ShallowUnwrapRef<${macros.defineExpose ?? 'Record<string, any>'}>) => void,
     attrs: Record<string, any>
   },
   render: ${isDefineComponent ? `ReturnType<` : ''}typeof __rndr${isDefineComponent ? '>' : ''}
