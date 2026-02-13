@@ -44,7 +44,8 @@ pub fn ssr_export_default() {
 #[test]
 pub fn ssr_define_vapor_component() {
   let code = transform(
-    "const Comp = defineVaporComponent(() => <div />)",
+    "import { defineVaporComponent } from 'vue'
+    const Comp = defineVaporComponent(() => <div />)",
     Some(TransformOptions {
       ssr: true,
       ..Default::default()

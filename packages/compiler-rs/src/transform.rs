@@ -120,6 +120,24 @@ impl<'a> Transform<'a> {
 
     let mut helpers = self.options.helpers.take();
     if !helpers.is_empty() {
+      if helpers.get("defineVaporSSRComponent").is_some() {
+        program.body.retain_mut(|stmt| {
+          if let Statement::ImportDeclaration(import) = stmt
+            && let Some(specifiers) = &mut import.specifiers
+            && let Some(index) = specifiers
+              .iter()
+              .position(|spec| spec.local().name.eq("defineVaporComponent"))
+          {
+            if specifiers.len() == 1 {
+              return false;
+            } else {
+              specifiers.remove(index);
+            }
+          }
+          true
+        });
+      };
+
       let vdom_helpers = vec!["createVNodeCache", "normalizeVNode"]
         .into_iter()
         .filter(|helper| {
