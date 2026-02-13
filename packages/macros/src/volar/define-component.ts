@@ -13,9 +13,9 @@ export function transformDefineComponent(
   codes.replaceRange(comp.end, node.end - 1)
 
   const isFnComponent =
-    ((ts.isArrowFunction(comp) || ts.isFunctionExpression(comp)) &&
-      comp.typeParameters?.length) ||
-    node.expression.getText(ast).includes('defineVapor')
+    (ts.isArrowFunction(comp) || ts.isFunctionExpression(comp)) &&
+    comp.typeParameters?.length
+  const isVaporComponent = node.expression.getText(ast).includes('defineVapor')
 
   codes.replaceRange(
     node.getStart(ast),
@@ -49,7 +49,7 @@ const __setup = `,
     `({\n  ...{} as {
     setup: (props: __Props) => __Exposed,
     render: () => ReturnType<__Setup>
-    slots: import('vue').SlotsType<__Slots>
+    slots: ${isVaporComponent ? '__Slots' : `import('vue').SlotsType<__Slots>`}
   },`,
     ...((compOptions
       ? ['...', [compOptions.getText(ast), compOptions.getStart(ast)]]
