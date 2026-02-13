@@ -340,21 +340,7 @@ impl<'a> HmrOrSsrTransform<'a> {
                   ast.expression_identifier(SPAN, "__VUE_HMR_RUNTIME__"),
                   ast.expression_conditional(
                     SPAN,
-                    ast.expression_logical(
-                      SPAN,
-                      exported_expression_render.clone_in(ast.allocator),
-                      LogicalOperator::Or,
-                      ast.expression_binary(
-                        SPAN,
-                        ast.expression_unary(
-                          SPAN,
-                          UnaryOperator::Typeof,
-                          exported_expression.clone_in(ast.allocator),
-                        ),
-                        BinaryOperator::StrictEquality,
-                        ast.expression_string_literal(SPAN, "function", None),
-                      ),
-                    ),
+                    exported_expression_render.clone_in(ast.allocator),
                     ast.expression_string_literal(SPAN, "rerender", None),
                     ast.expression_string_literal(SPAN, "reload", None),
                   ),
