@@ -6,10 +6,9 @@ use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   AstBuilder, NONE,
   ast::{
-    Argument, AssignmentOperator, AssignmentTarget, BinaryOperator, BindingPattern, Declaration,
+    Argument, AssignmentOperator, AssignmentTarget, BindingPattern, Declaration,
     ExportDefaultDeclarationKind, Expression, FormalParameterKind, ImportOrExportKind,
-    LogicalOperator, Program, Statement, UnaryOperator, VariableDeclaration,
-    VariableDeclarationKind,
+    LogicalOperator, Program, Statement, VariableDeclaration, VariableDeclarationKind,
   },
 };
 use oxc_span::{GetSpan, SPAN};
