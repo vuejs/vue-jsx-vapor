@@ -72,7 +72,9 @@ pub unsafe fn transform_children<'a>(
         && let JSXChild::ExpressionContainer(exp) = next
         && !matches!(
           exp.expression,
-          JSXExpression::ConditionalExpression(_) | JSXExpression::LogicalExpression(_)
+          JSXExpression::ConditionalExpression(_)
+            | JSXExpression::LogicalExpression(_)
+            | JSXExpression::EmptyExpression(_)
         )
       {
         next_is_interpolation = true;

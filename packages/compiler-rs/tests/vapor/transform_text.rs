@@ -399,3 +399,23 @@ fn fragment_with_interpolation() {
   })();
   "#)
 }
+
+#[test]
+fn fragment_with_empty_interpolation() {
+  let code = transform(
+    r#"<>
+      Parent
+      {/* ... */}
+    </>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("Parent");
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#)
+}
