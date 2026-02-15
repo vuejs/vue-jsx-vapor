@@ -20,13 +20,13 @@ hero:
 features:
   - icon: ⚒️ ️
     title: Directives
-    details: Support all build-in directives of Vue.
+    details: Support all built-in directives of Vue.
   - icon: ✨
     title: Macros
     details: Support most macros of Vue, Friendly to JSX.
   - icon: 🦾
     title: Type Safe
-    details: Provide Volar plugin support by install TS Macro (VSCode plugin).
+    details: Provide Volar plugin support by installing TS Macro (VSCode plugin).
   - icon: ⚡️
     title: High Performance
     details: It has the same performance as Vue Vapor!

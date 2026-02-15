@@ -1,6 +1,6 @@
 # Macros
 
-A collection of macros for JSX. They are need to manually enabled by set `macros` to `true`.
+A collection of macros for JSX. They need to be manually enabled by setting `macros` to `true`.
 
 ## Setup
 
@@ -41,7 +41,7 @@ We have also released a standalone plugin that can be used in virtual DOM projec
 pnpm add @vue-jsx-vapor/macros -D
 ```
 
-配置:
+Configuration:
 
 ```ts
 // vite.config.ts

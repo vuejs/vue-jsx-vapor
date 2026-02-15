@@ -61,7 +61,7 @@ export default () => (
 ## `v-slot`, `v-slots`
 
 > [!WARNING]
-> Due to the inability to generate a correct AST for directive expressions with default values (e.g., `v-slot={({ foo = '' })}`), so default values are not supported.
+> Due to the inability to generate a correct AST for directive expressions with default values (e.g., `v-slot={({ foo = '' })}`), default values are not supported.
 
 ::: code-group
 

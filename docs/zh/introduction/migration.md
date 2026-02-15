@@ -3,7 +3,7 @@
 ## 从 `vue-jsx` 迁移
 
 1. 使用 `defineVaporComponent` 替代 `defineComponent` 来定义 Vapor 组件。`defineVaporComponent` 的 setup 函数现在可以直接返回 JSX 表达式，无需再返回一个函数。
-2. 不支持使用连字符的 prop 名称和组件名称。
+2. 连字符的 prop 名称和组件名称不会被转换成驼峰命名。
 3. `v-model` 不支持数组表达式，请改用 `v-model:$name$_trim={foo}`。
 4. 不支持 `v-models` 指令。
 5. 解构 props：

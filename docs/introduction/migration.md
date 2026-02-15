@@ -3,10 +3,10 @@
 ## Migration from `vue-jsx`
 
 1. Use `defineVaporComponent` instead of `defineComponent` to define Vapor components. The setup function of `defineVaporComponent` now returns a JSX expression directly—there is no need to return a function anymore.
-2. Don't support hyphenated prop name and hyphenated component name.
-3. `v-model` don't support Array Expression, use `v-model:$name$_trim={foo}` instead.
-4. Don't support `v-models` directive.
-5. Destructing props:
+2. Hyphenated prop names and hyphenated component names are not converted to camelCase prop names.
+3. `v-model` does not support array expressions. Use `v-model:$name$_trim={foo}` instead.
+4. The `v-models` directive is not supported.
+5. Destructuring props:
 
 > [!CAUTION]
 > ❌ The destructuring of props in a functional component will cause loss of reactivity.
@@ -24,7 +24,7 @@ export default () => {
 
 #### Two Solutions
 
-1. ✅ Pass a ref variable as prop:
+1. ✅ Pass a ref variable as a prop:
 
 ```tsx
 function Comp({ foo }) {
@@ -63,7 +63,7 @@ export default () => {
     const Comp = defineVaporComponent(({ foo }) => {
       return <>{foo}</>
     })
-    // Will be convert to:
+    // Will be converted to:
     const Comp = defineVaporComponent((_props) => {
       return <>{_props.foo}</>
     }, { props: ['foo'] })

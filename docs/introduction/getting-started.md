@@ -2,7 +2,7 @@
 
 Vue JSX Vapor is a `Vue JSX Compiler` inspired by `Vue Compiler`, written in Rust 🦀, and powered by Oxc. It supports generating Virtual DOM and Vapor Mode.
 
-We assume you are already familiar with the basic usages of Vue before you continue.
+We assume you are already familiar with the basic usage of Vue before you continue.
 
 ## Setup
 

@@ -1,6 +1,6 @@
 # useRef
 
-Automatically infer type for `useRef`. It's an alias of `shallowRef`.
+Automatically infers the type for `useRef`. It's an alias of `shallowRef`.
 
 ## Basic Usage
 

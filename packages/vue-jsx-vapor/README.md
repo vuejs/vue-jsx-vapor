@@ -7,7 +7,7 @@ Vapor Mode of Vue JSX.
 ## Features
 
 - ⚡️ High Performance: It has the same performance as Vue Vapor!
-- ⚒️ Directives: Support all build-in directives of Vue.
+- ⚒️ Directives: Support all built-in directives of Vue.
 - ✨ Macros: Support most macros of Vue, Friendly to JSX.
 - 🦀 Compiler rewritten in Rust: Powered by Oxc, ~30x (Virtual DOM) and ~50x (Vapor) performance improvement over Babel.
 - 🦾 Type Safe: Provide Volar plugin support by install TS Macro (VSCode plugin).
