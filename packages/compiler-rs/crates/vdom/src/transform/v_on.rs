@@ -68,6 +68,7 @@ pub fn transform_v_on<'a>(
           ast.vec(),
           Some(ast.alloc_formal_parameter_rest(
             SPAN,
+            ast.vec(),
             ast.binding_rest_element(SPAN, ast.binding_pattern_binding_identifier(SPAN, "args")),
             NONE,
           )),

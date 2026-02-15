@@ -203,16 +203,14 @@ pub fn gen_insertion_state<'a>(
           } else {
             None
           },
-          if let Some(logical_index) = logical_index {
-            Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+          logical_index.map(|logical_index| {
+            Argument::NumericLiteral(ast.alloc_numeric_literal(
               SPAN,
               logical_index as f64,
               None,
               NumberBase::Hex,
-            )))
-          } else {
-            None
-          },
+            ))
+          }),
           if last {
             Some(Argument::BooleanLiteral(
               ast.alloc_boolean_literal(SPAN, true),

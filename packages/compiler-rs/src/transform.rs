@@ -8,7 +8,7 @@ use oxc_ast::{
   ast::{Argument, Expression, ImportOrExportKind, Program, Statement, VariableDeclarationKind},
 };
 use oxc_ast_visit::{VisitMut, walk_mut};
-use oxc_span::{Atom, SPAN};
+use oxc_span::{Ident, SPAN};
 
 use crate::hmr_or_ssr::HmrOrSsrTransform;
 
@@ -32,7 +32,7 @@ impl<'a> Transform<'a> {
         )
       {
         if options.ssr {
-          callee.name = Atom::from_in("_defineVaporSSRComponent", &options.allocator);
+          callee.name = Ident::from_in("_defineVaporSSRComponent", ast.allocator);
           options
             .helpers
             .borrow_mut()
@@ -120,7 +120,7 @@ impl<'a> Transform<'a> {
 
     let mut helpers = self.options.helpers.take();
     if !helpers.is_empty() {
-      if helpers.get("defineVaporSSRComponent").is_some() {
+      if helpers.contains("defineVaporSSRComponent") {
         program.body.retain_mut(|stmt| {
           if let Statement::ImportDeclaration(import) = stmt
             && let Some(specifiers) = &mut import.specifiers

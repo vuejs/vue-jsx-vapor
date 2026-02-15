@@ -144,16 +144,14 @@ fn gen_children<'a>(
               Some(Argument::Identifier(
                 ast.alloc_identifier_reference(SPAN, ast.atom(&prev.0)),
               )),
-              if let Some(logical_index) = logical_index {
-                Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+              logical_index.map(|logical_index| {
+                Argument::NumericLiteral(ast.alloc_numeric_literal(
                   SPAN,
                   logical_index as f64,
                   None,
                   NumberBase::Hex,
-                )))
-              } else {
-                None
-              },
+                ))
+              }),
             ]
             .into_iter()
             .flatten(),
@@ -176,16 +174,14 @@ fn gen_children<'a>(
                 None,
                 NumberBase::Hex,
               ))),
-              if let Some(logical_index) = logical_index {
-                Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+              logical_index.map(|logical_index| {
+                Argument::NumericLiteral(ast.alloc_numeric_literal(
                   SPAN,
                   logical_index as f64,
                   None,
                   NumberBase::Hex,
-                )))
-              } else {
-                None
-              },
+                ))
+              }),
             ]
             .into_iter()
             .flatten(),
@@ -239,16 +235,14 @@ fn gen_children<'a>(
                 )),
                 false,
               ))),
-              if let Some(logical_index) = logical_index {
-                Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+              logical_index.map(|logical_index| {
+                Argument::NumericLiteral(ast.alloc_numeric_literal(
                   SPAN,
                   logical_index as f64,
                   None,
                   NumberBase::Hex,
-                )))
-              } else {
-                None
-              },
+                ))
+              }),
             ]
             .into_iter()
             .flatten(),
@@ -271,16 +265,14 @@ fn gen_children<'a>(
                 None,
                 NumberBase::Hex,
               ))),
-              if let Some(logical_index) = logical_index {
-                Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+              logical_index.map(|logical_index| {
+                Argument::NumericLiteral(ast.alloc_numeric_literal(
                   SPAN,
                   logical_index as f64,
                   None,
                   NumberBase::Hex,
-                )))
-              } else {
-                None
-              },
+                ))
+              }),
             ]
             .into_iter()
             .flatten(),

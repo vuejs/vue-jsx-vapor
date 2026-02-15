@@ -128,8 +128,8 @@ pub fn gen_set_event<'a>(
 pub fn gen_event_handler<'a>(
   context: &'a CodegenContext<'a>,
   values: Vec<Option<SimpleExpressionNode<'a>>>,
-  keys: &Vec<String>,
-  non_keys: &Vec<String>,
+  keys: &[String],
+  non_keys: &[String],
   // passed as component prop - need additional wrap
   extra_wrap: bool,
 ) -> Expression<'a> {

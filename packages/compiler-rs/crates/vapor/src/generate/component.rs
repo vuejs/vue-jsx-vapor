@@ -566,7 +566,7 @@ fn gen_model<'a>(
       ast
         .expression_binary(
           SPAN,
-          gen_expression(key.clone(), context, None, false).into(),
+          gen_expression(key.clone(), context, None, false),
           BinaryOperator::Addition,
           ast.expression_string_literal(SPAN, ast.atom("Modifiers"), None),
         )

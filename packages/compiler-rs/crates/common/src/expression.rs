@@ -201,7 +201,7 @@ pub fn parse_expression<'a>(
     allocator,
     Atom::from_in(
       &if span == SPAN {
-        format!("{}", source)
+        source.to_string()
       } else {
         format!("/*{}*/({})", ".".repeat(span.start as usize - 5), source)
       },

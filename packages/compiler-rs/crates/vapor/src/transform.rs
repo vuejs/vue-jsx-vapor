@@ -387,7 +387,7 @@ impl<'a> TransformContext<'a> {
     } else if !parent_tag_name.is_empty()
       && !has_inline_ancestor_needing_close
       && !is_on_rightmost_path
-      && is_inline_tag(&parent_tag_name)
+      && is_inline_tag(parent_tag_name)
     {
       // Logic: if current node (parent of the node being created) is inline
       // AND it's not on the rightmost path, then it needs closing.

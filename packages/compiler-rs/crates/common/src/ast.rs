@@ -1,5 +1,8 @@
+use std::cell::Cell;
+
 use oxc_allocator::{Allocator, FromIn, TakeIn};
 use oxc_ast::ast::{Expression, JSXChild, JSXClosingFragment, JSXFragment, JSXOpeningFragment};
+use oxc_semantic::NodeId;
 use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::text::is_empty_text;
@@ -12,14 +15,21 @@ impl<'a> RootNode {
     JSXChild::Fragment(oxc_allocator::Box::new_in(
       JSXFragment::from_in(
         JSXFragment {
+          node_id: Cell::new(NodeId::DUMMY),
           span: Span::new(0, 1),
           opening_fragment: JSXOpeningFragment::from_in(
-            JSXOpeningFragment { span: SPAN },
+            JSXOpeningFragment {
+              node_id: Cell::new(NodeId::DUMMY),
+              span: SPAN,
+            },
             allocator,
           ),
           children: oxc_allocator::Vec::new_in(allocator),
           closing_fragment: JSXClosingFragment::from_in(
-            JSXClosingFragment { span: SPAN },
+            JSXClosingFragment {
+              node_id: Cell::new(NodeId::DUMMY),
+              span: SPAN,
+            },
             allocator,
           ),
         },
@@ -68,6 +78,7 @@ impl<'a> RootNode {
     JSXChild::Fragment(oxc_allocator::Box::new_in(
       JSXFragment::from_in(
         JSXFragment {
+          node_id: Cell::new(NodeId::DUMMY),
           span: Span::new(
             if is_fragment {
               2
@@ -79,12 +90,18 @@ impl<'a> RootNode {
             0,
           ),
           opening_fragment: JSXOpeningFragment::from_in(
-            JSXOpeningFragment { span: SPAN },
+            JSXOpeningFragment {
+              node_id: Cell::new(NodeId::DUMMY),
+              span: SPAN,
+            },
             allocator,
           ),
           children,
           closing_fragment: JSXClosingFragment::from_in(
-            JSXClosingFragment { span: SPAN },
+            JSXClosingFragment {
+              node_id: Cell::new(NodeId::DUMMY),
+              span: SPAN,
+            },
             allocator,
           ),
         },

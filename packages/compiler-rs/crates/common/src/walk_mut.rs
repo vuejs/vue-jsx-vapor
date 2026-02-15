@@ -10,7 +10,11 @@ use oxc_ast_visit::{
   VisitMut,
   walk_mut::{self, walk_assignment_target, walk_expression},
 };
-use std::collections::{HashMap, HashSet};
+use oxc_semantic::NodeId;
+use std::{
+  cell::Cell,
+  collections::{HashMap, HashSet},
+};
 
 use napi::bindgen_prelude::Either3;
 use oxc_ast::{AstKind, ast::IdentifierReference};
@@ -135,9 +139,11 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
           *node =
             AssignmentTargetProperty::AssignmentTargetPropertyProperty(oxc_allocator::Box::new_in(
               AssignmentTargetPropertyProperty {
+                node_id: Cell::new(NodeId::DUMMY),
                 span: SPAN,
                 name: PropertyKey::StaticIdentifier(oxc_allocator::Box::from_in(
                   IdentifierName {
+                    node_id: Cell::new(NodeId::DUMMY),
                     span: id.binding.span,
                     name: id.binding.name,
                   },

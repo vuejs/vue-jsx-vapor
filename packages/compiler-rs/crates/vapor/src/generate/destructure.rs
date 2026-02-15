@@ -126,18 +126,16 @@ impl<'a> CodegenContext<'a> {
                         if let ObjectPropertyKind::ObjectProperty(p) = p {
                           Some(if let PropertyKey::StringLiteral(key) = &p.key {
                             ast.expression_string_literal(SPAN, key.value, None).into()
+                          } else if let Some(key) = p.key.as_expression() {
+                            key.clone_in(ast.allocator).into()
                           } else {
-                            if let Some(key) = p.key.as_expression() {
-                              key.clone_in(ast.allocator).into()
-                            } else {
-                              ast
-                                .expression_string_literal(
-                                  SPAN,
-                                  ast.atom(&p.key.name().unwrap_or(Cow::from(""))),
-                                  None,
-                                )
-                                .into()
-                            }
+                            ast
+                              .expression_string_literal(
+                                SPAN,
+                                ast.atom(&p.key.name().unwrap_or(Cow::from(""))),
+                                None,
+                              )
+                              .into()
                           })
                         } else {
                           None

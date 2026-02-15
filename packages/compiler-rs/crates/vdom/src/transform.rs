@@ -8,8 +8,7 @@ use indexmap::IndexSet;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
 use oxc_ast::ast::{
   ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, IdentifierReference,
-  JSXAttributeValue, JSXChild, JSXClosingFragment, JSXExpressionContainer, JSXFragment,
-  JSXOpeningFragment, LogicalOperator, NumberBase, ObjectPropertyKind,
+  JSXAttributeValue, JSXChild, LogicalOperator, NumberBase, ObjectPropertyKind,
 };
 use oxc_ast::{AstBuilder, NONE};
 use oxc_span::{GetSpan, SPAN, Span};
@@ -251,28 +250,16 @@ impl<'a> TransformContext<'a> {
         ast.jsx_closing_fragment(SPAN),
       )
     } else {
-      JSXChild::Fragment(oxc_allocator::Box::new_in(
-        JSXFragment {
-          span,
-          opening_fragment: JSXOpeningFragment { span: SPAN },
-          closing_fragment: JSXClosingFragment { span: SPAN },
-          children: oxc_allocator::Vec::from_array_in(
-            [match node {
-              Expression::JSXElement(node) => JSXChild::Element(node),
-              Expression::JSXFragment(node) => JSXChild::Fragment(node),
-              _ => JSXChild::ExpressionContainer(oxc_allocator::Box::new_in(
-                JSXExpressionContainer {
-                  span: SPAN,
-                  expression: node.into(),
-                },
-                self.allocator,
-              )),
-            }],
-            self.allocator,
-          ),
-        },
-        self.allocator,
-      ))
+      ast.jsx_child_fragment(
+        span,
+        ast.jsx_opening_fragment(SPAN),
+        ast.vec1(match node {
+          Expression::JSXElement(node) => JSXChild::Element(node),
+          Expression::JSXFragment(node) => JSXChild::Fragment(node),
+          _ => ast.jsx_child_expression_container(SPAN, node.into()),
+        }),
+        ast.jsx_closing_fragment(SPAN),
+      )
     }
   }
 
