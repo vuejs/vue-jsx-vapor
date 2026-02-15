@@ -22,50 +22,76 @@ export default defineConfig({
           { text: '首页', link: '/zh/' },
           { text: '特性', link: '/zh/features/directives' },
           {
+            text: '教程',
+            link: '/zh/tutorial/step-1',
+            activeMatch: 'tutorial',
+          },
+          {
             text: 'Playground',
             link: 'https://repl.zmjs.dev/vuejs/vue-jsx-vapor',
           },
         ],
-        sidebar: [
-          {
-            text: '介绍',
-            items: [
-              {
-                text: '快速开始',
-                link: `/zh/introduction/getting-started`,
-              },
-              {
-                text: '互操作性',
-                link: `/zh/introduction/interop`,
-              },
-              {
-                text: '迁移',
-                link: `/zh/introduction/migration`,
-              },
-              {
-                text: 'ESLint',
-                link: `/zh/introduction/eslint`,
-              },
-            ],
-          },
-          {
-            text: '特性',
-            items: [
-              {
-                text: '指令',
-                link: '/zh/features/directives',
-              },
-              {
-                text: '宏',
-                link: '/zh/features/macros',
-              },
-              {
-                text: 'useRef',
-                link: '/zh/features/use-ref',
-              },
-            ],
-          },
-        ],
+        sidebar: {
+          '/zh/': [
+            {
+              text: '介绍',
+              items: [
+                {
+                  text: '快速开始',
+                  link: `/zh/introduction/getting-started`,
+                },
+                {
+                  text: '互操作性',
+                  link: `/zh/introduction/interop`,
+                },
+                {
+                  text: '迁移',
+                  link: `/zh/introduction/migration`,
+                },
+                {
+                  text: 'ESLint',
+                  link: `/zh/introduction/eslint`,
+                },
+              ],
+            },
+            {
+              text: '特性',
+              items: [
+                {
+                  text: '指令',
+                  link: '/zh/features/directives',
+                },
+                {
+                  text: '宏',
+                  link: '/zh/features/macros',
+                },
+                {
+                  text: 'useRef',
+                  link: '/zh/features/use-ref',
+                },
+              ],
+            },
+          ],
+          '/zh/tutorial/': [
+            {
+              text: '教程',
+              items: [
+                { text: '1. 快速开始', link: '/zh/tutorial/step-1/' },
+                { text: '2. JSX 介绍', link: '/zh/tutorial/step-2/' },
+                { text: '3. 属性绑定', link: '/zh/tutorial/step-3/' },
+                { text: '4. 事件绑定', link: '/zh/tutorial/step-4/' },
+                { text: '5. 条件渲染', link: '/zh/tutorial/step-5/' },
+                { text: '6. 列表渲染', link: '/zh/tutorial/step-6/' },
+                { text: '7. 组件', link: '/zh/tutorial/step-7/' },
+                { text: '8. Props', link: '/zh/tutorial/step-8/' },
+                { text: '9. 插槽', link: '/zh/tutorial/step-9/' },
+                { text: '10. 作用域插槽', link: '/zh/tutorial/step-10/' },
+                { text: '11. Expose', link: '/zh/tutorial/step-11/' },
+                { text: '12. 恭喜完成!', link: '/zh/tutorial/step-12/' },
+              ],
+            },
+          ],
+        },
       },
     },
   },
