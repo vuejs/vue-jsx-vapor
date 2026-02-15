@@ -4,8 +4,8 @@ layout: home
 
 hero:
   name: "Vue JSX Vapor"
-  text: "Type-safe, Improve DX, High Performance"
-  tagline: Vapor Mode of Vue JSX
+  text: "Type-Safe, Enhanced DX, High Performance"
+  tagline: Vue JSX with Vapor Mode Support
   image:
     src: /logo.svg
     alt: Vue JSX Vapor
@@ -20,10 +20,10 @@ hero:
 features:
   - icon: ⚒️ ️
     title: Directives
-    details: Support all built-in directives of Vue.
+    details: Full support for all Vue built-in directives in JSX syntax.
   - icon: ✨
     title: Macros
-    details: Support most macros of Vue, Friendly to JSX.
+    details: Support most macros of Vue, optimized for JSX.
   - icon: 🦾
     title: Type Safe
     details: Provide Volar plugin support by installing TS Macro (VSCode plugin).
@@ -31,11 +31,11 @@ features:
     title: High Performance
     details: It has the same performance as Vue Vapor!
   - icon: 🦀
-    title: Compiler rewritten in Rust
-    details: Powered by Oxc, ~30x (Virtual DOM) and ~50x (Vapor) performance improvement over Babel.
+    title: Rust Compiler
+    details: Powered by Oxc, ~30× faster (Virtual DOM) and ~50× faster (Vapor) than Babel.
   - icon: ⚙️
-    title: ESLint
-    details: Provide an ESLint plugin for vue-jsx-vapor to automatically format directives and macros.
+    title: ESLint Integration
+    details: Includes an ESLint plugin for automatic formatting of directives and macros.
 ---
 
 ## Compiler Benchmark

@@ -1,8 +1,8 @@
 # Interop
 
-`vue-jsx-vapor` supports Virtual DOM and Vapor DOM co-usage. After setting interop to `true`, JSX within `defineVaporComponent` will be compiled to Vapor DOM, while JSX outside `defineVaporComponent` will be compiled to Virtual DOM.
+`vue-jsx-vapor` provides seamless interoperability between Virtual DOM and Vapor DOM rendering modes. When the `interop` option is set to `true`, JSX code within `defineVaporComponent` compiles to Vapor DOM, while JSX outside of `defineVaporComponent` compiles to Virtual DOM.
 
-## Vapor in Virtual DOM
+## Embedding Vapor Components in Virtual DOM
 
 [Playground](https://repl.zmjs.dev/vuejs/vapor-in-virtual-dom)
 
@@ -58,7 +58,7 @@ export default defineComponent(() => {
 
 :::
 
-## Virtual DOM in Vapor
+## Embedding Virtual DOM Components in Vapor
 
 [Playground](https://repl.zmjs.dev/vuejs/virtual-dom-in-vapor)
 

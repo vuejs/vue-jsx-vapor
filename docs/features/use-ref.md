@@ -1,6 +1,6 @@
 # useRef
 
-Automatically infers the type for `useRef`. It's an alias of `shallowRef`.
+A utility function that provides automatic type inference for component refs. It serves as an alias for `shallowRef`.
 
 ## Basic Usage
 

@@ -1,25 +1,23 @@
 # Directives
 
-Vue built-in directives for JSX.
+Vue JSX Vapor provides full support for Vue's built-in directives within JSX syntax.
 
-|           Directive           |        Vue         |       Volar        |
+| Directive                     | Vue                | Volar              |
 | :---------------------------: | :----------------: | :----------------: |
 | `v-if`, `v-else-if`, `v-else` | :white_check_mark: | :white_check_mark: |
-|      `v-slot`, `v-slots`      | :white_check_mark: | :white_check_mark: |
-|            `v-for`            | :white_check_mark: | :white_check_mark: |
-|           `v-model`           | :white_check_mark: | :white_check_mark: |
-|      `v-html`, `v-text`       | :white_check_mark: |         /          |
-|           `v-once`            | :white_check_mark: |         /          |
+| `v-slot`, `v-slots`           | :white_check_mark: | :white_check_mark: |
+| `v-for`                       | :white_check_mark: | :white_check_mark: |
+| `v-model`                     | :white_check_mark: | :white_check_mark: |
+| `v-html`, `v-text`            | :white_check_mark: |         /          |
+| `v-once`                      | :white_check_mark: |         /          |
 
 ## Dynamic Arguments
 
-It is also possible to use a variable in a directive argument.
-Because JSX doesn't support `[]` keyword, use `$` instead.
+Variables can be used as directive arguments. Since JSX does not support the `[]` syntax used in Vue templates, use `$` as a substitute.
 
 ## Modifiers
 
-Modifiers are special postfixes denoted by a `_`, which indicate that a directive should be bound in some special way.
-Because JSX doesn't support `.` keyword, use `_` instead.
+Modifiers are special postfixes denoted by `_` that indicate a directive should be bound in a particular way. Since JSX does not support the `.` character in attribute names, use `_` as a substitute.
 
 ```tsx
 <form onSubmit_prevent>
@@ -28,6 +26,8 @@ Because JSX doesn't support `.` keyword, use `_` instead.
 ```
 
 ## `v-if`, `v-else-if`, `v-else`
+
+Conditional rendering directives work seamlessly with proper type narrowing support.
 
 ```tsx twoslash
 export default ({ foo = 0 }) => {
@@ -50,6 +50,8 @@ export default ({ foo = 0 }) => {
 
 ## `v-for`
 
+List rendering directive for iterating over arrays or ranges.
+
 ```tsx twoslash
 export default () => (
   <div v-for={(item, index) in 4} key={index}>
@@ -61,7 +63,7 @@ export default () => (
 ## `v-slot`, `v-slots`
 
 > [!WARNING]
-> Due to the inability to generate a correct AST for directive expressions with default values (e.g., `v-slot={({ foo = '' })}`), default values are not supported.
+> Default parameter values in slot scope destructuring (e.g., `v-slot={({ foo = '' })}`) are not supported due to AST generation limitations.
 
 ::: code-group
 
@@ -112,6 +114,8 @@ export default () => (
 :::
 
 ## `v-model`
+
+Two-way binding directive with support for dynamic model names and modifiers.
 
 ```tsx twoslash
 import { ref } from 'vue'

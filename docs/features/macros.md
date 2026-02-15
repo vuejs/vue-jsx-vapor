@@ -1,6 +1,6 @@
 # Macros
 
-A collection of macros for JSX. They need to be manually enabled by setting `macros` to `true`.
+A collection of compile-time macros for JSX. These macros must be explicitly enabled by setting the `macros` option to `true`.
 
 ## Setup
 
@@ -35,7 +35,7 @@ export default {
 
 ::: details Install as a standalone plugin
 
-We have also released a standalone plugin that can be used in virtual DOM projects.
+A standalone plugin is also available for use in Virtual DOM projects.
 
 ```bash
 pnpm add @vue-jsx-vapor/macros -D
@@ -58,7 +58,7 @@ export default {
 
 ## defineComponent | defineVaporComponent
 
-`defineComponent` is used to define Virtual DOM components, and `defineVaporComponent` is used to define Vapor components.
+`defineComponent` is used to define Virtual DOM components, while `defineVaporComponent` is used to define Vapor components.
 
 ### Options
 
@@ -68,15 +68,17 @@ VueJsxVapor({
     /**
      * @default ['defineComponent','defineVaporComponent']
      *
-     * You can set alias to an empty array to disable defineComponent macro.
+     * Set alias to an empty array to disable the defineComponent macro.
      */
     alias: []
   }
 })
 ```
 
-- Support `await` keyword.
-- Automatically collects used props to the defineVaporComponent's props option.
+### Features
+
+- Supports the `await` keyword in async setup functions.
+- Automatically collects referenced props and adds them to the component's `props` option.
 
 ```tsx twoslash
 import { defineComponent, nextTick, Suspense, useAttrs } from 'vue'
@@ -85,7 +87,7 @@ const Comp = defineComponent(
   async (props: {
     foo?: string
     bar?: string
-    // ^ unused prop will be as a fallthrough attribute.
+    // ^ Unreferenced props are treated as fallthrough attributes.
   }) => {
     await nextTick()
     const attrs = useAttrs()
@@ -127,9 +129,11 @@ defineComponent(
 
 :::
 
-- The destructured props will be automatically restructured.
-- If the prop's default value ends with `!`, the prop will be inferred as required.
-- If a rest prop is defined, it will be converted to `useAttrs()`, and the `inheritAttrs` option will default to `false`.
+### Props Handling
+
+- Destructured props are automatically restructured to preserve reactivity.
+- Append `!` to a prop's default value to mark it as required.
+- Rest parameters in props are converted to `useAttrs()`, and `inheritAttrs` defaults to `false`.
 
 ```tsx twoslash
 // @errors: 2322
@@ -171,9 +175,14 @@ defineVaporComponent(
 
 ## defineModel
 
-- Doesn't support hyphenated model names.
-- Will be inferred as a required prop when the expression ends with `!`.
-- The modified model's value can be read synchronously, without needing to `await nextTick()`. [Related issue](https://github.com/vuejs/core/issues/11080)
+### Limitations
+
+- Hyphenated model names are not supported.
+
+### Features
+
+- Append `!` to mark the model as required.
+- Model values can be read synchronously after modification, without awaiting `nextTick()`. [Related issue](https://github.com/vuejs/core/issues/11080)
 
 ```tsx twoslash
 import { ref } from 'vue'
@@ -211,7 +220,9 @@ function Comp(_props: {
 
 ## defineSlots
 
-- If using generics to define slots, all slots will be optional.
+### Generic Slots
+
+When using generics to define slots, all slots are treated as optional.
 
 ```tsx twoslash
 const slots = defineSlots<{
@@ -222,7 +233,9 @@ slots.default?.()
 //           ^ optional
 ```
 
-- Support default slots (Recommended).
+### Default Slot Values (Recommended)
+
+Providing default implementations for slots is the recommended approach.
 
 ```tsx twoslash
 function Comp<const T>() {
@@ -253,7 +266,7 @@ export default () => (
 
 ## defineExpose
 
-Just like in Vue SFC.
+Functions identically to `defineExpose` in Vue SFCs.
 
 ```tsx twoslash
 import { useRef } from 'vue-jsx-vapor'
@@ -301,9 +314,11 @@ declare function defineStyle(
 ): void
 ```
 
-- Support CSS-variable and JS-variable binding.
-- Support defining multiple style macros in a file.
-- Support CSS pre-processors: `css`, `scss`, `sass`, `less`, `stylus`, `postcss`.
+### Features
+
+- Supports CSS variable and JavaScript variable binding.
+- Multiple `defineStyle` calls can be used within a single file.
+- Supports CSS preprocessors: `css`, `scss`, `sass`, `less`, `stylus`, `postcss`.
 
 ```ts
 defineStyle.scss(`...`)
@@ -311,9 +326,10 @@ defineStyle.stylus(`...`)
 // ...
 ```
 
-- Support scoped mode.
-  - If defined at the top level of the file, the scoped option defaults to `false`.
-  - If defined within a function, the scoped option defaults to `true`.
+### Scoped Styles
+
+- Top-level definitions default to `scoped: false`.
+- Definitions within functions default to `scoped: true`.
 
 ```tsx twoslash
 function Comp({ color = 'red' }) {
@@ -336,7 +352,9 @@ defineStyle(`
 `)
 ```
 
-- Support `css modules`, if the macro is an assignment expression.
+### CSS Modules
+
+Assigning `defineStyle` to a variable enables CSS Modules support.
 
 ```tsx twoslash
 export default () => {

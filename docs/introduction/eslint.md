@@ -1,14 +1,14 @@
 # ESLint
 
-An ESLint plugin for `vue-jsx-vapor` to automatically format code.
+An ESLint plugin for `vue-jsx-vapor` that provides automatic code formatting for directives and macros.
 
-## Install
+## Installation
 
 ```sh
 pnpm add @vue-jsx-vapor/eslint
 ```
 
-## Setup
+## Configuration
 
 ```ts 
 // eslint.config.ts
@@ -19,9 +19,11 @@ export default [
 ]
 ```
 
-## define-style
+## Rules
 
-Use `prettier` to format styles in the defineStyle macro.
+### define-style
+
+Formats styles within the `defineStyle` macro using Prettier.
 
 ```ts twoslash
 import vueJsxVapor from '@vue-jsx-vapor/eslint'
@@ -35,9 +37,9 @@ export default [
 ]
 ```
 
-## jsx-sort-props
+### jsx-sort-props
 
-This is a modified version of [@stylistic/jsx/jsx-sort-props](https://eslint.style/rules/jsx/jsx-sort-props), supporting custom reservedFirst and reservedLast options.
+A modified version of [@stylistic/jsx/jsx-sort-props](https://eslint.style/rules/jsx/jsx-sort-props) with support for custom `reservedFirst` and `reservedLast` options.
 
 ```ts twoslash
 import vueJsxVapor from '@vue-jsx-vapor/eslint'
@@ -54,32 +56,30 @@ export default [
 ]
 ```
 
-### `reservedFirst`
+#### `reservedFirst`
 
-Defaults to `['v-if', 'v-else-if', 'v-else', 'v-for', 'key', 'ref', 'v-model']`
+**Default:** `['v-if', 'v-else-if', 'v-else', 'v-for', 'key', 'ref', 'v-model']`
 
-If given as an array, the array's values will override the default list of reserved props.
-These props will respect the order specified in the array:
+When provided as an array, these values override the default list of reserved props. Props listed here will appear first, respecting the specified order:
 
 ```jsx
-// before
+// Before
 const Before = <App a v-for={i in list} v-if={list} b />
 
-// after
+// After
 const After = <App v-if={list} v-for={i in list} a b />
 ```
 
-### `reservedLast`
+#### `reservedLast`
 
-Defaults to `['v-slot', 'v-slots', 'v-text', 'v-html']`
+**Default:** `['v-slot', 'v-slots', 'v-text', 'v-html']`
 
-This can be an array option. These props must be listed after all other props.
-These will respect the order specified in the array:
+When provided as an array, these props will be placed after all other props, respecting the specified order:
 
 ```jsx
-// before
+// Before
 const Before = <App v-slot={{ foo }} onClick={onClick} />
 
-// after
+// After
 const After = <App onClick={onClick} v-slot={{ foo }} />
 ```
