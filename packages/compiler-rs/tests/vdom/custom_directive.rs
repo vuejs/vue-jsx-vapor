@@ -209,3 +209,25 @@ fn none_resolve_directive() {
   ]]);
   "#);
 }
+
+#[test]
+fn should_not_resolve_directive() {
+  let code = transform(
+    "() => {
+      const vExample = () => {}
+      return <div v-example></div>
+    }",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
+  () => {
+  	const vExample = () => {};
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[vExample]]);
+  };
+  "#);
+}

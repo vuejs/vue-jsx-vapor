@@ -6,7 +6,7 @@ use napi::{
 use napi_derive::napi;
 use oxc_codegen::{Codegen, CodegenReturn};
 use oxc_parser::Parser;
-// use oxc_semantic::SemanticBuilder;
+use oxc_semantic::SemanticBuilder;
 use oxc_span::{SourceType, Span};
 use std::path::PathBuf;
 
@@ -129,9 +129,10 @@ pub fn transform<'a>(source: &'a str, options: Option<TransformOptions<'a>>) -> 
   )
   .parse()
   .program;
-  // *options.semantic.borrow_mut() = SemanticBuilder::new()
-  //   .build(unsafe { &*(&program as *const _) })
-  //   .semantic;
+  let program_ptr = &program as *const _;
+  *options.semantic.borrow_mut() = SemanticBuilder::new()
+    .build(unsafe { &*program_ptr })
+    .semantic;
   Transform::new(unsafe { &*(&options as *const _) }).visit(&mut program);
   Codegen::new()
     .with_options(CodegenOptions {

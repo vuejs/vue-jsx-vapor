@@ -1,5 +1,5 @@
 use napi::{Either, bindgen_prelude::Either3};
-use oxc_allocator::{CloneIn, TakeIn};
+use oxc_allocator::{CloneIn, FromIn, TakeIn};
 use oxc_ast::{
   AstBuilder, NONE,
   ast::{
@@ -8,7 +8,7 @@ use oxc_ast::{
     PropertyKind,
   },
 };
-use oxc_span::{GetSpan, SPAN, Span};
+use oxc_span::{GetSpan, Ident, SPAN, Span};
 
 use crate::{
   ast::{NodeTypes, VNodeCall},
@@ -29,7 +29,7 @@ use common::{
   directive::{DirectiveNode, resolve_directive},
   error::ErrorCodes,
   patch_flag::PatchFlags,
-  text::{get_tag_name, to_valid_asset_id},
+  text::{camelize, get_tag_name, to_valid_asset_id},
 };
 
 /// # SAFETY
@@ -84,7 +84,22 @@ pub unsafe fn transform_element<'a>(
     transform_transition(node, context);
   }
   let is_component = is_jsx_component(node, false, context.options);
-  if is_component && vnode_tag.contains("-") {
+  let asset = vnode_tag.contains("-") && {
+    let semantic = &context.options.semantic.borrow();
+    let scope_id = semantic.nodes().get_node(node.node_id()).scope_id();
+    let camelize_tag = camelize(&vnode_tag);
+    if semantic
+      .scoping()
+      .find_binding(scope_id, Ident::from_in(&camelize_tag, context.allocator))
+      .is_some()
+    {
+      vnode_tag = camelize_tag;
+      false
+    } else {
+      true
+    }
+  };
+  if is_component && asset {
     context.helper("resolveComponent");
     context.components.borrow_mut().insert(vnode_tag.clone());
     vnode_tag = to_valid_asset_id(&vnode_tag, "component");
@@ -498,10 +513,21 @@ pub fn build_props<'a>(
               {
                 name.to_string()
               } else {
-                // inject statement for resolving directive
-                context.helper("resolveDirective");
-                context.directives.borrow_mut().insert(dir_name.to_string());
-                to_valid_asset_id(dir_name, "directive")
+                let semantic = &context.options.semantic.borrow();
+                let scope_id = semantic.nodes().get_node(node.node_id()).scope_id();
+                let camelize_name = camelize(&name);
+                if semantic
+                  .scoping()
+                  .find_binding(scope_id, Ident::from_in(&camelize_name, context.allocator))
+                  .is_some()
+                {
+                  camelize_name
+                } else {
+                  // inject statement for resolving directive
+                  context.helper("resolveDirective");
+                  context.directives.borrow_mut().insert(dir_name.to_string());
+                  to_valid_asset_id(dir_name, "directive")
+                }
               };
               runtime_directives.push(
                 build_directive_args(

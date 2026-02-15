@@ -185,3 +185,27 @@ fn none_resolve_directive() {
   })();
   "#);
 }
+
+#[test]
+fn should_not_resolve_directive() {
+  let code = transform(
+    "() => {
+      const vExample = () => {}
+      return <div v-example></div>
+    }",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+  const _t0 = _template("<div>", true);
+  () => {
+  	const vExample = () => {};
+  	return (() => {
+  		const _n0 = _t0();
+  		_withVaporDirectives(_n0, [[vExample]]);
+  		return _n0;
+  	})();
+  };
+  "#);
+}

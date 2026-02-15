@@ -1,11 +1,13 @@
 use std::{cell::RefCell, mem, rc::Rc};
 
 use napi::{Either, bindgen_prelude::Either3};
+use oxc_allocator::FromIn;
 use oxc_ast::ast::{
   JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement,
   JSXElementName, JSXExpression,
 };
-use oxc_span::SPAN;
+use oxc_semantic::NodeId;
+use oxc_span::{Ident, SPAN};
 
 use crate::{
   ir::{
@@ -33,7 +35,7 @@ use common::{
   dom::is_valid_html_nesting,
   error::ErrorCodes,
   expression::SimpleExpressionNode,
-  text::{get_tag_name, get_text_like_value},
+  text::{camelize, get_tag_name, get_text_like_value},
 };
 
 /// # SAFETY
@@ -70,6 +72,7 @@ pub unsafe fn transform_element<'a>(
   }) as Box<dyn FnMut() -> i32>));
 
   let tag = get_tag_name(&node.opening_element.name, context.source_text);
+  let node_id = node.node_id();
   if tag == "slot" {
     return unsafe {
       transform_slot_outlet(
@@ -117,6 +120,7 @@ pub unsafe fn transform_element<'a>(
     if is_component {
       transform_component_element(
         tag,
+        node_id,
         props_result,
         single_root,
         is_custom_element,
@@ -291,14 +295,29 @@ fn can_omit_end_tag(tag: &str, parent_node: &JSXChild, context: &TransformContex
 }
 
 pub fn transform_component_element<'a>(
-  tag: String,
+  mut tag: String,
+  node_id: NodeId,
   props_result: PropsResult<'a>,
   single_root: bool,
   is_custom_element: bool,
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) {
-  let asset = tag.contains("-") && !is_custom_element;
+  let asset = !is_custom_element && tag.contains("-") && {
+    let semantic = &context.options.semantic.borrow();
+    let scope_id = semantic.nodes().get_node(node_id).scope_id();
+    let camelize_tag = camelize(&tag);
+    if semantic
+      .scoping()
+      .find_binding(scope_id, Ident::from_in(&camelize_tag, context.allocator))
+      .is_some()
+    {
+      tag = camelize_tag;
+      false
+    } else {
+      true
+    }
+  };
   if asset {
     let component = &mut context.ir.borrow_mut().component;
     component.insert(tag.clone());
@@ -542,13 +561,14 @@ pub fn transform_prop<'a>(
     ));
   }
 
-  let name = if is_event(name) {
+  let mut dir_name = if is_event(name) {
     "on"
   } else {
     get_directive_name(name).unwrap_or("bind")
-  };
+  }
+  .to_string();
 
-  match name {
+  match dir_name.as_str() {
     "bind" => return transform_v_bind(prop, context),
     "on" => return transform_v_on(prop, node, context, context_block),
     "model" => return transform_v_model(directives, prop, node, context, context_block),
@@ -558,8 +578,8 @@ pub fn transform_prop<'a>(
     _ => (),
   };
 
-  if !is_built_in_directive(name) {
-    let asset = if name
+  if !is_built_in_directive(&dir_name) {
+    let asset = if dir_name
       .chars()
       .nth(1)
       .map(|c| c.is_uppercase())
@@ -567,9 +587,27 @@ pub fn transform_prop<'a>(
     {
       false
     } else {
-      let directive = &mut context.ir.borrow_mut().directive;
-      directive.insert(name.to_string());
-      true
+      let semantic = &context.options.semantic.borrow();
+      let scope_id = semantic.nodes().get_node(node.node_id()).scope_id();
+      let camelize_name = camelize(&name);
+      dbg!(
+        semantic
+          .scoping()
+          .find_binding(scope_id, Ident::from_in(&camelize_name, context.allocator))
+          .is_some()
+      );
+      if semantic
+        .scoping()
+        .find_binding(scope_id, Ident::from_in(&camelize_name, context.allocator))
+        .is_some()
+      {
+        dir_name = camelize_name;
+        false
+      } else {
+        let directive = &mut context.ir.borrow_mut().directive;
+        directive.insert(dir_name.to_string());
+        true
+      }
     };
 
     let element = context.reference(&mut context_block.dynamic);
@@ -579,7 +617,7 @@ pub fn transform_prop<'a>(
         directive: true,
         element,
         dir: resolve_directive(prop, context.source_text),
-        name: name.to_string(),
+        name: dir_name,
         asset,
         builtin: false,
         model_type: None,

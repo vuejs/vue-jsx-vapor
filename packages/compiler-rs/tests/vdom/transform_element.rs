@@ -3,7 +3,7 @@ use compiler_rs::transform;
 use insta::assert_snapshot;
 
 #[test]
-fn import_resolve_component() {
+fn resolve_component() {
   let code = transform(
     r#"<foo-bar />"#,
     Some(TransformOptions {
@@ -18,6 +18,28 @@ fn import_resolve_component() {
   	const _component_foo_bar = _resolveComponent("foo-bar");
   	return _openBlock(), _createBlock(_component_foo_bar);
   })();
+  "#);
+}
+
+#[test]
+fn should_not_resolve_component() {
+  let code = transform(
+    "() => {
+      const fooBar = () => []
+      return <foo-bar/>
+    }",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  () => {
+  	const fooBar = () => [];
+  	return _openBlock(), _createBlock(fooBar);
+  };
   "#);
 }
 

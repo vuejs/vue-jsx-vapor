@@ -3,7 +3,7 @@ use compiler_rs::transform;
 use insta::assert_snapshot;
 
 #[test]
-fn component_import_resolve_component() {
+fn component_resolve_component() {
   let code = transform(
     "<foo-bar/>",
     Some(TransformOptions {
@@ -19,6 +19,30 @@ fn component_import_resolve_component() {
   	const _n0 = _createComponentWithFallback(_component_foo_bar, null, null, true);
   	return _n0;
   })();
+  "#);
+}
+
+#[test]
+fn component_should_not_resolve_component() {
+  let code = transform(
+    "() => {
+      const fooBar = () => []
+      return <foo-bar/>
+    }",
+    Some(TransformOptions {
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  () => {
+  	const fooBar = () => [];
+  	return (() => {
+  		const _n0 = _createComponent(fooBar, null, null, true);
+  		return _n0;
+  	})();
+  };
   "#);
 }
 
