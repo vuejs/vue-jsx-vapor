@@ -4,10 +4,10 @@ use common::options::{RootJsx, TransformOptions};
 use napi::Either;
 use oxc_allocator::{FromIn, TakeIn};
 use oxc_ast::{
-  AstBuilder, AstKind, NONE,
+  AstBuilder, NONE,
   ast::{Argument, Expression, ImportOrExportKind, Program, Statement, VariableDeclarationKind},
 };
-use oxc_ast_visit::{VisitMut, walk_mut};
+use oxc_ast_visit::{VisitMut, walk_mut::walk_expression};
 use oxc_span::{Ident, SPAN};
 
 use crate::hmr_or_ssr::HmrOrSsrTransform;
@@ -349,13 +349,11 @@ impl<'a> VisitMut<'a> for Transform<'a> {
         vdom,
       });
     }
-    walk_mut::walk_expression(self, node);
-  }
-  fn leave_node(&mut self, node: AstKind<'a>) {
-    if let AstKind::CallExpression(node) = node
+    walk_expression(self, node);
+    if let Expression::CallExpression(node) = node
       && let Some(on_leave_expression) = self.options.on_leave_expression.borrow().as_ref()
     {
       on_leave_expression(node)
-    };
+    }
   }
 }

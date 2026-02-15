@@ -1,10 +1,9 @@
 use oxc_allocator::{FromIn, TakeIn};
 use oxc_ast::ast::{
   ArrowFunctionExpression, AssignmentTarget, AssignmentTargetMaybeDefault,
-  AssignmentTargetProperty, AssignmentTargetPropertyProperty, BindingIdentifier, BindingPattern,
-  BlockStatement, CatchClause, Expression, ForInStatement, ForOfStatement, ForStatement,
-  ForStatementInit, ForStatementLeft, Function, FunctionBody, IdentifierName, PropertyKey,
-  Statement, VariableDeclarationKind,
+  AssignmentTargetProperty, AssignmentTargetPropertyProperty, BlockStatement, CatchClause,
+  Expression, ForInStatement, ForOfStatement, ForStatement, Function, FunctionBody, IdentifierName,
+  PropertyKey,
 };
 use oxc_ast_visit::{
   VisitMut,
@@ -23,18 +22,14 @@ use oxc_span::{SPAN, Span};
 use crate::{
   check::is_referenced_identifier,
   options::{RootJsx, TransformOptions},
+  walk::{
+    extract_identifiers, mark_known_ids, mark_scope_identifier, remove_known_ids,
+    walk_block_declarations, walk_for_statement,
+  },
 };
 
-type OnIdentifier<'a> = Box<
-  dyn FnMut(
-      &mut IdentifierReference<'a>,
-      Option<&AstKind<'a>>,
-      &Vec<AstKind<'a>>,
-      bool,
-      bool,
-    ) -> Option<Expression<'a>>
-    + 'a,
->;
+type OnIdentifier<'a> =
+  Box<dyn FnMut(&mut IdentifierReference<'a>, Option<AstKind<'a>>) -> Option<Expression<'a>> + 'a>;
 
 // Modified from https://github.com/vuejs/core/blob/main/packages/compiler-core/src/babelUtils.ts
 // To support browser environments and JSX.
@@ -47,7 +42,6 @@ pub struct WalkIdentifiersMut<'a> {
   on_identifier: OnIdentifier<'a>,
   scope_ids_map: HashMap<Span, HashSet<String>>,
   pub options: &'a TransformOptions<'a>,
-  pub parents: Vec<AstKind<'a>>,
   pub roots: Vec<RootJsx<'a>>,
 }
 
@@ -58,7 +52,6 @@ impl<'a> WalkIdentifiersMut<'a> {
       on_identifier,
       known_ids: HashMap::new(),
       scope_ids_map: HashMap::new(),
-      parents: vec![],
       roots: vec![],
     }
   }
@@ -70,10 +63,12 @@ impl<'a> WalkIdentifiersMut<'a> {
     if id.span.eq(&SPAN) && !id.name.eq("_cache") {
       return None;
     }
+    let semantic = &self.options.semantic.borrow();
+    let parent = semantic.nodes().parent_kind(id.node_id.get());
     let is_local = self.known_ids.contains_key(id.name.as_str());
-    let is_refed = is_referenced_identifier(id, &self.parents);
+    let is_refed = is_referenced_identifier(id, Some(parent));
     if is_refed && !is_local {
-      self.on_identifier.as_mut()(id, self.parents.last(), &self.parents, is_refed, is_local)
+      self.on_identifier.as_mut()(id, Some(parent))
     } else {
       None
     }
@@ -81,19 +76,19 @@ impl<'a> WalkIdentifiersMut<'a> {
 
   pub fn visit(&mut self, it: &mut Expression<'a>) {
     self.visit_expression(it);
+    if let Some(on_exit_program) = self.options.on_exit_program.borrow().as_ref() {
+      on_exit_program(std::mem::take(&mut self.roots));
+    }
   }
 }
 
 impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
-  fn enter_node(&mut self, kind: AstKind<'a>) {
-    self.parents.push(kind);
-  }
-
   fn visit_expression(&mut self, node: &mut Expression<'a>) {
     if let Expression::Identifier(id) = node {
       if let Some(replacer) = self.on_identifier_reference(id) {
         *node = replacer;
       }
+      return;
     } else if let Some(on_enter_expression) = self.options.on_enter_expression.borrow().as_ref()
       && let Some((node_ref, vdom)) = on_enter_expression(node)
     {
@@ -104,6 +99,11 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
       });
     }
     walk_expression(self, node);
+    if let Expression::CallExpression(node) = node
+      && let Some(on_leave_expression) = self.options.on_leave_expression.borrow().as_ref()
+    {
+      on_leave_expression(node)
+    }
   }
 
   fn visit_assignment_target(&mut self, node: &mut AssignmentTarget<'a>) {
@@ -202,6 +202,7 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
       }
     }
     walk_mut::walk_function(self, node, flags);
+    remove_known_ids(node.span, &mut self.known_ids, &mut self.scope_ids_map);
   }
 
   fn visit_arrow_function_expression(&mut self, node: &mut ArrowFunctionExpression<'a>) {
@@ -219,6 +220,7 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
       }
     }
     walk_mut::walk_arrow_function_expression(self, node);
+    remove_known_ids(node.span, &mut self.known_ids, &mut self.scope_ids_map);
   }
 
   fn visit_function_body(&mut self, node: &mut FunctionBody<'a>) {
@@ -232,6 +234,7 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
       });
     }
     walk_mut::walk_function_body(self, node);
+    remove_known_ids(node.span, &mut self.known_ids, &mut self.scope_ids_map);
   }
 
   fn visit_block_statement(&mut self, node: &mut BlockStatement<'a>) {
@@ -246,6 +249,7 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
       });
     }
     walk_mut::walk_block_statement(self, node);
+    remove_known_ids(node.span, &mut self.known_ids, &mut self.scope_ids_map);
   }
 
   fn visit_catch_clause(&mut self, node: &mut CatchClause<'a>) {
@@ -255,6 +259,7 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
       }
     }
     walk_mut::walk_catch_clause(self, node);
+    remove_known_ids(node.span, &mut self.known_ids, &mut self.scope_ids_map);
   }
 
   fn visit_for_statement(&mut self, node: &mut ForStatement<'a>) {
@@ -262,202 +267,20 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
       mark_scope_identifier(node.span, id, &mut self.known_ids, &mut self.scope_ids_map);
     });
     walk_mut::walk_for_statement(self, node);
+    remove_known_ids(node.span, &mut self.known_ids, &mut self.scope_ids_map);
   }
   fn visit_for_in_statement(&mut self, node: &mut ForInStatement<'a>) {
     walk_for_statement(Either3::B(node), true, &mut |id| {
       mark_scope_identifier(node.span, id, &mut self.known_ids, &mut self.scope_ids_map);
     });
     walk_mut::walk_for_in_statement(self, node);
+    remove_known_ids(node.span, &mut self.known_ids, &mut self.scope_ids_map);
   }
   fn visit_for_of_statement(&mut self, node: &mut ForOfStatement<'a>) {
     walk_for_statement(Either3::C(node), true, &mut |id| {
       mark_scope_identifier(node.span, id, &mut self.known_ids, &mut self.scope_ids_map);
     });
     walk_mut::walk_for_of_statement(self, node);
-  }
-
-  fn leave_node(&mut self, kind: AstKind<'a>) {
-    self.parents.pop();
-    if let Some(span) = match kind {
-      AstKind::IdentifierReference(node) => Some(node.span),
-      AstKind::Function(node) => Some(node.span),
-      AstKind::FunctionBody(node) => Some(node.span),
-      AstKind::ArrowFunctionExpression(node) => Some(node.span),
-      AstKind::BlockStatement(node) => Some(node.span),
-      AstKind::CatchClause(node) => Some(node.span),
-      AstKind::ForStatement(node) => Some(node.span),
-      AstKind::ForOfStatement(node) => Some(node.span),
-      AstKind::ForInStatement(node) => Some(node.span),
-      _ => None,
-    } {
-      let known_ids = &mut self.known_ids;
-      if !self.parents.is_empty()
-        && let Some(scope_ids) = self.scope_ids_map.get(&span)
-      {
-        for id in scope_ids {
-          if let Some(size) = known_ids.get(id) {
-            known_ids.insert(id.clone(), size - 1);
-            if known_ids[id] == 0 {
-              known_ids.remove(id);
-            }
-          }
-        }
-      }
-    }
-
-    if let AstKind::CallExpression(node) = kind
-      && let Some(on_leave_expression) = self.options.on_leave_expression.borrow().as_ref()
-    {
-      on_leave_expression(node)
-    };
-
-    if let Some(on_exit_program) = self.options.on_exit_program.borrow().as_ref()
-      && self.parents.is_empty()
-    {
-      on_exit_program(std::mem::take(&mut self.roots));
-    }
-  }
-}
-
-pub fn mark_known_ids(name: String, known_ids: &mut HashMap<String, u32>) {
-  if let Some(ids) = known_ids.get(&name) {
-    known_ids.insert(name, ids + 1);
-  } else {
-    known_ids.insert(name, 1);
-  }
-}
-
-pub fn mark_scope_identifier(
-  node_span: Span,
-  child: &BindingIdentifier,
-  known_ids: &mut HashMap<String, u32>,
-  scope_ids_map: &mut HashMap<Span, HashSet<String>>,
-) {
-  let name = child.name.to_string();
-  if let Some(scope_ids) = scope_ids_map.get_mut(&node_span) {
-    if scope_ids.contains(&name) {
-      return;
-    } else {
-      scope_ids.insert(name.clone());
-    }
-  } else {
-    scope_ids_map.insert(node_span, HashSet::from([name.clone()]));
-  }
-  mark_known_ids(name, known_ids);
-}
-
-pub fn walk_function_params<'a>(
-  node: &'a AstKind,
-  mut on_ident: impl FnMut(&'a BindingIdentifier) + 'a,
-) {
-  let params = match node {
-    AstKind::Function(node) => &node.params.items,
-    AstKind::ArrowFunctionExpression(node) => &node.params.items,
-    _ => panic!(""),
-  };
-  for p in params {
-    for id in extract_identifiers(&p.pattern, Vec::new()) {
-      on_ident(id)
-    }
-  }
-}
-
-pub fn extract_identifiers<'a>(
-  node: &'a BindingPattern<'a>,
-  mut identifiers: Vec<&'a BindingIdentifier<'a>>,
-) -> Vec<&'a BindingIdentifier<'a>> {
-  match node {
-    BindingPattern::BindingIdentifier(node) => identifiers.push(node.as_ref()),
-    BindingPattern::ObjectPattern(node) => {
-      if let Some(rest) = &node.rest {
-        identifiers = extract_identifiers(&rest.argument, identifiers);
-      } else {
-        for prop in &node.properties {
-          identifiers = extract_identifiers(&prop.value, identifiers)
-        }
-      }
-    }
-    BindingPattern::ArrayPattern(node) => {
-      for element in (&node.elements).into_iter().flatten() {
-        identifiers = extract_identifiers(element, identifiers);
-      }
-    }
-    BindingPattern::AssignmentPattern(node) => {
-      identifiers = extract_identifiers(&node.left, identifiers);
-    }
-  }
-  identifiers
-}
-
-pub fn walk_block_declarations<'a>(
-  body: &'a oxc_allocator::Vec<Statement>,
-  mut on_ident: impl FnMut(&'a BindingIdentifier) + 'a,
-) {
-  for stmt in body {
-    if let Statement::VariableDeclaration(stmt) = stmt {
-      if stmt.declare {
-        continue;
-      }
-      for decl in &stmt.declarations {
-        for id in extract_identifiers(&decl.id, Vec::new()) {
-          on_ident(id)
-        }
-      }
-    } else if let Statement::FunctionDeclaration(stmt) = stmt {
-      if stmt.declare {
-        continue;
-      }
-      if let Some(id) = &stmt.id {
-        on_ident(id);
-      }
-    } else if let Statement::ClassDeclaration(stmt) = stmt {
-      if stmt.declare {
-        continue;
-      }
-      if let Some(id) = &stmt.id {
-        on_ident(id);
-      }
-    } else if let Statement::ForStatement(stmt) = stmt {
-      walk_for_statement(Either3::A(stmt), true, &mut on_ident);
-    } else if let Statement::ForInStatement(stmt) = stmt {
-      walk_for_statement(Either3::B(stmt), true, &mut on_ident);
-    } else if let Statement::ForOfStatement(stmt) = stmt {
-      walk_for_statement(Either3::C(stmt), true, &mut on_ident);
-    }
-  }
-}
-
-pub fn walk_for_statement<'a>(
-  stmt: Either3<&'a ForStatement, &'a ForInStatement, &'a ForOfStatement>,
-  is_var: bool,
-  on_ident: &mut impl FnMut(&'a BindingIdentifier),
-) {
-  let variable = if let Either3::A(stmt) = stmt
-    && let Some(ForStatementInit::VariableDeclaration(stmt)) = &stmt.init
-  {
-    Some(stmt.as_ref())
-  } else if let Either3::B(stmt) = stmt
-    && let ForStatementLeft::VariableDeclaration(stmt) = &stmt.left
-  {
-    Some(stmt.as_ref())
-  } else if let Either3::C(stmt) = stmt
-    && let ForStatementLeft::VariableDeclaration(stmt) = &stmt.left
-  {
-    Some(stmt.as_ref())
-  } else {
-    None
-  };
-  if let Some(variable) = variable
-    && if let VariableDeclarationKind::Var = variable.kind {
-      is_var
-    } else {
-      !is_var
-    }
-  {
-    for decl in &variable.declarations {
-      for id in extract_identifiers(&decl.id, Vec::new()) {
-        on_ident(id)
-      }
-    }
+    remove_known_ids(node.span, &mut self.known_ids, &mut self.scope_ids_map);
   }
 }

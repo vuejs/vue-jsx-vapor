@@ -293,20 +293,9 @@ impl<'a> TransformContext<'a> {
     let mut has_ref = false;
     let mut has_scope_ref = !self.options.optimize_slots;
     let has_scope_ref_ptr = &mut has_scope_ref as *mut _;
-    if matches!(
-      value,
-      Expression::Identifier(_) | Expression::StaticMemberExpression(_)
-    ) || value.is_literal()
-    {
-      if let Some(id) = if let Expression::Identifier(id) = &value {
-        Some(id)
-      } else if let Expression::StaticMemberExpression(id) = &value
-        && let Expression::Identifier(id) = id.get_first_object()
-      {
-        Some(id)
-      } else {
-        None
-      } {
+    let has_ref_ptr = &mut has_ref as *mut bool;
+    WalkIdentifiersMut::new(
+      Box::new(move |id, _| {
         if !self.options.optimize_slots {
           self.add_slot_scopes(id);
         } else if self
@@ -316,44 +305,20 @@ impl<'a> TransformContext<'a> {
           .get(id.name.as_str())
           .is_some()
         {
-          has_scope_ref = true;
+          *unsafe { &mut *has_scope_ref_ptr } = true;
           self.add_slot_scopes(id);
         }
-        has_ref = true;
-        self
-          .reference_expressions
-          .borrow_mut()
-          .insert(span, has_ref);
-      };
-      (value, has_scope_ref)
-    } else {
-      let has_ref_ptr = &mut has_ref as *mut bool;
-      WalkIdentifiersMut::new(
-        Box::new(move |id, _, _, _, _| {
-          if !self.options.optimize_slots {
-            self.add_slot_scopes(id);
-          } else if self
-            .options
-            .identifiers
-            .borrow()
-            .get(id.name.as_str())
-            .is_some()
-          {
-            *unsafe { &mut *has_scope_ref_ptr } = true;
-            self.add_slot_scopes(id);
-          }
-          *unsafe { &mut *has_ref_ptr } = true;
-          None
-        }),
-        self.options,
-      )
-      .visit(&mut value);
-      self
-        .reference_expressions
-        .borrow_mut()
-        .insert(span, has_ref);
-      (value, has_scope_ref)
-    }
+        *unsafe { &mut *has_ref_ptr } = true;
+        None
+      }),
+      self.options,
+    )
+    .visit(&mut value);
+    self
+      .reference_expressions
+      .borrow_mut()
+      .insert(span, has_ref);
+    (value, has_scope_ref)
   }
 
   fn add_slot_scopes(&self, id: &IdentifierReference) {
@@ -381,28 +346,15 @@ impl<'a> TransformContext<'a> {
     let Some(exp) = exp else { return vec![] };
     let identifiers = self.options.identifiers.as_ptr();
     let mut ids = vec![];
-    let ids_ptr = &mut ids as *mut Vec<String>;
-    match exp {
-      Expression::Identifier(id) => {
-        let name = id.name.to_string();
-        ids.push(name.clone());
-        unsafe { &mut *identifiers }
-          .entry(name)
-          .and_modify(|v| *v += 1)
-          .or_insert(1);
-      }
-      _ => {
-        WalkIdentifiers::new(Box::new(move |id, _, _, _, _| {
-          let name = id.name.to_string();
-          unsafe { &mut *ids_ptr }.push(name.clone());
-          unsafe { &mut *identifiers }
-            .entry(name)
-            .and_modify(|v| *v += 1)
-            .or_insert(1);
-        }))
-        .visit(exp);
-      }
-    };
+    WalkIdentifiers::new(Box::new(|id, _, _| {
+      let name = id.name.to_string();
+      ids.push(name.clone());
+      unsafe { &mut *identifiers }
+        .entry(name)
+        .and_modify(|v| *v += 1)
+        .or_insert(1);
+    }))
+    .visit(exp);
     ids
   }
 

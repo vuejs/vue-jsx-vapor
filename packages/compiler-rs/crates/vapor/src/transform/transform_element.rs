@@ -589,13 +589,7 @@ pub fn transform_prop<'a>(
     } else {
       let semantic = &context.options.semantic.borrow();
       let scope_id = semantic.nodes().get_node(node.node_id()).scope_id();
-      let camelize_name = camelize(&name);
-      dbg!(
-        semantic
-          .scoping()
-          .find_binding(scope_id, Ident::from_in(&camelize_name, context.allocator))
-          .is_some()
-      );
+      let camelize_name = camelize(name);
       if semantic
         .scoping()
         .find_binding(scope_id, Ident::from_in(&camelize_name, context.allocator))

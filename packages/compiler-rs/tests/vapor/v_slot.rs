@@ -262,7 +262,7 @@ fn slot_prop_rest_with_computed_keys_preserved() {
   import { getRestElement as _getRestElement, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
   	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
-  		const _n0 = _createNodes(() => _slotProps0.foo + _getRestElement(_slotProps0, ["foo", _slotProps0[key]]).other);
+  		const _n0 = _createNodes(() => _slotProps0.foo + _getRestElement(_slotProps0, ["foo", key]).other);
   		return _n0;
   	}) }, true);
   	return _n2;

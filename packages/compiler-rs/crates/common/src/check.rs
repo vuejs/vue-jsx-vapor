@@ -330,11 +330,7 @@ pub fn get_directive_name(s: &str) -> Option<&str> {
 // @param parent - The parent node of the input `node`.
 // @param grandparent - The grandparent node of the input `node`.
 // @returns True if the input `node` is a reference to a bound variable, false otherwise.
-fn is_referenced(
-  node: &IdentifierReference,
-  parent: &AstKind,
-  grandparent: Option<&AstKind>,
-) -> bool {
+fn is_referenced(node: &IdentifierReference, parent: AstKind) -> bool {
   match parent {
     // yes: PARENT[NODE]
     // yes: NODE.child
@@ -380,15 +376,7 @@ fn is_referenced(
     // no: { NODE: "" }
     // depends: { NODE }
     // depends: { key: NODE }
-    AstKind::ObjectProperty(parent) => {
-      if parent.computed && parent.key.span().eq(&node.span) {
-        true
-      } else if let Some(grandparent) = grandparent {
-        !matches!(grandparent, AstKind::ObjectPattern(_))
-      } else {
-        true
-      }
-    }
+    AstKind::ObjectProperty(_) => true,
     // no: class { NODE = value; }
     // yes: class { [NODE] = value; }
     // yes: class { key = NODE; }
@@ -412,12 +400,17 @@ fn is_referenced(
     }
 
     // yes: left = NODE;
-    // no: NODE = right;
-    AstKind::AssignmentExpression(parent) => parent.right.span().eq(&node.span),
+    // yes: NODE = right;
+    AstKind::AssignmentExpression(_) => {
+      // babel's isReferenced check returns false for ids being assigned to, so we
+      // need to cover those cases here
+      // parent.right.span().eq(&node.span)
+      true
+    }
 
-    // no: [NODE = foo] = [];
+    // yes: [NODE = foo] = [];
     // yes: [foo = NODE] = [];
-    AstKind::AssignmentPattern(parent) => parent.right.span().eq(&node.span),
+    AstKind::AssignmentPattern(_) => true,
 
     // no: NODE: for (;;) {}
     AstKind::LabeledStatement(_) => false,
@@ -446,12 +439,7 @@ fn is_referenced(
     // no: export { foo as NODE };
     // yes: export { NODE as foo };
     // no: export { NODE as foo } from "foo";
-    AstKind::ExportSpecifier(parent) => {
-      if matches!(grandparent, Some(AstKind::ExportNamedDeclaration(_))) {
-        return false;
-      }
-      parent.local.span().eq(&node.span)
-    }
+    AstKind::ExportSpecifier(parent) => parent.local.span().eq(&node.span),
 
     // no: import NODE from "foo";
     // no: import * as NODE from "foo";
@@ -494,57 +482,16 @@ fn is_referenced(
   }
 }
 
-pub fn is_referenced_identifier<'a>(id: &IdentifierReference, parents: &Vec<AstKind<'a>>) -> bool {
-  let Some(parent) = parents.last() else {
-    return true;
-  };
+pub fn is_referenced_identifier<'a>(id: &IdentifierReference, parent: Option<AstKind<'a>>) -> bool {
+  let Some(parent) = parent else { return true };
 
   // is a special keyword but parsed as identifier
   if id.name.eq("arguments") {
     return false;
   }
-
-  if is_referenced(
-    id,
-    parent,
-    if parents.len() > 1 {
-      parents.get(parents.len() - 2)
-    } else {
-      None
-    },
-  ) {
-    return true;
+  if id.name.eq("zhiyuanzmj") {
+    dbg!(id);
   }
 
-  // babel's isReferenced check returns false for ids being assigned to, so we
-  // need to cover those cases here
-  if matches!(
-    parent,
-    AstKind::AssignmentExpression(_) | AstKind::AssignmentPattern(_)
-  ) {
-    true
-  } else if let AstKind::ObjectProperty(_parent) = parent {
-    _parent.key.span().eq(&id.span) && is_in_desctructure_assignment(parent, parents)
-  } else {
-    false
-  }
-}
-
-fn is_in_desctructure_assignment(parent: &AstKind, parents: &Vec<AstKind>) -> bool {
-  if matches!(
-    parent,
-    AstKind::ObjectProperty(_) | AstKind::ArrayPattern(_)
-  ) {
-    for p in parents.iter().rev() {
-      if matches!(p, AstKind::AssignmentExpression(_)) {
-        return true;
-      } else if !(matches!(
-        p,
-        AstKind::ObjectProperty(_) | AstKind::ObjectPattern(_) | AstKind::ArrayPattern(_)
-      )) {
-        break;
-      }
-    }
-  }
-  false
+  is_referenced(id, parent)
 }

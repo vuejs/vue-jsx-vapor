@@ -43,21 +43,16 @@ pub fn gen_expression<'a>(
     return gen_identifier(content, context, loc, assignment);
   };
 
-  let span = ast.span();
-  let mut expression = if let Expression::Identifier(ast) = ast {
-    gen_identifier(&ast.name, context, span, None)
-  } else {
-    WalkIdentifiersMut::new(
-      Box::new(|id, _, _, _, _| {
-        let span = id.span();
-        let content = span.source_text(context.source_text);
-        Some(gen_identifier(content, context, span, None))
-      }),
-      context.options,
-    )
-    .visit(ast);
-    ast.take_in(context.ast.allocator)
-  };
+  WalkIdentifiersMut::new(
+    Box::new(|id, _| {
+      let span = id.span();
+      let content = span.source_text(context.source_text);
+      Some(gen_identifier(content, context, span, None))
+    }),
+    context.options,
+  )
+  .visit(ast);
+  let mut expression = ast.take_in(context.ast.allocator);
   if let Some(assignment) = assignment {
     let span = expression.span();
     expression = context.ast.expression_assignment(

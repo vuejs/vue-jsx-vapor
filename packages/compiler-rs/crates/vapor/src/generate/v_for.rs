@@ -544,15 +544,9 @@ fn match_selector_pattern<'a>(
           key.eq(&context.source_text[left.span().start as usize..left.span().end as usize]);
         let right_is_key =
           key.eq(&context.source_text[right.span().start as usize..right.span().end as usize]);
-        if left_is_key
-          && !right_is_key
-          && analyze_variable_scopes(right, id_map, context).is_empty()
-        {
+        if left_is_key && !right_is_key && !analyze_variable_scopes(right, id_map, context) {
           matcheds.push((left.span(), right.span()));
-        } else if right_is_key
-          && !left_is_key
-          && analyze_variable_scopes(left, id_map, context).is_empty()
-        {
+        } else if right_is_key && !left_is_key && !analyze_variable_scopes(left, id_map, context) {
           matcheds.push((right.span(), left.span()));
         }
       }
@@ -565,7 +559,7 @@ fn match_selector_pattern<'a>(
 
     let mut has_extra_id = false;
     let _has_extra_id = &mut has_extra_id as *mut bool;
-    WalkIdentifiers::new(Box::new(move |id, _, _, _, _| {
+    WalkIdentifiers::new(Box::new(move |id, _, _| {
       let start = id.span.start;
       if start != key.start && start != selector.start {
         *unsafe { &mut *_has_extra_id } = true
@@ -592,19 +586,16 @@ fn analyze_variable_scopes<'a>(
   ast: &Expression,
   id_map: &HashMap<String, Expression<'a>>,
   context: &'a CodegenContext<'a>,
-) -> Vec<String> {
-  let mut locals = vec![];
-  let _locals = &mut locals as *mut Vec<String>;
-  let _id_map = id_map as *const HashMap<String, Expression>;
-  WalkIdentifiers::new(Box::new(move |id, _, _, _, _| unsafe {
+) -> bool {
+  let mut has_local = false;
+  WalkIdentifiers::new(Box::new(|id, _, _| {
     let name = id.name.to_string();
-    if !is_globally_allowed(&name) && (&*_id_map).get(&name).is_some() {
-      (&mut *_locals).push(name);
+    if !is_globally_allowed(&name) && id_map.get(&name).is_some() {
+      has_local = true;
     }
   }))
   .visit(&ast.clone_in(context.ast.allocator));
-
-  locals
+  has_local
 }
 
 fn get_expression<'a>(effect: &'a IREffect<'a>) -> Option<&'a SimpleExpressionNode<'a>> {

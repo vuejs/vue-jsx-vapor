@@ -175,6 +175,31 @@ fn selector_pattern4() {
 }
 
 #[test]
+fn should_not_selector_pattern() {
+  let code = transform(
+    "<tr
+      v-for={row in rows}
+      key={row.id}
+      class={{ danger: row.id === selected ? danger : null }}
+    ></tr>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createFor as _createFor, renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
+  const _t0 = _template("<tr>");
+  (() => {
+  	const _n0 = _createFor(() => rows, (_for_item0) => {
+  		const _n2 = _t0();
+  		_renderEffect(() => _setClass(_n2, { danger: _for_item0.value.id === selected ? danger : null }));
+  		return _n2;
+  	}, (row) => row.id);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn multi_effect() {
   let code = transform(
     "<div v-for={(item, index) in items} item={item} index={index} />",

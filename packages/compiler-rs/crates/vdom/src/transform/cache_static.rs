@@ -390,15 +390,10 @@ pub fn get_constant_type<'a>(
         ConstantTypes::CanStringify
       } else {
         let mut has_ref = false;
-        if node.is_identifier_reference() || matches!(node, Expression::StaticMemberExpression(_)) {
+        WalkIdentifiers::new(Box::new(|_, _, _| {
           has_ref = true;
-        } else {
-          let has_ref_ptr = &mut has_ref as *mut bool;
-          WalkIdentifiers::new(Box::new(move |_, _, _, _, _| {
-            *unsafe { &mut *has_ref_ptr } = true;
-          }))
-          .visit(node);
-        }
+        }))
+        .visit(node);
         if has_ref {
           ConstantTypes::NotConstant
         } else {

@@ -515,7 +515,7 @@ pub fn build_props<'a>(
               } else {
                 let semantic = &context.options.semantic.borrow();
                 let scope_id = semantic.nodes().get_node(node.node_id()).scope_id();
-                let camelize_name = camelize(&name);
+                let camelize_name = camelize(name);
                 if semantic
                   .scoping()
                   .find_binding(scope_id, Ident::from_in(&camelize_name, context.allocator))
