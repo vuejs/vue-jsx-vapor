@@ -47,7 +47,7 @@ We can also use the `v-for` directive to render a list that has the same perform
 </ul>
 ```
 
-Here todo is a local variable representing the array element currently being iterated on. It's only accessible on or inside the v-for element, similar to a function scope.
+Here, `todo` is a local variable representing the array element currently being iterated on. It's only accessible on or inside the v-for element, similar to a function scope.
 
 Notice how we are also giving each todo object a unique id, and binding it as the special key attribute for each `<li>`. The key allows Vue to accurately move each `<li>` to match the position of its corresponding object in the array.
 

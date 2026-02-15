@@ -29,7 +29,7 @@ const apps  = {
 
 <jsx-repl :files :apps prev="/tutorial/step-6/" next="/tutorial/step-8/">
 
-In this example, let's add out `Child` component to our app. We've defined it in another file, though you can put multiple components in the same file. First we must import it:
+In this example, let's add our `Child` component to our app. We've defined it in another file, though you can put multiple components in the same file. First we must import it:
 
 ```jsx
 import Child from './Child'

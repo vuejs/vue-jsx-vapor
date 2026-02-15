@@ -44,7 +44,7 @@ const Comp = (props) => (
 ## Deconstruct Props
 
 ::: warning
-The different from other JSX frameworks is that props lose reactivity when you deconstruct them:
+Unlike other JSX frameworks, props lose reactivity when you deconstruct them:
 :::
 
 ```jsx
@@ -55,7 +55,7 @@ const Comp = ({ foo }) => (
 )
 ````
 
-We have two Solutions:
+We have two solutions:
 
 1. Pass a reactive ref object as a prop directly:
 ```jsx
@@ -87,6 +87,6 @@ const Comp = defineVaporComponent((__props) => {
 Then the `foo` prop will regain reactivity.\
 [More details](/features/macros.html#definecomponent-definevaporcomponent)
 
-Now try it yourself - make the `foo` prop reactivity.
+Now try it yourself - make the `foo` prop reactive.
 
 </jsx-repl>

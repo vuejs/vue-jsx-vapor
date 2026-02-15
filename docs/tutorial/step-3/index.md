@@ -55,13 +55,13 @@ We can use string, object or array expression to conditionally bind classes:
 ```tsx
 export default (props: { hidden: boolean }) => (
   <>
-    <h1 style={props.hidden && 'hidden'}>h1</h1>
+    <h1 class={props.hidden && 'hidden'}>h1</h1>
     <h2 class={{ 'hidden': props.hidden }}>h2</h2>
     <h3 class={[ props.hidden && 'hidden' ]}>h3</h3>
   </>
 )
 ```
 
-Now, try to add a dynamic `class` binding to the `<h1>`, using the `titleClass` variable as its value. if it's bound correctly, the text should turn red.
+Now, try to add a dynamic `class` binding to the `<h1>`, using the `titleClass` variable as its value. If it's bound correctly, the text should turn red.
 
 </jsx-repl>

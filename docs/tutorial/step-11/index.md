@@ -63,7 +63,7 @@ const Comp = (props) => {
 ```
 
 ## Access exposed state
-We can use `ref` prop to take the exposed state and use it later:
+We can use the `ref` prop to get the exposed state and use it later:
 
 ```jsx
 import { shallowRef } from 'vue'

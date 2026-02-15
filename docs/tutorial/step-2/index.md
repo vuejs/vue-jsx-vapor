@@ -4,7 +4,7 @@ prev: false
 next: false
 ---
 
-# Introduction JSX
+# Introducing JSX
   
 <script setup>
 import appCode from './app.tsx?raw'
@@ -25,7 +25,7 @@ const apps  = {
 
 <jsx-repl :files :apps prev="/tutorial/step-1/" next="/tutorial/step-3/">
 
-JSX is the HTML-like syntax that allow you embed dynamic expressions using `{ }` to reference variables and functions.
+JSX is an HTML-like syntax that allows you to embed dynamic expressions using `{ }` to reference variables and functions.
 In this example, we include the string `name` in our JSX using `{name}` inside a div, and we render a JSX element that was directly assigned to the `a` variable.
 
 There are 4 main differences between JSX and HTML:
@@ -45,6 +45,6 @@ There are 4 main differences between JSX and HTML:
 
 4. JSX doesn't support HTML Comments `<!--...-->` or special tags like `<!DOCTYPE>`. Use JSX comments `{/*...*/}` instead, and they won't render to HTML.
 
-Now, try to the use `name` variable in JSX, and update the variable `a` to `<a href="#">link</a>`.
+Now, try to use the `name` variable in JSX, and update the variable `a` to `<a href="#">link</a>`.
 
 </jsx-repl>

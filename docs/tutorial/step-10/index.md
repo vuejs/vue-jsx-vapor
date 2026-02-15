@@ -33,7 +33,7 @@ const apps = {
 
 <jsx-repl :files :apps prev="/tutorial/step-9/" next="/tutorial/step-11/">
 
-There are cases where it could be useful if a slot's content can make use of data from both the parent scope and the child scope. we have two ways to achieve that:
+There are cases where it could be useful if a slot's content can make use of data from both the parent scope and the child scope. We have two ways to achieve that:
 
 1. We can pass attributes to the `<slots.default />` just like passing props to a component
 ```jsx
@@ -50,7 +50,7 @@ const Comp = () => {
 }
 ```
 
-## Using scoped slot
+## Using Scoped Slots
 We are going to show how to receive props using slots, we have four ways:
 
 1. Using a function expression in `<Comp>`:
@@ -60,7 +60,7 @@ export default () => (
 )
 ```
 
-2. Using a object expression in `<Comp>` for multiple slots:
+2. Using an object expression in `<Comp>` for multiple slots:
 ```jsx
 export default () => (
   <Comp>{{ 

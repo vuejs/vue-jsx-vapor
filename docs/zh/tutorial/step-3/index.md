@@ -55,7 +55,7 @@ export default (props: { hidden: boolean }) => (
 ```tsx
 export default (props: { hidden: boolean }) => (
   <>
-    <h1 style={props.hidden && 'hidden'}>h1</h1>
+    <h1 class={props.hidden && 'hidden'}>h1</h1>
     <h2 class={{ 'hidden': props.hidden }}>h2</h2>
     <h3 class={[ props.hidden && 'hidden' ]}>h3</h3>
   </>

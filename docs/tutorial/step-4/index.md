@@ -42,6 +42,6 @@ We also support [event modifiers](https://vuejs.org/guide/essentials/event-handl
 </form>
 ```
 
-Now, try to add a event handler `onClick` binding to the `<h1>`, using the `onClick` variable as its value. and then click the `h1`.
+Now, try to add an event handler `onClick` binding to the `<h1>`, using the `onClick` variable as its value, and then click the `h1`.
 
 </jsx-repl>
