@@ -9,13 +9,15 @@
 2. **Naming Conventions**: Hyphenated prop names and component names are not automatically converted to camelCase. Use camelCase naming consistently throughout your codebase.
 
 3. **`v-model` Syntax**: Array expressions are not supported with `v-model`. Use the explicit modifier syntax instead:
-   ```tsx
-   // ❌ Not supported
-   v-model={[foo, ['trim']]}
-   
-   // ✅ Use this instead
-   v-model:$name$_trim={foo}
-   ```
+    ```tsx
+      <>
+        {/* ❌ Not supported */}
+        <input v-model={[foo, ['trim']]} />
+        
+        {/* ✅ Use this instead */}
+        <input v-model:$name$_trim={foo} />
+      </>
+    ```
 
 4. **`v-models` Directive**: The `v-models` directive is not supported. Define multiple `v-model` bindings separately.
 
