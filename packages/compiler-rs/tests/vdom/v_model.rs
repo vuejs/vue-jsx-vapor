@@ -300,10 +300,10 @@ fn should_generate_model_modifiers_for_component_v_model_with_arguments() {
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, {
-  	foo,
+  	"foo": foo,
   	"onUpdate:foo": ($event) => foo = $event,
   	fooModifiers: { trim: true },
-  	bar,
+  	"bar": bar,
   	"onUpdate:bar": ($event) => bar = $event,
   	barModifiers: { number: true }
   }, null, 8, [
@@ -328,7 +328,7 @@ fn should_generate_model_modifiers_dollar_for_component_v_model_model_with_argum
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, {
-  	model: foo,
+  	"model": foo,
   	"onUpdate:model": ($event) => foo = $event,
   	modelModifiers$: { trim: true }
   }, null, 8, ["model", "onUpdate:model"]);

@@ -1,6 +1,5 @@
 use common::ast::{RootNode, get_first_child};
 use common::directive::Directives;
-use common::expression::parse_expression;
 pub use common::options::TransformOptions;
 use common::walk::WalkIdentifiers;
 use common::walk_mut::WalkIdentifiersMut;
@@ -330,15 +329,6 @@ impl<'a> TransformContext<'a> {
     }
     for value in slot_scopes.values_mut() {
       value.seen += 1;
-    }
-  }
-
-  pub fn parse_dynamic_arg(&self, arg: &str, span: Span) -> Expression<'a> {
-    let arg = arg.replace("_", ".");
-    if !arg.contains(".") {
-      self.ast.expression_identifier(SPAN, self.ast.atom(&arg))
-    } else {
-      parse_expression(&arg, span, self.allocator, self.options.source_type).unwrap()
     }
   }
 

@@ -3,7 +3,7 @@ use oxc_ast::ast::JSXAttribute;
 use crate::transform::{
   DirectiveTransformResult, TransformContext, transform_element::build_directive_args,
 };
-use common::{directive::resolve_directive, error::ErrorCodes};
+use common::{directive::resolve_directive1, error::ErrorCodes};
 
 pub fn transform_v_show<'a>(
   dir: &'a mut JSXAttribute<'a>,
@@ -17,7 +17,7 @@ pub fn transform_v_show<'a>(
   Some(DirectiveTransformResult {
     props: vec![],
     runtime: Some(build_directive_args(
-      resolve_directive(dir, context.source_text),
+      resolve_directive1(dir, context.ast),
       context,
       &context.helper("vShow"),
     )),

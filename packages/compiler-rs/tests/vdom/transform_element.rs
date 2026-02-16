@@ -378,7 +378,7 @@ fn directive_transforms() {
   	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
   		_directive_foo,
   		hello,
-  		bar
+  		"bar"
   	]]);
   })();
   "#)

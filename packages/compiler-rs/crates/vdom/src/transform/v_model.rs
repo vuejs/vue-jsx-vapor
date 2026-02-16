@@ -14,7 +14,7 @@ use crate::transform::{
 };
 use common::{
   check::{is_jsx_component, is_simple_identifier},
-  directive::{Directives, get_modifier_prop_name, resolve_directive},
+  directive::{Directives, get_modifier_prop_name, resolve_directive1},
   error::ErrorCodes,
   text::get_tag_name,
 };
@@ -60,35 +60,32 @@ pub fn transform_v_model<'a>(
     return None;
   }
 
-  let dir = resolve_directive(_dir, context.source_text);
+  let dir_span = _dir.span;
+  let dir = resolve_directive1(_dir, context.ast);
   let tag = get_tag_name(&node.opening_element.name, context.source_text);
   let is_component = is_jsx_component(node, true, context.options);
 
   let arg_is_some = dir.arg.is_some();
   let mut computed = false;
 
-  let prop_name = if let Some(arg) = &dir.arg {
-    if arg.is_static {
-      ast.property_key_static_identifier(arg.loc, ast.atom(&arg.content))
-    } else {
-      context.parse_dynamic_arg(&arg.content, arg.loc).into()
-    }
+  let prop_name = if let Some(arg) = dir.arg.as_ref() {
+    arg.clone_in(context.allocator).into()
   } else {
-    ast.property_key_static_identifier(Span::new(dir.loc.start, dir.loc.start + 7), "modelValue")
+    ast.property_key_static_identifier(Span::new(dir_span.start, dir_span.start + 7), "modelValue")
   };
 
   // modelModifiers: { foo: true, "bar-baz": true }
   let modfiiers = if !dir.modifiers.is_empty() && is_component {
-    let modifiers = dir.modifiers.iter().map(|m| {
+    let modifiers = dir.modifiers.iter().map(|modifier| {
       ast.object_property_kind_object_property(
         SPAN,
         PropertyKind::Init,
         ast.property_key_static_identifier(
           SPAN,
-          ast.atom(&if is_simple_identifier(&m.content) {
-            m.content.clone()
+          ast.atom(&if is_simple_identifier(&modifier) {
+            modifier.clone()
           } else {
-            format!("\"{}\"", m.content)
+            format!("\"{}\"", modifier)
           }),
         ),
         ast.expression_boolean_literal(SPAN, true),
@@ -97,9 +94,9 @@ pub fn transform_v_model<'a>(
         false,
       )
     });
-    let modifiers_key = if let Some(arg) = &dir.arg {
-      if arg.is_static {
-        ast.property_key_static_identifier(SPAN, ast.atom(&get_modifier_prop_name(&arg.content)))
+    let modifiers_key = if let Some(arg) = dir.arg.as_ref() {
+      if let Expression::StringLiteral(arg) = arg {
+        ast.property_key_static_identifier(SPAN, ast.atom(&get_modifier_prop_name(&arg.value)))
       } else {
         computed = true;
         ast
@@ -131,7 +128,7 @@ pub fn transform_v_model<'a>(
   };
 
   let event_name = if let Some(arg) = dir.arg.as_ref() {
-    if arg.is_static {
+    if let Expression::StringLiteral(_) = arg {
       ast.property_key_static_identifier(
         SPAN,
         ast.atom(&format!("\"onUpdate:{}\"", prop_name.name().unwrap())),
@@ -238,7 +235,7 @@ pub fn transform_v_model<'a>(
   }
 
   if arg_is_some {
-    context.options.on_error.as_ref()(ErrorCodes::VModelArgOnElement, dir.loc);
+    context.options.on_error.as_ref()(ErrorCodes::VModelArgOnElement, dir_span);
   }
 
   let mut runtime_name = None;

@@ -26,7 +26,7 @@ use common::{
     get_directive_name, is_built_in_directive, is_event, is_jsx_component, is_reserved_prop,
     is_template,
   },
-  directive::{DirectiveNode, resolve_directive},
+  directive::{DirectiveNode1, resolve_directive1},
   error::ErrorCodes,
   patch_flag::PatchFlags,
   text::{camelize, get_tag_name, to_valid_asset_id},
@@ -530,12 +530,8 @@ pub fn build_props<'a>(
                 }
               };
               runtime_directives.push(
-                build_directive_args(
-                  resolve_directive(prop, context.source_text),
-                  context,
-                  &runtime,
-                )
-                .into(),
+                build_directive_args(resolve_directive1(prop, context.ast), context, &runtime)
+                  .into(),
               );
               // custom dirs may use beforeUpdate so they need to force blocks
               // to ensure before-update gets called before children update
@@ -779,7 +775,7 @@ pub fn dedupe_properties<'a>(
 }
 
 pub fn build_directive_args<'a>(
-  mut dir: DirectiveNode<'a>,
+  mut dir: DirectiveNode1<'a>,
   context: &'a TransformContext<'a>,
   runtime: &str,
 ) -> Expression<'a> {
@@ -789,18 +785,11 @@ pub fn build_directive_args<'a>(
   dir_args.push(ast.expression_identifier(SPAN, ast.atom(runtime)));
   let exp_is_none = dir.exp.is_none();
   if let Some(exp) = dir.exp.as_mut() {
-    dir_args.push(if let Some(exp) = exp.ast.as_mut() {
-      context.process_expression(exp).0
-    } else {
-      ast.expression_string_literal(exp.loc, ast.atom(&exp.content), None)
-    });
+    dir_args.push(context.jsx_attribute_value_to_expression(exp));
   }
   let arg_is_none = dir.arg.is_none();
-  if let Some(arg) = dir.arg.as_ref() {
-    if arg_is_none {
-      dir_args.push(ast.expression_identifier(SPAN, "void 0"))
-    }
-    dir_args.push(context.parse_dynamic_arg(&arg.content, arg.loc))
+  if let Some(arg) = dir.arg.take() {
+    dir_args.push(arg)
   }
   if !dir.modifiers.is_empty() {
     if arg_is_none {
@@ -810,12 +799,12 @@ pub fn build_directive_args<'a>(
       dir_args.push(ast.expression_identifier(SPAN, "void 0"));
     }
     dir_args.push(ast.expression_object(
-      dir.loc,
+      SPAN,
       ast.vec_from_iter(dir.modifiers.iter().map(|modifier| {
         ast.object_property_kind_object_property(
-          modifier.loc,
+          SPAN,
           PropertyKind::Init,
-          ast.property_key_static_identifier(SPAN, ast.atom(&modifier.content)),
+          ast.property_key_static_identifier(SPAN, ast.atom(&modifier)),
           ast.expression_boolean_literal(SPAN, true),
           false,
           false,
@@ -826,7 +815,7 @@ pub fn build_directive_args<'a>(
   }
 
   ast.expression_array(
-    dir.loc,
+    SPAN,
     ast.vec_from_iter(dir_args.into_iter().map(|arg| arg.into())),
   )
 }

@@ -56,7 +56,7 @@ fn static_parameters() {
   	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
   		_directive_example,
   		msg,
-  		foo
+  		"foo"
   	]]);
   })();
   "#);
@@ -127,7 +127,7 @@ fn static_argument_and_modifiers() {
   	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
   		_directive_example,
   		msg,
-  		foo,
+  		"foo",
   		{ bar: true }
   	]]);
   })();
@@ -202,11 +202,7 @@ fn none_resolve_directive() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
-  _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
-  	vExample,
-  	msg,
-  	vExample
-  ]]);
+  _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[vExample, msg]]);
   "#);
 }
 

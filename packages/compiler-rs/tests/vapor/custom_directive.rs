@@ -176,11 +176,7 @@ fn none_resolve_directive() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_withVaporDirectives(_n0, [[
-  		vExample,
-  		() => msg,
-  		"vExample"
-  	]]);
+  	_withVaporDirectives(_n0, [[vExample, () => msg]]);
   	return _n0;
   })();
   "#);

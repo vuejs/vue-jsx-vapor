@@ -1,15 +1,20 @@
 use napi::bindgen_prelude::Either3;
-use oxc_ast::ast::{JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXElement};
-use oxc_span::{SPAN, Span};
+use oxc_allocator::TakeIn;
+use oxc_ast::{
+  AstBuilder,
+  ast::{
+    Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElement,
+  },
+};
+use oxc_span::{SPAN, SourceType, Span};
 
 use crate::{
   check::{is_event_option_modifier, is_keyboard_event, is_non_key_modifier, maybe_key_modifier},
-  expression::SimpleExpressionNode,
+  expression::{SimpleExpressionNode, parse_expression},
 };
 
 #[derive(Debug, Clone)]
 pub struct DirectiveNode<'a> {
-  // the normalized name without prefix or shorthands, e.g. "bind", "on"
   pub name: String,
   pub exp: Option<SimpleExpressionNode<'a>>,
   pub arg: Option<SimpleExpressionNode<'a>>,
@@ -29,7 +34,6 @@ pub fn resolve_directive<'a>(node: &'a mut JSXAttribute<'a>, source: &'a str) ->
       )
     }
   };
-  let is_directive = name_string.starts_with("v-");
   let mut modifiers: Vec<String> = vec![];
   let mut is_static = true;
 
@@ -61,29 +65,23 @@ pub fn resolve_directive<'a>(node: &'a mut JSXAttribute<'a>, source: &'a str) ->
     }
   }
 
-  let dir_name = if is_directive {
-    name_string[2..].to_string()
-  } else {
-    String::from("bind")
-  };
-
-  let arg = if is_directive {
-    if !arg_string.is_empty()
-      && let JSXAttributeName::NamespacedName(_) = &node.name
-    {
-      Some(SimpleExpressionNode {
-        content: arg_string,
-        is_static,
-        ast: None,
-        loc: arg_span,
-      })
+  let dir_index = name_string.char_indices().find_map(|(i, c)| {
+    if c == '-' {
+      Some(i + 1)
+    } else if c.is_ascii_uppercase() {
+      Some(i)
     } else {
       None
     }
-  } else if let JSXAttributeName::Identifier(_) = &node.name {
+  });
+  let dir_name = name_string[dir_index.unwrap()..].to_string();
+
+  let arg = if !arg_string.is_empty()
+    && let JSXAttributeName::NamespacedName(_) = &node.name
+  {
     Some(SimpleExpressionNode {
-      content: name_string,
-      is_static: true,
+      content: arg_string,
+      is_static,
       ast: None,
       loc: arg_span,
     })
@@ -111,6 +109,77 @@ pub fn resolve_directive<'a>(node: &'a mut JSXAttribute<'a>, source: &'a str) ->
     arg,
     loc: SPAN,
     modifiers,
+  }
+}
+
+#[derive(Debug)]
+pub struct DirectiveNode1<'a> {
+  pub exp: Option<JSXAttributeValue<'a>>,
+  pub arg: Option<Expression<'a>>,
+  pub modifiers: Vec<String>,
+}
+
+pub fn resolve_directive1<'a>(
+  node: &'a mut JSXAttribute<'a>,
+  ast: &AstBuilder<'a>,
+) -> DirectiveNode1<'a> {
+  let mut arg_string = String::new();
+  let (arg_span, name_string) = match &node.name {
+    JSXAttributeName::Identifier(name) => (name.span, name.name.to_string()),
+    JSXAttributeName::NamespacedName(name) => {
+      arg_string = name.name.name.to_string();
+      (
+        Span::new(name.name.span.start + 1, name.name.span.end - 1),
+        name.namespace.name.to_string(),
+      )
+    }
+  };
+  let mut modifiers: Vec<String> = vec![];
+  let mut is_static = true;
+
+  if !matches!(node.name, JSXAttributeName::NamespacedName(_)) {
+    let name_string_splited: Vec<&str> = name_string.split("_").collect();
+    if name_string_splited.len() > 1 {
+      modifiers = name_string_splited[1..]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+    }
+  } else {
+    let cloned = arg_string.clone();
+    let splited = &mut cloned.split("$").collect::<Vec<_>>();
+    if splited.len() > 2 {
+      is_static = false;
+      arg_string = splited[1].replace("_", ".");
+      if !splited[2].is_empty() {
+        modifiers = splited[2][1..]
+          .split("_")
+          .map(|s| s.to_string())
+          .collect::<Vec<_>>();
+      }
+    } else {
+      let mut splited = cloned.split("_").map(|i| i.to_string()).collect::<Vec<_>>();
+      arg_string = splited.remove(0);
+      modifiers = splited;
+    }
+  }
+
+  let arg = if !arg_string.is_empty()
+    && let JSXAttributeName::NamespacedName(_) = &node.name
+  {
+    if is_static {
+      Some(ast.expression_string_literal(SPAN, ast.atom(&arg_string), None))
+    } else {
+      parse_expression(&arg_string, arg_span, ast.allocator, SourceType::jsx())
+    }
+  } else {
+    None
+  };
+
+  DirectiveNode1 {
+    arg,
+    exp: node.value.as_mut().map(|exp| exp.take_in(ast.allocator)),
+    modifiers: modifiers.into_iter().map(|modifier| modifier).collect(),
   }
 }
 
