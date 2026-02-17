@@ -174,7 +174,6 @@ pub unsafe fn transform_v_for<'a>(
         &mut node.children,
         context,
         &mut context.codegen_map.borrow_mut(),
-        false,
       );
     }
     let child_block = unsafe { &mut *codegen_map }.remove(&node_span).unwrap();

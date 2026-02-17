@@ -223,7 +223,7 @@ pub fn create_children_codegen_node<'a>(
     inject_prop(vnode_call, key_property, context);
   }
   let children = &mut ast.vec1(unsafe { &mut *branch.node }.take_in(context.allocator));
-  cache_static_children(None, children, context, codegen_map, false);
+  cache_static_children(None, children, context, codegen_map);
   branch.node = children.first_mut().unwrap();
   match codegen_map.remove(&span).unwrap() {
     NodeTypes::VNodeCall(vnode_call) => context.gen_vnode_call(vnode_call, codegen_map),

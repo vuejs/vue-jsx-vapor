@@ -26,7 +26,8 @@ pub struct CompilerOptions {
   /**
    * Separate option for end users to extend the native elements list
    */
-  pub is_custom_element: Option<Function<'static, String, bool>>,
+  #[cfg_attr(feature = "napi", napi(ts_type = "(arg: string) => boolean"))]
+  pub is_custom_element: Option<Function<'static, &'static str, bool>>,
   pub on_error: Option<Function<'static, Object<'static>, ()>>,
   /**
    * Generate source map?
@@ -96,10 +97,9 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       optimize_slots: options.optimize_slots.unwrap_or(false),
       runtime_module_name: options.runtime_module_name,
       is_custom_element: if let Some(is_custom_element) = options.is_custom_element {
-        Box::new(move |tag: String| is_custom_element.call(tag).unwrap())
-          as Box<dyn Fn(String) -> bool>
+        Box::new(move |tag: &str| is_custom_element.call(tag).unwrap()) as Box<dyn Fn(&str) -> bool>
       } else {
-        Box::new(|_: String| false) as Box<dyn Fn(String) -> bool>
+        Box::new(|_: &str| false) as Box<dyn Fn(&str) -> bool>
       },
       on_error: if let Some(on_error) = options.on_error {
         Box::new(move |code: ErrorCodes, span: Span| {

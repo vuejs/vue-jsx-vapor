@@ -43,7 +43,7 @@ use crate::transform::{
   v_once::transform_v_once, v_slots::transform_v_slots,
 };
 
-use common::check::is_template;
+use common::check::{is_jsx_component, is_template};
 
 pub struct DirectiveTransformResult<'a> {
   pub props: Vec<ObjectPropertyKind<'a>>,
@@ -370,13 +370,26 @@ impl<'a> TransformContext<'a> {
     unsafe {
       let mut exit_fns = vec![];
 
+      let mut directives = Directives::default();
       let is_root = RootNode::is_root(&*node);
       if !is_root {
         let context = self as *const TransformContext;
         let parent_node = parent_node.unwrap() as *mut JSXChild;
-        let mut directives = Directives::default();
         if let JSXChild::Element(element) = &mut *node {
+          let is_component = if self.options.is_custom_element.as_ref()(
+            element
+              .opening_element
+              .name
+              .get_identifier_name()
+              .map(|name| name.as_str())
+              .unwrap_or_default(),
+          ) {
+            false
+          } else {
+            is_jsx_component(element)
+          };
           directives = Directives::new(element);
+          directives.is_component = is_component;
           if (directives.v_if.is_some()
             || directives.v_else_if.is_some()
             || directives.v_else.is_some())
@@ -421,12 +434,12 @@ impl<'a> TransformContext<'a> {
           exit_fns.push(on_exit);
         };
 
-        if let Some(on_exit) = transform_text(node, &*context) {
+        if let Some(on_exit) = transform_text(&directives, node, &*context) {
           exit_fns.push(on_exit);
         };
       }
 
-      transform_children(&mut *node, self);
+      transform_children(&directives, &mut *node, self);
 
       let mut i = exit_fns.len();
       while i > 0 {

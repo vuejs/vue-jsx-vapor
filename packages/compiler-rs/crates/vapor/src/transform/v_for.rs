@@ -27,8 +27,8 @@ pub unsafe fn transform_v_for<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  let node = node as *mut oxc_allocator::Box<JSXElement>;
-  if is_template(unsafe { &*node }) && directives.v_slot.is_some() {
+  let node_ptr = node as *mut oxc_allocator::Box<JSXElement>;
+  if is_template(node) && directives.v_slot.is_some() {
     return None;
   }
 
@@ -61,8 +61,7 @@ pub unsafe fn transform_v_for<'a>(
     None
   };
 
-  let is_component = is_jsx_component(unsafe { &*node }, true, context.options)
-    || is_template_with_single_component(unsafe { &*node }, context);
+  let is_component = directives.is_component || is_template_with_single_component(node);
   let dynamic = &mut context_block.dynamic;
   let id = context.reference(dynamic);
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
@@ -71,7 +70,7 @@ pub unsafe fn transform_v_for<'a>(
     unsafe { &mut *context_node },
     unsafe { &mut *block },
     Expression::JSXElement(oxc_allocator::Box::new_in(
-      unsafe { &mut *node }.take_in(context.allocator),
+      unsafe { &mut *node_ptr }.take_in(context.allocator),
       context.allocator,
     )),
     true,
@@ -81,7 +80,7 @@ pub unsafe fn transform_v_for<'a>(
   // when the entire list is emptied
   let mut only_child = false;
   if let JSXChild::Element(parent_node) = parent_node
-    && !is_jsx_component(parent_node, true, context.options)
+    && !is_jsx_component(parent_node)
   {
     let index = *context.index.borrow() as usize;
     for (i, child) in parent_node.children.iter().enumerate() {
@@ -183,10 +182,7 @@ pub fn get_for_parse_result<'a>(
   })
 }
 
-fn is_template_with_single_component<'a>(
-  node: &'a JSXElement<'a>,
-  context: &TransformContext,
-) -> bool {
+fn is_template_with_single_component<'a>(node: &'a JSXElement<'a>) -> bool {
   let non_comment_children = node
     .children
     .iter()
@@ -195,6 +191,6 @@ fn is_template_with_single_component<'a>(
 
   non_comment_children.len() == 1
     && matches!(non_comment_children[0], JSXChild::Element(child)
-      if is_jsx_component(child, true, context.options)
+      if is_jsx_component(child)
     )
 }

@@ -1,6 +1,6 @@
 use common::{
-  check::{is_delegated_events, is_jsx_component, is_keyboard_event},
-  directive::{Modifiers, resolve_modifiers},
+  check::{is_delegated_events, is_keyboard_event},
+  directive::{Directives, Modifiers, resolve_modifiers},
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
 };
@@ -16,13 +16,14 @@ use crate::{
 };
 
 pub fn transform_v_on<'a>(
+  directives: &Directives,
   dir: &'a mut JSXAttribute<'a>,
-  node: &JSXElement,
+  _: &JSXElement<'a>,
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let ast = context.ast;
-  let is_component = is_jsx_component(node, true, context.options);
+  let is_component = directives.is_component;
 
   let (name, name_loc) = match &dir.name {
     JSXAttributeName::Identifier(name) => (name.name.as_ref(), name.span),

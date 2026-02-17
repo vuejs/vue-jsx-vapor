@@ -5,8 +5,7 @@ use oxc_span::SPAN;
 
 use crate::{ast::NodeTypes, transform::TransformContext};
 use common::{
-  check::is_jsx_component, directive::Directives, error::ErrorCodes, patch_flag::PatchFlags,
-  text::is_empty_text,
+  directive::Directives, error::ErrorCodes, patch_flag::PatchFlags, text::is_empty_text,
 };
 
 /// # SAFETY
@@ -21,7 +20,7 @@ pub unsafe fn transform_v_slots<'a>(
 
   let node_span = node.span;
   let node_ptr = node as *mut oxc_allocator::Box<JSXElement>;
-  let is_component = is_jsx_component(node, false, context.options);
+  let is_component = directives.is_component;
   if is_component {
     let mut first_child_index = None;
     for (i, child) in unsafe { &mut *node_ptr }.children.iter().enumerate() {

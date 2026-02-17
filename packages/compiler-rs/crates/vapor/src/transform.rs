@@ -37,7 +37,9 @@ use crate::{
   },
 };
 
-use common::check::{is_constant_node, is_inline_tag, is_math_ml_tag, is_svg_tag, is_template};
+use common::check::{
+  is_constant_node, is_inline_tag, is_jsx_component, is_math_ml_tag, is_svg_tag, is_template,
+};
 
 pub struct DirectiveTransformResult<'a> {
   pub key: Expression<'a>,
@@ -436,15 +438,17 @@ impl<'a> TransformContext<'a> {
       let block = context_block as *mut BlockIRNode;
       let mut exit_fns = vec![];
 
+      let mut directives = Directives::default();
       let is_root = RootNode::is_root(&self.node.borrow());
       if !is_root {
         let context = self as *const TransformContext;
         let node = &mut *self.node.borrow_mut() as *mut _;
         let parent_node = parent_node.unwrap() as *mut _;
-        let mut directives = Directives::default();
         let directives_ptr = &mut directives as *mut _;
         if let JSXChild::Element(element) = &mut *node {
+          let is_component = is_jsx_component(element);
           directives = Directives::new(element);
+          directives.is_component = is_component;
           if directives.v_once.is_some() {
             *(&*context).in_v_once.borrow_mut() = true;
           };
@@ -494,7 +498,9 @@ impl<'a> TransformContext<'a> {
           exit_fns.push(on_exit);
         };
 
-        if let Some(on_exit) = transform_text(node, &*context, &mut *block, &mut *parent_node) {
+        if let Some(on_exit) =
+          transform_text(&directives, node, &*context, &mut *block, &mut *parent_node)
+        {
           exit_fns.push(on_exit);
         };
 
@@ -517,7 +523,7 @@ impl<'a> TransformContext<'a> {
       }
 
       let node = &mut self.node.borrow_mut().take_in(self.allocator);
-      transform_children(node, self, &mut *block);
+      transform_children(&directives, node, self, &mut *block);
 
       let mut i = exit_fns.len();
       while i > 0 {

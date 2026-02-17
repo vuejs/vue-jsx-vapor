@@ -8,7 +8,6 @@ use crate::{
   transform::{DirectiveTransformResult, TransformContext},
 };
 use common::{
-  check::is_jsx_component,
   directive::{Directives, resolve_directive},
   error::ErrorCodes,
   text::get_tag_name,
@@ -17,7 +16,7 @@ use common::{
 pub fn transform_v_model<'a>(
   directives: &Directives<'a>,
   _dir: &'a mut JSXAttribute<'a>,
-  node: &JSXElement,
+  node: &JSXElement<'a>,
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
@@ -34,7 +33,7 @@ pub fn transform_v_model<'a>(
     return None;
   }
 
-  let is_component = is_jsx_component(node, true, context.options);
+  let is_component = directives.is_component;
   if is_component {
     return Some(DirectiveTransformResult {
       key: if let Some(arg) = dir.arg {
@@ -57,7 +56,7 @@ pub fn transform_v_model<'a>(
   }
 
   let tag = get_tag_name(&node.opening_element.name, context.source_text);
-  let is_custom_element = context.options.is_custom_element.as_ref()(tag.to_string());
+  let is_custom_element = context.options.is_custom_element.as_ref()(&tag);
   let mut model_type = "text";
   // TODO let runtimeDirective: VaporHelper | undefined = 'vModelText'
   if matches!(tag.as_str(), "input" | "textarea" | "select") || is_custom_element {

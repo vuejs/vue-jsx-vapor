@@ -18,6 +18,7 @@ use crate::{
 use common::{
   ast::RootNode,
   check::{is_constant_node, is_fragment_node, is_jsx_component, is_template},
+  directive::Directives,
   text::{
     escape_html, get_tag_name, get_text_like_value, is_empty_text, is_text_like, resolve_jsx_text,
   },
@@ -25,6 +26,7 @@ use common::{
 
 /// # SAFETY
 pub unsafe fn transform_text<'a>(
+  directives: &Directives,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
@@ -40,7 +42,7 @@ pub unsafe fn transform_text<'a>(
   }
 
   match node {
-    JSXChild::Element(node) if !is_jsx_component(node, true, context.options) => {
+    JSXChild::Element(node) if !directives.is_component => {
       let is_template = is_template(node);
       let children = &mut node.children.iter_mut().collect() as *mut _;
       process_children(
@@ -103,7 +105,7 @@ pub unsafe fn transform_text<'a>(
       // Element children go through innerHTML which needs escaping
       let is_root_text = RootNode::is_root(parent_node)
         || if let JSXChild::Element(parent_node) = parent_node {
-          is_jsx_component(parent_node, true, context.options)
+          is_jsx_component(parent_node)
             || get_tag_name(&parent_node.opening_element.name, context.source_text) == "template"
         } else {
           false
@@ -218,7 +220,7 @@ fn process_interpolation<'a>(
   } else {
     is_fragment_node(parent_node)
       || if let JSXChild::Element(parent_node) = parent_node {
-        is_jsx_component(parent_node, true, context.options)
+        is_jsx_component(parent_node)
       } else {
         false
       }

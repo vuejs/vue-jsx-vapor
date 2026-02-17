@@ -1,6 +1,6 @@
 use common::{
-  check::{is_jsx_component, is_keyboard_event, is_simple_identifier},
-  directive::{Modifiers, resolve_modifiers},
+  check::{is_keyboard_event, is_simple_identifier},
+  directive::{Directives, Modifiers, resolve_modifiers},
   error::ErrorCodes,
   text::capitalize,
 };
@@ -16,8 +16,9 @@ use oxc_span::SPAN;
 use crate::transform::{DirectiveTransformResult, TransformContext};
 
 pub fn transform_v_on<'a>(
+  directives: &Directives,
   dir: &'a mut JSXAttribute<'a>,
-  node: &JSXElement<'a>,
+  _: &JSXElement<'a>,
   context: &'a TransformContext<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let ast = &context.ast;
@@ -46,7 +47,7 @@ pub fn transform_v_on<'a>(
   // handler processing
   let mut exp = if let Some(JSXAttributeValue::ExpressionContainer(value)) = value {
     let (exp, has_scope_ref) = context.process_expression(value.expression.to_expression_mut());
-    let is_component = is_jsx_component(node, true, context.options);
+    let is_component = directives.is_component;
     let is_member_exp = exp.is_member_expression() || matches!(exp, Expression::Identifier(_));
     should_cache = !(*context.options.in_v_once.borrow()
       || has_scope_ref

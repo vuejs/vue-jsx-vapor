@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use common::{
   check::{get_directive_name, is_jsx_component},
   patch_flag::PatchFlags,
-  text::{get_tag_name, is_empty_text},
+  text::is_empty_text,
   walk::WalkIdentifiers,
 };
 use napi::{Either, bindgen_prelude::Either3};
@@ -29,25 +29,7 @@ pub fn cache_static<'a>(
     JSXChild::Fragment(node) => &mut node.children,
     _ => unimplemented!(),
   };
-  let single_root = if let JSXChild::Fragment(_) = node
-    && children.len() == 1
-    && let JSXChild::Element(child) = &children[0]
-    && !is_jsx_component(child, false, context.options)
-    && get_tag_name(&child.opening_element.name, context.source_text) != "slot"
-  {
-    true
-  } else {
-    false
-  };
-  cache_static_children(
-    Some(Either::A(node)),
-    children,
-    context,
-    codegen_map,
-    // Root node is unfortunately non-hoistable due to potential parent
-    // fallthrough attributes.
-    single_root,
-  );
+  cache_static_children(Some(Either::A(node)), children, context, codegen_map);
 }
 
 pub fn cache_static_children<'a>(
@@ -55,7 +37,6 @@ pub fn cache_static_children<'a>(
   children: &mut oxc_allocator::Vec<JSXChild<'a>>,
   context: &'a TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
-  do_not_hoist_node: bool,
 ) {
   let codegen_map_ptr = codegen_map as *mut HashMap<Span, NodeTypes>;
   let child_len = children.len();
@@ -66,13 +47,9 @@ pub fn cache_static_children<'a>(
     let child_span = child.span();
     // only plain elements & text calls are eligible for caching.
     if let JSXChild::Element(child) = child
-      && !is_jsx_component(child, false, context.options)
+      && !is_jsx_component(child)
     {
-      let contant_type = if do_not_hoist_node {
-        ConstantTypes::NotConstant
-      } else {
-        get_constant_type(Either::A(unsafe { &*child_ptr }), context, codegen_map)
-      };
+      let contant_type = get_constant_type(Either::A(unsafe { &*child_ptr }), context, codegen_map);
       if (contant_type.clone() as i32) > ConstantTypes::NotConstant as i32 {
         if (contant_type.clone() as i32) >= ConstantTypes::CanCache as i32 {
           if let Some(NodeTypes::VNodeCall(codegen)) = codegen_map.get_mut(&child.span) {
@@ -105,11 +82,7 @@ pub fn cache_static_children<'a>(
     } else if let Some(codegen) = unsafe { &mut *codegen_map_ptr }.get_mut(&child_span)
       && let NodeTypes::TextCallNode(codegen) = codegen
     {
-      let contant_type = if do_not_hoist_node {
-        ConstantTypes::NotConstant
-      } else {
-        get_constant_type(Either::A(unsafe { &*child_ptr }), context, codegen_map)
-      };
+      let contant_type = get_constant_type(Either::A(unsafe { &*child_ptr }), context, codegen_map);
       if contant_type as i32 >= ConstantTypes::CanCache as i32 {
         if let Expression::CallExpression(codegen) = codegen
           && !codegen.arguments.is_empty()
@@ -132,11 +105,10 @@ pub fn cache_static_children<'a>(
     }
 
     // walk further
-    if let JSXChild::Element(child) = unsafe { &*child_ptr } {
-      let is_component = is_jsx_component(child, false, context.options);
-      if is_component {
-        *context.options.in_v_slot.borrow_mut() += 1;
-      }
+    if let JSXChild::Element(_) = unsafe { &*child_ptr } {
+      // if is_component {
+      //   *context.options.in_v_slot.borrow_mut() += 1;
+      // }
       cache_static_children(
         Some(Either::A(unsafe { &*child_ptr })),
         match unsafe { &mut *child_ptr } {
@@ -146,29 +118,10 @@ pub fn cache_static_children<'a>(
         },
         context,
         codegen_map,
-        false,
       );
-      if is_component {
-        *context.options.in_v_slot.borrow_mut() -= 1;
-      }
-    } else if let JSXChild::Fragment(child) = unsafe { &*child_ptr } {
-      let codegen = codegen_map.get(&child.span);
-      if let Some(NodeTypes::VNodeCall(codegen)) = codegen
-        && codegen.v_for.is_some()
-      {
-        // Do not hoist v-for because it has to be a block
-        cache_static_children(
-          Some(Either::A(unsafe { &*child_ptr })),
-          match unsafe { &mut *child_ptr } {
-            JSXChild::Element(node) => &mut node.children,
-            JSXChild::Fragment(node) => &mut node.children,
-            _ => unimplemented!(),
-          },
-          context,
-          codegen_map,
-          true,
-        )
-      }
+      // if is_component {
+      //   *context.options.in_v_slot.borrow_mut() -= 1;
+      // }
     }
   }
 
@@ -202,8 +155,8 @@ pub fn cache_static_children<'a>(
 
   for child in to_cache {
     let span = child.span();
-    match codegen_map.remove(&span).unwrap() {
-      NodeTypes::VNodeCall(codegen) => {
+    match codegen_map.remove(&span) {
+      Some(NodeTypes::VNodeCall(codegen)) => {
         unsafe { &mut *codegen_map_ptr }.insert(
           span,
           NodeTypes::CacheExpression(context.cache(
@@ -214,7 +167,7 @@ pub fn cache_static_children<'a>(
           )),
         );
       }
-      NodeTypes::TextCallNode(codegen) => {
+      Some(NodeTypes::TextCallNode(codegen)) => {
         codegen_map.insert(
           span,
           NodeTypes::CacheExpression(context.cache(codegen, false, false, false)),
@@ -238,7 +191,7 @@ pub fn get_constant_type<'a>(
   match &node {
     Either::A(node) => match node {
       JSXChild::Element(node) => {
-        if is_jsx_component(node, false, context.options) {
+        if is_jsx_component(node) {
           return ConstantTypes::NotConstant;
         }
         if let Some(cached) = context.constant_cache.borrow().get(&node_span) {
@@ -346,10 +299,7 @@ pub fn get_constant_type<'a>(
               }
 
               codegen.is_block = false;
-              context.helper(&get_vnode_block_helper(
-                context.options.ssr,
-                is_jsx_component(node, false, context.options),
-              ));
+              context.helper(&get_vnode_block_helper(context.options.ssr, false));
             }
 
             context

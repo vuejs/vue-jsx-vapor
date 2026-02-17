@@ -1,5 +1,6 @@
 use common::{
-  check::{is_jsx_component, is_void_tag},
+  check::is_void_tag,
+  directive::Directives,
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
   text::{escape_html, get_text_like_value, is_empty_text},
@@ -12,8 +13,9 @@ use crate::{
 };
 
 pub fn transform_v_text<'a>(
+  directives: &Directives,
   dir: &'a mut JSXAttribute<'a>,
-  node: &JSXElement,
+  node: &JSXElement<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
@@ -29,10 +31,14 @@ pub fn transform_v_text<'a>(
     return None;
   };
 
+  let tag_name = node
+    .opening_element
+    .name
+    .get_identifier_name()
+    .map(|name| name.as_str())
+    .unwrap_or_default();
   // v-text on void tags do nothing
-  if let Some(name) = &node.opening_element.name.get_identifier_name()
-    && is_void_tag(name)
-  {
+  if is_void_tag(tag_name) {
     return None;
   }
 
@@ -42,7 +48,11 @@ pub fn transform_v_text<'a>(
   } else {
     *context.children_template.borrow_mut() = vec![" ".to_string()];
     let parent = context.reference(&mut context_block.dynamic);
-    let is_component = is_jsx_component(node, false, context.options);
+    let is_component = if context.options.is_custom_element.as_ref()(tag_name) {
+      false
+    } else {
+      directives.is_component
+    };
     if !is_component {
       context.register_operation(
         context_block,

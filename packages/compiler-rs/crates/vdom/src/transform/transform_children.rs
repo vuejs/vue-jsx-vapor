@@ -2,19 +2,16 @@ use oxc_ast::ast::JSXChild;
 
 use crate::transform::TransformContext;
 
-use common::{
-  check::{is_fragment_node, is_jsx_component},
-  text::is_empty_text,
-};
+use common::{check::is_fragment_node, directive::Directives, text::is_empty_text};
 
 /// # SAFETY
-pub unsafe fn transform_children<'a>(node: &mut JSXChild<'a>, context: &'a TransformContext<'a>) {
+pub unsafe fn transform_children<'a>(
+  directives: &Directives,
+  node: &mut JSXChild<'a>,
+  context: &'a TransformContext<'a>,
+) {
   unsafe {
-    let is_fragment_or_component = is_fragment_node(node)
-      || match node {
-        JSXChild::Element(node) => is_jsx_component(node, false, context.options),
-        _ => false,
-      };
+    let is_fragment_or_component = is_fragment_node(node) || directives.is_component;
 
     if !matches!(&node, JSXChild::Element(_)) && !is_fragment_or_component {
       return;

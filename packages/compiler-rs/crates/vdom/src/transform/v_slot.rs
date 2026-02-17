@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use common::{
-  check::{is_jsx_component, is_template},
+  check::is_template,
   directive::{Directives, find_prop},
   error::ErrorCodes,
   expression::expression_to_params,
@@ -49,7 +49,7 @@ pub unsafe fn track_slot_scopes<'a>(
     let JSXChild::Element(node) = node else {
       return None;
     };
-    let is_component = is_jsx_component(node, false, context.options);
+    let is_component = directives.is_component;
     if is_component || is_template(node) {
       // We are only checking non-empty v-slot here
       // since we only care about slots that introduce scope variables.
@@ -653,7 +653,6 @@ fn gen_cache_node_list<'a>(
         node_children,
         context,
         &mut context.codegen_map.borrow_mut(),
-        false,
       );
       children
     },

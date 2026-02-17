@@ -10,22 +10,20 @@ use crate::{
 
 use common::{
   ast::RootNode,
-  check::{is_fragment_node, is_jsx_component},
+  check::is_fragment_node,
+  directive::Directives,
   text::{get_tag_name, is_empty_text},
 };
 
 /// # SAFETY
 pub unsafe fn transform_children<'a>(
+  directives: &Directives,
   node: &mut JSXChild<'a>,
   context: &TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
-  let is_fragment_or_component = RootNode::is_root(node)
-    || is_fragment_node(node)
-    || match node {
-      JSXChild::Element(node) => is_jsx_component(node, true, context.options),
-      _ => false,
-    };
+  let is_fragment_or_component =
+    RootNode::is_root(node) || is_fragment_node(node) || directives.is_component;
 
   if !matches!(&node, JSXChild::Element(_)) && !is_fragment_or_component {
     return None;

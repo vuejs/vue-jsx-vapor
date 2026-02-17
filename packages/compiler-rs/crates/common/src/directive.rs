@@ -175,6 +175,7 @@ pub fn resolve_modifiers(key_string: &str, modifiers: Vec<&str>) -> Modifiers {
 
 #[derive(Default, Debug)]
 pub struct Directives<'a> {
+  pub is_component: bool,
   pub v_if: Option<&'a mut JSXAttribute<'a>>,
   pub v_else_if: Option<&'a mut JSXAttribute<'a>>,
   pub v_else: Option<&'a mut JSXAttribute<'a>>,

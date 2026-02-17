@@ -13,16 +13,15 @@ use crate::transform::{
   DirectiveTransformResult, TransformContext, transform_element::build_directive_args,
 };
 use common::{
-  check::{is_jsx_component, is_simple_identifier},
+  check::is_simple_identifier,
   directive::{Directives, get_modifier_prop_name, resolve_directive},
   error::ErrorCodes,
-  text::get_tag_name,
 };
 
 pub fn transform_v_model<'a>(
   directives: &Directives<'a>,
   _dir: &'a mut JSXAttribute<'a>,
-  node: &JSXElement,
+  node: &JSXElement<'a>,
   context: &'a TransformContext<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let ast = &context.ast;
@@ -61,8 +60,13 @@ pub fn transform_v_model<'a>(
   }
 
   let dir = resolve_directive(_dir, context.ast);
-  let tag = get_tag_name(&node.opening_element.name, context.source_text);
-  let is_component = is_jsx_component(node, true, context.options);
+  let tag = node
+    .opening_element
+    .name
+    .get_identifier_name()
+    .map(|name| name.as_str())
+    .unwrap_or_default();
+  let is_component = context.options.is_custom_element.as_ref()(tag) || directives.is_component;
 
   let arg_is_some = dir.arg.is_some();
   let mut computed = false;
@@ -238,8 +242,8 @@ pub fn transform_v_model<'a>(
   }
 
   let mut runtime_name = None;
-  let is_custom_element = context.options.is_custom_element.as_ref()(tag.to_string());
-  if matches!(tag.as_str(), "input" | "textarea" | "select") || is_custom_element {
+  let is_custom_element = context.options.is_custom_element.as_ref()(&tag);
+  if matches!(tag, "input" | "textarea" | "select") || is_custom_element {
     let mut directive_to_use = "vModelText";
     let mut is_invalid_type = false;
     if tag == "input" || is_custom_element {

@@ -16,9 +16,7 @@ use crate::{
   },
   transform::TransformContext,
 };
-use common::{
-  check::is_jsx_component, directive::Directives, error::ErrorCodes, text::is_empty_text,
-};
+use common::{directive::Directives, error::ErrorCodes, text::is_empty_text};
 
 /// # SAFETY
 pub unsafe fn transform_v_slots<'a>(
@@ -33,7 +31,7 @@ pub unsafe fn transform_v_slots<'a>(
 
   let ast = &context.ast;
   let node_ptr = node as *mut oxc_allocator::Box<JSXElement>;
-  let is_component = is_jsx_component(node, true, context.options);
+  let is_component = directives.is_component;
   if is_component {
     let mut first_child_index = None;
     for (i, child) in unsafe { &mut *node_ptr }.children.iter().enumerate() {
@@ -73,7 +71,7 @@ pub unsafe fn transform_v_slots<'a>(
   }
 
   if let Some(dir) = directives.v_slots.as_mut() {
-    if !is_jsx_component(unsafe { &*node_ptr }, true, context.options) {
+    if !is_component {
       context.options.on_error.as_ref()(ErrorCodes::VSlotMisplaced, unsafe { &*node_ptr }.span);
       return None;
     }

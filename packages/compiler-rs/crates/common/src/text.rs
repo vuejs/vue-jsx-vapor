@@ -73,18 +73,13 @@ pub fn is_empty_text(node: &JSXChild) -> bool {
 
 pub fn get_tag_name(name: &JSXElementName, source: &str) -> String {
   match name {
-    JSXElementName::Identifier(name) => name.name.to_string(),
-    JSXElementName::IdentifierReference(name) => name.name.to_string(),
-    JSXElementName::NamespacedName(name) => {
-      source[name.span.start as usize..name.span.end as usize].to_string()
-    }
-    JSXElementName::MemberExpression(name) => {
-      source[name.span.start as usize..name.span.end as usize].to_string()
-    }
-    JSXElementName::ThisExpression(name) => {
-      source[name.span.start as usize..name.span.end as usize].to_string()
-    }
+    JSXElementName::Identifier(name) => name.name.as_str(),
+    JSXElementName::IdentifierReference(name) => name.name.as_str(),
+    JSXElementName::NamespacedName(name) => name.span.source_text(source),
+    JSXElementName::MemberExpression(name) => name.span.source_text(source),
+    JSXElementName::ThisExpression(name) => name.span.source_text(source),
   }
+  .to_string()
 }
 
 pub fn camelize(str: &str) -> String {

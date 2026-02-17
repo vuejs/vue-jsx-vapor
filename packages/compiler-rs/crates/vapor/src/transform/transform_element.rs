@@ -29,7 +29,7 @@ use common::{
   ast::RootNode,
   check::{
     get_directive_name, is_always_close_tag, is_block_tag, is_built_in_directive, is_event,
-    is_formatting_tag, is_jsx_component, is_reserved_prop, is_template, is_void_tag,
+    is_formatting_tag, is_reserved_prop, is_template, is_void_tag,
   },
   directive::{Directives, resolve_directive},
   dom::is_valid_html_nesting,
@@ -91,8 +91,8 @@ pub unsafe fn transform_element<'a>(
   }
   // treat custom elements as components because the template helper cannot
   // resolve them properly; they require creation via createElement
-  let is_custom_element = context.options.is_custom_element.as_ref()(tag.clone());
-  let is_component = is_jsx_component(node, true, context.options);
+  let is_custom_element = context.options.is_custom_element.as_ref()(&tag);
+  let is_component = directives.is_component;
 
   // If the element is a component, we need to isolate its slots context.
   // This ensures that slots defined for this component are not accidentally
@@ -557,11 +557,11 @@ pub fn transform_prop<'a>(
 
   match dir_name.as_str() {
     "bind" => return transform_v_bind(prop, context),
-    "on" => return transform_v_on(prop, node, context, context_block),
+    "on" => return transform_v_on(directives, prop, node, context, context_block),
     "model" => return transform_v_model(directives, prop, node, context, context_block),
     "show" => return transform_v_show(prop, context, context_block, parent_node),
-    "html" => return transform_v_html(prop, node, context, context_block),
-    "text" => return transform_v_text(prop, node, context, context_block),
+    "html" => return transform_v_html(directives, prop, node, context, context_block),
+    "text" => return transform_v_text(directives, prop, node, context, context_block),
     _ => (),
   };
 

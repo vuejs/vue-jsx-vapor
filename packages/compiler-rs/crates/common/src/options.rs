@@ -47,7 +47,7 @@ pub struct TransformOptions<'a> {
   pub helpers: RefCell<BTreeSet<String>>,
   pub delegates: RefCell<BTreeSet<String>>,
   pub hoists: RefCell<Vec<Expression<'a>>>,
-  pub is_custom_element: Box<dyn Fn(String) -> bool + 'a>,
+  pub is_custom_element: Box<dyn Fn(&str) -> bool + 'a>,
   pub on_error: Box<dyn Fn(ErrorCodes, Span) + 'a>,
   pub on_exit_program: RefCell<Option<OnExitProgram<'a>>>,
   pub on_enter_expression: RefCell<Option<OnEnterExpression<'a>>>,

@@ -771,11 +771,10 @@ fn custom_element_with_v_model() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = ["modelValue", "onUpdate:modelValue"];
   _openBlock(), _createElementBlock("my-custom-element", {
   	modelValue: foo,
   	"onUpdate:modelValue": ($event) => foo = $event
-  }, null, 8, _hoisted_1);
+  }, null, 8, ["modelValue", "onUpdate:modelValue"]);
   "#)
 }
 
@@ -792,8 +791,7 @@ fn custom_element_with_v_on() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = ["onFoo"];
-  _openBlock(), _createElementBlock("my-custom-element", { onFoo: foo }, null, 40, _hoisted_1);
+  _openBlock(), _createElementBlock("my-custom-element", { onFoo: foo }, null, 40, ["onFoo"]);
   "#)
 }
 
@@ -810,8 +808,7 @@ fn custom_element_with_v_html() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = ["innerHTML"];
-  _openBlock(), _createElementBlock("my-custom-element", { innerHTML: foo }, null, 8, _hoisted_1);
+  _openBlock(), _createElementBlock("my-custom-element", { innerHTML: foo }, null, 8, ["innerHTML"]);
   "#)
 }
 
@@ -828,8 +825,7 @@ fn custom_element_with_v_text() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
-  const _hoisted_1 = ["textContent"];
-  _openBlock(), _createElementBlock("my-custom-element", { textContent: _toDisplayString(foo) }, null, 8, _hoisted_1);
+  _openBlock(), _createElementBlock("my-custom-element", { textContent: _toDisplayString(foo) }, null, 8, ["textContent"]);
   "#)
 }
 

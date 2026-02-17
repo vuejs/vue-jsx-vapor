@@ -22,10 +22,7 @@ use crate::{
 
 use common::{
   ast::RootNode,
-  check::{
-    get_directive_name, is_built_in_directive, is_event, is_jsx_component, is_reserved_prop,
-    is_template,
-  },
+  check::{get_directive_name, is_built_in_directive, is_event, is_reserved_prop, is_template},
   directive::{DirectiveNode, resolve_directive},
   error::ErrorCodes,
   patch_flag::PatchFlags,
@@ -57,7 +54,8 @@ pub unsafe fn transform_element<'a>(
       ),
       node.children.take_in(context.allocator),
       Some(ast.jsx_closing_element(node.closing_fragment.span, name)),
-    )
+    );
+    directives.is_component = true;
   };
 
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
@@ -83,7 +81,7 @@ pub unsafe fn transform_element<'a>(
   if matches!(vnode_tag.as_ref(), "Transition" | "TransitionGroup") {
     transform_transition(node, context);
   }
-  let is_component = is_jsx_component(node, false, context.options);
+  let is_component = directives.is_component;
   let asset = vnode_tag.contains("-") && {
     let semantic = &context.options.semantic.borrow();
     let scope_id = semantic.nodes().get_node(node.node_id()).scope_id();
@@ -489,7 +487,7 @@ pub fn build_props<'a>(
             if modifiers.contains(&"prop") {
               patch_flag |= PatchFlags::NeedHydration as i32;
             }
-            transform_v_bind(prop, node, context)
+            transform_v_bind(directives, prop, node, context)
           }
           "on" => {
             // inline before-update hooks need to force block so that it is invoked
@@ -497,7 +495,7 @@ pub fn build_props<'a>(
             if has_children && *name == "onVue:beforeUpdate" {
               should_use_block = true;
             }
-            transform_v_on(prop, node, context)
+            transform_v_on(directives, prop, node, context)
           }
           "model" => transform_v_model(directives, prop, node, context),
           "show" => transform_v_show(prop, context),

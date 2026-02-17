@@ -1,7 +1,4 @@
-use common::{
-  check::{is_jsx_component, is_simple_identifier},
-  text::camelize,
-};
+use common::{check::is_simple_identifier, directive::Directives, text::camelize};
 use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement, PropertyKind};
 use oxc_span::{GetSpan, SPAN};
 
@@ -11,8 +8,9 @@ use crate::transform::{DirectiveTransformResult, TransformContext};
 // codegen for the entire props object. This transform here is only for v-bind
 // *with* args.
 pub fn transform_v_bind<'a>(
+  directives: &Directives,
   dir: &'a mut JSXAttribute<'a>,
-  node: &JSXElement,
+  _: &JSXElement<'a>,
   context: &'a TransformContext<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let ast = &context.ast;
@@ -45,7 +43,7 @@ pub fn transform_v_bind<'a>(
 
   let value = if let Some(value) = &mut dir.value {
     context.jsx_attribute_value_to_expression(value)
-  } else if is_jsx_component(node, true, context.options) {
+  } else if directives.is_component {
     ast.expression_boolean_literal(SPAN, true)
   } else {
     ast.expression_string_literal(SPAN, "", None)

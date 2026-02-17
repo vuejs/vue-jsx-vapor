@@ -524,11 +524,10 @@ fn should_allow_usage_on_custom_element() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = ["modelValue", "onUpdate:modelValue"];
   _openBlock(), _createElementBlock("my-input", {
   	modelValue: model,
   	"onUpdate:modelValue": ($event) => model = $event
-  }, null, 8, _hoisted_1);
+  }, null, 8, ["modelValue", "onUpdate:modelValue"]);
   "#);
 }
 

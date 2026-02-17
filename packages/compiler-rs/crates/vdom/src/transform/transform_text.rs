@@ -14,7 +14,8 @@ use crate::{
 };
 
 use common::{
-  check::{get_directive_name, is_built_in_directive, is_jsx_component, is_template},
+  check::{get_directive_name, is_built_in_directive, is_template},
+  directive::Directives,
   text::resolve_jsx_text,
 };
 
@@ -22,11 +23,13 @@ use common::{
 /// Merge adjacent text nodes and expressions into a single expression
 /// e.g. <div>abc {{ d }} {{ e }}</div> should have a single expression node as child.
 pub unsafe fn transform_text<'a>(
+  directives: &Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let ast = &context.ast;
   let node = unsafe { &mut *context_node };
+  let is_component = directives.is_component;
   if !matches!(node, JSXChild::Element(_) | JSXChild::Fragment(_)) {
     return None;
   }
@@ -52,7 +55,7 @@ pub unsafe fn transform_text<'a>(
           // to avoid accidentally overwriting the DOM elements added
           // by the user through custom directives.
           !is_template(node)
-            && !is_jsx_component(node, false, context.options)
+            && !is_component
             && !node.opening_element.attributes.iter().any(|p| {
               p.as_attribute()
                 .map(|p| {
@@ -263,7 +266,7 @@ fn transform_branch<'a>(
       );
       vnode_call.is_block = true;
       inject_prop(&mut vnode_call, key_property, context);
-      cache_static_children(None, &mut ast.vec1(branch), context, codegen_map, false);
+      cache_static_children(None, &mut ast.vec1(branch), context, codegen_map);
       *exp = context.gen_vnode_call(vnode_call, codegen_map);
     }
   }
