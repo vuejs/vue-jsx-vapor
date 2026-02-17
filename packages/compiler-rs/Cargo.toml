@@ -19,13 +19,13 @@ members = ["crates/*"]
 napi = { version = "3.3.0", features = ["napi9"] }
 napi-derive = "3.3.0"
 
-oxc_parser = { git = "https://github.com/zhiyuanzmj/oxc", branch = "ast-visit-ast-kind" }
-oxc_ast = { git = "https://github.com/zhiyuanzmj/oxc", branch = "ast-visit-ast-kind" }
-oxc_allocator = { git = "https://github.com/zhiyuanzmj/oxc", branch = "ast-visit-ast-kind" }
-oxc_ast_visit = { git = "https://github.com/zhiyuanzmj/oxc", branch = "ast-visit-ast-kind" }
-oxc_semantic = { git = "https://github.com/zhiyuanzmj/oxc", branch = "ast-visit-ast-kind" }
-oxc_codegen = { git = "https://github.com/zhiyuanzmj/oxc", branch = "ast-visit-ast-kind" }
-oxc_span = { git = "https://github.com/zhiyuanzmj/oxc", branch = "ast-visit-ast-kind" }
+oxc_parser = "0.114.0"
+oxc_ast = "0.114.0"
+oxc_allocator = "0.114.0"
+oxc_ast_visit = "0.114.0"
+oxc_semantic = "0.114.0"
+oxc_codegen = "0.114.0"
+oxc_span = "0.114.0"
 phf = "0.13.1"
 indexmap = "2.12.0"
 html-escape = "0.2.13"
