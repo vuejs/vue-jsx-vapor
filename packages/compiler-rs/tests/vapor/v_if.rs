@@ -174,7 +174,7 @@ fn v_if_on_slot() {
   	const _n0 = _createIf(() => "ok", () => {
   		const _n2 = _createSlot("default");
   		return _n2;
-  	});
+  	}, null, true);
   	return _n0;
   })();
   "#);
@@ -271,7 +271,7 @@ fn v_if_v_if_or_v_elses() {
   	const _n0 = _createIf(() => "foo", () => {
   		const _n2 = _t0();
   		return _n2;
-  	});
+  	}, null, true);
   	_setInsertionState(_n8, null, 1, true);
   	const _n3 = _createIf(() => "bar", () => {
   		const _n5 = _t1();
@@ -279,7 +279,7 @@ fn v_if_v_if_or_v_elses() {
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	}, false, 1);
+  	}, true, 1);
   	return _n8;
   })();
   "#);

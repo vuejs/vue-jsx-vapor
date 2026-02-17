@@ -1,7 +1,7 @@
 use napi::Either;
 use oxc_allocator::TakeIn;
 use oxc_ast::ast::{Expression, JSXChild, JSXElement};
-use oxc_span::{GetSpan, SPAN};
+use oxc_span::GetSpan;
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, IfIRNode, OperationNode},
@@ -11,9 +11,9 @@ use crate::{
 use common::{
   ast::RootNode,
   check::{is_constant_node, is_template},
-  directive::{Directives, resolve_directive},
+  directive::Directives,
   error::ErrorCodes,
-  expression::SimpleExpressionNode,
+  expression::jsx_attribute_value_to_expression,
 };
 
 /// # SAFETY
@@ -44,23 +44,20 @@ pub unsafe fn transform_v_if<'a>(
   }
   seen.insert(start);
 
-  let mut dir = resolve_directive(dir, context.source_text);
-  if dir.name != "else"
-    && (dir.exp.is_none() || dir.exp.as_ref().unwrap().content.trim().is_empty())
-  {
-    context.options.on_error.as_ref()(ErrorCodes::VIfNoExpression, dir.loc);
-    dir.exp = Some(SimpleExpressionNode {
-      content: "true".to_string(),
-      is_static: false,
-      loc: SPAN,
-      ast: None,
-    });
+  let dir_name = dir.name.get_identifier().name;
+  let dir_exp = dir
+    .value
+    .as_mut()
+    .map(|value| jsx_attribute_value_to_expression(value, context.ast));
+  if dir_name != "v-else" && dir_exp.is_none() {
+    context.options.on_error.as_ref()(ErrorCodes::VIfNoExpression, dir.span);
+    return None;
   }
 
   let dynamic = &mut context_block.dynamic;
   dynamic.flags |= DynamicFlag::NonTemplate as i32;
 
-  if dir.name == "if" {
+  if dir_name == "v-if" {
     let id = context.reference(dynamic);
     dynamic.flags |= DynamicFlag::Insert as i32;
     let block = context_block as *mut BlockIRNode;
@@ -85,9 +82,8 @@ pub unsafe fn transform_v_if<'a>(
         id,
         positive: block,
         index: context.next_if_index(),
-        once: *context.in_v_once.borrow()
-          || is_constant_node(&dir.exp.as_ref().unwrap().ast.as_deref()),
-        condition: dir.exp.unwrap(),
+        once: *context.in_v_once.borrow() || is_constant_node(dir_exp.as_ref().unwrap()),
+        condition: dir_exp.unwrap(),
         negative: None,
         anchor: None,
         logical_index: None,
@@ -129,8 +125,8 @@ pub unsafe fn transform_v_if<'a>(
   last_if_node = unsafe { &mut *last_if_node_ptr };
 
   // Check if v-else was followed by v-else-if
-  if dir.name == "else-if" && last_if_node.negative.is_some() {
-    context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, dir.loc);
+  if dir_name == "v-else-if" && last_if_node.negative.is_some() {
+    context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, dir.span);
   };
 
   let exit_block = context.create_block(
@@ -145,16 +141,15 @@ pub unsafe fn transform_v_if<'a>(
 
   Some(Box::new(move || {
     let block = exit_block();
-    if dir.name == "else" {
+    if dir_name == "v-else" {
       last_if_node.negative = Some(Box::new(Either::A(block)));
     } else {
       last_if_node.negative = Some(Box::new(Either::B(IfIRNode {
         id: -1,
         positive: block,
         index: context.next_if_index(),
-        once: *context.in_v_once.borrow()
-          || is_constant_node(&dir.exp.as_ref().unwrap().ast.as_deref()),
-        condition: dir.exp.unwrap(),
+        once: *context.in_v_once.borrow() || is_constant_node(dir_exp.as_ref().unwrap()),
+        condition: dir_exp.unwrap(),
         parent: None,
         anchor: None,
         logical_index: None,

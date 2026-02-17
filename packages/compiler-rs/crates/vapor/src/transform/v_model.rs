@@ -1,7 +1,7 @@
 use oxc_ast::ast::{
   JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElement,
 };
-use oxc_span::SPAN;
+use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   ir::index::{BlockIRNode, DirectiveIRNode, OperationNode},
@@ -11,7 +11,6 @@ use common::{
   check::is_jsx_component,
   directive::{Directives, resolve_directive},
   error::ErrorCodes,
-  expression::SimpleExpressionNode,
   text::get_tag_name,
 };
 
@@ -22,21 +21,16 @@ pub fn transform_v_model<'a>(
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
-  let dir = resolve_directive(_dir, context.source_text);
+  let ast = context.ast;
+  let dir = resolve_directive(_dir, context.ast);
 
   let Some(exp) = &dir.exp else {
-    context.options.on_error.as_ref()(ErrorCodes::VModelNoExpression, dir.loc);
+    context.options.on_error.as_ref()(ErrorCodes::VModelNoExpression, dir.span);
     return None;
   };
 
-  if exp.content.trim().is_empty()
-    || !exp
-      .ast
-      .as_ref()
-      .map(|ast| ast.is_identifier_reference() || ast.is_member_expression())
-      .unwrap_or_default()
-  {
-    context.options.on_error.as_ref()(ErrorCodes::VModelMalformedExpression, exp.loc);
+  if !(exp.is_identifier_reference() || exp.is_member_expression()) {
+    context.options.on_error.as_ref()(ErrorCodes::VModelMalformedExpression, exp.span());
     return None;
   }
 
@@ -46,22 +40,11 @@ pub fn transform_v_model<'a>(
       key: if let Some(arg) = dir.arg {
         arg
       } else {
-        SimpleExpressionNode {
-          content: "modelValue".to_string(),
-          is_static: true,
-          loc: SPAN,
-          ast: None,
-        }
+        ast.expression_string_literal(SPAN, ast.atom("modelValue"), None)
       },
       value: dir.exp.unwrap(),
       model: true,
-      model_modifiers: Some(
-        dir
-          .modifiers
-          .iter()
-          .map(|m| m.content.to_string())
-          .collect(),
-      ),
+      model_modifiers: Some(dir.modifiers),
       handler: false,
       handler_modifiers: None,
       modifier: None,
@@ -70,7 +53,7 @@ pub fn transform_v_model<'a>(
   }
 
   if dir.arg.is_some() {
-    context.options.on_error.as_ref()(ErrorCodes::VModelArgOnElement, dir.loc);
+    context.options.on_error.as_ref()(ErrorCodes::VModelArgOnElement, dir.span);
   }
 
   let tag = get_tag_name(&node.opening_element.name, context.source_text);

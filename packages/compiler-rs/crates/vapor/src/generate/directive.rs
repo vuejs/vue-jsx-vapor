@@ -86,10 +86,7 @@ pub fn gen_directives_for_element<'a>(
         .take()
         .map(|arg| gen_expression(arg, context, None, false));
       let modifiers = if !item.dir.modifiers.is_empty() {
-        Some(gen_directive_modifiers(
-          item.dir.modifiers.drain(..).map(|m| m.content).collect(),
-          ast,
-        ))
+        Some(gen_directive_modifiers(item.dir.modifiers.clone(), ast))
       } else {
         None
       };

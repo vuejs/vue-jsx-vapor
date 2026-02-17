@@ -2,7 +2,8 @@ use common::directive::{DirectiveNode, Modifiers};
 use indexmap::IndexSet;
 use napi::Either;
 
-use common::expression::SimpleExpressionNode;
+use oxc_ast::ast::Expression;
+use oxc_span::Span;
 
 use crate::ir::component::{IRProp, IRProps, IRSlots};
 
@@ -14,7 +15,7 @@ pub struct BlockIRNode<'a> {
   pub operation: Vec<OperationNode<'a>>,
   pub returns: Vec<i32>,
   pub slots: Vec<IRSlots<'a>>,
-  pub props: Option<SimpleExpressionNode<'a>>,
+  pub props: Option<Expression<'a>>,
 }
 impl<'a> BlockIRNode<'a> {
   pub fn new() -> Self {
@@ -58,7 +59,7 @@ impl RootIRNode {
 #[derive(Debug)]
 pub struct IfIRNode<'a> {
   pub id: i32,
-  pub condition: SimpleExpressionNode<'a>,
+  pub condition: Expression<'a>,
   pub positive: BlockIRNode<'a>,
   pub negative: Option<Box<Either<BlockIRNode<'a>, IfIRNode<'a>>>>,
   pub once: bool,
@@ -73,7 +74,7 @@ pub struct IfIRNode<'a> {
 #[derive(Debug)]
 pub struct KeyIRNode<'a> {
   pub id: i32,
-  pub value: SimpleExpressionNode<'a>,
+  pub value: Expression<'a>,
   pub block: BlockIRNode<'a>,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
@@ -84,21 +85,21 @@ pub struct KeyIRNode<'a> {
 
 #[derive(Debug)]
 pub struct IRFor<'a> {
-  pub source: Option<SimpleExpressionNode<'a>>,
-  pub value: Option<SimpleExpressionNode<'a>>,
-  pub key: Option<SimpleExpressionNode<'a>>,
-  pub index: Option<SimpleExpressionNode<'a>>,
+  pub source: Option<Expression<'a>>,
+  pub value: Option<Expression<'a>>,
+  pub key: Option<Expression<'a>>,
+  pub index: Option<Expression<'a>>,
 }
 
 #[derive(Debug)]
 pub struct ForIRNode<'a> {
-  pub source: SimpleExpressionNode<'a>,
-  pub value: Option<SimpleExpressionNode<'a>>,
-  pub key: Option<SimpleExpressionNode<'a>>,
-  pub index: Option<SimpleExpressionNode<'a>>,
+  pub source: Expression<'a>,
+  pub value: Option<Expression<'a>>,
+  pub key: Option<Expression<'a>>,
+  pub index: Option<Expression<'a>>,
 
   pub id: i32,
-  pub key_prop: Option<SimpleExpressionNode<'a>>,
+  pub key_prop: Option<Expression<'a>>,
   pub render: BlockIRNode<'a>,
   pub once: bool,
   pub component: bool,
@@ -130,14 +131,14 @@ pub struct SetDynamicPropsIRNode<'a> {
 pub struct SetDynamicEventsIRNode<'a> {
   pub set_dynamic_events: bool,
   pub element: i32,
-  pub value: SimpleExpressionNode<'a>,
+  pub value: Expression<'a>,
 }
 
 #[derive(Debug)]
 pub struct SetTextIRNode<'a> {
   pub set_text: bool,
   pub element: i32,
-  pub values: Vec<SimpleExpressionNode<'a>>,
+  pub values: Vec<Expression<'a>>,
   pub generated: bool,
   pub is_component: bool,
 }
@@ -147,16 +148,16 @@ pub struct SetNodesIRNode<'a> {
   pub set_nodes: bool,
   pub element: i32,
   pub once: bool,
-  pub values: Vec<SimpleExpressionNode<'a>>,
+  pub values: Vec<Expression<'a>>,
   pub generated: bool, // whether this is a generated empty text node by `processTextLikeContainer`
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct SetEventIRNode<'a> {
   pub set_event: bool,
   pub element: i32,
-  pub key: SimpleExpressionNode<'a>,
-  pub value: Option<SimpleExpressionNode<'a>>,
+  pub key: Expression<'a>,
+  pub value: Expression<'a>,
   pub modifiers: Modifiers,
   pub delegate: bool,
   // Whether it's in effect
@@ -167,7 +168,7 @@ pub struct SetEventIRNode<'a> {
 pub struct SetHtmlIRNode<'a> {
   pub set_html: bool,
   pub element: i32,
-  pub value: SimpleExpressionNode<'a>,
+  pub value: Expression<'a>,
   pub is_component: bool,
 }
 
@@ -175,7 +176,7 @@ pub struct SetHtmlIRNode<'a> {
 pub struct SetTemplateRefIRNode<'a> {
   pub set_template_ref: bool,
   pub element: i32,
-  pub value: SimpleExpressionNode<'a>,
+  pub value: Expression<'a>,
   pub ref_for: bool,
 }
 
@@ -184,7 +185,7 @@ pub struct CreateNodesIRNode<'a> {
   pub create_nodes: bool,
   pub id: i32,
   pub once: bool,
-  pub values: Vec<SimpleExpressionNode<'a>>,
+  pub values: Vec<Expression<'a>>,
 }
 
 #[derive(Debug)]
@@ -212,12 +213,12 @@ pub struct CreateComponentIRNode<'a> {
   pub create_component: bool,
   pub id: i32,
   pub tag: String,
+  pub tag_span: Span,
   pub props: Vec<IRProps<'a>>,
   pub slots: Vec<IRSlots<'a>>,
   pub asset: bool,
   pub root: bool,
   pub once: bool,
-  pub dynamic: Option<SimpleExpressionNode<'a>>,
   pub is_custom_element: bool,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
@@ -229,7 +230,7 @@ pub struct CreateComponentIRNode<'a> {
 #[derive(Debug)]
 pub struct SlotOutletIRNode<'a> {
   pub id: i32,
-  pub name: SimpleExpressionNode<'a>,
+  pub name: Expression<'a>,
   pub props: Vec<IRProps<'a>>,
   pub fallback: Option<BlockIRNode<'a>>,
   pub no_slotted: bool,
@@ -317,6 +318,5 @@ impl<'a> Default for IRDynamicInfo<'a> {
 
 #[derive(Debug)]
 pub struct IREffect<'a> {
-  pub expressions: Vec<SimpleExpressionNode<'a>>,
   pub operations: Vec<OperationNode<'a>>,
 }

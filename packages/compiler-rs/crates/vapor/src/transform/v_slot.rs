@@ -2,7 +2,7 @@ use std::mem;
 
 use indexmap::IndexMap;
 use napi::{Either, bindgen_prelude::Either4};
-use oxc_ast::ast::{JSXChild, JSXElement};
+use oxc_ast::ast::{Expression, JSXChild, JSXElement};
 
 use crate::{
   ir::{
@@ -15,7 +15,6 @@ use common::{
   check::{is_jsx_component, is_template},
   directive::{DirectiveNode, Directives, find_prop, resolve_directive},
   error::ErrorCodes,
-  expression::SimpleExpressionNode,
   text::is_empty_text,
 };
 
@@ -35,7 +34,7 @@ pub unsafe fn transform_v_slot<'a>(
   let dir = unsafe { &mut *(directives as *mut Directives) }
     .v_slot
     .as_mut()
-    .map(|dir| resolve_directive(dir, context.source_text));
+    .map(|dir| resolve_directive(dir, context.ast));
   let is_component = is_jsx_component(unsafe { &*node }, true, context.options);
   let is_slot_template = is_template(unsafe { &*node })
     && if let JSXChild::Element(parent_node) = parent_node
@@ -146,24 +145,24 @@ fn transform_template_slot<'a>(
   let v_if_dir = directives
     .v_if
     .as_mut()
-    .map(|v_if| resolve_directive(v_if, context.source_text));
+    .map(|v_if| resolve_directive(v_if, context.ast));
   let v_else_dir = directives
     .v_else
     .as_mut()
     .or(directives.v_else_if.as_mut())
-    .map(|v_else| resolve_directive(v_else, context.source_text));
+    .map(|v_else| resolve_directive(v_else, context.ast));
 
   Box::new(move || {
     let slots = &mut unsafe { &mut *_context_block }.slots;
     let block = exit_block();
     if v_if_dir.is_none() && v_else_dir.is_none() && for_parse_result.is_none() {
-      let slot_name = if let Some(arg) = &arg {
-        arg.content.clone()
+      let slot_name = if let Some(Expression::StringLiteral(arg)) = &arg {
+        arg.value.as_str()
       } else {
-        String::from("default")
+        "default"
       };
-      if !slot_name.is_empty() && has_static_slot(slots, &slot_name) {
-        context.options.on_error.as_ref()(ErrorCodes::VSlotDuplicateSlotNames, dir.loc)
+      if !slot_name.is_empty() && has_static_slot(slots, slot_name) {
+        context.options.on_error.as_ref()(ErrorCodes::VSlotDuplicateSlotNames, dir.span)
       } else {
         register_slot(slots, arg, block);
       }
@@ -200,7 +199,7 @@ fn transform_template_slot<'a>(
           };
           set_slot(v_if_slot, negative);
         } else {
-          context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, v_else_dir.loc)
+          context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, v_else_dir.span)
         }
       }
     } else if let Some(for_parse_result) = for_parse_result
@@ -229,11 +228,11 @@ fn set_slot<'a>(
 
 fn register_slot<'a>(
   slots: &mut Vec<IRSlots<'a>>,
-  name: Option<SimpleExpressionNode<'a>>,
+  name: Option<Expression<'a>>,
   block: BlockIRNode<'a>,
 ) {
   let is_static = if let Some(name) = &name {
-    name.is_static
+    matches!(name, Expression::StringLiteral(_))
   } else {
     true
   };
@@ -250,11 +249,12 @@ fn register_slot<'a>(
     }
     if let Some(Either4::A(slot)) = slots.last_mut() {
       slot.slots.insert(
-        if let Some(name) = &name {
-          name.content.clone()
+        if let Some(Expression::StringLiteral(name)) = &name {
+          name.value.as_ref()
         } else {
-          String::from("default")
-        },
+          "default"
+        }
+        .to_string(),
         block,
       );
     }
@@ -278,7 +278,7 @@ fn has_static_slot(slots: &Vec<IRSlots>, name: &str) -> bool {
 }
 
 fn create_slot_block<'a>(
-  props: Option<SimpleExpressionNode<'a>>,
+  props: Option<Expression<'a>>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Box<dyn FnOnce() -> BlockIRNode<'a> + 'a> {

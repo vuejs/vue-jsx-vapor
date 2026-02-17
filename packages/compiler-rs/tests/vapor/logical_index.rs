@@ -28,7 +28,7 @@ fn child_nth_child_next_with_logical_index() {
   	const _n1 = _createIf(() => "true", () => {
   		const _n3 = _t0();
   		return _n3;
-  	});
+  	}, null, true);
   	return _n5;
   })();
   "#);

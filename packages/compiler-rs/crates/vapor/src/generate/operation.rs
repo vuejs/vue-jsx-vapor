@@ -1,5 +1,6 @@
+use oxc_allocator::CloneIn;
 use oxc_ast::NONE;
-use oxc_ast::ast::{Argument, NumberBase, Statement};
+use oxc_ast::ast::{Argument, Expression, NumberBase, Statement, StringLiteral};
 use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
@@ -22,7 +23,6 @@ use crate::generate::v_for::gen_for;
 use crate::generate::v_if::gen_if;
 use crate::ir::index::BlockIRNode;
 use crate::ir::index::OperationNode;
-use crate::ir::index::SetEventIRNode;
 
 pub fn gen_operations<'a>(
   statements: &mut oxc_allocator::Vec<'a, Statement<'a>>,
@@ -33,8 +33,11 @@ pub fn gen_operations<'a>(
   let event_opers = opers
     .iter()
     .filter_map(|op| {
-      if let OperationNode::SetEvent(op) = op {
-        Some(op.clone())
+      if let OperationNode::SetEvent(op) = op
+        && op.delegate
+        && let Expression::StringLiteral(key) = &op.key
+      {
+        Some((op.element, key.as_ref().clone_in(context.ast.allocator)))
       } else {
         None
       }
@@ -57,7 +60,7 @@ pub fn gen_operation_with_insertion_state<'a>(
   oper: OperationNode<'a>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  event_opers: &Vec<SetEventIRNode>,
+  event_opers: &Vec<(i32, StringLiteral)>,
 ) {
   match &oper {
     OperationNode::If(if_ir_node) => {
@@ -131,7 +134,7 @@ pub fn gen_operation<'a>(
   oper: OperationNode<'a>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  event_opers: &Vec<SetEventIRNode>,
+  event_opers: &Vec<(i32, StringLiteral)>,
 ) {
   match oper {
     OperationNode::If(oper) => statements.push(gen_if(oper, context, context_block, false)),

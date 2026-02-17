@@ -1,6 +1,6 @@
 use common::check::is_simple_identifier;
 use common::directive::DirectiveNode;
-use common::expression::SimpleExpressionNode;
+use oxc_allocator::CloneIn;
 use oxc_ast::NONE;
 use oxc_ast::ast::Expression;
 use oxc_ast::ast::FormalParameterKind;
@@ -24,7 +24,9 @@ pub fn gen_v_model<'a>(
     dir: DirectiveNode { exp, modifiers, .. },
     ..
   } = oper;
-  let exp = exp.unwrap();
+  let Some(exp) = exp else {
+    unreachable!();
+  };
 
   ast.statement_expression(
     SPAN,
@@ -67,12 +69,10 @@ pub fn gen_v_model<'a>(
                 ast.function_body(
                   SPAN,
                   ast.vec(),
-                  ast.vec1(
-                    ast.statement_expression(
-                      SPAN,
-                      gen_expression(exp.clone(), context, None, false),
-                    ),
-                  ),
+                  ast.vec1(ast.statement_expression(
+                    SPAN,
+                    gen_expression(exp.clone_in(ast.allocator), context, None, false),
+                  )),
                 ),
               )
               .into(),
@@ -86,7 +86,6 @@ pub fn gen_v_model<'a>(
                 .expression_object(
                   SPAN,
                   ast.vec_from_iter(modifiers.into_iter().map(|modifier| {
-                    let modifier = modifier.content;
                     let modifier = if is_simple_identifier(&modifier) {
                       &modifier
                     } else {
@@ -118,7 +117,7 @@ pub fn gen_v_model<'a>(
 }
 
 pub fn gen_model_handler<'a>(
-  exp: SimpleExpressionNode<'a>,
+  exp: Expression<'a>,
   context: &'a CodegenContext<'a>,
 ) -> Expression<'a> {
   let ast = &context.ast;

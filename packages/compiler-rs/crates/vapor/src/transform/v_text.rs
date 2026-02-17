@@ -1,10 +1,9 @@
 use common::{
   check::{is_jsx_component, is_void_tag},
   error::ErrorCodes,
-  expression::SimpleExpressionNode,
-  text::{escape_html, is_empty_text},
+  expression::jsx_attribute_value_to_expression,
+  text::{escape_html, get_text_like_value, is_empty_text},
 };
-use napi::bindgen_prelude::Either3;
 use oxc_ast::ast::{JSXAttribute, JSXElement};
 
 use crate::{
@@ -19,10 +18,10 @@ pub fn transform_v_text<'a>(
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let exp = if let Some(value) = &mut dir.value {
-    SimpleExpressionNode::new(Either3::C(value), context.source_text)
+    jsx_attribute_value_to_expression(value, context.ast)
   } else {
     context.options.on_error.as_ref()(ErrorCodes::VTextNoExpression, dir.span);
-    SimpleExpressionNode::default()
+    return None;
   };
 
   if node.children.iter().any(|c| !is_empty_text(c)) {
@@ -37,7 +36,7 @@ pub fn transform_v_text<'a>(
     return None;
   }
 
-  let literal = exp.get_literal_expression_value();
+  let literal = get_text_like_value(&exp, false);
   if let Some(literal) = literal {
     *context.children_template.borrow_mut() = vec![escape_html(literal)];
   } else {

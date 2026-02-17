@@ -1,4 +1,3 @@
-use napi::bindgen_prelude::Either3;
 use oxc_allocator::TakeIn;
 use oxc_ast::ast::{Expression, JSXChild};
 
@@ -6,7 +5,10 @@ use crate::{
   ir::index::{BlockIRNode, DynamicFlag, KeyIRNode},
   transform::TransformContext,
 };
-use common::{directive::Directives, expression::SimpleExpressionNode};
+use common::{
+  directive::Directives,
+  expression::{get_constant_expression_text, jsx_attribute_value_to_expression},
+};
 
 /// # SAFETY
 pub unsafe fn transform_key<'a>(
@@ -28,8 +30,8 @@ pub unsafe fn transform_key<'a>(
   }
   seen.insert(start);
 
-  let value = SimpleExpressionNode::new(Either3::C(value), context.source_text);
-  if value.is_constant_expression() {
+  let value = jsx_attribute_value_to_expression(value, context.ast);
+  if get_constant_expression_text(&value, context.options).is_some() {
     return None;
   }
 

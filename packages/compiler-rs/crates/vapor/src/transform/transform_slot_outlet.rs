@@ -10,7 +10,8 @@ use crate::{
   transform::{TransformContext, transform_element::build_props},
 };
 use common::{
-  directive::Directives, error::ErrorCodes, expression::SimpleExpressionNode, text::is_empty_text,
+  directive::Directives, error::ErrorCodes, expression::jsx_attribute_value_to_expression,
+  text::is_empty_text,
 };
 
 /// # SAFETY
@@ -31,12 +32,7 @@ pub unsafe fn transform_slot_outlet<'a>(
   context_block.dynamic.flags =
     context_block.dynamic.flags | DynamicFlag::Insert as i32 | DynamicFlag::NonTemplate as i32;
 
-  let mut slot_name = SimpleExpressionNode {
-    content: "default".to_string(),
-    is_static: true,
-    loc: SPAN,
-    ast: None,
-  };
+  let mut slot_name = None;
   let props = &mut node.opening_element.attributes;
   let mut ir_props = vec![];
   if !props.is_empty() {
@@ -63,7 +59,7 @@ pub unsafe fn transform_slot_outlet<'a>(
     if let Some(name_prop) = props_result.name_prop
       && let Some(value) = &mut name_prop.value
     {
-      slot_name = SimpleExpressionNode::new(Either3::C(value), context.source_text)
+      slot_name = Some(jsx_attribute_value_to_expression(value, context.ast))
     }
 
     if let Some(runtime_directive) =
@@ -82,7 +78,7 @@ pub unsafe fn transform_slot_outlet<'a>(
     {
       context.options.on_error.as_ref()(
         ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet,
-        runtime_directive.dir.loc,
+        runtime_directive.dir.span,
       );
     }
   }
@@ -95,7 +91,7 @@ pub unsafe fn transform_slot_outlet<'a>(
     let fallback = exit_block.map(|exit_block| exit_block());
     context_block.dynamic.operation = Some(Box::new(OperationNode::SlotOutlet(SlotOutletIRNode {
       id,
-      name: slot_name,
+      name: slot_name.unwrap_or(context.ast.expression_string_literal(SPAN, "default", None)),
       props: ir_props,
       fallback,
       no_slotted: false,

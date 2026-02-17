@@ -1,6 +1,7 @@
-use common::{check::is_reserved_prop, expression::SimpleExpressionNode, text::camelize};
-use napi::bindgen_prelude::Either3;
-use oxc_ast::ast::{JSXAttribute, JSXAttributeName};
+use common::{
+  check::is_reserved_prop, expression::jsx_attribute_value_to_expression, text::camelize,
+};
+use oxc_ast::ast::{Expression, JSXAttribute, JSXAttributeName};
 use oxc_span::SPAN;
 
 use crate::transform::{DirectiveTransformResult, TransformContext};
@@ -9,6 +10,7 @@ pub fn transform_v_bind<'a>(
   dir: &'a mut JSXAttribute<'a>,
   context: &'a TransformContext<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
+  let ast = context.ast;
   let name_string = match &dir.name {
     JSXAttributeName::Identifier(name) => &name.name.to_string(),
     JSXAttributeName::NamespacedName(_) => return None,
@@ -19,26 +21,16 @@ pub fn transform_v_bind<'a>(
     return None;
   }
 
-  let mut arg = SimpleExpressionNode {
-    content: name_splited[0].to_string(),
-    is_static: true,
-    loc: SPAN,
-    ast: None,
-  };
+  let mut arg = ast.alloc_string_literal(SPAN, ast.atom(name_splited[0]), None);
 
   let exp = if let Some(value) = &mut dir.value {
-    SimpleExpressionNode::new(Either3::C(value), context.source_text)
+    jsx_attribute_value_to_expression(value, ast)
   } else {
-    SimpleExpressionNode {
-      content: String::from("true"),
-      is_static: false,
-      loc: SPAN,
-      ast: None,
-    }
+    ast.expression_boolean_literal(SPAN, true)
   };
 
   if modifiers.contains(&"camel") {
-    arg.content = camelize(&arg.content)
+    arg.value = ast.atom(&camelize(&arg.value))
   }
 
   let modifier = if modifiers.contains(&"prop") {
@@ -50,7 +42,7 @@ pub fn transform_v_bind<'a>(
   };
 
   Some(DirectiveTransformResult {
-    key: arg,
+    key: Expression::StringLiteral(arg),
     value: exp,
     runtime_camelize: false,
     modifier,

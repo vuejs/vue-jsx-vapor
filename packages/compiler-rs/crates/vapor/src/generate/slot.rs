@@ -4,7 +4,7 @@ use oxc_ast::{
   NONE,
   ast::{Expression, FormalParameterKind, PropertyKind},
 };
-use oxc_span::SPAN;
+use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   generate::{CodegenContext, block::gen_block, expression::gen_expression},
@@ -194,9 +194,27 @@ fn gen_loop_slot<'a>(
     index,
     source,
   } = _loop.unwrap();
-  let raw_value = value.map(|value| value.content);
-  let raw_key = key.map(|key| key.content);
-  let raw_index = index.map(|index| index.content);
+  let raw_value = value.and_then(|value| {
+    if let Expression::Identifier(value) = value {
+      Some(value.name)
+    } else {
+      None
+    }
+  });
+  let raw_key = key.and_then(|key| {
+    if let Expression::Identifier(key) = key {
+      Some(key.name)
+    } else {
+      None
+    }
+  });
+  let raw_index = index.and_then(|index| {
+    if let Expression::Identifier(index) = index {
+      Some(index.name)
+    } else {
+      None
+    }
+  });
 
   let slot_expr = ast.expression_object(
     SPAN,
@@ -357,17 +375,19 @@ fn gen_slot_block_with_props<'a>(
   let mut props_ast = None;
   let mut exit_scope = None;
 
-  if let Some(props) = oper.props.take() {
-    props_loc = props.loc;
-    if let Some(ast) = &props.ast
-      && let Expression::ObjectExpression(_) = ast.without_parentheses().get_inner_expression()
-    {
-      props_ast = props.ast;
-      let scope = context.enter_scope();
-      props_name = format!("_slotProps{}", scope.0);
-      exit_scope = Some(scope.1);
-    } else {
-      props_name = props.content;
+  if let Some(props) = oper.props.as_mut() {
+    props_loc = props.span();
+    match props.without_parentheses().get_inner_expression() {
+      Expression::ObjectExpression(_) => {
+        props_ast = Some(props);
+        let scope = context.enter_scope();
+        props_name = format!("_slotProps{}", scope.0);
+        exit_scope = Some(scope.1);
+      }
+      Expression::Identifier(props) => {
+        props_name = props.name.to_string();
+      }
+      _ => {}
     }
   }
 

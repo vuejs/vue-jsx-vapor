@@ -7,7 +7,6 @@ use crate::{
 use common::{
   directive::{find_prop, resolve_directive},
   error::ErrorCodes,
-  expression::SimpleExpressionNode,
   text::get_tag_name,
 };
 
@@ -17,10 +16,10 @@ pub fn transform_v_show<'a>(
   context_block: &'a mut BlockIRNode<'a>,
   parent_node: &mut JSXChild,
 ) -> Option<DirectiveTransformResult<'a>> {
-  let mut dir = resolve_directive(_dir, context.source_text);
+  let dir = resolve_directive(_dir, context.ast);
   if dir.exp.is_none() {
-    context.options.on_error.as_ref()(ErrorCodes::VShowNoExpression, dir.loc);
-    dir.exp = Some(SimpleExpressionNode::default())
+    context.options.on_error.as_ref()(ErrorCodes::VShowNoExpression, dir.span);
+    return None;
   }
 
   // lazy apply vshow if the node is inside a transition with appear

@@ -1,13 +1,13 @@
 use std::{cell::RefCell, mem, rc::Rc};
 
 use napi::{Either, bindgen_prelude::Either3};
-use oxc_allocator::FromIn;
+use oxc_allocator::{FromIn, TakeIn};
 use oxc_ast::ast::{
-  JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement,
-  JSXElementName, JSXExpression,
+  Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild,
+  JSXElement, JSXElementName, JSXExpression,
 };
 use oxc_semantic::NodeId;
-use oxc_span::{Ident, SPAN};
+use oxc_span::{GetSpan, Ident, SPAN, Span};
 
 use crate::{
   ir::{
@@ -34,7 +34,7 @@ use common::{
   directive::{Directives, resolve_directive},
   dom::is_valid_html_nesting,
   error::ErrorCodes,
-  expression::SimpleExpressionNode,
+  expression::jsx_attribute_value_to_expression,
   text::{camelize, get_tag_name, get_text_like_value},
 };
 
@@ -72,6 +72,7 @@ pub unsafe fn transform_element<'a>(
   }) as Box<dyn FnMut() -> i32>));
 
   let tag = get_tag_name(&node.opening_element.name, context.source_text);
+  let tag_span = node.opening_element.name.span();
   let node_id = node.node_id();
   if tag == "slot" {
     return unsafe {
@@ -120,6 +121,7 @@ pub unsafe fn transform_element<'a>(
     if is_component {
       transform_component_element(
         tag,
+        tag_span,
         node_id,
         props_result,
         single_root,
@@ -162,8 +164,6 @@ pub fn transform_native_element<'a>(
 ) {
   let mut template = format!("<{tag}");
 
-  let mut dynamic_props = vec![];
-
   match props_result.props {
     Either::A(props) => {
       let element = context.reference(&mut context_block.dynamic);
@@ -186,18 +186,17 @@ pub fn transform_native_element<'a>(
       // e.g. `class="foo"id="bar"` is valid, `class=foo id=bar` needs space
       let mut prev_was_quoted = false;
       for prop in props {
-        let key = &prop.key;
         let values = &prop.values;
-        if key.is_static
+        if let Expression::StringLiteral(key) = &prop.key
           && values.len() == 1
-          && values[0].is_static
-          && !DYNAMIC_KEYS.contains(&key.content.as_str())
+          && let Some(Expression::StringLiteral(first_value)) = values.first()
+          && !DYNAMIC_KEYS.contains(&key.value.as_str())
         {
           if !prev_was_quoted {
             template += " "
           }
-          let value = values[0].content.clone();
-          template += &key.content;
+          let value = first_value.value;
+          template += &key.value;
 
           if !value.is_empty() {
             // The attribute value can remain unquoted if it doesn't contain ASCII whitespace
@@ -215,12 +214,10 @@ pub fn transform_native_element<'a>(
             prev_was_quoted = false;
           }
         } else {
-          dynamic_props.push(key.content.clone());
-
           let element = context.reference(&mut context_block.dynamic);
           context.register_effect(
             context_block,
-            context.is_operation(values.iter().collect::<Vec<&SimpleExpressionNode>>()),
+            context.is_operation(values.iter().collect()),
             OperationNode::SetProp(SetPropIRNode {
               set_prop: true,
               prop,
@@ -294,8 +291,10 @@ fn can_omit_end_tag(tag: &str, parent_node: &JSXChild, context: &TransformContex
   *context.is_last_effective_child.borrow()
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn transform_component_element<'a>(
   mut tag: String,
+  tag_span: Span,
   node_id: NodeId,
   props_result: PropsResult<'a>,
   single_root: bool,
@@ -331,6 +330,7 @@ pub fn transform_component_element<'a>(
       create_component: true,
       id: context.reference(dynamic),
       tag,
+      tag_span,
       props: match props_result.props {
         Either::A(props) => props,
         Either::B(props) => vec![Either3::A(props)],
@@ -343,7 +343,6 @@ pub fn transform_component_element<'a>(
       parent: None,
       anchor: None,
       logical_index: None,
-      dynamic: None,
       append: false,
       last: false,
     },
@@ -385,7 +384,7 @@ pub fn build_props<'a>(
   for prop in props {
     match prop {
       JSXAttributeItem::SpreadAttribute(prop) => {
-        let value = SimpleExpressionNode::new(Either3::A(&mut prop.argument), context.source_text);
+        let value = prop.argument.take_in(context.allocator);
         if !results.is_empty() {
           dynamic_args.push(Either3::A(dedupe_properties(results)));
           results = vec![];
@@ -407,7 +406,7 @@ pub fn build_props<'a>(
         if prop_name.eq("v-on") {
           // v-on={obj}
           if let Some(prop_value) = &mut prop.value {
-            let value = SimpleExpressionNode::new(Either3::C(prop_value), context.source_text);
+            let value = jsx_attribute_value_to_expression(prop_value, context.ast);
             if is_component {
               if !results.is_empty() {
                 dynamic_args.push(Either3::A(dedupe_properties(results)));
@@ -451,7 +450,7 @@ pub fn build_props<'a>(
           unsafe { &mut *context_block },
           Rc::clone(&get_operation_index),
         ) {
-          if is_component && !prop.key.is_static {
+          if is_component && !matches!(&prop.key, Expression::StringLiteral(_)) {
             // v-model:$name$="value"
             if !results.is_empty() {
               dynamic_args.push(Either3::A(dedupe_properties(results)));
@@ -478,7 +477,11 @@ pub fn build_props<'a>(
   }
 
   // has dynamic key or {...obj}
-  if !dynamic_args.is_empty() || results.iter().any(|prop| !prop.key.is_static) {
+  if !dynamic_args.is_empty()
+    || results
+      .iter()
+      .any(|prop| !matches!(&prop.key, Expression::StringLiteral(_)))
+  {
     // take rest of props as dynamic props
     if !results.is_empty() {
       dynamic_args.push(Either3::A(dedupe_properties(results)));
@@ -532,31 +535,15 @@ pub fn transform_prop<'a>(
     if is_reserved_prop(name) {
       return None;
     }
+    let ast = context.ast;
     return Some(DirectiveTransformResult::new(
-      SimpleExpressionNode {
-        content: name.to_string(),
-        is_static: true,
-        ast: None,
-        loc: SPAN,
-      },
+      ast.expression_string_literal(SPAN, ast.atom(name), None),
       if let Some(value) = value {
-        SimpleExpressionNode {
-          content: value,
-          is_static: true,
-          ast: None,
-          loc: SPAN,
-        }
+        ast.expression_string_literal(SPAN, ast.atom(&value), None)
+      } else if is_component {
+        ast.expression_boolean_literal(SPAN, true)
       } else {
-        SimpleExpressionNode {
-          content: if is_component {
-            String::from("true")
-          } else {
-            String::new()
-          },
-          is_static: !is_component,
-          ast: None,
-          loc: SPAN,
-        }
+        ast.expression_string_literal(SPAN, ast.atom(""), None)
       },
     ));
   }
@@ -610,7 +597,7 @@ pub fn transform_prop<'a>(
       OperationNode::Directive(DirectiveIRNode {
         directive: true,
         element,
-        dir: resolve_directive(prop, context.source_text),
+        dir: resolve_directive(prop, context.ast),
         name: dir_name,
         asset,
         builtin: false,
@@ -643,12 +630,18 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
       dynamic: false,
     };
     // dynamic keys are always allowed
-    if !prop.key.is_static {
+    let Expression::StringLiteral(key) = &prop.key else {
       deduped.push(prop);
       continue;
-    }
-    let name = prop.key.content.as_str();
-    let existing = deduped.iter_mut().find(|i| i.key.content == name);
+    };
+    let name = &key.value;
+    let existing = deduped.iter_mut().find(|i| {
+      if let Expression::StringLiteral(key) = &i.key {
+        key.value == name
+      } else {
+        false
+      }
+    });
     // prop names and event handler names can be the same but serve different purposes
     // e.g. `:appear="true"` is a prop while `@appear="handler"` is an event handler
     if let Some(existing) = existing

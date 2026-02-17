@@ -1,7 +1,7 @@
 use common::{
-  check::is_jsx_component, error::ErrorCodes, expression::SimpleExpressionNode, text::is_empty_text,
+  check::is_jsx_component, error::ErrorCodes, expression::jsx_attribute_value_to_expression,
+  text::is_empty_text,
 };
-use napi::bindgen_prelude::Either3;
 use oxc_ast::ast::{JSXAttribute, JSXElement};
 
 use crate::{
@@ -16,10 +16,10 @@ pub fn transform_v_html<'a>(
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let exp = if let Some(value) = &mut dir.value {
-    SimpleExpressionNode::new(Either3::C(value), context.source_text)
+    jsx_attribute_value_to_expression(value, context.ast)
   } else {
     context.options.on_error.as_ref()(ErrorCodes::VHtmlNoExpression, dir.span);
-    SimpleExpressionNode::default()
+    return None;
   };
 
   if node.children.iter().any(|c| !is_empty_text(c)) {

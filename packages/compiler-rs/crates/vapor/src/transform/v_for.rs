@@ -1,4 +1,3 @@
-use napi::bindgen_prelude::Either3;
 use oxc_allocator::TakeIn;
 use oxc_ast::ast::{
   BinaryExpression, Expression, JSXAttribute, JSXAttributeValue, JSXChild, JSXElement,
@@ -13,7 +12,7 @@ use common::{
   check::{is_constant_node, is_jsx_component, is_template},
   directive::Directives,
   error::ErrorCodes,
-  expression::SimpleExpressionNode,
+  expression::jsx_attribute_value_to_expression,
   text::is_empty_text,
 };
 
@@ -57,10 +56,7 @@ pub unsafe fn transform_v_for<'a>(
     && let Some(value) = &mut key_prop.value
   {
     seen.insert(key_prop.span.start);
-    Some(SimpleExpressionNode::new(
-      Either3::C(value),
-      context.source_text,
-    ))
+    Some(jsx_attribute_value_to_expression(value, context.ast))
   } else {
     None
   };
@@ -118,7 +114,7 @@ pub unsafe fn transform_v_for<'a>(
       index,
       key_prop,
       render: block,
-      once: *context.in_v_once.borrow() || is_constant_node(&source.ast.as_deref()),
+      once: *context.in_v_once.borrow() || is_constant_node(&source),
       source,
       component: is_component,
       only_child,
@@ -135,10 +131,10 @@ pub fn get_for_parse_result<'a>(
   dir: &'a mut JSXAttribute<'a>,
   context: &'a TransformContext<'a>,
 ) -> Option<IRFor<'a>> {
-  let mut value: Option<SimpleExpressionNode> = None;
-  let mut index: Option<SimpleExpressionNode> = None;
-  let mut key: Option<SimpleExpressionNode> = None;
-  let mut source: Option<SimpleExpressionNode> = None;
+  let mut value: Option<Expression> = None;
+  let mut index: Option<Expression> = None;
+  let mut key: Option<Expression> = None;
+  let mut source: Option<Expression> = None;
   if let Some(dir_value) = &mut dir.value {
     let expression = if let JSXAttributeValue::ExpressionContainer(dir_value) = dir_value {
       Some(
@@ -163,23 +159,17 @@ pub fn get_for_parse_result<'a>(
         let expressions = &mut left.expressions as *mut oxc_allocator::Vec<Expression>;
         value = unsafe { &mut *expressions }
           .get_mut(0)
-          .map(|e| SimpleExpressionNode::new(Either3::A(e), context.source_text));
+          .map(|e| e.take_in(context.allocator));
         key = unsafe { &mut *expressions }
           .get_mut(1)
-          .map(|e| SimpleExpressionNode::new(Either3::A(e), context.source_text));
+          .map(|e| e.take_in(context.allocator));
         index = unsafe { &mut *expressions }
           .get_mut(2)
-          .map(|e| SimpleExpressionNode::new(Either3::A(e), context.source_text));
+          .map(|e| e.take_in(context.allocator));
       } else {
-        value = Some(SimpleExpressionNode::new(
-          Either3::A(left),
-          context.source_text,
-        ));
+        value = Some(left.take_in(context.allocator));
       };
-      source = Some(SimpleExpressionNode::new(
-        Either3::A(&mut unsafe { &mut *expression }.right),
-        context.source_text,
-      ));
+      source = Some((unsafe { &mut *expression }.right).take_in(context.allocator));
     }
   } else {
     context.options.on_error.as_ref()(ErrorCodes::VForNoExpression, dir.span);

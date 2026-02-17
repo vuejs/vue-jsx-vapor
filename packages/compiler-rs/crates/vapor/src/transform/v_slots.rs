@@ -1,4 +1,4 @@
-use napi::bindgen_prelude::{Either3, Either4};
+use napi::bindgen_prelude::Either4;
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
@@ -17,8 +17,7 @@ use crate::{
   transform::TransformContext,
 };
 use common::{
-  check::is_jsx_component, directive::Directives, error::ErrorCodes,
-  expression::SimpleExpressionNode, text::is_empty_text,
+  check::is_jsx_component, directive::Directives, error::ErrorCodes, text::is_empty_text,
 };
 
 /// # SAFETY
@@ -133,7 +132,7 @@ pub unsafe fn transform_v_slots<'a>(
           }
         }
       }
-      let slots = SimpleExpressionNode::new(Either3::A(expression), context.source_text);
+      let slots = expression.take_in(context.allocator);
       Some(Box::new(move || {
         context_block.slots = vec![Either4::D(IRSlotsExpression {
           slot_type: IRSlotType::EXPRESSION,

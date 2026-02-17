@@ -1,4 +1,4 @@
-use oxc_allocator::{CloneIn, TakeIn};
+use oxc_allocator::CloneIn;
 use oxc_ast::{
   NONE,
   ast::{AssignmentOperator, AssignmentTarget, Expression, FormalParameterKind},
@@ -7,52 +7,41 @@ use oxc_span::{GetSpan, GetSpanMut, SPAN, Span};
 
 use crate::generate::CodegenContext;
 
-use common::{expression::SimpleExpressionNode, walk_mut::WalkIdentifiersMut};
+use common::{expression::get_constant_expression_text, walk_mut::WalkIdentifiersMut};
 
 pub fn gen_expression<'a>(
-  node: SimpleExpressionNode<'a>,
+  mut expression: Expression<'a>,
   context: &'a CodegenContext<'a>,
   assignment: Option<Expression<'a>>,
   need_wrap: bool,
 ) -> Expression<'a> {
-  let ast = &context.ast;
+  let ast = context.ast;
 
-  let content = &node.content;
-  let loc = node.loc;
-
-  if node.is_static {
-    return ast.expression_string_literal(loc, ast.atom(content), None);
+  if let Expression::StringLiteral(_) = expression {
+    return expression;
   }
 
-  if node.is_constant_expression() {
+  let span = expression.span();
+  if let Some(content) = get_constant_expression_text(&expression, context.options) {
     return if let Some(assignment) = assignment {
       ast.expression_assignment(
-        loc,
+        span,
         AssignmentOperator::Assign,
         AssignmentTarget::AssignmentTargetIdentifier(
-          ast.alloc_identifier_reference(loc, ast.atom(content)),
+          ast.alloc_identifier_reference(span, ast.atom(&content)),
         ),
         assignment,
       )
     } else {
-      ast.expression_identifier(loc, ast.atom(content))
+      ast.expression_identifier(span, ast.atom(&content))
     };
   }
 
-  let Some(ast) = node.ast else {
-    return gen_identifier(content, context, loc, assignment);
-  };
-
   WalkIdentifiersMut::new(
-    Box::new(|id, _| {
-      let span = id.span();
-      let content = span.source_text(context.source_text);
-      Some(gen_identifier(content, context, span, None))
-    }),
+    Box::new(|id, _| Some(gen_identifier(&id.name, context, id.span, None))),
     context.options,
   )
-  .visit(ast);
-  let mut expression = ast.take_in(context.ast.allocator);
+  .visit(&mut expression);
   if let Some(assignment) = assignment {
     let span = expression.span();
     expression = context.ast.expression_assignment(

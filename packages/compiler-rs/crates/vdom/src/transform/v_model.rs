@@ -14,7 +14,7 @@ use crate::transform::{
 };
 use common::{
   check::{is_jsx_component, is_simple_identifier},
-  directive::{Directives, get_modifier_prop_name, resolve_directive1},
+  directive::{Directives, get_modifier_prop_name, resolve_directive},
   error::ErrorCodes,
   text::get_tag_name,
 };
@@ -60,8 +60,7 @@ pub fn transform_v_model<'a>(
     return None;
   }
 
-  let dir_span = _dir.span;
-  let dir = resolve_directive1(_dir, context.ast);
+  let dir = resolve_directive(_dir, context.ast);
   let tag = get_tag_name(&node.opening_element.name, context.source_text);
   let is_component = is_jsx_component(node, true, context.options);
 
@@ -71,7 +70,7 @@ pub fn transform_v_model<'a>(
   let prop_name = if let Some(arg) = dir.arg.as_ref() {
     arg.clone_in(context.allocator).into()
   } else {
-    ast.property_key_static_identifier(Span::new(dir_span.start, dir_span.start + 7), "modelValue")
+    ast.property_key_static_identifier(Span::new(dir.span.start, dir.span.start + 7), "modelValue")
   };
 
   // modelModifiers: { foo: true, "bar-baz": true }
@@ -82,7 +81,7 @@ pub fn transform_v_model<'a>(
         PropertyKind::Init,
         ast.property_key_static_identifier(
           SPAN,
-          ast.atom(&if is_simple_identifier(&modifier) {
+          ast.atom(&if is_simple_identifier(modifier) {
             modifier.clone()
           } else {
             format!("\"{}\"", modifier)
@@ -235,7 +234,7 @@ pub fn transform_v_model<'a>(
   }
 
   if arg_is_some {
-    context.options.on_error.as_ref()(ErrorCodes::VModelArgOnElement, dir_span);
+    context.options.on_error.as_ref()(ErrorCodes::VModelArgOnElement, dir.span);
   }
 
   let mut runtime_name = None;

@@ -1,15 +1,16 @@
-use common::{directive::Modifiers, expression::SimpleExpressionNode};
+use common::directive::Modifiers;
 use indexmap::IndexMap;
 use napi::{
   Either,
   bindgen_prelude::{Either3, Either4},
 };
+use oxc_ast::ast::Expression;
 
 use crate::ir::index::{BlockIRNode, IRFor};
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct IRProp<'a> {
-  pub key: SimpleExpressionNode<'a>,
+  pub key: Expression<'a>,
   pub modifier: Option<String>,
   pub runtime_camelize: bool,
   pub handler: bool,
@@ -17,15 +18,15 @@ pub struct IRProp<'a> {
   pub model: bool,
   pub model_modifiers: Option<Vec<String>>,
 
-  pub values: Vec<SimpleExpressionNode<'a>>,
+  pub values: Vec<Expression<'a>>,
   pub dynamic: bool,
 }
 
 pub type IRPropsStatic<'a> = Vec<IRProp<'a>>;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct IRPropsDynamicExpression<'a> {
-  pub value: SimpleExpressionNode<'a>,
+  pub value: Expression<'a>,
   pub handler: bool,
 }
 
@@ -49,7 +50,7 @@ pub struct IRSlotsStatic<'a> {
 #[derive(Debug)]
 pub struct IRSlotDynamicBasic<'a> {
   pub slot_type: IRSlotType,
-  pub name: SimpleExpressionNode<'a>,
+  pub name: Expression<'a>,
   pub _fn: BlockIRNode<'a>,
   pub _loop: Option<IRFor<'a>>,
 }
@@ -57,7 +58,7 @@ pub struct IRSlotDynamicBasic<'a> {
 #[derive(Debug)]
 pub struct IRSlotDynamicConditional<'a> {
   pub slot_type: IRSlotType,
-  pub condition: SimpleExpressionNode<'a>,
+  pub condition: Expression<'a>,
   pub positive: IRSlotDynamicBasic<'a>,
   pub negative: Option<Box<Either<IRSlotDynamicBasic<'a>, IRSlotDynamicConditional<'a>>>>,
 }
@@ -65,7 +66,7 @@ pub struct IRSlotDynamicConditional<'a> {
 #[derive(Debug)]
 pub struct IRSlotsExpression<'a> {
   pub slot_type: IRSlotType,
-  pub slots: SimpleExpressionNode<'a>,
+  pub slots: Expression<'a>,
 }
 
 pub type IRSlots<'a> = Either4<

@@ -1,9 +1,6 @@
 use std::collections::HashMap;
 
-use common::{
-  expression::{SimpleExpressionNode, is_globally_allowed},
-  walk::WalkIdentifiers,
-};
+use common::{expression::is_globally_allowed, walk::WalkIdentifiers};
 use oxc_allocator::CloneIn;
 use oxc_ast::{
   NONE,
@@ -52,7 +49,7 @@ pub fn gen_for<'a>(
   let ast = &context.ast;
   let ForIRNode {
     source,
-    value,
+    mut value,
     key,
     index,
     id,
@@ -64,20 +61,32 @@ pub fn gen_for<'a>(
     ..
   } = oper;
 
-  let (raw_key, key_span) = if let Some(key) = key {
-    (Some(key.content), key.loc)
+  let (raw_key, key_span) = if let Some(Expression::Identifier(key)) = key {
+    let span = key.span();
+    (
+      Some(span.source_text(context.source_text).to_string()),
+      span,
+    )
   } else {
     (None, SPAN)
   };
   let (raw_index, index_span) = if let Some(index) = index {
-    (Some(index.content), index.loc)
+    let span = index.span();
+    (
+      Some(span.source_text(context.source_text).to_string()),
+      span,
+    )
   } else {
     (None, SPAN)
   };
-  let (raw_value, value_span, value_ast) = if let Some(value) = value {
-    (value.content, value.loc, value.ast)
+  let (raw_value, value_span) = if let Some(value) = &value {
+    let span = value.span();
+    (
+      Some(span.source_text(context.source_text).to_string()),
+      span,
+    )
   } else {
-    (String::new(), SPAN, None)
+    (None, SPAN)
   };
 
   let source_expr = ast.expression_arrow_function(
@@ -102,7 +111,7 @@ pub fn gen_for<'a>(
   let (depth, exit_scope) = context.enter_scope();
   let item_var = format!("_for_item{depth}");
   let mut id_map = context.parse_value_destructure(
-    value_ast,
+    value.as_mut(),
     ast
       .member_expression_static(
         SPAN,
@@ -328,7 +337,7 @@ pub fn gen_for<'a>(
             FormalParameterKind::ArrowFormalParameters,
             ast.vec_from_iter(
               [
-                if !raw_value.is_empty() {
+                if let Some(raw_value) = raw_value {
                   Some(ast.plain_formal_parameter(
                     SPAN,
                     ast.binding_pattern_binding_identifier(value_span, ast.atom(&raw_value)),
@@ -470,34 +479,29 @@ pub fn gen_for<'a>(
 
 fn match_patterns<'a>(
   render: &mut BlockIRNode<'a>,
-  key_prop: &Option<SimpleExpressionNode<'a>>,
+  key_prop: &Option<Expression<'a>>,
   id_map: &HashMap<String, Expression<'a>>,
   context: &'a CodegenContext<'a>,
-) -> (
-  Vec<IREffect<'a>>,
-  Vec<SimpleExpressionNode<'a>>,
-  Vec<IREffect<'a>>,
-) {
+) -> (Vec<IREffect<'a>>, Vec<Expression<'a>>, Vec<IREffect<'a>>) {
   let mut effect_patterns = vec![];
   let mut selector_patterns = vec![];
   let mut key_only_binding_patterns = vec![];
 
   if let Some(key_prop) = key_prop {
+    let key_content = key_prop.span().source_text(context.source_text);
     let effects = &mut render.effect;
     let mut kept = Vec::with_capacity(effects.len());
     let mut old = std::mem::take(effects);
     for effect in old.drain(..) {
       let effect_ptr = &effect as *const _;
       if let Some(selector) =
-        match_selector_pattern(unsafe { &*effect_ptr }, &key_prop.content, id_map, context)
+        match_selector_pattern(unsafe { &*effect_ptr }, key_content, id_map, context)
       {
         effect_patterns.push(effect);
         selector_patterns.push(selector);
       } else if !effect.operations.is_empty()
-        && let Some(ast) = &get_expression(unsafe { &*effect_ptr }).unwrap().ast
-        && key_prop
-          .content
-          .eq(ast.span().source_text(context.source_text))
+        && let Some(ast) = get_expression(unsafe { &*effect_ptr })
+        && key_content.eq(ast.span().source_text(context.source_text))
       {
         key_only_binding_patterns.push(effect);
       } else {
@@ -519,16 +523,11 @@ fn match_selector_pattern<'a>(
   key: &str,
   id_map: &HashMap<String, Expression<'a>>,
   context: &'a CodegenContext<'a>,
-) -> Option<SimpleExpressionNode<'a>> {
+) -> Option<Expression<'a>> {
   if effect.operations.len() != 1 {
     return None;
   }
   let expression = get_expression(effect)?;
-  let Some(ast) = &expression.ast else {
-    return None;
-  };
-
-  let offset = ast.span().start;
 
   let mut matcheds: Vec<(Span, Span)> = vec![];
 
@@ -552,7 +551,7 @@ fn match_selector_pattern<'a>(
       }
     }),
   }
-  .visit_expression(ast);
+  .visit_expression(expression);
 
   if matcheds.len() == 1 {
     let (key, selector) = matcheds[0];
@@ -565,18 +564,11 @@ fn match_selector_pattern<'a>(
         *unsafe { &mut *_has_extra_id } = true
       }
     }))
-    .visit(ast);
+    .visit(expression);
 
     if !has_extra_id {
-      let content = expression.content
-        [(selector.start - offset) as usize..(selector.end - offset) as usize]
-        .to_string();
-      return Some(SimpleExpressionNode {
-        content,
-        ast: None,
-        loc: SPAN,
-        is_static: false,
-      });
+      let content = selector.span().source_text(context.source_text);
+      return Some(context.ast.expression_identifier(SPAN, content));
     }
   }
   None
@@ -598,16 +590,16 @@ fn analyze_variable_scopes<'a>(
   has_local
 }
 
-fn get_expression<'a>(effect: &'a IREffect<'a>) -> Option<&'a SimpleExpressionNode<'a>> {
+fn get_expression<'a>(effect: &'a IREffect<'a>) -> Option<&'a Expression<'a>> {
   let operation = effect.operations.first();
   match operation.as_ref().unwrap() {
     OperationNode::SetText(operation) => operation.values.first(),
-    OperationNode::SetNodes(operation) => operation.values.first(),
-    OperationNode::CreateNodes(operation) => operation.values.first(),
+    // OperationNode::SetNodes(operation) => operation.values.first(),
+    // OperationNode::CreateNodes(operation) => operation.values.first(),
     OperationNode::SetHtml(operation) => Some(&operation.value),
-    OperationNode::SetEvent(operation) => operation.value.as_ref(),
-    OperationNode::SetDynamicEvents(operation) => Some(&operation.value),
-    OperationNode::SetTemplateRef(operation) => Some(&operation.value),
+    OperationNode::SetEvent(operation) => Some(&operation.value),
+    // OperationNode::SetDynamicEvents(operation) => Some(&operation.value),
+    // OperationNode::SetTemplateRef(operation) => Some(&operation.value),
     OperationNode::SetProp(operation) => operation.prop.values.first(),
     OperationNode::Key(operation) => Some(&operation.value),
     _ => None,

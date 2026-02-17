@@ -1,128 +1,26 @@
-use napi::bindgen_prelude::Either3;
-use oxc_allocator::TakeIn;
 use oxc_ast::{
   AstBuilder,
-  ast::{
-    Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElement,
-  },
+  ast::{Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXElement},
 };
 use oxc_span::{SPAN, SourceType, Span};
 
 use crate::{
   check::{is_event_option_modifier, is_keyboard_event, is_non_key_modifier, maybe_key_modifier},
-  expression::{SimpleExpressionNode, parse_expression},
+  expression::{jsx_attribute_value_to_expression, parse_expression},
 };
 
-#[derive(Debug, Clone)]
-pub struct DirectiveNode<'a> {
-  pub name: String,
-  pub exp: Option<SimpleExpressionNode<'a>>,
-  pub arg: Option<SimpleExpressionNode<'a>>,
-  pub modifiers: Vec<SimpleExpressionNode<'a>>,
-  pub loc: Span,
-}
-
-pub fn resolve_directive<'a>(node: &'a mut JSXAttribute<'a>, source: &'a str) -> DirectiveNode<'a> {
-  let mut arg_string = String::new();
-  let (arg_span, mut name_string) = match &node.name {
-    JSXAttributeName::Identifier(name) => (name.span, name.name.to_string()),
-    JSXAttributeName::NamespacedName(name) => {
-      arg_string = name.name.name.to_string();
-      (
-        Span::new(name.name.span.start + 1, name.name.span.end - 1),
-        name.namespace.name.to_string(),
-      )
-    }
-  };
-  let mut modifiers: Vec<String> = vec![];
-  let mut is_static = true;
-
-  if !matches!(node.name, JSXAttributeName::NamespacedName(_)) {
-    let name_string_splited: Vec<&str> = name_string.split("_").collect();
-    if name_string_splited.len() > 1 {
-      modifiers = name_string_splited[1..]
-        .iter()
-        .map(|s| s.to_string())
-        .collect();
-      name_string = name_string_splited[0].to_string();
-    }
-  } else {
-    let cloned = arg_string.clone();
-    let splited = &mut cloned.split("$").collect::<Vec<_>>();
-    if splited.len() > 2 {
-      is_static = false;
-      arg_string = splited[1].replace("_", ".");
-      if !splited[2].is_empty() {
-        modifiers = splited[2][1..]
-          .split("_")
-          .map(|s| s.to_string())
-          .collect::<Vec<_>>();
-      }
-    } else {
-      let mut splited = cloned.split("_").map(|i| i.to_string()).collect::<Vec<_>>();
-      arg_string = splited.remove(0);
-      modifiers = splited;
-    }
-  }
-
-  let dir_index = name_string.char_indices().find_map(|(i, c)| {
-    if c == '-' {
-      Some(i + 1)
-    } else if c.is_ascii_uppercase() {
-      Some(i)
-    } else {
-      None
-    }
-  });
-  let dir_name = name_string[dir_index.unwrap()..].to_string();
-
-  let arg = if !arg_string.is_empty()
-    && let JSXAttributeName::NamespacedName(_) = &node.name
-  {
-    Some(SimpleExpressionNode {
-      content: arg_string,
-      is_static,
-      ast: None,
-      loc: arg_span,
-    })
-  } else {
-    None
-  };
-
-  let exp = node
-    .value
-    .as_mut()
-    .map(|exp| SimpleExpressionNode::new(Either3::C(exp), source));
-
-  let modifiers = modifiers
-    .into_iter()
-    .map(|modifier| SimpleExpressionNode {
-      content: modifier,
-      is_static: false,
-      ast: None,
-      loc: SPAN,
-    })
-    .collect();
-  DirectiveNode {
-    name: dir_name,
-    exp,
-    arg,
-    loc: SPAN,
-    modifiers,
-  }
-}
-
 #[derive(Debug)]
-pub struct DirectiveNode1<'a> {
-  pub exp: Option<JSXAttributeValue<'a>>,
+pub struct DirectiveNode<'a> {
+  pub exp: Option<Expression<'a>>,
   pub arg: Option<Expression<'a>>,
   pub modifiers: Vec<String>,
+  pub span: Span,
 }
 
-pub fn resolve_directive1<'a>(
+pub fn resolve_directive<'a>(
   node: &'a mut JSXAttribute<'a>,
   ast: &AstBuilder<'a>,
-) -> DirectiveNode1<'a> {
+) -> DirectiveNode<'a> {
   let mut arg_string = String::new();
   let (arg_span, name_string) = match &node.name {
     JSXAttributeName::Identifier(name) => (name.span, name.name.to_string()),
@@ -176,10 +74,14 @@ pub fn resolve_directive1<'a>(
     None
   };
 
-  DirectiveNode1 {
+  DirectiveNode {
     arg,
-    exp: node.value.as_mut().map(|exp| exp.take_in(ast.allocator)),
-    modifiers: modifiers.into_iter().map(|modifier| modifier).collect(),
+    exp: node
+      .value
+      .as_mut()
+      .map(|value| jsx_attribute_value_to_expression(value, ast)),
+    modifiers,
+    span: node.span,
   }
 }
 

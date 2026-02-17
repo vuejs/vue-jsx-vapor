@@ -26,7 +26,7 @@ use common::{
     get_directive_name, is_built_in_directive, is_event, is_jsx_component, is_reserved_prop,
     is_template,
   },
-  directive::{DirectiveNode1, resolve_directive1},
+  directive::{DirectiveNode, resolve_directive},
   error::ErrorCodes,
   patch_flag::PatchFlags,
   text::{camelize, get_tag_name, to_valid_asset_id},
@@ -530,7 +530,7 @@ pub fn build_props<'a>(
                 }
               };
               runtime_directives.push(
-                build_directive_args(resolve_directive1(prop, context.ast), context, &runtime)
+                build_directive_args(resolve_directive(prop, context.ast), context, &runtime)
                   .into(),
               );
               // custom dirs may use beforeUpdate so they need to force blocks
@@ -775,7 +775,7 @@ pub fn dedupe_properties<'a>(
 }
 
 pub fn build_directive_args<'a>(
-  mut dir: DirectiveNode1<'a>,
+  mut dir: DirectiveNode<'a>,
   context: &'a TransformContext<'a>,
   runtime: &str,
 ) -> Expression<'a> {
@@ -785,7 +785,7 @@ pub fn build_directive_args<'a>(
   dir_args.push(ast.expression_identifier(SPAN, ast.atom(runtime)));
   let exp_is_none = dir.exp.is_none();
   if let Some(exp) = dir.exp.as_mut() {
-    dir_args.push(context.jsx_attribute_value_to_expression(exp));
+    dir_args.push(context.process_expression(exp).0);
   }
   let arg_is_none = dir.arg.is_none();
   if let Some(arg) = dir.arg.take() {
@@ -804,7 +804,7 @@ pub fn build_directive_args<'a>(
         ast.object_property_kind_object_property(
           SPAN,
           PropertyKind::Init,
-          ast.property_key_static_identifier(SPAN, ast.atom(&modifier)),
+          ast.property_key_static_identifier(SPAN, ast.atom(modifier)),
           ast.expression_boolean_literal(SPAN, true),
           false,
           false,

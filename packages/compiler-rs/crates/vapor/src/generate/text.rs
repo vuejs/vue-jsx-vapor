@@ -1,6 +1,7 @@
-use common::expression::SimpleExpressionNode;
+use common::text::get_text_like_value;
 use oxc_ast::NONE;
 use oxc_ast::ast::Argument;
+use oxc_ast::ast::Expression;
 use oxc_ast::ast::Statement;
 use oxc_ast::ast::VariableDeclarationKind;
 use oxc_span::SPAN;
@@ -177,7 +178,7 @@ pub fn gen_create_nodes<'a>(
 
 fn combine_values<'a>(
   arguments: &mut oxc_allocator::Vec<'a, Argument<'a>>,
-  values: Vec<SimpleExpressionNode<'a>>,
+  values: Vec<Expression<'a>>,
   context: &'a CodegenContext<'a>,
   once: bool,
   is_set_text: bool,
@@ -187,10 +188,9 @@ fn combine_values<'a>(
   for value in values {
     let should_wrap = !once
       && !is_set_text
-      && !value.content.is_empty()
-      && !value.is_static
-      && !is_constant_node(&value.ast.as_deref());
-    let literal_expression_value = &value.get_literal_expression_value();
+      && !matches!(value, Expression::StringLiteral(_))
+      && !is_constant_node(&value);
+    let literal_expression_value = get_text_like_value(&value, false);
     let exp = gen_expression(value, context, None, should_wrap);
     if is_set_text && literal_expression_value.is_none() {
       // dynamic, wrap with toDisplayString

@@ -18,38 +18,29 @@ pub fn is_template<'a>(node: &'a JSXElement<'a>) -> bool {
   }
 }
 
-pub fn is_constant_node(node: &Option<&Expression>) -> bool {
-  let Some(node) = node else {
-    return false;
-  };
+pub fn is_constant_node(node: &Expression) -> bool {
   match node.without_parentheses().get_inner_expression() {
     // void 0, !true
-    Expression::UnaryExpression(node) => is_constant_node(&Some(&node.argument)),
+    Expression::UnaryExpression(node) => is_constant_node(&node.argument),
     // 1 > 2
     Expression::LogicalExpression(node) => {
-      is_constant_node(&Some(&node.left)) && is_constant_node(&Some(&node.right))
+      is_constant_node(&node.left) && is_constant_node(&node.right)
     }
     // 1 + 2
     Expression::BinaryExpression(node) => {
-      is_constant_node(&Some(&node.left)) && is_constant_node(&Some(&node.right))
+      is_constant_node(&node.left) && is_constant_node(&node.right)
     }
     // 1 ? 2 : 3
     Expression::ConditionalExpression(node) => {
-      is_constant_node(&Some(&node.test))
-        && is_constant_node(&Some(&node.consequent))
-        && is_constant_node(&Some(&node.alternate))
+      is_constant_node(&node.test)
+        && is_constant_node(&node.consequent)
+        && is_constant_node(&node.alternate)
     }
     // (1, 2)
-    Expression::SequenceExpression(node) => node
-      .expressions
-      .iter()
-      .all(|exp| is_constant_node(&Some(exp))),
+    Expression::SequenceExpression(node) => node.expressions.iter().all(is_constant_node),
     // `foo${1}`
-    Expression::TemplateLiteral(node) => node
-      .expressions
-      .iter()
-      .all(|exp| is_constant_node(&Some(exp))),
-    Expression::ParenthesizedExpression(node) => is_constant_node(&Some(&node.expression)),
+    Expression::TemplateLiteral(node) => node.expressions.iter().all(is_constant_node),
+    Expression::ParenthesizedExpression(node) => is_constant_node(&node.expression),
     Expression::NullLiteral(_)
     | Expression::BigIntLiteral(_)
     | Expression::RegExpLiteral(_)
@@ -68,10 +59,10 @@ pub fn is_constant_node(node: &Option<&Expression>) -> bool {
             return false;
           }
           // { foo: 1 }
-          (!prop.computed || is_constant_node(&Some(prop.key.to_expression())))
-            && is_constant_node(&Some(&prop.value))
+          (!prop.computed || is_constant_node(prop.key.to_expression()))
+            && is_constant_node(&prop.value)
         }
-        ObjectPropertyKind::SpreadProperty(prop) => is_constant_node(&Some(&prop.argument)),
+        ObjectPropertyKind::SpreadProperty(prop) => is_constant_node(&prop.argument),
       })
     }
     Expression::ArrayExpression(node) => {
@@ -82,10 +73,10 @@ pub fn is_constant_node(node: &Option<&Expression>) -> bool {
         }
         // [1, ...[2, 3]]
         if let ArrayExpressionElement::SpreadElement(element) = element {
-          return is_constant_node(&Some(&element.argument));
+          return is_constant_node(&element.argument);
         }
         // [1, 2]
-        is_constant_node(&Some(element.to_expression()))
+        is_constant_node(element.to_expression())
       })
     }
     _ => false,
@@ -488,9 +479,6 @@ pub fn is_referenced_identifier<'a>(id: &IdentifierReference, parent: Option<Ast
   // is a special keyword but parsed as identifier
   if id.name.eq("arguments") {
     return false;
-  }
-  if id.name.eq("zhiyuanzmj") {
-    dbg!(id);
   }
 
   is_referenced(id, parent)

@@ -1,5 +1,5 @@
 use oxc_ast::NONE;
-use oxc_ast::ast::{Statement, VariableDeclarationKind};
+use oxc_ast::ast::{Expression, Statement, VariableDeclarationKind};
 use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
@@ -41,12 +41,8 @@ pub fn gen_slot_outlet<'a>(
               NONE,
               ast.vec_from_iter(
                 [
-                  if name.is_static {
-                    Some(
-                      ast
-                        .expression_string_literal(SPAN, ast.atom(&name.content), None)
-                        .into(),
-                    )
+                  if let Expression::StringLiteral(name) = name {
+                    Some(ast.expression_string_literal(SPAN, name.value, None).into())
                   } else {
                     Some(
                       ast

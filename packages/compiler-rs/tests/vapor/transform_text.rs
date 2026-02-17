@@ -117,7 +117,7 @@ fn should_not_escape_quotes_in_template_v_if_text() {
   	const _n0 = _createIf(() => "ok", () => {
   		const _n2 = _t0();
   		return _n2;
-  	});
+  	}, null, true);
   	return _n0;
   })();
   "#);

@@ -1,4 +1,3 @@
-use common::expression::SimpleExpressionNode;
 use napi::bindgen_prelude::Either3;
 use oxc_ast::NONE;
 use oxc_ast::ast::BinaryOperator;
@@ -92,7 +91,15 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
       .expression_identifier(SPAN, ast.atom(&format!("_n{}", oper.element)))
       .into(),
   );
-  let resolved_helper = get_runtime_helper(&tag, &key.content, modifier);
+  let resolved_helper = get_runtime_helper(
+    &tag,
+    if let Expression::StringLiteral(key) = &key {
+      &key.value
+    } else {
+      ""
+    },
+    modifier,
+  );
   if resolved_helper.need_key {
     arguments.push(gen_expression(key, context, None, false).into());
   }
@@ -282,7 +289,7 @@ fn gen_literal_object_props<'a>(
 }
 
 pub fn gen_prop_key<'a>(
-  node: SimpleExpressionNode<'a>,
+  node: Expression<'a>,
   runtime_camelize: bool,
   modifier: Option<String>,
   handler: bool,
@@ -301,22 +308,22 @@ pub fn gen_prop_key<'a>(
     String::new()
   };
   // static arg was transformed by v-bind transformer
-  if node.is_static {
+  if let Expression::StringLiteral(node) = node {
     // only quote keys if necessary
     let key_name = (if handler {
       format!(
         "on{}",
-        node.content[0..1].to_string().to_uppercase() + &node.content[1..]
+        node.value[0..1].to_string().to_uppercase() + &node.value[1..]
       )
     } else {
-      node.content
+      node.value.to_string()
     }) + &handler_modifier_postfix;
     let key_name = if is_simple_identifier(&key_name) {
       &key_name
     } else {
       &format!("\"{}\"", key_name)
     };
-    return ast.property_key_static_identifier(node.loc, ast.atom(key_name));
+    return ast.property_key_static_identifier(node.span, ast.atom(key_name));
   }
 
   let mut key = gen_expression(node, context, None, false);
@@ -368,7 +375,7 @@ pub fn gen_prop_key<'a>(
 }
 
 pub fn gen_prop_value<'a>(
-  mut values: Vec<SimpleExpressionNode<'a>>,
+  mut values: Vec<Expression<'a>>,
   context: &'a CodegenContext<'a>,
 ) -> Expression<'a> {
   let ast = &context.ast;

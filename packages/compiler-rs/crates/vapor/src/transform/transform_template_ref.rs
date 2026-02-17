@@ -1,11 +1,12 @@
-use napi::bindgen_prelude::Either3;
 use oxc_ast::ast::JSXChild;
 
 use crate::{
   ir::index::{BlockIRNode, OperationNode, SetTemplateRefIRNode},
   transform::TransformContext,
 };
-use common::{check::is_fragment_node, directive::Directives, expression::SimpleExpressionNode};
+use common::{
+  check::is_fragment_node, directive::Directives, expression::jsx_attribute_value_to_expression,
+};
 
 /// # SAFETY
 pub unsafe fn transform_template_ref<'a>(
@@ -24,7 +25,7 @@ pub unsafe fn transform_template_ref<'a>(
   };
   context.ir.borrow_mut().has_template_ref = true;
 
-  let value = SimpleExpressionNode::new(Either3::C(value), context.source_text);
+  let value = jsx_attribute_value_to_expression(value, context.ast);
   Some(Box::new(move || {
     let id = context.reference(&mut context_block.dynamic);
 

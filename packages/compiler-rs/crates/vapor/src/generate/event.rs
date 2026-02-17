@@ -1,10 +1,10 @@
 use common::directive::Modifiers;
-use common::expression::SimpleExpressionNode;
 use oxc_ast::NONE;
 use oxc_ast::ast::{
   AssignmentTarget, Expression, FormalParameterKind, ObjectPropertyKind, PropertyKind, Statement,
+  StringLiteral,
 };
-use oxc_span::SPAN;
+use oxc_span::{GetSpan, SPAN};
 
 use crate::generate::CodegenContext;
 use crate::generate::expression::gen_expression;
@@ -13,7 +13,7 @@ use crate::ir::index::{SetDynamicEventsIRNode, SetEventIRNode};
 pub fn gen_set_event<'a>(
   oper: SetEventIRNode<'a>,
   context: &'a CodegenContext<'a>,
-  event_opers: &Vec<SetEventIRNode>,
+  event_opers: &Vec<(i32, StringLiteral)>,
 ) -> Statement<'a> {
   let ast = &context.ast;
   let SetEventIRNode {
@@ -30,8 +30,12 @@ pub fn gen_set_event<'a>(
     ..
   } = oper;
 
-  let key_content = key.content.clone();
-  let oper_key_strat = key.loc.start;
+  let key_content = if let Expression::StringLiteral(key) = &key {
+    key.value.as_str()
+  } else {
+    ""
+  };
+  let key_strat = key.span().start;
   let name = gen_expression(key, context, None, false);
   let event_options = if options.is_empty() && !effect {
     None
@@ -71,16 +75,14 @@ pub fn gen_set_event<'a>(
       .options
       .delegates
       .borrow_mut()
-      .insert(key_content.clone());
+      .insert(key_content.to_string());
     // if this is the only delegated event of this name on this element,
     // we can generate optimized handler attachment code
     // e.g. n1.$evtclick = () => {}
-    if !event_opers.iter().any(|op| {
-      op.key.loc.start != oper_key_strat
-        && op.delegate
-        && op.element == oper.element
-        && op.key.content == key_content
-    }) {
+    if !event_opers
+      .iter()
+      .any(|op| op.1.span.start != key_strat && op.0 == oper.element && op.1.value == key_content)
+    {
       return ast.statement_expression(
         SPAN,
         ast.expression_assignment(
@@ -127,35 +129,16 @@ pub fn gen_set_event<'a>(
 
 pub fn gen_event_handler<'a>(
   context: &'a CodegenContext<'a>,
-  values: Vec<Option<SimpleExpressionNode<'a>>>,
+  values: Vec<Expression<'a>>,
   keys: &[String],
   non_keys: &[String],
   // passed as component prop - need additional wrap
   extra_wrap: bool,
 ) -> Expression<'a> {
   let ast = &context.ast;
-  let mut values = values.into_iter().map(|value| {
-    if let Some(value) = value
-      && !value.content.trim().is_empty()
-    {
-      gen_expression(value, context, None, false)
-    } else {
-      ast.expression_arrow_function(
-        SPAN,
-        false,
-        false,
-        NONE,
-        ast.formal_parameters(
-          SPAN,
-          FormalParameterKind::ArrowFormalParameters,
-          ast.vec(),
-          NONE,
-        ),
-        NONE,
-        ast.function_body(SPAN, ast.vec(), ast.vec()),
-      )
-    }
-  });
+  let mut values = values
+    .into_iter()
+    .map(|value| gen_expression(value, context, None, false));
 
   let mut handler_exp = if values.len() > 1 {
     ast.expression_array(SPAN, ast.vec_from_iter(values.map(|value| value.into())))

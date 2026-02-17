@@ -1,6 +1,6 @@
 use common::ast::RootNode;
 use common::directive::{Directives, Modifiers};
-use common::expression::SimpleExpressionNode;
+use common::expression::get_constant_expression_text;
 pub use common::options::TransformOptions;
 use oxc_allocator::{Allocator, TakeIn};
 use oxc_ast::ast::{Expression, JSXAttributeItem, JSXChild, JSXElement};
@@ -40,8 +40,8 @@ use crate::{
 use common::check::{is_constant_node, is_inline_tag, is_math_ml_tag, is_svg_tag, is_template};
 
 pub struct DirectiveTransformResult<'a> {
-  pub key: SimpleExpressionNode<'a>,
-  pub value: SimpleExpressionNode<'a>,
+  pub key: Expression<'a>,
+  pub value: Expression<'a>,
   pub modifier: Option<String>,
   pub runtime_camelize: bool,
   pub handler: bool,
@@ -51,7 +51,7 @@ pub struct DirectiveTransformResult<'a> {
 }
 
 impl<'a> DirectiveTransformResult<'a> {
-  pub fn new(key: SimpleExpressionNode<'a>, value: SimpleExpressionNode<'a>) -> Self {
+  pub fn new(key: Expression<'a>, value: Expression<'a>) -> Self {
     DirectiveTransformResult {
       key,
       value,
@@ -162,20 +162,18 @@ impl<'a> TransformContext<'a> {
     if_index
   }
 
-  pub fn is_operation(&self, expressions: Vec<&SimpleExpressionNode>) -> bool {
+  pub fn is_operation(&self, expressions: Vec<&Expression>) -> bool {
     if self.in_v_once.borrow().eq(&true) {
       return true;
     }
-    let expressions: Vec<&SimpleExpressionNode> = expressions
+    let expressions: Vec<&Expression> = expressions
       .into_iter()
-      .filter(|exp| !exp.is_constant_expression())
+      .filter(|exp| get_constant_expression_text(exp, self.options).is_none())
       .collect();
     if expressions.is_empty() {
       return true;
     }
-    expressions
-      .iter()
-      .all(|exp| is_constant_node(&exp.ast.as_deref()))
+    expressions.iter().all(|exp| is_constant_node(exp))
   }
 
   pub fn register_effect(
@@ -198,7 +196,6 @@ impl<'a> TransformContext<'a> {
     context_block.effect.insert(
       index,
       IREffect {
-        expressions: vec![],
         operations: vec![operation],
       },
     );

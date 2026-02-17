@@ -2,10 +2,13 @@ use common::{
   check::{is_delegated_events, is_jsx_component, is_keyboard_event},
   directive::{Modifiers, resolve_modifiers},
   error::ErrorCodes,
-  expression::SimpleExpressionNode,
+  expression::jsx_attribute_value_to_expression,
 };
-use napi::bindgen_prelude::Either3;
-use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement};
+use oxc_ast::{
+  NONE,
+  ast::{Expression, FormalParameterKind, JSXAttribute, JSXAttributeName, JSXElement},
+};
+use oxc_span::SPAN;
 
 use crate::{
   ir::index::{BlockIRNode, OperationNode, SetEventIRNode},
@@ -18,6 +21,7 @@ pub fn transform_v_on<'a>(
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
+  let ast = context.ast;
   let is_component = is_jsx_component(node, true, context.options);
 
   let (name, name_loc) = match &dir.name {
@@ -28,7 +32,7 @@ pub fn transform_v_on<'a>(
   };
   let replaced = format!("{}{}", name[2..3].to_lowercase(), &name[3..]);
   let splited = replaced.split("_").collect::<Vec<_>>();
-  let name_string = splited[0].to_string();
+  let name_string = splited[0];
   let modifiers = splited[1..].to_vec();
 
   let value = &mut dir.value;
@@ -36,23 +40,32 @@ pub fn transform_v_on<'a>(
     context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, dir.span);
   }
 
-  let mut arg = SimpleExpressionNode {
-    content: name_string.clone(),
-    is_static: true,
-    loc: name_loc,
-    ast: None,
-  };
+  let mut arg = ast.alloc_string_literal(name_loc, ast.atom(name_string), None);
   let exp = value
     .as_mut()
-    .map(|value| SimpleExpressionNode::new(Either3::C(value), context.source_text));
+    .map(|value| jsx_attribute_value_to_expression(value, ast))
+    .unwrap_or(ast.expression_arrow_function(
+      SPAN,
+      false,
+      false,
+      NONE,
+      ast.formal_parameters(
+        SPAN,
+        FormalParameterKind::ArrowFormalParameters,
+        ast.vec(),
+        NONE,
+      ),
+      NONE,
+      ast.function_body(SPAN, ast.vec(), ast.vec()),
+    ));
 
   let Modifiers {
     keys: mut key_modifiers,
     non_keys: non_key_modifiers,
     options: event_option_modifiers,
-  } = resolve_modifiers(&arg.content, modifiers);
+  } = resolve_modifiers(&arg.value, modifiers);
 
-  let is_static_click = arg.is_static && arg.content.to_lowercase() == "click";
+  let is_static_click = arg.value == "click";
 
   // normalize click.right and click.middle since they don't actually fire
   if non_key_modifiers
@@ -60,22 +73,22 @@ pub fn transform_v_on<'a>(
     .any(|modifier| modifier == "middle")
     && is_static_click
   {
-    arg.content = "mouseup".to_string()
+    arg.value = ast.atom("mouseup");
   }
   if non_key_modifiers.iter().any(|modifier| modifier == "right") && is_static_click {
-    arg.content = "contextmenu".to_string();
+    arg.value = ast.atom("contextmenu");
   }
 
   // don't gen keys guard for non-keyboard events
   // if event name is dynamic, always wrap with keys guard
-  if !key_modifiers.is_empty() && !is_keyboard_event(&arg.content) {
+  if !key_modifiers.is_empty() && !is_keyboard_event(&arg.value) {
     key_modifiers.clear();
   }
 
   if is_component {
     return Some(DirectiveTransformResult {
-      key: arg,
-      value: exp.unwrap_or_default(),
+      key: Expression::StringLiteral(arg),
+      value: exp,
       handler: true,
       handler_modifiers: Some(Modifiers {
         keys: key_modifiers,
@@ -93,13 +106,11 @@ pub fn transform_v_on<'a>(
   // - no dynamic event name
   // - no event option modifiers (passive, capture, once)
   // - is a delegatable
-  let delegate =
-    arg.is_static && event_option_modifiers.is_empty() && is_delegated_events(arg.content.as_str());
+  let delegate = event_option_modifiers.is_empty() && is_delegated_events(&arg.value);
 
   let element = context.reference(&mut context_block.dynamic);
-  context.register_effect(
+  context.register_operation(
     context_block,
-    context.is_operation(vec![&arg]),
     OperationNode::SetEvent(SetEventIRNode {
       set_event: true,
       element,
@@ -110,10 +121,9 @@ pub fn transform_v_on<'a>(
         options: event_option_modifiers,
       },
       delegate,
-      effect: !arg.is_static,
-      key: arg,
+      effect: false,
+      key: Expression::StringLiteral(arg),
     }),
-    None,
     None,
   );
   None

@@ -2,7 +2,6 @@ use std::mem;
 
 use common::check::is_simple_identifier;
 use common::directive::Modifiers;
-use common::expression::SimpleExpressionNode;
 use common::text::capitalize;
 use indexmap::IndexMap;
 use napi::bindgen_prelude::Either3;
@@ -43,73 +42,28 @@ pub fn gen_create_component<'a>(
   let ast = &context.ast;
   let CreateComponentIRNode {
     tag,
+    tag_span,
     root,
     props,
     slots,
     once,
     id,
-    dynamic,
     asset,
     is_custom_element,
     ..
   } = operation;
 
-  let is_dynamic = if let Some(dynamic) = &dynamic
-    && !dynamic.is_static
-  {
-    true
-  } else {
-    false
-  };
   let tag = if is_custom_element {
     ast
       .expression_string_literal(SPAN, ast.atom(&tag), None)
       .into()
-  } else if let Some(dynamic) = dynamic {
-    if dynamic.is_static {
-      ast
-        .expression_call(
-          SPAN,
-          ast.expression_identifier(SPAN, ast.atom(&context.helper("resolveDynamicComponent"))),
-          NONE,
-          ast.vec1(gen_expression(dynamic, context, None, false).into()),
-          false,
-        )
-        .into()
-    } else {
-      ast
-        .expression_arrow_function(
-          SPAN,
-          true,
-          false,
-          NONE,
-          ast.formal_parameters(
-            SPAN,
-            FormalParameterKind::ArrowFormalParameters,
-            ast.vec(),
-            NONE,
-          ),
-          NONE,
-          ast.function_body(
-            SPAN,
-            ast.vec(),
-            ast.vec1(ast.statement_expression(SPAN, gen_expression(dynamic, context, None, false))),
-          ),
-        )
-        .into()
-    }
   } else if asset {
     ast
       .expression_identifier(SPAN, ast.atom(&to_valid_asset_id(&tag, "component")))
       .into()
   } else {
     gen_expression(
-      SimpleExpressionNode {
-        content: tag,
-        is_static: false,
-        loc: SPAN,
-        ast: None,
-      },
+      ast.expression_identifier(tag_span, ast.atom(&tag)),
       context,
       None,
       false,
@@ -153,9 +107,7 @@ pub fn gen_create_component<'a>(
           SPAN,
           ast.expression_identifier(
             SPAN,
-            ast.atom(&context.helper(if is_dynamic {
-              "createDynamicComponent"
-            } else if is_custom_element {
+            ast.atom(&context.helper(if is_custom_element {
               "createPlainElement"
             } else if asset {
               "createComponentWithFallback"
@@ -249,7 +201,14 @@ fn gen_static_props<'a>(
 
   for mut prop in props {
     if prop.handler {
-      let key_name = format!("\"on{}\"", capitalize(prop.key.content.clone()));
+      let key_name = format!(
+        "\"on{}\"",
+        capitalize(if let Expression::StringLiteral(key) = &prop.key {
+          key.value.to_string()
+        } else {
+          unreachable!()
+        })
+      );
       if key_name.is_empty() {
         // dynamic key handlers are emitted as-is
         gen_prop(&mut properties, prop, context, true);
@@ -276,13 +235,7 @@ fn gen_static_props<'a>(
       );
       let has_modifiers = !keys.is_empty() || !non_keys.is_empty();
       if has_modifiers || prop.values.len() <= 1 {
-        let handler_exp = gen_event_handler(
-          context,
-          prop.values.into_iter().map(Some).collect(),
-          &keys,
-          &non_keys,
-          false,
-        );
+        let handler_exp = gen_event_handler(context, prop.values, &keys, &non_keys, false);
         add_handler(
           &mut handler_groups,
           &mut properties,
@@ -293,7 +246,7 @@ fn gen_static_props<'a>(
       } else {
         // no modifiers: flatten multiple handler values
         for value in prop.values.drain(..) {
-          let handler_exp = gen_event_handler(context, vec![Some(value)], &keys, &non_keys, false);
+          let handler_exp = gen_event_handler(context, vec![value], &keys, &non_keys, false);
           add_handler(
             &mut handler_groups,
             &mut properties,
@@ -309,16 +262,22 @@ fn gen_static_props<'a>(
     // v-model on component: synthesize onUpdate:* and modifiers props, and
     // dedupe/merge with user provided @update:* handlers.
     if prop.model {
-      let mut prop_clone = prop.clone();
-      prop_clone.model = false;
+      let prop_key = prop.key.clone_in(ast.allocator);
+      let prop_value = prop
+        .values
+        .first()
+        .map(|value| value.clone_in(ast.allocator))
+        .unwrap();
+      let prop_model_modifiers = prop.model_modifiers.clone();
+      prop.model = false;
       // normal (non-handler) props
-      gen_prop(&mut properties, prop_clone, context, true);
+      gen_prop(&mut properties, prop, context, true);
       gen_model(
         Some(&mut handler_groups),
         &mut properties,
-        prop.key,
-        prop.values.remove(0),
-        prop.model_modifiers,
+        prop_key,
+        prop_value,
+        prop_model_modifiers,
         context,
       );
     } else {
@@ -469,8 +428,8 @@ fn gen_prop<'a>(
     gen_model(
       None,
       &mut properties,
-      prop.key.clone(),
-      values[0].clone(),
+      prop.key.clone_in(ast.allocator),
+      values[0].clone_in(ast.allocator),
       model_modifiers,
       context,
     );
@@ -481,11 +440,7 @@ fn gen_prop<'a>(
 
   let value = if handler {
     gen_event_handler(
-      context,
-      values.into_iter().map(Some).collect(),
-      &keys,
-      &non_keys,
-      true, /* wrap handlers passed to components */
+      context, values, &keys, &non_keys, true, /* wrap handlers passed to components */
     )
   } else {
     let values = gen_prop_value(values, context);
@@ -540,33 +495,32 @@ fn gen_prop<'a>(
 fn gen_model<'a>(
   handler_groups: Option<&mut IndexMap<String, HandlerGroup<'a>>>,
   properties: &mut oxc_allocator::Vec<ObjectPropertyKind<'a>>,
-  key: SimpleExpressionNode<'a>,
-  value: SimpleExpressionNode<'a>,
+  key: Expression<'a>,
+  value: Expression<'a>,
   model_modifiers: Option<Vec<String>>,
   context: &'a CodegenContext<'a>,
 ) {
   let ast = context.ast;
 
   // modelModifiers prop
-  let is_static = key.is_static;
-  let content = key.content.clone();
+  let is_static = matches!(key, Expression::StringLiteral(_));
   let modifiers = if let Some(model_modifiers) = model_modifiers
     && !model_modifiers.is_empty()
   {
-    let modifers_key = if key.is_static {
+    let modifers_key = if let Expression::StringLiteral(key) = &key {
       ast.property_key_static_identifier(
         SPAN,
-        ast.atom(&if is_simple_identifier(&content) {
-          format!("{}Modifiers", &content)
+        ast.atom(&if is_simple_identifier(&key.value) {
+          format!("{}Modifiers", key.value)
         } else {
-          format!("\"{}Modifiers\"", &content)
+          format!("\"{}Modifiers\"", key.value)
         }),
       )
     } else {
       ast
         .expression_binary(
           SPAN,
-          gen_expression(key.clone(), context, None, false),
+          gen_expression(key.clone_in(ast.allocator), context, None, false),
           BinaryOperator::Addition,
           ast.expression_string_literal(SPAN, ast.atom("Modifiers"), None),
         )
@@ -606,9 +560,9 @@ fn gen_model<'a>(
 
   // onUpdate:* handler
   let handler_value = gen_model_handler(value, context);
-  if is_static {
-    let key_name = format!("\"onUpdate:{}\"", key.content);
-    let key_frag = ast.property_key_static_identifier(key.loc, ast.atom(&key_name));
+  if let Expression::StringLiteral(key) = &key {
+    let key_name = format!("\"onUpdate:{}\"", key.value);
+    let key_frag = ast.property_key_static_identifier(key.span, ast.atom(&key_name));
     if let Some(handler_groups) = handler_groups {
       add_handler(
         handler_groups,
@@ -655,7 +609,7 @@ fn gen_model<'a>(
             SPAN,
             ast.expression_string_literal(SPAN, ast.atom("onUpdate:"), None),
             BinaryOperator::Addition,
-            gen_expression(key.clone(), context, None, false),
+            gen_expression(key, context, None, false),
           )
           .into(),
         ast.expression_arrow_function(

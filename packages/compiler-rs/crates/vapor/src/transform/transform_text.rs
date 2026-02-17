@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use napi::{Either, bindgen_prelude::Either3};
+use napi::Either;
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::ast::{
   BinaryOperator, ConditionalExpression, Expression, JSXChild, LogicalExpression,
@@ -18,8 +18,9 @@ use crate::{
 use common::{
   ast::RootNode,
   check::{is_constant_node, is_fragment_node, is_jsx_component, is_template},
-  expression::SimpleExpressionNode,
-  text::{escape_html, get_tag_name, is_empty_text, is_text_like, resolve_jsx_text},
+  text::{
+    escape_html, get_tag_name, get_text_like_value, is_empty_text, is_text_like, resolve_jsx_text,
+  },
 };
 
 /// # SAFETY
@@ -262,7 +263,7 @@ fn process_text_container<'a>(
   let values = process_text_like_expressions(children, context, seen);
   let literals = values
     .iter()
-    .map(|e| e.get_literal_expression_value())
+    .map(|e| get_text_like_value(e, false))
     .collect::<Vec<Option<String>>>();
   if literals.iter().all(|l| l.is_some()) {
     *context.children_template.borrow_mut() = literals
@@ -301,17 +302,26 @@ fn process_text_like_expressions<'a>(
   nodes: &'a mut Vec<&mut JSXChild<'a>>,
   context: &'a TransformContext<'a>,
   seen: &mut HashSet<u32>,
-) -> Vec<SimpleExpressionNode<'a>> {
+) -> Vec<Expression<'a>> {
+  let ast = context.ast;
   let mut values = vec![];
   for node in nodes {
     mark_non_template(node, seen);
     if is_empty_text(node) {
       continue;
     }
-    values.push(SimpleExpressionNode::new(
-      Either3::B(node),
-      context.source_text,
-    ))
+    values.push(match node {
+      JSXChild::ExpressionContainer(node) => node
+        .expression
+        .to_expression_mut()
+        .take_in(context.allocator),
+      JSXChild::Text(node) => {
+        ast.expression_string_literal(node.span, ast.atom(&resolve_jsx_text(node)), None)
+      }
+      JSXChild::Element(node) => Expression::JSXElement(node.take_in_box(context.allocator)),
+      JSXChild::Fragment(node) => Expression::JSXFragment(node.take_in_box(context.allocator)),
+      JSXChild::Spread(node) => node.expression.take_in(ast.allocator),
+    });
   }
   values
 }
@@ -341,8 +351,8 @@ pub fn process_conditional_expression<'a>(
   let block = context_block as *mut BlockIRNode;
   let exit_block = context.create_block(context_node, unsafe { &mut *block }, consequent, false);
 
-  let is_const_test = is_constant_node(&Some(test));
-  let test = SimpleExpressionNode::new(Either3::A(test), context.source_text);
+  let is_const_test = is_constant_node(test);
+  let test = test.take_in(context.allocator);
 
   Box::new(move || {
     let block = exit_block();
@@ -417,8 +427,8 @@ fn process_logical_expression<'a>(
       id,
       positive: block,
       index: context.next_if_index(),
-      once: *context.in_v_once.borrow() || is_constant_node(&Some(left)),
-      condition: SimpleExpressionNode::new(Either3::A(left), context.source_text),
+      once: *context.in_v_once.borrow() || is_constant_node(left),
+      condition: left.take_in(context.allocator),
       negative: None,
       anchor: None,
       logical_index: None,
@@ -465,15 +475,13 @@ fn set_negative<'a>(
     );
     context.transform_node(Some(unsafe { &mut *_context_block }), Some(parent_node));
     let block = exit_block();
+    let test = &mut unsafe { &mut *node }.test;
     let mut negative = IfIRNode {
       id: -1,
-      condition: SimpleExpressionNode::new(
-        Either3::A(&mut unsafe { &mut *node }.test),
-        context.source_text,
-      ),
+      once: *context.in_v_once.borrow() || is_constant_node(test),
+      condition: test.take_in(context.allocator),
       positive: block,
       index: context.next_if_index(),
-      once: *context.in_v_once.borrow() || is_constant_node(&Some(&unsafe { &*node }.test)),
       negative: None,
       anchor: None,
       logical_index: None,
@@ -522,8 +530,8 @@ fn set_negative<'a>(
     let block = exit_block();
     let mut negative = IfIRNode {
       id: -1,
-      once: *context.in_v_once.borrow() || is_constant_node(&Some(left)),
-      condition: SimpleExpressionNode::new(Either3::A(left), context.source_text),
+      once: *context.in_v_once.borrow() || is_constant_node(left),
+      condition: left.take_in(context.allocator),
       positive: block,
       index: context.next_if_index(),
       negative: None,

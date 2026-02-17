@@ -1,124 +1,24 @@
-use napi::bindgen_prelude::Either3;
-
-use oxc_allocator::{Allocator, FromIn, TakeIn};
-use oxc_ast::ast::{Expression, FormalParameter, JSXAttributeValue, JSXChild};
+use oxc_allocator::{Allocator, CloneIn, FromIn, TakeIn};
+use oxc_ast::{
+  AstBuilder,
+  ast::{Expression, FormalParameter, JSXAttributeValue},
+};
 use oxc_parser::Parser;
 use oxc_span::{Atom, GetSpan, SPAN, SourceType, Span};
 use phf::phf_set;
 
-use crate::text::{get_text_like_value, resolve_jsx_text};
+use crate::{options::TransformOptions, text::get_text_like_value};
 
-#[derive(Debug)]
-pub struct SimpleExpressionNode<'a> {
-  pub content: String,
-  pub is_static: bool,
-  pub loc: Span,
-  pub ast: Option<&'a mut Expression<'a>>,
-}
-
-impl<'a> Clone for SimpleExpressionNode<'a> {
-  fn clone(&self) -> Self {
-    Self {
-      content: self.content.clone(),
-      is_static: self.is_static,
-      loc: self.loc,
-      ast: None,
-    }
-  }
-}
-
-impl<'a> Default for SimpleExpressionNode<'a> {
-  fn default() -> Self {
-    Self {
-      content: String::new(),
-      is_static: true,
-      loc: SPAN,
-      ast: None,
-    }
-  }
-}
-
-impl<'a> SimpleExpressionNode<'a> {
-  pub fn new(
-    node: Either3<&'a mut Expression<'a>, &'a mut JSXChild<'a>, &'a mut JSXAttributeValue<'a>>,
-    source: &'a str,
-  ) -> SimpleExpressionNode<'a> {
-    let mut is_static = false;
-    let mut ast = None;
-    let mut loc = SPAN;
-    let content = match node {
-      Either3::A(node) => {
-        loc = node.span();
-        ast = Some(node);
-        loc.source_text(source).to_string()
-      }
-      Either3::B(node) => match node {
-        JSXChild::ExpressionContainer(node) => {
-          let expression = node.expression.to_expression_mut();
-          loc = expression.span();
-          ast = Some(expression);
-          loc.source_text(source).to_string()
-        }
-        JSXChild::Text(node) => {
-          is_static = true;
-          resolve_jsx_text(node)
-        }
-        JSXChild::Element(node) => {
-          source[node.span.start as usize..node.span.end as usize].to_string()
-        }
-        JSXChild::Fragment(node) => {
-          source[node.span.start as usize..node.span.end as usize].to_string()
-        }
-        JSXChild::Spread(node) => {
-          source[node.span.start as usize..node.span.end as usize].to_string()
-        }
-      },
-      Either3::C(node) => match node {
-        JSXAttributeValue::ExpressionContainer(node) => {
-          if let Some(expression) = node.expression.as_expression_mut() {
-            is_static = matches!(expression, Expression::StringLiteral(_));
-            loc = expression.span();
-            ast = Some(expression);
-            loc.source_text(source).to_string()
-          } else {
-            String::new()
-          }
-        }
-        JSXAttributeValue::StringLiteral(node) => {
-          is_static = true;
-          loc = node.span;
-          node.value.to_string()
-        }
-        JSXAttributeValue::Element(node) => {
-          source[node.span.start as usize..node.span.end as usize].to_string()
-        }
-        JSXAttributeValue::Fragment(node) => {
-          source[node.span.start as usize..node.span.end as usize].to_string()
-        }
-      },
-    };
-    SimpleExpressionNode {
-      content,
-      is_static,
-      ast,
-      loc,
-    }
-  }
-
-  pub fn is_constant_expression(&self) -> bool {
-    is_literal_whitelisted(&self.content)
-      || is_globally_allowed(&self.content)
-      || self.get_literal_expression_value().is_some()
-  }
-
-  pub fn get_literal_expression_value(&self) -> Option<String> {
-    if let Some(ast) = &self.ast
-      && let Some(res) = get_text_like_value(ast, false)
-    {
-      return Some(res);
-    }
-    if self.is_static {
-      Some(self.content.to_string())
+pub fn get_constant_expression_text(
+  exp: &Expression,
+  options: &TransformOptions,
+) -> Option<String> {
+  if let Some(value) = get_text_like_value(exp, false) {
+    Some(value)
+  } else {
+    let content = exp.span().source_text(&options.source_text.borrow());
+    if is_literal_whitelisted(content) || is_globally_allowed(content) {
+      Some(content.to_string())
     } else {
       None
     }
@@ -212,4 +112,20 @@ pub fn parse_expression<'a>(
   )
   .parse_expression()
   .ok()
+}
+
+pub fn jsx_attribute_value_to_expression<'a>(
+  value: &mut JSXAttributeValue<'a>,
+  ast: &AstBuilder<'a>,
+) -> Expression<'a> {
+  match value {
+    JSXAttributeValue::Element(value) => Expression::JSXElement(value.clone_in(ast.allocator)),
+    JSXAttributeValue::Fragment(value) => Expression::JSXFragment(value.clone_in(ast.allocator)),
+    JSXAttributeValue::StringLiteral(value) => {
+      ast.expression_string_literal(value.span, value.value, value.raw)
+    }
+    JSXAttributeValue::ExpressionContainer(value) => {
+      value.expression.to_expression_mut().take_in(ast.allocator)
+    }
+  }
 }
