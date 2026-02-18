@@ -56,6 +56,9 @@ pub unsafe fn transform_element<'a>(
       Some(ast.jsx_closing_element(node.closing_fragment.span, name)),
     );
     directives.is_component = true;
+    if let JSXChild::Element(node) = unsafe { &mut *context_node } {
+      directives.tag_name = get_tag_name(node, context.options);
+    };
   };
 
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
@@ -73,7 +76,7 @@ pub unsafe fn transform_element<'a>(
 
   // The goal of the transform is to create a codegenNode implementing the
   // VNodeCall interface.
-  let mut vnode_tag = get_tag_name(&node.opening_element.name, context.source_text);
+  let mut vnode_tag = directives.tag_name.to_string();
   if vnode_tag == "slot" {
     unsafe { transform_slot_outlet(directives, context_node, context) };
     return None;

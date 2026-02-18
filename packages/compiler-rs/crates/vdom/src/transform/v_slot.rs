@@ -7,7 +7,6 @@ use common::{
   expression::expression_to_params,
   options::SlotScope,
   patch_flag::SlotFlags,
-  text::get_tag_name,
 };
 use napi::Either;
 use oxc_allocator::TakeIn;
@@ -95,7 +94,7 @@ pub fn build_slots<'a>(
 ) -> (Expression<'a>, bool, Vec<String>) {
   let ast = &context.ast;
   let _node = node as *mut JSXElement;
-  let tag_name = get_tag_name(&node.opening_element.name, context.source_text);
+  let tag_name = directives.tag_name;
   let is_fragment = tag_name == "Fragment" || tag_name == "_Fragment";
   let mut slots_properties = ast.vec();
   let mut dynamic_slots = ast.vec();
@@ -171,7 +170,7 @@ pub fn build_slots<'a>(
       continue;
     };
     let slot_element_ptr = slot_element as *mut oxc_allocator::Box<JSXElement>;
-    let mut slot_directives = Directives::new(unsafe { &mut *slot_element_ptr });
+    let mut slot_directives = Directives::new(unsafe { &mut *slot_element_ptr }, context.options);
     if if is_template(slot_element) {
       slot_dir = slot_directives.v_slot.as_ref();
       slot_dir.is_none()

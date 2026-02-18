@@ -10,7 +10,6 @@ use crate::{
 use common::{
   directive::{Directives, resolve_directive},
   error::ErrorCodes,
-  text::get_tag_name,
 };
 
 pub fn transform_v_model<'a>(
@@ -55,11 +54,11 @@ pub fn transform_v_model<'a>(
     context.options.on_error.as_ref()(ErrorCodes::VModelArgOnElement, dir.span);
   }
 
-  let tag = get_tag_name(&node.opening_element.name, context.source_text);
+  let tag = directives.tag_name;
   let is_custom_element = context.options.is_custom_element.as_ref()(&tag);
   let mut model_type = "text";
   // TODO let runtimeDirective: VaporHelper | undefined = 'vModelText'
-  if matches!(tag.as_str(), "input" | "textarea" | "select") || is_custom_element {
+  if matches!(tag, "input" | "textarea" | "select") || is_custom_element {
     if tag == "input" || is_custom_element {
       if let Some(_type) = directives._type.as_ref() {
         let value = &_type.value;

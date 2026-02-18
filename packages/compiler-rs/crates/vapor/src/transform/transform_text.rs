@@ -105,8 +105,7 @@ pub unsafe fn transform_text<'a>(
       // Element children go through innerHTML which needs escaping
       let is_root_text = RootNode::is_root(parent_node)
         || if let JSXChild::Element(parent_node) = parent_node {
-          is_jsx_component(parent_node)
-            || get_tag_name(&parent_node.opening_element.name, context.source_text) == "template"
+          is_jsx_component(parent_node) || get_tag_name(&parent_node, context.options) == "template"
         } else {
           false
         };

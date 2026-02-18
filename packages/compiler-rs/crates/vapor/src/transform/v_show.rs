@@ -14,7 +14,7 @@ pub fn transform_v_show<'a>(
   _dir: &'a mut JSXAttribute<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &mut JSXChild,
+  parent_node: &mut JSXChild<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let dir = resolve_directive(_dir, context.ast);
   if dir.exp.is_none() {
@@ -26,7 +26,7 @@ pub fn transform_v_show<'a>(
   let mut should_deferred = false;
   if let JSXChild::Element(parent_node) = parent_node {
     should_deferred = matches!(
-      get_tag_name(&parent_node.opening_element.name, context.source_text).as_str(),
+      get_tag_name(&parent_node, context.options),
       "VaporTransition" | "VaporTransitionGroup"
     ) && find_prop(parent_node, vec!["appear"]).is_some();
 

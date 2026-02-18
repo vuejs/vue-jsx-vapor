@@ -388,7 +388,7 @@ impl<'a> TransformContext<'a> {
           } else {
             is_jsx_component(element)
           };
-          directives = Directives::new(element);
+          directives = Directives::new(element, self.options);
           directives.is_component = is_component;
           if (directives.v_if.is_some()
             || directives.v_else_if.is_some()

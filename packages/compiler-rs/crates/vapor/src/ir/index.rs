@@ -116,7 +116,7 @@ pub struct SetPropIRNode<'a> {
   pub set_prop: bool,
   pub element: i32,
   pub prop: IRProp<'a>,
-  pub tag: String,
+  pub tag: &'a str,
 }
 
 #[derive(Debug)]
@@ -124,7 +124,7 @@ pub struct SetDynamicPropsIRNode<'a> {
   pub set_dynamic_props: bool,
   pub element: i32,
   pub props: Vec<IRProps<'a>>,
-  pub tag: String,
+  pub tag: &'a str,
 }
 
 #[derive(Debug)]

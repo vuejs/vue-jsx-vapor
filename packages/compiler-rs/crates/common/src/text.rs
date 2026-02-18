@@ -1,5 +1,7 @@
 use html_escape::decode_html_entities;
-use oxc_ast::ast::{Expression, JSXChild, JSXElementName, JSXExpression, JSXText};
+use oxc_ast::ast::{Expression, JSXChild, JSXElement, JSXElementName, JSXExpression, JSXText};
+
+use crate::options::TransformOptions;
 
 fn is_all_empty_text(s: &str) -> bool {
   let mut has_newline = false;
@@ -71,15 +73,14 @@ pub fn is_empty_text(node: &JSXChild) -> bool {
   }
 }
 
-pub fn get_tag_name(name: &JSXElementName, source: &str) -> String {
-  match name {
+pub fn get_tag_name<'a>(node: &JSXElement<'a>, options: &TransformOptions<'a>) -> &'a str {
+  match &node.opening_element.name {
     JSXElementName::Identifier(name) => name.name.as_str(),
     JSXElementName::IdentifierReference(name) => name.name.as_str(),
-    JSXElementName::NamespacedName(name) => name.span.source_text(source),
-    JSXElementName::MemberExpression(name) => name.span.source_text(source),
-    JSXElementName::ThisExpression(name) => name.span.source_text(source),
+    JSXElementName::NamespacedName(name) => name.span.source_text(&options.source_text.borrow()),
+    JSXElementName::MemberExpression(name) => name.span.source_text(&options.source_text.borrow()),
+    JSXElementName::ThisExpression(name) => name.span.source_text(&options.source_text.borrow()),
   }
-  .to_string()
 }
 
 pub fn camelize(str: &str) -> String {

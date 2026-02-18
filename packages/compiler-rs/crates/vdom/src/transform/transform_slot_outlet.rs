@@ -1,8 +1,4 @@
-use common::{
-  directive::Directives,
-  error::ErrorCodes,
-  text::{get_tag_name, is_empty_text},
-};
+use common::{directive::Directives, error::ErrorCodes, text::is_empty_text};
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
@@ -27,7 +23,7 @@ pub unsafe fn transform_slot_outlet<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  let tag = get_tag_name(&node.opening_element.name, context.source_text);
+  let tag = directives.tag_name;
   if tag != "slot" {
     return None;
   }

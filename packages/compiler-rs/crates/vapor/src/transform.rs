@@ -217,7 +217,7 @@ impl<'a> TransformContext<'a> {
     context_block.operation.insert(index, operation);
   }
 
-  pub fn push_template(&self, content: String, tag: Option<String>) -> i32 {
+  pub fn push_template(&self, content: String, tag: Option<&str>) -> i32 {
     let ir = self.ir.borrow_mut();
     let root_template_index = ir.root_template_index;
     let len = self.options.templates.borrow().len();
@@ -250,7 +250,7 @@ impl<'a> TransformContext<'a> {
     len as i32
   }
 
-  pub fn register_template(&self, dynamic: &mut IRDynamicInfo, tag: Option<String>) -> i32 {
+  pub fn register_template(&self, dynamic: &mut IRDynamicInfo, tag: Option<&str>) -> i32 {
     let template = self.template.borrow();
     if template.is_empty() {
       return -1;
@@ -297,7 +297,7 @@ impl<'a> TransformContext<'a> {
       && is_template(node)
     {
       let node_ptr = node.as_mut() as *mut JSXElement;
-      let mut directives = Directives::new(unsafe { &mut *node_ptr });
+      let mut directives = Directives::new(unsafe { &mut *node_ptr }, self.options);
       if (directives.v_if.is_some()
         || directives.v_else_if.is_some()
         || directives.v_else.is_some())
@@ -447,7 +447,7 @@ impl<'a> TransformContext<'a> {
         let directives_ptr = &mut directives as *mut _;
         if let JSXChild::Element(element) = &mut *node {
           let is_component = is_jsx_component(element);
-          directives = Directives::new(element);
+          directives = Directives::new(element, self.options);
           directives.is_component = is_component;
           if directives.v_once.is_some() {
             *(&*context).in_v_once.borrow_mut() = true;

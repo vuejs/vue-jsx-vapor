@@ -71,7 +71,7 @@ pub unsafe fn transform_element<'a>(
     current
   }) as Box<dyn FnMut() -> i32>));
 
-  let tag = get_tag_name(&node.opening_element.name, context.source_text);
+  let tag = directives.tag_name;
   let tag_span = node.opening_element.name.span();
   let node_id = node.node_id();
   if tag == "slot" {
@@ -153,7 +153,7 @@ static DYNAMIC_KEYS: [&str; 1] = ["indeterminate"];
 
 #[allow(clippy::too_many_arguments)]
 pub fn transform_native_element<'a>(
-  tag: String,
+  tag: &'a str,
   props_result: PropsResult<'a>,
   single_root: bool,
   context: &'a TransformContext<'a>,
@@ -175,7 +175,7 @@ pub fn transform_native_element<'a>(
           set_dynamic_props: true,
           props,
           element,
-          tag: tag.clone(),
+          tag,
         }),
         Some(get_effect_index),
         Some(get_operation_index),
@@ -222,7 +222,7 @@ pub fn transform_native_element<'a>(
               set_prop: true,
               prop,
               element,
-              tag: tag.clone(),
+              tag,
             }),
             Some(Rc::clone(&get_effect_index)),
             Some(Rc::clone(&get_operation_index)),
@@ -244,7 +244,7 @@ pub fn transform_native_element<'a>(
 
   if let JSXChild::Element(parent_node) = parent_node
     && let JSXElementName::Identifier(name) = &parent_node.opening_element.name
-    && !is_valid_html_nesting(&name.name, &tag)
+    && !is_valid_html_nesting(&name.name, tag)
   {
     let dynamic = &mut context_block.dynamic;
     context.reference(dynamic);
@@ -255,7 +255,11 @@ pub fn transform_native_element<'a>(
   }
 }
 
-fn can_omit_end_tag(tag: &str, parent_node: &JSXChild, context: &TransformContext) -> bool {
+fn can_omit_end_tag<'a>(
+  tag: &str,
+  parent_node: &JSXChild<'a>,
+  context: &TransformContext<'a>,
+) -> bool {
   // Root-level elements generate dedicated templates
   // so closing tags can be omitted
   if RootNode::is_single_root(parent_node) {
@@ -274,7 +278,7 @@ fn can_omit_end_tag(tag: &str, parent_node: &JSXChild, context: &TransformContex
   // - Same-name tags: parent's close tag would incorrectly close the child
   if is_formatting_tag(tag)
     || if let JSXChild::Element(parent_node) = parent_node {
-      get_tag_name(&parent_node.opening_element.name, context.source_text) == tag
+      get_tag_name(&parent_node, context.options) == tag
     } else {
       false
     }
@@ -293,7 +297,7 @@ fn can_omit_end_tag(tag: &str, parent_node: &JSXChild, context: &TransformContex
 
 #[allow(clippy::too_many_arguments)]
 pub fn transform_component_element<'a>(
-  mut tag: String,
+  tag: &'a str,
   tag_span: Span,
   node_id: NodeId,
   props_result: PropsResult<'a>,
@@ -302,6 +306,7 @@ pub fn transform_component_element<'a>(
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) {
+  let mut tag = tag.to_string();
   let asset = !is_custom_element && tag.contains("-") && {
     let semantic = &context.options.semantic.borrow();
     let scope_id = semantic.nodes().get_node(node_id).scope_id();
