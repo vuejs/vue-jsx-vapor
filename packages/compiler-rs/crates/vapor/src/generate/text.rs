@@ -47,10 +47,10 @@ pub fn gen_set_text<'a>(oper: SetTextIRNode<'a>, context: &'a CodegenContext<'a>
       SPAN,
       ast.expression_identifier(
         SPAN,
-        ast.atom(&context.helper(if is_component {
-          "setBlockText"
+        ast.atom(context.options.helper(if is_component {
+          "_setBlockText"
         } else {
-          "setText"
+          "_setText"
         })),
       ),
       NONE,
@@ -79,7 +79,7 @@ pub fn gen_get_text_child<'a>(
           Some(
             ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&context.helper("txt"))),
+              ast.expression_identifier(SPAN, ast.atom(context.options.helper("_txt"))),
               NONE,
               ast.vec1(
                 ast
@@ -118,11 +118,7 @@ pub fn gen_set_nodes<'a>(
         SPAN,
         ast.atom(&format!(
           "{}{}",
-          if generated {
-            "_x".to_string()
-          } else {
-            "_n".to_string()
-          },
+          if generated { "_x" } else { "_n" },
           element
         )),
       )
@@ -134,7 +130,7 @@ pub fn gen_set_nodes<'a>(
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&context.helper("setNodes"))),
+      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_setNodes"))),
       NONE,
       arguments,
       false,
@@ -165,7 +161,7 @@ pub fn gen_create_nodes<'a>(
       NONE,
       Some(ast.expression_call(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(&context.helper("createNodes"))),
+        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_createNodes"))),
         NONE,
         arguments,
         false,
@@ -198,7 +194,7 @@ fn combine_values<'a>(
         ast
           .expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&context.helper("toDisplayString"))),
+            ast.expression_identifier(SPAN, ast.atom(context.options.helper("_toDisplayString"))),
             NONE,
             ast.vec1(exp.into()),
             false,

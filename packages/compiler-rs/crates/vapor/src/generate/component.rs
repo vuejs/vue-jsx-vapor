@@ -1,7 +1,8 @@
+use std::borrow::Cow;
 use std::mem;
 
-use common::check::is_simple_identifier;
 use common::directive::Modifiers;
+use common::directive::get_modifier_prop_name;
 use common::text::capitalize;
 use indexmap::IndexMap;
 use napi::bindgen_prelude::Either3;
@@ -107,12 +108,12 @@ pub fn gen_create_component<'a>(
           SPAN,
           ast.expression_identifier(
             SPAN,
-            ast.atom(&context.helper(if is_custom_element {
-              "createPlainElement"
+            ast.atom(context.options.helper(if is_custom_element {
+              "_createPlainElement"
             } else if asset {
-              "createComponentWithFallback"
+              "_createComponentWithFallback"
             } else {
-              "createComponent"
+              "_createComponent"
             })),
           ),
           NONE,
@@ -204,7 +205,7 @@ fn gen_static_props<'a>(
       let key_name = format!(
         "\"on{}\"",
         capitalize(if let Expression::StringLiteral(key) = &prop.key {
-          key.value.to_string()
+          Cow::Borrowed(key.value.as_str())
         } else {
           unreachable!()
         })
@@ -362,7 +363,7 @@ fn gen_dynamic_props<'a>(
       expr = if p.handler {
         Some(ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(&context.helper("toHandlers"))),
+          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_toHandlers"))),
           NONE,
           ast.vec1(expression.into()),
           false,
@@ -508,14 +509,7 @@ fn gen_model<'a>(
     && !model_modifiers.is_empty()
   {
     let modifers_key = if let Expression::StringLiteral(key) = &key {
-      ast.property_key_static_identifier(
-        SPAN,
-        ast.atom(&if is_simple_identifier(&key.value) {
-          format!("{}Modifiers", key.value)
-        } else {
-          format!("\"{}Modifiers\"", key.value)
-        }),
-      )
+      ast.property_key_static_identifier(SPAN, ast.atom(&get_modifier_prop_name(&key.value)))
     } else {
       ast
         .expression_binary(

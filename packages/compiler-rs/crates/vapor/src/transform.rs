@@ -6,6 +6,7 @@ use oxc_allocator::{Allocator, TakeIn};
 use oxc_ast::ast::{Expression, JSXAttributeItem, JSXChild, JSXElement};
 use oxc_ast::{AstBuilder, NONE};
 use oxc_span::{GetSpan, SPAN};
+use std::borrow::Cow;
 use std::{cell::RefCell, collections::HashSet, mem, rc::Rc};
 pub mod transform_children;
 pub mod transform_element;
@@ -44,10 +45,10 @@ use common::check::{
 pub struct DirectiveTransformResult<'a> {
   pub key: Expression<'a>,
   pub value: Expression<'a>,
-  pub modifier: Option<String>,
+  pub modifier: Option<&'a str>,
   pub runtime_camelize: bool,
   pub handler: bool,
-  pub handler_modifiers: Option<Modifiers>,
+  pub handler_modifiers: Option<Modifiers<'a>>,
   pub model: bool,
   pub model_modifiers: Option<Vec<String>>,
 }
@@ -79,7 +80,7 @@ pub struct TransformContext<'a> {
   pub options: &'a TransformOptions<'a>,
 
   pub template: RefCell<String>,
-  pub children_template: RefCell<Vec<String>>,
+  pub children_template: RefCell<Vec<Cow<'a, str>>>,
 
   pub in_v_once: RefCell<bool>,
   pub in_v_for: RefCell<i32>,
@@ -99,7 +100,7 @@ pub struct TransformContext<'a> {
   global_id: RefCell<i32>,
   if_index: RefCell<i32>,
 
-  pub ir: Rc<RefCell<RootIRNode>>,
+  pub ir: Rc<RefCell<RootIRNode<'a>>>,
   pub node: RefCell<JSXChild<'a>>,
 
   pub parent_dynamic: RefCell<IRDynamicInfo<'a>>,
@@ -124,7 +125,7 @@ impl<'a> TransformContext<'a> {
       if_index: RefCell::new(0),
       node: RefCell::new(RootNode::new(allocator)),
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
-      ir: Rc::new(RefCell::new(RootIRNode::new())),
+      ir: Rc::new(RefCell::new(RootIRNode::default())),
       block: RefCell::new(BlockIRNode::new()),
       ast,
       options,
@@ -133,7 +134,7 @@ impl<'a> TransformContext<'a> {
 
   pub fn transform(&'a self, expression: Expression<'a>) -> Expression<'a> {
     let allocator = self.allocator;
-    let ir = RootIRNode::new();
+    let ir = RootIRNode::default();
     *self.node.borrow_mut() = RootNode::from(allocator, expression, true);
     *self.block.borrow_mut() = BlockIRNode::new();
     *self.ir.borrow_mut() = ir;
@@ -164,11 +165,11 @@ impl<'a> TransformContext<'a> {
     if_index
   }
 
-  pub fn is_operation(&self, expressions: Vec<&Expression>) -> bool {
+  pub fn is_operation(&self, expressions: Vec<&Expression<'a>>) -> bool {
     if self.in_v_once.borrow().eq(&true) {
       return true;
     }
-    let expressions: Vec<&Expression> = expressions
+    let expressions: Vec<_> = expressions
       .into_iter()
       .filter(|exp| get_constant_expression_text(exp, self.options).is_none())
       .collect();
@@ -232,9 +233,9 @@ impl<'a> TransformContext<'a> {
       return existing as i32;
     }
     let namespace = if let Some(tag) = tag {
-      if is_svg_tag(&tag) {
+      if is_svg_tag(tag) {
         1
-      } else if is_math_ml_tag(&tag) {
+      } else if is_math_ml_tag(tag) {
         2
       } else {
         0

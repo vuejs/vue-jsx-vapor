@@ -21,7 +21,7 @@ pub fn gen_builtin_directive<'a>(
   oper: DirectiveIRNode<'a>,
   context: &'a CodegenContext<'a>,
 ) -> Option<Statement<'a>> {
-  match oper.name.as_str() {
+  match oper.name.as_ref() {
     "show" => Some(gen_v_show(oper, context)),
     "model" => Some(gen_v_model(oper, context)),
     _ => None,
@@ -132,7 +132,10 @@ pub fn gen_directives_for_element<'a>(
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&context.helper("withVaporDirectives"))),
+      ast.expression_identifier(
+        SPAN,
+        ast.atom(context.options.helper("_withVaporDirectives")),
+      ),
       NONE,
       ast.vec_from_array([
         Argument::Identifier(

@@ -1,4 +1,4 @@
-use std::{cell::RefCell, mem, rc::Rc};
+use std::{borrow::Cow, cell::RefCell, mem, rc::Rc};
 
 use napi::{Either, bindgen_prelude::Either3};
 use oxc_allocator::{FromIn, TakeIn};
@@ -86,12 +86,12 @@ pub unsafe fn transform_element<'a>(
         get_operation_index,
       )
     };
-  } else if matches!(tag.as_ref(), "VaporTransition" | "VaporTransitionGroup") {
+  } else if matches!(tag, "VaporTransition" | "VaporTransitionGroup") {
     transform_transition(node, context);
   }
   // treat custom elements as components because the template helper cannot
   // resolve them properly; they require creation via createElement
-  let is_custom_element = context.options.is_custom_element.as_ref()(&tag);
+  let is_custom_element = context.options.is_custom_element.as_ref()(tag);
   let is_component = directives.is_component;
 
   // If the element is a component, we need to isolate its slots context.
@@ -233,7 +233,7 @@ pub fn transform_native_element<'a>(
   }
 
   template += &format!(">{}", context.children_template.borrow().join(""));
-  if !is_void_tag(&tag) && !can_omit_end_tag(&tag, parent_node, context) {
+  if !is_void_tag(tag) && !can_omit_end_tag(tag, parent_node, context) {
     template += &format!("</{}>", tag)
   }
 
@@ -278,7 +278,7 @@ fn can_omit_end_tag<'a>(
   // - Same-name tags: parent's close tag would incorrectly close the child
   if is_formatting_tag(tag)
     || if let JSXChild::Element(parent_node) = parent_node {
-      get_tag_name(&parent_node, context.options) == tag
+      get_tag_name(parent_node, context.options) == tag
     } else {
       false
     }
@@ -297,7 +297,7 @@ fn can_omit_end_tag<'a>(
 
 #[allow(clippy::too_many_arguments)]
 pub fn transform_component_element<'a>(
-  tag: &'a str,
+  tag_raw: &'a str,
   tag_span: Span,
   node_id: NodeId,
   props_result: PropsResult<'a>,
@@ -306,14 +306,17 @@ pub fn transform_component_element<'a>(
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) {
-  let mut tag = tag.to_string();
+  let mut tag = Cow::Borrowed(tag_raw);
   let asset = !is_custom_element && tag.contains("-") && {
     let semantic = &context.options.semantic.borrow();
     let scope_id = semantic.nodes().get_node(node_id).scope_id();
-    let camelize_tag = camelize(&tag);
+    let camelize_tag = camelize(tag.clone());
     if semantic
       .scoping()
-      .find_binding(scope_id, Ident::from_in(&camelize_tag, context.allocator))
+      .find_binding(
+        scope_id,
+        Ident::from_in(camelize_tag.as_ref(), context.allocator),
+      )
       .is_some()
     {
       tag = camelize_tag;
@@ -323,8 +326,8 @@ pub fn transform_component_element<'a>(
     }
   };
   if asset {
-    let component = &mut context.ir.borrow_mut().component;
-    component.insert(tag.clone());
+    let components = &mut context.ir.borrow_mut().components;
+    components.insert(tag_raw);
   }
 
   let dynamic = &mut context_block.dynamic;
@@ -521,13 +524,14 @@ pub fn transform_prop<'a>(
     JSXAttributeName::NamespacedName(name) => name.namespace.name.as_str(),
   }
   .split("_")
-  .collect::<Vec<&str>>()[0];
+  .next()
+  .unwrap_or_default();
   let value = if let Some(value) = &prop.value {
     match value {
       JSXAttributeValue::ExpressionContainer(value) => {
         get_text_like_value(value.expression.to_expression(), is_component)
       }
-      JSXAttributeValue::StringLiteral(value) => Some(value.value.to_string()),
+      JSXAttributeValue::StringLiteral(value) => Some(value.value.into()),
       _ => None,
     }
   } else {
@@ -553,14 +557,13 @@ pub fn transform_prop<'a>(
     ));
   }
 
-  let mut dir_name = if is_event(name) {
+  let dir_name_raw = if is_event(name) {
     "on"
   } else {
     get_directive_name(name).unwrap_or("bind")
-  }
-  .to_string();
+  };
 
-  match dir_name.as_str() {
+  match dir_name_raw {
     "bind" => return transform_v_bind(prop, context),
     "on" => return transform_v_on(directives, prop, node, context, context_block),
     "model" => return transform_v_model(directives, prop, node, context, context_block),
@@ -570,8 +573,9 @@ pub fn transform_prop<'a>(
     _ => (),
   };
 
-  if !is_built_in_directive(&dir_name) {
-    let asset = if dir_name
+  if !is_built_in_directive(dir_name_raw) {
+    let mut dir_name = Cow::Borrowed(dir_name_raw);
+    let asset = if dir_name_raw
       .chars()
       .nth(1)
       .map(|c| c.is_uppercase())
@@ -581,17 +585,20 @@ pub fn transform_prop<'a>(
     } else {
       let semantic = &context.options.semantic.borrow();
       let scope_id = semantic.nodes().get_node(node.node_id()).scope_id();
-      let camelize_name = camelize(name);
+      let camelize_name = camelize(Cow::Borrowed(name));
       if semantic
         .scoping()
-        .find_binding(scope_id, Ident::from_in(&camelize_name, context.allocator))
+        .find_binding(
+          scope_id,
+          Ident::from_in(camelize_name.as_ref(), context.allocator),
+        )
         .is_some()
       {
         dir_name = camelize_name;
         false
       } else {
-        let directive = &mut context.ir.borrow_mut().directive;
-        directive.insert(dir_name.to_string());
+        let directives = &mut context.ir.borrow_mut().directives;
+        directives.insert(dir_name_raw);
         true
       }
     };

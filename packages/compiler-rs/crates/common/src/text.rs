@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use html_escape::decode_html_entities;
 use oxc_ast::ast::{Expression, JSXChild, JSXElement, JSXElementName, JSXExpression, JSXText};
 
@@ -42,24 +44,37 @@ fn ends_with_newline_and_spaces(s: &str) -> bool {
   false
 }
 
-pub fn resolve_jsx_text(node: &JSXText) -> String {
+pub fn resolve_jsx_text<'a>(node: &'a JSXText) -> Cow<'a, str> {
   if is_all_empty_text(&node.value) {
-    return String::new();
+    return Cow::Owned(String::new());
   }
-  let mut value = decode_html_entities(node.value.as_str()).to_string();
-  if start_with_newline_and_spaces(&value) {
-    value = value
-      .trim_start_matches(|c: char| c.is_ascii_whitespace())
-      .to_owned();
+
+  let mut value = decode_html_entities(&node.value);
+
+  if start_with_newline_and_spaces(value.as_ref()) {
+    value = match value {
+      Cow::Borrowed(s) => Cow::Borrowed(s.trim_start_matches(|c: char| c.is_ascii_whitespace())),
+      Cow::Owned(s) => Cow::Owned(
+        s.trim_start_matches(|c: char| c.is_ascii_whitespace())
+          .to_string(),
+      ),
+    };
   }
-  if ends_with_newline_and_spaces(&value) {
-    value = value
-      .trim_end_matches(|c: char| c.is_ascii_whitespace())
-      .to_owned();
+
+  if ends_with_newline_and_spaces(value.as_ref()) {
+    value = match value {
+      Cow::Borrowed(s) => Cow::Borrowed(s.trim_end_matches(|c: char| c.is_ascii_whitespace())),
+      Cow::Owned(s) => Cow::Owned(
+        s.trim_end_matches(|c: char| c.is_ascii_whitespace())
+          .to_string(),
+      ),
+    };
   }
+
   if value.trim().is_empty() {
-    return String::from(" ");
+    return Cow::Owned(String::from(" "));
   }
+
   value
 }
 
@@ -83,57 +98,62 @@ pub fn get_tag_name<'a>(node: &JSXElement<'a>, options: &TransformOptions<'a>) -
   }
 }
 
-pub fn camelize(str: &str) -> String {
-  str
-    .split('-')
-    .enumerate()
-    .map(|(idx, word)| {
+pub fn camelize<'a>(str: Cow<'a, str>) -> Cow<'a, str> {
+  let splited = str.split('-').collect::<Vec<_>>();
+  if splited.len() == 1 {
+    str
+  } else {
+    let mut out = String::with_capacity(str.len());
+    for (idx, word) in splited.iter().enumerate() {
       if idx == 0 {
-        word.to_string()
+        out.push_str(word);
       } else {
         let mut chars = word.chars();
-        match chars.next() {
-          Some(first) => first.to_ascii_uppercase().to_string() + chars.as_str(),
-          None => String::new(),
+        if let Some(first) = chars.next() {
+          out.push_str(&(first.to_ascii_uppercase().to_string() + chars.as_str()));
         }
       }
-    })
-    .collect()
+    }
+    Cow::Owned(out)
+  }
 }
 
-pub fn capitalize(name: String) -> String {
-  if let Some(first) = name.chars().next() {
-    format!("{}{}", first.to_ascii_uppercase(), &name[1..])
+pub fn capitalize<'a>(name: Cow<'a, str>) -> Cow<'a, str> {
+  if let Some(first) = name.chars().next()
+    && !first.is_ascii_uppercase()
+  {
+    Cow::Owned(format!("{}{}", first.to_ascii_uppercase(), &name[1..]))
   } else {
-    String::new()
+    name
   }
 }
 
 pub fn to_valid_asset_id(name: &str, _type: &str) -> String {
-  let name = name
-    .chars()
-    .map(|c| {
-      if c == '-' {
-        "_".to_string()
-      } else if c.is_ascii_alphanumeric() || c == '_' || c == '$' {
-        c.to_string()
-      } else {
-        (c as u32).to_string()
-      }
-    })
-    .collect::<String>();
-  format!("_{_type}_{name}")
+  let mut out = String::with_capacity(name.len() * 2);
+  for c in name.chars() {
+    if c == '-' {
+      out.push('_')
+    } else if c.is_ascii_alphanumeric() || c == '_' || c == '$' {
+      out.push(c)
+    } else {
+      out.push_str(&(c as u32).to_string());
+    }
+  }
+  format!("_{_type}_{out}")
 }
 
-pub fn get_text_like_value(node: &Expression, exclude_number: bool) -> Option<String> {
+pub fn get_text_like_value<'a>(
+  node: &Expression<'a>,
+  exclude_number: bool,
+) -> Option<Cow<'a, str>> {
   let node = node.without_parentheses().get_inner_expression();
   if let Expression::StringLiteral(node) = node {
-    return Some(node.value.to_string());
+    return Some(Cow::Borrowed(node.value.as_str()));
   } else if !exclude_number && node.is_number_literal() {
     if let Expression::NumericLiteral(node) = node {
-      return Some(node.value.to_string());
+      return Some(Cow::Owned(node.value.to_string()));
     } else if let Expression::BigIntLiteral(node) = node {
-      return Some(node.value.to_string());
+      return Some(Cow::Borrowed(node.value.as_str()));
     }
   } else if let Expression::TemplateLiteral(node) = node {
     let mut result = String::new();
@@ -144,7 +164,7 @@ pub fn get_text_like_value(node: &Expression, exclude_number: bool) -> Option<St
         result += &expression_value;
       }
     }
-    return Some(result);
+    return Some(Cow::Owned(result));
   }
   None
 }
@@ -162,7 +182,7 @@ pub fn is_text_like(node: &JSXChild) -> bool {
   }
 }
 
-pub fn escape_html(s: String) -> String {
+pub fn escape_html<'a>(s: Cow<'a, str>) -> Cow<'a, str> {
   let bytes = s.as_bytes();
   let mut last_index = 0;
   let mut html = String::new();
@@ -191,5 +211,5 @@ pub fn escape_html(s: String) -> String {
   }
 
   html.push_str(&s[last_index..]);
-  html
+  Cow::Owned(html)
 }

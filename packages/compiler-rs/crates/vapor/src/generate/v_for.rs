@@ -63,28 +63,19 @@ pub fn gen_for<'a>(
 
   let (raw_key, key_span) = if let Some(Expression::Identifier(key)) = key {
     let span = key.span();
-    (
-      Some(span.source_text(context.source_text).to_string()),
-      span,
-    )
+    (Some(span.source_text(context.source_text)), span)
   } else {
     (None, SPAN)
   };
   let (raw_index, index_span) = if let Some(index) = index {
     let span = index.span();
-    (
-      Some(span.source_text(context.source_text).to_string()),
-      span,
-    )
+    (Some(span.source_text(context.source_text)), span)
   } else {
     (None, SPAN)
   };
   let (raw_value, value_span) = if let Some(value) = &value {
     let span = value.span();
-    (
-      Some(span.source_text(context.source_text).to_string()),
-      span,
-    )
+    (Some(span.source_text(context.source_text)), span)
   } else {
     (None, SPAN)
   };
@@ -124,7 +115,7 @@ pub fn gen_for<'a>(
 
   let mut args: Vec<String> = vec![];
   args.push(item_var);
-  if let Some(raw_key) = raw_key.clone() {
+  if let Some(raw_key) = raw_key {
     let key_var = format!("_for_key{depth}");
     id_map.insert(
       raw_key,
@@ -139,7 +130,7 @@ pub fn gen_for<'a>(
     );
     args.push(key_var);
   }
-  if let Some(raw_index) = raw_index.clone() {
+  if let Some(raw_index) = raw_index {
     let index_var = format!("_for_index{depth}");
     id_map.insert(
       raw_index,
@@ -340,7 +331,7 @@ pub fn gen_for<'a>(
                 if let Some(raw_value) = raw_value {
                   Some(ast.plain_formal_parameter(
                     SPAN,
-                    ast.binding_pattern_binding_identifier(value_span, ast.atom(&raw_value)),
+                    ast.binding_pattern_binding_identifier(value_span, ast.atom(raw_value)),
                   ))
                 } else if raw_key.is_some() || raw_index.is_some() {
                   Some(ast.plain_formal_parameter(
@@ -353,7 +344,7 @@ pub fn gen_for<'a>(
                 if let Some(raw_key) = raw_key {
                   Some(ast.plain_formal_parameter(
                     SPAN,
-                    ast.binding_pattern_binding_identifier(key_span, ast.atom(&raw_key)),
+                    ast.binding_pattern_binding_identifier(key_span, ast.atom(raw_key)),
                   ))
                 } else if raw_index.is_some() {
                   Some(ast.plain_formal_parameter(
@@ -366,7 +357,7 @@ pub fn gen_for<'a>(
                 raw_index.map(|raw_index| {
                   ast.plain_formal_parameter(
                     SPAN,
-                    ast.binding_pattern_binding_identifier(index_span, ast.atom(&raw_index)),
+                    ast.binding_pattern_binding_identifier(index_span, ast.atom(raw_index)),
                   )
                 }),
               ]
@@ -442,7 +433,7 @@ pub fn gen_for<'a>(
           Some(
             ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&context.helper("createFor"))),
+              ast.expression_identifier(SPAN, ast.atom(context.options.helper("_createFor"))),
               NONE,
               ast.vec_from_iter(
                 [
@@ -480,7 +471,7 @@ pub fn gen_for<'a>(
 fn match_patterns<'a>(
   render: &mut BlockIRNode<'a>,
   key_prop: &Option<Expression<'a>>,
-  id_map: &HashMap<String, Expression<'a>>,
+  id_map: &HashMap<&'a str, Expression<'a>>,
   context: &'a CodegenContext<'a>,
 ) -> (Vec<IREffect<'a>>, Vec<Expression<'a>>, Vec<IREffect<'a>>) {
   let mut effect_patterns = vec![];
@@ -521,7 +512,7 @@ fn match_patterns<'a>(
 fn match_selector_pattern<'a>(
   effect: &'a IREffect<'a>,
   key: &str,
-  id_map: &HashMap<String, Expression<'a>>,
+  id_map: &HashMap<&'a str, Expression<'a>>,
   context: &'a CodegenContext<'a>,
 ) -> Option<Expression<'a>> {
   if effect.operations.len() != 1 {
@@ -557,13 +548,15 @@ fn match_selector_pattern<'a>(
     let (key, selector) = matcheds[0];
 
     let mut has_extra_id = false;
-    let _has_extra_id = &mut has_extra_id as *mut bool;
-    WalkIdentifiers::new(Box::new(move |id, _, _| {
-      let start = id.span.start;
-      if start != key.start && start != selector.start {
-        *unsafe { &mut *_has_extra_id } = true
-      }
-    }))
+    WalkIdentifiers::new(
+      Box::new(|id, _, _| {
+        let start = id.span.start;
+        if start != key.start && start != selector.start {
+          has_extra_id = true
+        }
+      }),
+      context.options,
+    )
     .visit(expression);
 
     if !has_extra_id {
@@ -576,16 +569,19 @@ fn match_selector_pattern<'a>(
 
 fn analyze_variable_scopes<'a>(
   ast: &Expression,
-  id_map: &HashMap<String, Expression<'a>>,
-  context: &'a CodegenContext<'a>,
+  id_map: &HashMap<&'a str, Expression<'a>>,
+  context: &CodegenContext<'a>,
 ) -> bool {
   let mut has_local = false;
-  WalkIdentifiers::new(Box::new(|id, _, _| {
-    let name = id.name.to_string();
-    if !is_globally_allowed(&name) && id_map.get(&name).is_some() {
-      has_local = true;
-    }
-  }))
+  WalkIdentifiers::new(
+    Box::new(|id, _, _| {
+      let name = id.name.as_str();
+      if !is_globally_allowed(name) && id_map.get(name).is_some() {
+        has_local = true;
+      }
+    }),
+    context.options,
+  )
   .visit(&ast.clone_in(context.ast.allocator));
   has_local
 }

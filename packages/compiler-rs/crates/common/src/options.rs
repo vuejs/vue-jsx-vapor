@@ -34,9 +34,9 @@ pub struct Hmr {
   pub define_component_name: Vec<String>,
 }
 
-pub struct SlotScope {
+pub struct SlotScope<'a> {
   pub seen: i32,
-  pub identifiers: Vec<String>,
+  pub identifiers: Vec<&'a str>,
   pub forwarded: bool,
 }
 
@@ -44,8 +44,8 @@ pub struct TransformOptions<'a> {
   pub allocator: Allocator,
   pub semantic: RefCell<Semantic<'a>>,
   pub templates: RefCell<Vec<(String, bool, i32)>>,
-  pub helpers: RefCell<BTreeSet<String>>,
-  pub delegates: RefCell<BTreeSet<String>>,
+  pub helpers: RefCell<BTreeSet<&'a str>>,
+  pub delegates: RefCell<BTreeSet<&'a str>>,
   pub hoists: RefCell<Vec<Expression<'a>>>,
   pub is_custom_element: Box<dyn Fn(&str) -> bool + 'a>,
   pub on_error: Box<dyn Fn(ErrorCodes, Span) + 'a>,
@@ -63,8 +63,8 @@ pub struct TransformOptions<'a> {
   pub in_v_slot: RefCell<i32>,
   pub in_v_once: RefCell<bool>,
   pub in_vapor: RefCell<i32>,
-  pub identifiers: RefCell<HashMap<String, i32>>,
-  pub slot_scopes: RefCell<IndexMap<Span, SlotScope>>,
+  pub identifiers: RefCell<HashMap<&'a str, i32>>,
+  pub slot_scopes: RefCell<IndexMap<Span, SlotScope<'a>>>,
   pub cache_index: RefCell<i32>,
   pub optimize_slots: bool,
   pub runtime_module_name: Option<String>,
@@ -101,5 +101,12 @@ impl<'a> Default for TransformOptions<'a> {
       optimize_slots: false,
       runtime_module_name: None,
     }
+  }
+}
+
+impl<'a> TransformOptions<'a> {
+  pub fn helper(&self, name: &'a str) -> &'a str {
+    self.helpers.borrow_mut().insert(&name[1..]);
+    name
   }
 }

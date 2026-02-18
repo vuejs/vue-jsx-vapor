@@ -4,7 +4,6 @@ use common::{
   check::is_template,
   directive::{Directives, find_prop},
   error::ErrorCodes,
-  expression::expression_to_params,
   options::SlotScope,
   patch_flag::SlotFlags,
 };
@@ -91,7 +90,7 @@ pub fn build_slots<'a>(
   directives: &mut Directives<'a>,
   node: &'a mut JSXElement<'a>,
   context: &'a TransformContext<'a>,
-) -> (Expression<'a>, bool, Vec<String>) {
+) -> (Expression<'a>, bool, Vec<&'a str>) {
   let ast = &context.ast;
   let _node = node as *mut JSXElement;
   let tag_name = directives.tag_name;
@@ -200,20 +199,19 @@ pub fn build_slots<'a>(
           ast.atom(&name.name.name[1..name.name.name.len() - 1].replace("_", ".")),
         )
       } else {
-        static_slot_name = Some(name.name.name.to_string());
+        static_slot_name = Some(name.name.name.as_str());
         ast.expression_identifier(name.span, name.name.name)
       }
     } else {
-      static_slot_name = Some(String::from("default"));
+      static_slot_name = Some("default");
       ast.expression_identifier(SPAN, "default")
     };
     let slot_props = if let Some(JSXAttributeValue::ExpressionContainer(value)) = &slot_dir.value {
-      expression_to_params(
-        value.expression.to_expression(),
-        context.source_text,
-        context.allocator,
-        context.options.source_type,
-      )
+      let span = value.expression.span();
+      Some(ast.plain_formal_parameter(
+        SPAN,
+        ast.binding_pattern_binding_identifier(span, span.source_text(context.source_text)),
+      ))
     } else {
       None
     };
@@ -332,7 +330,7 @@ pub fn build_slots<'a>(
           ast
             .expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&context.helper("renderList"))),
+              ast.expression_identifier(SPAN, ast.atom(context.options.helper("_renderList"))),
               NONE,
               ast.vec_from_array([
                 source.unwrap().into(),
@@ -362,12 +360,12 @@ pub fn build_slots<'a>(
       };
     } else {
       // check duplicate static names
-      if let Some(static_slot_name) = static_slot_name.as_ref() {
+      if let Some(static_slot_name) = static_slot_name {
         if seen_slot_names.contains(static_slot_name) {
           context.options.on_error.as_ref()(ErrorCodes::VSlotDuplicateSlotNames, dir_loc);
           continue;
         }
-        seen_slot_names.insert(static_slot_name.clone());
+        seen_slot_names.insert(static_slot_name);
         if static_slot_name == "default" {
           has_named_default_slot = true;
         }
@@ -379,7 +377,7 @@ pub fn build_slots<'a>(
         slot_name.into(),
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(&context.helper("withCtx"))),
+          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withCtx"))),
           NONE,
           ast.vec1(slot_function.into()),
           false,
@@ -395,7 +393,7 @@ pub fn build_slots<'a>(
     if let Some(ObjectPropertyKind::ObjectProperty(prop)) = slots_properties.first_mut() {
       prop.value = ast.expression_call(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(&context.helper("withCtx"))),
+        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withCtx"))),
         NONE,
         ast.vec1(
           ast
@@ -410,15 +408,16 @@ pub fn build_slots<'a>(
                 if let Some(JSXAttributeValue::ExpressionContainer(value)) =
                   &on_component_slot.value
                 {
-                  ast.vec1(
-                    expression_to_params(
-                      value.expression.to_expression(),
-                      context.source_text,
-                      context.allocator,
-                      context.options.source_type,
+                  ast.vec1({
+                    let span = value.expression.span();
+                    ast.plain_formal_parameter(
+                      SPAN,
+                      ast.binding_pattern_binding_identifier(
+                        span,
+                        span.source_text(context.source_text),
+                      ),
                     )
-                    .unwrap(),
-                  )
+                  })
                 } else {
                   ast.vec()
                 },
@@ -450,10 +449,10 @@ pub fn build_slots<'a>(
           SPAN,
           ast.expression_identifier(
             SPAN,
-            ast.atom(&if is_fragment {
-              String::from("withCtx")
+            ast.atom(if is_fragment {
+              ""
             } else {
-              context.helper("withCtx")
+              context.options.helper("_withCtx")
             }),
           ),
           NONE,
@@ -504,7 +503,7 @@ pub fn build_slots<'a>(
           ast.property_key_static_identifier(SPAN, "default"),
           ast.expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&context.helper("withCtx"))),
+            ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withCtx"))),
             NONE,
             ast.vec1(
               ast
@@ -586,7 +585,7 @@ pub fn build_slots<'a>(
   if !dynamic_slots.is_empty() {
     slots = ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&context.helper("createSlots"))),
+      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_createSlots"))),
       NONE,
       ast.vec_from_array([
         slots.into(),

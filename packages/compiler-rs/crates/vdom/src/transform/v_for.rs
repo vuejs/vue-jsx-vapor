@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use napi::{Either, bindgen_prelude::Either3};
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
@@ -8,7 +10,7 @@ use oxc_ast::{
     LogicalOperator, NumberBase, PropertyKind, Statement, VariableDeclarationKind,
   },
 };
-use oxc_span::{SPAN, Span};
+use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ast::{ConstantTypes, ForNode, NodeTypes, VNodeCall},
@@ -18,9 +20,7 @@ use crate::{
     utils::inject_prop,
   },
 };
-use common::{
-  check::is_template, error::ErrorCodes, expression::expression_to_params, patch_flag::PatchFlags,
-};
+use common::{check::is_template, error::ErrorCodes, patch_flag::PatchFlags};
 
 /// # SAFETY
 pub unsafe fn transform_v_for<'a>(
@@ -104,7 +104,7 @@ pub unsafe fn transform_v_for<'a>(
   // iterator on exit after all children have been traversed
   let mut render_exp = ast.call_expression(
     SPAN,
-    ast.expression_identifier(SPAN, ast.atom(&context.helper("renderList"))),
+    ast.expression_identifier(SPAN, ast.atom(context.options.helper("_renderList"))),
     NONE,
     ast.vec1(source.into()),
     false,
@@ -126,7 +126,7 @@ pub unsafe fn transform_v_for<'a>(
     context.codegen_map.borrow_mut().insert(
       fragment_span,
       NodeTypes::VNodeCall(VNodeCall {
-        tag: context.helper("Fragment"),
+        tag: Cow::Borrowed(context.options.helper("_Fragment")),
         props: None,
         children: None,
         patch_flag: Some(fragment_flag as i32),
@@ -245,7 +245,10 @@ pub unsafe fn transform_v_for<'a>(
                     LogicalOperator::And,
                     ast.expression_call(
                       SPAN,
-                      ast.expression_identifier(SPAN, ast.atom(&context.helper("isMemoSame"))),
+                      ast.expression_identifier(
+                        SPAN,
+                        ast.atom(context.options.helper("_isMemoSame")),
+                      ),
                       NONE,
                       ast.vec_from_array([
                         ast.expression_identifier(SPAN, "_cached").into(),
@@ -413,12 +416,11 @@ pub fn create_for_loop_params<'a>(
               ast.binding_pattern_binding_identifier(value.span, value.name),
             ))
           } else {
-            expression_to_params(
-              &value,
-              context.source_text,
-              context.allocator,
-              context.options.source_type,
-            )
+            let span = value.span();
+            Some(ast.plain_formal_parameter(
+              SPAN,
+              ast.binding_pattern_binding_identifier(span, span.source_text(context.source_text)),
+            ))
           }
         } else if key.is_some() || index.is_some() || memo.is_some() {
           Some(ast.plain_formal_parameter(SPAN, ast.binding_pattern_binding_identifier(SPAN, "_")))

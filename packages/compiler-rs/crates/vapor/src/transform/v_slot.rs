@@ -114,7 +114,7 @@ fn transform_component_slot<'a>(
           node.span,
         );
       } else {
-        register_slot(&mut slots, arg, block);
+        register_slot(&mut slots, arg, block, context);
         unsafe { &mut *context_block }.slots = slots;
       }
     } else if has_other_slots {
@@ -164,7 +164,7 @@ fn transform_template_slot<'a>(
       if !slot_name.is_empty() && has_static_slot(slots, slot_name) {
         context.options.on_error.as_ref()(ErrorCodes::VSlotDuplicateSlotNames, dir.span)
       } else {
-        register_slot(slots, arg, block);
+        register_slot(slots, arg, block, context);
       }
     } else if let Some(v_if_dir) = v_if_dir {
       slots.push(Either4::C(IRSlotDynamicConditional {
@@ -230,6 +230,7 @@ fn register_slot<'a>(
   slots: &mut Vec<IRSlots<'a>>,
   name: Option<Expression<'a>>,
   block: BlockIRNode<'a>,
+  context: &TransformContext<'a>,
 ) {
   let is_static = if let Some(name) = &name {
     matches!(name, Expression::StringLiteral(_))
@@ -250,11 +251,10 @@ fn register_slot<'a>(
     if let Some(Either4::A(slot)) = slots.last_mut() {
       slot.slots.insert(
         if let Some(Expression::StringLiteral(name)) = &name {
-          name.value.as_ref()
+          name.value
         } else {
-          "default"
-        }
-        .to_string(),
+          context.ast.atom("default")
+        },
         block,
       );
     }

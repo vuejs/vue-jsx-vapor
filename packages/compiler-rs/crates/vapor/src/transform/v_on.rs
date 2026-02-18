@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use common::{
   check::{is_delegated_events, is_keyboard_event},
   directive::{Directives, Modifiers, resolve_modifiers},
@@ -86,16 +88,27 @@ pub fn transform_v_on<'a>(
     key_modifiers.clear();
   }
 
+  let modifiers = Modifiers {
+    keys: key_modifiers
+      .into_iter()
+      .map(|m| Cow::Owned(Cow::into_owned(m)))
+      .collect::<Vec<_>>(),
+    non_keys: non_key_modifiers
+      .into_iter()
+      .map(|m| Cow::Owned(Cow::into_owned(m)))
+      .collect::<Vec<_>>(),
+    options: event_option_modifiers
+      .into_iter()
+      .map(|m| Cow::Owned(Cow::into_owned(m)))
+      .collect::<Vec<_>>(),
+  };
+
   if is_component {
     return Some(DirectiveTransformResult {
       key: Expression::StringLiteral(arg),
       value: exp,
       handler: true,
-      handler_modifiers: Some(Modifiers {
-        keys: key_modifiers,
-        non_keys: non_key_modifiers,
-        options: event_option_modifiers,
-      }),
+      handler_modifiers: Some(modifiers),
       model: false,
       model_modifiers: None,
       modifier: None,
@@ -107,7 +120,7 @@ pub fn transform_v_on<'a>(
   // - no dynamic event name
   // - no event option modifiers (passive, capture, once)
   // - is a delegatable
-  let delegate = event_option_modifiers.is_empty() && is_delegated_events(&arg.value);
+  let delegate = modifiers.options.is_empty() && is_delegated_events(&arg.value);
 
   let element = context.reference(&mut context_block.dynamic);
   context.register_operation(
@@ -116,11 +129,7 @@ pub fn transform_v_on<'a>(
       set_event: true,
       element,
       value: exp,
-      modifiers: Modifiers {
-        keys: key_modifiers,
-        non_keys: non_key_modifiers,
-        options: event_option_modifiers,
-      },
+      modifiers,
       delegate,
       effect: false,
       key: Expression::StringLiteral(arg),

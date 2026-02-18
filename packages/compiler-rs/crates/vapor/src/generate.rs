@@ -38,8 +38,8 @@ use crate::{
 pub struct CodegenContext<'a> {
   pub source_text: &'a str,
   pub options: &'a TransformOptions<'a>,
-  pub identifiers: RefCell<HashMap<String, Vec<Expression<'a>>>>,
-  pub ir: RootIRNode,
+  pub identifiers: RefCell<HashMap<&'a str, Vec<Expression<'a>>>>,
+  pub ir: RootIRNode<'a>,
   pub block: RefCell<BlockIRNode<'a>>,
   pub scope_level: RefCell<i32>,
   pub ast: &'a AstBuilder<'a>,
@@ -62,20 +62,15 @@ impl<'a> CodegenContext<'a> {
     }
   }
 
-  pub fn helper(&self, name: &str) -> String {
-    self.options.helpers.borrow_mut().insert(name.to_string());
-    format!("_{name}")
-  }
-
   pub fn with_id(
     &self,
     _fn: impl FnOnce() -> Expression<'a>,
-    mut id_map: HashMap<String, Expression<'a>>,
+    mut id_map: HashMap<&'a str, Expression<'a>>,
   ) -> Expression<'a> {
     for (id, value) in id_map.iter_mut() {
       let mut identifiers = self.identifiers.borrow_mut();
       if identifiers.get(id).is_none() {
-        identifiers.insert(id.clone(), vec![]);
+        identifiers.insert(id, vec![]);
       }
       identifiers
         .get_mut(id)
@@ -128,7 +123,10 @@ impl<'a> CodegenContext<'a> {
             NONE,
             Some(ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&self.helper("createTemplateRefSetter"))),
+              ast.expression_identifier(
+                SPAN,
+                ast.atom(self.options.helper("_createTemplateRefSetter")),
+              ),
               NONE,
               ast.vec(),
               false,
@@ -140,7 +138,7 @@ impl<'a> CodegenContext<'a> {
       ));
     }
 
-    for name in &self.ir.component {
+    for name in &self.ir.components {
       statements.push(Statement::VariableDeclaration(
         ast.alloc_variable_declaration(
           SPAN,
@@ -155,7 +153,7 @@ impl<'a> CodegenContext<'a> {
             NONE,
             Some(ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&self.helper("resolveComponent"))),
+              ast.expression_identifier(SPAN, ast.atom(self.options.helper("_resolveComponent"))),
               NONE,
               ast.vec_from_array([Argument::StringLiteral(ast.alloc_string_literal(
                 SPAN,
@@ -171,7 +169,7 @@ impl<'a> CodegenContext<'a> {
       ));
     }
 
-    for name in &self.ir.directive {
+    for name in &self.ir.directives {
       statements.push(Statement::VariableDeclaration(
         ast.alloc_variable_declaration(
           SPAN,
@@ -186,7 +184,7 @@ impl<'a> CodegenContext<'a> {
             NONE,
             Some(ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&self.helper("resolveDirective"))),
+              ast.expression_identifier(SPAN, ast.atom(self.options.helper("_resolveDirective"))),
               NONE,
               ast.vec1(Argument::StringLiteral(ast.alloc_string_literal(
                 SPAN,
@@ -229,10 +227,10 @@ impl<'a> CodegenContext<'a> {
     ));
 
     if !self.options.delegates.borrow().is_empty() {
-      self.helper("delegateEvents");
+      self.options.helper("_delegateEvents");
     }
     if !&self.options.templates.borrow().is_empty() {
-      self.helper("template");
+      self.options.helper("_template");
     }
 
     ast.expression_call(

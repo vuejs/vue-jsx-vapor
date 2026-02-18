@@ -44,7 +44,10 @@ pub fn gen_key<'a>(
 
   let expression = ast.expression_call(
     SPAN,
-    ast.expression_identifier(SPAN, ast.atom(&context.helper("createKeyedFragment"))),
+    ast.expression_identifier(
+      SPAN,
+      ast.atom(context.options.helper("_createKeyedFragment")),
+    ),
     NONE,
     ast.vec_from_array([expr.into(), block_fn.into()]),
     false,

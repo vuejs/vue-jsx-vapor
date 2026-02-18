@@ -5,16 +5,17 @@ use napi::{
   bindgen_prelude::{Either3, Either4},
 };
 use oxc_ast::ast::Expression;
+use oxc_span::Atom;
 
 use crate::ir::index::{BlockIRNode, IRFor};
 
 #[derive(Debug)]
 pub struct IRProp<'a> {
   pub key: Expression<'a>,
-  pub modifier: Option<String>,
+  pub modifier: Option<&'a str>,
   pub runtime_camelize: bool,
   pub handler: bool,
-  pub handler_modifiers: Option<Modifiers>,
+  pub handler_modifiers: Option<Modifiers<'a>>,
   pub model: bool,
   pub model_modifiers: Option<Vec<String>>,
 
@@ -44,7 +45,7 @@ pub enum IRSlotType {
 #[derive(Debug)]
 pub struct IRSlotsStatic<'a> {
   pub slot_type: IRSlotType,
-  pub slots: IndexMap<String, BlockIRNode<'a>>,
+  pub slots: IndexMap<Atom<'a>, BlockIRNode<'a>>,
 }
 
 #[derive(Debug)]

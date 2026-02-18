@@ -127,7 +127,7 @@ pub fn is_math_ml_tag(tag_name: &str) -> bool {
   MATH_TAGS.contains(tag_name)
 }
 
-pub fn is_jsx_component<'a>(node: &JSXElement) -> bool {
+pub fn is_jsx_component(node: &JSXElement) -> bool {
   match &node.opening_element.name {
     JSXElementName::Identifier(name) => {
       let tag_name = name.name.as_str();

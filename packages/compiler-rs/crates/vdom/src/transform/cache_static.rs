@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use common::{
   check::{get_directive_name, is_jsx_component},
   patch_flag::PatchFlags,
-  text::is_empty_text,
+  text::{get_tag_name, is_empty_text},
   walk::WalkIdentifiers,
 };
 use napi::{Either, bindgen_prelude::Either3};
@@ -204,7 +204,7 @@ pub fn get_constant_type<'a>(
           if codegen.v_for.is_some() || codegen.v_if.is_some() {
             return ConstantTypes::NotConstant;
           }
-          let tag = node.opening_element.name.to_string();
+          let tag = get_tag_name(node, context.options);
           if codegen.is_block && tag != "svg" && tag != "foreignObject" && tag != "math" {
             return ConstantTypes::NotConstant;
           }
@@ -299,7 +299,9 @@ pub fn get_constant_type<'a>(
               }
 
               codegen.is_block = false;
-              context.helper(&get_vnode_block_helper(context.options.ssr, false));
+              context
+                .options
+                .helper(get_vnode_block_helper(context.options.ssr, false));
             }
 
             context
@@ -340,9 +342,12 @@ pub fn get_constant_type<'a>(
         ConstantTypes::CanStringify
       } else {
         let mut has_ref = false;
-        WalkIdentifiers::new(Box::new(|_, _, _| {
-          has_ref = true;
-        }))
+        WalkIdentifiers::new(
+          Box::new(|_, _, _| {
+            has_ref = true;
+          }),
+          context.options,
+        )
         .visit(node);
         if has_ref {
           ConstantTypes::NotConstant

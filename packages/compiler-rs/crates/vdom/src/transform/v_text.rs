@@ -51,7 +51,7 @@ pub fn transform_v_text<'a>(
       } else {
         ast.expression_call(
           exp.span(),
-          ast.expression_identifier(SPAN, ast.atom(&context.helper("toDisplayString"))),
+          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_toDisplayString"))),
           NONE,
           ast.vec1(exp.into()),
           false,

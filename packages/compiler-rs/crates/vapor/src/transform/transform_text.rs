@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{borrow::Cow, collections::HashSet};
 
 use napi::Either;
 use oxc_allocator::{CloneIn, TakeIn};
@@ -105,7 +105,7 @@ pub unsafe fn transform_text<'a>(
       // Element children go through innerHTML which needs escaping
       let is_root_text = RootNode::is_root(parent_node)
         || if let JSXChild::Element(parent_node) = parent_node {
-          is_jsx_component(parent_node) || get_tag_name(&parent_node, context.options) == "template"
+          is_jsx_component(parent_node) || get_tag_name(parent_node, context.options) == "template"
         } else {
           false
         };
@@ -116,7 +116,7 @@ pub unsafe fn transform_text<'a>(
       };
       if !value.is_empty() {
         let mut template = context.template.borrow_mut();
-        *template = template.to_string() + &value;
+        *template = format!("{}{}", template, value);
       } else {
         dynamic.flags |= DynamicFlag::NonTemplate as i32;
       }
@@ -236,7 +236,7 @@ fn process_interpolation<'a>(
     );
   } else {
     let mut template = context.template.borrow_mut();
-    *template = template.to_string() + " ";
+    *template = format!("{} ", template);
     context.register_operation(
       context_block,
       OperationNode::SetNodes(SetNodesIRNode {
@@ -265,7 +265,7 @@ fn process_text_container<'a>(
   let literals = values
     .iter()
     .map(|e| get_text_like_value(e, false))
-    .collect::<Vec<Option<String>>>();
+    .collect::<Vec<_>>();
   if literals.iter().all(|l| l.is_some()) {
     *context.children_template.borrow_mut() = literals
       .into_iter()
@@ -273,7 +273,7 @@ fn process_text_container<'a>(
       .map(escape_html)
       .collect::<Vec<_>>();
   } else {
-    *context.children_template.borrow_mut() = vec![" ".to_string()];
+    *context.children_template.borrow_mut() = vec![Cow::Borrowed(" ")];
     let parent = context.reference(&mut context_block.dynamic);
     context.register_operation(
       context_block,

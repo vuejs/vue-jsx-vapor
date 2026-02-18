@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use oxc_ast::{
   AstBuilder,
   ast::{Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXElement},
@@ -5,7 +7,10 @@ use oxc_ast::{
 use oxc_span::{SPAN, SourceType, Span};
 
 use crate::{
-  check::{is_event_option_modifier, is_keyboard_event, is_non_key_modifier, maybe_key_modifier},
+  check::{
+    is_event_option_modifier, is_keyboard_event, is_non_key_modifier, is_simple_identifier,
+    maybe_key_modifier,
+  },
   expression::{jsx_attribute_value_to_expression, parse_expression},
   options::TransformOptions,
   text::get_tag_name,
@@ -23,18 +28,18 @@ pub fn resolve_directive<'a>(
   node: &'a mut JSXAttribute<'a>,
   ast: &AstBuilder<'a>,
 ) -> DirectiveNode<'a> {
-  let mut arg_string = String::new();
+  let mut arg_string = Cow::default();
   let (arg_span, name_string) = match &node.name {
-    JSXAttributeName::Identifier(name) => (name.span, name.name.to_string()),
+    JSXAttributeName::Identifier(name) => (name.span, name.name.as_str()),
     JSXAttributeName::NamespacedName(name) => {
-      arg_string = name.name.name.to_string();
+      arg_string = Cow::Borrowed(name.name.name.as_str());
       (
         Span::new(name.name.span.start + 1, name.name.span.end - 1),
-        name.namespace.name.to_string(),
+        name.namespace.name.as_str(),
       )
     }
   };
-  let mut modifiers: Vec<String> = vec![];
+  let mut modifiers = vec![];
   let mut is_static = true;
 
   if !matches!(node.name, JSXAttributeName::NamespacedName(_)) {
@@ -46,20 +51,22 @@ pub fn resolve_directive<'a>(
         .collect();
     }
   } else {
-    let cloned = arg_string.clone();
-    let splited = &mut cloned.split("$").collect::<Vec<_>>();
+    let splited = arg_string.split("$").collect::<Vec<_>>();
     if splited.len() > 2 {
       is_static = false;
-      arg_string = splited[1].replace("_", ".");
       if !splited[2].is_empty() {
         modifiers = splited[2][1..]
           .split("_")
           .map(|s| s.to_string())
           .collect::<Vec<_>>();
       }
+      arg_string = Cow::Owned(splited[1].replace("_", "."));
     } else {
-      let mut splited = cloned.split("_").map(|i| i.to_string()).collect::<Vec<_>>();
-      arg_string = splited.remove(0);
+      let mut splited = arg_string
+        .split("_")
+        .map(|i| i.to_string())
+        .collect::<Vec<String>>();
+      arg_string = Cow::Owned(splited.remove(0));
       modifiers = splited;
     }
   }
@@ -93,11 +100,11 @@ macro_rules! define_find_prop {
       for attr in node.opening_element.attributes.$iter() {
         if let JSXAttributeItem::Attribute(attr) = attr {
           let name = match &attr.name {
-            JSXAttributeName::Identifier(name) => name.name.to_string(),
-            JSXAttributeName::NamespacedName(name) => name.namespace.name.to_string(),
+            JSXAttributeName::Identifier(name) => name.name.as_str(),
+            JSXAttributeName::NamespacedName(name) => name.namespace.name.as_str(),
           };
-          let name = name.split('_').collect::<Vec<&str>>()[0];
-          if !name.eq("") && key.contains(&name) {
+          let name = name.split('_').next().unwrap_or_default();
+          if !name.is_empty() && key.contains(&name) {
             return Some(attr);
           }
         }
@@ -115,34 +122,37 @@ define_find_prop!(
 );
 
 pub fn get_modifier_prop_name(name: &str) -> String {
+  let is_simple = is_simple_identifier(name);
   format!(
-    "{}Modifiers{}",
+    "{}{}Modifiers{}{}",
+    if is_simple { "" } else { "\"" },
     if name == "modelValue" || name == "model-value" {
       "model"
     } else {
       name
     },
-    if name == "model" { "$" } else { "" }
+    if name == "model" { "$" } else { "" },
+    if is_simple { "" } else { "\"" },
   )
 }
 
 #[derive(Clone, Debug)]
-pub struct Modifiers {
+pub struct Modifiers<'a> {
   // modifiers for addEventListener() options, e.g. .passive & .capture
-  pub options: Vec<String>,
+  pub options: Vec<Cow<'a, str>>,
   // modifiers that needs runtime guards, withKeys
-  pub keys: Vec<String>,
+  pub keys: Vec<Cow<'a, str>>,
   // modifiers that needs runtime guards, withModifiers
-  pub non_keys: Vec<String>,
+  pub non_keys: Vec<Cow<'a, str>>,
 }
 
-pub fn resolve_modifiers(key_string: &str, modifiers: Vec<&str>) -> Modifiers {
-  let mut key_modifiers: Vec<String> = vec![];
-  let mut non_key_modifiers: Vec<String> = vec![];
-  let mut event_option_modifiers: Vec<String> = vec![];
+pub fn resolve_modifiers<'a>(key_string: &str, modifiers: Vec<&'a str>) -> Modifiers<'a> {
+  let mut key_modifiers = vec![];
+  let mut non_key_modifiers = vec![];
+  let mut event_option_modifiers = vec![];
 
   for modifier in modifiers {
-    let modifier = modifier.to_string();
+    let modifier = Cow::Borrowed(modifier);
     if is_event_option_modifier(&modifier) {
       // eventOptionModifiers: modifiers for addEventListener() options,
       // e.g. .passive & .capture
@@ -195,8 +205,10 @@ pub struct Directives<'a> {
 
 impl<'a> Directives<'a> {
   pub fn new(element: &'a mut JSXElement<'a>, options: &TransformOptions<'a>) -> Directives<'a> {
-    let mut directives = Directives::default();
-    directives.tag_name = get_tag_name(&element, options);
+    let mut directives = Directives {
+      tag_name: get_tag_name(element, options),
+      ..Default::default()
+    };
     for dir in element.opening_element.attributes.iter_mut() {
       if let JSXAttributeItem::Attribute(dir) = dir {
         let dir_name = match &dir.name {

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{borrow::Cow, collections::HashMap};
 
 use napi::bindgen_prelude::Either3;
 use oxc_allocator::TakeIn;
@@ -81,11 +81,11 @@ pub unsafe fn transform_v_if<'a>(
     context.codegen_map.borrow_mut().insert(
       fragment_span,
       NodeTypes::VNodeCall(VNodeCall {
-        tag: if is_template_node {
-          context.helper("Fragment")
+        tag: Cow::Borrowed(if is_template_node {
+          context.options.helper("_Fragment")
         } else {
-          String::new()
-        },
+          ""
+        }),
         props: None,
         children: None,
         patch_flag: None,
@@ -186,7 +186,10 @@ fn create_codegen_node_for_branch<'a>(
       // closes the current block.
       ast.expression_call(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(&context.helper("createCommentVNode"))),
+        ast.expression_identifier(
+          SPAN,
+          ast.atom(context.options.helper("_createCommentVNode")),
+        ),
         NONE,
         ast.vec_from_array([
           ast.expression_string_literal(SPAN, "", None).into(),

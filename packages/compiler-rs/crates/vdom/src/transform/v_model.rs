@@ -242,20 +242,20 @@ pub fn transform_v_model<'a>(
   }
 
   let mut runtime_name = None;
-  let is_custom_element = context.options.is_custom_element.as_ref()(&tag);
+  let is_custom_element = context.options.is_custom_element.as_ref()(tag);
   if matches!(tag, "input" | "textarea" | "select") || is_custom_element {
-    let mut directive_to_use = "vModelText";
+    let mut directive_to_use = "_vModelText";
     let mut is_invalid_type = false;
     if tag == "input" || is_custom_element {
       if let Some(_type) = directives._type.as_ref() {
         let value = &_type.value;
         if let Some(JSXAttributeValue::ExpressionContainer(_)) = value {
           // type={foo}
-          directive_to_use = "vModelDynamic"
+          directive_to_use = "_vModelDynamic"
         } else if let Some(JSXAttributeValue::StringLiteral(value)) = value {
           match value.value.as_str() {
-            "radio" => directive_to_use = "vModelRadio",
-            "checkbox" => directive_to_use = "vModelCheckbox",
+            "radio" => directive_to_use = "_vModelRadio",
+            "checkbox" => directive_to_use = "_vModelCheckbox",
             "file" => {
               is_invalid_type = true;
               context.options.on_error.as_ref()(ErrorCodes::VModelOnFileInputElement, node.span);
@@ -266,13 +266,13 @@ pub fn transform_v_model<'a>(
         }
       } else if has_dynamic_key_v_bind(node) {
         // element has bindings with dynamic keys, which can possibly contain "type".
-        directive_to_use = "vModelDynamic";
+        directive_to_use = "_vModelDynamic";
       } else {
         // text type
         check_duplicated_value(directives, context)
       }
     } else if tag == "select" {
-      directive_to_use = "vModelSelect"
+      directive_to_use = "_vModelSelect"
     } else {
       // textarea
       check_duplicated_value(directives, context)
@@ -281,7 +281,7 @@ pub fn transform_v_model<'a>(
     // by returning the helper symbol via needRuntime
     // the import will replaced a resolveDirective call.
     if !is_invalid_type {
-      runtime_name = Some(context.helper(directive_to_use));
+      runtime_name = Some(context.options.helper(directive_to_use));
     }
   } else if !is_custom_element {
     context.options.on_error.as_ref()(ErrorCodes::VModelOnInvalidElement, node.span)
@@ -305,7 +305,7 @@ pub fn transform_v_model<'a>(
 
   Some(DirectiveTransformResult {
     props,
-    runtime: runtime_name.map(|runtime_name| build_directive_args(dir, context, &runtime_name)),
+    runtime: runtime_name.map(|runtime_name| build_directive_args(dir, context, runtime_name)),
   })
 }
 

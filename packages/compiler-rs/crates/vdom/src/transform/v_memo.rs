@@ -37,7 +37,7 @@ pub unsafe fn transform_v_memo<'a>(
         let codegen = NodeTypes::CacheExpression(
           ast.expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&context.helper("withMemo"))),
+            ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withMemo"))),
             NONE,
             ast.vec_from_array([
               context.jsx_attribute_value_to_expression(&mut value).into(),

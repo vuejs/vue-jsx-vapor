@@ -107,7 +107,7 @@ fn v_slot_with_v_slots() {
   _openBlock(), _createBlock(Comp, { bar }, {
   	bar,
   	default: ({ foo }) => (_openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(() => foo + bar), _normalizeVNode(() => (_openBlock(), _createBlock(Comp, null, {
-  		default: _withCtx(({ baz }) => [_normalizeVNode(() => bar), _normalizeVNode(() => baz)]),
+  		default: _withCtx(({baz}) => [_normalizeVNode(() => bar), _normalizeVNode(() => baz)]),
   		_: 2
   	}, 1024)))], 64))
   }, 1032, ["bar"]);

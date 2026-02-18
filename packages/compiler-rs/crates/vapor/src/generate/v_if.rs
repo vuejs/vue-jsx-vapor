@@ -86,7 +86,7 @@ pub fn gen_if<'a>(
 
   let expression = ast.expression_call(
     SPAN,
-    ast.expression_identifier(SPAN, ast.atom(&context.helper("createIf"))),
+    ast.expression_identifier(SPAN, ast.atom(context.options.helper("_createIf"))),
     NONE,
     ast.vec_from_iter(
       [

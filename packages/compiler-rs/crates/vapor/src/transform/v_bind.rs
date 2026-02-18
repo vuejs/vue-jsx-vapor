@@ -12,7 +12,7 @@ pub fn transform_v_bind<'a>(
 ) -> Option<DirectiveTransformResult<'a>> {
   let ast = context.ast;
   let name_string = match &dir.name {
-    JSXAttributeName::Identifier(name) => &name.name.to_string(),
+    JSXAttributeName::Identifier(name) => name.name.as_str(),
     JSXAttributeName::NamespacedName(_) => return None,
   };
   let name_splited: Vec<&str> = name_string.split("_").collect();
@@ -30,13 +30,13 @@ pub fn transform_v_bind<'a>(
   };
 
   if modifiers.contains(&"camel") {
-    arg.value = ast.atom(&camelize(&arg.value))
+    arg.value = ast.atom(&camelize(arg.value.into()))
   }
 
   let modifier = if modifiers.contains(&"prop") {
-    Some(String::from("."))
+    Some(".")
   } else if modifiers.contains(&"attr") {
-    Some(String::from("^"))
+    Some("^")
   } else {
     None
   };

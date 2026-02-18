@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use oxc_ast::ast::{
   JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElement,
 };
@@ -55,7 +57,7 @@ pub fn transform_v_model<'a>(
   }
 
   let tag = directives.tag_name;
-  let is_custom_element = context.options.is_custom_element.as_ref()(&tag);
+  let is_custom_element = context.options.is_custom_element.as_ref()(tag);
   let mut model_type = "text";
   // TODO let runtimeDirective: VaporHelper | undefined = 'vModelText'
   if matches!(tag, "input" | "textarea" | "select") || is_custom_element {
@@ -102,8 +104,8 @@ pub fn transform_v_model<'a>(
         directive: true,
         element,
         dir,
-        name: "model".to_string(),
-        model_type: Some(model_type.to_string()),
+        name: Cow::Borrowed("model"),
+        model_type: Some(model_type),
         builtin: true,
         asset: false,
         deferred: false,

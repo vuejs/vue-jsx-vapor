@@ -63,7 +63,7 @@ fn array_de_structured_value() {
   .code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
-  _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, ([id, value]) => (_openBlock(), _createElementBlock("span"))), 256);
+  _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, ([ id, value ]) => (_openBlock(), _createElementBlock("span"))), 256);
   "#);
 }
 
@@ -214,7 +214,7 @@ fn v_for_aliases_with_complex_expressions() {
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
-  _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ foo = bar, baz: [qux = quux] }) => (_openBlock(), _createElementBlock("div", null, [_normalizeVNode(() => foo + bar + baz + qux + quux)]))), 256);
+  _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ foo:foo = bar, baz: [qux = quux] }) => (_openBlock(), _createElementBlock("div", null, [_normalizeVNode(() => foo + bar + baz + qux + quux)]))), 256);
   "#)
 }
 

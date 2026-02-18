@@ -32,7 +32,7 @@ features:
     details: It has the same performance as Vue Vapor!
   - icon: 🦀
     title: Rust Compiler
-    details: Powered by Oxc, ~30× faster (Virtual DOM) and ~50× faster (Vapor) than Babel.
+    details: Powered by Oxc, 35× faster (Virtual DOM) and 50× faster (Vapor) than Babel.
   - icon: ⚙️
     title: ESLint Integration
     details: Includes an ESLint plugin for automatic formatting of directives and macros.

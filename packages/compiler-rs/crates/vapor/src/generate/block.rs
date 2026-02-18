@@ -175,7 +175,7 @@ pub fn gen_effects<'a>(
         SPAN,
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(&context.helper("renderEffect"))),
+          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_renderEffect"))),
           NONE,
           ast.vec1(
             ast

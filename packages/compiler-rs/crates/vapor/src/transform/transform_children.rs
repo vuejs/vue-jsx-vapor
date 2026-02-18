@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, mem};
+use std::{borrow::Cow, collections::VecDeque, mem};
 
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::ast::{JSXChild, JSXExpression};
@@ -76,7 +76,7 @@ pub unsafe fn transform_children<'a>(
         child.clone_in(context.allocator)
       } else {
         if let JSXChild::Element(child) = child {
-          tag = get_tag_name(&child, context.options);
+          tag = get_tag_name(child, context.options);
         }
         child.take_in(context.allocator)
       },
@@ -108,7 +108,7 @@ pub unsafe fn transform_children<'a>(
         }
       }
     } else {
-      parent_children_template.push(context.template.borrow().to_string());
+      parent_children_template.push(Cow::Owned(context.template.take()));
     }
 
     if child_dynamic.has_dynamic_child
@@ -164,7 +164,8 @@ fn process_dynamic_children<'a>(
       unsafe { &mut *child_ptr }.logical_index = Some(logical_index);
       if !prev_dynamics.is_empty() {
         if static_count > 0 {
-          context.children_template.borrow_mut()[index - prev_dynamics.len()] = "<!>".to_string();
+          context.children_template.borrow_mut()[index - prev_dynamics.len()] =
+            Cow::Borrowed("<!>");
           prev_dynamics[0].flags -= DynamicFlag::NonTemplate as i32;
           let anchor = context.increase_id();
           prev_dynamics[0].anchor = Some(anchor);

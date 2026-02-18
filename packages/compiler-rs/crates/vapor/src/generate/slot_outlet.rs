@@ -37,7 +37,7 @@ pub fn gen_slot_outlet<'a>(
           Some(
             ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&context.helper("createSlot"))),
+              ast.expression_identifier(SPAN, ast.atom(context.options.helper("_createSlot"))),
               NONE,
               ast.vec_from_iter(
                 [

@@ -21,10 +21,10 @@ pub fn gen_set_html<'a>(oper: SetHtmlIRNode<'a>, context: &'a CodegenContext<'a>
       SPAN,
       ast.expression_identifier(
         SPAN,
-        ast.atom(&context.helper(if is_component {
-          "setBlockHtml"
+        ast.atom(context.options.helper(if is_component {
+          "_setBlockHtml"
         } else {
-          "setHtml"
+          "_setHtml"
         })),
       ),
       NONE,

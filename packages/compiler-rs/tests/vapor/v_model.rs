@@ -390,7 +390,7 @@ fn component_should_generate_model_value_modifiers() {
   	const _n0 = _createComponent(Comp, {
   		modelValue: () => foo,
   		"onUpdate:modelValue": () => (_value) => foo = _value,
-  		modelValueModifiers: () => ({
+  		modelModifiers: () => ({
   			trim: true,
   			"bar-baz": true
   		})

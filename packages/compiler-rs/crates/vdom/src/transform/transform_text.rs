@@ -144,7 +144,7 @@ pub unsafe fn transform_text<'a>(
           child.span(),
           NodeTypes::TextCallNode(ast.expression_call(
             child.span(),
-            ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeVNode"))),
+            ast.expression_identifier(SPAN, ast.atom(context.options.helper("_normalizeVNode"))),
             NONE,
             call_args,
             false,

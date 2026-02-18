@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use napi::bindgen_prelude::Either3;
 use oxc_ast::ast::{ArrayExpression, Expression, JSXAttribute, JSXChild};
 use oxc_span::Span;
@@ -16,7 +18,7 @@ pub type VNodeCallChildren<'a> =
 
 #[derive(Debug, Default)]
 pub struct VNodeCall<'a> {
-  pub tag: String,
+  pub tag: Cow<'a, str>,
   pub props: Option<Expression<'a>>,
   pub children: Option<VNodeCallChildren<'a>>,
   pub patch_flag: Option<i32>,
@@ -25,7 +27,7 @@ pub struct VNodeCall<'a> {
   pub is_block: bool,
   pub disable_tracking: bool,
   pub is_component: bool,
-  pub v_for: Option<Vec<String>>,
+  pub v_for: Option<Vec<&'a str>>,
   pub v_if: Option<Vec<IfBranchNode<'a>>>,
   pub loc: Span,
 }
@@ -61,7 +63,7 @@ pub struct ForNode<'a> {
   pub value: Option<Expression<'a>>,
   pub key: Option<Expression<'a>>,
   pub index: Option<Expression<'a>>,
-  pub identifiers: Vec<String>,
+  pub identifiers: Vec<&'a str>,
 }
 
 /**
@@ -77,18 +79,18 @@ pub enum ConstantTypes {
   CanStringify,
 }
 
-pub fn get_vnode_helper(ssr: bool, is_component: bool) -> String {
-  String::from(if ssr || is_component {
-    "createVNode"
+pub fn get_vnode_helper<'a>(ssr: bool, is_component: bool) -> &'a str {
+  if ssr || is_component {
+    "_createVNode"
   } else {
-    "createElementVNode"
-  })
+    "_createElementVNode"
+  }
 }
 
-pub fn get_vnode_block_helper(ssr: bool, is_component: bool) -> String {
-  String::from(if ssr || is_component {
-    "createBlock"
+pub fn get_vnode_block_helper<'a>(ssr: bool, is_component: bool) -> &'a str {
+  if ssr || is_component {
+    "_createBlock"
   } else {
-    "createElementBlock"
-  })
+    "_createElementBlock"
+  }
 }

@@ -19,7 +19,7 @@ pub fn transform_v_show<'a>(
     runtime: Some(build_directive_args(
       resolve_directive(dir, context.ast),
       context,
-      &context.helper("vShow"),
+      context.options.helper("_vShow"),
     )),
   })
 }

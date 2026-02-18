@@ -77,7 +77,7 @@ pub fn gen_self<'a>(
       context,
       context_block,
       statements.len(),
-      format!("_n{}", id.unwrap_or(0)),
+      format!("_n{}", id.unwrap_or(0)).as_str(),
     );
   }
 }
@@ -88,7 +88,7 @@ fn gen_children<'a>(
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   mut statement_index: usize,
-  from: String,
+  from: &str,
 ) {
   let ast = &context.ast;
 
@@ -137,7 +137,7 @@ fn gen_children<'a>(
       if element_index - prev.1 == 1 {
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(&context.helper("next"))),
+          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_next"))),
           NONE,
           ast.vec_from_iter(
             [
@@ -161,12 +161,12 @@ fn gen_children<'a>(
       } else {
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(&context.helper("nthChild"))),
+          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_nthChild"))),
           NONE,
           ast.vec_from_iter(
             [
               Some(Argument::Identifier(
-                ast.alloc_identifier_reference(SPAN, ast.atom(&from)),
+                ast.alloc_identifier_reference(SPAN, ast.atom(from)),
               )),
               Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
                 SPAN,
@@ -192,12 +192,12 @@ fn gen_children<'a>(
     } else if element_index == 0 {
       ast.expression_call(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(&context.helper("child"))),
+        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_child"))),
         NONE,
         ast.vec_from_iter(
           [
             Some(Argument::Identifier(
-              ast.alloc_identifier_reference(SPAN, ast.atom(&from)),
+              ast.alloc_identifier_reference(SPAN, ast.atom(from)),
             )),
             if let Some(logical_index) = logical_index
               && logical_index != 0
@@ -222,16 +222,16 @@ fn gen_children<'a>(
       if element_index == 1 {
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(&context.helper("next"))),
+          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_next"))),
           NONE,
           ast.vec_from_iter(
             [
               Some(Argument::CallExpression(ast.alloc_call_expression(
                 SPAN,
-                ast.expression_identifier(SPAN, ast.atom(&context.helper("child"))),
+                ast.expression_identifier(SPAN, ast.atom(context.options.helper("_child"))),
                 NONE,
                 ast.vec1(Argument::Identifier(
-                  ast.alloc_identifier_reference(SPAN, ast.atom(&from)),
+                  ast.alloc_identifier_reference(SPAN, ast.atom(from)),
                 )),
                 false,
               ))),
@@ -252,12 +252,12 @@ fn gen_children<'a>(
       } else if element_index > 1 {
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(&context.helper("nthChild"))),
+          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_nthChild"))),
           NONE,
           ast.vec_from_iter(
             [
               Some(Argument::Identifier(
-                ast.alloc_identifier_reference(SPAN, ast.atom(&from)),
+                ast.alloc_identifier_reference(SPAN, ast.atom(from)),
               )),
               Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
                 SPAN,
@@ -282,10 +282,10 @@ fn gen_children<'a>(
       } else {
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(&context.helper("child"))),
+          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_child"))),
           NONE,
           ast.vec1(Argument::Identifier(
-            ast.alloc_identifier_reference(SPAN, ast.atom(&from)),
+            ast.alloc_identifier_reference(SPAN, ast.atom(from)),
           )),
           false,
         )
@@ -322,14 +322,14 @@ fn gen_children<'a>(
       statements.push(directives)
     };
 
-    prev = Some((variable.clone(), element_index));
     gen_children(
       statements,
       child_children,
       context,
       unsafe { &mut *_context_block },
       statement_index,
-      variable,
+      variable.as_str(),
     );
+    prev = Some((variable, element_index));
   }
 }

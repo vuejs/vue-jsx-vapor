@@ -13,17 +13,17 @@ use oxc_ast::{
 };
 use oxc_span::{GetSpan, SPAN};
 
-struct Component {
-  local: String,
-  exported: String,
+struct Component<'a> {
+  local: &'a str,
+  exported: &'a str,
   id: String,
 }
 
 pub struct HmrOrSsrTransform<'a> {
   has_default_export: bool,
-  components: Vec<Component>,
+  components: Vec<Component<'a>>,
   options: &'a TransformOptions<'a>,
-  define_component_name: Vec<String>,
+  define_component_name: Vec<&'a str>,
 }
 
 impl<'a> HmrOrSsrTransform<'a> {
@@ -33,14 +33,18 @@ impl<'a> HmrOrSsrTransform<'a> {
       components: vec![],
       options,
       define_component_name: if let Either::B(hmr) = &options.hmr {
-        hmr.define_component_name.clone()
+        hmr
+          .define_component_name
+          .iter()
+          .map(|n| n.as_str())
+          .collect()
       } else {
         vec![
-          String::from("defineComponent"),
-          String::from("defineVaporComponent"),
-          String::from("defineElement"),
-          String::from("defineVaporCustomElement"),
-          String::from("_defineVaporSSRComponent"),
+          "defineComponent",
+          "defineVaporComponent",
+          "defineElement",
+          "defineVaporCustomElement",
+          "_defineVaporSSRComponent",
         ]
       },
     }
@@ -49,7 +53,7 @@ impl<'a> HmrOrSsrTransform<'a> {
   fn is_define_component_call(&self, node: Option<&Expression>) -> bool {
     if let Some(Expression::CallExpression(node)) = node
       && let Expression::Identifier(id) = &node.callee
-      && self.define_component_name.contains(&id.name.to_string())
+      && self.define_component_name.contains(&id.name.as_str())
     {
       true
     } else {
@@ -57,14 +61,14 @@ impl<'a> HmrOrSsrTransform<'a> {
     }
   }
 
-  fn parse_component_decls(&self, node: &VariableDeclaration) -> Vec<String> {
+  fn parse_component_decls(&self, node: &VariableDeclaration<'a>) -> Vec<&'a str> {
     let mut names = vec![];
     for decl in &node.declarations {
       if let BindingPattern::BindingIdentifier(id) = &decl.id
         && let Some(init) = &decl.init
         && (init.is_function() || self.is_define_component_call(Some(init)))
       {
-        names.push(id.name.to_string());
+        names.push(id.name.as_str());
       }
     }
     names
@@ -86,7 +90,7 @@ impl<'a> HmrOrSsrTransform<'a> {
       } else if let Statement::FunctionDeclaration(node) = node
         && let Some(id) = &node.id
       {
-        declared_components.push(id.name.to_string())
+        declared_components.push(id.name.as_str())
       } else if let Statement::ExportNamedDeclaration(node) = node {
         if let Some(Declaration::VariableDeclaration(declaration)) = &node.declaration {
           self.components.extend(
@@ -94,9 +98,9 @@ impl<'a> HmrOrSsrTransform<'a> {
               .parse_component_decls(declaration)
               .into_iter()
               .map(|name| Component {
-                local: name.clone(),
-                exported: name.clone(),
-                id: self.hash_string(&name),
+                local: name,
+                exported: name,
+                id: self.hash_string(name),
               })
               .collect::<Vec<_>>(),
           )
@@ -104,18 +108,18 @@ impl<'a> HmrOrSsrTransform<'a> {
           && let Some(id) = &declaration.id
         {
           self.components.push(Component {
-            local: id.name.to_string(),
-            exported: id.name.to_string(),
+            local: id.name.as_str(),
+            exported: id.name.as_str(),
             id: self.hash_string(&id.name),
           });
         } else {
           for spec in &node.specifiers {
             if let Some(name) = spec.exported.identifier_name()
-              && declared_components.iter().any(|n| name.eq(n.as_str()))
+              && declared_components.iter().any(|n| name.eq(n))
             {
               self.components.push(Component {
-                local: spec.local.name().to_string(),
-                exported: name.to_string(),
+                local: spec.local.name().as_str(),
+                exported: name.as_str(),
                 id: self.hash_string(&name),
               })
             }
@@ -124,10 +128,10 @@ impl<'a> HmrOrSsrTransform<'a> {
       } else if let Statement::ExportDefaultDeclaration(node) = node {
         if let ExportDefaultDeclarationKind::Identifier(id) = &node.declaration {
           let _name = id.name.as_str();
-          if declared_components.iter().any(|name| name.eq(_name)) {
+          if declared_components.iter().any(|name| name.eq(&_name)) {
             self.components.push(Component {
-              local: _name.to_string(),
-              exported: String::from("default"),
+              local: _name,
+              exported: "default",
               id: self.hash_string("default"),
             })
           }
@@ -137,11 +141,11 @@ impl<'a> HmrOrSsrTransform<'a> {
           self.has_default_export = declaration.id.is_none();
           self.components.push(Component {
             local: if let Some(id) = &declaration.id {
-              id.name.to_string()
+              id.name.as_str()
             } else {
-              String::from("__default__")
+              "__default__"
             },
-            exported: String::from("default"),
+            exported: "default",
             id: self.hash_string("default"),
           })
         } else if self.is_define_component_call(node.declaration.as_expression())
@@ -155,11 +159,11 @@ impl<'a> HmrOrSsrTransform<'a> {
           self.components.push(Component {
             local: if let ExportDefaultDeclarationKind::Identifier(id) = &node.declaration {
               self.has_default_export = false;
-              id.name.to_string()
+              id.name.as_str()
             } else {
-              String::from("__default__")
+              "__default__"
             },
-            exported: String::from("default"),
+            exported: "default",
             id: self.hash_string("default"),
           })
         }
@@ -261,7 +265,7 @@ impl<'a> HmrOrSsrTransform<'a> {
               ast.expression_identifier(SPAN, "ssrRegisterHelper"),
               NONE,
               ast.vec_from_array([
-                Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(&local))),
+                Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(local))),
                 Argument::Identifier(ast.alloc_identifier_reference(SPAN, "__moduleId")),
               ]),
               false,
@@ -284,7 +288,7 @@ impl<'a> HmrOrSsrTransform<'a> {
               AssignmentOperator::Assign,
               AssignmentTarget::StaticMemberExpression(ast.alloc_static_member_expression(
                 SPAN,
-                ast.expression_identifier(SPAN, ast.atom(&local)),
+                ast.expression_identifier(SPAN, ast.atom(local)),
                 ast.identifier_name(SPAN, "__hmrId"),
                 false,
               )),
@@ -304,7 +308,7 @@ impl<'a> HmrOrSsrTransform<'a> {
               NONE,
               ast.vec_from_array([
                 Argument::StringLiteral(ast.alloc_string_literal(SPAN, ast.atom(&id), None)),
-                Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(&local))),
+                Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(local))),
               ]),
               false,
             ),
@@ -314,7 +318,7 @@ impl<'a> HmrOrSsrTransform<'a> {
             Expression::StaticMemberExpression(ast.alloc_static_member_expression(
               SPAN,
               ast.expression_identifier(SPAN, "mod"),
-              ast.identifier_name(SPAN, ast.atom(&exported)),
+              ast.identifier_name(SPAN, ast.atom(exported)),
               false,
             ));
           let exported_expression_render =
@@ -323,7 +327,7 @@ impl<'a> HmrOrSsrTransform<'a> {
               Expression::StaticMemberExpression(ast.alloc_static_member_expression(
                 SPAN,
                 ast.expression_identifier(SPAN, "mod"),
-                ast.identifier_name(SPAN, ast.atom(&exported)),
+                ast.identifier_name(SPAN, ast.atom(exported)),
                 false,
               )),
               ast.identifier_name(SPAN, ast.atom("render")),

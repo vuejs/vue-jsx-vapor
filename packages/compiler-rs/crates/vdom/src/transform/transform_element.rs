@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use napi::{Either, bindgen_prelude::Either3};
 use oxc_allocator::{CloneIn, FromIn, TakeIn};
 use oxc_ast::{
@@ -43,7 +45,7 @@ pub unsafe fn transform_element<'a>(
     // skip v-if / v-for generated fragment
     && node.span.end > node.span.start
   {
-    let name = ast.jsx_element_name_identifier(SPAN, ast.atom(&context.helper("Fragment")));
+    let name = ast.jsx_element_name_identifier(SPAN, ast.atom(context.options.helper("_Fragment")));
     *unsafe { &mut *context_node } = ast.jsx_child_element(
       node.span,
       ast.jsx_opening_element(
@@ -76,7 +78,7 @@ pub unsafe fn transform_element<'a>(
 
   // The goal of the transform is to create a codegenNode implementing the
   // VNodeCall interface.
-  let mut vnode_tag = directives.tag_name.to_string();
+  let mut vnode_tag = Cow::Borrowed(directives.tag_name);
   if vnode_tag == "slot" {
     unsafe { transform_slot_outlet(directives, context_node, context) };
     return None;
@@ -88,10 +90,13 @@ pub unsafe fn transform_element<'a>(
   let asset = vnode_tag.contains("-") && {
     let semantic = &context.options.semantic.borrow();
     let scope_id = semantic.nodes().get_node(node.node_id()).scope_id();
-    let camelize_tag = camelize(&vnode_tag);
+    let camelize_tag = camelize(vnode_tag.clone());
     if semantic
       .scoping()
-      .find_binding(scope_id, Ident::from_in(&camelize_tag, context.allocator))
+      .find_binding(
+        scope_id,
+        Ident::from_in(camelize_tag.as_ref(), context.allocator),
+      )
       .is_some()
     {
       vnode_tag = camelize_tag;
@@ -101,9 +106,9 @@ pub unsafe fn transform_element<'a>(
     }
   };
   if is_component && asset {
-    context.helper("resolveComponent");
-    context.components.borrow_mut().insert(vnode_tag.clone());
-    vnode_tag = to_valid_asset_id(&vnode_tag, "component");
+    context.options.helper("_resolveComponent");
+    context.components.borrow_mut().insert(directives.tag_name);
+    vnode_tag = Cow::Owned(to_valid_asset_id(&vnode_tag, "component"));
   }
 
   let mut should_use_block = RootNode::is_single_root(parent_node)
@@ -265,7 +270,7 @@ pub struct PropsResult<'a> {
   pub props: Option<Expression<'a>>,
   pub directives: Option<ArrayExpression<'a>>,
   pub patch_flag: i32,
-  pub dynamic_prop_names: Vec<String>,
+  pub dynamic_prop_names: Vec<Cow<'a, str>>,
   pub should_use_block: bool,
   pub name_prop: Option<JSXAttribute<'a>>,
 }
@@ -325,8 +330,8 @@ pub fn build_props<'a>(
     }
   };
 
-  let _has_ref = &mut has_ref as *mut _;
-  let _has_dynamic_keys = &mut has_dynamic_keys as *mut _;
+  let has_ref_ptr = &mut has_ref as *mut _;
+  let has_dynamic_keys_ptr = &mut has_dynamic_keys as *mut _;
   let mut analyze_patch_flag = |prop: &ObjectPropertyKind<'a>| {
     let ObjectPropertyKind::ObjectProperty(prop) = prop else {
       return;
@@ -334,7 +339,7 @@ pub fn build_props<'a>(
     let ObjectProperty { key, computed, .. } = prop.as_ref();
     let mut value = &prop.value;
     if !computed {
-      let name = key.name().map(|name| name.to_string()).unwrap_or_default();
+      let name = key.name().unwrap_or_default();
       let is_event_handler = is_event(&name);
       if is_event_handler && !is_component &&
       // omit the flag for click handlers because hydration gives click
@@ -374,7 +379,7 @@ pub fn build_props<'a>(
       }
 
       if name == "ref" {
-        *unsafe { &mut *_has_ref } = true;
+        *unsafe { &mut *has_ref_ptr } = true;
       } else if name == "class" {
         has_class_binding = true;
       } else if name == "style" {
@@ -389,7 +394,7 @@ pub fn build_props<'a>(
         dynamic_prop_names.push(name);
       }
     } else {
-      *unsafe { &mut *_has_dynamic_keys } = true;
+      *unsafe { &mut *has_dynamic_keys_ptr } = true;
     }
   };
 
@@ -462,7 +467,7 @@ pub fn build_props<'a>(
               }
               merge_args.push(ast.expression_call(
                 SPAN,
-                ast.expression_identifier(SPAN, ast.atom(&context.helper("toHandlers"))),
+                ast.expression_identifier(SPAN, ast.atom(context.options.helper("_toHandlers"))),
                 NONE,
                 args,
                 false,
@@ -512,22 +517,25 @@ pub fn build_props<'a>(
                 .map(|c| c.is_uppercase())
                 .unwrap_or_default()
               {
-                name.to_string()
+                Cow::Borrowed(*name)
               } else {
                 let semantic = &context.options.semantic.borrow();
                 let scope_id = semantic.nodes().get_node(node.node_id()).scope_id();
-                let camelize_name = camelize(name);
+                let camelize_name = camelize(Cow::Borrowed(name));
                 if semantic
                   .scoping()
-                  .find_binding(scope_id, Ident::from_in(&camelize_name, context.allocator))
+                  .find_binding(
+                    scope_id,
+                    Ident::from_in(camelize_name.as_ref(), context.allocator),
+                  )
                   .is_some()
                 {
                   camelize_name
                 } else {
                   // inject statement for resolving directive
-                  context.helper("resolveDirective");
-                  context.directives.borrow_mut().insert(dir_name.to_string());
-                  to_valid_asset_id(dir_name, "directive")
+                  context.options.helper("_resolveDirective");
+                  context.directives.borrow_mut().insert(dir_name);
+                  Cow::Owned(to_valid_asset_id(dir_name, "directive"))
                 }
               };
               runtime_directives.push(
@@ -575,7 +583,7 @@ pub fn build_props<'a>(
     if merge_args.len() > 1 {
       Some(ast.expression_call(
         node.span,
-        ast.expression_identifier(SPAN, ast.atom(&context.helper("mergeProps"))),
+        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_mergeProps"))),
         NONE,
         ast.vec_from_iter(merge_args.into_iter().map(|arg| arg.into())),
         false,
@@ -629,7 +637,7 @@ pub fn build_props<'a>(
         for property in &mut object_expression.properties {
           if let ObjectPropertyKind::ObjectProperty(property) = property {
             let key = &property.key;
-            let name = key.name().map(|n| n.to_string()).unwrap_or(String::new());
+            let name = key.name().unwrap_or_default();
             if !property.computed {
               if name == "class" {
                 class_prop = Some(property);
@@ -649,7 +657,7 @@ pub fn build_props<'a>(
           {
             class_prop.value = ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeClass"))),
+              ast.expression_identifier(SPAN, ast.atom(context.options.helper("_normalizeClass"))),
               NONE,
               ast.vec1(class_prop.value.take_in(ast.allocator).into()),
               false,
@@ -662,7 +670,7 @@ pub fn build_props<'a>(
           {
             style_prop.value = ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeStyle"))),
+              ast.expression_identifier(SPAN, ast.atom(context.options.helper("_normalizeStyle"))),
               NONE,
               ast.vec1(style_prop.value.take_in(ast.allocator).into()),
               false,
@@ -672,7 +680,7 @@ pub fn build_props<'a>(
           // dynamic key binding, wrap with `normalizeProps`
           *props_expression = ast.expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeProps"))),
+            ast.expression_identifier(SPAN, ast.atom(context.options.helper("_normalizeProps"))),
             NONE,
             ast.vec1(props_expression.take_in(ast.allocator).into()),
             false,
@@ -685,13 +693,16 @@ pub fn build_props<'a>(
       _ => {
         *props_expression = ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(&context.helper("normalizeProps"))),
+          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_normalizeProps"))),
           NONE,
           ast.vec1(
             ast
               .expression_call(
                 SPAN,
-                ast.expression_identifier(SPAN, ast.atom(&context.helper("guardReactiveProps"))),
+                ast.expression_identifier(
+                  SPAN,
+                  ast.atom(context.options.helper("_guardReactiveProps")),
+                ),
                 NONE,
                 ast.vec1(props_expression.take_in(ast.allocator).into()),
                 false,
@@ -738,17 +749,17 @@ pub fn dedupe_properties<'a>(
         if prop.computed {
           deduped.push(property);
         } else if let Some(name) = prop.key.name() {
-          let name = name.to_string();
+          let name = name.as_ref();
           if let Some(existing) = deduped.iter_mut().find(|i| match i {
             ObjectPropertyKind::ObjectProperty(i) => i
               .key
               .name()
-              .map(|key_name| key_name.eq(name.as_str()))
+              .map(|key_name| key_name.eq(name))
               .unwrap_or_default(),
             ObjectPropertyKind::SpreadProperty(_) => false,
           }) && let ObjectPropertyKind::ObjectProperty(existing) = existing
           {
-            if name == "style" || name == "class" || is_event(&name) {
+            if name == "style" || name == "class" || is_event(name) {
               if let Expression::ArrayExpression(value) = &mut existing.value {
                 value
                   .elements

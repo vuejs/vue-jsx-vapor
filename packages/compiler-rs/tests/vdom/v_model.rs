@@ -172,7 +172,7 @@ fn compound_expression() {
 #[test]
 fn component_with_argument() {
   let code = transform(
-    r#"<Comp v-model:foo-value={model} />"#,
+    r#"<Comp v-model:foo-value_foo={model} />"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -183,7 +183,8 @@ fn component_with_argument() {
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, {
   	"foo-value": model,
-  	"onUpdate:foo-value": ($event) => model = $event
+  	"onUpdate:foo-value": ($event) => model = $event,
+  	"foo-valueModifiers": { foo: true }
   }, null, 8, ["foo-value", "onUpdate:foo-value"]);
   "#)
 }

@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use common::{check::is_simple_identifier, directive::Directives, text::camelize};
 use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement, PropertyKind};
 use oxc_span::{GetSpan, SPAN};
@@ -16,29 +18,27 @@ pub fn transform_v_bind<'a>(
   let ast = &context.ast;
 
   let name_string = match &dir.name {
-    JSXAttributeName::Identifier(name) => &name.name.to_string(),
+    JSXAttributeName::Identifier(name) => name.name.as_ref(),
     JSXAttributeName::NamespacedName(_) => return None,
   };
   let name_splited: Vec<&str> = name_string.split("_").collect();
   let modifiers = name_splited[1..].to_vec();
-  let name_string = name_splited[0].to_string();
-
-  let mut arg = name_string;
+  let mut arg = Cow::Borrowed(name_splited[0]);
 
   if modifiers.contains(&"camel") {
-    arg = camelize(&arg)
+    arg = camelize(arg)
   }
 
   if !context.options.ssr {
     if modifiers.contains(&"prop") {
-      arg = format!(".{}", arg);
+      arg = Cow::Owned(format!(".{}", arg));
     } else if modifiers.contains(&"attr") {
-      arg = format!("^{}", arg);
+      arg = Cow::Owned(format!("^{}", arg));
     }
   };
 
   if !is_simple_identifier(&arg) {
-    arg = format!("\"{}\"", arg);
+    arg = Cow::Owned(format!("\"{}\"", arg));
   }
 
   let value = if let Some(value) = &mut dir.value {

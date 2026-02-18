@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use common::directive::{DirectiveNode, Modifiers};
 use indexmap::IndexSet;
 use napi::Either;
@@ -37,23 +39,12 @@ impl<'a> Default for BlockIRNode<'a> {
 }
 
 #[derive(Debug, Default)]
-pub struct RootIRNode {
+pub struct RootIRNode<'a> {
   pub root_template_index: Option<usize>,
-  pub component: IndexSet<String>,
-  pub directive: IndexSet<String>,
+  pub components: IndexSet<&'a str>,
+  pub directives: IndexSet<&'a str>,
   pub has_template_ref: bool,
   pub has_deferred_v_show: bool,
-}
-impl RootIRNode {
-  pub fn new() -> Self {
-    RootIRNode {
-      component: IndexSet::new(),
-      directive: IndexSet::new(),
-      has_template_ref: false,
-      root_template_index: None,
-      has_deferred_v_show: false,
-    }
-  }
 }
 
 #[derive(Debug)]
@@ -158,7 +149,7 @@ pub struct SetEventIRNode<'a> {
   pub element: i32,
   pub key: Expression<'a>,
   pub value: Expression<'a>,
-  pub modifiers: Modifiers,
+  pub modifiers: Modifiers<'a>,
   pub delegate: bool,
   // Whether it's in effect
   pub effect: bool,
@@ -201,10 +192,10 @@ pub struct DirectiveIRNode<'a> {
   pub directive: bool,
   pub element: i32,
   pub dir: DirectiveNode<'a>,
-  pub name: String,
+  pub name: Cow<'a, str>,
   pub builtin: bool,
   pub asset: bool,
-  pub model_type: Option<String>,
+  pub model_type: Option<&'a str>,
   pub deferred: bool,
 }
 
@@ -212,7 +203,7 @@ pub struct DirectiveIRNode<'a> {
 pub struct CreateComponentIRNode<'a> {
   pub create_component: bool,
   pub id: i32,
-  pub tag: String,
+  pub tag: Cow<'a, str>,
   pub tag_span: Span,
   pub props: Vec<IRProps<'a>>,
   pub slots: Vec<IRSlots<'a>>,

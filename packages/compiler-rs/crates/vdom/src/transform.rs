@@ -65,8 +65,8 @@ pub struct TransformContext<'a> {
   pub codegen_map: RefCell<HashMap<Span, NodeTypes<'a>>>,
   pub v_if_map: RefCell<HashMap<Span, (usize, Vec<Span>)>>,
   pub cache_index: RefCell<usize>,
-  pub components: RefCell<IndexSet<String>>,
-  pub directives: RefCell<IndexSet<String>>,
+  pub components: RefCell<IndexSet<&'a str>>,
+  pub directives: RefCell<IndexSet<&'a str>>,
   pub has_temp: RefCell<bool>,
   pub has_slot: RefCell<bool>,
   pub reference_expressions: RefCell<HashMap<Span, bool>>,
@@ -109,11 +109,6 @@ impl<'a> TransformContext<'a> {
       self.transform_node(self.root_node.as_ptr(), None);
     }
     self.generate()
-  }
-
-  pub fn helper(&self, name: &str) -> String {
-    self.options.helpers.borrow_mut().insert(name.to_string());
-    format!("_{name}")
   }
 
   pub fn hoist(&self, exp: &mut Expression<'a>) -> Expression<'a> {
@@ -169,7 +164,7 @@ impl<'a> TransformContext<'a> {
         ast.vec_from_array([
           ast.expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&self.helper("setBlockTracking"))),
+            ast.expression_identifier(SPAN, ast.atom(self.options.helper("_setBlockTracking"))),
             NONE,
             arguments,
             false,
@@ -187,7 +182,7 @@ impl<'a> TransformContext<'a> {
           ),
           ast.expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&self.helper("setBlockTracking"))),
+            ast.expression_identifier(SPAN, ast.atom(self.options.helper("_setBlockTracking"))),
             NONE,
             ast.vec1(
               ast
@@ -226,7 +221,8 @@ impl<'a> TransformContext<'a> {
     } else if let Expression::JSXElement(node) = &mut node
       && is_template(node)
     {
-      let name = ast.jsx_element_name_identifier(node.span, ast.atom(&self.helper("Fragment")));
+      let name =
+        ast.jsx_element_name_identifier(node.span, ast.atom(self.options.helper("_Fragment")));
       ast.jsx_child_fragment(
         span,
         ast.jsx_opening_fragment(SPAN),
@@ -323,7 +319,7 @@ impl<'a> TransformContext<'a> {
   fn add_slot_scopes(&self, id: &IdentifierReference) {
     let slot_scopes = &mut self.options.slot_scopes.borrow_mut();
     if let Some(last_slot) = slot_scopes.last()
-      && last_slot.1.identifiers.contains(&id.name.to_string())
+      && last_slot.1.identifiers.contains(&id.name.as_str())
     {
       return;
     }
@@ -332,23 +328,27 @@ impl<'a> TransformContext<'a> {
     }
   }
 
-  pub fn add_identifiers(&'a self, exp: &Option<&Expression<'a>>) -> Vec<String> {
+  pub fn add_identifiers(&'a self, exp: &Option<&Expression<'a>>) -> Vec<&'a str> {
     let Some(exp) = exp else { return vec![] };
     let identifiers = self.options.identifiers.as_ptr();
     let mut ids = vec![];
-    WalkIdentifiers::new(Box::new(|id, _, _| {
-      let name = id.name.to_string();
-      ids.push(name.clone());
-      unsafe { &mut *identifiers }
-        .entry(name)
-        .and_modify(|v| *v += 1)
-        .or_insert(1);
-    }))
+    let ids_ptr = &mut ids as *mut Vec<&str>;
+    WalkIdentifiers::new(
+      Box::new(move |id, _, _| {
+        let name = id.name.as_str();
+        unsafe { &mut *ids_ptr }.push(name);
+        unsafe { &mut *identifiers }
+          .entry(name)
+          .and_modify(|v| *v += 1)
+          .or_insert(1);
+      }),
+      self.options,
+    )
     .visit(exp);
     ids
   }
 
-  pub fn remove_identifiers(&self, ids: Vec<String>) {
+  pub fn remove_identifiers(&self, ids: Vec<&'a str>) {
     let identifiers = &mut self.options.identifiers.borrow_mut();
     for id in ids {
       if let Some(v) = identifiers.get_mut(&id)

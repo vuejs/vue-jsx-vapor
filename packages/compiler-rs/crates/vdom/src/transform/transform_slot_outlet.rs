@@ -43,7 +43,7 @@ pub unsafe fn transform_slot_outlet<'a>(
   let expression = NodeTypes::CacheExpression(
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&context.helper("renderSlot"))),
+      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_renderSlot"))),
       NONE,
       ast.vec_from_iter(
         [

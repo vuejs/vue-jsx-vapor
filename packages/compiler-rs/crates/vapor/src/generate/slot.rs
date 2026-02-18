@@ -1,10 +1,12 @@
+use std::borrow::Cow;
+
 use indexmap::IndexMap;
 use napi::bindgen_prelude::{Either, Either4};
 use oxc_ast::{
   NONE,
   ast::{Expression, FormalParameterKind, PropertyKind},
 };
-use oxc_span::{GetSpan, SPAN};
+use oxc_span::{Atom, GetSpan, SPAN};
 
 use crate::{
   generate::{CodegenContext, block::gen_block, expression::gen_expression},
@@ -48,7 +50,7 @@ pub fn gen_raw_slots<'a>(
 }
 
 fn gen_static_slots<'a>(
-  mut slots: IndexMap<String, BlockIRNode<'a>>,
+  mut slots: IndexMap<Atom<'a>, BlockIRNode<'a>>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   dynamic_slots: Option<Vec<IRSlots<'a>>>,
@@ -56,10 +58,10 @@ fn gen_static_slots<'a>(
   let ast = context.ast;
   let mut properties = ast.vec();
   let context_block = context_block as *mut BlockIRNode;
-  for name in slots.keys().cloned().collect::<Vec<String>>() {
+  for name in slots.keys().cloned().collect::<Vec<_>>() {
     let oper = slots.shift_remove(&name).unwrap();
     let name = if is_simple_identifier(&name) {
-      &name
+      name.as_str()
     } else {
       &format!("\"{}\"", name)
     };
@@ -242,7 +244,7 @@ fn gen_loop_slot<'a>(
 
   ast.expression_call(
     SPAN,
-    ast.expression_identifier(SPAN, ast.atom(&context.helper("createForSlots"))),
+    ast.expression_identifier(SPAN, ast.atom(context.options.helper("_createForSlots"))),
     NONE,
     ast.vec_from_array([
       gen_expression(source.unwrap(), context, None, false).into(),
@@ -370,7 +372,7 @@ fn gen_slot_block_with_props<'a>(
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Expression<'a> {
-  let mut props_name = String::new();
+  let mut props_name = Cow::Borrowed("");
   let mut props_loc = SPAN;
   let mut props_ast = None;
   let mut exit_scope = None;
@@ -381,11 +383,11 @@ fn gen_slot_block_with_props<'a>(
       Expression::ObjectExpression(_) => {
         props_ast = Some(props);
         let scope = context.enter_scope();
-        props_name = format!("_slotProps{}", scope.0);
+        props_name = Cow::Owned(format!("_slotProps{}", scope.0));
         exit_scope = Some(scope.1);
       }
       Expression::Identifier(props) => {
-        props_name = props.name.to_string();
+        props_name = Cow::Borrowed(props.name.as_str());
       }
       _ => {}
     }
@@ -428,7 +430,7 @@ fn gen_slot_block_with_props<'a>(
   // 2. scopeId inheritance for components created inside slots
   ast.expression_call(
     SPAN,
-    ast.expression_identifier(SPAN, ast.atom(&context.helper("withVaporCtx"))),
+    ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withVaporCtx"))),
     NONE,
     ast.vec1(block_fn.into()),
     false,

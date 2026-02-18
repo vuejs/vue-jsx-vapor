@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use common::directive::Modifiers;
 use oxc_ast::NONE;
 use oxc_ast::ast::{
@@ -71,11 +73,7 @@ pub fn gen_set_event<'a>(
 
   if delegate {
     // key is static
-    context
-      .options
-      .delegates
-      .borrow_mut()
-      .insert(key_content.to_string());
+    context.options.delegates.borrow_mut().insert(key_content);
     // if this is the only delegated event of this name on this element,
     // we can generate optimized handler attachment code
     // e.g. n1.$evtclick = () => {}
@@ -118,7 +116,11 @@ pub fn gen_set_event<'a>(
       SPAN,
       ast.expression_identifier(
         SPAN,
-        ast.atom(&context.helper(if delegate { "delegate" } else { "on" })),
+        ast.atom(
+          context
+            .options
+            .helper(if delegate { "_delegate" } else { "_on" }),
+        ),
       ),
       NONE,
       arguments,
@@ -130,8 +132,8 @@ pub fn gen_set_event<'a>(
 pub fn gen_event_handler<'a>(
   context: &'a CodegenContext<'a>,
   values: Vec<Expression<'a>>,
-  keys: &[String],
-  non_keys: &[String],
+  keys: &[Cow<'a, str>],
+  non_keys: &[Cow<'a, str>],
   // passed as component prop - need additional wrap
   extra_wrap: bool,
 ) -> Expression<'a> {
@@ -149,7 +151,7 @@ pub fn gen_event_handler<'a>(
   if !non_keys.is_empty() {
     handler_exp = ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&context.helper("withModifiers"))),
+      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withModifiers"))),
       NONE,
       ast.vec_from_array([
         handler_exp.into(),
@@ -171,7 +173,7 @@ pub fn gen_event_handler<'a>(
   if !keys.is_empty() {
     handler_exp = ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&context.helper("withKeys"))),
+      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withKeys"))),
       NONE,
       ast.vec_from_array([
         handler_exp.into(),
@@ -222,7 +224,7 @@ pub fn gen_set_dynamic_events<'a>(
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&context.helper("setDynamicEvents"))),
+      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_setDynamicEvents"))),
       NONE,
       ast.vec_from_array([
         ast

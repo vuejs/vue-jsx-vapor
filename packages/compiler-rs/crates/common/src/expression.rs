@@ -1,7 +1,9 @@
+use std::borrow::Cow;
+
 use oxc_allocator::{Allocator, CloneIn, FromIn, TakeIn};
 use oxc_ast::{
   AstBuilder,
-  ast::{Expression, FormalParameter, JSXAttributeValue},
+  ast::{Expression, JSXAttributeValue},
 };
 use oxc_parser::Parser;
 use oxc_span::{Atom, GetSpan, SPAN, SourceType, Span};
@@ -9,16 +11,16 @@ use phf::phf_set;
 
 use crate::{options::TransformOptions, text::get_text_like_value};
 
-pub fn get_constant_expression_text(
-  exp: &Expression,
-  options: &TransformOptions,
-) -> Option<String> {
+pub fn get_constant_expression_text<'a>(
+  exp: &Expression<'a>,
+  options: &TransformOptions<'a>,
+) -> Option<Cow<'a, str>> {
   if let Some(value) = get_text_like_value(exp, false) {
     Some(value)
   } else {
     let content = exp.span().source_text(&options.source_text.borrow());
     if is_literal_whitelisted(content) || is_globally_allowed(content) {
-      Some(content.to_string())
+      Some(Cow::Borrowed(content))
     } else {
       None
     }
@@ -63,34 +65,6 @@ pub fn is_globally_allowed(key: &str) -> bool {
   GLOBALLY_ALLOWED.contains(key)
 }
 
-pub fn expression_to_params<'a>(
-  exp: &Expression<'a>,
-  source: &str,
-  allocator: &'a Allocator,
-  source_type: SourceType,
-) -> Option<FormalParameter<'a>> {
-  let span = exp.without_parentheses().span();
-  if let Ok(Expression::ArrowFunctionExpression(mut exp)) = Parser::new(
-    allocator,
-    Atom::from_in(
-      &format!(
-        "/*{}*/({})=>{{}}",
-        ".".repeat(span.start as usize - 5),
-        span.source_text(source)
-      ),
-      allocator,
-    )
-    .as_str(),
-    source_type,
-  )
-  .parse_expression()
-  {
-    Some(exp.params.items[0].take_in(allocator))
-  } else {
-    None
-  }
-}
-
 pub fn parse_expression<'a>(
   source: &str,
   span: Span,
@@ -100,11 +74,16 @@ pub fn parse_expression<'a>(
   Parser::new(
     allocator,
     Atom::from_in(
-      &if span == SPAN {
-        source.to_string()
+      if span == SPAN {
+        Cow::Borrowed(source)
       } else {
-        format!("/*{}*/({})", ".".repeat(span.start as usize - 5), source)
-      },
+        Cow::Owned(format!(
+          "/*{}*/({})",
+          ".".repeat(span.start as usize - 5),
+          source
+        ))
+      }
+      .as_ref(),
       allocator,
     )
     .as_str(),

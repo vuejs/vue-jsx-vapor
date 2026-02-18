@@ -37,7 +37,10 @@ impl<'a> TransformContext<'a> {
               Some(
                 ast.expression_call(
                   SPAN,
-                  ast.expression_identifier(SPAN, ast.atom(&self.helper("createVNodeCache"))),
+                  ast.expression_identifier(
+                    SPAN,
+                    ast.atom(self.options.helper("_createVNodeCache")),
+                  ),
                   NONE,
                   ast.vec1(
                     ast
@@ -91,7 +94,7 @@ impl<'a> TransformContext<'a> {
             NONE,
             Some(ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&self.helper("useSlots"))),
+              ast.expression_identifier(SPAN, ast.atom(self.options.helper("_useSlots"))),
               NONE,
               ast.vec(),
               false,
@@ -113,16 +116,16 @@ impl<'a> TransformContext<'a> {
             VariableDeclarationKind::Const,
             ast.binding_pattern_binding_identifier(
               SPAN,
-              ast.atom(&to_valid_asset_id(&name, "component")),
+              ast.atom(&to_valid_asset_id(name, "component")),
             ),
             NONE,
             Some(ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&self.helper("resolveComponent"))),
+              ast.expression_identifier(SPAN, ast.atom(self.options.helper("_resolveComponent"))),
               NONE,
               ast.vec_from_array([Argument::StringLiteral(ast.alloc_string_literal(
                 SPAN,
-                ast.atom(&name),
+                ast.atom(name),
                 None,
               ))]),
               false,
@@ -144,16 +147,16 @@ impl<'a> TransformContext<'a> {
             VariableDeclarationKind::Const,
             ast.binding_pattern_binding_identifier(
               SPAN,
-              ast.atom(&to_valid_asset_id(&name, "directive")),
+              ast.atom(&to_valid_asset_id(name, "directive")),
             ),
             NONE,
             Some(ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&self.helper("resolveDirective"))),
+              ast.expression_identifier(SPAN, ast.atom(self.options.helper("_resolveDirective"))),
               NONE,
               ast.vec1(Argument::StringLiteral(ast.alloc_string_literal(
                 SPAN,
-                ast.atom(&name),
+                ast.atom(name),
                 None,
               ))),
               false,
@@ -295,7 +298,7 @@ impl<'a> TransformContext<'a> {
     };
     let mut result = ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&self.helper(&call_helper))),
+      ast.expression_identifier(SPAN, ast.atom(self.options.helper(call_helper))),
       NONE,
       ast.vec_from_iter(
         [
@@ -347,7 +350,7 @@ impl<'a> TransformContext<'a> {
           ast.vec_from_array([
             ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(&self.helper("openBlock"))),
+              ast.expression_identifier(SPAN, ast.atom(self.options.helper("_openBlock"))),
               NONE,
               if disable_tracking {
                 ast.vec1(ast.expression_boolean_literal(SPAN, true).into())
@@ -365,7 +368,7 @@ impl<'a> TransformContext<'a> {
     if let Some(directives) = directives {
       result = ast.expression_call(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(&self.helper("withDirectives"))),
+        ast.expression_identifier(SPAN, ast.atom(self.options.helper("_withDirectives"))),
         NONE,
         ast.vec_from_array([
           result.into(),

@@ -1,3 +1,6 @@
+use std::borrow::Cow;
+
+use common::text::capitalize;
 use napi::bindgen_prelude::Either3;
 use oxc_ast::NONE;
 use oxc_ast::ast::BinaryOperator;
@@ -15,56 +18,56 @@ use crate::ir::index::SetPropIRNode;
 use common::check::is_simple_identifier;
 use common::check::is_svg_tag;
 
-pub struct HelperConfig {
-  name: String,
+pub struct HelperConfig<'a> {
+  name: &'a str,
   need_key: bool,
   is_svg: bool,
 }
 
-fn helpers(name: &str, is_svg: bool) -> HelperConfig {
+fn helpers<'a>(name: &str, is_svg: bool) -> HelperConfig<'a> {
   match name {
     "setText" => HelperConfig {
-      name: "setText".to_string(),
+      name: "_setText",
       need_key: false,
       is_svg,
     },
     "setHtml" => HelperConfig {
-      name: "setHtml".to_string(),
+      name: "_setHtml",
       need_key: false,
       is_svg,
     },
     "setClass" => HelperConfig {
-      name: "setClass".to_string(),
+      name: "_setClass",
       need_key: false,
       is_svg,
     },
     "setStyle" => HelperConfig {
-      name: "setStyle".to_string(),
+      name: "_setStyle",
       need_key: false,
       is_svg,
     },
     "setValue" => HelperConfig {
-      name: "setValue".to_string(),
+      name: "_setValue",
       need_key: false,
       is_svg,
     },
     "setAttr" => HelperConfig {
-      name: "setAttr".to_string(),
+      name: "_setAttr",
       need_key: true,
       is_svg,
     },
     "setProp" => HelperConfig {
-      name: "setProp".to_string(),
+      name: "_setProp",
       need_key: true,
       is_svg,
     },
     "setDOMProp" => HelperConfig {
-      name: "setDOMProp".to_string(),
+      name: "_setDOMProp",
       need_key: true,
       is_svg,
     },
     "setDynamicProps" => HelperConfig {
-      name: "setDynamicProps".to_string(),
+      name: "_setDynamicProps",
       need_key: true,
       is_svg,
     },
@@ -92,7 +95,7 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
       .into(),
   );
   let resolved_helper = get_runtime_helper(
-    &tag,
+    tag,
     if let Expression::StringLiteral(key) = &key {
       &key.value
     } else {
@@ -112,10 +115,7 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(
-        SPAN,
-        ast.atom(&context.helper(resolved_helper.name.as_str())),
-      ),
+      ast.expression_identifier(SPAN, ast.atom(context.options.helper(resolved_helper.name))),
       NONE,
       arguments,
       false,
@@ -123,7 +123,7 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
   )
 }
 
-fn get_runtime_helper(tag: &str, key: &str, modifier: Option<String>) -> HelperConfig {
+fn get_runtime_helper<'a>(tag: &str, key: &str, modifier: Option<&str>) -> HelperConfig<'a> {
   let tag_name = tag.to_uppercase();
   if let Some(modifier) = modifier {
     return if modifier.eq(".") {
@@ -208,7 +208,7 @@ fn can_set_value_directly(tag_name: &str) -> bool {
     !tag_name.contains("-")
 }
 
-fn get_special_helper(key_name: &str, tag_name: &str) -> Option<HelperConfig> {
+fn get_special_helper<'a>(key_name: &str, tag_name: &str) -> Option<HelperConfig<'a>> {
   // special case for 'value' property
   match key_name {
     "value" if can_set_value_directly(tag_name) => Some(helpers("setValue", false)),
@@ -226,7 +226,7 @@ pub fn gen_dynamic_props<'a>(
   context: &'a CodegenContext<'a>,
 ) -> Statement<'a> {
   let ast = &context.ast;
-  let is_svg = is_svg_tag(&oper.tag);
+  let is_svg = is_svg_tag(oper.tag);
   let values = oper.props.into_iter().map(|props| {
     match props {
       Either3::A(props) => gen_literal_object_props(props, context).into(),
@@ -249,7 +249,7 @@ pub fn gen_dynamic_props<'a>(
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&context.helper("setDynamicProps"))),
+      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_setDynamicProps"))),
       NONE,
       arguments,
       false,
@@ -291,9 +291,9 @@ fn gen_literal_object_props<'a>(
 pub fn gen_prop_key<'a>(
   node: Expression<'a>,
   runtime_camelize: bool,
-  modifier: Option<String>,
+  modifier: Option<&str>,
   handler: bool,
-  options: Vec<String>,
+  options: Vec<Cow<'a, str>>,
   context: &'a CodegenContext<'a>,
 ) -> PropertyKey<'a> {
   let ast = &context.ast;
@@ -301,7 +301,7 @@ pub fn gen_prop_key<'a>(
   let handler_modifier_postfix = if !options.is_empty() {
     options
       .into_iter()
-      .map(|option| option[..1].to_string().to_uppercase() + &option[1..])
+      .map(capitalize)
       .collect::<Vec<_>>()
       .join("")
   } else {
@@ -310,14 +310,16 @@ pub fn gen_prop_key<'a>(
   // static arg was transformed by v-bind transformer
   if let Expression::StringLiteral(node) = node {
     // only quote keys if necessary
-    let key_name = (if handler {
+    let key_name = if handler {
       format!(
-        "on{}",
-        node.value[0..1].to_string().to_uppercase() + &node.value[1..]
+        "on{}{}{}",
+        node.value[0..1].to_uppercase(),
+        &node.value[1..],
+        &handler_modifier_postfix
       )
     } else {
-      node.value.to_string()
-    }) + &handler_modifier_postfix;
+      format!("{}{}", node.value, &handler_modifier_postfix)
+    };
     let key_name = if is_simple_identifier(&key_name) {
       &key_name
     } else {
@@ -330,7 +332,7 @@ pub fn gen_prop_key<'a>(
   if runtime_camelize {
     key = ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&context.helper("camelize"))),
+      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_camelize"))),
       NONE,
       ast.vec1(key.into()),
       false,
@@ -339,7 +341,7 @@ pub fn gen_prop_key<'a>(
   if handler {
     key = ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&context.helper("toHandlerKey"))),
+      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_toHandlerKey"))),
       NONE,
       ast.vec1(key.into()),
       false,

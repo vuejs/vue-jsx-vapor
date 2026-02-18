@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use oxc_ast::ast::{JSXAttribute, JSXChild};
 
 use crate::{
@@ -26,7 +28,7 @@ pub fn transform_v_show<'a>(
   let mut should_deferred = false;
   if let JSXChild::Element(parent_node) = parent_node {
     should_deferred = matches!(
-      get_tag_name(&parent_node, context.options),
+      get_tag_name(parent_node, context.options),
       "VaporTransition" | "VaporTransitionGroup"
     ) && find_prop(parent_node, vec!["appear"]).is_some();
 
@@ -43,7 +45,7 @@ pub fn transform_v_show<'a>(
       directive: true,
       element,
       dir,
-      name: String::from("show"),
+      name: Cow::Borrowed("show"),
       builtin: true,
       asset: false,
       model_type: None,

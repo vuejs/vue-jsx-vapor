@@ -34,14 +34,18 @@ pub fn gen_v_model<'a>(
       SPAN,
       ast.expression_identifier(
         SPAN,
-        ast.atom(&context.helper(match model_type.unwrap().as_str() {
-          "text" => "applyTextModel",
-          "radio" => "applyRadioModel",
-          "checkbox" => "applyCheckboxModel",
-          "select" => "applySelectModel",
-          "dynamic" => "applyDynamicModel",
-          _ => panic!("Unsupported model type"),
-        })),
+        ast.atom(
+          context
+            .options
+            .helper(match model_type.unwrap_or_default() {
+              "text" => "_applyTextModel",
+              "radio" => "_applyRadioModel",
+              "checkbox" => "_applyCheckboxModel",
+              "select" => "_applySelectModel",
+              "dynamic" => "_applyDynamicModel",
+              _ => panic!("Unsupported model type"),
+            }),
+        ),
       ),
       NONE,
       ast.vec_from_iter(

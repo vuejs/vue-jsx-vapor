@@ -178,7 +178,7 @@ pub fn gen_insertion_state<'a>(
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(&context.helper("setInsertionState"))),
+      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_setInsertionState"))),
       NONE,
       ast.vec_from_iter(
         [

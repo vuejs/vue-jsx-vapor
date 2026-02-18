@@ -36,7 +36,7 @@ impl<'a> Transform<'a> {
           options
             .helpers
             .borrow_mut()
-            .insert("defineVaporSSRComponent".to_string());
+            .insert("defineVaporSSRComponent");
         }
         *options.in_vapor.borrow_mut() += 1;
       } else if matches!(

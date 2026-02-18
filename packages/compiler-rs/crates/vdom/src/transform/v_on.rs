@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use common::{
   check::{is_keyboard_event, is_simple_identifier},
   directive::{Directives, Modifiers, resolve_modifiers},
@@ -30,9 +32,9 @@ pub fn transform_v_on<'a>(
     }
   };
   let replaced = format!("{}{}", name[2..3].to_lowercase(), &name[3..]);
-  let splited = replaced.split("_").collect::<Vec<_>>();
-  let mut event_name = splited[0].to_string();
-  let modifiers = splited[1..].to_vec();
+  let mut splited = replaced.split("_").collect::<Vec<_>>();
+  let mut event_name = Cow::Borrowed(splited.remove(0));
+  let modifiers = splited;
 
   let value = &mut dir.value;
   if value.is_none() && modifiers.is_empty() {
@@ -40,7 +42,10 @@ pub fn transform_v_on<'a>(
   }
 
   if event_name.starts_with("vue:") {
-    event_name = format!("vnode{}", capitalize(event_name[4..].to_string()));
+    event_name = Cow::Owned(format!(
+      "vnode{}",
+      capitalize(Cow::Borrowed(&event_name[4..]))
+    ));
   }
 
   let mut should_cache = value.is_none() && !*context.options.in_v_once.borrow();
@@ -125,16 +130,16 @@ pub fn transform_v_on<'a>(
       .any(|modifier| modifier == "middle")
       && is_static_click
     {
-      event_name = "mouseup".to_string()
+      event_name = Cow::Borrowed("mouseup")
     }
     if non_key_modifiers.iter().any(|modifier| modifier == "right") && is_static_click {
-      event_name = "contextmenu".to_string();
+      event_name = Cow::Borrowed("contextmenu");
     }
 
     if !non_key_modifiers.is_empty() {
       exp = ast.expression_call(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(&context.helper("withModifiers"))),
+        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withModifiers"))),
         NONE,
         ast.vec_from_array([
           exp.into(),
@@ -156,7 +161,7 @@ pub fn transform_v_on<'a>(
     if !key_modifiers.is_empty() && is_keyboard_event(&event_name) {
       exp = ast.expression_call(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(&context.helper("withKeys"))),
+        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withKeys"))),
         NONE,
         ast.vec_from_array([
           exp.into(),
@@ -181,7 +186,7 @@ pub fn transform_v_on<'a>(
         .map(capitalize)
         .collect::<Vec<_>>()
         .join("");
-      event_name = format!("{}{}", event_name, modifier_postfix);
+      event_name = Cow::Owned(format!("{}{}", event_name, modifier_postfix));
     }
   }
 

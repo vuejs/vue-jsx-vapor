@@ -461,7 +461,8 @@ fn on_template_with_single_component_child() {
 #[test]
 fn identifiers() {
   let code = transform(
-    "<div v-for={(item, index) in items} id={index}>
+    "let item = ''
+    ;<div v-for={(item, index) in items} id={index}>
     { ((item) => {
       let index = 1
       return [item, index]
@@ -482,6 +483,7 @@ fn identifiers() {
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, renderEffect as _renderEffect, setProp as _setProp, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
+  let item = "";
   (() => {
   	const _n0 = _createFor(() => items, (_for_item0, _for_key0) => {
   		const _n2 = _t0();
