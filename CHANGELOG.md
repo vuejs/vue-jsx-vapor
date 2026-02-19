@@ -1,3 +1,19 @@
+## [3.1.23](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.22...v3.1.23) (2026-02-19)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** skip empty expressions when detecting ([5f0b847](https://github.com/vuejs/vue-jsx-vapor/commit/5f0b847d1f1ec5bb1451595b7173a75f1928085e))
+* **compiler:** ensure static directive is a string ([190511f](https://github.com/vuejs/vue-jsx-vapor/commit/190511fa3e0115918ab4a6e4639143969bd1c781))
+* **compiler:** introduce oxc_semantic to determine whether components ([06f2bc1](https://github.com/vuejs/vue-jsx-vapor/commit/06f2bc1232b3725926e97d3ba48837ad60a23ad6)), closes [#38](https://github.com/vuejs/vue-jsx-vapor/issues/38)
+
+
+### Performance Improvements
+
+* **compiler:** use fast-path matching for is_jsx_component ([4eb14ce](https://github.com/vuejs/vue-jsx-vapor/commit/4eb14cebcb0dc4d81884921036fadf96daec9b93))
+
+
+
 ## [3.1.22](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.21...v3.1.22) (2026-02-13)
 
 
