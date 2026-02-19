@@ -131,7 +131,20 @@ pub fn is_jsx_component(node: &JSXElement) -> bool {
   match &node.opening_element.name {
     JSXElementName::Identifier(name) => {
       let tag_name = name.name.as_str();
-      !is_html_tag(tag_name) && !is_svg_tag(tag_name) && !is_math_ml_tag(tag_name)
+      if tag_name
+        .chars()
+        .next()
+        .is_some_and(|c| c.is_ascii_uppercase())
+      {
+        true
+      } else if matches!(
+        tag_name,
+        "div" | "span" | "input" | "button" | "svg" | "p" | "a" | "img"
+      ) {
+        false
+      } else {
+        !is_html_tag(tag_name) && !is_svg_tag(tag_name) && !is_math_ml_tag(tag_name)
+      }
     }
     _ => true,
   }
