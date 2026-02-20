@@ -271,6 +271,26 @@ fn slot_prop_rest_with_computed_keys_preserved() {
 }
 
 #[test]
+fn slot_prop_assignment() {
+  let code = transform(
+    r#"<Comp v-slot={{ foo, bar }}>{foo++}{bar.value=1}</Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  		const _n0 = _createNodes(() => _slotProps0.foo++, () => _slotProps0.bar.value = 1);
+  		return _n0;
+  	}) }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
 fn named_slots_with_implicit_default_slot() {
   let code = transform(
     "<Comp>

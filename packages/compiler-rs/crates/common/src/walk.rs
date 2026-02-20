@@ -1,5 +1,8 @@
-use oxc_ast::ast::{AssignmentTarget, Expression};
-use oxc_ast_visit::{Visit, walk, walk::walk_assignment_target};
+use oxc_ast::ast::{Expression, SimpleAssignmentTarget};
+use oxc_ast_visit::{
+  Visit,
+  walk::{self, walk_simple_assignment_target},
+};
 use oxc_semantic::ScopeId;
 
 use oxc_ast::{AstKind, ast::IdentifierReference};
@@ -97,18 +100,10 @@ impl<'a, 'opt> Visit<'a> for WalkIdentifiers<'a, 'opt> {
     walk::walk_expression(self, node);
   }
 
-  fn visit_assignment_target(&mut self, node: &AssignmentTarget<'a>) {
-    if let AssignmentTarget::AssignmentTargetIdentifier(id) = node {
-      self.on_identifier_reference(id);
-    } else if let AssignmentTarget::StaticMemberExpression(node) = node
-      && let Expression::Identifier(id) = node.get_first_object()
-    {
-      self.on_identifier_reference(id);
-    } else if let AssignmentTarget::ComputedMemberExpression(node) = node
-      && let Expression::Identifier(id) = &node.object
-    {
+  fn visit_simple_assignment_target(&mut self, node: &SimpleAssignmentTarget<'a>) {
+    if let SimpleAssignmentTarget::AssignmentTargetIdentifier(id) = node {
       self.on_identifier_reference(id);
     }
-    walk_assignment_target(self, node);
+    walk_simple_assignment_target(self, node);
   }
 }

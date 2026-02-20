@@ -1,11 +1,11 @@
 use oxc_allocator::{FromIn, TakeIn};
 use oxc_ast::ast::{
-  AssignmentTarget, AssignmentTargetMaybeDefault, AssignmentTargetProperty,
-  AssignmentTargetPropertyProperty, Expression, IdentifierName, PropertyKey,
+  AssignmentTargetMaybeDefault, AssignmentTargetProperty, AssignmentTargetPropertyProperty,
+  Expression, IdentifierName, PropertyKey, SimpleAssignmentTarget,
 };
 use oxc_ast_visit::{
   VisitMut,
-  walk_mut::{self, walk_assignment_target, walk_expression},
+  walk_mut::{self, walk_expression, walk_simple_assignment_target},
 };
 use oxc_semantic::{NodeId, ScopeId};
 use std::cell::Cell;
@@ -118,29 +118,39 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
     }
   }
 
-  fn visit_assignment_target(&mut self, node: &mut AssignmentTarget<'a>) {
-    if let AssignmentTarget::AssignmentTargetIdentifier(id) = node {
-      self.on_identifier_reference(id);
-    } else if let AssignmentTarget::StaticMemberExpression(node) = node
-      && let Expression::Identifier(id) = {
-        let mut object = &mut node.object;
-        loop {
-          if let Expression::StaticMemberExpression(member) = object {
-            object = &mut member.object;
-            continue;
+  fn visit_simple_assignment_target(&mut self, node: &mut SimpleAssignmentTarget<'a>) {
+    if let SimpleAssignmentTarget::AssignmentTargetIdentifier(id) = node {
+      if let Some(exp) = self.on_identifier_reference(id) {
+        match exp {
+          Expression::Identifier(exp) => {
+            *node = SimpleAssignmentTarget::AssignmentTargetIdentifier(exp);
           }
-          break;
-        }
-        object
-      }
-    {
-      self.on_identifier_reference(id);
-    } else if let AssignmentTarget::ComputedMemberExpression(node) = node
-      && let Expression::Identifier(id) = &mut node.object
-    {
-      self.on_identifier_reference(id);
+          Expression::StaticMemberExpression(exp) => {
+            *node = SimpleAssignmentTarget::StaticMemberExpression(exp);
+          }
+          Expression::ComputedMemberExpression(exp) => {
+            *node = SimpleAssignmentTarget::ComputedMemberExpression(exp);
+          }
+          Expression::PrivateFieldExpression(exp) => {
+            *node = SimpleAssignmentTarget::PrivateFieldExpression(exp);
+          }
+          Expression::TSAsExpression(exp) => {
+            *node = SimpleAssignmentTarget::TSAsExpression(exp);
+          }
+          Expression::TSNonNullExpression(exp) => {
+            *node = SimpleAssignmentTarget::TSNonNullExpression(exp);
+          }
+          Expression::TSSatisfiesExpression(exp) => {
+            *node = SimpleAssignmentTarget::TSSatisfiesExpression(exp);
+          }
+          Expression::TSTypeAssertion(exp) => {
+            *node = SimpleAssignmentTarget::TSTypeAssertion(exp);
+          }
+          _ => {}
+        };
+      };
     }
-    walk_assignment_target(self, node);
+    walk_simple_assignment_target(self, node);
   }
 
   fn visit_assignment_target_property(&mut self, node: &mut AssignmentTargetProperty<'a>) {
