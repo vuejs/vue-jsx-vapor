@@ -59,13 +59,6 @@ pub struct CompilerOptions {
    */
   pub ssr: Option<bool>,
   /**
-   * Whether the compiler should detect if the `patchFlag` for slots is stable.
-   * Note: This is only used in interop mode, And not supported for slots within `CallExpression` (e.g. `map()`)
-   * or `ObjectExpression` | `FunctionExpression` slots. use `v-for` and `v-slot` directive instead.
-   * @default false
-   */
-  pub optimize_slots: Option<bool>,
-  /**
    * Customize where to import runtime helpers from vue-jsx-vapor.
    * If not specified, defaults to the virtual module path (e.g., `/vue-jsx-vapor/vapor`).
    */
@@ -94,7 +87,6 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       interop: options.interop.unwrap_or(false),
       hmr: options.hmr.unwrap_or(Either::A(false)),
       ssr,
-      optimize_slots: options.optimize_slots.unwrap_or(false),
       runtime_module_name: options.runtime_module_name,
       is_custom_element: if let Some(is_custom_element) = options.is_custom_element {
         Box::new(move |tag: &str| is_custom_element.call(tag).unwrap()) as Box<dyn Fn(&str) -> bool>

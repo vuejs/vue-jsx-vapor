@@ -2,14 +2,15 @@ use common::ast::{RootNode, get_first_child};
 use common::directive::Directives;
 pub use common::options::TransformOptions;
 use common::walk::WalkIdentifiers;
-use common::walk_mut::WalkIdentifiersMut;
+use common::walk_mut::{GetNodeId, WalkIdentifiersMut};
 use indexmap::IndexSet;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
 use oxc_ast::ast::{
   ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, IdentifierReference,
   JSXAttributeValue, JSXChild, LogicalOperator, NumberBase, ObjectPropertyKind,
 };
-use oxc_ast::{AstBuilder, NONE};
+use oxc_ast::{AstBuilder, AstKind, NONE};
+use oxc_semantic::NodeId;
 use oxc_span::{GetSpan, SPAN, Span};
 use std::collections::HashMap;
 use std::{cell::RefCell, collections::HashSet, rc::Rc};
@@ -70,6 +71,7 @@ pub struct TransformContext<'a> {
   pub has_temp: RefCell<bool>,
   pub has_slot: RefCell<bool>,
   pub reference_expressions: RefCell<HashMap<Span, bool>>,
+  pub should_optimize: RefCell<bool>,
 }
 
 impl<'a> TransformContext<'a> {
@@ -90,12 +92,14 @@ impl<'a> TransformContext<'a> {
       reference_expressions: RefCell::new(HashMap::new()),
       has_temp: RefCell::new(false),
       has_slot: RefCell::new(false),
+      should_optimize: RefCell::new(false),
       options,
     }
   }
 
   pub fn transform(&'a self, expression: Expression<'a>) -> Expression<'a> {
     let allocator = self.allocator;
+    *self.should_optimize.borrow_mut() = self.should_optimize(expression.node_id());
     if let Expression::JSXFragment(frag) = &expression
       && let Some(child) = get_first_child(&frag.children)
       && let JSXChild::Text(child) = child
@@ -109,6 +113,24 @@ impl<'a> TransformContext<'a> {
       self.transform_node(self.root_node.as_ptr(), None);
     }
     self.generate()
+  }
+
+  fn should_optimize(&self, node_id: NodeId) -> bool {
+    let semantic = self.options.semantic.borrow();
+    let scope_id = semantic.nodes().get_node(node_id).scope_id();
+    match semantic
+      .nodes()
+      .get_node(semantic.scoping().get_node_id(scope_id))
+      .kind()
+    {
+      AstKind::ArrowFunctionExpression(scope) => scope.params.is_empty(),
+      AstKind::Function(scope) => scope.params.is_empty(),
+      AstKind::BlockStatement(stmt) => match semantic.nodes().parent_kind(stmt.node_id()) {
+        AstKind::ForStatement(_) | AstKind::ForInStatement(_) | AstKind::ForOfStatement(_) => false,
+        _ => true,
+      },
+      _ => true,
+    }
   }
 
   pub fn hoist(&self, exp: &mut Expression<'a>) -> Expression<'a> {
@@ -286,12 +308,13 @@ impl<'a> TransformContext<'a> {
       exp.take_in(self.allocator)
     };
     let mut has_ref = false;
-    let mut has_scope_ref = !self.options.optimize_slots;
+    let should_optimize = *self.should_optimize.borrow();
+    let mut has_scope_ref = !should_optimize;
     let has_scope_ref_ptr = &mut has_scope_ref as *mut _;
     let has_ref_ptr = &mut has_ref as *mut bool;
     WalkIdentifiersMut::new(
       Box::new(move |id, _| {
-        if !self.options.optimize_slots {
+        if !should_optimize {
           self.add_slot_scopes(id);
         } else if self
           .options

@@ -17,8 +17,8 @@ fn basic() {
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, vShow as _vShow, withCtx as _withCtx, withDirectives as _withDirectives } from "vue";
   _openBlock(), _createBlock(Transition, { persisted: true }, {
   	default: _withCtx(() => [_withDirectives(_createElementVNode("h1", null, "foo", 512), [[_vShow, show]])]),
-  	_: 2
-  }, 1024);
+  	_: 1
+  });
   "#);
 }
 
@@ -35,15 +35,19 @@ fn v_show_with_appear() {
   )
   .code;
   assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, vShow as _vShow, withCtx as _withCtx, withDirectives as _withDirectives } from "vue";
-  _openBlock(), _createBlock(Transition, {
-  	appear: true,
-  	onAppear: () => {},
-  	persisted: true
-  }, {
-  	default: _withCtx(() => [_withDirectives(_createElementVNode("h1", null, "foo", 512), [[_vShow, show]])]),
-  	_: 2
-  }, 1024);
+  (() => {
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createBlock(Transition, {
+  		appear: true,
+  		onAppear: _cache[0] || (_cache[0] = () => {}),
+  		persisted: true
+  	}, {
+  		default: _withCtx(() => [_withDirectives(_createElementVNode("h1", null, "foo", 512), [[_vShow, show]])]),
+  		_: 1
+  	});
+  })();
   "#);
 }
 
@@ -64,8 +68,8 @@ fn work_with_v_if() {
   const _hoisted_1 = { key: 0 };
   _openBlock(), _createBlock(Transition, null, {
   	default: _withCtx(() => [show ? (_openBlock(), _createElementBlock("h1", _hoisted_1, "foo")) : _createCommentVNode("", true)]),
-  	_: 2
-  }, 1024);
+  	_: 1
+  });
   "#);
 }
 
@@ -85,7 +89,7 @@ fn transition_work_with_dynamic_keyed_children() {
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(Transition, null, {
   	default: _withCtx(() => [(_openBlock(), _createElementBlock("h1", { key: foo }, "foo"))]),
-  	_: 2
-  }, 1024);
+  	_: 1
+  });
   "#);
 }

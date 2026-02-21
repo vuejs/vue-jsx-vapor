@@ -143,8 +143,8 @@ fn cache_inside_default_slot() {
   	const _cache = _createVNodeCache(0);
   	return _openBlock(), _createBlock(Foo, null, {
   		default: _withCtx(() => [_normalizeVNode(() => x), _cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]),
-  		_: 2
-  	}, 1024);
+  		_: 1
+  	});
   })();
   "#);
 }
@@ -189,8 +189,8 @@ fn cache_inside_named_slot() {
   	const _cache = _createVNodeCache(0);
   	return _openBlock(), _createBlock(Foo, null, {
   		foo: _withCtx(() => [_normalizeVNode(() => x), _cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]),
-  		_: 2
-  	}, 1024);
+  		_: 1
+  	});
   })();
   "#);
 }
@@ -576,9 +576,12 @@ fn should_not_cache_elements_with_cached_handlers() {
   )
   .code;
   assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = ["onClick"];
-  _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", { onClick: foo }, null, 8, _hoisted_1)])]);
+  (() => {
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", { onClick: _cache[0] || (_cache[0] = (...args) => foo(...args)) })])]);
+  })();
   "#);
 }
 
@@ -593,12 +596,15 @@ fn should_not_cache_elements_with_cached_handlers_with_other_bindings() {
   )
   .code;
   assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = ["onClick"];
-  _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", {
-  	class: _normalizeClass({}),
-  	onClick: foo
-  }, null, 8, _hoisted_1)])]);
+  (() => {
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", {
+  		class: _normalizeClass({}),
+  		onClick: _cache[0] || (_cache[0] = (...args) => foo(...args))
+  	})])]);
+  })();
   "#);
 }
 
