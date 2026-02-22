@@ -169,14 +169,14 @@ fn component() {
 }
 
 #[test]
-fn none_resolve_directive() {
+fn is_not_directive() {
   let code = transform("<div vExample={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
-  import { template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+  import { renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_withVaporDirectives(_n0, [[vExample, () => msg]]);
+  	_renderEffect(() => _setProp(_n0, "vExample", msg));
   	return _n0;
   })();
   "#);

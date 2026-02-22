@@ -399,18 +399,14 @@ pub fn build_props<'a>(
           name_prop = Some(prop.take_in(context.allocator));
           continue;
         }
-        if get_directive_name(name).is_none() && !is_event(name) && *name == "ref" {
+
+        let dir_name = get_directive_name(name);
+        if dir_name == "bind" && *name == "ref" {
           has_ref = true;
           if let Some(marker) = ref_v_for_marker() {
             properties.push(marker)
           };
         }
-
-        let dir_name = if is_event(name) {
-          "on"
-        } else {
-          get_directive_name(name).unwrap_or("bind")
-        };
 
         // skip v-slot - it is handled by its dedicated transform.
         if dir_name == "slot" {

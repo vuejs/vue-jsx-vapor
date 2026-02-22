@@ -191,7 +191,7 @@ fn component() {
 }
 
 #[test]
-fn none_resolve_directive() {
+fn is_not_directive() {
   let code = transform(
     "<div vExample={msg}></div>",
     Some(TransformOptions {
@@ -201,8 +201,9 @@ fn none_resolve_directive() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
-  _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[vExample, msg]]);
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["vExample"];
+  _openBlock(), _createElementBlock("div", { vExample: msg }, null, 8, _hoisted_1);
   "#);
 }
 

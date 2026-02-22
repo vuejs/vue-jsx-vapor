@@ -59,7 +59,7 @@ pub unsafe fn transform_text<'a>(
             && !node.opening_element.attributes.iter().any(|p| {
               p.as_attribute()
                 .map(|p| {
-                  get_directive_name(&p.name.get_identifier().name).is_some()
+                  get_directive_name(&p.name.get_identifier().name) != "bind"
                     && !is_built_in_directive(&p.name.get_identifier().name[2..])
                 })
                 .unwrap_or_default()

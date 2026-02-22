@@ -258,7 +258,7 @@ pub fn get_constant_type<'a>(
                   continue;
                 };
                 let name = &p.name.get_identifier().name;
-                if get_directive_name(name).is_none()
+                if get_directive_name(name) == "bind"
                   && let Some(JSXAttributeValue::ExpressionContainer(value)) = p.value.as_ref()
                   && value.expression.span() != SPAN
                 {

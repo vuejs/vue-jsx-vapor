@@ -27,7 +27,7 @@ use crate::{
 use common::{
   ast::RootNode,
   check::{
-    get_directive_name, is_always_close_tag, is_block_tag, is_built_in_directive, is_event,
+    get_directive_name, is_always_close_tag, is_block_tag, is_built_in_directive,
     is_formatting_tag, is_reserved_prop, is_template, is_void_tag,
   },
   directive::{Directives, resolve_directive},
@@ -509,10 +509,9 @@ pub fn transform_prop<'a>(
   } else {
     None
   };
-  if get_directive_name(name).is_none()
-    && !is_event(name)
-    && (prop.value.is_none() || value.is_some())
-  {
+
+  let dir_name_raw = get_directive_name(name);
+  if dir_name_raw == "bind" && (prop.value.is_none() || value.is_some()) {
     if is_reserved_prop(name) {
       return None;
     }
@@ -528,12 +527,6 @@ pub fn transform_prop<'a>(
       },
     ));
   }
-
-  let dir_name_raw = if is_event(name) {
-    "on"
-  } else {
-    get_directive_name(name).unwrap_or("bind")
-  };
 
   match dir_name_raw {
     "bind" => return transform_v_bind(prop, context),
