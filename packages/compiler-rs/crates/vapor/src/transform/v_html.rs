@@ -36,14 +36,7 @@ pub fn transform_v_html<'a>(
       set_html: true,
       element,
       value: exp,
-      is_component: if context.options.is_custom_element.as_ref()(
-        node
-          .opening_element
-          .name
-          .get_identifier_name()
-          .map(|name| name.as_str())
-          .unwrap_or_default(),
-      ) {
+      is_component: if directives.is_custom_element {
         false
       } else {
         directives.is_component

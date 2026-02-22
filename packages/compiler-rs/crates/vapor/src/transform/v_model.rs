@@ -57,7 +57,7 @@ pub fn transform_v_model<'a>(
   }
 
   let tag = directives.tag_name;
-  let is_custom_element = context.options.is_custom_element.as_ref()(tag);
+  let is_custom_element = directives.is_custom_element;
   let mut model_type = "text";
   // TODO let runtimeDirective: VaporHelper | undefined = 'vModelText'
   if matches!(tag, "input" | "textarea" | "select") || is_custom_element {

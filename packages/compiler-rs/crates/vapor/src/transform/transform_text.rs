@@ -17,7 +17,7 @@ use crate::{
 
 use common::{
   ast::RootNode,
-  check::{is_constant_node, is_fragment_node, is_jsx_component, is_template},
+  check::{is_constant_node, is_custom_element, is_fragment_node, is_jsx_component, is_template},
   directive::Directives,
   text::{
     escape_html, get_tag_name, get_text_like_value, is_empty_text, is_text_like, resolve_jsx_text,
@@ -105,7 +105,9 @@ pub unsafe fn transform_text<'a>(
       // Element children go through innerHTML which needs escaping
       let is_root_text = RootNode::is_root(parent_node)
         || if let JSXChild::Element(parent_node) = parent_node {
-          is_jsx_component(parent_node) || get_tag_name(parent_node, context.options) == "template"
+          is_jsx_component(parent_node)
+            || is_custom_element(parent_node)
+            || get_tag_name(&parent_node, context.options) == "template"
         } else {
           false
         };
@@ -219,7 +221,7 @@ fn process_interpolation<'a>(
   } else {
     is_fragment_node(parent_node)
       || if let JSXChild::Element(parent_node) = parent_node {
-        is_jsx_component(parent_node)
+        is_jsx_component(parent_node) || is_custom_element(parent_node)
       } else {
         false
       }

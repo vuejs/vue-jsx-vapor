@@ -6,7 +6,6 @@ use oxc_ast::ast::{
   Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild,
   JSXElement, JSXElementName, JSXExpression,
 };
-use oxc_semantic::NodeId;
 use oxc_span::{GetSpan, Ident, SPAN, Span};
 
 use crate::{
@@ -73,7 +72,6 @@ pub unsafe fn transform_element<'a>(
 
   let tag = directives.tag_name;
   let tag_span = node.opening_element.name.span();
-  let node_id = node.node_id();
   if tag == "slot" {
     return unsafe {
       transform_slot_outlet(
@@ -91,7 +89,7 @@ pub unsafe fn transform_element<'a>(
   }
   // treat custom elements as components because the template helper cannot
   // resolve them properly; they require creation via createElement
-  let is_custom_element = context.options.is_custom_element.as_ref()(tag);
+  let is_custom_element = directives.is_custom_element;
   let is_component = directives.is_component;
 
   // If the element is a component, we need to isolate its slots context.
@@ -122,7 +120,6 @@ pub unsafe fn transform_element<'a>(
       transform_component_element(
         tag,
         tag_span,
-        node_id,
         props_result,
         single_root,
         is_custom_element,
@@ -297,39 +294,14 @@ fn can_omit_end_tag<'a>(
 
 #[allow(clippy::too_many_arguments)]
 pub fn transform_component_element<'a>(
-  tag_raw: &'a str,
+  tag: &'a str,
   tag_span: Span,
-  node_id: NodeId,
   props_result: PropsResult<'a>,
   single_root: bool,
   is_custom_element: bool,
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) {
-  let mut tag = Cow::Borrowed(tag_raw);
-  let asset = !is_custom_element && tag.contains("-") && {
-    let semantic = &context.options.semantic.borrow();
-    let scope_id = semantic.nodes().get_node(node_id).scope_id();
-    let camelize_tag = camelize(tag.clone());
-    if semantic
-      .scoping()
-      .find_binding(
-        scope_id,
-        Ident::from_in(camelize_tag.as_ref(), context.allocator),
-      )
-      .is_some()
-    {
-      tag = camelize_tag;
-      false
-    } else {
-      true
-    }
-  };
-  if asset {
-    let components = &mut context.ir.borrow_mut().components;
-    components.insert(tag_raw);
-  }
-
   let dynamic = &mut context_block.dynamic;
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
 
@@ -343,7 +315,7 @@ pub fn transform_component_element<'a>(
         Either::A(props) => props,
         Either::B(props) => vec![Either3::A(props)],
       },
-      asset,
+      asset: false,
       root: single_root,
       slots: mem::take(&mut context_block.slots),
       once: *context.in_v_once.borrow(),

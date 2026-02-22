@@ -232,7 +232,6 @@ fn errors_allow_usage_on_custom_element() {
   transform(
     "<my-input v-model={model} />",
     Some(TransformOptions {
-      is_custom_element: Box::new(|tag| tag.starts_with("my-")),
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),

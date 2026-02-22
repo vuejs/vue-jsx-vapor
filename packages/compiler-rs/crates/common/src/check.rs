@@ -129,24 +129,28 @@ pub fn is_math_ml_tag(tag_name: &str) -> bool {
 
 pub fn is_jsx_component(node: &JSXElement) -> bool {
   match &node.opening_element.name {
+    JSXElementName::Identifier(name) => name
+      .name
+      .as_str()
+      .chars()
+      .next()
+      .is_some_and(|c| c.is_ascii_uppercase() || !c.is_ascii() || c == '_' || c == '$'),
+    JSXElementName::NamespacedName(_) => false,
+    _ => true,
+  }
+}
+
+pub fn is_custom_element(node: &JSXElement) -> bool {
+  match &node.opening_element.name {
     JSXElementName::Identifier(name) => {
       let tag_name = name.name.as_str();
-      if tag_name
+      tag_name
         .chars()
         .next()
-        .is_some_and(|c| c.is_ascii_uppercase())
-      {
-        true
-      } else if matches!(
-        tag_name,
-        "div" | "span" | "input" | "button" | "svg" | "p" | "a" | "img"
-      ) {
-        false
-      } else {
-        !is_html_tag(tag_name) && !is_svg_tag(tag_name) && !is_math_ml_tag(tag_name)
-      }
+        .is_some_and(|c| c.is_ascii_lowercase())
+        && tag_name.contains("-")
     }
-    _ => true,
+    _ => false,
   }
 }
 

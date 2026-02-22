@@ -66,7 +66,8 @@ pub fn transform_v_model<'a>(
     .get_identifier_name()
     .map(|name| name.as_str())
     .unwrap_or_default();
-  let is_component = context.options.is_custom_element.as_ref()(tag) || directives.is_component;
+  let is_custom_element = directives.is_custom_element;
+  let is_component = is_custom_element || directives.is_component;
 
   let arg_is_some = dir.arg.is_some();
   let mut computed = false;
@@ -242,7 +243,6 @@ pub fn transform_v_model<'a>(
   }
 
   let mut runtime_name = None;
-  let is_custom_element = context.options.is_custom_element.as_ref()(tag);
   if matches!(tag, "input" | "textarea" | "select") || is_custom_element {
     let mut directive_to_use = "_vModelText";
     let mut is_invalid_type = false;
@@ -289,19 +289,21 @@ pub fn transform_v_model<'a>(
 
   // native vmodel doesn't need the `modelValue` props since they are also
   // passed to the runtime as `binding.value`. removing it reduces code size.
-  props = props
-    .into_iter()
-    .filter(|p| {
-      if let ObjectPropertyKind::ObjectProperty(p) = p
-        && let PropertyKey::StaticIdentifier(key) = &p.key
-        && key.name == "modelValue"
-      {
-        false
-      } else {
-        true
-      }
-    })
-    .collect::<Vec<_>>();
+  if !is_custom_element {
+    props = props
+      .into_iter()
+      .filter(|p| {
+        if let ObjectPropertyKind::ObjectProperty(p) = p
+          && let PropertyKey::StaticIdentifier(key) = &p.key
+          && key.name == "modelValue"
+        {
+          false
+        } else {
+          true
+        }
+      })
+      .collect::<Vec<_>>();
+  }
 
   Some(DirectiveTransformResult {
     props,

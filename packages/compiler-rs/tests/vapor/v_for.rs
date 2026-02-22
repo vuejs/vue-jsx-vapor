@@ -543,7 +543,7 @@ fn template_v_for_with_slotlet() {
   	const _n0 = _createFor(() => items, (_for_item0) => {
   		const _n2 = _createSlot("default");
   		return _n2;
-  	}, void 0, 2);
+  	});
   	return _n0;
   })();
   "#)
@@ -558,7 +558,7 @@ fn v_for_on_slotlet() {
   	const _n0 = _createFor(() => items, (_for_item0) => {
   		const _n2 = _createSlot("default");
   		return _n2;
-  	}, void 0, 2);
+  	});
   	return _n0;
   })();
   "#)

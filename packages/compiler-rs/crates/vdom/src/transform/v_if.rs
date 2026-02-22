@@ -1,4 +1,4 @@
-use std::{borrow::Cow, collections::HashMap};
+use std::collections::HashMap;
 
 use napi::bindgen_prelude::Either3;
 use oxc_allocator::TakeIn;
@@ -81,11 +81,11 @@ pub unsafe fn transform_v_if<'a>(
     context.codegen_map.borrow_mut().insert(
       fragment_span,
       NodeTypes::VNodeCall(VNodeCall {
-        tag: Cow::Borrowed(if is_template_node {
+        tag: if is_template_node {
           context.options.helper("_Fragment")
         } else {
           ""
-        }),
+        },
         props: None,
         children: None,
         patch_flag: None,

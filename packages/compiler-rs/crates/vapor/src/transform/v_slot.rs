@@ -12,7 +12,7 @@ use crate::{
   transform::{TransformContext, v_for::get_for_parse_result},
 };
 use common::{
-  check::{is_jsx_component, is_template},
+  check::{is_custom_element, is_jsx_component, is_template},
   directive::{DirectiveNode, Directives, find_prop, resolve_directive},
   error::ErrorCodes,
   text::is_empty_text,
@@ -38,7 +38,7 @@ pub unsafe fn transform_v_slot<'a>(
   let is_component = directives.is_component;
   let is_slot_template = is_template(unsafe { &*node })
     && if let JSXChild::Element(parent_node) = parent_node
-      && is_jsx_component(parent_node)
+      && (is_jsx_component(parent_node) || is_custom_element(parent_node))
     {
       true
     } else {

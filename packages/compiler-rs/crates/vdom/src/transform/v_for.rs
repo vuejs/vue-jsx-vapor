@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use napi::{Either, bindgen_prelude::Either3};
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
@@ -126,7 +124,7 @@ pub unsafe fn transform_v_for<'a>(
     context.codegen_map.borrow_mut().insert(
       fragment_span,
       NodeTypes::VNodeCall(VNodeCall {
-        tag: Cow::Borrowed(context.options.helper("_Fragment")),
+        tag: context.options.helper("_Fragment"),
         props: None,
         children: None,
         patch_flag: Some(fragment_flag as i32),

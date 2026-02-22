@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use napi::bindgen_prelude::Either3;
 use oxc_ast::ast::{ArrayExpression, Expression, JSXAttribute, JSXChild};
 use oxc_span::Span;
@@ -18,7 +16,7 @@ pub type VNodeCallChildren<'a> =
 
 #[derive(Debug, Default)]
 pub struct VNodeCall<'a> {
-  pub tag: Cow<'a, str>,
+  pub tag: &'a str,
   pub props: Option<Expression<'a>>,
   pub children: Option<VNodeCallChildren<'a>>,
   pub patch_flag: Option<i32>,

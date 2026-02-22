@@ -38,9 +38,7 @@ use crate::{
   },
 };
 
-use common::check::{
-  is_constant_node, is_inline_tag, is_jsx_component, is_math_ml_tag, is_svg_tag, is_template,
-};
+use common::check::{is_constant_node, is_inline_tag, is_math_ml_tag, is_svg_tag, is_template};
 
 pub struct DirectiveTransformResult<'a> {
   pub key: Expression<'a>,
@@ -447,9 +445,10 @@ impl<'a> TransformContext<'a> {
         let parent_node = parent_node.unwrap() as *mut _;
         let directives_ptr = &mut directives as *mut _;
         if let JSXChild::Element(element) = &mut *node {
-          let is_component = is_jsx_component(element);
           directives = Directives::new(element, self.options);
-          directives.is_component = is_component;
+          if directives.is_custom_element {
+            directives.is_component = true;
+          }
           if directives.v_once.is_some() {
             *(&*context).in_v_once.borrow_mut() = true;
           };

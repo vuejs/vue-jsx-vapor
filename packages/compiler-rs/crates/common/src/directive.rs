@@ -8,8 +8,8 @@ use oxc_span::{SPAN, SourceType, Span};
 
 use crate::{
   check::{
-    is_event_option_modifier, is_keyboard_event, is_non_key_modifier, is_simple_identifier,
-    maybe_key_modifier,
+    is_custom_element, is_event_option_modifier, is_jsx_component, is_keyboard_event,
+    is_non_key_modifier, is_simple_identifier, maybe_key_modifier,
   },
   expression::{jsx_attribute_value_to_expression, parse_expression},
   options::TransformOptions,
@@ -189,6 +189,7 @@ pub fn resolve_modifiers<'a>(key_string: &str, modifiers: Vec<&'a str>) -> Modif
 pub struct Directives<'a> {
   pub tag_name: &'a str,
   pub is_component: bool,
+  pub is_custom_element: bool,
   pub v_if: Option<&'a mut JSXAttribute<'a>>,
   pub v_else_if: Option<&'a mut JSXAttribute<'a>>,
   pub v_else: Option<&'a mut JSXAttribute<'a>>,
@@ -207,6 +208,8 @@ impl<'a> Directives<'a> {
   pub fn new(element: &'a mut JSXElement<'a>, options: &TransformOptions<'a>) -> Directives<'a> {
     let mut directives = Directives {
       tag_name: get_tag_name(element, options),
+      is_component: is_jsx_component(element),
+      is_custom_element: is_custom_element(element),
       ..Default::default()
     };
     for dir in element.opening_element.attributes.iter_mut() {

@@ -44,7 +44,7 @@ use crate::transform::{
   v_once::transform_v_once, v_slots::transform_v_slots,
 };
 
-use common::check::{is_jsx_component, is_template};
+use common::check::is_template;
 
 pub struct DirectiveTransformResult<'a> {
   pub props: Vec<ObjectPropertyKind<'a>>,
@@ -399,20 +399,7 @@ impl<'a> TransformContext<'a> {
         let context = self as *const TransformContext;
         let parent_node = parent_node.unwrap() as *mut JSXChild;
         if let JSXChild::Element(element) = &mut *node {
-          let is_component = if self.options.is_custom_element.as_ref()(
-            element
-              .opening_element
-              .name
-              .get_identifier_name()
-              .map(|name| name.as_str())
-              .unwrap_or_default(),
-          ) {
-            false
-          } else {
-            is_jsx_component(element)
-          };
           directives = Directives::new(element, self.options);
-          directives.is_component = is_component;
           if (directives.v_if.is_some()
             || directives.v_else_if.is_some()
             || directives.v_else.is_some())

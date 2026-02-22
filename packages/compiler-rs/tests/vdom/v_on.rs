@@ -251,8 +251,12 @@ fn bail_on_component_member_expression_handler() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
-  _openBlock(), _createBlock(comp, { onClick: foo }, null, 8, ["onClick"]);
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createElementBlock("comp", { onClick: _cache[0] || (_cache[0] = (...args) => foo(...args)) });
+  })();
   "#);
 }
 

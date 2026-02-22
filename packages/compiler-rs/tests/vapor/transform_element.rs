@@ -1,53 +1,8 @@
-use common::options::TransformOptions;
 use compiler_rs::transform;
 use insta::assert_snapshot;
 
 #[test]
-fn component_resolve_component() {
-  let code = transform(
-    "<foo-bar/>",
-    Some(TransformOptions {
-      ..Default::default()
-    }),
-  )
-  .code;
-  assert_snapshot!(code, @r#"
-  import { createComponentWithFallback as _createComponentWithFallback } from "/vue-jsx-vapor/vapor";
-  import { resolveComponent as _resolveComponent } from "vue";
-  (() => {
-  	const _component_foo_bar = _resolveComponent("foo-bar");
-  	const _n0 = _createComponentWithFallback(_component_foo_bar, null, null, true);
-  	return _n0;
-  })();
-  "#);
-}
-
-#[test]
-fn component_should_not_resolve_component() {
-  let code = transform(
-    "() => {
-      const fooBar = () => []
-      return <foo-bar/>
-    }",
-    Some(TransformOptions {
-      ..Default::default()
-    }),
-  )
-  .code;
-  assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  () => {
-  	const fooBar = () => [];
-  	return (() => {
-  		const _n0 = _createComponent(fooBar, null, null, true);
-  		return _n0;
-  	})();
-  };
-  "#);
-}
-
-#[test]
-fn component_resolve_namespaced_component() {
+fn member_expression_component() {
   let code = transform("<Foo.Example/>", None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
@@ -56,12 +11,6 @@ fn component_resolve_namespaced_component() {
   	return _n0;
   })();
   "#);
-}
-
-#[test]
-fn component_() {
-  let code = transform("", None).code;
-  assert_snapshot!(code, @r#""#);
 }
 
 #[test]
@@ -255,20 +204,6 @@ fn component_event_with_multiple_modifier_and_event_options() {
   import { withModifiers as _withModifiers } from "vue";
   (() => {
   	const _n0 = _createComponent(Foo, { onFooCaptureOnce: () => _withModifiers(bar, ["stop", "prevent"]) }, null, true);
-  	return _n0;
-  })();
-  "#);
-}
-
-#[test]
-fn component_with_fallback() {
-  let code = transform("<foo-bar />", None).code;
-  assert_snapshot!(code, @r#"
-  import { createComponentWithFallback as _createComponentWithFallback } from "/vue-jsx-vapor/vapor";
-  import { resolveComponent as _resolveComponent } from "vue";
-  (() => {
-  	const _component_foo_bar = _resolveComponent("foo-bar");
-  	const _n0 = _createComponentWithFallback(_component_foo_bar, null, null, true);
   	return _n0;
   })();
   "#);
@@ -601,15 +536,8 @@ fn invalid_table_nesting_with_dynamic_child() {
 }
 
 #[test]
-fn custom_element() {
-  let code = transform(
-    r#"<my-custom-element>{foo}</my-custom-element>"#,
-    Some(TransformOptions {
-      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
-      ..Default::default()
-    }),
-  )
-  .code;
+fn zcustom_element() {
+  let code = transform(r#"<my-custom-element>{foo}</my-custom-element>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { createPlainElement as _createPlainElement, withVaporCtx as _withVaporCtx } from "vue";
@@ -627,10 +555,7 @@ fn custom_element() {
 fn custom_element_with_v_model() {
   let code = transform(
     r#"<my-custom-element v-model={foo}></my-custom-element>"#,
-    Some(TransformOptions {
-      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -649,10 +574,7 @@ fn custom_element_with_v_model() {
 fn custom_element_with_v_on() {
   let code = transform(
     r#"<my-custom-element onFoo={foo}></my-custom-element>"#,
-    Some(TransformOptions {
-      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -668,10 +590,7 @@ fn custom_element_with_v_on() {
 fn custom_element_with_v_html() {
   let code = transform(
     r#"<my-custom-element v-html={foo}></my-custom-element>"#,
-    Some(TransformOptions {
-      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -688,10 +607,7 @@ fn custom_element_with_v_html() {
 fn custom_element_with_v_text() {
   let code = transform(
     r#"<my-custom-element v-text={foo}></my-custom-element>"#,
-    Some(TransformOptions {
-      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -743,6 +659,63 @@ fn fragment_in_fragment() {
   	const _n0 = _t0();
   	const _n1 = _t1();
   	const _n2 = _t2();
+  	return [
+  		_n0,
+  		_n1,
+  		_n2
+  	];
+  })();
+  "#)
+}
+
+#[test]
+fn is_component() {
+  let code = transform(
+    r#"<>
+      <组件 />
+      <_foo />
+      <$foo />
+      <foo.bar />
+    </>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(组件);
+  	const _n1 = _createComponent(_foo);
+  	const _n2 = _createComponent($foo);
+  	const _n3 = _createComponent(foo.bar);
+  	return [
+  		_n0,
+  		_n1,
+  		_n2,
+  		_n3
+  	];
+  })();
+  "#)
+}
+
+#[test]
+fn is_not_component() {
+  let code = transform(
+    r#"<>
+      <foo-bar />
+      <foo />
+      <foo:bar />
+    </>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createPlainElement as _createPlainElement, template as _template } from "vue";
+  const _t0 = _template("<foo>");
+  const _t1 = _template("<foo:bar>");
+  (() => {
+  	const _n0 = _createPlainElement("foo-bar");
+  	const _n1 = _t0();
+  	const _n2 = _t1();
   	return [
   		_n0,
   		_n1,

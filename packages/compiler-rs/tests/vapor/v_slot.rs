@@ -568,7 +568,7 @@ fn slot_tag_with_v_for() {
   		const _n0 = _createFor(() => b, (_for_item0) => {
   			const _n2 = _createSlot("default");
   			return _n2;
-  		}, void 0, 2);
+  		});
   		return _n0;
   	}) }, true);
   	return _n3;

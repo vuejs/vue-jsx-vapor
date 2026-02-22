@@ -203,7 +203,7 @@ pub struct DirectiveIRNode<'a> {
 pub struct CreateComponentIRNode<'a> {
   pub create_component: bool,
   pub id: i32,
-  pub tag: Cow<'a, str>,
+  pub tag: &'a str,
   pub tag_span: Span,
   pub props: Vec<IRProps<'a>>,
   pub slots: Vec<IRSlots<'a>>,

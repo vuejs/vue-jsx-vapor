@@ -88,11 +88,6 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       hmr: options.hmr.unwrap_or(Either::A(false)),
       ssr,
       runtime_module_name: options.runtime_module_name,
-      is_custom_element: if let Some(is_custom_element) = options.is_custom_element {
-        Box::new(move |tag: &str| is_custom_element.call(tag).unwrap()) as Box<dyn Fn(&str) -> bool>
-      } else {
-        Box::new(|_: &str| false) as Box<dyn Fn(&str) -> bool>
-      },
       on_error: if let Some(on_error) = options.on_error {
         Box::new(move |code: ErrorCodes, span: Span| {
           let compiler_error = create_compiler_error(&env, code, span).unwrap();

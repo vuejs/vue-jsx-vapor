@@ -68,12 +68,6 @@ export interface CompilerOptions {
    * @default false
    */
   ssr?: boolean
-  /** * Whether the compiler should detect if the `patchFlag` for slots is stable.
-   * Note: This is only used in interop mode, And not supported for slots within `CallExpression` (e.g. `map()`)
-   * or `ObjectExpression` | `FunctionExpression` slots. use `v-for` and `v-slot` directive instead.
-   * @default false
-   */
-  optimizeSlots?: boolean
   /** * Customize where to import runtime helpers from vue-jsx-vapor.
    * If not specified, defaults to the virtual module path (e.g., `/vue-jsx-vapor/vapor`).
    */

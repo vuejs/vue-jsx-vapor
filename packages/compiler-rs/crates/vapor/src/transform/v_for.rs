@@ -9,7 +9,7 @@ use crate::{
 };
 use common::{
   ast::RootNode,
-  check::{is_constant_node, is_jsx_component, is_template},
+  check::{is_constant_node, is_custom_element, is_jsx_component, is_template},
   directive::Directives,
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
@@ -80,7 +80,7 @@ pub unsafe fn transform_v_for<'a>(
   // when the entire list is emptied
   let mut only_child = false;
   if let JSXChild::Element(parent_node) = parent_node
-    && !is_jsx_component(parent_node)
+    && !(is_jsx_component(parent_node) || is_custom_element(parent_node))
   {
     let index = *context.index.borrow() as usize;
     for (i, child) in parent_node.children.iter().enumerate() {
@@ -183,6 +183,9 @@ pub fn get_for_parse_result<'a>(
 }
 
 fn is_template_with_single_component<'a>(node: &'a JSXElement<'a>) -> bool {
+  if !is_template(node) {
+    return false;
+  }
   let non_comment_children = node
     .children
     .iter()
@@ -191,6 +194,6 @@ fn is_template_with_single_component<'a>(node: &'a JSXElement<'a>) -> bool {
 
   non_comment_children.len() == 1
     && matches!(non_comment_children[0], JSXChild::Element(child)
-      if is_jsx_component(child)
+      if is_jsx_component(child) || is_custom_element(child)
     )
 }

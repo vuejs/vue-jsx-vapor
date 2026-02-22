@@ -50,7 +50,7 @@ pub fn transform_v_text<'a>(
   } else {
     *context.children_template.borrow_mut() = vec![Cow::Borrowed(" ")];
     let parent = context.reference(&mut context_block.dynamic);
-    let is_component = if context.options.is_custom_element.as_ref()(tag_name) {
+    let is_component = if directives.is_custom_element {
       false
     } else {
       directives.is_component

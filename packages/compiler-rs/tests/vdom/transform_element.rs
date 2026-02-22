@@ -13,11 +13,8 @@ fn resolve_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createBlock as _createBlock, openBlock as _openBlock, resolveComponent as _resolveComponent } from "vue";
-  (() => {
-  	const _component_foo_bar = _resolveComponent("foo-bar");
-  	return _openBlock(), _createBlock(_component_foo_bar);
-  })();
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createElementBlock("foo-bar");
   "#);
 }
 
@@ -35,10 +32,10 @@ fn should_not_resolve_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   () => {
   	const fooBar = () => [];
-  	return _openBlock(), _createBlock(fooBar);
+  	return _openBlock(), _createElementBlock("foo-bar");
   };
   "#);
 }
@@ -759,7 +756,6 @@ fn custom_element() {
     r#"<my-custom-element>foo</my-custom-element>"#,
     Some(TransformOptions {
       interop: true,
-      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
       ..Default::default()
     }),
   )
@@ -776,7 +772,6 @@ fn custom_element_with_v_model() {
     r#"<my-custom-element v-model={foo}></my-custom-element>"#,
     Some(TransformOptions {
       interop: true,
-      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
       ..Default::default()
     }),
   )
@@ -784,12 +779,13 @@ fn custom_element_with_v_model() {
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["modelValue"];
   (() => {
   	const _cache = _createVNodeCache(0);
   	return _openBlock(), _createElementBlock("my-custom-element", {
   		modelValue: foo,
   		"onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => foo = $event)
-  	}, null, 8, ["modelValue"]);
+  	}, null, 8, _hoisted_1);
   })();
   "#)
 }
@@ -800,7 +796,6 @@ fn custom_element_with_v_on() {
     r#"<my-custom-element onFoo={foo}></my-custom-element>"#,
     Some(TransformOptions {
       interop: true,
-      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
       ..Default::default()
     }),
   )
@@ -821,14 +816,14 @@ fn custom_element_with_v_html() {
     r#"<my-custom-element v-html={foo}></my-custom-element>"#,
     Some(TransformOptions {
       interop: true,
-      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
       ..Default::default()
     }),
   )
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  _openBlock(), _createElementBlock("my-custom-element", { innerHTML: foo }, null, 8, ["innerHTML"]);
+  const _hoisted_1 = ["innerHTML"];
+  _openBlock(), _createElementBlock("my-custom-element", { innerHTML: foo }, null, 8, _hoisted_1);
   "#)
 }
 
@@ -838,14 +833,14 @@ fn custom_element_with_v_text() {
     r#"<my-custom-element v-text={foo}></my-custom-element>"#,
     Some(TransformOptions {
       interop: true,
-      is_custom_element: Box::new(|tag| tag == "my-custom-element"),
       ..Default::default()
     }),
   )
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
-  _openBlock(), _createElementBlock("my-custom-element", { textContent: _toDisplayString(foo) }, null, 8, ["textContent"]);
+  const _hoisted_1 = ["textContent"];
+  _openBlock(), _createElementBlock("my-custom-element", { textContent: _toDisplayString(foo) }, null, 8, _hoisted_1);
   "#)
 }
 

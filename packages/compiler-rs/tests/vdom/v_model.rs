@@ -553,7 +553,6 @@ fn should_not_error_on_static_value_binding_alongside_v_model() {
     r#"<input v-model={test} value="test"/>"#,
     Some(TransformOptions {
       interop: true,
-      is_custom_element: Box::new(|tag| tag.starts_with("my-")),
       ..Default::default()
     }),
   )
@@ -577,7 +576,6 @@ fn should_allow_usage_on_custom_element() {
     r#"<my-input v-model={model} />"#,
     Some(TransformOptions {
       interop: true,
-      is_custom_element: Box::new(|tag| tag.starts_with("my-")),
       ..Default::default()
     }),
   )
@@ -585,12 +583,13 @@ fn should_allow_usage_on_custom_element() {
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["modelValue"];
   (() => {
   	const _cache = _createVNodeCache(0);
   	return _openBlock(), _createElementBlock("my-input", {
   		modelValue: model,
   		"onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model = $event)
-  	}, null, 8, ["modelValue"]);
+  	}, null, 8, _hoisted_1);
   })();
   "#);
 }

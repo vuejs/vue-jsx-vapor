@@ -78,7 +78,7 @@ pub unsafe fn transform_element<'a>(
 
   // The goal of the transform is to create a codegenNode implementing the
   // VNodeCall interface.
-  let mut vnode_tag = Cow::Borrowed(directives.tag_name);
+  let vnode_tag = directives.tag_name;
   if vnode_tag == "slot" {
     unsafe { transform_slot_outlet(directives, context_node, context) };
     return None;
@@ -87,29 +87,6 @@ pub unsafe fn transform_element<'a>(
     transform_transition(node, context);
   }
   let is_component = directives.is_component;
-  let asset = vnode_tag.contains("-") && {
-    let semantic = &context.options.semantic.borrow();
-    let scope_id = semantic.nodes().get_node(node.node_id()).scope_id();
-    let camelize_tag = camelize(vnode_tag.clone());
-    if semantic
-      .scoping()
-      .find_binding(
-        scope_id,
-        Ident::from_in(camelize_tag.as_ref(), context.allocator),
-      )
-      .is_some()
-    {
-      vnode_tag = camelize_tag;
-      false
-    } else {
-      true
-    }
-  };
-  if is_component && asset {
-    context.options.helper("_resolveComponent");
-    context.components.borrow_mut().insert(directives.tag_name);
-    vnode_tag = Cow::Owned(to_valid_asset_id(&vnode_tag, "component"));
-  }
 
   let mut should_use_block = RootNode::is_single_root(parent_node)
     || RootNode::is_fragment(parent_node)
