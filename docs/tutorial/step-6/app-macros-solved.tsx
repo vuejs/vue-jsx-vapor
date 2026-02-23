@@ -1,6 +1,6 @@
-import { defineComponent, ref } from 'vue'
+import { ref } from 'vue'
 
-export default defineComponent(() => {
+export default () => {
   let id = 0
   const newTodo = ref('')
   const todos = ref([
@@ -18,7 +18,7 @@ export default defineComponent(() => {
   function removeTodo(todo) {
     todos.value = todos.value.filter((t) => t !== todo)
   }
-  return () => (
+  return (
     <>
       <form onSubmit_prevent={addTodo}>
         <input
@@ -30,13 +30,11 @@ export default defineComponent(() => {
         <button>Add Todo</button>
       </form>
       <ul>
-        {todos.value.map((todo) => (
-          <li key={todo.id}>
-            {todo.text}
-            <button onClick={() => removeTodo(todo)}>X</button>
-          </li>
-        ))}
+        <li v-for={todo in todos.value} key={todo.id}>
+          {todo.text}
+          <button onClick={() => removeTodo(todo)}>X</button>
+        </li>
       </ul>
     </>
   )
-})
+}

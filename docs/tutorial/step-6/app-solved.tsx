@@ -30,10 +30,12 @@ export default () => {
         <button>Add Todo</button>
       </form>
       <ul>
-        <li v-for={todo in todos.value} key={todo.id}>
-          {todo.text}
-          <button onClick={() => removeTodo(todo)}>X</button>
-        </li>
+        {todos.value.map((todo) => (
+          <li key={todo.id}>
+            {todo.text}
+            <button onClick={() => removeTodo(todo)}>X</button>
+          </li>
+        ))}
       </ul>
     </>
   )

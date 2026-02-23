@@ -11,7 +11,6 @@ import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
 import appInteropCode from './app-interop.tsx?raw'
 import appInteropSolvedCode from './app-interop-solved.tsx?raw'
-import appMacrosCode from './app-macros.tsx?raw'
 import appMacrosSolvedCode from './app-macros-solved.tsx?raw'
 import appInteropMacrosCode from './app-interop-macros.tsx?raw'
 import appInteropMacrosSolvedCode from './app-interop-macros-solved.tsx?raw'
@@ -24,7 +23,7 @@ const apps = {
   solved: { 'src/App.tsx': appSolvedCode },
   interop: { 'src/App.tsx': appInteropCode },
   interopSolved: { 'src/App.tsx': appInteropSolvedCode },
-  macros: { 'src/App.tsx': appMacrosCode },
+  macros: { 'src/App.tsx': appCode },
   macrosSolved: { 'src/App.tsx': appMacrosSolvedCode },
   interopMacros: { 'src/App.tsx': appInteropMacrosCode },
   interopMacrosSolved: { 'src/App.tsx': appInteropMacrosSolvedCode },

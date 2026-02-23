@@ -9,11 +9,14 @@ export default () => {
     { id: id++, text: 'Learn Vue' },
   ])
   function addTodo() {
-    // ...
+    todos.value.push({
+      id: id++,
+      text: newTodo.value,
+    })
     newTodo.value = ''
   }
   function removeTodo(todo) {
-    // ...
+    todos.value = todos.value.filter((t) => t !== todo)
   }
   return (
     <>
@@ -27,10 +30,15 @@ export default () => {
         <button>Add Todo</button>
       </form>
       <ul>
-        <li v-for={todo in todos.value} key={todo.id}>
-          {todo.text}
-          <button onClick={() => removeTodo(todo)}>X</button>
-        </li>
+        {(() => {
+          const todo = todos.value[0]
+          return (
+            <li key={todo.id}>
+              {todo.text}
+              <button onClick={() => removeTodo(todo)}>X</button>
+            </li>
+          )
+        })()}
       </ul>
     </>
   )

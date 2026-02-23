@@ -30,12 +30,10 @@ export default defineComponent(() => {
         <button>Add Todo</button>
       </form>
       <ul>
-        {todos.value.map((todo) => (
-          <li key={todo.id}>
-            {todo.text}
-            <button onClick={() => removeTodo(todo)}>X</button>
-          </li>
-        ))}
+        <li v-for={todo in todos.value} key={todo.id}>
+          {todo.text}
+          <button onClick={() => removeTodo(todo)}>X</button>
+        </li>
       </ul>
     </>
   )

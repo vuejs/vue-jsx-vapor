@@ -11,11 +11,10 @@ import appCode from '~/tutorial/step-3/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-3/app-solved.tsx?raw'
 import appInteropCode from '~/tutorial/step-3/app-interop.tsx?raw'
 import appInteropSolvedCode from '~/tutorial/step-3/app-interop-solved.tsx?raw'
-import cssCode from '~/tutorial/step-3/main.css?raw'
 import { getDefaultFiles } from '~/tutorial/template'
 import { ref } from 'vue'
 
-const files = ref({ ...getDefaultFiles(), 'src/main.css': cssCode })
+const files = ref(getDefaultFiles())
 const apps  = {
   app: { 'src/App.tsx': appCode },
   solved: { 'src/App.tsx': appSolvedCode },

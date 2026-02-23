@@ -11,6 +11,8 @@ import appCode from '~/tutorial/step-5/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-5/app-solved.tsx?raw'
 import appInteropCode from '~/tutorial/step-5/app-interop.tsx?raw'
 import appInteropSolvedCode from '~/tutorial/step-5/app-interop-solved.tsx?raw'
+import appMacrosSolvedCode from '~/tutorial/step-5/app-macros-solved.tsx?raw'
+import appInteropMacrosSolvedCode from '~/tutorial/step-5/app-interop-macros-solved.tsx?raw'
 import { getDefaultFiles } from '~/tutorial/template'
 import { ref } from 'vue'
 
@@ -19,7 +21,11 @@ const apps  = {
   app: { 'src/App.tsx': appCode },
   solved: { 'src/App.tsx': appSolvedCode },
   interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropSolvedCode }
+  interopSolved: { 'src/App.tsx': appInteropSolvedCode },
+  macros: { 'src/App.tsx': appCode },
+  macrosSolved: { 'src/App.tsx': appMacrosSolvedCode },
+  interopMacros: { 'src/App.tsx': appInteropCode },
+  interopMacrosSolved: { 'src/App.tsx': appInteropMacrosSolvedCode }
 }
 </script>
 
@@ -45,6 +51,7 @@ const apps  = {
   <div v-else>内容</div>
 </>
 ```
-目前，示例同时显示了两个 `<h1>`，而且按钮没有任何效果。尝试给它们添加 `v-if` 和 `v-else` 指令，并实现 `toggle()` 方法，使我们可以使用按钮在它们之间切换。
+
+目前，示例同时显示了两个 `<h1>`，请确保页面只显示一个`<h1>`。
 
 </jsx-repl>

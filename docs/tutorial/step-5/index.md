@@ -11,6 +11,8 @@ import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
 import appInteropCode from './app-interop.tsx?raw'
 import appInteropSolvedCode from './app-interop-solved.tsx?raw'
+import appMacrosSolvedCode from './app-macros-solved.tsx?raw'
+import appInteropMacrosSolvedCode from './app-interop-macros-solved.tsx?raw'
 import { getDefaultFiles } from '../template'
 import { ref } from 'vue'
 
@@ -19,7 +21,11 @@ const apps  = {
   app: { 'src/App.tsx': appCode },
   solved: { 'src/App.tsx': appSolvedCode },
   interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropSolvedCode }
+  interopSolved: { 'src/App.tsx': appInteropSolvedCode },
+  macros: { 'src/App.tsx': appCode },
+  macrosSolved: { 'src/App.tsx': appMacrosSolvedCode },
+  interopMacros: { 'src/App.tsx': appInteropCode },
+  interopMacrosSolved: { 'src/App.tsx': appInteropMacrosSolvedCode}
 }
 </script>
 
@@ -45,6 +51,7 @@ We can also use the `v-if` directive to conditionally render an element:
   <div v-else>Content</div>
 </>
 ```
-Currently, the demo is showing both `<h1>`s at the same time, and the button does nothing. Try to add `v-if` and `v-else` directives to them, and implement the `toggle()` method so that we can use the button to toggle between them.
+
+Currently, the demo is showing both `<h1>` elements at the same time, please ensure that only one `<h1>` is shown on the page.
 
 </jsx-repl>

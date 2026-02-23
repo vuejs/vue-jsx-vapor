@@ -4,7 +4,6 @@ const Comp = defineComponent({
   setup: ({ foo }) => {
     return () => <div>{foo}</div>
   },
-  props: ['foo'],
 })
 
 export default defineComponent(() => {

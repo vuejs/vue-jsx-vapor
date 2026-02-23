@@ -2,7 +2,7 @@ import { defineComponent, ref } from 'vue'
 
 const Comp = defineComponent(
   ({ foo }) => {
-    return () => <div>{foo.value}</div>
+    return () => <div>{foo}</div>
   },
   { props: ['foo'] },
 )
@@ -12,7 +12,7 @@ export default defineComponent(() => {
   return () => (
     <>
       <button onClick={() => foo.value++}>+</button>
-      <Comp foo={foo} />
+      <Comp foo={foo.value} />
     </>
   )
 })

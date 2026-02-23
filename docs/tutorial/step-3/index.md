@@ -11,11 +11,10 @@ import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
 import appInteropCode from './app-interop.tsx?raw'
 import appInteropSolvedCode from './app-interop-solved.tsx?raw'
-import cssCode from './main.css?raw'
 import { getDefaultFiles } from '../template'
 import { ref } from 'vue'
 
-const files = ref({ ...getDefaultFiles(), 'src/main.css': cssCode })
+const files = ref(getDefaultFiles())
 const apps  = {
   app: { 'src/App.tsx': appCode },
   solved: { 'src/App.tsx': appSolvedCode },
