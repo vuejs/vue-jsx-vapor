@@ -14,8 +14,8 @@ hero:
       text: 快速上手
       link: /zh/introduction/getting-started
     - theme: alt
-      text: 功能特性
-      link: /zh/features/directives
+      text: 互动教程
+      link: /tutorial/step-1
 
 features:
   - icon: ⚒️ ️
