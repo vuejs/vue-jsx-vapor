@@ -2,6 +2,21 @@
 import { transform as rsTransform } from '@vue-jsx-vapor/compiler-rs'
 import { Bench } from 'tinybench'
 import { compileTemplate } from 'vue/compiler-sfc'
+import { compile, compileVapor } from '@vizejs/native'
+
+function vizeTransform(source, options = {}) {
+  compile(source, {
+    filename: 'foo.vue',
+    ...options,
+  })
+}
+
+function vizeVaporTransform(source, options = {}) {
+  compileVapor(source, {
+    filename: 'foo.vue',
+    ...options,
+  })
+}
 
 function vueTransform(source, options = {}) {
   compileTemplate({
@@ -62,13 +77,21 @@ bench.add('vue', () => {
   vueTransform(vueSource)
 })
 
-bench.add('vue-jsx-vapor.rs + oxc', () => {
+bench.add('vue-jsx-vapor + oxc', () => {
   rsTransform(source)
 })
 
-bench.add('vue-jsx.rs       + oxc', () => {
+bench.add('vue-jsx       + oxc', () => {
   rsTransform(source, { interop: true })
 })
+
+bench.add('vize', () => {
+  vizeTransform(vueSource)
+})
+
+// bench.add('vize-vapor', () => {
+//   vizeVaporTransform(vueSource)
+// })
 
 await bench.run()
 console.table(bench.table())
