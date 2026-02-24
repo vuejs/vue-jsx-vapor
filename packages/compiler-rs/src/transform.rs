@@ -181,7 +181,6 @@ impl<'a> Transform<'a> {
         "setNodes",
         "createNodes",
         "createComponent",
-        "createComponentWithFallback",
         "defineVaporSSRComponent",
       ]
       .into_iter()

@@ -1508,12 +1508,9 @@ export type EventHandlers<E> = {
     : (payload: E[K]) => void
 }
 
-type _ReservedProps = import('vue').ReservedProps
-export interface ReservedProps extends _ReservedProps {}
-
 export type NativeElements = {
   [K in keyof IntrinsicElementAttributes]: IntrinsicElementAttributes[K] &
-    ReservedProps
+    import('vue').ReservedProps
 }
 
 export interface BaseSyntheticEvent<E = object, C = unknown, T = unknown> {

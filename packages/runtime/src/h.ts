@@ -1,33 +1,24 @@
 /* eslint-disable prefer-rest-params */
+import * as Vue from 'vue'
 import {
-  createComponentWithFallback,
-  isBlock,
-  type NodeArrayChildren,
+  createComponent,
+  createNodes,
+  createProxyComponent,
   type NodeChild,
 } from './vapor'
 import type {
   Block,
   Component,
-  ComponentOptions,
-  ConcreteComponent,
-  DefineComponent,
   EmitsOptions,
   Fragment,
-  FunctionalComponent,
+  FunctionalVaporComponent,
+  NodeRef,
   Suspense,
   SuspenseProps,
-  Teleport,
   TeleportProps,
-  VNodeRef,
+  VaporComponent,
+  VaporTeleport,
 } from 'vue'
-
-// fake constructor type returned from `defineComponent`
-interface Constructor<P = any> {
-  __isFragment?: never
-  __isTeleport?: never
-  __isSuspense?: never
-  new (...args: any[]): { $props: P }
-}
 
 type HTMLElementEventHandler = {
   [K in keyof HTMLElementEventMap as `on${Capitalize<K>}`]?: (
@@ -35,160 +26,119 @@ type HTMLElementEventHandler = {
   ) => any
 }
 
-type RawProps = Record<string, any>
+type ReservedProps = { key?: () => PropertyKey; ref?: NodeRef }
+type RawProps = Record<string, any> & ReservedProps
 
-type ResolveProps<T> = T extends null | undefined ? T : (() => T) | T
+type RawSlot = () => NodeChild
+type RawChildren = NodeChild | RawSlot
+type RawSlots = Record<string, RawSlot>
 
 // The following is a series of overloads for providing props validation of
 // manually written render functions.
 
-// element
-export function h<K extends keyof HTMLElementTagNameMap>(
+// element / custom element / resolve component
+export function h<K extends string>(
   type: K,
-  children?: NodeChild,
-): Block
-export function h<K extends keyof HTMLElementTagNameMap>(
-  type: K,
-  props?: ResolveProps<RawProps & HTMLElementEventHandler> | null,
-  children?: NodeChild,
-): Block
-
-// custom element
-export function h(type: string, children?: NodeChild): Block
-export function h(
-  type: string,
-  props?: ResolveProps<RawProps> | null,
-  children?: NodeChild,
-): Block
-
-// text/comment
-export function h(
-  type: typeof Text | typeof Comment,
-  children?: string | number | boolean,
-): Block
-export function h(
-  type: typeof Text | typeof Comment,
-  props?: null,
-  children?: string | number | boolean,
+  props?:
+    | (RawProps &
+        (K extends keyof HTMLElementTagNameMap ? HTMLElementEventHandler : {}))
+    | null,
+  children?: K extends keyof HTMLElementTagNameMap ? RawChildren : RawSlots,
 ): Block
 
 // fragment
-export function h(type: typeof Fragment, children?: NodeArrayChildren): Block
 export function h(
   type: typeof Fragment,
-  props?: ResolveProps<{ key?: PropertyKey; ref?: VNodeRef }> | null,
-  children?: NodeArrayChildren,
+  props?: ReservedProps | null,
+  children?: RawChildren,
 ): Block
 
 // teleport (target prop is required)
 export function h(
-  type: typeof Teleport,
+  type: typeof VaporTeleport,
   props: RawProps & TeleportProps,
-  children: NodeChild,
+  children: RawChildren | RawSlots,
 ): Block
 
 // suspense
-export function h(type: typeof Suspense, children?: NodeChild): Block
 export function h(
   type: typeof Suspense,
-  props?: ResolveProps<RawProps & SuspenseProps> | null,
-  children?: NodeChild,
+  props?: (RawProps & SuspenseProps) | null,
+  children?: RawChildren | RawSlots,
 ): Block
 
 // functional component
-export function h(type: FunctionalComponent, children?: NodeChild): Block
 export function h<
   P,
   E extends EmitsOptions = {},
-  S extends Record<string, any> = any,
+  S extends Record<string, any> = RawSlots,
 >(
-  type: FunctionalComponent<P, E, S>,
-  props?: ResolveProps<(RawProps & P) | ({} extends P ? null : never)>,
-  children?: NodeChild,
+  type: FunctionalVaporComponent<P, E, S>,
+  props?: (RawProps & P) | ({} extends P ? null : never),
+  children?: RawChildren | S,
 ): Block
 
 // catch all types
 export function h(
-  type:
-    | string
-    | ConcreteComponent
-    | Component
-    | ComponentOptions
-    | Constructor
-    | DefineComponent,
-  children?: NodeChild,
-): Block
-export function h<P>(
-  type:
-    | string
-    | ConcreteComponent<P>
-    | Component<P>
-    | ComponentOptions<P>
-    | Constructor<P>
-    | DefineComponent<P>,
-  props?: ResolveProps<(RawProps & P) | ({} extends P ? null : never)>,
-  children?: NodeChild,
+  type: Component | VaporComponent,
+  props?: RawProps,
+  children?: NodeChild | RawSlots,
 ): Block
 
 /*@__NO_SIDE_EFFECTS__*/
-export function h(type: any, propsOrChildren?: any, children?: any) {
+export function h(type: any, props?: any, children?: any): any {
   const l = arguments.length
-  if (l === 2) {
-    if (
-      (typeof propsOrChildren === 'object' &&
-        !Array.isArray(propsOrChildren)) ||
-      typeof propsOrChildren === 'function'
-    ) {
-      // single block without props
-      if (isBlock(propsOrChildren)) {
-        return createComponentWithFallback(type, null, {
-          default: () => propsOrChildren,
-        })
-      }
-
-      // props without children
-      return createComponentWithFallback(type, resolveProps(propsOrChildren))
-    } else {
-      // omit props
-      return createComponentWithFallback(type, null, {
-        default: () => propsOrChildren,
-      })
-    }
-  } else {
-    if (l > 3) {
-      children = Array.prototype.slice.call(arguments, 2)
-    }
-    return createComponentWithFallback(
+  if (l > 3) {
+    children = Array.prototype.slice.call(arguments, 2)
+  }
+  const childrenIsArray = Array.isArray(children)
+  const { props: resolvedProps, key, ref } = resolveProps(props)
+  const render = () => {
+    const comp = createComponent(
       type,
-      resolveProps(propsOrChildren),
+      resolvedProps,
       children
-        ? typeof children === 'object' && !Array.isArray(children)
-          ? children
+        ? typeof children === 'object' && !childrenIsArray
+          ? new Proxy(children, {
+              get: (target, key, receiver) =>
+                createProxyComponent(Reflect.get(target, key, receiver)),
+            })
           : {
-              default: () => children,
+              default: () =>
+                createNodes(...(childrenIsArray ? children : [children])),
             }
         : undefined,
     )
+    if (ref) {
+      const setRef = Vue.createTemplateRefSetter()
+      Vue.renderEffect(() => setRef(comp, ref!))
+    }
+    return comp
   }
+  return key ? Vue.createKeyedFragment(key, render) : render()
 }
 
-function resolveProps(
-  props?: Record<string, any> | (() => Record<string, any>),
-) {
+type ResolvedProps = {
+  props: Record<string, any>
+} & ReservedProps
+const EVENT_REGEX = /^on[A-Z]/
+function resolveProps(props?: Record<string, any>): ResolvedProps {
+  const resolvedProps: ResolvedProps = { props: {} }
   if (props) {
-    if (typeof props === 'function') {
-      return { $: [props] }
-    }
-    const resolvedProps: Record<string, any> = {}
     // eslint-disable-next-line no-restricted-syntax
-    for (const key in props) {
-      if (typeof props[key] === 'function' || key === '$') {
-        resolvedProps[key] = props[key]
+    for (const p in props) {
+      const isFuncton = typeof props[p] === 'function'
+      if (p === 'key') {
+        resolvedProps.key = isFuncton ? props[p] : () => props[p]
+      } else if (p === 'ref') {
+        resolvedProps.ref = props[p]
+      } else if (EVENT_REGEX.test(p[2])) {
+        resolvedProps.props[p] = () => props[p]
       } else {
-        resolvedProps[key] = () => props[key]
+        resolvedProps.props[p] = props[p]
       }
     }
     return resolvedProps
   }
-  return null
+  return resolvedProps
 }

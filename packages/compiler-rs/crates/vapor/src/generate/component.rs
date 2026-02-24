@@ -110,8 +110,6 @@ pub fn gen_create_component<'a>(
             SPAN,
             ast.atom(context.options.helper(if is_custom_element {
               "_createPlainElement"
-            } else if asset {
-              "_createComponentWithFallback"
             } else {
               "_createComponent"
             })),

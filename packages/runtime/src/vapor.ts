@@ -4,6 +4,7 @@ import {
   getCurrentInstance,
   type Block,
   type VaporComponent,
+  type VNode,
 } from 'vue'
 import * as Vue from 'vue'
 
@@ -38,87 +39,68 @@ export function defineVaporSSRComponent(
 type Tail<T extends any[]> = T extends [any, ...infer R] ? R : never
 
 export const createComponent = (
-  type: VaporComponent | typeof Fragment,
+  type: VaporComponent | typeof Fragment | string,
   ...args: Tail<Parameters<typeof Vue.createComponent>>
 ) => {
-  return createProxyComponent(Vue.createComponent, type, ...args)
-}
-
-export const createComponentWithFallback = (
-  type: VaporComponent | typeof Fragment,
-  ...args: Tail<Parameters<typeof Vue.createComponentWithFallback>>
-) => {
-  const slots = args[1]
-  if (
-    typeof type === 'string' &&
-    slots &&
-    slots.default &&
-    typeof slots.default === 'function'
-  ) {
-    const defaultSlot = slots.default
-    slots.default = () => {
-      return createProxyComponent(
-        Vue.createComponentWithFallback,
-        defaultSlot,
-        null,
-        null,
-      )
-    }
-  }
-  return createProxyComponent(Vue.createComponentWithFallback, type, ...args)
-}
-
-const createProxyComponent = (
-  createComponent:
-    | typeof Vue.createComponent
-    | typeof Vue.createComponentWithFallback,
-  type: VaporComponent | typeof Fragment,
-  props: any,
-  ...args: any[]
-) => {
   if (type === Fragment) {
-    type = (_, { slots }) => (slots.default ? slots.default() : [])
-    props = null
+    const slots = args[1]
+    type = (slots && (slots.default as any)) || (() => [])
   }
+  return Vue.createComponentWithFallback(
+    createProxyComponent(Vue.resolveDynamicComponent(type) as VaporComponent),
+    ...args,
+  )
+}
 
-  // @ts-ignore
-  const i = Vue.currentInstance || getCurrentInstance()
-  // @ts-ignore #24
-  if (!type.__proxyed) {
-    if (typeof type === 'function') {
-      type = new Proxy(type, {
-        apply(target, ctx, args) {
+export function createProxyComponent(type: VaporComponent) {
+  if (typeof type === 'function') {
+    // @ts-ignore
+    const i = Vue.currentInstance || getCurrentInstance()
+    return new Proxy(type, {
+      apply(target, ctx, args) {
+        // @ts-ignore
+        if (typeof target.__setup === 'function') {
           // @ts-ignore
-          if (typeof target.__setup === 'function') {
-            // @ts-ignore
-            target.__setup.apply(ctx, args)
-          }
-          return normalizeNode(Reflect.apply(target, ctx, args))
-        },
-        get(target, p, receiver) {
-          if (i && i.appContext.vapor && p === '__vapor') {
-            return true
-          }
-          return Reflect.get(target, p, receiver)
-        },
-      })
-    } else if (type.__vapor && type.setup) {
-      type.setup = new Proxy(type.setup, {
-        apply(target, ctx, args) {
-          return normalizeNode(Reflect.apply(target, ctx, args))
-        },
-      })
-    }
+          target.__setup.apply(ctx, args)
+        }
+        return normalizeNode(Reflect.apply(target, ctx, args))
+      },
+      get(target, p, receiver) {
+        if (i && i.appContext.vapor && p === '__vapor') {
+          return true
+        }
+        return Reflect.get(target, p, receiver)
+      },
+    })
+  } else if (
+    type &&
+    type.setup &&
+    type.__vapor &&
+    // @ts-ignore #24
+    !type.__proxyed
+  ) {
+    type.setup = new Proxy(type.setup, {
+      apply(target, ctx, args) {
+        return normalizeNode(Reflect.apply(target, ctx, args))
+      },
+    })
     // @ts-ignore
     type.__proxyed = true
   }
-
-  return createComponent(type as VaporComponent, props, ...args)
+  return type
 }
 
 // block
 
-type NodeChildAtom = Block | string | number | boolean | null | undefined | void
+type NodeChildAtom =
+  | VNode
+  | Block
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | void
 
 export type NodeArrayChildren = Array<NodeArrayChildren | NodeChildAtom>
 
