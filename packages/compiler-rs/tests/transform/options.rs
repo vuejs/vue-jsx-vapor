@@ -23,3 +23,26 @@ pub fn runtime_module_name() {
   })();
   "#);
 }
+
+#[test]
+pub fn filename() {
+  let code = transform(
+    "<div>{foo}</div>",
+    Some(TransformOptions {
+      filename: "routes/index.tsx?tsr-split=component",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ", true);
+  (() => {
+  	const _n0 = _t0();
+  	const _x0 = _txt(_n0);
+  	_setNodes(_x0, () => foo);
+  	return _n0;
+  })();
+  "#);
+}

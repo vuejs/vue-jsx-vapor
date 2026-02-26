@@ -72,7 +72,7 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
       transform: {
         filter: {
           id: {
-            include: options?.include || /\.[cm]?[jt]sx$/,
+            include: options?.include || /\.[cm]?[jt]sx(?=$|[?#])/,
             exclude: options?.exclude || /node_modules/,
           },
         },

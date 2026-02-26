@@ -8,7 +8,7 @@ use oxc_codegen::{Codegen, CodegenReturn};
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::{SourceType, Span};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use common::{
   error::{ErrorCodes, create_compiler_error},
@@ -82,7 +82,6 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
     &source,
     Some(TransformOptions {
       filename,
-      source_type: SourceType::from_path(filename).unwrap(),
       source_map: options.source_map.unwrap_or(false),
       interop: options.interop.unwrap_or(false),
       hmr: options.hmr.unwrap_or(Either::A(false)),
@@ -109,10 +108,21 @@ pub fn transform<'a>(source: &'a str, options: Option<TransformOptions<'a>>) -> 
   use oxc_codegen::CodegenOptions;
   let options = options.unwrap_or_default();
   *options.source_text.borrow_mut() = source;
+  *options.source_type.borrow_mut() = {
+    if let Some(ext) = Path::new(options.filename)
+      .extension()
+      .and_then(std::ffi::OsStr::to_str)
+      && let Some(ext) = ext.split("?").next()
+    {
+      SourceType::from_extension(ext).unwrap()
+    } else {
+      SourceType::from_path(options.filename).unwrap()
+    }
+  };
   let mut program = Parser::new(
     unsafe { &*(&options.allocator as *const _) },
     source,
-    options.source_type,
+    *options.source_type.borrow(),
   )
   .parse()
   .program;
