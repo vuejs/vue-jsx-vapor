@@ -11,7 +11,9 @@ export default defineConfig({
     VueJsxVapor({
       include: interops,
       interop: true,
-      macros: true,
+      macros: {
+        include: interops,
+      },
       compiler: {
         runtimeModuleName: 'vue-jsx-vapor',
         isCustomElement: (tag) => tag.includes('-'),

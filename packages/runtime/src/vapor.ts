@@ -44,7 +44,7 @@ export const createComponent = (
 ) => {
   if (type === Fragment) {
     const slots = args[1]
-    type = (slots && (slots.default as any)) || (() => [])
+    return slots && typeof slots.default === 'function' ? slots.default() : []
   }
   return Vue.createComponentWithFallback(
     createProxyComponent(Vue.resolveDynamicComponent(type) as VaporComponent),
@@ -52,18 +52,26 @@ export const createComponent = (
   )
 }
 
-export function createProxyComponent(type: VaporComponent) {
+const proxyCache = new WeakMap()
+export function createProxyComponent(
+  type: VaporComponent,
+  normalizeNode?: (node: any) => Block,
+) {
   if (typeof type === 'function') {
+    const existing = proxyCache.get(type)
+    if (existing) return existing
+
     // @ts-ignore
     const i = Vue.currentInstance || getCurrentInstance()
-    return new Proxy(type, {
+    const proxy = new Proxy(type, {
       apply(target, ctx, args) {
         // @ts-ignore
         if (typeof target.__setup === 'function') {
           // @ts-ignore
           target.__setup.apply(ctx, args)
         }
-        return normalizeNode(Reflect.apply(target, ctx, args))
+        const node = Reflect.apply(target, ctx, args)
+        return normalizeNode ? normalizeNode(node) : node
       },
       get(target, p, receiver) {
         if (i && i.appContext.vapor && p === '__vapor') {
@@ -72,20 +80,8 @@ export function createProxyComponent(type: VaporComponent) {
         return Reflect.get(target, p, receiver)
       },
     })
-  } else if (
-    type &&
-    type.setup &&
-    type.__vapor &&
-    // @ts-ignore #24
-    !type.__proxyed
-  ) {
-    type.setup = new Proxy(type.setup, {
-      apply(target, ctx, args) {
-        return normalizeNode(Reflect.apply(target, ctx, args))
-      },
-    })
-    // @ts-ignore
-    type.__proxyed = true
+    proxyCache.set(type, proxy)
+    return proxy
   }
   return type
 }
@@ -101,6 +97,7 @@ type NodeChildAtom =
   | null
   | undefined
   | void
+  | (() => NodeChild)
 
 export type NodeArrayChildren = Array<NodeArrayChildren | NodeChildAtom>
 
@@ -113,6 +110,8 @@ export function normalizeNode(node: NodeChild): Block {
     return node.map(normalizeNode)
   } else if (isBlock(node)) {
     return node
+  } else if (typeof node === 'function') {
+    return resolveValues([node], undefined, true)[0]
   } else {
     // strings and numbers
     return document.createTextNode(String(node))
@@ -139,16 +138,22 @@ function createFragment(
   return frag
 }
 
-function normalizeBlock(node: any, anchor?: Node): Block {
+function normalizeBlock(
+  node: any,
+  anchor?: Node,
+  processFunction = false,
+): Block {
   if (node instanceof Node || Vue.isFragment(node)) {
     return node
   } else if (Vue.isVaporComponent(node)) {
     return createFragment(node, anchor)
   } else if (Array.isArray(node)) {
     return createFragment(
-      node.map((i) => normalizeBlock(i)),
+      node.map((i) => normalizeBlock(i, undefined, processFunction)),
       anchor,
     )
+  } else if (processFunction && typeof node === 'function') {
+    return resolveValues([node], anchor, true)[0]
   } else {
     const result = node == null || typeof node === 'boolean' ? '' : String(node)
     if (anchor) {
@@ -160,17 +165,22 @@ function normalizeBlock(node: any, anchor?: Node): Block {
   }
 }
 
-function resolveValue(current: Block | undefined, value: any, anchor?: Node) {
+function resolveValue(
+  current: Block | undefined,
+  value: any,
+  anchor?: Node,
+  processFunction = false,
+) {
   anchor =
     anchor ||
     (current instanceof Node && current.nodeType === 3 ? current : undefined)
-  const node = normalizeBlock(value, anchor)
+  const node = normalizeBlock(value, anchor, processFunction)
   if (current) {
     if (Vue.isFragment(current)) {
       if (current.anchor && current.anchor.parentNode) {
         Vue.remove(current.nodes, current.anchor.parentNode)
         Vue.insert(node, current.anchor.parentNode, current.anchor)
-        !anchor && current.anchor.parentNode.removeChild(current.anchor)
+        if (!anchor) current.anchor.parentNode.removeChild(current.anchor)
         // @ts-ignore
         if (current.scope) current.scope.stop()
       }
@@ -199,7 +209,11 @@ function resolveValue(current: Block | undefined, value: any, anchor?: Node) {
   return node
 }
 
-function resolveValues(values: any[] = [], _anchor?: Node) {
+function resolveValues(
+  values: any[] = [],
+  _anchor?: Node,
+  processFunction = false,
+) {
   const nodes: Block[] = []
   const scopes: EffectScope[] = []
   for (const [index, value] of values.entries()) {
@@ -209,11 +223,11 @@ function resolveValues(values: any[] = [], _anchor?: Node) {
         if (scopes[index]) scopes[index].stop()
         scopes[index] = new EffectScope()
         nodes[index] = scopes[index].run(() =>
-          resolveValue(nodes[index], value(), anchor),
+          resolveValue(nodes[index], value(), anchor, processFunction),
         )!
       })
     } else {
-      nodes[index] = resolveValue(nodes[index], value, anchor)
+      nodes[index] = resolveValue(nodes[index], value, anchor, processFunction)
     }
   }
   return nodes
@@ -221,7 +235,7 @@ function resolveValues(values: any[] = [], _anchor?: Node) {
 
 export function setNodes(anchor: Node, ...values: any[]) {
   const resolvedValues = resolveValues(values, anchor)
-  anchor.parentNode && Vue.insert(resolvedValues, anchor.parentNode, anchor)
+  if (anchor.parentNode) Vue.insert(resolvedValues, anchor.parentNode, anchor)
 }
 
 export function createNodes(...values: any[]) {

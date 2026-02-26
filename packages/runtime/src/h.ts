@@ -1,9 +1,8 @@
-/* eslint-disable prefer-rest-params */
 import * as Vue from 'vue'
 import {
   createComponent,
-  createNodes,
   createProxyComponent,
+  normalizeNode,
   type NodeChild,
 } from './vapor'
 import type {
@@ -29,7 +28,7 @@ type HTMLElementEventHandler = {
 type ReservedProps = { key?: () => PropertyKey; ref?: NodeRef }
 type RawProps = Record<string, any> & ReservedProps
 
-type RawSlot = () => NodeChild
+type RawSlot = (...args: any[]) => NodeChild
 type RawChildren = NodeChild | RawSlot
 type RawSlots = Record<string, RawSlot>
 
@@ -43,7 +42,9 @@ export function h<K extends string>(
     | (RawProps &
         (K extends keyof HTMLElementTagNameMap ? HTMLElementEventHandler : {}))
     | null,
-  children?: K extends keyof HTMLElementTagNameMap ? RawChildren : RawSlots,
+  children?: K extends keyof HTMLElementTagNameMap
+    ? RawChildren
+    : RawChildren | RawSlots,
 ): Block
 
 // fragment
@@ -82,36 +83,36 @@ export function h<
 export function h(
   type: Component | VaporComponent,
   props?: RawProps,
-  children?: NodeChild | RawSlots,
+  children?: RawChildren | RawSlots,
 ): Block
 
 /*@__NO_SIDE_EFFECTS__*/
 export function h(type: any, props?: any, children?: any): any {
-  const l = arguments.length
-  if (l > 3) {
-    children = Array.prototype.slice.call(arguments, 2)
-  }
-  const childrenIsArray = Array.isArray(children)
   const { props: resolvedProps, key, ref } = resolveProps(props)
   const render = () => {
     const comp = createComponent(
       type,
       resolvedProps,
       children
-        ? typeof children === 'object' && !childrenIsArray
+        ? typeof children === 'object' && !Array.isArray(children)
           ? new Proxy(children, {
               get: (target, key, receiver) =>
-                createProxyComponent(Reflect.get(target, key, receiver)),
+                createProxyComponent(
+                  Reflect.get(target, key, receiver),
+                  normalizeNode,
+                ),
             })
           : {
-              default: () =>
-                createNodes(...(childrenIsArray ? children : [children])),
+              default:
+                typeof children === 'function'
+                  ? createProxyComponent(children, normalizeNode)
+                  : () => normalizeNode(children),
             }
         : undefined,
     )
     if (ref) {
       const setRef = Vue.createTemplateRefSetter()
-      Vue.renderEffect(() => setRef(comp, ref!))
+      Vue.renderEffect(() => setRef(comp as any, ref!))
     }
     return comp
   }
@@ -132,7 +133,7 @@ function resolveProps(props?: Record<string, any>): ResolvedProps {
         resolvedProps.key = isFuncton ? props[p] : () => props[p]
       } else if (p === 'ref') {
         resolvedProps.ref = props[p]
-      } else if (EVENT_REGEX.test(p[2])) {
+      } else if (EVENT_REGEX.test(p)) {
         resolvedProps.props[p] = () => props[p]
       } else {
         resolvedProps.props[p] = props[p]
