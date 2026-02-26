@@ -1,3 +1,18 @@
+# [3.2.0](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.23...v3.2.0) (2026-02-26)
+
+
+### Bug Fixes
+
+* **compiler:** ignore filename query for source_type ([9a8725c](https://github.com/vuejs/vue-jsx-vapor/commit/9a8725cdb0dd6948684dc7686a46dbdbaaa28e32)), closes [#50](https://github.com/vuejs/vue-jsx-vapor/issues/50)
+* **compiler:** visit simple assignment target ([5bba443](https://github.com/vuejs/vue-jsx-vapor/commit/5bba4431f6923b19cb0e34ee299955b880cdb4d6))
+
+
+### Features
+
+* **runtime:** support HyperScript ([24c1b2e](https://github.com/vuejs/vue-jsx-vapor/commit/24c1b2ece05c2030ae46ba8a161f5caadd0a4406))
+
+
+
 ## [3.1.23](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.22...v3.1.23) (2026-02-19)
 
 
