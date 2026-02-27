@@ -1019,3 +1019,23 @@ fn fragment_in_fragment() {
   })();
   "#)
 }
+
+#[test]
+fn plain_element_with_event() {
+  let code = transform(
+    r#" <button onClick={() => []}>Click me</button>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createElementBlock("button", { onClick: _cache[0] || (_cache[0] = () => []) }, "Click me");
+  })();
+  "#)
+}
