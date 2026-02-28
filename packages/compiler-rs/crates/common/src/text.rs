@@ -71,7 +71,7 @@ pub fn resolve_jsx_text<'a>(node: &'a JSXText) -> Cow<'a, str> {
     };
   }
 
-  if value.trim().is_empty() {
+  if value.trim_ascii().is_empty() {
     return Cow::Owned(String::from(" "));
   }
 

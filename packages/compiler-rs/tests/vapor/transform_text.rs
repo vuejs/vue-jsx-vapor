@@ -62,6 +62,20 @@ fn consecutive_text() {
 }
 
 #[test]
+fn escapes_raw_static_text() {
+  let code = transform("<div>&nbsp;</div>", None).code;
+
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div>\xA0", true);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn escapes_raw_static_text_when_generating_the_template_string() {
   let code = transform(
     "<code>
