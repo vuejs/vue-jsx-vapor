@@ -174,7 +174,7 @@ pub unsafe fn transform_element<'a>(
         let child = children.get_mut(0).unwrap();
         // pass directly if the only child is a text node
         // (plain / interpolation / expression)
-        if matches!(child, JSXChild::Text(_))
+        if matches!(child, JSXChild::Text(child) if context.codegen_map.borrow().get(&child.span).is_none())
           || if let JSXChild::ExpressionContainer(child) = child
             && let Some(exp) = child.expression.as_expression()
             && exp.span() != SPAN

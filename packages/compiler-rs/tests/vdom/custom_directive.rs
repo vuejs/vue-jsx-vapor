@@ -4,7 +4,7 @@ use insta::assert_snapshot;
 #[test]
 fn basic() {
   let code = transform(
-    "<div v-example></div>",
+    "<div v-example>foo</div>",
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -12,10 +12,12 @@ fn basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
+  	const _cache = _createVNodeCache(0);
   	const _directive_example = _resolveDirective("example");
-  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[_directive_example]]);
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))])), [[_directive_example]]);
   })();
   "#);
 }

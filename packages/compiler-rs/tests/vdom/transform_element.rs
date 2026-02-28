@@ -900,7 +900,7 @@ fn force_block_for_runtime_custom_directive_with_children() {
   (() => {
   	const _cache = _createVNodeCache(0);
   	const _directive_foo = _resolveDirective("foo");
-  	return _withDirectives((_openBlock(), _createElementBlock("div", null, _cache[0] || (_cache[0] = _normalizeVNode("hello", -1)))), [[_directive_foo]]);
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _normalizeVNode("hello", -1))])), [[_directive_foo]]);
   })();
   "#)
 }
@@ -991,7 +991,7 @@ fn keep_alive() {
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache(0);
-  	return _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createBlock(KeepAlive, { include: foo }, _cache[0] || (_cache[0] = _normalizeVNode("foo", -1)), 1032, ["include"]))]);
+  	return _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createBlock(KeepAlive, { include: foo }, [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))], 1032, ["include"]))]);
   })();
   "#)
 }
