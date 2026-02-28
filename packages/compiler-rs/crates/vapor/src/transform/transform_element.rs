@@ -30,7 +30,7 @@ use common::{
     get_directive_name, is_always_close_tag, is_block_tag, is_built_in_directive,
     is_formatting_tag, is_reserved_prop, is_template, is_void_tag,
   },
-  directive::{Directives, resolve_directive},
+  directive::{Directives, resolve_directive, resolve_prop_name},
   dom::is_valid_html_nesting,
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
@@ -491,13 +491,10 @@ pub fn transform_prop<'a>(
   context_block: &'a mut BlockIRNode<'a>,
   get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
 ) -> Option<DirectiveTransformResult<'a>> {
-  let name = match &prop.name {
+  let name = resolve_prop_name(match &prop.name {
     JSXAttributeName::Identifier(name) => name.name.as_str(),
     JSXAttributeName::NamespacedName(name) => name.namespace.name.as_str(),
-  }
-  .split("_")
-  .next()
-  .unwrap_or_default();
+  })[0];
   let value = if let Some(value) = &prop.value {
     match value {
       JSXAttributeValue::ExpressionContainer(value) => {

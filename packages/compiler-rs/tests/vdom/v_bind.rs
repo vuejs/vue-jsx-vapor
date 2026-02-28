@@ -116,3 +116,23 @@ fn attr_modifier() {
   _openBlock(), _createElementBlock("div", { "^foo-bar": id }, null, 8, _hoisted_1);
   "#);
 }
+
+#[test]
+fn starts_with_underline() {
+  let code = transform(
+    r#"<div _id_prop={id} __id_prop="" />"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["._id"];
+  _openBlock(), _createElementBlock("div", {
+  	"._id": id,
+  	".__id": ""
+  }, null, 40, _hoisted_1);
+  "#);
+}

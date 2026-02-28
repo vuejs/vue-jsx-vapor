@@ -24,6 +24,17 @@ pub struct DirectiveNode<'a> {
   pub span: Span,
 }
 
+pub fn resolve_prop_name(name_string: &str) -> Vec<&str> {
+  let mut name_splited: Vec<&str> = name_string.split("_").collect();
+  if name_string.starts_with("_")
+    && let Some(offset) = name_string.chars().position(|s| s != '_')
+  {
+    name_splited = name_splited.drain(offset..).collect();
+    name_splited[0] = &name_string[0..offset + name_splited[0].len()];
+  }
+  name_splited
+}
+
 pub fn resolve_directive<'a>(
   node: &'a mut JSXAttribute<'a>,
   ast: &AstBuilder<'a>,
@@ -43,7 +54,7 @@ pub fn resolve_directive<'a>(
   let mut is_static = true;
 
   if !matches!(node.name, JSXAttributeName::NamespacedName(_)) {
-    let name_string_splited: Vec<&str> = name_string.split("_").collect();
+    let name_string_splited: Vec<&str> = resolve_prop_name(name_string);
     if name_string_splited.len() > 1 {
       modifiers = name_string_splited[1..]
         .iter()
@@ -62,10 +73,10 @@ pub fn resolve_directive<'a>(
       }
       arg_string = Cow::Owned(splited[1].replace("_", "."));
     } else {
-      let mut splited = arg_string
-        .split("_")
-        .map(|i| i.to_string())
-        .collect::<Vec<String>>();
+      let mut splited = resolve_prop_name(arg_string.as_ref())
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
       arg_string = Cow::Owned(splited.remove(0));
       modifiers = splited;
     }

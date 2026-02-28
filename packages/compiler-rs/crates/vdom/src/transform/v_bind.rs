@@ -1,6 +1,10 @@
 use std::borrow::Cow;
 
-use common::{check::is_simple_identifier, directive::Directives, text::camelize};
+use common::{
+  check::is_simple_identifier,
+  directive::{Directives, resolve_prop_name},
+  text::camelize,
+};
 use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement, PropertyKind};
 use oxc_span::{GetSpan, SPAN};
 
@@ -21,7 +25,7 @@ pub fn transform_v_bind<'a>(
     JSXAttributeName::Identifier(name) => name.name.as_ref(),
     JSXAttributeName::NamespacedName(_) => return None,
   };
-  let name_splited: Vec<&str> = name_string.split("_").collect();
+  let name_splited: Vec<&str> = resolve_prop_name(name_string);
   let modifiers = name_splited[1..].to_vec();
   let mut arg = Cow::Borrowed(name_splited[0]);
 

@@ -1,5 +1,6 @@
 use common::{
-  check::is_reserved_prop, expression::jsx_attribute_value_to_expression, text::camelize,
+  check::is_reserved_prop, directive::resolve_prop_name,
+  expression::jsx_attribute_value_to_expression, text::camelize,
 };
 use oxc_ast::ast::{Expression, JSXAttribute, JSXAttributeName};
 use oxc_span::SPAN;
@@ -15,7 +16,7 @@ pub fn transform_v_bind<'a>(
     JSXAttributeName::Identifier(name) => name.name.as_str(),
     JSXAttributeName::NamespacedName(_) => return None,
   };
-  let name_splited: Vec<&str> = name_string.split("_").collect();
+  let name_splited: Vec<&str> = resolve_prop_name(name_string);
   let modifiers = name_splited[1..].to_vec();
   if is_reserved_prop(name_splited[0]) {
     return None;

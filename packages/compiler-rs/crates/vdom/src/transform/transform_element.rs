@@ -25,7 +25,7 @@ use crate::{
 use common::{
   ast::RootNode,
   check::{get_directive_name, is_built_in_directive, is_event, is_reserved_prop, is_template},
-  directive::{DirectiveNode, resolve_directive},
+  directive::{DirectiveNode, resolve_directive, resolve_prop_name},
   error::ErrorCodes,
   patch_flag::PatchFlags,
   text::{camelize, get_tag_name, to_valid_asset_id},
@@ -386,12 +386,10 @@ pub fn build_props<'a>(
           continue;
         }
         let ast = &context.ast;
-        let name_splited = match &prop.name {
+        let name_splited = resolve_prop_name(match &prop.name {
           JSXAttributeName::Identifier(name) => name.name.as_str(),
           JSXAttributeName::NamespacedName(name) => name.namespace.name.as_str(),
-        }
-        .split("_")
-        .collect::<Vec<_>>();
+        });
         let Some((name, modifiers)) = name_splited.split_first() else {
           unreachable!()
         };
