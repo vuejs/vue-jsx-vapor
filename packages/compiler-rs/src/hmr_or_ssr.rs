@@ -42,7 +42,7 @@ impl<'a> HmrOrSsrTransform<'a> {
         vec![
           "defineComponent",
           "defineVaporComponent",
-          "defineElement",
+          "defineCustomElement",
           "defineVaporCustomElement",
           "_defineVaporSSRComponent",
         ]
