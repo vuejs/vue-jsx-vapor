@@ -219,3 +219,43 @@ export default defineComponent(() => {
 
 "
 `;
+
+exports[`fixtures > ./fixtures/slot.tsx 1`] = `
+"
+import { useFullProps as __useFullProps } from "/vue-jsx-vapor/props";import { defineComponent, defineVaporComponent } from 'vue';
+
+const Comp = defineComponent(() => {const props = __useFullProps();
+  const computedText = () => {
+   return props.text
+  }
+  return () => <div><slot foo="" /></div>
+}, { props: {
+'text': null
+} })
+;<Comp>
+  {{ default: (props) => [props.foo === ''] }}
+</Comp>
+
+const Comp1 = defineVaporComponent(() => {const props = __useFullProps();
+  const computedText = () => {
+   return props.text
+  }
+  return <div><slot foo="" /></div>
+}, { props: {
+'text': null
+} }) 
+;<Comp1>
+  {{ default: (props) => [props.foo === ''] }}
+</Comp1>
+
+const Comp2 = (props: {text?: string}) => {
+  const computedText = () => {
+   return props.text
+  }
+  return <div><slot foo="" /></div>
+}
+;<Comp2>
+  {{ default: (props) => [props.foo === ''] }}
+</Comp2>
+"
+`;

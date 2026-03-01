@@ -1,10 +1,10 @@
 import { allCodeFeatures, type Code } from 'ts-macro'
-import type { DefineStyle, RootKey, TransformOptions } from '.'
+import type { DefineStyle, Root, TransformOptions } from '.'
 
 export function transformDefineStyle(
   { expression, isCssModules }: DefineStyle,
   index: number,
-  root: RootKey,
+  root: Root,
   options: TransformOptions,
 ): void {
   const { ts, codes, ast } = options

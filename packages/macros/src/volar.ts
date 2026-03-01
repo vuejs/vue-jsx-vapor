@@ -29,6 +29,15 @@ const plugin: PluginReturn<Options | undefined> = createPlugin(
         if (rootMap.size) {
           transformJsxMacros(rootMap, options)
         }
+        /**
+         * JSX and inline import types co-usage will break TS.
+         * So use `import ''` to fixed it
+         * ```tsx
+         * const foo = <div></div>
+         * const bar = {} as import('vue').ShallowUnwrapRef<any>
+         * ```
+         */
+        codes.unshift("import '';\n")
         codes.push(getGlobalTypes(rootMap, options))
       },
     }

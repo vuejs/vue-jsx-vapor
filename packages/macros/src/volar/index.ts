@@ -29,12 +29,12 @@ export type JsxMacros = {
   )[]
 }
 
-export type RootKey =
+export type Root =
   | import('typescript').ArrowFunction
   | import('typescript').FunctionExpression
   | import('typescript').FunctionDeclaration
   | undefined
-export type RootMap = Map<RootKey, JsxMacros>
+export type RootMap = Map<Root, JsxMacros>
 
 function getMacro(
   node: import('typescript').Node | undefined,
@@ -103,11 +103,11 @@ function getMacro(
 export function getRootMap(options: TransformOptions): RootMap {
   const { ts, ast, codes } = options
   const rootMap: RootMap = new Map()
-  let prevRoot: RootKey
 
   function walk(
     node: import('typescript').Node,
     parents: import('typescript').Node[],
+    scopes: Root[],
   ) {
     const root =
       parents[1] &&
@@ -138,16 +138,6 @@ export function getRootMap(options: TransformOptions): RootMap {
           transformDefineComponent(caller, parents[3], options)
         }
       }
-    }
-
-    const fnRoot =
-      ts.isArrowFunction(node) ||
-      ts.isFunctionExpression(node) ||
-      ts.isFunctionDeclaration(node)
-        ? node
-        : undefined
-    if (fnRoot && !getDefineComponentCaller(parents[3])) {
-      prevRoot = fnRoot
     }
 
     const macro = getMacro(node, ts, options)
@@ -246,19 +236,31 @@ export function getRootMap(options: TransformOptions): RootMap {
       : ts.isJsxSelfClosingElement(node)
         ? node
         : null
-    if (prevRoot && slotNode?.tagName.getText(ast) === 'slot') {
-      if (!rootMap.has(prevRoot)) rootMap.set(prevRoot, {})
-      ;(rootMap.get(prevRoot)!.slots ??= []).push(slotNode)
+    const scope = scopes[0]
+    if (scope && slotNode?.tagName.getText(ast) === 'slot') {
+      if (!rootMap.has(scope)) rootMap.set(scope, {})
+      ;(rootMap.get(scope)!.slots ??= []).push(slotNode)
     }
 
     node.forEachChild((child) => {
       parents.unshift(node)
-      walk(child, parents)
+      const scopeNode =
+        (ts.isArrowFunction(child) ||
+          ts.isFunctionExpression(child) ||
+          ts.isFunctionDeclaration(child)) &&
+        !ts.isReturnStatement(node)
+      if (scopeNode) {
+        scopes.unshift(child)
+      }
+      walk(child, parents, scopes)
       parents.shift()
+      if (scopeNode) {
+        scopes.shift()
+      }
     })
   }
 
-  ast.forEachChild((node) => walk(node, []))
+  ast.forEachChild((node) => walk(node, [], []))
   return rootMap
 }
 

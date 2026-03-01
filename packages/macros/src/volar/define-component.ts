@@ -48,7 +48,7 @@ const __setup = `,
     [node.expression.getText(ast), node.expression.getStart(ast)],
     `({\n  ...{} as {
     setup: (props: __Props) => __Exposed,
-    render: () => ReturnType<__Setup>
+    render: () => ReturnType<__Setup>,
     slots: ${isVaporComponent ? '__Slots' : `import('vue').SlotsType<__Slots>`}
   },`,
     ...((compOptions
