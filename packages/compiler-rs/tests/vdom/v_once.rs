@@ -137,11 +137,11 @@ fn with_v_if_else() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, setBlockTracking as _setBlockTracking } from "vue";
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, setBlockTracking as _setBlockTracking } from "vue";
   const _hoisted_1 = { key: 1 };
   (() => {
   	const _cache = _createVNodeCache(0);
-  	return _openBlock(), _createBlock(_Fragment, null, [BOOLEAN ? _cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div")).cacheIndex = 0, _setBlockTracking(1), _cache[0]) : (_openBlock(), _createElementBlock("p", _hoisted_1))], 64);
+  	return _openBlock(), _createElementBlock(_Fragment, null, [BOOLEAN ? _cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div")).cacheIndex = 0, _setBlockTracking(1), _cache[0]) : (_openBlock(), _createElementBlock("p", _hoisted_1))], 64);
   })();
   "#)
 }

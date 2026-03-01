@@ -469,10 +469,10 @@ fn v_model_with_event() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache(0);
-  	return _openBlock(), _createBlock(_Fragment, null, [_createVNode(Comp, {
+  	return _openBlock(), _createElementBlock(_Fragment, null, [_createVNode(Comp, {
   		modelValue: model,
   		"onUpdate:modelValue": [_cache[0] || (_cache[0] = ($event) => model = $event), foo]
   	}, null, 8, ["modelValue", "onUpdate:modelValue"]), _createVNode(Comp, {

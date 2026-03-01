@@ -18,7 +18,7 @@ fn v_slots_basic() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = ["onUpdate:modelValue", "onClick"];
-  _openBlock(), _createBlock(Comp, null, { default: ({ foo }) => (_openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(() => _withDirectives((_openBlock(), _createElementBlock("input", {
+  _openBlock(), _createBlock(Comp, null, { default: ({ foo }) => (_openBlock(), _createElementBlock(_Fragment, null, [_normalizeVNode(() => _withDirectives((_openBlock(), _createElementBlock("input", {
   	"onUpdate:modelValue": ($event) => bar = $event,
   	onClick: () => foo
   }, null, 8, _hoisted_1)), [[_vModelText, bar]]))], 64)) }, 1024);
@@ -103,10 +103,10 @@ fn v_slot_with_v_slots() {
   .code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(Comp, { bar }, {
   	bar,
-  	default: ({ foo }) => (_openBlock(), _createBlock(_Fragment, null, [_normalizeVNode(() => foo + bar), _normalizeVNode(() => (_openBlock(), _createBlock(Comp, null, {
+  	default: ({ foo }) => (_openBlock(), _createElementBlock(_Fragment, null, [_normalizeVNode(() => foo + bar), _normalizeVNode(() => (_openBlock(), _createBlock(Comp, null, {
   		default: _withCtx(({baz}) => [_normalizeVNode(() => bar), _normalizeVNode(() => baz)]),
   		_: 2
   	}, 1024)))], 64))

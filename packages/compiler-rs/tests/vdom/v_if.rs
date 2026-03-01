@@ -33,10 +33,10 @@ fn template_v_if() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache(0);
-  	return _openBlock(), _createBlock(_Fragment, null, ok ? (_openBlock(), _createBlock(_Fragment, { key: 0 }, [..._cache[0] || (_cache[0] = [
+  	return _openBlock(), _createElementBlock(_Fragment, null, ok ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [..._cache[0] || (_cache[0] = [
   		_createElementVNode("div", null, null, -1),
   		_normalizeVNode("hello", -1),
   		_createElementVNode("p", null, null, -1)
@@ -56,10 +56,10 @@ fn template_v_if_with_single_slot_child() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
   	const _slots = _useSlots();
-  	return _openBlock(), _createBlock(_Fragment, null, ok ? (_openBlock(), _createBlock(_Fragment, { key: 0 }, [_renderSlot(_slots, "default")], 64)) : _createCommentVNode("", true));
+  	return _openBlock(), _createElementBlock(_Fragment, null, ok ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_renderSlot(_slots, "default")], 64)) : _createCommentVNode("", true));
   })();
   "#);
 }
@@ -110,10 +110,10 @@ fn v_if_v_else() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
   const _hoisted_2 = { key: 1 };
-  _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : (_openBlock(), _createElementBlock("p", _hoisted_2))], 64);
+  _openBlock(), _createElementBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : (_openBlock(), _createElementBlock("p", _hoisted_2))], 64);
   "#);
 }
 
@@ -128,10 +128,10 @@ fn v_if_v_else_if() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
   const _hoisted_2 = { key: 1 };
-  _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : orNot ? (_openBlock(), _createElementBlock("p", _hoisted_2)) : _createCommentVNode("", true)], 64);
+  _openBlock(), _createElementBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : orNot ? (_openBlock(), _createElementBlock("p", _hoisted_2)) : _createCommentVNode("", true)], 64);
   "#);
 }
 
@@ -147,12 +147,12 @@ fn v_if_v_else_if_v_else() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
   const _hoisted_2 = { key: 1 };
   (() => {
   	const _cache = _createVNodeCache(0);
-  	return _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : orNot ? (_openBlock(), _createElementBlock("p", _hoisted_2)) : (_openBlock(), _createBlock(_Fragment, { key: 2 }, [_cache[0] || (_cache[0] = _normalizeVNode("fine", -1))], 64))], 64);
+  	return _openBlock(), _createElementBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : orNot ? (_openBlock(), _createElementBlock("p", _hoisted_2)) : (_openBlock(), _createElementBlock(_Fragment, { key: 2 }, [_cache[0] || (_cache[0] = _normalizeVNode("fine", -1))], 64))], 64);
   })();
   "#);
 }
@@ -235,8 +235,8 @@ fn user_key() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", { key: a + 1 })) : (_openBlock(), _createElementBlock("div", { key: a + 1 }))], 64);
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createElementBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", { key: a + 1 })) : (_openBlock(), _createElementBlock("div", { key: a + 1 }))], 64);
   "#)
 }
 
@@ -251,10 +251,10 @@ fn multiple_v_if_that_are_sibling_nodes_should_have_different_keys() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
   const _hoisted_2 = { key: 1 };
-  _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), orNot ? (_openBlock(), _createElementBlock("p", _hoisted_2)) : _createCommentVNode("", true)], 64);
+  _openBlock(), _createElementBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), orNot ? (_openBlock(), _createElementBlock("p", _hoisted_2)) : _createCommentVNode("", true)], 64);
   "#)
 }
 
@@ -269,13 +269,13 @@ fn increasing_key_v_if_v_else_if_v_else() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
   const _hoisted_2 = { key: 1 };
   const _hoisted_3 = { key: 2 };
   const _hoisted_4 = { key: 3 };
   const _hoisted_5 = { key: 4 };
-  _openBlock(), _createBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : (_openBlock(), _createElementBlock("p", _hoisted_2)), another ? (_openBlock(), _createElementBlock("div", _hoisted_3)) : orNot ? (_openBlock(), _createElementBlock("p", _hoisted_4)) : (_openBlock(), _createElementBlock("p", _hoisted_5))], 64);
+  _openBlock(), _createElementBlock(_Fragment, null, [ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : (_openBlock(), _createElementBlock("p", _hoisted_2)), another ? (_openBlock(), _createElementBlock("div", _hoisted_3)) : orNot ? (_openBlock(), _createElementBlock("p", _hoisted_4)) : (_openBlock(), _createElementBlock("p", _hoisted_5))], 64);
   "#)
 }
 
@@ -378,13 +378,13 @@ fn with_spaces_between_branches() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
   const _hoisted_2 = { key: 1 };
   const _hoisted_3 = { key: 2 };
   (() => {
   	const _cache = _createVNodeCache(0);
-  	return _openBlock(), _createBlock(_Fragment, null, [
+  	return _openBlock(), _createElementBlock(_Fragment, null, [
   		ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : no ? (_openBlock(), _createElementBlock("div", _hoisted_2)) : (_openBlock(), _createElementBlock("div", _hoisted_3)),
   		_cache[0] || (_cache[0] = _normalizeVNode()),
   		_cache[1] || (_cache[1] = _normalizeVNode())
@@ -414,12 +414,12 @@ fn with_comments() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
   const _hoisted_2 = { key: 1 };
   (() => {
   	const _cache = _createVNodeCache(0);
-  	return _openBlock(), _createBlock(_Fragment, null, ok ? (_openBlock(), _createBlock(_Fragment, { key: 0 }, [ok2 ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : (_openBlock(), _createElementBlock("b", _hoisted_2)), _cache[0] || (_cache[0] = _createElementVNode("p", null, null, -1))], 64)) : _createCommentVNode("", true));
+  	return _openBlock(), _createElementBlock(_Fragment, null, ok ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [ok2 ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : (_openBlock(), _createElementBlock("b", _hoisted_2)), _cache[0] || (_cache[0] = _createElementVNode("p", null, null, -1))], 64)) : _createCommentVNode("", true));
   })();
   "#)
 }
