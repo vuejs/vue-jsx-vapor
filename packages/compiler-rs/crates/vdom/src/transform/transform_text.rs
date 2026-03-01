@@ -1,21 +1,23 @@
+use napi::bindgen_prelude::Either3;
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   NONE,
   ast::{
     AssignmentOperator, AssignmentTarget, BinaryOperator, ConditionalExpression, Expression,
-    FormalParameterKind, JSXChild, LogicalExpression, NumberBase, PropertyKind,
+    FormalParameterKind, JSXChild, LogicalExpression, NumberBase, ObjectPropertyKind, PropertyKind,
   },
 };
 use oxc_span::{GetSpan, SPAN};
 
 use crate::{
-  ast::NodeTypes,
+  ast::{NodeTypes, VNodeCall},
   transform::{TransformContext, cache_static::cache_static_children, utils::inject_prop},
 };
 
 use common::{
   check::{get_directive_name, is_built_in_directive, is_template},
   directive::Directives,
+  patch_flag::PatchFlags,
   text::resolve_jsx_text,
 };
 
@@ -256,20 +258,47 @@ fn transform_branch<'a>(
   unsafe {
     context.transform_node(&mut branch, Some(parent));
     let codegen_map = &mut context.codegen_map.borrow_mut();
-    if let Some(NodeTypes::VNodeCall(mut vnode_call)) = codegen_map.remove(&span) {
-      let key_property = ast.object_property(
-        SPAN,
-        PropertyKind::Init,
-        ast.property_key_static_identifier(SPAN, "key"),
-        ast.expression_numeric_literal(SPAN, key as f64, None, NumberBase::Hex),
-        false,
-        false,
-        false,
-      );
-      vnode_call.is_block = true;
-      inject_prop(&mut vnode_call, key_property, context);
-      cache_static_children(None, &mut ast.vec1(branch), context, codegen_map);
-      *exp = context.gen_vnode_call(vnode_call, codegen_map);
+    let key_property = ast.object_property(
+      SPAN,
+      PropertyKind::Init,
+      ast.property_key_static_identifier(SPAN, "key"),
+      ast.expression_numeric_literal(SPAN, key as f64, None, NumberBase::Hex),
+      false,
+      false,
+      false,
+    );
+    match codegen_map.remove(&span) {
+      Some(NodeTypes::VNodeCall(mut vnode_call)) => {
+        vnode_call.is_block = true;
+        inject_prop(&mut vnode_call, key_property, context);
+        cache_static_children(None, &mut ast.vec1(branch), context, codegen_map);
+        *exp = context.gen_vnode_call(vnode_call, codegen_map);
+      }
+      Some(NodeTypes::CacheExpression(cache_exp)) => {
+        *exp = context.gen_vnode_call(
+          VNodeCall {
+            tag: context.options.helper("_Fragment"),
+            props: Some(ast.expression_object(
+              SPAN,
+              ast.vec1(ObjectPropertyKind::ObjectProperty(ast.alloc(key_property))),
+            )),
+            children: Some(Either3::C(
+              ast.expression_array(SPAN, ast.vec1(cache_exp.into())),
+            )),
+            patch_flag: Some(PatchFlags::StableFragment as i32),
+            directives: None,
+            dynamic_props: None,
+            is_block: true,
+            disable_tracking: false,
+            is_component: true,
+            v_for: None,
+            v_if: None,
+            loc: SPAN,
+          },
+          codegen_map,
+        );
+      }
+      _ => {}
     }
   }
 }

@@ -307,3 +307,24 @@ fn expression_with_comment() {
   })();
   "#)
 }
+
+#[test]
+fn condition_expression_with_slot_outlet() {
+  let code = transform(
+    r#"<>{foo ? <slot /> : <div v-once={true} />}</>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderSlot as _renderSlot, setBlockTracking as _setBlockTracking, useSlots as _useSlots } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache(0);
+  	const _slots = _useSlots();
+  	return _openBlock(), _createBlock(_Fragment, null, [foo ? (_openBlock(), _createBlock(_Fragment, { key: 0 }, [_renderSlot(_slots, "default")], 64)) : (_openBlock(), _createBlock(_Fragment, { key: 1 }, [_cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div")).cacheIndex = 0, _setBlockTracking(1), _cache[0])], 64))], 64);
+  })();
+  "#);
+}

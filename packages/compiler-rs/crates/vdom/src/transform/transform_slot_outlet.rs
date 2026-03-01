@@ -19,13 +19,13 @@ pub unsafe fn transform_slot_outlet<'a>(
   directives: &mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
-) -> Option<Box<dyn FnOnce() + 'a>> {
+) {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
-    return None;
+    return;
   };
   let tag = directives.tag_name;
   if tag != "slot" {
-    return None;
+    return;
   }
 
   for value in &mut context.options.slot_scopes.borrow_mut().values_mut() {
@@ -128,7 +128,6 @@ pub unsafe fn transform_slot_outlet<'a>(
     .codegen_map
     .borrow_mut()
     .insert(node_span, expression);
-  None
 }
 
 fn process_slot_outlet<'a>(
