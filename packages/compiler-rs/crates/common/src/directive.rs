@@ -71,7 +71,7 @@ pub fn resolve_directive<'a>(
           .map(|s| s.to_string())
           .collect::<Vec<_>>();
       }
-      arg_string = Cow::Owned(splited[1].replace("_", "."));
+      arg_string = Cow::Owned(resolve_prop_name(&splited[1]).join("."));
     } else {
       let mut splited = resolve_prop_name(arg_string.as_ref())
         .into_iter()

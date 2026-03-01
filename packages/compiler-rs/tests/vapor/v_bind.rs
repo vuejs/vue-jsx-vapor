@@ -224,12 +224,17 @@ fn bind_with_svg_elements() {
 
 #[test]
 fn starts_with_underline() {
-  let code = transform(r#"<div _id_prop={id} __id_prop={id} />"#, None).code;
+  let code = transform(
+    r#"<div _id_prop={id} __id_prop={id} v-model:$_value_value$={model} />"#,
+    None,
+  )
+  .code;
   assert_snapshot!(code, @r#"
-  import { renderEffect as _renderEffect, setDOMProp as _setDOMProp, template as _template } from "vue";
+  import { applyTextModel as _applyTextModel, renderEffect as _renderEffect, setDOMProp as _setDOMProp, template as _template } from "vue";
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
+  	_applyTextModel(_n0, () => model, (_value) => model = _value);
   	_renderEffect(() => {
   		_setDOMProp(_n0, "_id", id);
   		_setDOMProp(_n0, "__id", id);

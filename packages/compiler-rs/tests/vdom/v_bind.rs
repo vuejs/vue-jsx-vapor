@@ -120,7 +120,7 @@ fn attr_modifier() {
 #[test]
 fn starts_with_underline() {
   let code = transform(
-    r#"<div _id_prop={id} __id_prop="" />"#,
+    r#"<div _id_prop={id} __id_prop="" v-model:$_value_value$={model} />"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -128,11 +128,17 @@ fn starts_with_underline() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["._id"];
-  _openBlock(), _createElementBlock("div", {
-  	"._id": id,
-  	".__id": ""
-  }, null, 40, _hoisted_1);
+  (() => {
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createElementBlock("div", _normalizeProps({
+  		"._id": id,
+  		".__id": "",
+  		[_value.value]: model,
+  		["onUpdate:" + _value.value]: _cache[0] || (_cache[0] = ($event) => model = $event)
+  	}), null, 48, _hoisted_1);
+  })();
   "#);
 }
