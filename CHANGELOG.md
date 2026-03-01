@@ -1,3 +1,20 @@
+## [3.2.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.0...v3.2.1) (2026-03-01)
+
+
+### Bug Fixes
+
+* **compiler/vdom:** don't convert plain text to `normalizeNode` when an ([2b6b74d](https://github.com/vuejs/vue-jsx-vapor/commit/2b6b74d61f4197ee9e65912d744c09b2ebf41fcf)), closes [#51](https://github.com/vuejs/vue-jsx-vapor/issues/51)
+* **compiler/vdom:** only optimize JSX in functional scope ([6f0ac81](https://github.com/vuejs/vue-jsx-vapor/commit/6f0ac818a5cc7d52961ef8670274cbe0f23870e3))
+* **compiler/vdom:** slot element and condition expression co-usage ([2b45f51](https://github.com/vuejs/vue-jsx-vapor/commit/2b45f51ced99be76ed8aa1795e50510a25068806))
+* **compiler/vdom:** use createElementBlock instead of createBlock for ([aebec9a](https://github.com/vuejs/vue-jsx-vapor/commit/aebec9a400670b8031df113e26bfcb227005fd85))
+* **compiler:** ignore codegen text as plain child ([9341fcd](https://github.com/vuejs/vue-jsx-vapor/commit/9341fcdd7bb957eddc6a80b5d0fceaa4555c97fb))
+* **compiler:** preserve &nbsp; when trimming text ([fedff20](https://github.com/vuejs/vue-jsx-vapor/commit/fedff201d895001de90e1c05b9c9f8e2be1d793b))
+* **compiler:** resolve dynamic prop names starting with underscores ([2149e83](https://github.com/vuejs/vue-jsx-vapor/commit/2149e835a7068ceb8293780562d160bc0437eeed))
+* **macros/volar:** collect scopes to detect slot element's scope ([6c73397](https://github.com/vuejs/vue-jsx-vapor/commit/6c7339790e81fcb48a3b8812383249c47baa6513)), closes [#52](https://github.com/vuejs/vue-jsx-vapor/issues/52)
+* **runtime/vdom:** wrap array items in normalizeVNode ([966ffc4](https://github.com/vuejs/vue-jsx-vapor/commit/966ffc44e4630c1fe08b1164e5f4c7356a9e21af))
+
+
+
 # [3.2.0](https://github.com/vuejs/vue-jsx-vapor/compare/v3.1.23...v3.2.0) (2026-02-26)
 
 
