@@ -1,6 +1,7 @@
 import {
   cloneVNode,
   createBlock,
+  createElementBlock,
   createVNode,
   Fragment,
   getCurrentInstance,
@@ -15,7 +16,7 @@ const cacheMap = new WeakMap()
 export function createVNodeCache(index: number) {
   const i = getCurrentInstance()
   if (i) {
-    !cacheMap.has(i) && cacheMap.set(i, [])
+    if (!cacheMap.has(i)) cacheMap.set(i, [])
     const caches = cacheMap.get(i)
     return caches[index] || (caches[index] = [])
   } else {
@@ -36,10 +37,12 @@ export function normalizeVNode(value: any = ' ', flag = 1): VNode {
       ? createBlock(cloneIfMounted(value))
       : cloneIfMounted(value)
     : Array.isArray(value)
-      ? create(
+      ? createElementBlock(
           Fragment,
           null,
-          value.map((n) => normalizeVNode(n)),
+          value.map((n) =>
+            normalizeVNode(typeof n === 'function' ? n.toString() : () => n),
+          ),
         )
       : create(
           Text,
