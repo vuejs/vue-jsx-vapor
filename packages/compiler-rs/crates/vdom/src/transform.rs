@@ -118,18 +118,53 @@ impl<'a> TransformContext<'a> {
   fn should_optimize(&self, node_id: NodeId) -> bool {
     let semantic = self.options.semantic.borrow();
     let scope_id = semantic.nodes().get_node(node_id).scope_id();
+    let parent_is_define_component = || -> bool {
+      let mut ancestors = semantic.scoping().scope_ancestors(scope_id);
+      ancestors.next();
+      if let Some(parent_scope_id) = ancestors.next() {
+        if parent_scope_id == semantic.scoping().root_scope_id() {
+          true
+        } else if let Some(grandparent_scope_id) = ancestors.next() {
+          grandparent_scope_id == semantic.scoping().root_scope_id()
+            || match semantic
+              .nodes()
+              .parent_kind(semantic.scoping().get_node_id(parent_scope_id))
+            {
+              AstKind::CallExpression(call_exp) => call_exp
+                .callee_name()
+                .is_some_and(|name| ["defineComponent", "defineCustomElement"].contains(&name)),
+              AstKind::ObjectProperty(prop) => {
+                if let Some(AstKind::CallExpression(call_exp)) =
+                  semantic.nodes().ancestor_kinds(prop.node_id()).nth(1)
+                {
+                  call_exp
+                    .callee_name()
+                    .is_some_and(|name| ["defineComponent", "defineCustomElement"].contains(&name))
+                } else {
+                  false
+                }
+              }
+              _ => false,
+            }
+        } else {
+          true
+        }
+      } else {
+        true
+      }
+    };
+
     match semantic
       .nodes()
       .get_node(semantic.scoping().get_node_id(scope_id))
       .kind()
     {
-      AstKind::ArrowFunctionExpression(scope) => scope.params.is_empty(),
-      AstKind::Function(scope) => scope.params.is_empty(),
-      AstKind::BlockStatement(stmt) => match semantic.nodes().parent_kind(stmt.node_id()) {
-        AstKind::ForStatement(_) | AstKind::ForInStatement(_) | AstKind::ForOfStatement(_) => false,
-        _ => true,
-      },
-      _ => true,
+      AstKind::ArrowFunctionExpression(scope) => {
+        scope.params.is_empty() && parent_is_define_component()
+      }
+      AstKind::Function(scope) => scope.params.is_empty() && parent_is_define_component(),
+      AstKind::Program(_) => true,
+      _ => false,
     }
   }
 
