@@ -35,7 +35,7 @@ pub fn transform_v_model<'a>(
   // (not artificially created by a transform)
   let (exp, has_scope_ref) = if let JSXAttributeValue::ExpressionContainer(exp) = exp
     && !matches!(exp.expression, JSXExpression::EmptyExpression(_))
-    && let (exp, has_scope_ref) = context.process_expression(
+    && let (exp, has_scope_ref, ..) = context.process_expression(
       exp
         .expression
         .clone_in(context.allocator)
