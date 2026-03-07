@@ -328,3 +328,43 @@ fn condition_expression_with_slot_outlet() {
   })();
   "#);
 }
+
+#[test]
+fn condition_expression_with_assign_target() {
+  let code = transform(
+    r#"<>{(foo = <div />) ? foo : null}</>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createElementBlock(_Fragment, null, [(foo = (_openBlock(), _createElementBlock("div"))) ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_normalizeVNode(() => foo)], 64)) : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [_cache[0] || (_cache[0] = _normalizeVNode(null, -1))], 64))], 64);
+  })();
+  "#);
+}
+
+#[test]
+fn logical_expression_with_assign_target() {
+  let code = transform(
+    r#"<>{(foo = <div />) || foo}</>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  (() => {
+  	let _temp;
+  	return _openBlock(), _createElementBlock(_Fragment, null, [(_temp = foo = (_openBlock(), _createElementBlock("div")), _temp) ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [_normalizeVNode(() => _temp)], 64)) : (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_normalizeVNode(() => foo)], 64))], 64);
+  })();
+  "#);
+}

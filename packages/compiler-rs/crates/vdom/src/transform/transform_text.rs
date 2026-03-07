@@ -168,6 +168,7 @@ fn transform_condition_expression<'a>(
   parent: &mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
 ) {
+  node.test = context.process_expression(&mut node.test).0;
   let context_v_if_map = context.v_if_map.as_ptr();
   let v_if_map = unsafe { &mut *context_v_if_map }
     .entry(parent.span())
@@ -206,7 +207,7 @@ fn transform_logical_expression<'a>(
           AssignmentTarget::AssignmentTargetIdentifier(
             ast.alloc_identifier_reference(SPAN, "_temp"),
           ),
-          node.left.take_in(ast.allocator),
+          context.process_expression(&mut node.left).0,
         ),
         {
           node.left = ast.expression_identifier(left_span, "_temp");
