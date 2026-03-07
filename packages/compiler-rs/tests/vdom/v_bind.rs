@@ -142,3 +142,23 @@ fn starts_with_underline() {
   })();
   "#);
 }
+
+#[test]
+fn prevent_hoisted_expression_with_this() {
+  let code = transform(
+    r#"<div class={this.foo} onMousedown={this.onMousedown} />"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["onMousedown"];
+  _openBlock(), _createElementBlock("div", {
+  	class: _normalizeClass(this.foo),
+  	onMousedown: this.onMousedown
+  }, null, 42, _hoisted_1);
+  "#);
+}

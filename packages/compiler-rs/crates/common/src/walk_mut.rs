@@ -29,6 +29,7 @@ type OnIdentifier<'a> =
 // Return value indicates whether the AST walked can be a constant
 pub struct WalkIdentifiersMut<'a> {
   on_identifier: OnIdentifier<'a>,
+  has_this: bool,
   pub options: &'a TransformOptions<'a>,
   pub roots: Vec<RootJsx<'a>>,
   pub root_scope_id: Option<ScopeId>,
@@ -41,6 +42,7 @@ impl<'a> WalkIdentifiersMut<'a> {
       on_identifier,
       root_scope_id: None,
       roots: vec![],
+      has_this: false,
     }
   }
 
@@ -77,7 +79,7 @@ impl<'a> WalkIdentifiersMut<'a> {
     }
   }
 
-  pub fn visit(&mut self, it: &mut Expression<'a>) {
+  pub fn visit(&mut self, it: &mut Expression<'a>) -> bool {
     self.root_scope_id = Some(
       self
         .options
@@ -91,6 +93,7 @@ impl<'a> WalkIdentifiersMut<'a> {
     if let Some(on_exit_program) = self.options.on_exit_program.borrow().as_ref() {
       on_exit_program(std::mem::take(&mut self.roots));
     }
+    self.has_this
   }
 }
 
@@ -101,6 +104,8 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
         *node = replacer;
       }
       return;
+    } else if let Expression::ThisExpression(_) = node {
+      self.has_this = true;
     } else if let Some(on_enter_expression) = self.options.on_enter_expression.borrow().as_ref()
       && let Some((node_ref, vdom)) = on_enter_expression(node)
     {

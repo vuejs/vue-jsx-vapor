@@ -347,7 +347,7 @@ impl<'a> TransformContext<'a> {
     let mut has_scope_ref = !should_optimize;
     let has_scope_ref_ptr = &mut has_scope_ref as *mut _;
     let has_ref_ptr = &mut has_ref as *mut bool;
-    WalkIdentifiersMut::new(
+    if WalkIdentifiersMut::new(
       Box::new(move |id, _| {
         if !should_optimize {
           self.add_slot_scopes(id);
@@ -366,7 +366,10 @@ impl<'a> TransformContext<'a> {
       }),
       self.options,
     )
-    .visit(&mut value);
+    .visit(&mut value)
+    {
+      has_ref = true;
+    };
     self
       .reference_expressions
       .borrow_mut()
