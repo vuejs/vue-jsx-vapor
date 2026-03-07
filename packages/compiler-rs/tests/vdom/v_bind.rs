@@ -154,11 +154,14 @@ fn prevent_hoisted_expression_with_this() {
   )
   .code;
   assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = ["onMousedown"];
-  _openBlock(), _createElementBlock("div", {
-  	class: _normalizeClass(this.foo),
-  	onMousedown: this.onMousedown
-  }, null, 42, _hoisted_1);
+  (() => {
+  	const _cache = _createVNodeCache(0);
+  	return _openBlock(), _createElementBlock("div", {
+  		class: _normalizeClass(this.foo),
+  		onMousedown: _cache[0] || (_cache[0] = (...args) => this.onMousedown(...args))
+  	}, null, 34);
+  })();
   "#);
 }
