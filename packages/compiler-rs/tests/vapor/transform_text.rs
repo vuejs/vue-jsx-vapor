@@ -236,18 +236,15 @@ fn logical_expression() {
   let code = transform("<>{ok && (<div>{msg}</div>)}</>", None).code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> ");
+  import { template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ", true);
   (() => {
-  	const _n0 = _createIf(() => ok, () => {
-  		const _n2 = _t0();
-  		const _x2 = _txt(_n2);
-  		_setNodes(_x2, () => msg);
-  		return _n2;
-  	}, () => {
-  		const _n4 = _createNodes(() => ok);
-  		return _n4;
-  	}, false, 0);
+  	const _n0 = _createNodes(() => ok && (() => {
+  		const _n0 = _t0();
+  		const _x0 = _txt(_n0);
+  		_setNodes(_x0, () => msg);
+  		return _n0;
+  	})());
   	return _n0;
   })();
   "#);
@@ -257,23 +254,19 @@ fn logical_expression() {
 fn logical_expression_or() {
   let code = transform(r#"<div>{foo || <div>{foo}</div>}</div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> ");
-  const _t1 = _template("<div>", true);
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ", true);
   (() => {
-  	const _n5 = _t1();
-  	_setInsertionState(_n5, null, 0, true);
-  	const _n0 = _createIf(() => foo, () => {
-  		const _n2 = _createNodes(() => foo);
-  		return _n2;
-  	}, () => {
-  		const _n4 = _t0();
-  		const _x4 = _txt(_n4);
-  		_setNodes(_x4, () => foo);
-  		return _n4;
-  	}, false, 0);
-  	return _n5;
+  	const _n0 = _t0();
+  	const _x0 = _txt(_n0);
+  	_setNodes(_x0, () => foo || (() => {
+  		const _n0 = _t0();
+  		const _x0 = _txt(_n0);
+  		_setNodes(_x0, () => foo);
+  		return _n0;
+  	})());
+  	return _n0;
   })();
   "#)
 }
@@ -282,23 +275,19 @@ fn logical_expression_or() {
 fn logical_expression_coalesce() {
   let code = transform(r#"<div>{foo ?? <div>{foo}</div>}</div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> ");
-  const _t1 = _template("<div>", true);
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ", true);
   (() => {
-  	const _n5 = _t1();
-  	_setInsertionState(_n5, null, 0, true);
-  	const _n0 = _createIf(() => foo == null, () => {
-  		const _n2 = _t0();
-  		const _x2 = _txt(_n2);
-  		_setNodes(_x2, () => foo);
-  		return _n2;
-  	}, () => {
-  		const _n4 = _createNodes(() => foo);
-  		return _n4;
-  	}, false, 0);
-  	return _n5;
+  	const _n0 = _t0();
+  	const _x0 = _txt(_n0);
+  	_setNodes(_x0, () => foo ?? (() => {
+  		const _n0 = _t0();
+  		const _x0 = _txt(_n0);
+  		_setNodes(_x0, () => foo);
+  		return _n0;
+  	})());
+  	return _n0;
   })();
   "#)
 }

@@ -27,6 +27,11 @@ export default defineVaporComponent(() => {
         </fieldset>
 
         <fieldset>
+          <legend>logical expression</legend>
+          <div>{count.value && <div>{1}</div>}</div>
+        </fieldset>
+
+        <fieldset>
           <legend>v-if</legend>
           <div>
             {/* @ts-ignore */}

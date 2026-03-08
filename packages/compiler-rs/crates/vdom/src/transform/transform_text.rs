@@ -1,10 +1,10 @@
 use napi::bindgen_prelude::Either3;
-use oxc_allocator::{CloneIn, TakeIn};
+use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
   ast::{
-    AssignmentOperator, AssignmentTarget, BinaryOperator, ConditionalExpression, Expression,
-    FormalParameterKind, JSXChild, LogicalExpression, NumberBase, ObjectPropertyKind, PropertyKind,
+    ConditionalExpression, Expression, FormalParameterKind, JSXChild, NumberBase,
+    ObjectPropertyKind, PropertyKind,
   },
 };
 use oxc_span::{GetSpan, SPAN};
@@ -101,10 +101,6 @@ pub unsafe fn transform_text<'a>(
           if let Expression::ConditionalExpression(exp) = exp {
             transform_condition_expression(exp, unsafe { &mut *context_node }, context);
             continue;
-          } else if let Expression::LogicalExpression(logical_exp) = exp {
-            *exp =
-              transform_logical_expression(logical_exp, unsafe { &mut *context_node }, context);
-            continue;
           } else if exp.is_literal() {
             call_args.push(
               context
@@ -177,69 +173,6 @@ fn transform_condition_expression<'a>(
   v_if_map.0 += 2;
   transform_branch(&mut node.consequent, key, parent, context);
   transform_branch(&mut node.alternate, key + 1, parent, context);
-}
-
-fn transform_logical_expression<'a>(
-  node: &mut LogicalExpression<'a>,
-  parent: &mut JSXChild<'a>,
-  context: &'a TransformContext<'a>,
-) -> Expression<'a> {
-  let context_v_if_map = context.v_if_map.as_ptr();
-  let v_if_map = unsafe { &mut *context_v_if_map }
-    .entry(parent.span())
-    .or_default();
-  let key = v_if_map.0;
-  v_if_map.0 += 2;
-  transform_branch(&mut node.right, key, parent, context);
-
-  // {foo() ?? bar} => (_temp = foo(), _temp == null) ? bar : _temp
-  *context.has_temp.borrow_mut() = true;
-  let ast = &context.ast;
-  let left_span = node.left.span();
-  let test = ast.expression_parenthesized(
-    SPAN,
-    ast.expression_sequence(
-      SPAN,
-      ast.vec_from_array([
-        ast.expression_assignment(
-          SPAN,
-          AssignmentOperator::Assign,
-          AssignmentTarget::AssignmentTargetIdentifier(
-            ast.alloc_identifier_reference(SPAN, "_temp"),
-          ),
-          context.process_expression(&mut node.left).0,
-        ),
-        {
-          node.left = ast.expression_identifier(left_span, "_temp");
-          if node.operator.is_coalesce() {
-            ast.expression_binary(
-              SPAN,
-              node.left.clone_in(ast.allocator),
-              BinaryOperator::Equality,
-              ast.expression_null_literal(SPAN),
-            )
-          } else {
-            node.left.clone_in(ast.allocator)
-          }
-        },
-      ]),
-    ),
-  );
-  transform_branch(&mut node.left, key + 1, parent, context);
-  ast.expression_conditional(
-    SPAN,
-    test,
-    if node.operator.is_and() || node.operator.is_coalesce() {
-      node.right.take_in(ast.allocator)
-    } else {
-      node.left.take_in(ast.allocator)
-    },
-    if node.operator.is_and() || node.operator.is_coalesce() {
-      node.left.take_in(ast.allocator)
-    } else {
-      node.right.take_in(ast.allocator)
-    },
-  )
 }
 
 fn transform_branch<'a>(

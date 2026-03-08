@@ -175,7 +175,7 @@ pub fn is_text_like(node: &JSXChild) -> bool {
   {
     !matches!(
       expression.without_parentheses().get_inner_expression(),
-      Expression::ConditionalExpression(_) | Expression::LogicalExpression(_)
+      Expression::ConditionalExpression(_)
     )
   } else {
     matches!(node, JSXChild::Text(_))

@@ -1,11 +1,9 @@
 use std::{borrow::Cow, collections::HashSet};
 
 use napi::Either;
-use oxc_allocator::{CloneIn, TakeIn};
-use oxc_ast::ast::{
-  BinaryOperator, ConditionalExpression, Expression, JSXChild, LogicalExpression,
-};
-use oxc_span::{GetSpan, SPAN};
+use oxc_allocator::TakeIn;
+use oxc_ast::ast::{ConditionalExpression, Expression, JSXChild};
+use oxc_span::GetSpan;
 
 use crate::{
   ir::index::{
@@ -78,15 +76,6 @@ pub unsafe fn transform_text<'a>(
               parent_node,
             ));
           }
-          Expression::LogicalExpression(expression) => {
-            return Some(process_logical_expression(
-              expression,
-              unsafe { &mut *context_node },
-              context,
-              context_block,
-              parent_node,
-            ));
-          }
           _ => process_interpolation(
             unsafe { &mut *context_node },
             context,
@@ -144,7 +133,7 @@ fn process_children<'a>(
         if if let Some(exp) = exp {
           !matches!(
             exp.without_parentheses().get_inner_expression(),
-            Expression::ConditionalExpression(_) | Expression::LogicalExpression(_),
+            Expression::ConditionalExpression(_),
           )
         } else {
           false
@@ -386,74 +375,6 @@ pub fn process_conditional_expression<'a>(
   })
 }
 
-fn process_logical_expression<'a>(
-  node: &'a mut LogicalExpression<'a>,
-  context_node: &'a mut JSXChild<'a>,
-  context: &'a TransformContext<'a>,
-  context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut JSXChild<'a>,
-) -> Box<dyn FnOnce() + 'a> {
-  let left = node
-    .left
-    .without_parentheses_mut()
-    .get_inner_expression_mut();
-  let right = node
-    .right
-    .without_parentheses_mut()
-    .get_inner_expression_mut()
-    .take_in(context.allocator);
-
-  let dynamic = &mut context_block.dynamic;
-  dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
-  let id = context.reference(dynamic);
-  let block = context_block as *mut BlockIRNode;
-  let (_left, _right) = if node.operator.is_and() || node.operator.is_coalesce() {
-    (right, left.clone_in(context.allocator))
-  } else {
-    (left.clone_in(context.allocator), right)
-  };
-  let exit_block = context.create_block(context_node, unsafe { &mut *block }, _left, false);
-
-  if node.operator.is_coalesce() {
-    let ast = &context.ast;
-    *left = ast.expression_binary(
-      SPAN,
-      left.take_in(context.allocator),
-      BinaryOperator::Equality,
-      ast.expression_null_literal(SPAN),
-    );
-  }
-  Box::new(move || {
-    let block = exit_block();
-
-    let mut operation = IfIRNode {
-      id,
-      positive: block,
-      index: context.next_if_index(),
-      once: *context.in_v_once.borrow() || is_constant_node(left),
-      condition: left.take_in(context.allocator),
-      negative: None,
-      anchor: None,
-      logical_index: None,
-      parent: None,
-      append: false,
-      last: false,
-    };
-    let _context_block = context_block as *mut BlockIRNode;
-
-    set_negative(
-      _right,
-      &mut operation,
-      context_node,
-      context,
-      unsafe { &mut *_context_block },
-      parent_node,
-    );
-
-    context_block.dynamic.operation = Some(Box::new(OperationNode::If(operation)));
-  })
-}
-
 fn set_negative<'a>(
   mut node: Expression<'a>,
   operation: &mut IfIRNode<'a>,
@@ -494,58 +415,6 @@ fn set_negative<'a>(
     };
     set_negative(
       unsafe { &mut *node }.alternate.take_in(context.allocator),
-      &mut negative,
-      context_node,
-      context,
-      context_block,
-      parent_node,
-    );
-    operation.negative = Some(Box::new(Either::B(negative)));
-  } else if let Expression::LogicalExpression(node) = node {
-    let node = node as *mut oxc_allocator::Box<LogicalExpression>;
-    let left = unsafe { &mut *node }
-      .left
-      .without_parentheses_mut()
-      .get_inner_expression_mut();
-    let right = unsafe { &mut *node }
-      .right
-      .without_parentheses_mut()
-      .get_inner_expression_mut()
-      .take_in(context.allocator);
-    let (_left, mut _right) =
-      if unsafe { &mut *node }.operator.is_and() || unsafe { &mut *node }.operator.is_coalesce() {
-        (right, left.clone_in(context.allocator))
-      } else {
-        (left.clone_in(context.allocator), right)
-      };
-    let block = context_block as *mut BlockIRNode;
-    let exit_block = context.create_block(context_node, unsafe { &mut *block }, _left, false);
-    context.transform_node(Some(unsafe { &mut *block }), Some(parent_node));
-    if unsafe { &mut *node }.operator.is_coalesce() {
-      let ast = &context.ast;
-      *left = ast.expression_binary(
-        SPAN,
-        left.take_in(context.allocator),
-        BinaryOperator::Equality,
-        ast.expression_null_literal(SPAN),
-      );
-    }
-    let block = exit_block();
-    let mut negative = IfIRNode {
-      id: -1,
-      once: *context.in_v_once.borrow() || is_constant_node(left),
-      condition: left.take_in(context.allocator),
-      positive: block,
-      index: context.next_if_index(),
-      negative: None,
-      anchor: None,
-      logical_index: None,
-      parent: None,
-      append: false,
-      last: false,
-    };
-    set_negative(
-      _right,
       &mut negative,
       context_node,
       context,
