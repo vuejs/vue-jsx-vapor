@@ -1,5 +1,6 @@
 import {
   cloneVNode,
+  Comment,
   createBlock,
   createElementBlock,
   createVNode,
@@ -44,12 +45,9 @@ export function normalizeVNode(value: any = ' ', flag = 1): VNode {
             normalizeVNode(typeof n === 'function' ? n.toString() : () => n),
           ),
         )
-      : create(
-          Text,
-          null,
-          value == null || typeof value === 'boolean' ? '' : String(value),
-          flag,
-        )
+      : value == null || typeof value === 'boolean'
+        ? create(Comment)
+        : create(Text, null, String(value), flag)
 }
 
 // optimized normalization for template-compiled render fns

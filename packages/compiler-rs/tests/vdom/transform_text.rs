@@ -340,12 +340,9 @@ fn condition_expression_with_assign_target() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache(0);
-  	return _openBlock(), _createElementBlock(_Fragment, null, [(foo = (_openBlock(), _createElementBlock("div"))) ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_normalizeVNode(() => foo)], 64)) : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [_cache[0] || (_cache[0] = _normalizeVNode(null, -1))], 64))], 64);
-  })();
+  _openBlock(), _createElementBlock(_Fragment, null, [(foo = (_openBlock(), _createElementBlock("div"))) ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_normalizeVNode(() => foo)], 64)) : _normalizeVNode(null)], 64);
   "#);
 }
 

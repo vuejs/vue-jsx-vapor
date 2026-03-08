@@ -250,6 +250,16 @@ fn transform_branch<'a>(
 ) {
   let ast = &context.ast;
   let exp = exp.without_parentheses_mut().get_inner_expression_mut();
+  if exp.is_literal() || exp.evaluate_to_undefined() {
+    *exp = ast.expression_call(
+      SPAN,
+      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_normalizeVNode"))),
+      NONE,
+      ast.vec1(exp.take_in(context.allocator).into()),
+      false,
+    );
+    return;
+  }
   let span = exp.span();
   let mut branch = if let Expression::JSXElement(branch) = exp {
     JSXChild::Element(branch.take_in_box(context.allocator))
