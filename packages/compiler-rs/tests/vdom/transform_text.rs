@@ -342,7 +342,7 @@ fn condition_expression_with_assign_target() {
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  _openBlock(), _createElementBlock(_Fragment, null, [(foo = (_openBlock(), _createElementBlock("div"))) ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_normalizeVNode(() => foo)], 64)) : _normalizeVNode(null)], 64);
+  _openBlock(), _createElementBlock(_Fragment, null, [(foo = (_openBlock(), _createElementBlock("div"))) ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_normalizeVNode(() => foo)], 64)) : _normalizeVNode(() => null)], 64);
   "#);
 }
 

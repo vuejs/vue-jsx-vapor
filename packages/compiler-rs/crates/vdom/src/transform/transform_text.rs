@@ -255,7 +255,28 @@ fn transform_branch<'a>(
       SPAN,
       ast.expression_identifier(SPAN, ast.atom(context.options.helper("_normalizeVNode"))),
       NONE,
-      ast.vec1(exp.take_in(context.allocator).into()),
+      ast.vec1(
+        ast
+          .expression_arrow_function(
+            SPAN,
+            true,
+            false,
+            NONE,
+            ast.formal_parameters(
+              SPAN,
+              FormalParameterKind::ArrowFormalParameters,
+              ast.vec(),
+              NONE,
+            ),
+            NONE,
+            ast.function_body(
+              SPAN,
+              ast.vec(),
+              ast.vec1(ast.statement_expression(SPAN, exp.take_in(context.allocator))),
+            ),
+          )
+          .into(),
+      ),
       false,
     );
     return;
