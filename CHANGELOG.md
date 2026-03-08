@@ -1,3 +1,15 @@
+## [3.2.2](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.1...v3.2.2) (2026-03-08)
+
+
+### Bug Fixes
+
+* **compiler/vdom:** prevent cache this-expression ([932a6ae](https://github.com/vuejs/vue-jsx-vapor/commit/932a6ae6cec0a620735dfdbf9b5dff5aa4e0e70d))
+* **compiler/vdom:** prevent hoisted this-expression ([470e6b8](https://github.com/vuejs/vue-jsx-vapor/commit/470e6b842ed3cf1a05f20323a48216e4bde40daa))
+* **compiler/vdom:** transform JSX in expression with assignment targets ([7c24536](https://github.com/vuejs/vue-jsx-vapor/commit/7c2453646de39ee855ebf11992d4a805e1682662))
+* **macros:** remove import shim ([14d4c6d](https://github.com/vuejs/vue-jsx-vapor/commit/14d4c6ddb4208bc628ceace504e7c9687351cfab)), closes [#53](https://github.com/vuejs/vue-jsx-vapor/issues/53)
+
+
+
 ## [3.2.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.0...v3.2.1) (2026-03-01)
 
 
