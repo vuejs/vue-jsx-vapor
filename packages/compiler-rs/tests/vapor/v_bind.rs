@@ -19,10 +19,11 @@ fn basic() {
 fn no_expression() {
   let code = transform("<div id />", None).code;
   assert_snapshot!(code, @r#"
-  import { template as _template } from "vue";
-  const _t0 = _template("<div id>", true);
+  import { setProp as _setProp, template as _template } from "vue";
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
+  	_setProp(_n0, "id", true);
   	return _n0;
   })();
   "#);
@@ -59,10 +60,11 @@ fn camel_modifier() {
 fn camel_modifier_with_no_expression() {
   let code = transform("<div foo-bar_camel />", None).code;
   assert_snapshot!(code, @r#"
-  import { template as _template } from "vue";
-  const _t0 = _template("<div foo-bar>", true);
+  import { setAttr as _setAttr, template as _template } from "vue";
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
+  	_setAttr(_n0, "foo-bar", true);
   	return _n0;
   })();
   "#);
@@ -86,10 +88,11 @@ fn prop_modifier() {
 fn prop_modifier_with_no_expression() {
   let code = transform("<div fooBar_prop />", None).code;
   assert_snapshot!(code, @r#"
-  import { template as _template } from "vue";
-  const _t0 = _template("<div fooBar>", true);
+  import { setProp as _setProp, template as _template } from "vue";
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
+  	_setProp(_n0, "fooBar", true);
   	return _n0;
   })();
   "#);
@@ -113,10 +116,11 @@ fn attr_modifier() {
 fn attr_modifier_with_no_expression() {
   let code = transform("<div foo-bar_attr />", None).code;
   assert_snapshot!(code, @r#"
-  import { template as _template } from "vue";
-  const _t0 = _template("<div foo-bar>", true);
+  import { setAttr as _setAttr, template as _template } from "vue";
+  const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
+  	_setAttr(_n0, "foo-bar", true);
   	return _n0;
   })();
   "#);

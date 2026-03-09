@@ -517,10 +517,8 @@ pub fn transform_prop<'a>(
       ast.expression_string_literal(SPAN, ast.atom(name), None),
       if let Some(value) = value {
         ast.expression_string_literal(SPAN, ast.atom(&value), None)
-      } else if is_component {
-        ast.expression_boolean_literal(SPAN, true)
       } else {
-        ast.expression_string_literal(SPAN, ast.atom(""), None)
+        ast.expression_boolean_literal(SPAN, true)
       },
     ));
   }

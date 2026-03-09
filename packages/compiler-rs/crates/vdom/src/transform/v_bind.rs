@@ -47,10 +47,8 @@ pub fn transform_v_bind<'a>(
 
   let value = if let Some(value) = &mut dir.value {
     context.jsx_attribute_value_to_expression(value)
-  } else if directives.is_component {
-    ast.expression_boolean_literal(SPAN, true)
   } else {
-    ast.expression_string_literal(SPAN, "", None)
+    ast.expression_boolean_literal(SPAN, true)
   };
 
   Some(DirectiveTransformResult {
