@@ -38,7 +38,7 @@ fn statically_named_slot_outlet() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	const _cache = _createVNodeCache(0);
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
   	const _slots = _useSlots();
   	return _renderSlot(_slots, "foo", {}, () => [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))]);
   })();
@@ -145,7 +145,7 @@ fn default_slot_outlet_with_fallback() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	const _cache = _createVNodeCache(0);
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
   	const _slots = _useSlots();
   	return _renderSlot(_slots, "default", {}, () => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]);
   })();
@@ -166,7 +166,7 @@ fn named_slot_outlet_with_fallback() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	const _cache = _createVNodeCache(0);
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
   	const _slots = _useSlots();
   	return _renderSlot(_slots, "foo", {}, () => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]);
   })();
@@ -187,7 +187,7 @@ fn default_slot_outlet_with_props_and_fallback() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	const _cache = _createVNodeCache(0);
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
   	const _slots = _useSlots();
   	return _renderSlot(_slots, "default", { foo: bar }, () => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]);
   })();
@@ -208,7 +208,7 @@ fn named_slot_outlet_with_props_and_fallback() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
-  	const _cache = _createVNodeCache(0);
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
   	const _slots = _useSlots();
   	return _renderSlot(_slots, "foo", { foo: bar }, () => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]);
   })();

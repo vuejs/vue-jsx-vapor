@@ -1,6 +1,4 @@
-use std::hash::{DefaultHasher, Hash, Hasher};
-
-use common::options::TransformOptions;
+use common::{options::TransformOptions, text::hash_string};
 use napi::Either;
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
@@ -74,12 +72,6 @@ impl<'a> HmrOrSsrTransform<'a> {
     names
   }
 
-  fn hash_string(&self, s: &str) -> String {
-    let mut hasher = DefaultHasher::new();
-    format!("{}{}", self.options.filename, s).hash(&mut hasher);
-    format!("{:x}", hasher.finish())
-  }
-
   pub fn visit(&mut self, ast: &AstBuilder<'a>, program: &mut Program<'a>) {
     let mut declared_components = vec![];
     let mut default_declaration_index = 0;
@@ -100,7 +92,7 @@ impl<'a> HmrOrSsrTransform<'a> {
               .map(|name| Component {
                 local: name,
                 exported: name,
-                id: self.hash_string(name),
+                id: hash_string(&format!("{}{}", self.options.filename, name)),
               })
               .collect::<Vec<_>>(),
           )
@@ -110,7 +102,7 @@ impl<'a> HmrOrSsrTransform<'a> {
           self.components.push(Component {
             local: id.name.as_str(),
             exported: id.name.as_str(),
-            id: self.hash_string(&id.name),
+            id: hash_string(&format!("{}{}", self.options.filename, &id.name)),
           });
         } else {
           for spec in &node.specifiers {
@@ -120,7 +112,7 @@ impl<'a> HmrOrSsrTransform<'a> {
               self.components.push(Component {
                 local: spec.local.name().as_str(),
                 exported: name.as_str(),
-                id: self.hash_string(&name),
+                id: hash_string(&format!("{}{}", self.options.filename, &name)),
               })
             }
           }
@@ -132,7 +124,7 @@ impl<'a> HmrOrSsrTransform<'a> {
             self.components.push(Component {
               local: _name,
               exported: "default",
-              id: self.hash_string("default"),
+              id: hash_string(&format!("{}{}", self.options.filename, "default")),
             })
           }
         } else if let ExportDefaultDeclarationKind::FunctionDeclaration(declaration) =
@@ -146,7 +138,7 @@ impl<'a> HmrOrSsrTransform<'a> {
               "__default__"
             },
             exported: "default",
-            id: self.hash_string("default"),
+            id: hash_string(&format!("{}{}", self.options.filename, "default")),
           })
         } else if self.is_define_component_call(node.declaration.as_expression())
           || node
@@ -164,7 +156,7 @@ impl<'a> HmrOrSsrTransform<'a> {
               "__default__"
             },
             exported: "default",
-            id: self.hash_string("default"),
+            id: hash_string(&format!("{}{}", self.options.filename, "default")),
           })
         }
         default_declaration_index = index;

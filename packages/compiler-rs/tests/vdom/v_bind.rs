@@ -132,7 +132,7 @@ fn starts_with_underline() {
   import { createElementBlock as _createElementBlock, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["._id"];
   (() => {
-  	const _cache = _createVNodeCache(0);
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
   	return _openBlock(), _createElementBlock("div", _normalizeProps({
   		"._id": id,
   		".__id": "",

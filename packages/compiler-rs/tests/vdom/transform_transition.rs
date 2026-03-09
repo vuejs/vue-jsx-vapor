@@ -38,7 +38,7 @@ fn v_show_with_appear() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, vShow as _vShow, withCtx as _withCtx, withDirectives as _withDirectives } from "vue";
   (() => {
-  	const _cache = _createVNodeCache(0);
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
   	return _openBlock(), _createBlock(Transition, {
   		appear: true,
   		onAppear: _cache[0] || (_cache[0] = () => {}),

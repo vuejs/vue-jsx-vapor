@@ -77,7 +77,7 @@ fn should_optimize_in_define_compoennt() {
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   export default defineComponent({ setup() {
   	return () => (() => {
-  		const _cache = _createVNodeCache(0);
+  		const _cache = _createVNodeCache("631d214bc2c8427c");
   		return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
   	})();
   } });
@@ -101,7 +101,7 @@ fn should_optimize_in_functional_define_compoennt() {
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   export default defineComponent(() => {
   	return () => (() => {
-  		const _cache = _createVNodeCache(0);
+  		const _cache = _createVNodeCache("631d214bc2c8427c");
   		return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
   	})();
   });
@@ -137,24 +137,24 @@ fn should_optimize_in_nested_define_compoennt() {
   export default defineComponent(() => {
   	const Comp = defineComponent(() => {
   		return () => (() => {
-  			const _cache = _createVNodeCache(0);
+  			const _cache = _createVNodeCache("631d214bc2c8427c");
   			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
   		})();
   	});
   	const Comp1 = defineComponent({ setup: () => {
   		return () => (() => {
-  			const _cache = _createVNodeCache(1);
+  			const _cache = _createVNodeCache("5c89500e299049d2");
   			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
   		})();
   	} });
   	const Comp2 = () => {
   		return (() => {
-  			const _cache = _createVNodeCache(2);
+  			const _cache = _createVNodeCache("d10877e335888a9");
   			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
   		})();
   	};
   	return () => (() => {
-  		const _cache = _createVNodeCache(3);
+  		const _cache = _createVNodeCache("cecabad81427710a");
   		return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
   	})();
   });
@@ -194,18 +194,18 @@ fn should_optimize_in_custom_define_compoennt() {
   	});
   	const Comp1 = defineCustomElement({ setup: () => {
   		return () => (() => {
-  			const _cache = _createVNodeCache(0);
+  			const _cache = _createVNodeCache("631d214bc2c8427c");
   			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
   		})();
   	} });
   	const Comp2 = () => {
   		return (() => {
-  			const _cache = _createVNodeCache(1);
+  			const _cache = _createVNodeCache("5c89500e299049d2");
   			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
   		})();
   	};
   	return () => (() => {
-  		const _cache = _createVNodeCache(2);
+  		const _cache = _createVNodeCache("d10877e335888a9");
   		return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
   	})();
   });
@@ -226,7 +226,7 @@ fn should_cache_in_root_arrow_function_without_params() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   () => (() => {
-  	const _cache = _createVNodeCache(0);
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
   	return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => item) });
   })();
   "#);

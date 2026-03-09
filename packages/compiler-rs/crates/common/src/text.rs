@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::hash::{DefaultHasher, Hash, Hasher};
 
 use html_escape::decode_html_entities;
 use oxc_ast::ast::{Expression, JSXChild, JSXElement, JSXElementName, JSXExpression, JSXText};
@@ -212,4 +213,10 @@ pub fn escape_html<'a>(s: Cow<'a, str>) -> Cow<'a, str> {
 
   html.push_str(&s[last_index..]);
   Cow::Owned(html)
+}
+
+pub fn hash_string(s: &str) -> String {
+  let mut hasher = DefaultHasher::new();
+  s.hash(&mut hasher);
+  format!("{:x}", hasher.finish())
 }

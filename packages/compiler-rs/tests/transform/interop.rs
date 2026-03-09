@@ -32,7 +32,7 @@ fn basic() {
   		return _n0;
   	})());
   	return () => (() => {
-  		const _cache = _createVNodeCache(0);
+  		const _cache = _createVNodeCache("631d214bc2c8427c");
   		return _openBlock(), _createElementBlock(_Fragment, null, [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))], 64);
   	})();
   });
