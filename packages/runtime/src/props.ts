@@ -1,4 +1,4 @@
-import { proxyRefs, toRefs, useAttrs } from 'vue'
+import { computed, isRef, unref, useAttrs } from 'vue'
 import * as Vue from 'vue'
 
 /*@__NO_SIDE_EFFECTS__*/
@@ -41,8 +41,41 @@ export function useProps() {
  */
 /*@__NO_SIDE_EFFECTS__*/
 export function useFullProps() {
-  return proxyRefs({
-    ...toRefs(useProps()),
-    ...toRefs(useAttrs()),
-  })
+  const attrs = useAttrs()
+  const i = getCurrentInstance()!
+  // @ts-ignore
+  if (!i.type.props) {
+    return attrs
+  }
+  const props = useProps()
+  const fullProps = computed(() => ({ ...props, ...attrs }))
+  return new Proxy(
+    {},
+    {
+      get(_, p, receiver) {
+        return unref(Reflect.get(fullProps.value, p, receiver))
+      },
+      set(_, p, value) {
+        if (isRef((fullProps.value as any)[p]) && !isRef(value))
+          (fullProps.value as any)[p].value = value
+        else (fullProps.value as any)[p] = value
+        return true
+      },
+      deleteProperty(_, p) {
+        return Reflect.deleteProperty(fullProps.value, p)
+      },
+      has(_, p) {
+        return Reflect.has(fullProps.value, p)
+      },
+      ownKeys() {
+        return Object.keys(fullProps.value)
+      },
+      getOwnPropertyDescriptor() {
+        return {
+          enumerable: true,
+          configurable: true,
+        }
+      },
+    },
+  )
 }
