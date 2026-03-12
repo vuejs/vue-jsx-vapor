@@ -57,7 +57,7 @@ const Comp1 = defineVaporComponent(
 'foo': null, 
 'onUpdate:foo': null, 
 'fooModifiers': null
-} },
+}, },
 )
 
 const Comp2 = defineComponent(async () => {
@@ -105,7 +105,7 @@ defineVaporComponent(
 'g': { default: foo, skipFactory: true }, 
 'h': { default: null }, 
 'i': { required: true, default: undefined }
-} },
+}, },
 )
 
 // #21
@@ -115,6 +115,15 @@ const Comp3 = defineComponent(<T,>() => {
 const Comp4 = defineVaporComponent(<T,>() => {
   return <div>123</div>
 })
+
+const Comp5 = defineVaporComponent((__props) => {const props = __useAttrs();
+  return <div>123</div>
+}, { inheritAttrs: false, })
+
+const options = {}
+const Comp6 = defineVaporComponent((__props) => {const props = __useAttrs();
+  return <div>123</div>
+}, { inheritAttrs: false, ...options })
 "
 `;
 
@@ -158,7 +167,7 @@ export const Comp = defineVaporComponent((__props) => {
 'foo': { default: __props.bar, skipFactory: true }, 
 'onUpdate:foo': null, 
 'fooModifiers': null
-} })
+}, })
 
 export default function (__props) {
   const modelValue = $(__useModel<string>(__props, 'modelValue',)!)
@@ -231,7 +240,7 @@ const Comp = defineComponent(() => {const props = __useFullProps();
   return () => <div><slot foo="" /></div>
 }, { props: {
 'text': null
-} })
+}, })
 ;<Comp>
   {{ default: (props) => [props.foo === ''] }}
 </Comp>
@@ -243,7 +252,7 @@ const Comp1 = defineVaporComponent(() => {const props = __useFullProps();
   return <div><slot foo="" /></div>
 }, { props: {
 'text': null
-} }) 
+}, }) 
 ;<Comp1>
   {{ default: (props) => [props.foo === ''] }}
 </Comp1>

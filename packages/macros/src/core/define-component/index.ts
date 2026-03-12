@@ -107,14 +107,14 @@ export function transformDefineComponent(
   const propsString = Object.entries(props)
     .map(([key, value]) => `'${key}': ${value}`)
     .join(', \n')
-  if (propsString) {
-    const resolvedPropsString = `${hasRestProp ? 'inheritAttrs: false, ' : ''}props: {\n${propsString}\n}`
+  if (propsString || hasRestProp) {
+    const resolvedPropsString = `${hasRestProp ? 'inheritAttrs: false, ' : ''}${propsString ? `props: {\n${propsString}\n}, ` : ''}`
     const compOptions = macros.defineComponent.arguments[1]
-    if (!compOptions) {
-      s.appendRight(root.end!, `, { ${resolvedPropsString} }`)
-    } else if (compOptions.type === 'ObjectExpression') {
-      s.appendLeft(compOptions.start!, `{ ${resolvedPropsString}, ...`)
+    if (compOptions) {
+      s.appendLeft(compOptions.start!, `{ ${resolvedPropsString}...`)
       s.appendRight(compOptions.end!, ' }')
+    } else {
+      s.appendRight(root.end!, `, { ${resolvedPropsString}}`)
     }
   }
 

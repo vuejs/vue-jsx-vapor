@@ -87,3 +87,12 @@ const Comp3 = defineComponent(<T,>() => {
 const Comp4 = defineVaporComponent(<T,>() => {
   return <div>123</div>
 })
+
+const Comp5 = defineVaporComponent(({...props}) => {
+  return <div>123</div>
+})
+
+const options = {}
+const Comp6 = defineVaporComponent(({...props}) => {
+  return <div>123</div>
+}, options)
