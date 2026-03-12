@@ -1,3 +1,16 @@
+## [3.2.3](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.2...v3.2.3) (2026-03-12)
+
+
+### Bug Fixes
+
+* **compiler/vdom:** use hash_string for VDOM cache keys ([ba2dc81](https://github.com/vuejs/vue-jsx-vapor/commit/ba2dc817f5ae415ef456fd9b937d08797808d097))
+* **compiler:** treat valueless attributes as boolean true ([fc3d292](https://github.com/vuejs/vue-jsx-vapor/commit/fc3d2923751f651a2d8c3257392fab74e8df2711))
+* **macros:** close inheritAttrs if only a rest prop ([1661760](https://github.com/vuejs/vue-jsx-vapor/commit/1661760ed0aab1d36b4f6603a3c0f9b414afdb94))
+* **runtime:** use a computed Proxy to merge props and attrs ([b63c312](https://github.com/vuejs/vue-jsx-vapor/commit/b63c312fbccc442d35231e0e69a2b688edd0e36a))
+* **types:** allow JSX elements to be arrays ([0564d64](https://github.com/vuejs/vue-jsx-vapor/commit/0564d6439b35c8e9d0d884cf90ac518dcf587229)), closes [#54](https://github.com/vuejs/vue-jsx-vapor/issues/54)
+
+
+
 ## [3.2.2](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.1...v3.2.2) (2026-03-08)
 
 
