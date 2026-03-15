@@ -866,3 +866,26 @@ fn should_not_mark_stable_slot_in_funciton_with_params() {
   }, 1024)), 1024);
   "#);
 }
+
+#[test]
+fn provider_component_should_be_dynamic() {
+  let code = transform(
+    r#"<ContextProvider><div /></ContextProvider>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _openBlock(), _createBlock(ContextProvider, null, {
+  		default: _withCtx(() => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]),
+  		_: 2
+  	});
+  })();
+  "#);
+}

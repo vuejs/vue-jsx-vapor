@@ -540,7 +540,7 @@ pub fn build_slots<'a>(
     }
   }
 
-  let slot_flag = if has_dynamic_slots {
+  let slot_flag = if has_dynamic_slots || tag_name.ends_with("Provider") {
     SlotFlags::DYNAMIC
   } else if let Some(slot_static) = context.options.slot_scopes.borrow().get(&node.span)
     && slot_static.forwarded
