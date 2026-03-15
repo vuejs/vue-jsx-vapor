@@ -156,6 +156,40 @@ fn named_slot_outlet_with_props_and_fallback() {
 }
 
 #[test]
+fn slots_component() {
+  let code = transform(r#"<slots.foo foo={bar}><div /></slots.foo>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n1 = _createComponent(slots.foo, { foo: () => bar }, { default: _withVaporCtx(() => {
+  		const _n0 = _t0();
+  		return _n0;
+  	}) }, true);
+  	return _n1;
+  })();
+  "#);
+}
+
+#[test]
+fn dollor_slots_component() {
+  let code = transform(r#"<$slots.foo foo={bar}><div /></$slots.foo>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n1 = _createComponent($slots.foo, { foo: () => bar }, { default: _withVaporCtx(() => {
+  		const _n0 = _t0();
+  		return _n0;
+  	}) }, true);
+  	return _n1;
+  })();
+  "#);
+}
+
+#[test]
 fn error_on_unexpected_cunstom_directive_on_slot() {
   let error = RefCell::new(None);
   transform(

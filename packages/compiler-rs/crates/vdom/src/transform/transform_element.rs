@@ -24,7 +24,10 @@ use crate::{
 
 use common::{
   ast::RootNode,
-  check::{get_directive_name, is_built_in_directive, is_event, is_reserved_prop, is_template},
+  check::{
+    get_directive_name, is_built_in_directive, is_event, is_reserved_prop, is_slots_component,
+    is_template,
+  },
   directive::{DirectiveNode, resolve_directive, resolve_prop_name},
   error::ErrorCodes,
   patch_flag::PatchFlags,
@@ -79,7 +82,7 @@ pub unsafe fn transform_element<'a>(
   // The goal of the transform is to create a codegenNode implementing the
   // VNodeCall interface.
   let vnode_tag = directives.tag_name;
-  if vnode_tag == "slot" {
+  if vnode_tag == "slot" || is_slots_component(directives.tag_name) {
     unsafe { transform_slot_outlet(directives, context_node, context) };
     return None;
   }
@@ -466,7 +469,7 @@ pub fn build_props<'a>(
             if modifiers.contains(&"prop") {
               patch_flag |= PatchFlags::NeedHydration as i32;
             }
-            transform_v_bind(directives, prop, node, context)
+            transform_v_bind(prop, node, context)
           }
           "on" => {
             // inline before-update hooks need to force block so that it is invoked

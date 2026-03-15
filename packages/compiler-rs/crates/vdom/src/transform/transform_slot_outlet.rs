@@ -1,4 +1,6 @@
-use common::{directive::Directives, error::ErrorCodes, text::is_empty_text};
+use common::{
+  check::is_slots_component, directive::Directives, error::ErrorCodes, text::is_empty_text,
+};
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
@@ -23,10 +25,6 @@ pub unsafe fn transform_slot_outlet<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return;
   };
-  let tag = directives.tag_name;
-  if tag != "slot" {
-    return;
-  }
 
   for value in &mut context.options.slot_scopes.borrow_mut().values_mut() {
     value.forwarded = true;
@@ -34,9 +32,11 @@ pub unsafe fn transform_slot_outlet<'a>(
 
   let ast = context.ast;
   let node_span = node.span;
+  let is_slots = is_slots_component(directives.tag_name);
   let (slot_name, slot_props) = process_slot_outlet(
     directives,
     unsafe { &mut *(node.as_mut() as *mut _) },
+    is_slots,
     context,
   );
 
@@ -63,12 +63,13 @@ pub unsafe fn transform_slot_outlet<'a>(
           } else {
             None
           },
-          if node
-            .children
-            .iter()
-            .filter(|child| !is_empty_text(child))
-            .count()
-            != 0
+          if !is_slots
+            && node
+              .children
+              .iter()
+              .filter(|child| !is_empty_text(child))
+              .count()
+              != 0
           {
             let mut fragment = ast.jsx_child_fragment(
               node_span,
@@ -133,10 +134,23 @@ pub unsafe fn transform_slot_outlet<'a>(
 fn process_slot_outlet<'a>(
   directives: &mut Directives<'a>,
   node: &'a mut JSXElement<'a>,
+  is_slots: bool,
   context: &'a TransformContext<'a>,
 ) -> (Expression<'a>, Option<Expression<'a>>) {
   let ast = context.ast;
-  let mut slot_name = ast.expression_string_literal(SPAN, "default", None);
+  let mut slot_name = ast.expression_string_literal(
+    SPAN,
+    if is_slots {
+      directives
+        .tag_name
+        .split("slots.")
+        .nth(1)
+        .unwrap_or("default")
+    } else {
+      "default"
+    },
+    None,
+  );
   let mut slot_props = None;
 
   let props = &mut node.opening_element.attributes;
@@ -149,6 +163,7 @@ fn process_slot_outlet<'a>(
     } = build_props(directives, node, context, false, true);
     if let Some(name_prop) = &mut name_prop
       && let Some(value) = &mut name_prop.value
+      && !is_slots
     {
       slot_name = context.jsx_attribute_value_to_expression(value);
     }

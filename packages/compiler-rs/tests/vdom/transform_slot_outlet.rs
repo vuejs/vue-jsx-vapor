@@ -216,6 +216,48 @@ fn named_slot_outlet_with_props_and_fallback() {
 }
 
 #[test]
+fn slots_component() {
+  let code = transform(
+    r#"<slots.foo foo={bar}><div /></slots.foo>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _slots = _useSlots();
+  	return _renderSlot(_slots, "foo", { foo: bar });
+  })();
+  "#);
+}
+
+#[test]
+fn dollor_slots_component() {
+  let code = transform(
+    r#"<$slots.foo foo={bar}><div /></$slots.foo>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _slots = _useSlots();
+  	return _renderSlot(_slots, "foo", { foo: bar });
+  })();
+  "#);
+}
+
+#[test]
 fn error_on_unexpected_cunstom_directive_on_slot() {
   let error = RefCell::new(None);
   transform(

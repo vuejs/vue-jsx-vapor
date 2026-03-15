@@ -316,7 +316,7 @@ fn template_v_for_with_slotlet() {
 #[test]
 fn template_v_for_with_slot() {
   let code = transform(
-    r#"<template v-for={item in items}><slots.default /></template>"#,
+    r#"<template v-for={item in items}><slot /></template>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -324,8 +324,11 @@ fn template_v_for_with_slot() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
-  _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, null, [_createVNode(slots.default)], 64))), 256);
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  (() => {
+  	const _slots = _useSlots();
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, null, [_renderSlot(_slots, "default")], 64))), 256);
+  })();
   "#)
 }
 
