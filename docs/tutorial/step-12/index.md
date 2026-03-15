@@ -128,15 +128,6 @@ const Comp = () => {
 }
 ```
 
-::: tip
-You can append `!` to mark the model as required:
-
-```jsx
-const model = defineModel<string>()!
-```
-
-:::
-
 Now try it yourself - replace the manual `modelValue` + `onUpdate:modelValue` binding with `v-model`.
 
 </jsx-repl>

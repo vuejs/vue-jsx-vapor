@@ -128,15 +128,6 @@ const Comp = () => {
 }
 ```
 
-::: tip
-可以在末尾添加 `!` 将 model 标记为必填：
-
-```jsx
-const model = defineModel<string>()!
-```
-
-:::
-
 现在试试看 - 将手动的 `modelValue` + `onUpdate:modelValue` 绑定替换为 `v-model`。
 
 </jsx-repl>
