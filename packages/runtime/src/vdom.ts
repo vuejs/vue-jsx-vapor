@@ -3,6 +3,7 @@ import {
   Comment,
   createBlock,
   createElementBlock,
+  createElementVNode,
   createVNode,
   Fragment,
   getCurrentInstance,
@@ -27,23 +28,22 @@ export function createVNodeCache(key: string) {
 
 export function normalizeVNode(value: any = ' ', flag = 1): VNode {
   let create: any = createVNode
-  const isFunction = typeof value === 'function'
-  if (isFunction) {
+  const isBlock = typeof value === 'function'
+  if (isBlock) {
     openBlock()
     create = createBlock
     value = value()
   }
   return isVNode(value)
-    ? isFunction
+    ? isBlock
       ? createBlock(cloneIfMounted(value))
       : cloneIfMounted(value)
     : Array.isArray(value)
-      ? createElementBlock(
+      ? (isBlock ? createElementBlock : createElementVNode)(
           Fragment,
           null,
-          value.map((n) =>
-            normalizeVNode(typeof n === 'function' ? n.toString() : () => n),
-          ),
+          value.map((n) => normalizeVNode(() => n)),
+          -2,
         )
       : value == null || typeof value === 'boolean'
         ? create(Comment)
