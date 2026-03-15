@@ -59,6 +59,13 @@ pub struct CompilerOptions {
    */
   pub ssr: Option<bool>,
   /**
+   * Whether the compiler should detect if the slots is stable.
+   * Note: This is only used in interop mode, And not supported for slots within `CallExpression` (e.g. `map()`)
+   * or `ObjectExpression` | `FunctionExpression` slots. please use `v-for` and `v-slot` directive instead.
+   * @default true
+   */
+  pub optimize_slots: Option<bool>,
+  /**
    * Customize where to import runtime helpers from vue-jsx-vapor.
    * If not specified, defaults to the virtual module path (e.g., `/vue-jsx-vapor/vapor`).
    */
@@ -86,6 +93,7 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       interop: options.interop.unwrap_or(false),
       hmr: options.hmr.unwrap_or(Either::A(false)),
       ssr,
+      optimize_slots: options.optimize_slots.unwrap_or(true),
       runtime_module_name: options.runtime_module_name,
       on_error: if let Some(on_error) = options.on_error {
         Box::new(move |code: ErrorCodes, span: Span| {

@@ -114,6 +114,9 @@ impl<'a> TransformContext<'a> {
   }
 
   fn should_optimize(&self, node_id: NodeId) -> bool {
+    if !self.options.optimize_slots {
+      return false;
+    }
     let semantic = self.options.semantic.borrow();
     let scope_id = semantic.nodes().get_node(node_id).scope_id();
     let parent_is_define_component = || -> bool {

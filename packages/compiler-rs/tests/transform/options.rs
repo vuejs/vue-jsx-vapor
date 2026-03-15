@@ -46,3 +46,24 @@ pub fn filename() {
   })();
   "#);
 }
+
+#[test]
+pub fn optimize_slots() {
+  let code = transform(
+    "<Comp>{foo}</Comp>",
+    Some(TransformOptions {
+      interop: true,
+      optimize_slots: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  _openBlock(), _createBlock(Comp, null, {
+  	default: _withCtx(() => [_normalizeVNode(() => foo)]),
+  	_: 2
+  }, 1024);
+  "#);
+}
