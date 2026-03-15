@@ -116,7 +116,7 @@ const Repl = defineAsyncComponent({
 
 .repl-container {
   display: flex;
-  gap: 20px;
+  gap: 12px;
   height: calc(100vh - 132px - 48px);
 }
 @media (min-width: 1280px) {

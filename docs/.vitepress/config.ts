@@ -74,7 +74,7 @@ export default defineConfig({
           ],
           '/zh/tutorial/': [
             {
-              text: '教程',
+              text: '基础教程',
               items: [
                 { text: '1. 快速开始', link: '/zh/tutorial/step-1/' },
                 { text: '2. JSX 介绍', link: '/zh/tutorial/step-2/' },
@@ -87,9 +87,13 @@ export default defineConfig({
                 { text: '9. 插槽', link: '/zh/tutorial/step-9/' },
                 { text: '10. 作用域插槽', link: '/zh/tutorial/step-10/' },
                 { text: '11. Expose', link: '/zh/tutorial/step-11/' },
-                { text: '12. 恭喜完成!', link: '/zh/tutorial/step-12/' },
               ],
             },
+            {
+              text: '进阶教程',
+              items: [{ text: '12. 双向绑定', link: '/zh/tutorial/step-12/' }],
+            },
+            { text: '恭喜完成!', link: '/zh/tutorial/step-done/' },
           ],
         },
       },
@@ -152,7 +156,7 @@ export default defineConfig({
       ],
       '/tutorial/': [
         {
-          text: 'Tutorial',
+          text: 'Basic Tutorial',
           items: [
             { text: '1. Getting Started', link: '/tutorial/step-1/' },
             { text: '2. Introduction JSX', link: '/tutorial/step-2/' },
@@ -165,9 +169,13 @@ export default defineConfig({
             { text: '9. Slots', link: '/tutorial/step-9/' },
             { text: '10. Scoped Slots', link: '/tutorial/step-10/' },
             { text: '11. Expose', link: '/tutorial/step-11/' },
-            { text: '12. You Did it!', link: '/tutorial/step-12/' },
           ],
         },
+        {
+          text: 'Advanced Tutorial',
+          items: [{ text: '12. Two-way Binding', link: '/tutorial/step-12/' }],
+        },
+        { text: 'You Did it!', link: '/tutorial/step-done/' },
       ],
     },
 

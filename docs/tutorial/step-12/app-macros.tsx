@@ -1,10 +1,11 @@
 import { ref } from 'vue'
 
-const Comp = (props: { modelValue: string; 'onUpdate:modelValue': (v: string) => void }) => {
+const Comp = (props: { modelValue: string }) => {
+  const model = defineModel<string>()
   return (
     <input
-      value={props.modelValue}
-      onInput={(e) => props['onUpdate:modelValue']((e.target as HTMLInputElement).value)}
+      value={model.value}
+      onInput={(e) => (model.value = e.currentTarget.value)}
     />
   )
 }

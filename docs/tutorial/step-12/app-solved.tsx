@@ -13,7 +13,7 @@ export default () => {
   const msg = ref('Hello')
   return (
     <>
-      <Comp modelValue={msg.value} onUpdate:modelValue={(v) => (msg.value = v)} />
+      <Comp v-model={msg.value} />
       <p>{msg.value}</p>
     </>
   )
