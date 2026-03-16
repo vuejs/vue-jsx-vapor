@@ -1,3 +1,23 @@
+## [3.2.4](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.3...v3.2.4) (2026-03-16)
+
+
+### Bug Fixes
+
+* **compiler/vdom:** mark Provider components as dynamic slots ([72ac0cb](https://github.com/vuejs/vue-jsx-vapor/commit/72ac0cbad4b02dff720a037e021bb0126c0f7292))
+* **runtime/vdom:** set PatchFlags.BAIL for normalizeVNode ([c72d5d8](https://github.com/vuejs/vue-jsx-vapor/commit/c72d5d8692d33cda0f65bfb9db367f98bb7c20b2))
+
+
+### Features
+
+* **compiler/vdom:** compile slots.xx component as a slot ([6cde1ee](https://github.com/vuejs/vue-jsx-vapor/commit/6cde1ee90ac4785c51f6f58bd1ebb816050a6eba))
+
+
+### Reverts
+
+* **compiler/vdom:** add optimizeSlots option ([8bceb59](https://github.com/vuejs/vue-jsx-vapor/commit/8bceb59e8379b7af1d6edd3c9a9d7a87dfac3b42))
+
+
+
 ## [3.2.3](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.2...v3.2.3) (2026-03-12)
 
 
