@@ -77,10 +77,10 @@ fn on_v_if() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, withMemo as _withMemo } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withMemo as _withMemo } from "vue";
   (() => {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock(_Fragment, null, [ok ? _withMemo([x], () => (_openBlock(), _createElementBlock("div", null, [_createElementVNode("span", null, "foo"), _normalizeVNode("bar")])), _cache, 0) : _withMemo([x], () => _createVNode(Comp), _cache, 1)], 64);
+  	return _openBlock(), _createElementBlock(_Fragment, null, [ok ? _withMemo([x], () => (_openBlock(), _createElementBlock("div", null, [_createElementVNode("span", null, "foo"), _normalizeVNode("bar")])), _cache, 0) : _withMemo([x], () => (_openBlock(), _createBlock(Comp)), _cache, 1)], 64);
   })();
   "#)
 }

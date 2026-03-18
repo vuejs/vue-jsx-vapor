@@ -1013,7 +1013,7 @@ fn fragment_in_fragment() {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
   	return _openBlock(), _createElementBlock(_Fragment, null, [
   		_cache[1] || (_cache[1] = _normalizeVNode("foo", -1)),
-  		_createVNode(_Fragment, null, [_cache[0] || (_cache[0] = _normalizeVNode("bar", -1))], 64),
+  		_createVNode(_Fragment, null, [_cache[0] || (_cache[0] = _normalizeVNode("bar", -1))]),
   		_cache[2] || (_cache[2] = _normalizeVNode("baz", -1))
   	], 64);
   })();
@@ -1037,5 +1037,21 @@ fn plain_element_with_event() {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
   	return _openBlock(), _createElementBlock("button", { onClick: _cache[0] || (_cache[0] = () => []) }, "Click me");
   })();
+  "#)
+}
+
+#[test]
+fn non_block_fragment_should_not_stable() {
+  let code = transform(
+    r#"<div><><DynamicComponent.value /></></div>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
+  _openBlock(), _createElementBlock("div", null, [_createVNode(_Fragment, null, [_createVNode(DynamicComponent.value)])]);
   "#)
 }

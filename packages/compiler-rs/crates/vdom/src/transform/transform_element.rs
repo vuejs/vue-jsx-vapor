@@ -90,11 +90,12 @@ pub unsafe fn transform_element<'a>(
     transform_transition(node, context);
   }
   let is_component = directives.is_component;
-
+  let parent_span = parent_node.span();
   let mut should_use_block = RootNode::is_single_root(parent_node)
     || RootNode::is_fragment(parent_node)
     || vnode_tag == "Teleport"
     || vnode_tag == "Suspense"
+    || (parent_span.start > parent_span.end && parent_span.start - parent_span.end > 0) // template with v-if / v-for
     || (!is_component
       // <svg> and <foreignObject> must be forced into blocks so that block
       // updates inside get proper isSVG flag at runtime. (#639, #643)
@@ -153,7 +154,7 @@ pub unsafe fn transform_element<'a>(
         && vnode_tag != "Teleport" // Teleport is not a real component and has dedicated runtime handling
         && vnode_tag != "KeepAlive" && vnode_tag != "keep-alive"; // explained above.
 
-      if vnode_tag == "Fragment" || vnode_tag == "_Fragment" {
+      if (vnode_tag == "Fragment" || vnode_tag == "_Fragment") && should_use_block {
         patch_flag |= PatchFlags::StableFragment as i32;
       }
 
