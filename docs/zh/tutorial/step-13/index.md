@@ -10,7 +10,6 @@ next: false
 import appCode from '~/tutorial/step-13/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-13/app-solved.tsx?raw'
 import appInteropCode from '~/tutorial/step-13/app-interop.tsx?raw'
-import appInteropSolvedCode from '~/tutorial/step-13/app-interop-solved.tsx?raw'
 import { getDefaultFiles } from '~/tutorial/template'
 import { ref } from 'vue'
 
@@ -19,11 +18,11 @@ const apps = {
   app: { 'src/App.tsx': appCode },
   solved: { 'src/App.tsx': appSolvedCode },
   interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropSolvedCode },
+  interopSolved: { 'src/App.tsx': appInteropCode },
 }
 </script>
 
-<jsx-repl :files :apps prev="/zh/tutorial/step-12/" next="/zh/tutorial/done/">
+<jsx-repl :files :apps prev="/zh/tutorial/step-12/" next="/zh/tutorial/14/">
 
 有时候，你想要渲染的组件在编写代码时并不能提前确定。这种情况下，你可以把组件保存到一个变量中，并在运行时动态切换它。
 

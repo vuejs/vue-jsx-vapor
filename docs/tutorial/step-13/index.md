@@ -10,7 +10,6 @@ next: false
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
 import appInteropCode from './app-interop.tsx?raw'
-import appInteropSolvedCode from './app-interop-solved.tsx?raw'
 import { getDefaultFiles } from '../template'
 import { ref } from 'vue'
 
@@ -19,11 +18,11 @@ const apps = {
   app: { 'src/App.tsx': appCode },
   solved: { 'src/App.tsx': appSolvedCode },
   interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropSolvedCode },
+  interopSolved: { 'src/App.tsx': appInteropCode },
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-12/" next="/tutorial/done/">
+<jsx-repl :files :apps prev="/tutorial/step-12/" next="/tutorial/14/">
 
 Sometimes the component you want to render is not known ahead of time. In that case, you can store the component in a variable and switch it dynamically.
 
