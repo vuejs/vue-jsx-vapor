@@ -31,7 +31,7 @@ const apps = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/zh/tutorial/step-11/" next="/zh/tutorial/done/">
+<jsx-repl :files :apps prev="/zh/tutorial/step-11/" next="/zh/tutorial/step-13/">
 
 双向绑定允许父组件向子组件传递数据，同时也能接收子组件的更新。在 Vue JSX 中，这是通过 `v-model` 实现的。
 

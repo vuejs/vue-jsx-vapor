@@ -91,7 +91,10 @@ export default defineConfig({
             },
             {
               text: '进阶教程',
-              items: [{ text: '12. 双向绑定', link: '/zh/tutorial/step-12/' }],
+              items: [
+                { text: '12. 双向绑定', link: '/zh/tutorial/step-12/' },
+                { text: '13. 动态组件', link: '/zh/tutorial/step-13/' },
+              ],
             },
             { text: '恭喜完成!', link: '/zh/tutorial/step-done/' },
           ],
@@ -173,7 +176,10 @@ export default defineConfig({
         },
         {
           text: 'Advanced Tutorial',
-          items: [{ text: '12. Two-way Binding', link: '/tutorial/step-12/' }],
+          items: [
+            { text: '12. Two-way Binding', link: '/tutorial/step-12/' },
+            { text: '13. Dynamic Component', link: '/tutorial/step-13/' },
+          ],
         },
         { text: 'You Did it!', link: '/tutorial/step-done/' },
       ],

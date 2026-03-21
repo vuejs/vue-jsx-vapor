@@ -31,7 +31,7 @@ const apps = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-11/" next="/tutorial/done/">
+<jsx-repl :files :apps prev="/tutorial/step-11/" next="/tutorial/step-13/">
 
 Two-way binding allows a parent component to both pass data down to a child and receive updates back from it. In Vue JSX, this is done via `v-model`.
 
