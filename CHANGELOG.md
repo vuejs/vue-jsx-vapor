@@ -1,3 +1,14 @@
+## [3.2.5](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.4...v3.2.5) (2026-03-22)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** add block_shape for v-if IR ([8a18c2d](https://github.com/vuejs/vue-jsx-vapor/commit/8a18c2deeb8d1b173c5b2f51b5a0a5f4228563c0))
+* **compiler/vdom:** collect scope identifiers for slots flag detection ([7ae5cb6](https://github.com/vuejs/vue-jsx-vapor/commit/7ae5cb62ebf952895479a73f38dbc4a425537cc2))
+* **compiler/vdom:** mark Fragment stable only when used as a block ([4d66cad](https://github.com/vuejs/vue-jsx-vapor/commit/4d66cade9af8780ad24dde6e861864f4d022cd94))
+
+
+
 ## [3.2.4](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.3...v3.2.4) (2026-03-16)
 
 
