@@ -2,6 +2,6 @@
   "name": "vapor-jsx-vapor",
   "dependencies": {
     "vue": "3.6.0-beta.8",
-    "vue-jsx-vapor": "^3.1.22?deps=vue@3.6.0-beta.8"
+    "vue-jsx-vapor": "^3.2.5?deps=vue@3.6.0-beta.8"
   }
 }
