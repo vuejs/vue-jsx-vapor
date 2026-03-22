@@ -208,10 +208,19 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
     }
     walk_mut::walk_assignment_target_property(self, node);
   }
-  
-  fn visit_function(&mut self, node: &mut oxc_ast::ast::Function<'a>, flags: oxc_semantic::ScopeFlags) {
+
+  fn visit_function(
+    &mut self,
+    node: &mut oxc_ast::ast::Function<'a>,
+    flags: oxc_semantic::ScopeFlags,
+  ) {
     walk_function(self, node, flags);
-    if let Some(map) = self.options.should_optimize_map.borrow_mut().remove(&node.span) {
+    if let Some(map) = self
+      .options
+      .should_optimize_map
+      .borrow_mut()
+      .remove(&node.span)
+    {
       self.options.remove_identifiers(map.1);
     }
   }

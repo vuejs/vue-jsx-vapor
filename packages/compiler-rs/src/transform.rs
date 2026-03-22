@@ -7,7 +7,10 @@ use oxc_ast::{
   AstBuilder, NONE,
   ast::{Argument, Expression, ImportOrExportKind, Program, Statement, VariableDeclarationKind},
 };
-use oxc_ast_visit::{VisitMut, walk_mut::{walk_expression, walk_function}};
+use oxc_ast_visit::{
+  VisitMut,
+  walk_mut::{walk_expression, walk_function},
+};
 use oxc_span::{Ident, SPAN};
 
 use crate::hmr_or_ssr::HmrOrSsrTransform;
@@ -365,9 +368,18 @@ impl<'a> VisitMut<'a> for Transform<'a> {
       on_leave_expression(node)
     }
   }
-  fn visit_function(&mut self, node: &mut oxc_ast::ast::Function<'a>, flags: oxc_semantic::ScopeFlags) {
+  fn visit_function(
+    &mut self,
+    node: &mut oxc_ast::ast::Function<'a>,
+    flags: oxc_semantic::ScopeFlags,
+  ) {
     walk_function(self, node, flags);
-    if let Some(map) = self.options.should_optimize_map.borrow_mut().remove(&node.span) {
+    if let Some(map) = self
+      .options
+      .should_optimize_map
+      .borrow_mut()
+      .remove(&node.span)
+    {
       self.options.remove_identifiers(map.1);
     }
   }
