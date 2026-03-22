@@ -22,7 +22,7 @@ const apps = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-13/" next="/tutorial/done/">
+<jsx-repl :files :apps prev="/tutorial/step-13/" next="/tutorial/step-done/">
 
 Besides JSX, `vue-jsx-vapor` also provides an `h` function for manually creating Vapor nodes. This style is commonly called HyperScript, and it is useful when you want finer-grained control over node creation.
 

@@ -22,7 +22,7 @@ const apps = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-12/" next="/tutorial/14/">
+<jsx-repl :files :apps prev="/tutorial/step-12/" next="/tutorial/step-14/">
 
 Sometimes the component you want to render is not known ahead of time. In that case, you can store the component in a variable and switch it dynamically.
 

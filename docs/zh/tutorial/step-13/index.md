@@ -22,7 +22,7 @@ const apps = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/zh/tutorial/step-12/" next="/zh/tutorial/14/">
+<jsx-repl :files :apps prev="/zh/tutorial/step-12/" next="/zh/tutorial/step-14/">
 
 有时候，你想要渲染的组件在编写代码时并不能提前确定。这种情况下，你可以把组件保存到一个变量中，并在运行时动态切换它。
 
