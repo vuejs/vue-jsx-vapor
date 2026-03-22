@@ -140,3 +140,9 @@ pub enum SlotFlags {
    */
   FORWARDED = 3,
 }
+
+pub enum VaporBlockShape {
+  Empty = 0,
+  SingleRoot = 1,
+  MultiRoot = 2,
+}

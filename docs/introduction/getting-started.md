@@ -25,7 +25,7 @@ This guide assumes familiarity with Vue fundamentals.
 pnpm add vue-jsx-vapor
 
 # Runtime
-pnpm add vue@3.6.0-beta.6
+pnpm add vue@3.6.0-beta.8
 ```
 
 ## Configuration
@@ -65,7 +65,6 @@ export default defineConfig({
 The TS Macro VSCode extension automatically loads `vue-jsx-vapor/volar` by analyzing your `vite.config.ts`. It shares the configuration from the `vue-jsx-vapor/vite` plugin, eliminating the need to manually configure `ts-macro.config.ts`.
 
 ::: details Manual Configuration
-
 
 ::: code-group
 

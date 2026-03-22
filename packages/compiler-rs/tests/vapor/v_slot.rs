@@ -549,7 +549,7 @@ fn slot_tag_with_v_if() {
   		const _n0 = _createIf(() => ok, () => {
   			const _n2 = _createSlot("default");
   			return _n2;
-  		});
+  		}, null, 1);
   		return _n0;
   	}) }, true);
   	return _n3;

@@ -50,6 +50,7 @@ pub struct RootIRNode<'a> {
 #[derive(Debug)]
 pub struct IfIRNode<'a> {
   pub id: i32,
+  pub block_shape: i32,
   pub condition: Expression<'a>,
   pub positive: BlockIRNode<'a>,
   pub negative: Option<Box<Either<BlockIRNode<'a>, IfIRNode<'a>>>>,

@@ -14,6 +14,7 @@ use common::{
   directive::Directives,
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
+  patch_flag::VaporBlockShape,
 };
 
 /// # SAFETY
@@ -80,6 +81,7 @@ pub unsafe fn transform_v_if<'a>(
 
       context_block.dynamic.operation = Some(Box::new(OperationNode::If(IfIRNode {
         id,
+        block_shape: encode_if_block_shape(&block, None),
         positive: block,
         index: context.next_if_index(),
         once: *context.in_v_once.borrow() || is_constant_node(dir_exp.as_ref().unwrap()),
@@ -146,6 +148,7 @@ pub unsafe fn transform_v_if<'a>(
     } else {
       last_if_node.negative = Some(Box::new(Either::B(IfIRNode {
         id: -1,
+        block_shape: VaporBlockShape::Empty as i32,
         positive: block,
         index: context.next_if_index(),
         once: *context.in_v_once.borrow() || is_constant_node(dir_exp.as_ref().unwrap()),
@@ -158,5 +161,44 @@ pub unsafe fn transform_v_if<'a>(
         last: false,
       })))
     }
+
+    if let Some(negative) = last_if_node.negative.as_mut()
+      && let Either::B(negative) = negative.as_mut()
+    {
+      negative.block_shape = encode_if_block_shape(&negative.positive, None)
+    }
+    last_if_node.block_shape =
+      encode_if_block_shape(&last_if_node.positive, last_if_node.negative.as_ref())
   }))
+}
+
+pub fn encode_if_block_shape(
+  positive: &BlockIRNode,
+  negative: Option<&Box<Either<BlockIRNode, IfIRNode>>>,
+) -> i32 {
+  // Pack the true/false branch shapes into one integer so runtime `createIf()`
+  // can decode the selected branch with a single bit-mask operation.
+  get_block_shape(positive) | (get_negative_block_shape(negative) << 2)
+}
+
+fn get_negative_block_shape(negative: Option<&Box<Either<BlockIRNode, IfIRNode>>>) -> i32 {
+  if let Some(negative) = negative {
+    match negative.as_ref() {
+      Either::A(block) => get_block_shape(block),
+      Either::B(_) => VaporBlockShape::SingleRoot as i32,
+    }
+  } else {
+    VaporBlockShape::Empty as i32
+  }
+}
+
+fn get_block_shape(block: &BlockIRNode) -> i32 {
+  if block.returns.is_empty() {
+    return VaporBlockShape::Empty as i32;
+  }
+  if block.returns.len() == 1 {
+    VaporBlockShape::SingleRoot as i32
+  } else {
+    VaporBlockShape::MultiRoot as i32
+  }
 }

@@ -162,7 +162,7 @@ fn anchor_insertion_in_middle() {
   	const _n0 = _createIf(() => 1, () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, true);
+  	}, null, 1, true);
   	return _n4;
   })();
   "#);
@@ -225,7 +225,7 @@ fn next_child_and_nthchild_should_be_above_the_set_insertion_state() {
   	const _n1 = _createIf(() => true, () => {
   		const _n3 = _t0();
   		return _n3;
-  	}, null, true);
+  	}, null, 1, true);
   	_renderEffect(() => _setProp(_n4, "disabled", foo));
   	return _n6;
   })();

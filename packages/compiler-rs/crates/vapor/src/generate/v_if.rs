@@ -26,6 +26,7 @@ pub fn gen_if<'a>(
     negative,
     once,
     index,
+    block_shape,
     ..
   } = oper;
 
@@ -94,11 +95,14 @@ pub fn gen_if<'a>(
         Some(positive_arg.into()),
         if let Some(negative_arg) = negative_arg {
           Some(negative_arg.into())
-        } else if once {
-          Some(ast.expression_null_literal(SPAN).into())
         } else {
-          None
+          Some(ast.expression_null_literal(SPAN).into())
         },
+        Some(
+          ast
+            .expression_numeric_literal(SPAN, block_shape as f64, None, NumberBase::Hex)
+            .into(),
+        ),
         if once {
           Some(ast.expression_boolean_literal(SPAN, true).into())
         } else if negative_is_some {

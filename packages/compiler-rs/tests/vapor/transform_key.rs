@@ -44,7 +44,7 @@ fn key_with_v_if() {
   			return _n4;
   		});
   		return _n2;
-  	});
+  	}, null, 1);
   	return _n0;
   })();
   "#);

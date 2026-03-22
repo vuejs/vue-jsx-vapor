@@ -25,7 +25,7 @@ Vue JSX Vapor 是一个受 `Vue Compiler` 启发的 `Vue JSX 编译器`，用 Ru
 pnpm add vue-jsx-vapor
 
 # 运行时
-pnpm add vue@3.6.0-beta.5
+pnpm add vue@3.6.0-beta.8
 ```
 
 ## 配置
@@ -50,11 +50,12 @@ export default defineConfig({
 ## Typescript
 
 ### 配置 `tsconfig.json`
+
 ```json
 {
   "compilerOptions": {
     "jsx": "preserve",
-    "jsxImportSource": "vue-jsx-vapor",
+    "jsxImportSource": "vue-jsx-vapor"
     // ...
   }
 }
@@ -63,7 +64,6 @@ export default defineConfig({
 ### Volar 插件
 
 `TS Macro` 的 VSCode 会通过分析 `vite.config.ts` 来自动加载 `vue-jsx-vapor/volar` 插件并共享 `vue-jsx-vapor/vite` 插件的用户配置，无需手动配置 `ts-macro.config.ts`。
-
 
 ::: details 手动配置
 

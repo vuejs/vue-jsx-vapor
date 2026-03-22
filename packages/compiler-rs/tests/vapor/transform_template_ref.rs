@@ -76,7 +76,7 @@ fn ref_v_if() {
   		const _n2 = _t0();
   		_renderEffect(() => _setTemplateRef(_n2, foo));
   		return _n2;
-  	}, null, true);
+  	}, null, 1, true);
   	return _n0;
   })();
   "#);

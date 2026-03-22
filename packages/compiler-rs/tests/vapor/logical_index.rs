@@ -28,7 +28,7 @@ fn child_nth_child_next_with_logical_index() {
   	const _n1 = _createIf(() => "true", () => {
   		const _n3 = _t0();
   		return _n3;
-  	}, null, true);
+  	}, null, 1, true);
   	return _n5;
   })();
   "#);
@@ -66,7 +66,7 @@ fn nth_child_with_logical_index() {
   	const _n1 = _createIf(() => true, () => {
   		const _n3 = _t0();
   		return _n3;
-  	}, null, true);
+  	}, null, 1, true);
   	_renderEffect(() => _setProp(_n4, "disabled", foo));
   	return _n6;
   })();
@@ -383,7 +383,7 @@ fn set_insertion_state_scenarios_v_if_prepend() {
   	const _n0 = _createIf(() => show, () => {
   		const _n2 = _t0();
   		return _n2;
-  	});
+  	}, null, 1);
   	return _n3;
   })();
   "#);
@@ -411,7 +411,7 @@ fn set_insertion_state_scenarios_v_if_insert() {
   	const _n0 = _createIf(() => show, () => {
   		const _n2 = _t0();
   		return _n2;
-  	});
+  	}, null, 1);
   	return _n4;
   })();
   "#);
@@ -437,7 +437,7 @@ fn set_insertion_state_scenarios_v_if_append() {
   	const _n0 = _createIf(() => show, () => {
   		const _n2 = _t0();
   		return _n2;
-  	});
+  	}, null, 1);
   	return _n3;
   })();
   "#);
@@ -618,7 +618,7 @@ fn set_insertion_state_scenarios_v_if_with_v_else_should_share_same_logical_inde
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, false, 0);
+  	}, 5, false, 0);
   	return _n6;
   })();
   "#);
@@ -656,7 +656,7 @@ fn set_insertion_state_scenarios_v_if_with_v_else_if_and_v_else_should_share_sam
   	}, () => {
   		const _n6 = _t2();
   		return _n6;
-  	}, false, 1), false, 0);
+  	}, 5, false, 1), 5, false, 0);
   	return _n8;
   })();
   "#);
@@ -687,7 +687,7 @@ fn set_insertion_state_scenarios_v_if_and_v_else_prepend() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, false, 0);
+  	}, 5, false, 0);
   	return _n5;
   })();
   "#);
@@ -718,7 +718,7 @@ fn set_insertion_state_scenarios_v_if_and_v_else_append() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, false, 0);
+  	}, 5, false, 0);
   	return _n5;
   })();
   "#);
@@ -751,7 +751,7 @@ fn set_insertion_state_scenarios_v_if_and_v_else_followed_by_component() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, false, 0);
+  	}, 5, false, 0);
   	_setInsertionState(_n6, null, 2, true);
   	const _n5 = _createComponent(Comp);
   	return _n6;
@@ -788,7 +788,7 @@ fn set_insertion_state_scenarios_component_followed_by_v_if_v_else() {
   	}, () => {
   		const _n5 = _t1();
   		return _n5;
-  	}, false, 0);
+  	}, 5, false, 0);
   	return _n6;
   })();
   "#);
@@ -823,7 +823,7 @@ fn set_insertion_state_scenarios_component_and_v_if_v_else_and_component() {
   	}, () => {
   		const _n5 = _t1();
   		return _n5;
-  	}, false, 0);
+  	}, 5, false, 0);
   	_setInsertionState(_n7, null, 2, true);
   	const _n6 = _createComponent(Comp2);
   	return _n7;

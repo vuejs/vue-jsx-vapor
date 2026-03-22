@@ -10,13 +10,14 @@ use crate::{
     BlockIRNode, CreateNodesIRNode, DynamicFlag, GetTextChildIRNode, IfIRNode, OperationNode,
     SetNodesIRNode,
   },
-  transform::TransformContext,
+  transform::{TransformContext, v_if::encode_if_block_shape},
 };
 
 use common::{
   ast::RootNode,
   check::{is_constant_node, is_custom_element, is_fragment_node, is_jsx_component, is_template},
   directive::Directives,
+  patch_flag::VaporBlockShape,
   text::{
     escape_html, get_tag_name, get_text_like_value, is_empty_text, is_text_like, resolve_jsx_text,
   },
@@ -351,6 +352,7 @@ pub fn process_conditional_expression<'a>(
 
     let mut operation = IfIRNode {
       id,
+      block_shape: encode_if_block_shape(&block, None),
       positive: block,
       index: context.next_if_index(),
       once: *context.in_v_once.borrow() || is_const_test,
@@ -402,6 +404,7 @@ fn set_negative<'a>(
     let test = &mut unsafe { &mut *node }.test;
     let mut negative = IfIRNode {
       id: -1,
+      block_shape: VaporBlockShape::Empty as i32,
       once: *context.in_v_once.borrow() || is_constant_node(test),
       condition: test.take_in(context.allocator),
       positive: block,
@@ -434,4 +437,11 @@ fn set_negative<'a>(
     let block = exit_block();
     operation.negative = Some(Box::new(Either::A(block)));
   }
+
+  if let Some(negative) = operation.negative.as_mut()
+    && let Either::B(negative) = negative.as_mut()
+  {
+    negative.block_shape = encode_if_block_shape(&negative.positive, None)
+  }
+  operation.block_shape = encode_if_block_shape(&operation.positive, operation.negative.as_ref())
 }
