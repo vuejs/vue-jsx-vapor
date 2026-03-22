@@ -61,10 +61,10 @@ impl<'a> Transform<'a> {
           .is_some_and(|name| matches!(name, "defineVaporComponent" | "defineVaporCustomElement"))
       {
         *options.in_vapor.borrow_mut() -= 1;
-      } else if let Expression::ArrowFunctionExpression(node) = node {
-        if let Some(map) = options.should_optimize_map.borrow_mut().remove(&node.span) {
-          options.remove_identifiers(map.1);
-        }
+      } else if let Expression::ArrowFunctionExpression(node) = node
+        && let Some(map) = options.should_optimize_map.borrow_mut().remove(&node.span)
+      {
+        options.remove_identifiers(map.1);
       }
     }));
 
@@ -81,7 +81,6 @@ impl<'a> Transform<'a> {
       let expression = Some(if vdom {
         use vdom::transform::TransformContext;
         let transform_context: *const TransformContext = &TransformContext::new(options, &*ast_ptr);
-        let node = node;
         (&*transform_context).transform(node)
       } else {
         use vapor::transform::TransformContext;

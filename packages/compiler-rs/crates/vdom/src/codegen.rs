@@ -49,7 +49,7 @@ impl<'a> TransformContext<'a> {
                         ast.atom(&hash_string(&format!(
                           "{}{}",
                           self.options.filename,
-                          self.options.cache_index.borrow().to_string(),
+                          self.options.cache_index.borrow(),
                         ))),
                         None,
                       )
@@ -293,9 +293,9 @@ impl<'a> TransformContext<'a> {
         [
           Some(
             if is_component {
-              ast.expression_identifier(SPAN, ast.atom(&tag))
+              ast.expression_identifier(SPAN, ast.atom(tag))
             } else {
-              ast.expression_string_literal(SPAN, ast.atom(&tag), None)
+              ast.expression_string_literal(SPAN, ast.atom(tag), None)
             }
             .into(),
           ),

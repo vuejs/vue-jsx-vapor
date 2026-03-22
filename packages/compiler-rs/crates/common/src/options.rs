@@ -22,6 +22,7 @@ type OnExitProgram<'a> = Box<dyn Fn(Vec<RootJsx<'a>>) + 'a>;
 type OnEnterExpression<'a> =
   Box<dyn Fn(*mut Expression<'a>) -> Option<(*mut Expression<'a>, bool)> + 'a>;
 type OnLeaveExpression<'a> = Box<dyn Fn(&Expression) + 'a>;
+type CreateRootJSX<'a> = Box<dyn Fn(*mut Expression<'a>, bool) -> RootJsx<'a> + 'a>;
 
 #[napi(object)]
 pub struct Hmr {
@@ -48,7 +49,7 @@ pub struct TransformOptions<'a> {
   pub hoists: RefCell<Vec<Expression<'a>>>,
   pub on_error: Box<dyn Fn(ErrorCodes, Span) + 'a>,
   pub on_exit_program: RefCell<Option<OnExitProgram<'a>>>,
-  pub create_root_jsx: RefCell<Option<Box<dyn Fn(*mut Expression<'a>, bool) -> RootJsx<'a> + 'a>>>,
+  pub create_root_jsx: RefCell<Option<CreateRootJSX<'a>>>,
   pub on_enter_expression: RefCell<Option<OnEnterExpression<'a>>>,
   pub on_leave_expression: RefCell<Option<OnLeaveExpression<'a>>>,
   pub source_map: bool,

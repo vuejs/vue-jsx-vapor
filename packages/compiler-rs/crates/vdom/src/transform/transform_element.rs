@@ -86,7 +86,7 @@ pub unsafe fn transform_element<'a>(
     unsafe { transform_slot_outlet(directives, context_node, context) };
     return None;
   }
-  if matches!(vnode_tag.as_ref(), "Transition" | "TransitionGroup") {
+  if matches!(vnode_tag, "Transition" | "TransitionGroup") {
     transform_transition(node, context);
   }
   let is_component = directives.is_component;

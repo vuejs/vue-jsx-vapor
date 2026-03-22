@@ -96,7 +96,7 @@ pub unsafe fn transform_text<'a>(
         || if let JSXChild::Element(parent_node) = parent_node {
           is_jsx_component(parent_node)
             || is_custom_element(parent_node)
-            || get_tag_name(&parent_node, context.options) == "template"
+            || get_tag_name(parent_node, context.options) == "template"
         } else {
           false
         };

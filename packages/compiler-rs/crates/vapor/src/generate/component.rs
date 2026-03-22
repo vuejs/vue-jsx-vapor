@@ -56,15 +56,15 @@ pub fn gen_create_component<'a>(
 
   let tag = if is_custom_element {
     ast
-      .expression_string_literal(SPAN, ast.atom(&tag), None)
+      .expression_string_literal(SPAN, ast.atom(tag), None)
       .into()
   } else if asset {
     ast
-      .expression_identifier(SPAN, ast.atom(&to_valid_asset_id(&tag, "component")))
+      .expression_identifier(SPAN, ast.atom(&to_valid_asset_id(tag, "component")))
       .into()
   } else {
     gen_expression(
-      ast.expression_identifier(tag_span, ast.atom(&tag)),
+      ast.expression_identifier(tag_span, ast.atom(tag)),
       context,
       None,
       false,

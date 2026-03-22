@@ -310,8 +310,8 @@ pub fn is_event(mut s: &str) -> bool {
 pub fn get_directive_name(s: &str) -> &str {
   if is_event(s) {
     "on"
-  } else if s.starts_with("v-") {
-    &s[2..]
+  } else if let Some(name) = s.strip_prefix("v-") {
+    name
   } else {
     "bind"
   }

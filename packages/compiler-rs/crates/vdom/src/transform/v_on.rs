@@ -57,13 +57,13 @@ pub fn transform_v_on<'a>(
     let is_member_exp = exp.is_member_expression() || matches!(exp, Expression::Identifier(_));
     should_cache = !(*context.options.in_v_once.borrow()
       || has_scope_ref
+      || has_this
       // #1541 bail if this is a member exp handler passed to a component -
       // we need to use the original function to preserve arity,
       // e.g. <transition> relies on checking cb.length to determine
       // transition end handling. Inline function is ok since its arity
       // is preserved even when cached.
-      || is_member_exp && is_component)
-      && !has_this;
+      || is_member_exp && is_component);
     if should_cache && is_member_exp {
       ast.expression_arrow_function(
         SPAN,

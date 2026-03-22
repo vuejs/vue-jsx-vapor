@@ -119,35 +119,35 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
   }
 
   fn visit_simple_assignment_target(&mut self, node: &mut SimpleAssignmentTarget<'a>) {
-    if let SimpleAssignmentTarget::AssignmentTargetIdentifier(id) = node {
-      if let Some(exp) = self.on_identifier_reference(id) {
-        match exp {
-          Expression::Identifier(exp) => {
-            *node = SimpleAssignmentTarget::AssignmentTargetIdentifier(exp);
-          }
-          Expression::StaticMemberExpression(exp) => {
-            *node = SimpleAssignmentTarget::StaticMemberExpression(exp);
-          }
-          Expression::ComputedMemberExpression(exp) => {
-            *node = SimpleAssignmentTarget::ComputedMemberExpression(exp);
-          }
-          Expression::PrivateFieldExpression(exp) => {
-            *node = SimpleAssignmentTarget::PrivateFieldExpression(exp);
-          }
-          Expression::TSAsExpression(exp) => {
-            *node = SimpleAssignmentTarget::TSAsExpression(exp);
-          }
-          Expression::TSNonNullExpression(exp) => {
-            *node = SimpleAssignmentTarget::TSNonNullExpression(exp);
-          }
-          Expression::TSSatisfiesExpression(exp) => {
-            *node = SimpleAssignmentTarget::TSSatisfiesExpression(exp);
-          }
-          Expression::TSTypeAssertion(exp) => {
-            *node = SimpleAssignmentTarget::TSTypeAssertion(exp);
-          }
-          _ => {}
-        };
+    if let SimpleAssignmentTarget::AssignmentTargetIdentifier(id) = node
+      && let Some(exp) = self.on_identifier_reference(id)
+    {
+      match exp {
+        Expression::Identifier(exp) => {
+          *node = SimpleAssignmentTarget::AssignmentTargetIdentifier(exp);
+        }
+        Expression::StaticMemberExpression(exp) => {
+          *node = SimpleAssignmentTarget::StaticMemberExpression(exp);
+        }
+        Expression::ComputedMemberExpression(exp) => {
+          *node = SimpleAssignmentTarget::ComputedMemberExpression(exp);
+        }
+        Expression::PrivateFieldExpression(exp) => {
+          *node = SimpleAssignmentTarget::PrivateFieldExpression(exp);
+        }
+        Expression::TSAsExpression(exp) => {
+          *node = SimpleAssignmentTarget::TSAsExpression(exp);
+        }
+        Expression::TSNonNullExpression(exp) => {
+          *node = SimpleAssignmentTarget::TSNonNullExpression(exp);
+        }
+        Expression::TSSatisfiesExpression(exp) => {
+          *node = SimpleAssignmentTarget::TSSatisfiesExpression(exp);
+        }
+        Expression::TSTypeAssertion(exp) => {
+          *node = SimpleAssignmentTarget::TSTypeAssertion(exp);
+        }
+        _ => {}
       };
     }
     walk_simple_assignment_target(self, node);
