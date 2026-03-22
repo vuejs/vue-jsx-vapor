@@ -149,7 +149,7 @@ pub unsafe fn transform_v_for<'a>(
       return;
     };
     if let Some(v_for) = fragment_codegen.v_for.replace(vec![]) {
-      context.remove_identifiers(v_for)
+      context.options.remove_identifiers(v_for)
     }
 
     let mut key_exp = None;

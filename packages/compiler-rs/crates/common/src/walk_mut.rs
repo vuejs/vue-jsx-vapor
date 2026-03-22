@@ -1,11 +1,11 @@
-use oxc_allocator::{FromIn, TakeIn};
+use oxc_allocator::FromIn;
 use oxc_ast::ast::{
   AssignmentTargetMaybeDefault, AssignmentTargetProperty, AssignmentTargetPropertyProperty,
   Expression, IdentifierName, PropertyKey, SimpleAssignmentTarget,
 };
 use oxc_ast_visit::{
   VisitMut,
-  walk_mut::{self, walk_expression, walk_simple_assignment_target},
+  walk_mut::{self, walk_expression, walk_function, walk_simple_assignment_target},
 };
 use oxc_semantic::{NodeId, ScopeId};
 use std::cell::Cell;
@@ -109,16 +109,11 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
     } else if let Some(on_enter_expression) = self.options.on_enter_expression.borrow().as_ref()
       && let Some((node_ref, vdom)) = on_enter_expression(node)
     {
-      self.roots.push(RootJsx {
-        node_ref,
-        node: unsafe { &mut *node_ref }.take_in(&self.options.allocator),
-        vdom,
-      });
+      let root = self.options.create_root_jsx.borrow().as_ref().unwrap()(node_ref, vdom);
+      self.roots.push(root);
     }
     walk_expression(self, node);
-    if let Expression::CallExpression(node) = node
-      && let Some(on_leave_expression) = self.options.on_leave_expression.borrow().as_ref()
-    {
+    if let Some(on_leave_expression) = self.options.on_leave_expression.borrow().as_ref() {
       on_leave_expression(node)
     }
   }
@@ -212,6 +207,13 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
       }
     }
     walk_mut::walk_assignment_target_property(self, node);
+  }
+  
+  fn visit_function(&mut self, node: &mut oxc_ast::ast::Function<'a>, flags: oxc_semantic::ScopeFlags) {
+    walk_function(self, node, flags);
+    if let Some(map) = self.options.should_optimize_map.borrow_mut().remove(&node.span) {
+      self.options.remove_identifiers(map.1);
+    }
   }
 }
 

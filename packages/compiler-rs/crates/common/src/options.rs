@@ -8,21 +8,20 @@ use std::{
 
 use indexmap::IndexMap;
 use napi::Either;
-use oxc_ast::ast::{CallExpression, Expression};
+use oxc_ast::ast::Expression;
 use oxc_span::{SourceType, Span};
 
 use crate::error::ErrorCodes;
 
 pub struct RootJsx<'a> {
-  pub node: Expression<'a>,
   pub node_ref: *mut Expression<'a>,
-  pub vdom: bool,
+  pub expression: Option<Expression<'a>>,
 }
 
 type OnExitProgram<'a> = Box<dyn Fn(Vec<RootJsx<'a>>) + 'a>;
 type OnEnterExpression<'a> =
   Box<dyn Fn(*mut Expression<'a>) -> Option<(*mut Expression<'a>, bool)> + 'a>;
-type OnLeaveExpression<'a> = Box<dyn Fn(&CallExpression) + 'a>;
+type OnLeaveExpression<'a> = Box<dyn Fn(&Expression) + 'a>;
 
 #[napi(object)]
 pub struct Hmr {
@@ -49,6 +48,7 @@ pub struct TransformOptions<'a> {
   pub hoists: RefCell<Vec<Expression<'a>>>,
   pub on_error: Box<dyn Fn(ErrorCodes, Span) + 'a>,
   pub on_exit_program: RefCell<Option<OnExitProgram<'a>>>,
+  pub create_root_jsx: RefCell<Option<Box<dyn Fn(*mut Expression<'a>, bool) -> RootJsx<'a> + 'a>>>,
   pub on_enter_expression: RefCell<Option<OnEnterExpression<'a>>>,
   pub on_leave_expression: RefCell<Option<OnLeaveExpression<'a>>>,
   pub source_map: bool,
@@ -67,6 +67,7 @@ pub struct TransformOptions<'a> {
   pub cache_index: RefCell<i32>,
   pub optimize_slots: bool,
   pub runtime_module_name: Option<String>,
+  pub should_optimize_map: RefCell<HashMap<Span, (bool, Vec<&'a str>)>>,
 }
 
 impl<'a> Default for TransformOptions<'a> {
@@ -87,6 +88,7 @@ impl<'a> Default for TransformOptions<'a> {
       hmr: Either::A(false),
       ssr: false,
       on_exit_program: RefCell::new(None),
+      create_root_jsx: RefCell::new(None),
       on_enter_expression: RefCell::new(None),
       on_leave_expression: RefCell::new(None),
       in_v_for: RefCell::new(0),
@@ -98,6 +100,7 @@ impl<'a> Default for TransformOptions<'a> {
       cache_index: RefCell::new(0),
       optimize_slots: true,
       runtime_module_name: None,
+      should_optimize_map: RefCell::new(HashMap::new()),
     }
   }
 }
@@ -106,5 +109,17 @@ impl<'a> TransformOptions<'a> {
   pub fn helper(&self, name: &'a str) -> &'a str {
     self.helpers.borrow_mut().insert(&name[1..]);
     name
+  }
+  pub fn remove_identifiers(&self, ids: Vec<&'a str>) {
+    let identifiers = &mut self.identifiers.borrow_mut();
+    for id in ids {
+      if let Some(v) = identifiers.get_mut(&id)
+        && *v > 1
+      {
+        *v -= 1;
+      } else {
+        identifiers.remove(&id);
+      }
+    }
   }
 }

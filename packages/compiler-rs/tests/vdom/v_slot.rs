@@ -862,8 +862,8 @@ fn should_not_mark_stable_slot_in_funciton_with_params() {
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(Comp, null, (slotProps) => (_openBlock(), _createBlock(Comp, null, {
   	default: _withCtx(() => [_normalizeVNode(() => foo)]),
-  	_: 2
-  }, 1024)), 1024);
+  	_: 1
+  })), 1024);
   "#);
 }
 

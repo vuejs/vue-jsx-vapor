@@ -7,7 +7,7 @@ use oxc_ast::{
   AstBuilder, NONE,
   ast::{Argument, Expression, ImportOrExportKind, Program, Statement, VariableDeclarationKind},
 };
-use oxc_ast_visit::{VisitMut, walk_mut::walk_expression};
+use oxc_ast_visit::{VisitMut, walk_mut::{walk_expression, walk_function}};
 use oxc_span::{Ident, SPAN};
 
 use crate::hmr_or_ssr::HmrOrSsrTransform;
@@ -52,27 +52,42 @@ impl<'a> Transform<'a> {
     }));
 
     *options.on_leave_expression.borrow_mut() = Some(Box::new(|node| {
-      if node
-        .callee_name()
-        .is_some_and(|name| matches!(name, "defineVaporComponent" | "defineVaporCustomElement"))
+      if let Expression::CallExpression(node) = node
+        && node
+          .callee_name()
+          .is_some_and(|name| matches!(name, "defineVaporComponent" | "defineVaporCustomElement"))
       {
         *options.in_vapor.borrow_mut() -= 1;
+      } else if let Expression::ArrowFunctionExpression(node) = node {
+        if let Some(map) = options.should_optimize_map.borrow_mut().remove(&node.span) {
+          options.remove_identifiers(map.1);
+        }
       }
     }));
 
     *options.on_exit_program.borrow_mut() = Some(Box::new(move |mut roots| unsafe {
       for root in roots.drain(..) {
-        if root.vdom {
-          use vdom::transform::TransformContext;
-          let transform_context: *mut TransformContext =
-            &mut TransformContext::new(options, &*ast_ptr);
-          *root.node_ref = (&*transform_context).transform(root.node);
-        } else {
-          use vapor::transform::TransformContext;
-          let transform_context: *mut TransformContext =
-            &mut TransformContext::new(options, &*ast_ptr);
-          *root.node_ref = (&*transform_context).transform(root.node);
-        }
+        if let Some(expression) = root.expression {
+          *root.node_ref = expression;
+        };
+      }
+    }));
+
+    *options.create_root_jsx.borrow_mut() = Some(Box::new(move |node_ref, vdom| unsafe {
+      let node = (&mut *node_ref).take_in(&options.allocator);
+      let expression = Some(if vdom {
+        use vdom::transform::TransformContext;
+        let transform_context: *const TransformContext = &TransformContext::new(options, &*ast_ptr);
+        let node = node;
+        (&*transform_context).transform(node)
+      } else {
+        use vapor::transform::TransformContext;
+        let transform_context: *const TransformContext = &TransformContext::new(options, &*ast_ptr);
+        (&*transform_context).transform(node)
+      });
+      RootJsx {
+        node_ref,
+        expression,
       }
     }));
 
@@ -342,17 +357,18 @@ impl<'a> VisitMut<'a> for Transform<'a> {
     if let Some(on_enter_expression) = self.options.on_enter_expression.borrow().as_ref()
       && let Some((node_ref, vdom)) = on_enter_expression(node)
     {
-      self.roots.push(RootJsx {
-        node_ref,
-        node: unsafe { &mut *node_ref }.take_in(&self.options.allocator),
-        vdom,
-      });
+      let root = self.options.create_root_jsx.borrow().as_ref().unwrap()(node_ref, vdom);
+      self.roots.push(root);
     }
     walk_expression(self, node);
-    if let Expression::CallExpression(node) = node
-      && let Some(on_leave_expression) = self.options.on_leave_expression.borrow().as_ref()
-    {
+    if let Some(on_leave_expression) = self.options.on_leave_expression.borrow().as_ref() {
       on_leave_expression(node)
+    }
+  }
+  fn visit_function(&mut self, node: &mut oxc_ast::ast::Function<'a>, flags: oxc_semantic::ScopeFlags) {
+    walk_function(self, node, flags);
+    if let Some(map) = self.options.should_optimize_map.borrow_mut().remove(&node.span) {
+      self.options.remove_identifiers(map.1);
     }
   }
 }

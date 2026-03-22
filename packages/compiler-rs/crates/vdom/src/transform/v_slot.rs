@@ -69,7 +69,7 @@ pub unsafe fn track_slot_scopes<'a>(
         *context.options.in_v_slot.borrow_mut() += 1;
         return Some(Box::new(move || {
           *context.options.in_v_slot.borrow_mut() -= 1;
-          context.remove_identifiers(identifiers);
+          context.options.remove_identifiers(identifiers);
         }));
       } else if is_component {
         context.options.slot_scopes.borrow_mut().insert(

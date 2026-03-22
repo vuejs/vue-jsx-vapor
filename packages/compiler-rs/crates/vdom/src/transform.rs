@@ -11,7 +11,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast::{AstBuilder, AstKind, NONE};
 use oxc_semantic::NodeId;
-use oxc_span::{GetSpan, SPAN, Span};
+use oxc_span::{GetSpan, Ident, SPAN, Span};
 use std::collections::HashMap;
 use std::{cell::RefCell, collections::HashSet, rc::Rc};
 pub mod cache_static;
@@ -119,54 +119,58 @@ impl<'a> TransformContext<'a> {
     }
     let semantic = self.options.semantic.borrow();
     let scope_id = semantic.nodes().get_node(node_id).scope_id();
-    let parent_is_define_component = || -> bool {
-      let mut ancestors = semantic.scoping().scope_ancestors(scope_id);
-      ancestors.next();
-      if let Some(parent_scope_id) = ancestors.next() {
-        if parent_scope_id == semantic.scoping().root_scope_id() {
-          true
-        } else if let Some(grandparent_scope_id) = ancestors.next() {
-          grandparent_scope_id == semantic.scoping().root_scope_id()
-            || match semantic
-              .nodes()
-              .parent_kind(semantic.scoping().get_node_id(parent_scope_id))
-            {
-              AstKind::CallExpression(call_exp) => call_exp
-                .callee_name()
-                .is_some_and(|name| ["defineComponent", "defineCustomElement"].contains(&name)),
-              AstKind::ObjectProperty(prop) => {
-                if let Some(AstKind::CallExpression(call_exp)) =
-                  semantic.nodes().ancestor_kinds(prop.node_id()).nth(1)
-                {
-                  call_exp
-                    .callee_name()
-                    .is_some_and(|name| ["defineComponent", "defineCustomElement"].contains(&name))
-                } else {
-                  false
-                }
-              }
-              _ => false,
-            }
-        } else {
-          true
+    let scope_node = semantic
+      .nodes()
+      .get_node(semantic.scoping().get_node_id(scope_id));
+    let scope_span = scope_node.span();
+    if let Some(optimize) = self.options.should_optimize_map.borrow().get(&scope_span) {
+      return optimize.0;
+    }
+
+    let mut identifiers = vec![];
+    let mut add_identifiers = |id: &Ident| {
+      let name = id.as_ref() as *const str;
+      identifiers.push(unsafe { &*name });
+      self
+        .options
+        .identifiers
+        .borrow_mut()
+        .entry(unsafe { &*name })
+        .and_modify(|v| *v += 1)
+        .or_insert(1);
+    };
+    let result = match scope_node.kind() {
+      AstKind::ArrowFunctionExpression(scope) => {
+        for id in semantic.scoping().get_bindings(scope_id) {
+          add_identifiers(id.0);
         }
-      } else {
+        for item in &scope.params.items {
+          for id in item.pattern.get_binding_identifiers() {
+            add_identifiers(&id.name);
+          }
+        }
         true
       }
-    };
-
-    match semantic
-      .nodes()
-      .get_node(semantic.scoping().get_node_id(scope_id))
-      .kind()
-    {
-      AstKind::ArrowFunctionExpression(scope) => {
-        scope.params.is_empty() && parent_is_define_component()
+      AstKind::Function(scope) => {
+        for id in semantic.scoping().get_bindings(scope_id) {
+          add_identifiers(id.0);
+        }
+        for item in &scope.params.items {
+          for id in item.pattern.get_binding_identifiers() {
+            add_identifiers(&id.name);
+          }
+        }
+        true
       }
-      AstKind::Function(scope) => scope.params.is_empty() && parent_is_define_component(),
       AstKind::Program(_) => true,
       _ => false,
-    }
+    };
+    self
+      .options
+      .should_optimize_map
+      .borrow_mut()
+      .insert(scope_span, (result, identifiers));
+    result
   }
 
   pub fn hoist(&self, exp: &mut Expression<'a>) -> Expression<'a> {
@@ -408,19 +412,6 @@ impl<'a> TransformContext<'a> {
     )
     .visit(exp);
     ids
-  }
-
-  pub fn remove_identifiers(&self, ids: Vec<&'a str>) {
-    let identifiers = &mut self.options.identifiers.borrow_mut();
-    for id in ids {
-      if let Some(v) = identifiers.get_mut(&id)
-        && *v > 1
-      {
-        *v -= 1;
-      } else {
-        identifiers.remove(&id);
-      }
-    }
   }
 
   /// # SAFETY

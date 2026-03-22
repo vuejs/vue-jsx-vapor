@@ -187,25 +187,27 @@ fn should_optimize_in_custom_define_compoennt() {
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = ["onClick"];
   export default genericComponent(() => {
   	const Comp = genericComponent(() => {
-  		return () => (_openBlock(), _createElementBlock("div", { onClick: () => foo }, null, 8, _hoisted_1));
+  		return () => (() => {
+  			const _cache = _createVNodeCache("631d214bc2c8427c");
+  			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
+  		})();
   	});
   	const Comp1 = defineCustomElement({ setup: () => {
   		return () => (() => {
-  			const _cache = _createVNodeCache("631d214bc2c8427c");
+  			const _cache = _createVNodeCache("5c89500e299049d2");
   			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
   		})();
   	} });
   	const Comp2 = () => {
   		return (() => {
-  			const _cache = _createVNodeCache("5c89500e299049d2");
+  			const _cache = _createVNodeCache("d10877e335888a9");
   			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
   		})();
   	};
   	return () => (() => {
-  		const _cache = _createVNodeCache("d10877e335888a9");
+  		const _cache = _createVNodeCache("cecabad81427710a");
   		return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
   	})();
   });
@@ -338,5 +340,43 @@ fn should_not_cache_in_for_of_statement() {
   ]) {
   	stmts.push((_openBlock(), _createElementBlock("div", { onClick: () => i }, null, 8, _hoisted_1)));
   }
+  "#);
+}
+
+#[test]
+fn should_not_optimize_multiple_statments() {
+  let code = transform(
+    r#"const Comp = defineComponent((props) => {
+      return () => {
+        const Foo = <>{props.foo}</>
+        return <Comp>{Foo}</Comp>
+      }
+    })
+    export default () => (
+      <Comp>{Foo}</Comp>
+    )
+    "#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  const Comp = defineComponent((props) => {
+  	return () => {
+  		const Foo = (_openBlock(), _createElementBlock(_Fragment, null, [_normalizeVNode(() => props.foo)], 64));
+  		return _openBlock(), _createBlock(Comp, null, {
+  			default: _withCtx(() => [_normalizeVNode(() => Foo)]),
+  			_: 2
+  		}, 1024);
+  	};
+  });
+  export default () => (_openBlock(), _createBlock(Comp, null, {
+  	default: _withCtx(() => [_normalizeVNode(() => Foo)]),
+  	_: 1
+  }));
   "#);
 }
