@@ -90,8 +90,10 @@ impl<'a> WalkIdentifiersMut<'a> {
         .scope_id(),
     );
     self.visit_expression(it);
-    if let Some(on_exit_program) = self.options.on_exit_program.borrow().as_ref() {
-      on_exit_program(std::mem::take(&mut self.roots));
+    for root in self.roots.drain(..) {
+      unsafe {
+        *root.node_ptr = root.expression;
+      }
     }
     self.has_this
   }
@@ -107,9 +109,9 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
     } else if let Expression::ThisExpression(_) = node {
       self.has_this = true;
     } else if let Some(on_enter_expression) = self.options.on_enter_expression.borrow().as_ref()
-      && let Some((node_ref, vdom)) = on_enter_expression(node)
+      && let Some((node_ptr, vdom)) = on_enter_expression(node)
     {
-      let root = self.options.create_root_jsx.borrow().as_ref().unwrap()(node_ref, vdom);
+      let root = self.options.create_root_jsx.borrow().as_ref().unwrap()(node_ptr, vdom);
       self.roots.push(root);
     }
     walk_expression(self, node);

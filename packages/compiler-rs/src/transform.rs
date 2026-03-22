@@ -1,5 +1,3 @@
-use std::mem;
-
 use common::options::{RootJsx, TransformOptions};
 use napi::Either;
 use oxc_allocator::{FromIn, TakeIn};
@@ -68,17 +66,9 @@ impl<'a> Transform<'a> {
       }
     }));
 
-    *options.on_exit_program.borrow_mut() = Some(Box::new(move |mut roots| unsafe {
-      for root in roots.drain(..) {
-        if let Some(expression) = root.expression {
-          *root.node_ref = expression;
-        };
-      }
-    }));
-
-    *options.create_root_jsx.borrow_mut() = Some(Box::new(move |node_ref, vdom| unsafe {
-      let node = (&mut *node_ref).take_in(&options.allocator);
-      let expression = Some(if vdom {
+    *options.create_root_jsx.borrow_mut() = Some(Box::new(move |node_ptr, vdom| unsafe {
+      let node = (&mut *node_ptr).take_in(&options.allocator);
+      let expression = if vdom {
         use vdom::transform::TransformContext;
         let transform_context: *const TransformContext = &TransformContext::new(options, &*ast_ptr);
         (&*transform_context).transform(node)
@@ -86,9 +76,9 @@ impl<'a> Transform<'a> {
         use vapor::transform::TransformContext;
         let transform_context: *const TransformContext = &TransformContext::new(options, &*ast_ptr);
         (&*transform_context).transform(node)
-      });
+      };
       RootJsx {
-        node_ref,
+        node_ptr,
         expression,
       }
     }));
@@ -111,8 +101,10 @@ impl<'a> Transform<'a> {
       HmrOrSsrTransform::new(self.options).visit(ast, program);
     }
 
-    if let Some(on_exit_program) = self.options.on_exit_program.borrow().as_ref() {
-      on_exit_program(mem::take(&mut self.roots));
+    for root in self.roots.drain(..) {
+      unsafe {
+        *root.node_ptr = root.expression;
+      }
     }
 
     let mut statements = vec![];
@@ -357,9 +349,9 @@ impl<'a> Transform<'a> {
 impl<'a> VisitMut<'a> for Transform<'a> {
   fn visit_expression(&mut self, node: &mut Expression<'a>) {
     if let Some(on_enter_expression) = self.options.on_enter_expression.borrow().as_ref()
-      && let Some((node_ref, vdom)) = on_enter_expression(node)
+      && let Some((node_ptr, vdom)) = on_enter_expression(node)
     {
-      let root = self.options.create_root_jsx.borrow().as_ref().unwrap()(node_ref, vdom);
+      let root = self.options.create_root_jsx.borrow().as_ref().unwrap()(node_ptr, vdom);
       self.roots.push(root);
     }
     walk_expression(self, node);
