@@ -219,7 +219,7 @@ fn condition_expression() {
   const _hoisted_1 = { key: 0 };
   (() => {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", null, [foo ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), foo ? (_openBlock(), _createElementBlock("div", { key: 1 }, [_normalizeVNode(() => foo), _cache[0] || (_cache[0] = _normalizeVNode("bar", -1))])) : (_openBlock(), _createElementBlock(_Fragment, { key: 2 }, [_normalizeVNode(() => bar)]))]);
+  	return _openBlock(), _createElementBlock("div", null, [foo ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : _createCommentVNode("", true), foo ? (_openBlock(), _createElementBlock("div", { key: 1 }, [_normalizeVNode(() => foo), _cache[0] || (_cache[0] = _normalizeVNode("bar", -1))])) : (_openBlock(), _createElementBlock(_Fragment, { key: 2 }, [_normalizeVNode(() => bar)], 64))]);
   })();
   "#)
 }
@@ -333,7 +333,7 @@ fn condition_expression_with_assign_target() {
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  _openBlock(), _createElementBlock(_Fragment, null, [(foo = (_openBlock(), _createElementBlock("div"))) ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_normalizeVNode(() => foo)])) : _normalizeVNode(() => null)], 64);
+  _openBlock(), _createElementBlock(_Fragment, null, [(foo = (_openBlock(), _createElementBlock("div"))) ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_normalizeVNode(() => foo)], 64)) : _normalizeVNode(() => null)], 64);
   "#);
 }
 
