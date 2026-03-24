@@ -5,7 +5,10 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{
   VisitMut,
-  walk_mut::{self, walk_expression, walk_function, walk_simple_assignment_target},
+  walk_mut::{
+    self, walk_expression, walk_for_in_statement, walk_for_of_statement, walk_for_statement,
+    walk_function, walk_simple_assignment_target,
+  },
 };
 use oxc_semantic::{NodeId, ScopeId};
 use std::cell::Cell;
@@ -217,11 +220,48 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
     flags: oxc_semantic::ScopeFlags,
   ) {
     walk_function(self, node, flags);
-    if let Some(map) = self
-      .options
-      .should_optimize_map
-      .borrow_mut()
-      .remove(&node.span)
+    if self.options.interop
+      && let Some(map) = self
+        .options
+        .scope_identifiers_map
+        .borrow_mut()
+        .remove(&node.span)
+    {
+      self.options.remove_identifiers(map.1);
+    }
+  }
+  fn visit_for_statement(&mut self, node: &mut oxc_ast::ast::ForStatement<'a>) {
+    walk_for_statement(self, node);
+    if self.options.interop
+      && let Some(map) = self
+        .options
+        .scope_identifiers_map
+        .borrow_mut()
+        .remove(&node.span)
+    {
+      self.options.remove_identifiers(map.1);
+    }
+  }
+  fn visit_for_in_statement(&mut self, node: &mut oxc_ast::ast::ForInStatement<'a>) {
+    walk_for_in_statement(self, node);
+    if self.options.interop
+      && let Some(map) = self
+        .options
+        .scope_identifiers_map
+        .borrow_mut()
+        .remove(&node.span)
+    {
+      self.options.remove_identifiers(map.1);
+    }
+  }
+  fn visit_for_of_statement(&mut self, node: &mut oxc_ast::ast::ForOfStatement<'a>) {
+    walk_for_of_statement(self, node);
+    if self.options.interop
+      && let Some(map) = self
+        .options
+        .scope_identifiers_map
+        .borrow_mut()
+        .remove(&node.span)
     {
       self.options.remove_identifiers(map.1);
     }

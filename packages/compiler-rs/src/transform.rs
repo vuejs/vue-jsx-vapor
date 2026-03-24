@@ -7,7 +7,10 @@ use oxc_ast::{
 };
 use oxc_ast_visit::{
   VisitMut,
-  walk_mut::{walk_expression, walk_function},
+  walk_mut::{
+    walk_expression, walk_for_in_statement, walk_for_of_statement, walk_for_statement,
+    walk_function,
+  },
 };
 use oxc_span::{Ident, SPAN};
 
@@ -60,7 +63,11 @@ impl<'a> Transform<'a> {
       {
         *options.in_vapor.borrow_mut() -= 1;
       } else if let Expression::ArrowFunctionExpression(node) = node
-        && let Some(map) = options.should_optimize_map.borrow_mut().remove(&node.span)
+        && options.interop
+        && let Some(map) = options
+          .scope_identifiers_map
+          .borrow_mut()
+          .remove(&node.span)
       {
         options.remove_identifiers(map.1);
       }
@@ -365,11 +372,48 @@ impl<'a> VisitMut<'a> for Transform<'a> {
     flags: oxc_semantic::ScopeFlags,
   ) {
     walk_function(self, node, flags);
-    if let Some(map) = self
-      .options
-      .should_optimize_map
-      .borrow_mut()
-      .remove(&node.span)
+    if self.options.interop
+      && let Some(map) = self
+        .options
+        .scope_identifiers_map
+        .borrow_mut()
+        .remove(&node.span)
+    {
+      self.options.remove_identifiers(map.1);
+    }
+  }
+  fn visit_for_statement(&mut self, node: &mut oxc_ast::ast::ForStatement<'a>) {
+    walk_for_statement(self, node);
+    if self.options.interop
+      && let Some(map) = self
+        .options
+        .scope_identifiers_map
+        .borrow_mut()
+        .remove(&node.span)
+    {
+      self.options.remove_identifiers(map.1);
+    }
+  }
+  fn visit_for_in_statement(&mut self, node: &mut oxc_ast::ast::ForInStatement<'a>) {
+    walk_for_in_statement(self, node);
+    if self.options.interop
+      && let Some(map) = self
+        .options
+        .scope_identifiers_map
+        .borrow_mut()
+        .remove(&node.span)
+    {
+      self.options.remove_identifiers(map.1);
+    }
+  }
+  fn visit_for_of_statement(&mut self, node: &mut oxc_ast::ast::ForOfStatement<'a>) {
+    walk_for_of_statement(self, node);
+    if self.options.interop
+      && let Some(map) = self
+        .options
+        .scope_identifiers_map
+        .borrow_mut()
+        .remove(&node.span)
     {
       self.options.remove_identifiers(map.1);
     }

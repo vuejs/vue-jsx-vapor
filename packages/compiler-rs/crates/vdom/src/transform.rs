@@ -70,7 +70,6 @@ pub struct TransformContext<'a> {
   pub directives: RefCell<IndexSet<&'a str>>,
   pub has_slot: RefCell<bool>,
   pub reference_expressions: RefCell<HashMap<Span, bool>>,
-  pub should_optimize: RefCell<bool>,
 }
 
 impl<'a> TransformContext<'a> {
@@ -90,14 +89,13 @@ impl<'a> TransformContext<'a> {
       directives: RefCell::new(IndexSet::new()),
       reference_expressions: RefCell::new(HashMap::new()),
       has_slot: RefCell::new(false),
-      should_optimize: RefCell::new(false),
       options,
     }
   }
 
   pub fn transform(&'a self, expression: Expression<'a>) -> Expression<'a> {
     let allocator = self.allocator;
-    *self.should_optimize.borrow_mut() = self.should_optimize(expression.node_id());
+    self.collect_scope_identifiers(expression.node_id());
     if let Expression::JSXFragment(frag) = &expression
       && let Some(child) = get_first_child(&frag.children)
       && let JSXChild::Text(child) = child
@@ -113,64 +111,80 @@ impl<'a> TransformContext<'a> {
     self.generate()
   }
 
-  fn should_optimize(&self, node_id: NodeId) -> bool {
+  fn collect_scope_identifiers(&self, node_id: NodeId) {
     if !self.options.optimize_slots {
-      return false;
+      return;
     }
     let semantic = self.options.semantic.borrow();
-    let scope_id = semantic.nodes().get_node(node_id).scope_id();
-    let scope_node = semantic
-      .nodes()
-      .get_node(semantic.scoping().get_node_id(scope_id));
-    let scope_span = scope_node.span();
-    if let Some(optimize) = self.options.should_optimize_map.borrow().get(&scope_span) {
-      return optimize.0;
-    }
+    for scope_id in semantic
+      .scoping()
+      .scope_ancestors(semantic.nodes().get_node(node_id).scope_id())
+    {
+      if scope_id == semantic.scoping().root_scope_id() {
+        return;
+      }
+      let node_id = semantic.scoping().get_node_id(scope_id);
+      let scope_node = semantic.nodes().get_node(node_id);
+      let scope_span = scope_node.span();
+      if self
+        .options
+        .scope_identifiers_map
+        .borrow()
+        .get(&scope_span)
+        .is_some()
+      {
+        return;
+      }
+      if match semantic.nodes().parent_kind(node_id) {
+        AstKind::CallExpression(call_exp) => call_exp
+          .callee_name()
+          .is_some_and(|name| ["defineComponent", "defineCustomElement"].contains(&name)),
+        AstKind::ObjectProperty(prop) => {
+          if let Some(AstKind::CallExpression(call_exp)) =
+            semantic.nodes().ancestor_kinds(prop.node_id()).nth(1)
+          {
+            call_exp
+              .callee_name()
+              .is_some_and(|name| ["defineComponent", "defineCustomElement"].contains(&name))
+          } else {
+            false
+          }
+        }
+        _ => false,
+      } {
+        continue;
+      }
 
-    let mut identifiers = vec![];
-    let mut add_identifiers = |id: &Ident| {
-      let name = id.as_ref() as *const str;
-      identifiers.push(unsafe { &*name });
+      let mut identifiers = vec![];
+      let mut add_identifiers = |id: &Ident| {
+        let name = id.as_ref() as *const str;
+        identifiers.push(unsafe { &*name });
+        self
+          .options
+          .identifiers
+          .borrow_mut()
+          .entry(unsafe { &*name })
+          .and_modify(|v| *v += 1)
+          .or_insert(1);
+      };
+      if matches!(
+        scope_node.kind(),
+        AstKind::ArrowFunctionExpression(_)
+          | AstKind::Function(_)
+          | AstKind::ForStatement(_)
+          | AstKind::ForInStatement(_)
+          | AstKind::ForOfStatement(_)
+      ) {
+        for id in semantic.scoping().get_bindings(scope_id) {
+          add_identifiers(id.0);
+        }
+      }
       self
         .options
-        .identifiers
+        .scope_identifiers_map
         .borrow_mut()
-        .entry(unsafe { &*name })
-        .and_modify(|v| *v += 1)
-        .or_insert(1);
-    };
-    let result = match scope_node.kind() {
-      AstKind::ArrowFunctionExpression(scope) => {
-        for id in semantic.scoping().get_bindings(scope_id) {
-          add_identifiers(id.0);
-        }
-        for item in &scope.params.items {
-          for id in item.pattern.get_binding_identifiers() {
-            add_identifiers(&id.name);
-          }
-        }
-        true
-      }
-      AstKind::Function(scope) => {
-        for id in semantic.scoping().get_bindings(scope_id) {
-          add_identifiers(id.0);
-        }
-        for item in &scope.params.items {
-          for id in item.pattern.get_binding_identifiers() {
-            add_identifiers(&id.name);
-          }
-        }
-        true
-      }
-      AstKind::Program(_) => true,
-      _ => false,
-    };
-    self
-      .options
-      .should_optimize_map
-      .borrow_mut()
-      .insert(scope_span, (result, identifiers));
-    result
+        .insert(scope_span, (true, identifiers));
+    }
   }
 
   pub fn hoist(&self, exp: &mut Expression<'a>) -> Expression<'a> {
@@ -348,13 +362,12 @@ impl<'a> TransformContext<'a> {
       exp.take_in(self.allocator)
     };
     let mut has_ref = false;
-    let should_optimize = *self.should_optimize.borrow();
-    let mut has_scope_ref = !should_optimize;
+    let mut has_scope_ref = !self.options.optimize_slots;
     let has_scope_ref_ptr = &mut has_scope_ref as *mut _;
     let has_ref_ptr = &mut has_ref as *mut bool;
     let has_this = WalkIdentifiersMut::new(
       Box::new(move |id, _| {
-        if !should_optimize {
+        if !self.options.optimize_slots {
           self.add_slot_scopes(id);
         } else if self
           .options

@@ -66,7 +66,7 @@ pub struct TransformOptions<'a> {
   pub cache_index: RefCell<i32>,
   pub optimize_slots: bool,
   pub runtime_module_name: Option<String>,
-  pub should_optimize_map: RefCell<HashMap<Span, (bool, Vec<&'a str>)>>,
+  pub scope_identifiers_map: RefCell<HashMap<Span, (bool, Vec<&'a str>)>>,
 }
 
 impl<'a> Default for TransformOptions<'a> {
@@ -98,7 +98,7 @@ impl<'a> Default for TransformOptions<'a> {
       cache_index: RefCell::new(0),
       optimize_slots: true,
       runtime_module_name: None,
-      should_optimize_map: RefCell::new(HashMap::new()),
+      scope_identifiers_map: RefCell::new(HashMap::new()),
     }
   }
 }

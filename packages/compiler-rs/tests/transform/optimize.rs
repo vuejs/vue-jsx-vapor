@@ -349,7 +349,7 @@ fn should_not_optimize_multiple_statments() {
     r#"const Comp = defineComponent((props) => {
       return () => {
         const Foo = <>{props.foo}</>
-        return <Comp>{Foo}</Comp>
+        return <Comp onClick={() => props.bar}>{Foo}</Comp>
       }
     })
     export default () => (
@@ -363,20 +363,57 @@ fn should_not_optimize_multiple_statments() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   const Comp = defineComponent((props) => {
   	return () => {
   		const Foo = (_openBlock(), _createElementBlock(_Fragment, null, [_normalizeVNode(() => props.foo)], 64));
-  		return _openBlock(), _createBlock(Comp, null, {
-  			default: _withCtx(() => [_normalizeVNode(() => Foo)]),
-  			_: 2
-  		}, 1024);
+  		return (() => {
+  			const _cache = _createVNodeCache("631d214bc2c8427c");
+  			return _openBlock(), _createBlock(Comp, { onClick: _cache[0] || (_cache[0] = () => props.bar) }, {
+  				default: _withCtx(() => [_normalizeVNode(() => Foo)]),
+  				_: 2
+  			}, 1024);
+  		})();
   	};
   });
   export default () => (_openBlock(), _createBlock(Comp, null, {
   	default: _withCtx(() => [_normalizeVNode(() => Foo)]),
   	_: 1
   }));
+  "#);
+}
+
+#[test]
+fn should_not_optimize_in_nested_scopes() {
+  let code = transform(
+    r#"const renderRow = ({
+      rowInfo,
+    }) => {
+      const cells = iteratedCols.map((col) => {
+        return (
+          <div onClick={() => {
+            handleUpdateExpanded(rowInfo.tmNode)
+          }} />
+        )
+      })
+    }"#,
+    Some(TransformOptions {
+      interop: true,
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["onClick"];
+  const renderRow = ({ rowInfo }) => {
+  	const cells = iteratedCols.map((col) => {
+  		return _openBlock(), _createElementBlock("div", { onClick: () => {
+  			handleUpdateExpanded(rowInfo.tmNode);
+  		} }, null, 8, _hoisted_1);
+  	});
+  };
   "#);
 }
