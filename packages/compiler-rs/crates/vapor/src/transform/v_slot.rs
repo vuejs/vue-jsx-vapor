@@ -3,6 +3,7 @@ use std::mem;
 use indexmap::IndexMap;
 use napi::{Either, bindgen_prelude::Either4};
 use oxc_ast::ast::{Expression, JSXChild, JSXElement};
+use oxc_span::SPAN;
 
 use crate::{
   ir::{
@@ -130,6 +131,7 @@ fn transform_template_slot<'a>(
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Box<dyn FnOnce() + 'a> {
+  let ast = context.ast;
   let _context_block = context_block as *mut BlockIRNode;
   let dynamic = &mut context_block.dynamic;
   dynamic.flags |= DynamicFlag::NonTemplate as i32;
@@ -155,8 +157,9 @@ fn transform_template_slot<'a>(
   Box::new(move || {
     let slots = &mut unsafe { &mut *_context_block }.slots;
     let block = exit_block();
+    let name = arg.unwrap_or(ast.expression_string_literal(SPAN, "default", None));
     if v_if_dir.is_none() && v_else_dir.is_none() && for_parse_result.is_none() {
-      let slot_name = if let Some(Expression::StringLiteral(arg)) = &arg {
+      let slot_name = if let Expression::StringLiteral(arg) = &name {
         arg.value.as_str()
       } else {
         "default"
@@ -164,7 +167,7 @@ fn transform_template_slot<'a>(
       if !slot_name.is_empty() && has_static_slot(slots, slot_name) {
         context.options.on_error.as_ref()(ErrorCodes::VSlotDuplicateSlotNames, dir.span)
       } else {
-        register_slot(slots, arg, block, context);
+        register_slot(slots, Some(name), block, context);
       }
     } else if let Some(v_if_dir) = v_if_dir {
       slots.push(Either4::C(IRSlotDynamicConditional {
@@ -173,7 +176,7 @@ fn transform_template_slot<'a>(
         negative: None,
         positive: IRSlotDynamicBasic {
           slot_type: IRSlotType::DYNAMIC,
-          name: arg.unwrap(),
+          name,
           _fn: block,
           _loop: None,
         },
@@ -183,7 +186,7 @@ fn transform_template_slot<'a>(
         if let Either4::C(v_if_slot) = last_slot {
           let positive = IRSlotDynamicBasic {
             slot_type: IRSlotType::DYNAMIC,
-            name: arg.unwrap(),
+            name,
             _fn: block,
             _loop: None,
           };
@@ -207,7 +210,7 @@ fn transform_template_slot<'a>(
     {
       slots.push(Either4::B(IRSlotDynamicBasic {
         slot_type: IRSlotType::DYNAMIC,
-        name: arg.unwrap(),
+        name,
         _fn: block,
         _loop: Some(for_parse_result),
       }))

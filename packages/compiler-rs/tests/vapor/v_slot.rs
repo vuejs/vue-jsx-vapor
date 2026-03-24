@@ -614,6 +614,51 @@ fn slot_tag_with_nested_component() {
 }
 
 #[test]
+fn default_slot_with_v_if_directive() {
+  let code = transform(
+    r#"<Comp><template v-slot v-if={show}></template></Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n1 = _createComponent(Comp, null, { $: [() => show ? {
+  		name: "default",
+  		fn: _withVaporCtx(() => {
+  			return null;
+  		})
+  	} : undefined] }, true);
+  	return _n1;
+  })();
+  "#);
+}
+
+#[test]
+fn default_slot_with_v_for_directive() {
+  let code = transform(
+    r#"<Comp><template v-slot v-for={item in list}>{item}</template></Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createForSlots as _createForSlots, withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { $: [() => _createForSlots(list, (item) => ({
+  		name: "default",
+  		fn: _withVaporCtx(() => {
+  			const _n0 = _createNodes(() => item);
+  			return _n0;
+  		})
+  	}))] }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
 fn error_on_extraneous_children_with_named_default_slot() {
   let error = RefCell::new(None);
   transform(
