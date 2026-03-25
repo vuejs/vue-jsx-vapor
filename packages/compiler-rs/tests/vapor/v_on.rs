@@ -79,9 +79,9 @@ fn event_modifier() {
   	const _n19 = _t3();
   	const _n20 = _t3();
   	const _n21 = _t3();
-  	_n0.$evtclick = _withModifiers(handleEvent, ["stop"]);
+  	_on(_n0, "click", _withModifiers(handleEvent, ["stop"]));
   	_on(_n1, "submit", _withModifiers(handleEvent, ["prevent"]));
-  	_n2.$evtclick = _withModifiers(handleEvent, ["stop", "prevent"]);
+  	_on(_n2, "click", _withModifiers(handleEvent, ["stop", "prevent"]));
   	_n3.$evtclick = _withModifiers(handleEvent, ["self"]);
   	_on(_n4, "click", handleEvent, { capture: true });
   	_on(_n5, "click", handleEvent, { once: true });
@@ -191,12 +191,12 @@ fn should_support_multiple_modifiers_and_event_options() {
 fn should_support_multiple_events_and_modifiers_options() {
   let code = transform("<div onClick_stop={test} onKeyup_enter={test} />", None).code;
   assert_snapshot!(code, @r#"
-  _delegateEvents("click", "keyup");
-  import { delegateEvents as _delegateEvents, template as _template, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
+  _delegateEvents("keyup");
+  import { delegateEvents as _delegateEvents, on as _on, template as _template, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_n0.$evtclick = _withModifiers(test, ["stop"]);
+  	_on(_n0, "click", _withModifiers(test, ["stop"]));
   	_n0.$evtkeyup = _withKeys(test, ["enter"]);
   	return _n0;
   })();
@@ -293,16 +293,34 @@ fn should_delegate_event() {
 }
 
 #[test]
-fn should_use_delegate_helper_when_have_multiple_events_of_same_name() {
+fn should_not_delegate_stop_when_have_multiple_events_of_same_name() {
   let code = transform("<div onClick={test} onClick_stop={test} />", None).code;
   assert_snapshot!(code, @r#"
-  _delegateEvents("click");
-  import { delegate as _delegate, delegateEvents as _delegateEvents, template as _template, withModifiers as _withModifiers } from "vue";
+  import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_delegate(_n0, "click", test);
-  	_delegate(_n0, "click", _withModifiers(test, ["stop"]));
+  	_on(_n0, "click", test);
+  	_on(_n0, "click", _withModifiers(test, ["stop"]));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn should_not_delegate_normalized_static_event_when_sibling_uses_stop() {
+  let code = transform(
+    r#"<div onClick_right={test} onContextmenu_stop={test} />"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>", true);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "contextmenu", _withModifiers(test, ["right"]));
+  	_on(_n0, "contextmenu", _withModifiers(test, ["stop"]));
   	return _n0;
   })();
   "#);
