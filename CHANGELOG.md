@@ -1,3 +1,15 @@
+## [3.2.6](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.5...v3.2.6) (2026-03-25)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** avoid delegating same-event handlers when sibling ([b9dce34](https://github.com/vuejs/vue-jsx-vapor/commit/b9dce34f4b66313caad5f9b7335229c6a7f1637e))
+* **compiler/vapor:** normalize default dynamic slot names in transform ([dc47bdf](https://github.com/vuejs/vue-jsx-vapor/commit/dc47bdf41c121956eb8957acb071bdd767a3a546))
+* **compiler/vdom:** collect scope identifiers for slot optimization ([d82ef13](https://github.com/vuejs/vue-jsx-vapor/commit/d82ef1360bc8446ab0d1223623e74b989fefedc9))
+* **compiler/vdom:** handle Fragment block usage for conditional ([dcf7851](https://github.com/vuejs/vue-jsx-vapor/commit/dcf7851569ad12d503793de9687e954bc20b2d6f))
+
+
+
 ## [3.2.5](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.4...v3.2.5) (2026-03-22)
 
 
