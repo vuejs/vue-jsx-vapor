@@ -276,7 +276,8 @@ fn should_not_cache_in_root_function_with_params() {
 fn should_not_cache_in_for_statement() {
   let code = transform(
     r#"for (let i = 0; i < 3; i++) {
-      stmts.push(<div onClick={() => i} />)
+      const foo = 1
+      stmts.push(<div onClick={() => i} onBlur={() => foo} />)
     }"#,
     Some(TransformOptions {
       interop: true,
@@ -286,9 +287,13 @@ fn should_not_cache_in_for_statement() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = ["onClick"];
+  const _hoisted_1 = ["onClick", "onBlur"];
   for (let i = 0; i < 3; i++) {
-  	stmts.push((_openBlock(), _createElementBlock("div", { onClick: () => i }, null, 8, _hoisted_1)));
+  	const foo = 1;
+  	stmts.push((_openBlock(), _createElementBlock("div", {
+  		onClick: () => i,
+  		onBlur: () => foo
+  	}, null, 40, _hoisted_1)));
   }
   "#);
 }
@@ -297,7 +302,8 @@ fn should_not_cache_in_for_statement() {
 fn should_not_cache_in_for_in_statement() {
   let code = transform(
     r#"for (let i in [1, 2, 3]) {
-      stmts.push(<div onClick={() => i} />)
+      const foo = 1
+      stmts.push(<div onClick={() => i} onBlur={() => foo} />)
     }"#,
     Some(TransformOptions {
       interop: true,
@@ -307,13 +313,17 @@ fn should_not_cache_in_for_in_statement() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = ["onClick"];
+  const _hoisted_1 = ["onClick", "onBlur"];
   for (let i in [
   	1,
   	2,
   	3
   ]) {
-  	stmts.push((_openBlock(), _createElementBlock("div", { onClick: () => i }, null, 8, _hoisted_1)));
+  	const foo = 1;
+  	stmts.push((_openBlock(), _createElementBlock("div", {
+  		onClick: () => i,
+  		onBlur: () => foo
+  	}, null, 40, _hoisted_1)));
   }
   "#);
 }
@@ -322,7 +332,8 @@ fn should_not_cache_in_for_in_statement() {
 fn should_not_cache_in_for_of_statement() {
   let code = transform(
     r#"for (let i of [1, 2, 3]) {
-      stmts.push(<div onClick={() => i} />)
+      const foo = 1
+      stmts.push(<div onClick={() => i} onBlur={() => foo} />)
     }"#,
     Some(TransformOptions {
       interop: true,
@@ -332,13 +343,17 @@ fn should_not_cache_in_for_of_statement() {
   .code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = ["onClick"];
+  const _hoisted_1 = ["onClick", "onBlur"];
   for (let i of [
   	1,
   	2,
   	3
   ]) {
-  	stmts.push((_openBlock(), _createElementBlock("div", { onClick: () => i }, null, 8, _hoisted_1)));
+  	const foo = 1;
+  	stmts.push((_openBlock(), _createElementBlock("div", {
+  		onClick: () => i,
+  		onBlur: () => foo
+  	}, null, 40, _hoisted_1)));
   }
   "#);
 }

@@ -175,6 +175,7 @@ impl<'a> TransformContext<'a> {
           | AstKind::ForStatement(_)
           | AstKind::ForInStatement(_)
           | AstKind::ForOfStatement(_)
+          | AstKind::BlockStatement(_)
       ) {
         for id in semantic.scoping().get_bindings(scope_id) {
           add_identifiers(id.0);
