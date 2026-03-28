@@ -49,6 +49,7 @@ use common::check::is_template;
 pub struct DirectiveTransformResult<'a> {
   pub props: Vec<ObjectPropertyKind<'a>>,
   pub runtime: Option<Expression<'a>>,
+  pub has_jsx: bool,
 }
 
 pub struct TransformContext<'a> {
@@ -354,7 +355,10 @@ impl<'a> TransformContext<'a> {
     }
   }
 
-  pub fn process_expression(&'a self, exp: &mut Expression<'a>) -> (Expression<'a>, bool, bool) {
+  pub fn process_expression(
+    &'a self,
+    exp: &mut Expression<'a>,
+  ) -> (Expression<'a>, bool, bool, bool) {
     let span = exp.span();
     let mut value = if exp.is_literal() {
       exp.clone_in(self.allocator)
@@ -365,7 +369,7 @@ impl<'a> TransformContext<'a> {
     let mut has_scope_ref = !self.options.optimize_slots;
     let has_scope_ref_ptr = &mut has_scope_ref as *mut _;
     let has_ref_ptr = &mut has_ref as *mut bool;
-    let has_this = WalkIdentifiersMut::new(
+    let mut walk_identifiers = WalkIdentifiersMut::new(
       Box::new(move |id, _| {
         if !self.options.optimize_slots {
           self.add_slot_scopes(id);
@@ -383,8 +387,8 @@ impl<'a> TransformContext<'a> {
         None
       }),
       self.options,
-    )
-    .visit(&mut value);
+    );
+    let (has_this, has_jsx) = walk_identifiers.visit(&mut value);
     if has_this {
       has_ref = true;
     };
@@ -392,7 +396,7 @@ impl<'a> TransformContext<'a> {
       .reference_expressions
       .borrow_mut()
       .insert(span, has_ref);
-    (value, has_scope_ref, has_this)
+    (value, has_scope_ref, has_this, has_jsx)
   }
 
   fn add_slot_scopes(&self, id: &IdentifierReference) {

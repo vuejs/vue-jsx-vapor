@@ -176,3 +176,20 @@ fn prevent_cache_expression_with_this() {
   _openBlock(), _createElementBlock("div", { onMousedown: this.onMousedown }, [_normalizeVNode(() => this.foo)], 40, _hoisted_1);
   "#);
 }
+
+#[test]
+fn jsx_in_expression_container() {
+  let code = transform(
+    r#"<><div foo={<div />} /></>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = { foo: (_openBlock(), _createElementBlock("div")) };
+  _openBlock(), _createElementBlock(_Fragment, null, [(_openBlock(), _createElementBlock("div", _hoisted_1))], 64);
+  "#);
+}

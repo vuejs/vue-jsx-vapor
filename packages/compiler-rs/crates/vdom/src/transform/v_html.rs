@@ -33,5 +33,6 @@ pub fn transform_v_html<'a>(
       false,
     )],
     runtime: None,
+    has_jsx: false,
   })
 }

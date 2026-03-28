@@ -62,5 +62,6 @@ pub fn transform_v_text<'a>(
       false,
     )],
     runtime: None,
+    has_jsx: false,
   })
 }

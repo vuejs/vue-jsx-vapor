@@ -49,10 +49,12 @@ pub fn transform_v_on<'a>(
   }
 
   let mut should_cache = value.is_none() && !*context.options.in_v_once.borrow();
+  let mut has_jsx = false;
   // handler processing
   let mut exp = if let Some(JSXAttributeValue::ExpressionContainer(value)) = value {
-    let (exp, has_scope_ref, has_this) =
+    let (exp, has_scope_ref, has_this, _has_jsx) =
       context.process_expression(value.expression.to_expression_mut());
+    has_jsx = _has_jsx;
     let is_component = directives.is_component;
     let is_member_exp = exp.is_member_expression() || matches!(exp, Expression::Identifier(_));
     should_cache = !(*context.options.in_v_once.borrow()
@@ -211,5 +213,6 @@ pub fn transform_v_on<'a>(
       false,
     )],
     runtime: None,
+    has_jsx,
   })
 }

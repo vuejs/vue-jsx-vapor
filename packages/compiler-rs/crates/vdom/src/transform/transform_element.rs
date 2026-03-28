@@ -457,7 +457,11 @@ pub fn build_props<'a>(
           }
         }
 
-        if let Some(DirectiveTransformResult { props, runtime }) = match dir_name {
+        if let Some(DirectiveTransformResult {
+          props,
+          runtime,
+          has_jsx,
+        }) = match dir_name {
           "bind" => {
             // #938: elements with dynamic keys should be forced into blocks
             if *name == "key"
@@ -529,6 +533,9 @@ pub fn build_props<'a>(
             None
           }
         } {
+          if has_jsx {
+            should_use_block = true;
+          }
           if !context.options.ssr {
             props.iter().for_each(&mut analyze_patch_flag);
           }

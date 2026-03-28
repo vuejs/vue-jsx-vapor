@@ -235,6 +235,7 @@ pub fn transform_v_model<'a>(
     return Some(DirectiveTransformResult {
       props,
       runtime: None,
+      has_jsx: false,
     });
   }
 
@@ -308,6 +309,7 @@ pub fn transform_v_model<'a>(
   Some(DirectiveTransformResult {
     props,
     runtime: runtime_name.map(|runtime_name| build_directive_args(dir, context, runtime_name)),
+    has_jsx: false,
   })
 }
 

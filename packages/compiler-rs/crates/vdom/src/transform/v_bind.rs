@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use common::{check::is_simple_identifier, directive::resolve_prop_name, text::camelize};
-use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXElement, PropertyKind};
+use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXAttributeValue, JSXElement, PropertyKind};
 use oxc_span::{GetSpan, SPAN};
 
 use crate::transform::{DirectiveTransformResult, TransformContext};
@@ -40,8 +40,17 @@ pub fn transform_v_bind<'a>(
     arg = Cow::Owned(format!("\"{}\"", arg));
   }
 
+  let mut has_jsx = false;
   let value = if let Some(value) = &mut dir.value {
-    context.jsx_attribute_value_to_expression(value)
+    if let JSXAttributeValue::ExpressionContainer(value) = value
+      && let Some(value) = value.expression.as_expression_mut()
+    {
+      let result = context.process_expression(value);
+      has_jsx = result.3;
+      result.0
+    } else {
+      context.jsx_attribute_value_to_expression(value)
+    }
   } else {
     ast.expression_boolean_literal(SPAN, true)
   };
@@ -57,5 +66,6 @@ pub fn transform_v_bind<'a>(
       false,
     )],
     runtime: None,
+    has_jsx,
   })
 }

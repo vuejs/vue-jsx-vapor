@@ -21,5 +21,6 @@ pub fn transform_v_show<'a>(
       context,
       context.options.helper("_vShow"),
     )),
+    has_jsx: false,
   })
 }

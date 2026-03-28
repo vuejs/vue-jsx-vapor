@@ -82,7 +82,7 @@ impl<'a> WalkIdentifiersMut<'a> {
     }
   }
 
-  pub fn visit(&mut self, it: &mut Expression<'a>) -> bool {
+  pub fn visit(&mut self, it: &mut Expression<'a>) -> (bool, bool) {
     self.root_scope_id = Some(
       self
         .options
@@ -93,12 +93,13 @@ impl<'a> WalkIdentifiersMut<'a> {
         .scope_id(),
     );
     self.visit_expression(it);
+    let has_jsx = !self.roots.is_empty();
     for root in self.roots.drain(..) {
       unsafe {
         *root.node_ptr = root.expression;
       }
     }
-    self.has_this
+    (self.has_this, has_jsx)
   }
 }
 
