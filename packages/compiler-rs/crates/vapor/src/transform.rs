@@ -492,9 +492,13 @@ impl<'a> TransformContext<'a> {
           };
         }
 
-        if let Some(on_exit) =
-          transform_element(&directives, node, &*context, &mut *block, &mut *parent_node)
-        {
+        if let Some(on_exit) = transform_element(
+          &mut directives,
+          node,
+          &*context,
+          &mut *block,
+          &mut *parent_node,
+        ) {
           exit_fns.push(on_exit);
         };
 

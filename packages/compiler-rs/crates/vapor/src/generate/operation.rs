@@ -10,7 +10,7 @@ use crate::generate::dom::gen_insert_node;
 use crate::generate::event::gen_set_dynamic_events;
 use crate::generate::event::gen_set_event;
 use crate::generate::html::gen_set_html;
-use crate::generate::key::gen_key;
+use crate::generate::key::{gen_key, gen_set_block_key};
 use crate::generate::prop::gen_dynamic_props;
 use crate::generate::prop::gen_set_prop;
 use crate::generate::slot_outlet::gen_slot_outlet;
@@ -162,6 +162,7 @@ pub fn gen_operation<'a>(
     }
     OperationNode::GetTextChild(oper) => statements.push(gen_get_text_child(oper, context)),
     OperationNode::Key(oper) => statements.push(gen_key(oper, context, context_block)),
+    OperationNode::SetBlockKey(oper) => statements.push(gen_set_block_key(oper, context)),
   }
 }
 

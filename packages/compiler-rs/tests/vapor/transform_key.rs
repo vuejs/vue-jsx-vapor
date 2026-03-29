@@ -100,13 +100,120 @@ fn key_in_component() {
 
 #[test]
 fn static_key() {
-  let code = transform("<div key={1} />", None).code;
+  let code = transform(
+    "<>
+      <div key={1} />
+      <Comp key={1} />
+    </>",
+    None,
+  )
+  .code;
   assert_snapshot!(code, @r#"
-  import { template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { setBlockKey as _setBlockKey, template as _template } from "vue";
+  const _t0 = _template("<div>");
   (() => {
   	const _n0 = _t0();
-  	return _n0;
+  	const _n1 = _createComponent(Comp);
+  	_setBlockKey(_n0, 1);
+  	_setBlockKey(_n1, 1);
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn boolean_static_expression_key() {
+  let code = transform(
+    "<>
+      <div key={true} />
+      <Comp key={true} />
+    </>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { setBlockKey as _setBlockKey, template as _template } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n0 = _t0();
+  	const _n1 = _createComponent(Comp);
+  	_setBlockKey(_n0, true);
+  	_setBlockKey(_n1, true);
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn null_static_expression_key() {
+  let code = transform(
+    "<>
+      <div key={null} />
+      <Comp key={null} />
+    </>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { setBlockKey as _setBlockKey, template as _template } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n0 = _t0();
+  	const _n1 = _createComponent(Comp);
+  	_setBlockKey(_n0, null);
+  	_setBlockKey(_n1, null);
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn v_once_with_static_key() {
+  let code = transform(
+    r#"<>
+      <div v-once key="foo" />
+      <Comp v-once key="foo" />
+    </>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { setBlockKey as _setBlockKey, template as _template } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n0 = _t0();
+  	const _n1 = _createComponent(Comp, null, null, null, true);
+  	_setBlockKey(_n0, "foo");
+  	_setBlockKey(_n1, "foo");
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn key_without_value() {
+  let code = transform(
+    r#"<>
+      <div key />
+      <Comp key />
+    </>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { setBlockKey as _setBlockKey, template as _template } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n0 = _t0();
+  	const _n1 = _createComponent(Comp);
+  	_setBlockKey(_n0, true);
+  	_setBlockKey(_n1, true);
+  	return [_n0, _n1];
   })();
   "#);
 }

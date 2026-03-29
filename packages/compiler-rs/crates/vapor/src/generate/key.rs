@@ -9,6 +9,7 @@ use crate::generate::block::gen_block;
 use crate::generate::expression::gen_expression;
 use crate::ir::index::BlockIRNode;
 use crate::ir::index::KeyIRNode;
+use crate::ir::index::SetBlockKeyIRNode;
 
 pub fn gen_key<'a>(
   oper: KeyIRNode<'a>,
@@ -66,4 +67,30 @@ pub fn gen_key<'a>(
     )),
     false,
   ))
+}
+
+pub fn gen_set_block_key<'a>(
+  oper: SetBlockKeyIRNode<'a>,
+  context: &'a CodegenContext<'a>,
+) -> Statement<'a> {
+  let ast = context.ast;
+  let SetBlockKeyIRNode { element, value } = oper;
+
+  Statement::ExpressionStatement(
+    ast.alloc_expression_statement(
+      SPAN,
+      ast.expression_call(
+        SPAN,
+        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_setBlockKey"))),
+        NONE,
+        ast.vec_from_array([
+          ast
+            .expression_identifier(SPAN, ast.atom(&format!("_n{}", element)))
+            .into(),
+          value.into(),
+        ]),
+        false,
+      ),
+    ),
+  )
 }

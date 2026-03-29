@@ -13,14 +13,14 @@ use crate::{
     component::{IRProp, IRProps, IRPropsDynamicExpression, IRPropsStatic},
     index::{
       BlockIRNode, CreateComponentIRNode, DirectiveIRNode, DynamicFlag, OperationNode,
-      SetDynamicEventsIRNode, SetDynamicPropsIRNode, SetPropIRNode,
+      SetBlockKeyIRNode, SetDynamicEventsIRNode, SetDynamicPropsIRNode, SetPropIRNode,
     },
   },
   transform::{
-    DirectiveTransformResult, TransformContext, transform_slot_outlet::transform_slot_outlet,
-    transform_transition::transform_transition, v_bind::transform_v_bind, v_html::transform_v_html,
-    v_model::transform_v_model, v_on::transform_v_on, v_show::transform_v_show,
-    v_text::transform_v_text,
+    DirectiveTransformResult, TransformContext, transform_key::resolve_static_key,
+    transform_slot_outlet::transform_slot_outlet, transform_transition::transform_transition,
+    v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
+    v_on::transform_v_on, v_show::transform_v_show, v_text::transform_v_text,
   },
 };
 
@@ -39,7 +39,7 @@ use common::{
 
 /// # SAFETY
 pub unsafe fn transform_element<'a>(
-  directives: &Directives<'a>,
+  directives: &mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
@@ -92,6 +92,8 @@ pub unsafe fn transform_element<'a>(
   let is_custom_element = directives.is_custom_element;
   let is_component = directives.is_component;
 
+  let static_key = resolve_static_key(directives, context);
+
   // If the element is a component, we need to isolate its slots context.
   // This ensures that slots defined for this component are not accidentally
   // inherited by its children components.
@@ -121,15 +123,18 @@ pub unsafe fn transform_element<'a>(
         tag,
         tag_span,
         props_result,
+        static_key,
         single_root,
         is_custom_element,
         context,
         context_block,
+        Rc::clone(&get_operation_index),
       );
     } else {
       transform_native_element(
         tag,
         props_result,
+        static_key,
         single_root,
         context,
         context_block,
@@ -152,6 +157,7 @@ static DYNAMIC_KEYS: [&str; 1] = ["indeterminate"];
 pub fn transform_native_element<'a>(
   tag: &'a str,
   props_result: PropsResult<'a>,
+  static_key: Option<Expression<'a>>,
   single_root: bool,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
@@ -175,7 +181,7 @@ pub fn transform_native_element<'a>(
           tag,
         }),
         Some(get_effect_index),
-        Some(get_operation_index),
+        Some(Rc::clone(&get_operation_index)),
       )
     }
     Either::B(props) => {
@@ -250,6 +256,19 @@ pub fn transform_native_element<'a>(
   } else {
     *context.template.borrow_mut() = format!("{}{}", context.template.borrow(), template);
   }
+
+  if let Some(static_key) = static_key {
+    let dynamic = &mut context_block.dynamic;
+    let element = context.reference(dynamic);
+    context.register_operation(
+      context_block,
+      OperationNode::SetBlockKey(SetBlockKeyIRNode {
+        element,
+        value: static_key,
+      }),
+      Some(Rc::clone(&get_operation_index)),
+    );
+  }
 }
 
 fn can_omit_end_tag<'a>(
@@ -297,18 +316,20 @@ pub fn transform_component_element<'a>(
   tag: &'a str,
   tag_span: Span,
   props_result: PropsResult<'a>,
+  static_key: Option<Expression<'a>>,
   single_root: bool,
   is_custom_element: bool,
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
+  get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
 ) {
   let dynamic = &mut context_block.dynamic;
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
-
+  let id = context.reference(dynamic);
   dynamic.operation = Some(Box::new(OperationNode::CreateComponent(
     CreateComponentIRNode {
       create_component: true,
-      id: context.reference(dynamic),
+      id,
       tag,
       tag_span,
       props: match props_result.props {
@@ -327,6 +348,17 @@ pub fn transform_component_element<'a>(
       last: false,
     },
   )));
+
+  if let Some(static_key) = static_key {
+    context.register_operation(
+      context_block,
+      OperationNode::SetBlockKey(SetBlockKeyIRNode {
+        element: id,
+        value: static_key,
+      }),
+      Some(Rc::clone(&get_operation_index)),
+    );
+  }
 }
 
 pub struct PropsResult<'a> {

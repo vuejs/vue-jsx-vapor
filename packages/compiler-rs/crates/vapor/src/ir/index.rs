@@ -241,6 +241,12 @@ pub struct GetTextChildIRNode {
 }
 
 #[derive(Debug)]
+pub struct SetBlockKeyIRNode<'a> {
+  pub element: i32,
+  pub value: Expression<'a>,
+}
+
+#[derive(Debug)]
 pub enum OperationNode<'a> {
   If(IfIRNode<'a>),
   For(ForIRNode<'a>),
@@ -259,6 +265,7 @@ pub enum OperationNode<'a> {
   SlotOutlet(SlotOutletIRNode<'a>),
   GetTextChild(GetTextChildIRNode),
   Key(KeyIRNode<'a>),
+  SetBlockKey(SetBlockKeyIRNode<'a>),
 }
 
 pub enum DynamicFlag {
