@@ -104,7 +104,7 @@ fn on_v_for() {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
   		const _memo = [x, y === z];
-  		if (_cached && _cached.key === x && _isMemoSame(_cached, _memo)) return _cached;
+  		if (_cached && _cached.el && _cached.key === x && _isMemoSame(_cached, _memo)) return _cached;
   		const _item = (_openBlock(), _createElementBlock("div", { key: x }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, "foobar", -1))]));
   		_item.memo = _memo;
   		return _item;
@@ -132,7 +132,7 @@ fn on_template_v_for() {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
   		const _memo = [x, y === z];
-  		if (_cached && _cached.key === x && _isMemoSame(_cached, _memo)) return _cached;
+  		if (_cached && _cached.el && _cached.key === x && _isMemoSame(_cached, _memo)) return _cached;
   		const _item = (_openBlock(), _createElementBlock(_Fragment, { key: x }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, "foobar", -1))], 64));
   		_item.memo = _memo;
   		return _item;
@@ -158,7 +158,7 @@ fn element_v_for_key_expression_v_memo() {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(tableData, (data, __, ___, _cached) => {
   		const _memo = getLetter(data);
-  		if (_cached && _cached.key === getId(data) && _isMemoSame(_cached, _memo)) return _cached;
+  		if (_cached && _cached.el && _cached.key === getId(data) && _isMemoSame(_cached, _memo)) return _cached;
   		const _item = (_openBlock(), _createElementBlock("span", { key: getId(data) }));
   		_item.memo = _memo;
   		return _item;

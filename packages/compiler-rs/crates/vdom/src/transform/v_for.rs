@@ -223,7 +223,17 @@ pub unsafe fn transform_v_for<'a>(
                     if let Some(key_exp) = key_exp {
                       ast.expression_logical(
                         SPAN,
-                        ast.expression_identifier(SPAN, "_cached"),
+                        ast.expression_logical(
+                          SPAN,
+                          ast.expression_identifier(SPAN, "_cached"),
+                          LogicalOperator::And,
+                          Expression::StaticMemberExpression(ast.alloc_static_member_expression(
+                            SPAN,
+                            ast.expression_identifier(SPAN, "_cached"),
+                            ast.identifier_name(SPAN, "el"),
+                            false,
+                          )),
+                        ),
                         LogicalOperator::And,
                         ast.expression_binary(
                           SPAN,
