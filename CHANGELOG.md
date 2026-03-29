@@ -1,3 +1,20 @@
+## [3.2.7](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.6...v3.2.7) (2026-03-29)
+
+
+### Bug Fixes
+
+* **compiler/vdom:** mark element as block if prop has jsx ([406ec74](https://github.com/vuejs/vue-jsx-vapor/commit/406ec740c74d78fa8bf940205716e89001d2671e))
+* **compiler/vdom:** prevent optimize in for statement ([7d456fa](https://github.com/vuejs/vue-jsx-vapor/commit/7d456faac339650566ab04969223f0710b8fba30))
+* **runtime/vdom:** invalidate detached v-for memo vnodes after unmount ([3bc38eb](https://github.com/vuejs/vue-jsx-vapor/commit/3bc38eb25624867f9c1fe07702c31a5cccdf5d6d))
+
+
+### Features
+
+* **compiler/vdom:** optimize object-expression slots ([98dcb89](https://github.com/vuejs/vue-jsx-vapor/commit/98dcb89f502791691fa736d5ec21a664112d7427))
+* **vapor:** preserve static keys ([d1dca8a](https://github.com/vuejs/vue-jsx-vapor/commit/d1dca8af746c54f134c3be4c7a6e6b1d5d59cd0f))
+
+
+
 ## [3.2.6](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.5...v3.2.6) (2026-03-25)
 
 
