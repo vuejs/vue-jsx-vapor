@@ -10,7 +10,10 @@ import {
   isVNode,
   openBlock,
   Text,
+  withCtx,
+  type Slot,
   type VNode,
+  type VNodeChild,
 } from 'vue'
 
 const cacheMap = new WeakMap()
@@ -26,10 +29,14 @@ export function createVNodeCache(key: string) {
   }
 }
 
-export function normalizeVNode(value: any = ' ', flag = 1): VNode {
+export function normalizeVNode(
+  value: VNodeChild | (() => VNodeChild),
+  flag = 1,
+): VNode {
   let create: any = createVNode
-  const isBlock = typeof value === 'function'
-  if (isBlock) {
+  let isBlock = false
+  if (typeof value === 'function') {
+    isBlock = true
     openBlock()
     create = createBlock
     value = value()
@@ -39,12 +46,14 @@ export function normalizeVNode(value: any = ' ', flag = 1): VNode {
       ? createBlock(cloneIfMounted(value))
       : cloneIfMounted(value)
     : Array.isArray(value)
-      ? (isBlock ? createElementBlock : createElementVNode)(
-          Fragment,
-          null,
-          value.map((n) => normalizeVNode(() => n)),
-          -2,
-        )
+      ? isBlock
+        ? createElementBlock(
+            Fragment,
+            null,
+            value.map((n) => normalizeVNode(() => n)),
+            -2,
+          )
+        : createElementVNode(Fragment, null, value.slice())
       : value == null || typeof value === 'boolean'
         ? create(Comment)
         : create(Text, null, String(value), flag)
@@ -57,4 +66,22 @@ function cloneIfMounted(child: VNode): VNode {
     child.memo
     ? child
     : cloneVNode(child)
+}
+
+const normalizeSlotValue = (value: unknown): VNode[] =>
+  Array.isArray(value)
+    ? value.map((n) => normalizeVNode(n))
+    : [normalizeVNode(value as VNodeChild)]
+
+export const normalizeSlot = (rawSlot: Function): Slot => {
+  if ((rawSlot as any)._n) {
+    // already normalized
+    return rawSlot as Slot
+  }
+  const normalized = withCtx((...args: any[]) => {
+    return normalizeSlotValue(rawSlot(...args))
+  }) as Slot
+  // NOT a compiled slot
+  ;(normalized as any)._c = false
+  return normalized
 }

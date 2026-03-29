@@ -125,7 +125,7 @@ fn whitespace_text() {
   		_createElementVNode("div", null, null, -1),
   		_normalizeVNode("hello", -1),
   		_createElementVNode("div", null, null, -1),
-  		_normalizeVNode(),
+  		_normalizeVNode(" ", -1),
   		_createElementVNode("div", null, null, -1)
   	])], 64);
   })();

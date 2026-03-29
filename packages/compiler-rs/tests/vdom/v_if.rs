@@ -386,8 +386,8 @@ fn with_spaces_between_branches() {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
   	return _openBlock(), _createElementBlock(_Fragment, null, [
   		ok ? (_openBlock(), _createElementBlock("div", _hoisted_1)) : no ? (_openBlock(), _createElementBlock("div", _hoisted_2)) : (_openBlock(), _createElementBlock("div", _hoisted_3)),
-  		_cache[0] || (_cache[0] = _normalizeVNode()),
-  		_cache[1] || (_cache[1] = _normalizeVNode())
+  		_cache[0] || (_cache[0] = _normalizeVNode(" ", -1)),
+  		_cache[1] || (_cache[1] = _normalizeVNode(" ", -1))
   	], 64);
   })();
   "#)

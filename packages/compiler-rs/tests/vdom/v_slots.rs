@@ -41,9 +41,13 @@ fn function_expression_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
+  import { normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick"];
-  _openBlock(), _createBlock(Comp, null, ({ foo }) => (_openBlock(), _createElementBlock("div", { onClick: () => foo }, null, 8, _hoisted_1)), 1024);
+  _openBlock(), _createBlock(Comp, null, {
+  	_: 1,
+  	default: _normalizeSlot(({ foo }) => (_openBlock(), _createElementBlock("div", { onClick: () => foo }, null, 8, _hoisted_1)))
+  });
   "#);
 }
 
@@ -60,16 +64,52 @@ fn object_expression_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = ["onClick"];
-  _openBlock(), _createBlock(Comp, null, { default: ({ foo }) => (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _withDirectives((_openBlock(), _createElementBlock("input", {
-  		"onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => bar = $event),
-  		onClick: () => foo
-  	}, null, 8, _hoisted_1)), [[_vModelText, bar]]);
-  })() }, 1024);
+  _openBlock(), _createBlock(Comp, null, {
+  	_: 1,
+  	default: _normalizeSlot(({ foo }) => (() => {
+  		const _cache = _createVNodeCache("631d214bc2c8427c");
+  		return _withDirectives((_openBlock(), _createElementBlock("input", {
+  			"onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => bar = $event),
+  			onClick: () => foo
+  		}, null, 8, _hoisted_1)), [[_vModelText, bar]]);
+  	})())
+  });
+  "#);
+}
+
+#[test]
+fn object_expression_multiple_children() {
+  let code = transform(
+    r#"<Comp>
+      {{ 
+        default: ({ foo }) => <input v-model={bar} onClick={() => foo} />,
+        other: () => <div>{foo}</div>
+      }}
+    </Comp>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode, normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
+  const _hoisted_1 = ["onClick"];
+  _openBlock(), _createBlock(Comp, null, {
+  	_: 1,
+  	default: _normalizeSlot(({ foo }) => (() => {
+  		const _cache = _createVNodeCache("631d214bc2c8427c");
+  		return _withDirectives((_openBlock(), _createElementBlock("input", {
+  			"onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => bar = $event),
+  			onClick: () => foo
+  		}, null, 8, _hoisted_1)), [[_vModelText, bar]]);
+  	})()),
+  	other: _normalizeSlot(() => (_openBlock(), _createElementBlock("div", null, [_normalizeVNode(() => foo)])))
+  });
   "#);
 }
 
@@ -94,14 +134,18 @@ fn object_expression_children_with_computed_property() {
 #[test]
 fn v_slot_with_v_slots() {
   let code = transform(
-    "<Comp bar={bar} v-slots={{
-        bar,
-        default: ({ foo }) => <>
-          { foo + bar }
-          {<Comp v-slot={{baz}}>{bar}{baz}</Comp>}
-        </>
-      }}>
-    </Comp>",
+    r#"({ bar }) => <VAutocomplete
+      variant={ variant }
+      density={ density }
+      modelValue={['California']}
+      label="selection slot"
+      { ...v.props }
+    >{{
+      selection: ({ item }) => {
+        return item + bar
+      },
+    }}
+    </VAutocomplete>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -109,15 +153,15 @@ fn v_slot_with_v_slots() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
-  _openBlock(), _createBlock(Comp, { bar }, {
-  	bar,
-  	default: ({ foo }) => (_openBlock(), _createElementBlock(_Fragment, null, [_normalizeVNode(() => foo + bar), _normalizeVNode(() => (_openBlock(), _createBlock(Comp, null, {
-  		default: _withCtx(({baz}) => [_normalizeVNode(() => bar), _normalizeVNode(() => baz)]),
-  		_: 1
-  	})))], 64))
-  }, 1032, ["bar"]);
+  import { createBlock as _createBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
+  ({ bar }) => (_openBlock(), _createBlock(VAutocomplete, _mergeProps({
+  	variant,
+  	density,
+  	modelValue: ["California"],
+  	label: "selection slot"
+  }, v.props), { selection: ({ item }) => {
+  	return item + bar;
+  } }, 1040, ["variant", "density"]));
   "#)
 }
 

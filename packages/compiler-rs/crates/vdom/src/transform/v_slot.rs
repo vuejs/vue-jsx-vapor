@@ -60,9 +60,9 @@ pub unsafe fn track_slot_scopes<'a>(
           context.options.slot_scopes.borrow_mut().insert(
             node.span,
             SlotScope {
-              seen: 0,
-              identifiers: identifiers.clone(),
+              dynamic: false,
               forwarded: false,
+              identifiers: identifiers.clone(),
             },
           );
         }
@@ -75,9 +75,9 @@ pub unsafe fn track_slot_scopes<'a>(
         context.options.slot_scopes.borrow_mut().insert(
           node.span,
           SlotScope {
-            seen: 0,
-            identifiers: vec![],
+            dynamic: false,
             forwarded: false,
+            identifiers: vec![],
           },
         );
       }
@@ -114,8 +114,7 @@ pub fn build_slots<'a>(
       .slot_scopes
       .borrow()
       .get(&node.span)
-      .map(|n| n.seen > 0)
-      .unwrap_or_default();
+      .is_some_and(|n| n.dynamic);
   }
 
   // 1. Check for slot with slotProps on component itself.

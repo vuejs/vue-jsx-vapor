@@ -88,7 +88,9 @@ pub unsafe fn transform_text<'a>(
         // createTextVNode defaults to single whitespace, so if it is a
         // single space the code could be an empty call to save bytes
         if let JSXChild::Text(child) = child {
-          if !child.value.trim().is_empty() {
+          if child.value.trim().is_empty() {
+            call_args.push(ast.expression_string_literal(SPAN, " ", None).into())
+          } else {
             call_args.push(
               ast
                 .expression_string_literal(SPAN, ast.atom(&resolve_jsx_text(child)), None)

@@ -33,10 +33,11 @@ pub struct Hmr {
   pub define_component_name: Vec<String>,
 }
 
+#[derive(Debug)]
 pub struct SlotScope<'a> {
-  pub seen: i32,
-  pub identifiers: Vec<&'a str>,
+  pub dynamic: bool,
   pub forwarded: bool,
+  pub identifiers: Vec<&'a str>,
 }
 
 pub struct TransformOptions<'a> {

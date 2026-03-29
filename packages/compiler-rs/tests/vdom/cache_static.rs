@@ -466,7 +466,7 @@ fn cache_nested_static_tree_with_static_interpolation() {
   	return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _createElementVNode("span", null, [
   		_normalizeVNode("foo "),
   		_normalizeVNode(1),
-  		_normalizeVNode(),
+  		_normalizeVNode(" "),
   		_normalizeVNode(true)
   	], -1))]);
   })();

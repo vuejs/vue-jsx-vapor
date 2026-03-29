@@ -74,7 +74,11 @@ pub fn ssr_slots() {
   )
   .code;
   assert_snapshot!(code, @r#"
+  import { normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
-  _openBlock(), _createBlock(Comp, null, { default: () => (_openBlock(), _createBlock("div")) }, 1024);
+  _openBlock(), _createBlock(Comp, null, {
+  	_: 1,
+  	default: _normalizeSlot(() => (_openBlock(), _createBlock("div")))
+  });
   "#);
 }

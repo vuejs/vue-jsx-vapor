@@ -154,7 +154,7 @@ impl<'a> Transform<'a> {
         });
       };
 
-      let vdom_helpers = vec!["createVNodeCache", "normalizeVNode"]
+      let vdom_helpers = vec!["createVNodeCache", "normalizeVNode", "normalizeSlot"]
         .into_iter()
         .filter(|helper| {
           if helpers.contains(*helper) {

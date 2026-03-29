@@ -7,7 +7,7 @@ use indexmap::IndexSet;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
 use oxc_ast::ast::{
   ArrayExpressionElement, AssignmentOperator, AssignmentTarget, Expression, IdentifierReference,
-  JSXAttributeValue, JSXChild, LogicalOperator, NumberBase, ObjectPropertyKind,
+  JSXAttributeValue, JSXChild, LogicalOperator, NumberBase, ObjectPropertyKind, PropertyKey,
 };
 use oxc_ast::{AstBuilder, AstKind, NONE};
 use oxc_semantic::NodeId;
@@ -141,8 +141,10 @@ impl<'a> TransformContext<'a> {
           .callee_name()
           .is_some_and(|name| ["defineComponent", "defineCustomElement"].contains(&name)),
         AstKind::ObjectProperty(prop) => {
-          if let Some(AstKind::CallExpression(call_exp)) =
-            semantic.nodes().ancestor_kinds(prop.node_id()).nth(1)
+          if let PropertyKey::Identifier(key) = &prop.key
+            && key.name.eq("setup")
+            && let Some(AstKind::CallExpression(call_exp)) =
+              semantic.nodes().ancestor_kinds(prop.node_id()).nth(1)
           {
             call_exp
               .callee_name()
@@ -408,7 +410,7 @@ impl<'a> TransformContext<'a> {
       return;
     }
     for value in slot_scopes.values_mut() {
-      value.seen += 1;
+      value.dynamic = true;
     }
   }
 
