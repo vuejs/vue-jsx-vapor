@@ -25,7 +25,7 @@ Vue JSX Vapor 是一个受 `Vue Compiler` 启发的 `Vue JSX 编译器`，用 Ru
 pnpm add vue-jsx-vapor
 
 # 运行时
-pnpm add vue@3.6.0-beta.8
+pnpm add vue@3.6.0-beta.9
 ```
 
 ## 配置
