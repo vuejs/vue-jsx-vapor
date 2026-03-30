@@ -10,7 +10,6 @@ import {
   isVNode,
   openBlock,
   Text,
-  withCtx,
   type Slot,
   type VNode,
   type VNodeChild,
@@ -78,9 +77,9 @@ export const normalizeSlot = (rawSlot: Function): Slot => {
     // already normalized
     return rawSlot as Slot
   }
-  const normalized = withCtx((...args: any[]) => {
+  const normalized = (...args: any[]) => {
     return normalizeSlotValue(rawSlot(...args))
-  }) as Slot
+  }
   // NOT a compiled slot
   ;(normalized as any)._c = false
   return normalized
