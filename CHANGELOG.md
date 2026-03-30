@@ -1,3 +1,12 @@
+## [3.2.8](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.7...v3.2.8) (2026-03-30)
+
+
+### Bug Fixes
+
+* **compiler/vdom:** remove withCtx for normalizeSlot ([b1568de](https://github.com/vuejs/vue-jsx-vapor/commit/b1568ded2982b4ea32d2804d3bd47f127e6d46c8))
+
+
+
 ## [3.2.7](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.6...v3.2.7) (2026-03-29)
 
 
