@@ -141,7 +141,7 @@ impl<'a> TransformContext<'a> {
           .callee_name()
           .is_some_and(|name| ["defineComponent", "defineCustomElement"].contains(&name)),
         AstKind::ObjectProperty(prop) => {
-          if let PropertyKey::Identifier(key) = &prop.key
+          if let PropertyKey::StaticIdentifier(key) = &prop.key
             && key.name.eq("setup")
             && let Some(AstKind::CallExpression(call_exp)) =
               semantic.nodes().ancestor_kinds(prop.node_id()).nth(1)

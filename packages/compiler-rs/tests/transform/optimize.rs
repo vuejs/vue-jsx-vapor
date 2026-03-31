@@ -432,3 +432,69 @@ fn should_not_optimize_in_nested_scopes() {
   };
   "#);
 }
+
+#[test]
+fn should_optimize_in_define_component_with_setup() {
+  let code = transform(
+    r#"export default defineComponent({
+      setup() {
+        let foo = 1
+        return () => (
+          <Comp>
+            {() => foo}
+          </Comp>
+        )
+      },
+    })"#,
+    Some(TransformOptions {
+      interop: true,
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  export default defineComponent({ setup() {
+  	let foo = 1;
+  	return () => (_openBlock(), _createBlock(Comp, null, {
+  		_: 1,
+  		default: _normalizeSlot(() => foo)
+  	}));
+  } });
+  "#);
+}
+
+#[test]
+fn should_not_optimize_in_define_component_with_setup() {
+  let code = transform(
+    r#"export default defineComponent({
+      setup() {
+        return () => {
+          let foo = 1
+          return (
+            <Comp>
+              {() => foo}
+            </Comp>
+          )
+        }
+      },
+    })"#,
+    Some(TransformOptions {
+      interop: true,
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  export default defineComponent({ setup() {
+  	return () => {
+  		let foo = 1;
+  		return _openBlock(), _createBlock(Comp, null, { default: () => foo }, 1024);
+  	};
+  } });
+  "#);
+}
