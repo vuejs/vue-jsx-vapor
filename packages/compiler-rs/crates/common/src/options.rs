@@ -65,7 +65,7 @@ pub struct TransformOptions<'a> {
   pub identifiers: RefCell<HashMap<&'a str, i32>>,
   pub slot_scopes: RefCell<IndexMap<Span, SlotScope<'a>>>,
   pub cache_index: RefCell<i32>,
-  pub optimize_slots: bool,
+  pub optimize: bool,
   pub runtime_module_name: Option<String>,
   pub scope_identifiers_map: RefCell<HashMap<Span, (bool, Vec<&'a str>)>>,
 }
@@ -97,7 +97,7 @@ impl<'a> Default for TransformOptions<'a> {
       identifiers: RefCell::new(HashMap::new()),
       slot_scopes: RefCell::new(IndexMap::new()),
       cache_index: RefCell::new(0),
-      optimize_slots: true,
+      optimize: true,
       runtime_module_name: None,
       scope_identifiers_map: RefCell::new(HashMap::new()),
     }

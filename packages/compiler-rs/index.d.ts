@@ -68,12 +68,15 @@ export interface CompilerOptions {
    * @default false
    */
   ssr?: boolean
-  /** * Whether the compiler should detect if the slots is stable.
-   * Note: This is only used in interop mode, And not supported for slots within `CallExpression` (e.g. `map()`)
-   * or `ObjectExpression` | `FunctionExpression` slots. please use `v-for` and `v-slot` directive instead.
+  /** * Whether to enable compiler optimizations, including:
+   * - **Slots**: Detect if slots are stable for more efficient updates.
+   * - **Cache**: Cache event handler to avoid recreating closures on each render.
+   * - **Block**: Enable block tree optimizations.
+   *
+   * Note: this option is only used in interop mode.
    * @default true
    */
-  optimizeSlots?: boolean
+  optimize?: boolean
   /** * Customize where to import runtime helpers from vue-jsx-vapor.
    * If not specified, defaults to the virtual module path (e.g., `/vue-jsx-vapor/vapor`).
    */

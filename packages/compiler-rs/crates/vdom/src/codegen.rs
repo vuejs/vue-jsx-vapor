@@ -273,7 +273,7 @@ impl<'a> TransformContext<'a> {
       return self.gen_node_list(children, codegen_map);
     }
 
-    let call_helper = if is_block {
+    let call_helper = if is_block && self.options.optimize {
       get_vnode_block_helper(
         self.options.ssr,
         if v_for.is_some() || ["Fragment", "_Fragment"].contains(&tag) {
@@ -331,7 +331,7 @@ impl<'a> TransformContext<'a> {
       ),
       false,
     );
-    if is_block {
+    if is_block && self.options.optimize {
       result = ast.expression_parenthesized(
         SPAN,
         ast.expression_sequence(

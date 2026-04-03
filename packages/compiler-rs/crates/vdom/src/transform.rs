@@ -113,7 +113,7 @@ impl<'a> TransformContext<'a> {
   }
 
   fn collect_scope_identifiers(&self, node_id: NodeId) {
-    if !self.options.optimize_slots {
+    if !self.options.optimize {
       return;
     }
     let semantic = self.options.semantic.borrow();
@@ -369,19 +369,18 @@ impl<'a> TransformContext<'a> {
       exp.take_in(self.allocator)
     };
     let mut has_ref = false;
-    let mut has_scope_ref = !self.options.optimize_slots;
+    let mut has_scope_ref = !self.options.optimize;
     let has_scope_ref_ptr = &mut has_scope_ref as *mut _;
     let has_ref_ptr = &mut has_ref as *mut bool;
     let mut walk_identifiers = WalkIdentifiersMut::new(
       Box::new(move |id, _| {
-        if !self.options.optimize_slots {
-          self.add_slot_scopes(id);
-        } else if self
-          .options
-          .identifiers
-          .borrow()
-          .get(id.name.as_str())
-          .is_some()
+        if self.options.optimize
+          && self
+            .options
+            .identifiers
+            .borrow()
+            .get(id.name.as_str())
+            .is_some()
         {
           *unsafe { &mut *has_scope_ref_ptr } = true;
           self.add_slot_scopes(id);

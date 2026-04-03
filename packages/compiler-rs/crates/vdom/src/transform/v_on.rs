@@ -48,7 +48,8 @@ pub fn transform_v_on<'a>(
     ));
   }
 
-  let mut should_cache = value.is_none() && !*context.options.in_v_once.borrow();
+  let mut should_cache =
+    context.options.optimize && value.is_none() && !*context.options.in_v_once.borrow();
   let mut has_jsx = false;
   // handler processing
   let mut exp = if let Some(JSXAttributeValue::ExpressionContainer(value)) = value {
@@ -57,7 +58,8 @@ pub fn transform_v_on<'a>(
     has_jsx = _has_jsx;
     let is_component = directives.is_component;
     let is_member_exp = exp.is_member_expression() || matches!(exp, Expression::Identifier(_));
-    should_cache = !(*context.options.in_v_once.borrow()
+    should_cache = context.options.optimize
+      && !(*context.options.in_v_once.borrow()
       || has_scope_ref
       || has_this
       // #1541 bail if this is a member exp handler passed to a component -

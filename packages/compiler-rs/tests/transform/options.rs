@@ -53,7 +53,7 @@ pub fn optimize_slots() {
     "<Comp>{foo}</Comp>",
     Some(TransformOptions {
       interop: true,
-      optimize_slots: false,
+      optimize: false,
       ..Default::default()
     }),
   )
