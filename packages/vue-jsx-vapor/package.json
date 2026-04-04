@@ -102,14 +102,12 @@
       "import": "./dist/unplugin.js"
     },
     "./jsx-runtime": {
-      "types": "./jsx-runtime/index.d.ts",
-      "require": "./jsx-runtime/index.cjs",
-      "default": "./jsx-runtime/index.js"
+      "types": "./jsx-runtime/vapor.d.ts",
+      "default": "./jsx-runtime/vapor.js"
     },
-    "./jsx-dev-runtime": {
-      "types": "./jsx-runtime/index.d.ts",
-      "require": "./jsx-runtime/index.cjs",
-      "default": "./jsx-runtime/index.js"
+    "./vdom/jsx-runtime": {
+      "types": "./jsx-runtime/vdom.d.ts",
+      "default": "./jsx-runtime/vdom.js"
     },
     "./volar": {
       "types": "./dist/volar.d.ts",
