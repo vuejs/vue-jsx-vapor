@@ -9,10 +9,10 @@ use oxc_ast_visit::{
   VisitMut,
   walk_mut::{
     walk_expression, walk_for_in_statement, walk_for_of_statement, walk_for_statement,
-    walk_function,
+    walk_function, walk_statement,
   },
 };
-use oxc_span::{Ident, SPAN};
+use oxc_span::{GetSpan, Ident, SPAN};
 
 use crate::hmr_or_ssr::HmrOrSsrTransform;
 
@@ -414,6 +414,18 @@ impl<'a> VisitMut<'a> for Transform<'a> {
         .scope_identifiers_map
         .borrow_mut()
         .remove(&node.span)
+    {
+      self.options.remove_identifiers(map.1);
+    }
+  }
+  fn visit_statement(&mut self, node: &mut Statement<'a>) {
+    walk_statement(self, node);
+    if self.options.interop
+      && let Some(map) = self
+        .options
+        .scope_identifiers_map
+        .borrow_mut()
+        .remove(&node.span())
     {
       self.options.remove_identifiers(map.1);
     }

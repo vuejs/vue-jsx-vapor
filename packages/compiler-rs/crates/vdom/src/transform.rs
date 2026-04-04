@@ -403,13 +403,12 @@ impl<'a> TransformContext<'a> {
 
   fn add_slot_scopes(&self, id: &IdentifierReference) {
     let slot_scopes = &mut self.options.slot_scopes.borrow_mut();
-    if let Some(last_slot) = slot_scopes.last()
-      && last_slot.1.identifiers.contains(&id.name.as_str())
-    {
-      return;
-    }
-    for value in slot_scopes.values_mut() {
-      value.dynamic = true;
+    for value in slot_scopes.values_mut().rev() {
+      if value.identifiers.contains(&id.name.as_str()) {
+        break;
+      } else {
+        value.dynamic = true;
+      }
     }
   }
 
@@ -489,7 +488,7 @@ impl<'a> TransformContext<'a> {
           exit_fns.push(on_exit);
         };
 
-        if let Some(on_exit) = track_slot_scopes(&mut directives, node, &*context) {
+        if let Some(on_exit) = track_slot_scopes(&mut directives, node, &*parent_node, &*context) {
           exit_fns.push(on_exit);
         };
 

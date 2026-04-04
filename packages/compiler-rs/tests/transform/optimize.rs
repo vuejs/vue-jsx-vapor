@@ -301,10 +301,13 @@ fn should_not_cache_in_for_statement() {
 #[test]
 fn should_not_cache_in_for_in_statement() {
   let code = transform(
-    r#"for (let i in [1, 2, 3]) {
+    r#"
+    for (let i in [1, 2, 3]) {
       const foo = 1
       stmts.push(<div onClick={() => i} onBlur={() => foo} />)
-    }"#,
+    }
+    <Comp>{foo}</Comp>
+    "#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -312,7 +315,8 @@ fn should_not_cache_in_for_in_statement() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   const _hoisted_1 = ["onClick", "onBlur"];
   for (let i in [
   	1,
@@ -325,6 +329,10 @@ fn should_not_cache_in_for_in_statement() {
   		onBlur: () => foo
   	}, null, 40, _hoisted_1)));
   }
+  _openBlock(), _createBlock(Comp, null, {
+  	default: _withCtx(() => [_normalizeVNode(() => foo)]),
+  	_: 1
+  });
   "#);
 }
 

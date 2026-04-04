@@ -50,7 +50,10 @@ fn on_component_default_slot() {
 #[test]
 fn on_component_named_slot() {
   let code = transform(
-    r#"<Comp v-slot:named={{ foo }}>{ foo }{ bar }</Comp>"#,
+    r#"<>
+      <Comp v-slot:named={{ foo }}>{ foo }{ bar }</Comp>
+      <Comp v-slot={{ bar }}>{foo}</Comp>
+    </>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -59,11 +62,14 @@ fn on_component_named_slot() {
   .code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
-  _openBlock(), _createBlock(Comp, null, {
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  _openBlock(), _createElementBlock(_Fragment, null, [_createVNode(Comp, null, {
   	named: _withCtx(({ foo }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
   	_: 1
-  });
+  }), _createVNode(Comp, null, {
+  	default: _withCtx(({ bar }) => [_normalizeVNode(() => foo)]),
+  	_: 1
+  })], 64);
   "#);
 }
 
@@ -185,12 +191,13 @@ fn dynamically_named_slots() {
 fn nested_slots_scoping() {
   let code = transform(
     r#"<Comp>
-      <template v-slot:default={{ foo }}>
+      <template v-slot:foo={{ foo }}>
         <Inner v-slot={{ bar }}>
           { foo }{ bar }{ baz }
         </Inner>
         { foo }{ bar }{ baz }
       </template>
+      <Comp>{foo}</Comp>
     </Comp>"#,
     Some(TransformOptions {
       interop: true,
@@ -202,7 +209,7 @@ fn nested_slots_scoping() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(Comp, null, {
-  	default: _withCtx(({ foo }) => [
+  	foo: _withCtx(({ foo }) => [
   		_createVNode(Inner, null, {
   			default: _withCtx(({ bar }) => [
   				_normalizeVNode(() => foo),
@@ -215,6 +222,10 @@ fn nested_slots_scoping() {
   		_normalizeVNode(() => bar),
   		_normalizeVNode(() => baz)
   	]),
+  	default: _withCtx(() => [_createVNode(Comp, null, {
+  		default: _withCtx(() => [_normalizeVNode(() => foo)]),
+  		_: 1
+  	})]),
   	_: 1
   });
   "#);
@@ -296,9 +307,13 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars2() {
 #[test]
 fn should_only_force_dynamic_slots_when_actually_using_scope_vars3() {
   let code = transform(
-    r#"<Comp v-slot={foo}>
-      <Comp v-slot={bar}>{foo}</Comp>
-    </Comp>"#,
+    r#"
+    () => {
+      let foo = 1
+      return <Comp v-slot={foo}>
+        <Comp v-slot={bar}>{foo}</Comp>
+      </Comp>
+    }"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -308,13 +323,16 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars3() {
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
-  _openBlock(), _createBlock(Comp, null, {
-  	default: _withCtx((foo) => [_createVNode(Comp, null, {
-  		default: _withCtx((bar) => [_normalizeVNode(() => foo)]),
-  		_: 2
-  	}, 1024)]),
-  	_: 1
-  });
+  () => {
+  	let foo = 1;
+  	return _openBlock(), _createBlock(Comp, null, {
+  		default: _withCtx((foo) => [_createVNode(Comp, null, {
+  			default: _withCtx((bar) => [_normalizeVNode(() => foo)]),
+  			_: 2
+  		}, 1024)]),
+  		_: 1
+  	});
+  };
   "#);
 }
 
@@ -478,9 +496,12 @@ fn named_slot_with_v_if_v_else_if_v_else() {
 #[test]
 fn named_slot_with_v_for() {
   let code = transform(
-    r#"<Comp>
-      <template v-for={name in list} v-slot:$name$>{ name }</template>
-    </Comp>"#,
+    r#"<>
+      <Comp>
+        <template v-for={name in list} v-slot:$name$>{ name }</template>
+      </Comp>
+      <Comp>{name}</Comp>
+    </>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -489,11 +510,14 @@ fn named_slot_with_v_for() {
   .code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { createBlock as _createBlock, createSlots as _createSlots, openBlock as _openBlock, renderList as _renderList } from "vue";
-  _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [_renderList(list, (name) => ({
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createSlots as _createSlots, createVNode as _createVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
+  _openBlock(), _createElementBlock(_Fragment, null, [_createVNode(Comp, null, _createSlots({ _: 2 }, [_renderList(list, (name) => ({
   	name,
   	fn: () => [_normalizeVNode(() => name)]
-  }))]), 1024);
+  }))]), 1024), _createVNode(Comp, null, {
+  	default: _withCtx(() => [_normalizeVNode(() => name)]),
+  	_: 1
+  })], 64);
   "#);
 }
 

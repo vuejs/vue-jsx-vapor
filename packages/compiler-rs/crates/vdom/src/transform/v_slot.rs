@@ -40,6 +40,7 @@ use crate::{
 pub unsafe fn track_slot_scopes<'a>(
   directives: &mut Directives<'a>,
   context_node: *mut JSXChild<'a>,
+  parent_node: &'a JSXChild<'a>,
   context: &'a TransformContext<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   unsafe {
@@ -65,6 +66,13 @@ pub unsafe fn track_slot_scopes<'a>(
               identifiers: identifiers.clone(),
             },
           );
+        } else if let Some(parent) = context
+          .options
+          .slot_scopes
+          .borrow_mut()
+          .get_mut(&parent_node.span())
+        {
+          parent.identifiers = identifiers.clone();
         }
         *context.options.in_v_slot.borrow_mut() += 1;
         return Some(Box::new(move || {
@@ -90,32 +98,26 @@ pub fn build_slots<'a>(
   directives: &mut Directives<'a>,
   node: &'a mut JSXElement<'a>,
   context: &'a TransformContext<'a>,
-) -> (Expression<'a>, bool, Vec<&'a str>) {
+) -> (Expression<'a>, bool) {
   let ast = &context.ast;
   let _node = node as *mut JSXElement;
   let tag_name = directives.tag_name;
   let is_fragment = tag_name == "Fragment" || tag_name == "_Fragment";
   let mut slots_properties = ast.vec();
   let mut dynamic_slots = ast.vec();
-  let mut should_removed_identifiers = vec![];
 
-  // If the slot is inside a v-for or another v-slot, force it to be dynamic
-  // since it likely uses a scope variable.
-  let mut has_dynamic_slots = if context.options.ssr {
-    *context.options.in_v_slot.borrow() > 0 || *context.options.in_v_for.borrow() > 0
-  } else {
-    !context.options.identifiers.borrow().is_empty()
-  };
   // This can be further optimized to make
   // it dynamic when the slot children use the scope variables.
-  if !context.options.ssr && (has_dynamic_slots || !context.options.optimize) {
-    has_dynamic_slots = context
+  let mut has_dynamic_slots = if !context.options.optimize {
+    true
+  } else {
+    context
       .options
       .slot_scopes
       .borrow()
       .get(&node.span)
-      .is_some_and(|n| n.dynamic);
-  }
+      .is_some_and(|n| n.dynamic)
+  };
 
   // 1. Check for slot with slotProps on component itself.
   //    <Comp v-slot="{ prop }"/>
@@ -322,7 +324,7 @@ pub fn build_slots<'a>(
         identifiers,
       }) = get_for_parse_result(v_for, context)
       {
-        should_removed_identifiers = identifiers;
+        context.options.remove_identifiers(identifiers);
         // Render the dynamic slots as an array and add it to the createSlot()
         // args. The runtime knows how to handle it appropriately.
         dynamic_slots.push(
@@ -594,7 +596,7 @@ pub fn build_slots<'a>(
     )
   }
 
-  (slots, has_dynamic_slots, should_removed_identifiers)
+  (slots, has_dynamic_slots)
 }
 
 fn build_dynamic_slot<'a>(

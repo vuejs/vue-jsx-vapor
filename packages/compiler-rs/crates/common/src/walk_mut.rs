@@ -1,20 +1,20 @@
 use oxc_allocator::FromIn;
 use oxc_ast::ast::{
   AssignmentTargetMaybeDefault, AssignmentTargetProperty, AssignmentTargetPropertyProperty,
-  Expression, IdentifierName, PropertyKey, SimpleAssignmentTarget,
+  Expression, IdentifierName, PropertyKey, SimpleAssignmentTarget, Statement,
 };
 use oxc_ast_visit::{
   VisitMut,
   walk_mut::{
     self, walk_expression, walk_for_in_statement, walk_for_of_statement, walk_for_statement,
-    walk_function, walk_simple_assignment_target,
+    walk_function, walk_simple_assignment_target, walk_statement,
   },
 };
 use oxc_semantic::{NodeId, ScopeId};
 use std::cell::Cell;
 
 use oxc_ast::{AstKind, ast::IdentifierReference};
-use oxc_span::SPAN;
+use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   check::is_referenced_identifier,
@@ -263,6 +263,18 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
         .scope_identifiers_map
         .borrow_mut()
         .remove(&node.span)
+    {
+      self.options.remove_identifiers(map.1);
+    }
+  }
+  fn visit_statement(&mut self, node: &mut Statement<'a>) {
+    walk_statement(self, node);
+    if self.options.interop
+      && let Some(map) = self
+        .options
+        .scope_identifiers_map
+        .borrow_mut()
+        .remove(&node.span())
     {
       self.options.remove_identifiers(map.1);
     }

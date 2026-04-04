@@ -162,16 +162,8 @@ pub unsafe fn transform_element<'a>(
       }
 
       vnode_children = Some(if should_build_as_slots {
-        let (slots, has_dynamic_slots, identifiers) =
+        let (slots, has_dynamic_slots) =
           build_slots(unsafe { &mut *directives_ptr }, node, context);
-        if let Some(NodeTypes::VNodeCall(v_for_vnode_call)) = context
-          .codegen_map
-          .borrow_mut()
-          .get_mut(&Span::new(node_span.end, node_span.start))
-          && let Some(v_for) = v_for_vnode_call.v_for.as_mut()
-        {
-          *v_for = identifiers;
-        }
 
         if has_dynamic_slots {
           patch_flag |= PatchFlags::DynamicSlots as i32

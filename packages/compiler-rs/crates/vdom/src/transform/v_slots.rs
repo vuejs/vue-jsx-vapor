@@ -102,7 +102,9 @@ pub unsafe fn transform_v_slots<'a>(
         )
       }
       let mut has_dynamic_slots = true;
-      if let Expression::ObjectExpression(obj) = expression {
+      if let Expression::ObjectExpression(obj) = expression
+        && context.options.optimize
+      {
         let semantic = context.options.semantic.as_ptr();
         if !obj.properties.iter().any(|p| match p {
           ObjectPropertyKind::ObjectProperty(p) => p.computed || !p.value.is_function(),
