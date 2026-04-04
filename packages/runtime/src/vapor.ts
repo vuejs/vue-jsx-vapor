@@ -107,7 +107,7 @@ export function createProxyComponent(
 
 // block
 
-type NodeChildAtom =
+type NodeChildAtom<T> =
   | VNode
   | Block
   | string
@@ -116,11 +116,13 @@ type NodeChildAtom =
   | null
   | undefined
   | void
-  | (() => NodeChild)
+  | T
 
-export type NodeArrayChildren = Array<NodeArrayChildren | NodeChildAtom>
+export type NodeArrayChildren<T> = Array<
+  NodeArrayChildren<T> | NodeChildAtom<T>
+>
 
-export type NodeChild = NodeChildAtom | NodeArrayChildren
+export type NodeChild<T = undefined> = NodeChildAtom<T> | NodeArrayChildren<T>
 
 export function normalizeNode(node: NodeChild): Block {
   if (node == null || typeof node === 'boolean') {

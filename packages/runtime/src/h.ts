@@ -28,8 +28,8 @@ type HTMLElementEventHandler = {
 type ReservedProps = { key?: () => PropertyKey; ref?: NodeRef }
 type RawProps = Record<string, any> & ReservedProps
 
-type RawSlot = (...args: any[]) => NodeChild
-type RawChildren = NodeChild | RawSlot
+type RawSlot = (...args: any[]) => NodeChild<() => NodeChild>
+type RawChildren = NodeChild<() => NodeChild> | RawSlot
 type RawSlots = Record<string, RawSlot>
 
 // The following is a series of overloads for providing props validation of
