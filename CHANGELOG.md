@@ -1,3 +1,22 @@
+## [3.2.9](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.8...v3.2.9) (2026-04-04)
+
+
+### Bug Fixes
+
+* **compiler/vdom:** cleanup scope identifiers and improve slot tracking ([1ae1239](https://github.com/vuejs/vue-jsx-vapor/commit/1ae12395598b835c85140b1af104931873a80d3f))
+* **compiler/vdom:** should optimize in optional defineComponent ([27e3b45](https://github.com/vuejs/vue-jsx-vapor/commit/27e3b45ff297cc71803729b88953a31ed47578da))
+* **macros:** direct TSNonNullExpression checks ([c6b2200](https://github.com/vuejs/vue-jsx-vapor/commit/c6b2200e4cadfd500e681d6a185aae4a06ee94c5))
+* **runtime/vapor:** make NodeChild generic ([f74e3b5](https://github.com/vuejs/vue-jsx-vapor/commit/f74e3b59468ce4c76102987a8be36b2b1a392162))
+* **runtime/vdom:** remove _c flag for normalizeSlot ([61d5bb6](https://github.com/vuejs/vue-jsx-vapor/commit/61d5bb634d50377c7ebd76a2af3aa0ce0c8e5f93))
+
+
+### Features
+
+* **compiler/vdom:** add optimize option and replace optimizeSlots ([e598555](https://github.com/vuejs/vue-jsx-vapor/commit/e598555ddfe17190d44544b6a3812ab113822ea9))
+* **runtime:** support `v-slots` types in `defineComponent` and ([1e7f259](https://github.com/vuejs/vue-jsx-vapor/commit/1e7f259aeb1595cf49660cd263040da8a8a46b63))
+
+
+
 ## [3.2.8](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.7...v3.2.8) (2026-03-30)
 
 
