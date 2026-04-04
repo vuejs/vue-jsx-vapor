@@ -39,7 +39,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: '22.22.1'
+          node-version: 22.22.1
           cache: pnpm
       - name: Install
         uses: dtolnay/rust-toolchain@stable
@@ -109,7 +109,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: '22.22.1'
+          node-version: 22.22.1
           cache: pnpm
       - name: Install
         uses: dtolnay/rust-toolchain@stable
@@ -152,7 +152,7 @@ jobs:
         uses: actions/setup-node@v5
         if: matrix.settings.target == 'i686-pc-windows-msvc'
         with:
-          node-version: '22.22.1'
+          node-version: 22.22.1
           cache: pnpm
           architecture: x86
       - name: Build
@@ -242,7 +242,7 @@ jobs:
             architecture: arm64
         node:
           - '20'
-          - '22.22.1'
+          - 22.22.1
     runs-on: ${{ matrix.settings.host }}
     defaults:
       run:
@@ -288,7 +288,7 @@ jobs:
           - armv7-unknown-linux-gnueabihf
         node:
           - '20'
-          - '22.22.1'
+          - 22.22.1
     runs-on: ${{ contains(matrix.target, 'aarch64') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     defaults:
       run:
@@ -364,7 +364,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: '22.22.1'
+          node-version: 22.22.1
           cache: pnpm
       - name: Install dependencies
         run: pnpm install
@@ -399,7 +399,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: '22.22.1'
+          node-version: 22.22.1
           cache: pnpm
       - name: Install dependencies
         run: pnpm install
