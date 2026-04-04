@@ -4,7 +4,7 @@ const $ = unref
 
 const Comp = defineVaporComponent(
   ({
-    bar = 'bar'! as string,
+    bar = ('bar' as string)!,
     Comp,
     ...attrs
   }: {
