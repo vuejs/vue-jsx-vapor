@@ -1,4 +1,4 @@
-import { walkAST, walkIdentifiers } from 'ast-kit'
+import { walkIdentifiers } from 'ast-kit'
 import { restructure } from '../restructure'
 import {
   getDefaultValue,
@@ -56,15 +56,7 @@ export function transformDefineComponent(
           continue
         }
         const defaultValue = getDefaultValue(prop.value.right)
-        let isRequired = false
-        walkAST(prop.value.right, {
-          enter(node) {
-            if (node.type === 'TSNonNullExpression') {
-              isRequired = true
-              this.skip()
-            }
-          },
-        })
+        const isRequired = prop.value.right.type === 'TSNonNullExpression'
 
         const propOptions = []
         if (isRequired) {

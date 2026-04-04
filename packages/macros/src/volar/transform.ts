@@ -71,14 +71,8 @@ export function transformJsxMacros(
             : []
         for (const element of elements) {
           if (ts.isIdentifier(element.name)) {
-            const isRequired = element.forEachChild(
-              function isNonNullExpression(node): boolean {
-                return (
-                  ts.isNonNullExpression(node) ||
-                  !!node.forEachChild(isNonNullExpression)
-                )
-              },
-            )
+            const isRequired =
+              element.initializer && ts.isNonNullExpression(element.initializer)
             props.push(
               `${element.name.escapedText}${
                 isRequired ? ':' : '?:'
