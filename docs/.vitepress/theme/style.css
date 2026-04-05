@@ -142,3 +142,11 @@
 .VPNav {
   z-index: 51 !important;
 }
+
+.VPContent.has-sidebar {
+  padding-right: 0 !important;
+}
+.VPDoc > .container > .content {
+  padding: 0 !important;
+  margin-top: -20px;
+}

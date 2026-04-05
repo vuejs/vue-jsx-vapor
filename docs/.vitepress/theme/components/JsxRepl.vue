@@ -106,14 +106,6 @@ const Repl = defineAsyncComponent({
 </template>
 
 <style>
-.VPContent.has-sidebar {
-  padding-right: 0 !important;
-}
-.VPDoc .content {
-  padding: 0 !important;
-  margin-top: -20px;
-}
-
 .repl-container {
   display: flex;
   gap: 12px;
