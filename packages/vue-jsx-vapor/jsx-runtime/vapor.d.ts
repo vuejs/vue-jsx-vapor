@@ -4,7 +4,7 @@ import type { NativeElements, NodeChild } from 'vue-jsx-vapor'
 declare function jsx(type: any, props: any, key: any): Block
 declare global {
   namespace JSX {
-    type Element = NodeChild | null
+    type Element = Block | VNode | Element[]
     interface ElementClass {
       $props: {}
     }

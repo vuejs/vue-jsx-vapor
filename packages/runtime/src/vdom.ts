@@ -212,13 +212,14 @@ export type DefineSetupFnComponent<
   P extends Record<string, any>,
   E extends EmitsOptions = {},
   S extends SlotsType = SlotsType,
+  Exposed extends Record<string, any> = {},
   Props = P & EmitsToProps<E>,
   PP = PublicProps,
 > = new (
   props: Props & PP,
 ) => CreateComponentPublicInstanceWithMixins<
   ResolvePropsWithSlots<Props, SetupContext<EmitsOptions, S>['slots']>,
-  {},
+  Exposed,
   {},
   {},
   {},
@@ -229,7 +230,10 @@ export type DefineSetupFnComponent<
   {},
   false,
   {},
-  S
+  S,
+  {},
+  {},
+  keyof Exposed & string
 >
 
 // defineComponent is a utility that is primarily used for type inference
@@ -244,7 +248,7 @@ export function defineComponent<
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
   Slots extends Record<string, any> = {},
-  Exposed extends Record<string, any> = Record<string, any>,
+  Exposed extends Record<string, any> = {},
 >(
   setup: (
     this: void,
@@ -261,13 +265,13 @@ export function defineComponent<
     emits?: Emits | RuntimeEmitsKeys[]
     slots?: Slots
   },
-): DefineSetupFnComponent<Props, Emits, SlotsType<Slots>>
+): DefineSetupFnComponent<Props, Emits, SlotsType<Slots>, Exposed>
 export function defineComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
   Slots extends Record<string, any> = {},
-  Exposed extends Record<string, any> = Record<string, any>,
+  Exposed extends Record<string, any> = {},
 >(
   setup: (
     this: void,
@@ -284,7 +288,7 @@ export function defineComponent<
     emits?: Emits | RuntimeEmitsKeys[]
     slots?: Slots
   },
-): DefineSetupFnComponent<Props, Emits, SlotsType<Slots>>
+): DefineSetupFnComponent<Props, Emits, SlotsType<Slots>, Exposed>
 
 // overload 2: defineComponent with options object, infer props from options
 export function defineComponent<
