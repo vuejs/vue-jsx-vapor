@@ -60,9 +60,7 @@ export default () => {
     <>
       <Comp>{1}</Comp>
       <Comp1
-        v-model:foo={foo}
         foo={foo}
-        onUpdate:foo={() => {}}
         v-slots={{
           default: ({ foo }) => [foo],
           other: ({ foo }) => [foo],
