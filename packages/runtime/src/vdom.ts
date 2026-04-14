@@ -1,4 +1,5 @@
 import {
+  defineComponent as __defineComponent,
   cloneVNode,
   Comment,
   createBlock,
@@ -33,18 +34,13 @@ import {
   type GlobalDirectives,
   type MethodOptions,
   type PublicProps,
-  type SetupContext,
   type Slot,
   type SlotsType,
   type TypeEmitsToOptions,
   type VNode,
   type VNodeChild,
 } from 'vue'
-import type {
-  IsKeyValues,
-  ResolvePropsWithSlots,
-  ToResolvedProps,
-} from './types'
+import type { IsKeyValues, SlotsToProps, ToResolvedProps } from './types'
 
 const cacheMap = new WeakMap()
 
@@ -167,7 +163,7 @@ export type DefineComponent<
   TypeEl extends Element = any,
 > = ComponentPublicInstanceConstructor<
   CreateComponentPublicInstanceWithMixins<
-    ResolvePropsWithSlots<Props, SetupContext<EmitsOptions, S>['slots']>,
+    Props & SlotsToProps<S>,
     RawBindings,
     D,
     C,
@@ -213,12 +209,12 @@ export type DefineSetupFnComponent<
   E extends EmitsOptions = {},
   S extends SlotsType = SlotsType,
   Exposed extends Record<string, any> = {},
-  Props = P & EmitsToProps<E>,
+  Props = P & EmitsToProps<E> & SlotsToProps<S>,
   PP = PublicProps,
 > = new (
   props: Props & PP,
 ) => CreateComponentPublicInstanceWithMixins<
-  ResolvePropsWithSlots<Props, SetupContext<EmitsOptions, S>['slots']>,
+  Props,
   Exposed,
   {},
   {},
@@ -243,11 +239,12 @@ export type DefineSetupFnComponent<
 
 // overload 1: direct setup function
 // (uses user defined props interface)
-export function defineComponent<
+// eslint-disable-next-line unused-imports/no-unused-vars
+declare function _defineComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
-  Slots extends Record<string, any> = {},
+  Slots extends SlotsType | Record<string, any> = {},
   Exposed extends Record<string, any> = {},
 >(
   setup: (
@@ -257,7 +254,7 @@ export function defineComponent<
       emit: EmitFn<Emits>
       slots: Slots
       attrs: Record<string, any>
-      expose: (exposed: Exposed) => void
+      expose: (exposed?: Exposed) => void
     },
   ) => RenderFunction | Promise<RenderFunction>,
   options?: Omit<ComponentOptions, 'props' | 'emits' | 'slots'> & {
@@ -265,12 +262,17 @@ export function defineComponent<
     emits?: Emits | RuntimeEmitsKeys[]
     slots?: Slots
   },
-): DefineSetupFnComponent<Props, Emits, SlotsType<Slots>, Exposed>
-export function defineComponent<
+): DefineSetupFnComponent<
+  Props,
+  Emits,
+  Slots extends SlotsType ? Slots : SlotsType<Slots>,
+  Exposed
+>
+declare function _defineComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
-  Slots extends Record<string, any> = {},
+  Slots extends SlotsType | Record<string, any> = {},
   Exposed extends Record<string, any> = {},
 >(
   setup: (
@@ -280,7 +282,7 @@ export function defineComponent<
       emit: EmitFn<Emits>
       slots: Slots
       attrs: Record<string, any>
-      expose: (exposed: Exposed) => void
+      expose: (exposed?: Exposed) => void
     },
   ) => RenderFunction | Promise<RenderFunction>,
   options?: Omit<ComponentOptions, 'props' | 'emits' | 'slots'> & {
@@ -288,10 +290,15 @@ export function defineComponent<
     emits?: Emits | RuntimeEmitsKeys[]
     slots?: Slots
   },
-): DefineSetupFnComponent<Props, Emits, SlotsType<Slots>, Exposed>
+): DefineSetupFnComponent<
+  Props,
+  Emits,
+  Slots extends SlotsType ? Slots : SlotsType<Slots>,
+  Exposed
+>
 
 // overload 2: defineComponent with options object, infer props from options
-export function defineComponent<
+declare function _defineComponent<
   // props
   TypeProps,
   RuntimePropsOptions extends
@@ -411,13 +418,4 @@ export function defineComponent<
   TypeEl
 >
 
-// implementation, close to no-op
-/*@__NO_SIDE_EFFECTS__*/
-export function defineComponent(
-  options: unknown,
-  extraOptions?: ComponentOptions,
-) {
-  return typeof options === 'function'
-    ? Object.assign({ name: options.name }, extraOptions, { setup: options })
-    : options
-}
+export const defineComponent = __defineComponent as typeof _defineComponent

@@ -1,4 +1,5 @@
 import {
+  defineVaporComponent as __defineVaporComponent,
   EffectScope,
   Fragment,
   getCurrentInstance,
@@ -23,7 +24,7 @@ import * as Vue from 'vue'
 import type {
   IsKeyValues,
   Prettify,
-  ResolvePropsWithSlots,
+  SlotsToProps,
   ToResolvedProps,
 } from './types'
 
@@ -285,16 +286,13 @@ export type DefineVaporComponent<
   Defaults = ExtractDefaultPropTypes<RuntimePropsOptions>,
 > = VaporComponentInstanceConstructor<
   VaporComponentInstance<
-    ResolvePropsWithSlots<
-      MakeDefaultsOptional extends true
-        ? keyof Defaults extends never
-          ? Prettify<ResolvedProps> & PublicProps
-          : Partial<Defaults> &
-              Omit<Prettify<ResolvedProps> & PublicProps, keyof Defaults>
-        : Prettify<ResolvedProps> & PublicProps,
-      Slots,
-      NodeChild
-    >,
+    (MakeDefaultsOptional extends true
+      ? keyof Defaults extends never
+        ? Prettify<ResolvedProps> & PublicProps
+        : Partial<Defaults> &
+            Omit<Prettify<ResolvedProps> & PublicProps, keyof Defaults>
+      : Prettify<ResolvedProps> & PublicProps) &
+      SlotsToProps<Slots, NodeChild>,
     Emits,
     Slots,
     Exposed,
@@ -321,7 +319,7 @@ export type DefineVaporSetupFnComponent<
     Emits
   >,
 > = new () => VaporComponentInstance<
-  ResolvePropsWithSlots<ResolvedProps, Slots, NodeChild>,
+  ResolvedProps & SlotsToProps<Slots, NodeChild>,
   Emits,
   Slots,
   Exposed,
@@ -330,7 +328,8 @@ export type DefineVaporSetupFnComponent<
 
 // overload 1: direct setup function
 // (uses user defined props interface)
-export function defineVaporComponent<
+// eslint-disable-next-line unused-imports/no-unused-vars
+declare function _defineVaporComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
@@ -345,7 +344,7 @@ export function defineVaporComponent<
       emit: EmitFn<Emits>
       slots: Slots
       attrs: Record<string, any>
-      expose: (exposed: Exposed) => void
+      expose: (exposed?: Exposed) => void
     },
   ) => VaporRenderResult<TypeBlock> | void,
   extraOptions?: VaporComponentOptions<
@@ -357,7 +356,7 @@ export function defineVaporComponent<
   > &
     ThisType<void>,
 ): DefineVaporSetupFnComponent<Props, Emits, Slots, Exposed, TypeBlock>
-export function defineVaporComponent<
+declare function _defineVaporComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
@@ -372,7 +371,7 @@ export function defineVaporComponent<
       emit: EmitFn<Emits>
       slots: Slots
       attrs: Record<string, any>
-      expose: (exposed: Exposed) => void
+      expose: (exposed?: Exposed) => void
     },
   ) => VaporRenderResult<TypeBlock> | void,
   extraOptions?: VaporComponentOptions<
@@ -386,7 +385,7 @@ export function defineVaporComponent<
 ): DefineVaporSetupFnComponent<Props, Emits, Slots, Exposed, TypeBlock>
 
 // overload 2: defineVaporComponent with options object, infer props from options
-export function defineVaporComponent<
+declare function _defineVaporComponent<
   // props
   TypeProps,
   RuntimePropsOptions extends
@@ -455,14 +454,5 @@ export function defineVaporComponent<
   unknown extends TypeProps ? true : false
 >
 
-/*@__NO_SIDE_EFFECTS__*/
-export function defineVaporComponent(comp: any, extraOptions?: any) {
-  if (typeof comp === 'function') {
-    return Object.assign({ name: comp.name }, extraOptions, {
-      setup: comp,
-      __vapor: true,
-    })
-  }
-  comp.__vapor = true
-  return comp
-}
+export const defineVaporComponent =
+  __defineVaporComponent as typeof _defineVaporComponent

@@ -1,4 +1,10 @@
-import type { EmitsOptions, EmitsToProps, VNodeChild } from 'vue'
+import type {
+  EmitsOptions,
+  EmitsToProps,
+  SetupContext,
+  SlotsType,
+  VNodeChild,
+} from 'vue'
 
 export type Prettify<T> = { [K in keyof T]: T[K] } & {}
 
@@ -14,14 +20,16 @@ export type ToResolvedProps<
   Emits extends EmitsOptions,
 > = Readonly<Props> & Readonly<EmitsToProps<Emits>>
 
-export type ResolvePropsWithSlots<
-  Props,
-  Slots = Record<string, any>,
+export type SlotsToProps<
+  RawSlots extends SlotsType | Record<string, any> = Record<string, any>,
   Element = VNodeChild,
+  Slots = RawSlots extends SlotsType
+    ? SetupContext<EmitsOptions, RawSlots>['slots']
+    : RawSlots,
 > = string extends keyof Slots
-  ? Props
-  : Props & {
+  ? {}
+  : {
       'v-slots'?:
         | ('default' extends keyof Slots ? Slots['default'] | Slots : Slots)
-        | Element
+        | NoInfer<Element>
     }
