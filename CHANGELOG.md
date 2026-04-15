@@ -1,3 +1,12 @@
+## [3.2.10](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.9...v3.2.10) (2026-04-15)
+
+
+### Features
+
+* **runtime:** infer Exposed type for defineComponent ([9b9dc62](https://github.com/vuejs/vue-jsx-vapor/commit/9b9dc622120f9894843dab2a8c823ed2813f97c3))
+
+
+
 ## [3.2.9](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.8...v3.2.9) (2026-04-04)
 
 
