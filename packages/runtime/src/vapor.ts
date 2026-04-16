@@ -1,5 +1,4 @@
 import {
-  defineVaporComponent as __defineVaporComponent,
   EffectScope,
   Fragment,
   getCurrentInstance,
@@ -328,8 +327,7 @@ export type DefineVaporSetupFnComponent<
 
 // overload 1: direct setup function
 // (uses user defined props interface)
-// eslint-disable-next-line unused-imports/no-unused-vars
-declare function _defineVaporComponent<
+export function defineVaporComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
@@ -356,7 +354,7 @@ declare function _defineVaporComponent<
   > &
     ThisType<void>,
 ): DefineVaporSetupFnComponent<Props, Emits, Slots, Exposed, TypeBlock>
-declare function _defineVaporComponent<
+export function defineVaporComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
@@ -385,7 +383,7 @@ declare function _defineVaporComponent<
 ): DefineVaporSetupFnComponent<Props, Emits, Slots, Exposed, TypeBlock>
 
 // overload 2: defineVaporComponent with options object, infer props from options
-declare function _defineVaporComponent<
+export function defineVaporComponent<
   // props
   TypeProps,
   RuntimePropsOptions extends
@@ -454,5 +452,14 @@ declare function _defineVaporComponent<
   unknown extends TypeProps ? true : false
 >
 
-export const defineVaporComponent =
-  __defineVaporComponent as typeof _defineVaporComponent
+/*@__NO_SIDE_EFFECTS__*/
+export function defineVaporComponent(comp: any, extraOptions?: any) {
+  if (typeof comp === 'function') {
+    return Object.assign({ name: comp.name }, extraOptions, {
+      setup: comp,
+      __vapor: true,
+    })
+  }
+  comp.__vapor = true
+  return comp
+}
