@@ -27,7 +27,7 @@ export default defineComponent(() => {
       </button>
       <button
         onClick={() => {
-          list.value = JSON.parse(JSON.stringify(list.value))
+          list.value = structuredClone(list.value)
         }}
       >
         refresh

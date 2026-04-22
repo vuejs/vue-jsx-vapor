@@ -108,7 +108,6 @@ pub unsafe fn transform_v_slots<'a>(
       {
         let semantic = context.options.semantic.as_ptr();
         if !directives.tag_name.ends_with("Provider")
-          && !is_for_component
           && !obj.properties.iter().any(|p| match p {
             ObjectPropertyKind::ObjectProperty(p) => p.computed || !p.value.is_function(),
             _ => true,
@@ -170,18 +169,20 @@ pub unsafe fn transform_v_slots<'a>(
               }
             });
             if !has_dynamic_slots {
-              for prop in obj.properties.iter_mut() {
-                if let ObjectPropertyKind::ObjectProperty(prop) = prop {
-                  prop.value = ast.expression_call(
-                    SPAN,
-                    ast.expression_identifier(
+              if !is_for_component {
+                for prop in obj.properties.iter_mut() {
+                  if let ObjectPropertyKind::ObjectProperty(prop) = prop {
+                    prop.value = ast.expression_call(
                       SPAN,
-                      ast.atom(context.options.helper("_normalizeSlot")),
-                    ),
-                    NONE,
-                    ast.vec1(prop.value.take_in(context.allocator).into()),
-                    false,
-                  )
+                      ast.expression_identifier(
+                        SPAN,
+                        ast.atom(context.options.helper("_normalizeSlot")),
+                      ),
+                      NONE,
+                      ast.vec1(prop.value.take_in(context.allocator).into()),
+                      false,
+                    )
+                  }
                 }
               }
               obj.properties.insert(

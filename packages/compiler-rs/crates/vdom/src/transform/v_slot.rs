@@ -563,7 +563,7 @@ pub fn build_slots<'a>(
     }
   }
 
-  if tag_name.ends_with("Provider") || is_for_component {
+  if tag_name.ends_with("Provider") {
     has_dynamic_slots = true;
   }
   let slot_flag = if has_dynamic_slots {

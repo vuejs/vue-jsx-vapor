@@ -96,7 +96,6 @@ pub unsafe fn transform_element<'a>(
     || RootNode::is_fragment(parent_node)
     || vnode_tag == "Teleport"
     || vnode_tag == "Suspense"
-    || vnode_tag == "For"
     || is_fragment
       && (context.v_if_map.borrow().contains_key(&parent_span) // conditional expression
         || (parent_span.start > parent_span.end && (parent_span.start - parent_span.end) > 3)) // template with v-if / v-for

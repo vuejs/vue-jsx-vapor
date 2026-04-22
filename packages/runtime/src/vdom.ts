@@ -458,17 +458,12 @@ export const For = defineComponent(
     },
   ) => {
     const defaultSlot = slots.default
-    const is_stable = (slots as any)._ === 1
     return () => (
       openBlock(true),
       createElementBlock(
         Fragment,
         null,
         renderList(props.in, (item, key, index) => {
-          if (is_stable) {
-            // @ts-ignore
-            return normalizeVNode(() => defaultSlot(item, key, index))
-          }
           // @ts-ignore
           const result = defaultSlot(item, key, index)
           return Array.isArray(result)
@@ -481,4 +476,5 @@ export const For = defineComponent(
       )
     )
   },
+  { props: ['in'] },
 )
