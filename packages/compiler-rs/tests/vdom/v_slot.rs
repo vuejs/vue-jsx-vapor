@@ -915,7 +915,30 @@ fn provider_component_should_be_dynamic() {
   	return _openBlock(), _createBlock(ContextProvider, null, {
   		default: _withCtx(() => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]),
   		_: 2
-  	});
+  	}, 1024);
+  })();
+  "#);
+}
+
+#[test]
+fn for_component_should_be_dynamic() {
+  let code = transform(
+    r#"<div><For><div /></For></div>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createBlock(For, null, {
+  		default: (() => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]),
+  		_: 2
+  	}, 1024))]);
   })();
   "#);
 }

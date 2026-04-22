@@ -102,14 +102,18 @@ pub unsafe fn transform_v_slots<'a>(
         )
       }
       let mut has_dynamic_slots = true;
+      let is_for_component = directives.tag_name == "For";
       if let Expression::ObjectExpression(obj) = expression
         && context.options.optimize
       {
         let semantic = context.options.semantic.as_ptr();
-        if !obj.properties.iter().any(|p| match p {
-          ObjectPropertyKind::ObjectProperty(p) => p.computed || !p.value.is_function(),
-          _ => true,
-        }) {
+        if !directives.tag_name.ends_with("Provider")
+          && !is_for_component
+          && !obj.properties.iter().any(|p| match p {
+            ObjectPropertyKind::ObjectProperty(p) => p.computed || !p.value.is_function(),
+            _ => true,
+          })
+        {
           has_dynamic_slots = false;
           for prop in obj.properties.iter_mut() {
             if let ObjectPropertyKind::ObjectProperty(prop) = prop
@@ -195,6 +199,23 @@ pub unsafe fn transform_v_slots<'a>(
             }
           }
           if has_dynamic_slots {
+            if is_for_component {
+              exp = ast.expression_object(
+                SPAN,
+                ast.vec_from_array([
+                  ast.object_property_kind_spread_property(SPAN, exp),
+                  ast.object_property_kind_object_property(
+                    SPAN,
+                    oxc_ast::ast::PropertyKind::Init,
+                    ast.property_key_static_identifier(SPAN, "_"),
+                    ast.expression_numeric_literal(SPAN, 2 as f64, None, NumberBase::Hex),
+                    false,
+                    false,
+                    false,
+                  ),
+                ]),
+              );
+            }
             patch_flag |= PatchFlags::DynamicSlots as i32;
             vnode_call.patch_flag = Some(patch_flag);
           }

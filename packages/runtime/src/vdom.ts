@@ -10,6 +10,7 @@ import {
   getCurrentInstance,
   isVNode,
   openBlock,
+  renderList,
   Text,
   withCtx,
   type Component,
@@ -419,3 +420,65 @@ declare function _defineComponent<
 >
 
 export const defineComponent = __defineComponent as typeof _defineComponent
+
+// components
+
+export const For = defineComponent(
+  <
+    T extends
+      | any[]
+      | Record<any, any>
+      | number
+      | string
+      | Set<any>
+      | Map<any, any>,
+    Item = T extends number
+      ? number
+      : T extends string
+        ? string
+        : T extends any[]
+          ? T[number]
+          : T extends Iterable<infer T1>
+            ? T1
+            : Record<any, any>,
+  >(
+    props: {
+      in: T
+    },
+    {
+      slots,
+    }: {
+      slots: {
+        default: (
+          ...args: string extends keyof Item
+            ? [item: T[keyof T], key: keyof T, index: number]
+            : [item: Item, index: number]
+        ) => any
+      }
+    },
+  ) => {
+    const defaultSlot = slots.default
+    const is_stable = (slots as any)._ === 1
+    return () => (
+      openBlock(true),
+      createElementBlock(
+        Fragment,
+        null,
+        renderList(props.in, (item, key, index) => {
+          if (is_stable) {
+            // @ts-ignore
+            return normalizeVNode(() => defaultSlot(item, key, index))
+          }
+          // @ts-ignore
+          const result = defaultSlot(item, key, index)
+          return Array.isArray(result)
+            ? result.length === 1
+              ? result[0]
+              : normalizeVNode(result)
+            : result
+        }),
+        128,
+      )
+    )
+  },
+)

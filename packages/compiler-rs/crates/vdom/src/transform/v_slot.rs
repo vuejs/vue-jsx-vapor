@@ -103,6 +103,7 @@ pub fn build_slots<'a>(
   let _node = node as *mut JSXElement;
   let tag_name = directives.tag_name;
   let is_fragment = tag_name == "Fragment" || tag_name == "_Fragment";
+  let is_for_component = tag_name == "For";
   let mut slots_properties = ast.vec();
   let mut dynamic_slots = ast.vec();
 
@@ -378,7 +379,14 @@ pub fn build_slots<'a>(
         slot_name.into(),
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withCtx"))),
+          ast.expression_identifier(
+            SPAN,
+            if is_for_component {
+              ""
+            } else {
+              context.options.helper("_withCtx")
+            },
+          ),
           NONE,
           ast.vec1(slot_function.into()),
           false,
@@ -394,7 +402,14 @@ pub fn build_slots<'a>(
     if let Some(ObjectPropertyKind::ObjectProperty(prop)) = slots_properties.first_mut() {
       prop.value = ast.expression_call(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withCtx"))),
+        ast.expression_identifier(
+          SPAN,
+          if is_for_component {
+            ""
+          } else {
+            context.options.helper("_withCtx")
+          },
+        ),
         NONE,
         ast.vec1(
           ast
@@ -450,7 +465,7 @@ pub fn build_slots<'a>(
           SPAN,
           ast.expression_identifier(
             SPAN,
-            ast.atom(if is_fragment {
+            ast.atom(if is_fragment || is_for_component {
               ""
             } else {
               context.options.helper("_withCtx")
@@ -504,7 +519,14 @@ pub fn build_slots<'a>(
           ast.property_key_static_identifier(SPAN, "default"),
           ast.expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withCtx"))),
+            ast.expression_identifier(
+              SPAN,
+              if is_for_component {
+                ""
+              } else {
+                context.options.helper("_withCtx")
+              },
+            ),
             NONE,
             ast.vec1(
               ast
@@ -541,7 +563,10 @@ pub fn build_slots<'a>(
     }
   }
 
-  let slot_flag = if has_dynamic_slots || tag_name.ends_with("Provider") {
+  if tag_name.ends_with("Provider") || is_for_component {
+    has_dynamic_slots = true;
+  }
+  let slot_flag = if has_dynamic_slots {
     SlotFlags::DYNAMIC
   } else if let Some(slot_static) = context.options.slot_scopes.borrow().get(&node.span)
     && slot_static.forwarded

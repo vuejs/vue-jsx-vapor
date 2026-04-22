@@ -169,6 +169,25 @@ fn v_slot_with_v_slots() {
 }
 
 #[test]
+fn for_component_should_be_dynamic() {
+  let code = transform(
+    r#"<For>{() => <div />}</For>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(For, null, {
+  	...{ default: () => (_openBlock(), _createElementBlock("div")) },
+  	_: 2
+  }, 1024);
+  "#);
+}
+
+#[test]
 fn should_raise_error_if_not_component() {
   let error = RefCell::new(None);
   transform(
