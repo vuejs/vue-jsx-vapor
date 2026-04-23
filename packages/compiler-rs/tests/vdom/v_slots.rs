@@ -181,9 +181,9 @@ fn for_component_should_be_dynamic() {
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(For, null, {
-  	...{ default: () => (_openBlock(), _createElementBlock("div")) },
-  	_: 2
-  }, 1024);
+  	_: 1,
+  	default: () => (_openBlock(), _createElementBlock("div"))
+  });
   "#);
 }
 

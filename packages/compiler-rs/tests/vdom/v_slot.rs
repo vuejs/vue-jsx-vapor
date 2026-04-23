@@ -932,13 +932,13 @@ fn for_component_should_be_dynamic() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
+  import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createBlock(For, null, {
+  	return _openBlock(), _createElementBlock("div", null, [_createVNode(For, null, {
   		default: (() => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]),
-  		_: 2
-  	}, 1024))]);
+  		_: 1
+  	})]);
   })();
   "#);
 }
