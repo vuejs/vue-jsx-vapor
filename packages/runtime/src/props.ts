@@ -1,4 +1,4 @@
-import { computed, isRef, unref, useAttrs } from 'vue'
+import { computed, useAttrs } from 'vue'
 import * as Vue from 'vue'
 
 /*@__NO_SIDE_EFFECTS__*/
@@ -53,13 +53,10 @@ export function useFullProps() {
     {},
     {
       get(_, p, receiver) {
-        return unref(Reflect.get(fullProps.value, p, receiver))
+        return Reflect.get(fullProps.value, p, receiver)
       },
-      set(_, p, value) {
-        if (isRef((fullProps.value as any)[p]) && !isRef(value))
-          (fullProps.value as any)[p].value = value
-        else (fullProps.value as any)[p] = value
-        return true
+      set(_, p, v, r) {
+        return Reflect.set(fullProps.value, p, v, r)
       },
       deleteProperty(_, p) {
         return Reflect.deleteProperty(fullProps.value, p)
