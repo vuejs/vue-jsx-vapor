@@ -9,6 +9,7 @@ import {
   type EmitsOptions,
   type ExtractDefaultPropTypes,
   type ExtractPropTypes,
+  type ShallowRef,
   type StaticSlots,
   type TypeEmitsToOptions,
   type VaporComponent,
@@ -463,3 +464,72 @@ export function defineVaporComponent(comp: any, extraOptions?: any) {
   comp.__vapor = true
   return comp
 }
+
+// components
+
+type ResolveItem<Item, GetKey> = GetKey extends undefined
+  ? Item
+  : ShallowRef<Item>
+
+export const VaporFor = defineVaporComponent(
+  <
+    T extends
+      | any[]
+      | Record<any, any>
+      | number
+      | string
+      | Set<any>
+      | Map<any, any>,
+    Item = T extends number
+      ? number
+      : T extends string
+        ? string
+        : T extends any[]
+          ? T[number]
+          : T extends Iterable<infer T1>
+            ? T1
+            : Record<any, any>,
+    GetKeyDetault = (
+      ...args: string extends keyof Item
+        ? [item: T[keyof T], key: keyof T, index: number]
+        : [item: Item, index: number]
+    ) => any,
+    GetKey extends GetKeyDetault | null | undefined = undefined,
+  >(
+    props: {
+      in: T
+      getKey?: GetKey extends undefined ? GetKeyDetault : GetKey
+    },
+    {
+      slots,
+    }: {
+      slots: {
+        default: (
+          ...args: string extends keyof Item
+            ? [
+                item: ResolveItem<T[keyof T], GetKey>,
+                key: ShallowRef<keyof T>,
+                index: ShallowRef<number>,
+              ]
+            : [item: ResolveItem<Item, GetKey>, index: ShallowRef<number>]
+        ) => any
+      }
+    },
+  ) => {
+    return Vue.createFor(
+      () => props.in as any,
+      (item, key, index) => {
+        return slots.default
+          ? slots.default(
+              // @ts-ignore
+              props.getKey === undefined ? item.value : item,
+              key,
+              index,
+            )
+          : []
+      },
+      props.getKey === undefined ? (item) => item : (props.getKey as any),
+    )
+  },
+  { props: ['in', 'getKey'] as any },
+)
