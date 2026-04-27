@@ -1,3 +1,20 @@
+## [3.2.11](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.10...v3.2.11) (2026-04-27)
+
+
+### Bug Fixes
+
+* **compiler/vdom:** allow stable slotFlag in For component ([8ec92e6](https://github.com/vuejs/vue-jsx-vapor/commit/8ec92e6438f94ffef2fc8a6c20f89a3914bcb86f))
+* **runtime/props:** prevent unref prop for useFullProps ([8022677](https://github.com/vuejs/vue-jsx-vapor/commit/8022677c7a1fb8eb629e6aa3575873af22cae787))
+
+
+### Features
+
+* introduce For component ([b96bb43](https://github.com/vuejs/vue-jsx-vapor/commit/b96bb43d5438be302264c93eaeff73749c4d9714))
+* **runtime/vapor:** introduce VaporFor component ([d3afd52](https://github.com/vuejs/vue-jsx-vapor/commit/d3afd529e4087e44f356b392332d54f412d7ed7d))
+* **runtime:** export SlotsToProps type ([fda5c82](https://github.com/vuejs/vue-jsx-vapor/commit/fda5c8255b3135b6af06e78c2b893a408836a76c))
+
+
+
 ## [3.2.10](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.9...v3.2.10) (2026-04-15)
 
 
