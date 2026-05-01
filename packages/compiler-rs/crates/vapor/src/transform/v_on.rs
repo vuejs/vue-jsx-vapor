@@ -45,7 +45,7 @@ pub fn transform_v_on<'a>(
     context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, dir.span);
   }
 
-  let mut arg = ast.alloc_string_literal(name_loc, ast.atom(name_string), None);
+  let mut arg = ast.alloc_string_literal(name_loc, ast.str(name_string), None);
   let exp = value
     .as_mut()
     .map(|value| jsx_attribute_value_to_expression(value, ast))
@@ -78,10 +78,10 @@ pub fn transform_v_on<'a>(
     .any(|modifier| modifier == "middle")
     && is_static_click
   {
-    arg.value = ast.atom("mouseup");
+    arg.value = ast.str("mouseup");
   }
   if non_key_modifiers.iter().any(|modifier| modifier == "right") && is_static_click {
-    arg.value = ast.atom("contextmenu");
+    arg.value = ast.str("contextmenu");
   }
 
   // don't gen keys guard for non-keyboard events

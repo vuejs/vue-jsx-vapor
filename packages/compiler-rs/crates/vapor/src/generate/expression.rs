@@ -28,12 +28,12 @@ pub fn gen_expression<'a>(
         span,
         AssignmentOperator::Assign,
         AssignmentTarget::AssignmentTargetIdentifier(
-          ast.alloc_identifier_reference(span, ast.atom(&content)),
+          ast.alloc_identifier_reference(span, ast.str(&content)),
         ),
         assignment,
       )
     } else {
-      ast.expression_identifier(span, ast.atom(&content))
+      ast.expression_identifier(span, ast.str(&content))
     };
   }
 
@@ -106,11 +106,11 @@ pub fn gen_identifier<'a>(
       loc,
       AssignmentOperator::Assign,
       AssignmentTarget::AssignmentTargetIdentifier(
-        ast.alloc_identifier_reference(loc, ast.atom(name)),
+        ast.alloc_identifier_reference(loc, ast.str(name)),
       ),
       assignment,
     )
   } else {
-    ast.expression_identifier(loc, ast.atom(name))
+    ast.expression_identifier(loc, ast.str(name))
   }
 }

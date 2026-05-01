@@ -145,7 +145,7 @@ pub fn transform_v_on<'a>(
     if !non_key_modifiers.is_empty() {
       exp = ast.expression_call(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withModifiers"))),
+        ast.expression_identifier(SPAN, ast.str(context.options.helper("_withModifiers"))),
         NONE,
         ast.vec_from_array([
           exp.into(),
@@ -154,7 +154,7 @@ pub fn transform_v_on<'a>(
               SPAN,
               ast.vec_from_iter(non_key_modifiers.iter().map(|modifier| {
                 ast
-                  .expression_string_literal(SPAN, ast.atom(modifier), None)
+                  .expression_string_literal(SPAN, ast.str(modifier), None)
                   .into()
               })),
             )
@@ -167,7 +167,7 @@ pub fn transform_v_on<'a>(
     if !key_modifiers.is_empty() && is_keyboard_event(&event_name) {
       exp = ast.expression_call(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withKeys"))),
+        ast.expression_identifier(SPAN, ast.str(context.options.helper("_withKeys"))),
         NONE,
         ast.vec_from_array([
           exp.into(),
@@ -176,7 +176,7 @@ pub fn transform_v_on<'a>(
               SPAN,
               ast.vec_from_iter(key_modifiers.into_iter().map(|key| {
                 ast
-                  .expression_string_literal(SPAN, ast.atom(&key), None)
+                  .expression_string_literal(SPAN, ast.str(&key), None)
                   .into()
               })),
             )
@@ -208,7 +208,7 @@ pub fn transform_v_on<'a>(
     props: vec![ast.object_property_kind_object_property(
       SPAN,
       PropertyKind::Init,
-      ast.property_key_static_identifier(name_loc, ast.atom(&on_event_name)),
+      ast.property_key_static_identifier(name_loc, ast.str(&on_event_name)),
       exp,
       false,
       false,

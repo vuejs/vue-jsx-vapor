@@ -4,9 +4,9 @@ use indexmap::IndexMap;
 use napi::bindgen_prelude::{Either, Either4};
 use oxc_ast::{
   NONE,
-  ast::{Expression, FormalParameterKind, PropertyKind},
+  ast::{Expression, FormalParameterKind, PropertyKind, Str},
 };
-use oxc_span::{Atom, GetSpan, SPAN};
+use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   generate::{CodegenContext, block::gen_block, expression::gen_expression},
@@ -50,7 +50,7 @@ pub fn gen_raw_slots<'a>(
 }
 
 fn gen_static_slots<'a>(
-  mut slots: IndexMap<Atom<'a>, BlockIRNode<'a>>,
+  mut slots: IndexMap<Str<'a>, BlockIRNode<'a>>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   dynamic_slots: Option<Vec<IRSlots<'a>>>,
@@ -68,7 +68,7 @@ fn gen_static_slots<'a>(
     properties.push(ast.object_property_kind_object_property(
       SPAN,
       PropertyKind::Init,
-      ast.property_key_static_identifier(SPAN, ast.atom(name)),
+      ast.property_key_static_identifier(SPAN, ast.str(name)),
       gen_slot_block_with_props(oper, context, unsafe { &mut *context_block }),
       false,
       false,
@@ -79,7 +79,7 @@ fn gen_static_slots<'a>(
     properties.push(ast.object_property_kind_object_property(
       SPAN,
       PropertyKind::Init,
-      ast.property_key_static_identifier(SPAN, ast.atom("$")),
+      ast.property_key_static_identifier(SPAN, ast.str("$")),
       gen_dynamic_slots(dynamic_slots, context, unsafe { &mut *context_block }),
       false,
       false,
@@ -162,7 +162,7 @@ fn gen_basic_dynamic_slot<'a>(
       ast.object_property_kind_object_property(
         SPAN,
         PropertyKind::Init,
-        ast.property_key_static_identifier(SPAN, ast.atom("name")),
+        ast.property_key_static_identifier(SPAN, ast.str("name")),
         gen_expression(slot.name, context, None, false),
         false,
         false,
@@ -171,7 +171,7 @@ fn gen_basic_dynamic_slot<'a>(
       ast.object_property_kind_object_property(
         SPAN,
         PropertyKind::Init,
-        ast.property_key_static_identifier(SPAN, ast.atom("fn")),
+        ast.property_key_static_identifier(SPAN, ast.str("fn")),
         gen_slot_block_with_props(slot._fn, context, context_block),
         false,
         false,
@@ -224,7 +224,7 @@ fn gen_loop_slot<'a>(
       ast.object_property_kind_object_property(
         SPAN,
         PropertyKind::Init,
-        ast.property_key_static_identifier(SPAN, ast.atom("name")),
+        ast.property_key_static_identifier(SPAN, ast.str("name")),
         gen_expression(name, context, None, false),
         false,
         false,
@@ -233,7 +233,7 @@ fn gen_loop_slot<'a>(
       ast.object_property_kind_object_property(
         SPAN,
         PropertyKind::Init,
-        ast.property_key_static_identifier(SPAN, ast.atom("fn")),
+        ast.property_key_static_identifier(SPAN, ast.str("fn")),
         gen_slot_block_with_props(_fn, context, context_block),
         false,
         false,
@@ -244,7 +244,7 @@ fn gen_loop_slot<'a>(
 
   ast.expression_call(
     SPAN,
-    ast.expression_identifier(SPAN, ast.atom(context.options.helper("_createForSlots"))),
+    ast.expression_identifier(SPAN, ast.str(context.options.helper("_createForSlots"))),
     NONE,
     ast.vec_from_array([
       gen_expression(source.unwrap(), context, None, false).into(),
@@ -262,12 +262,12 @@ fn gen_loop_slot<'a>(
                 if let Some(raw_value) = raw_value {
                   Some(ast.plain_formal_parameter(
                     SPAN,
-                    ast.binding_pattern_binding_identifier(SPAN, ast.atom(&raw_value)),
+                    ast.binding_pattern_binding_identifier(SPAN, ast.str(&raw_value)),
                   ))
                 } else if raw_key.is_some() && raw_index.is_some() {
                   Some(ast.plain_formal_parameter(
                     SPAN,
-                    ast.binding_pattern_binding_identifier(SPAN, ast.atom("_")),
+                    ast.binding_pattern_binding_identifier(SPAN, ast.str("_")),
                   ))
                 } else {
                   None
@@ -275,12 +275,12 @@ fn gen_loop_slot<'a>(
                 if let Some(raw_key) = raw_key {
                   Some(ast.plain_formal_parameter(
                     SPAN,
-                    ast.binding_pattern_binding_identifier(SPAN, ast.atom(&raw_key)),
+                    ast.binding_pattern_binding_identifier(SPAN, ast.str(&raw_key)),
                   ))
                 } else if raw_index.is_some() {
                   Some(ast.plain_formal_parameter(
                     SPAN,
-                    ast.binding_pattern_binding_identifier(SPAN, ast.atom("__")),
+                    ast.binding_pattern_binding_identifier(SPAN, ast.str("__")),
                   ))
                 } else {
                   None
@@ -288,7 +288,7 @@ fn gen_loop_slot<'a>(
                 raw_index.map(|raw_index| {
                   ast.plain_formal_parameter(
                     SPAN,
-                    ast.binding_pattern_binding_identifier(SPAN, ast.atom(&raw_index)),
+                    ast.binding_pattern_binding_identifier(SPAN, ast.str(&raw_index)),
                   )
                 }),
               ]
@@ -398,7 +398,7 @@ fn gen_slot_block_with_props<'a>(
     props_ast,
     context
       .ast
-      .expression_identifier(SPAN, ast.atom(&props_name)),
+      .expression_identifier(SPAN, ast.str(&props_name)),
   );
 
   let ast = &context.ast;
@@ -414,7 +414,7 @@ fn gen_slot_block_with_props<'a>(
         } else {
           ast.vec1(ast.plain_formal_parameter(
             SPAN,
-            ast.binding_pattern_binding_identifier(props_loc, ast.atom(&props_name)),
+            ast.binding_pattern_binding_identifier(props_loc, ast.str(&props_name)),
           ))
         },
       )
@@ -430,7 +430,7 @@ fn gen_slot_block_with_props<'a>(
   // 2. scopeId inheritance for components created inside slots
   ast.expression_call(
     SPAN,
-    ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withVaporCtx"))),
+    ast.expression_identifier(SPAN, ast.str(context.options.helper("_withVaporCtx"))),
     NONE,
     ast.vec1(block_fn.into()),
     false,

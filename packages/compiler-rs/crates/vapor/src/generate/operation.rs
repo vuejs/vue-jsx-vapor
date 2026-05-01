@@ -179,13 +179,13 @@ pub fn gen_insertion_state<'a>(
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_setInsertionState"))),
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_setInsertionState"))),
       NONE,
       ast.vec_from_iter(
         [
           Some(Argument::Identifier(ast.alloc_identifier_reference(
             SPAN,
-            ast.atom(&format!("_n{}", parent)),
+            ast.str(&format!("_n{}", parent)),
           ))),
           if let Some(anchor) = anchor {
             if anchor == -1 {
@@ -201,7 +201,7 @@ pub fn gen_insertion_state<'a>(
             } else {
               Some(Argument::Identifier(ast.alloc_identifier_reference(
                 SPAN,
-                ast.atom(&format!("_n{anchor}")),
+                ast.str(&format!("_n{anchor}")),
               )))
             }
           } else {

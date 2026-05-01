@@ -11,7 +11,6 @@ use oxc_span::SPAN;
 use crate::{
   check::is_referenced_identifier,
   options::{RootJsx, TransformOptions},
-  walk_mut::GetNodeId,
 };
 
 type OnIdentifier<'a> =

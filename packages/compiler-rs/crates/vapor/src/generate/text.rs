@@ -28,7 +28,7 @@ pub fn gen_set_text<'a>(oper: SetTextIRNode<'a>, context: &'a CodegenContext<'a>
     ast
       .expression_identifier(
         SPAN,
-        ast.atom(&format!(
+        ast.str(&format!(
           "{}{}",
           if generated && !is_component {
             "_x"
@@ -47,7 +47,7 @@ pub fn gen_set_text<'a>(oper: SetTextIRNode<'a>, context: &'a CodegenContext<'a>
       SPAN,
       ast.expression_identifier(
         SPAN,
-        ast.atom(context.options.helper(if is_component {
+        ast.str(context.options.helper(if is_component {
           "_setBlockText"
         } else {
           "_setText"
@@ -74,16 +74,16 @@ pub fn gen_get_text_child<'a>(
         ast.variable_declarator(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_x{}", oper.parent))),
+          ast.binding_pattern_binding_identifier(SPAN, ast.str(&format!("_x{}", oper.parent))),
           NONE,
           Some(
             ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(context.options.helper("_txt"))),
+              ast.expression_identifier(SPAN, ast.str(context.options.helper("_txt"))),
               NONE,
               ast.vec1(
                 ast
-                  .expression_identifier(SPAN, ast.atom(&format!("_n{}", oper.parent)))
+                  .expression_identifier(SPAN, ast.str(&format!("_n{}", oper.parent)))
                   .into(),
               ),
               false,
@@ -116,7 +116,7 @@ pub fn gen_set_nodes<'a>(
     ast
       .expression_identifier(
         SPAN,
-        ast.atom(&format!(
+        ast.str(&format!(
           "{}{}",
           if generated { "_x" } else { "_n" },
           element
@@ -130,7 +130,7 @@ pub fn gen_set_nodes<'a>(
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_setNodes"))),
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_setNodes"))),
       NONE,
       arguments,
       false,
@@ -157,11 +157,11 @@ pub fn gen_create_nodes<'a>(
     ast.vec1(ast.variable_declarator(
       SPAN,
       VariableDeclarationKind::Const,
-      ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_n{id}"))),
+      ast.binding_pattern_binding_identifier(SPAN, ast.str(&format!("_n{id}"))),
       NONE,
       Some(ast.expression_call(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_createNodes"))),
+        ast.expression_identifier(SPAN, ast.str(context.options.helper("_createNodes"))),
         NONE,
         arguments,
         false,
@@ -194,7 +194,7 @@ fn combine_values<'a>(
         ast
           .expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(context.options.helper("_toDisplayString"))),
+            ast.expression_identifier(SPAN, ast.str(context.options.helper("_toDisplayString"))),
             NONE,
             ast.vec1(exp.into()),
             false,

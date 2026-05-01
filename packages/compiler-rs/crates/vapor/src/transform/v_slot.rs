@@ -256,7 +256,7 @@ fn register_slot<'a>(
         if let Some(Expression::StringLiteral(name)) = &name {
           name.value
         } else {
-          context.ast.atom("default")
+          context.ast.str("default")
         },
         block,
       );

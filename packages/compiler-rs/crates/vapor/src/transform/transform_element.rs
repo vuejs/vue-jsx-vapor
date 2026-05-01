@@ -1,12 +1,12 @@
 use std::{borrow::Cow, cell::RefCell, mem, rc::Rc};
 
 use napi::{Either, bindgen_prelude::Either3};
-use oxc_allocator::{FromIn, TakeIn};
+use oxc_allocator::TakeIn;
 use oxc_ast::ast::{
   Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild,
   JSXElement, JSXElementName, JSXExpression,
 };
-use oxc_span::{GetSpan, Ident, SPAN, Span};
+use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ir::{
@@ -541,9 +541,9 @@ pub fn transform_prop<'a>(
     }
     let ast = context.ast;
     return Some(DirectiveTransformResult::new(
-      ast.expression_string_literal(SPAN, ast.atom(name), None),
+      ast.expression_string_literal(SPAN, ast.str(name), None),
       if let Some(value) = value {
-        ast.expression_string_literal(SPAN, ast.atom(&value), None)
+        ast.expression_string_literal(SPAN, ast.str(&value), None)
       } else {
         ast.expression_boolean_literal(SPAN, true)
       },
@@ -575,10 +575,7 @@ pub fn transform_prop<'a>(
       let camelize_name = camelize(Cow::Borrowed(name));
       if semantic
         .scoping()
-        .find_binding(
-          scope_id,
-          Ident::from_in(camelize_name.as_ref(), context.allocator),
-        )
+        .find_binding(scope_id, camelize_name.as_ref().into())
         .is_some()
       {
         dir_name = camelize_name;

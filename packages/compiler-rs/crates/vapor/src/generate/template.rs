@@ -40,11 +40,11 @@ pub fn gen_self<'a>(
         ast.vec1(ast.variable_declarator(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_n{id}"))),
+          ast.binding_pattern_binding_identifier(SPAN, ast.str(&format!("_n{id}"))),
           NONE,
           Some(ast.expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&format!("_t{template}"))),
+            ast.expression_identifier(SPAN, ast.str(&format!("_t{template}"))),
             NONE,
             ast.vec(),
             false,
@@ -137,12 +137,12 @@ fn gen_children<'a>(
       if element_index - prev.1 == 1 {
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_next"))),
+          ast.expression_identifier(SPAN, ast.str(context.options.helper("_next"))),
           NONE,
           ast.vec_from_iter(
             [
               Some(Argument::Identifier(
-                ast.alloc_identifier_reference(SPAN, ast.atom(&prev.0)),
+                ast.alloc_identifier_reference(SPAN, ast.str(&prev.0)),
               )),
               logical_index.map(|logical_index| {
                 Argument::NumericLiteral(ast.alloc_numeric_literal(
@@ -161,12 +161,12 @@ fn gen_children<'a>(
       } else {
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_nthChild"))),
+          ast.expression_identifier(SPAN, ast.str(context.options.helper("_nthChild"))),
           NONE,
           ast.vec_from_iter(
             [
               Some(Argument::Identifier(
-                ast.alloc_identifier_reference(SPAN, ast.atom(from)),
+                ast.alloc_identifier_reference(SPAN, ast.str(from)),
               )),
               Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
                 SPAN,
@@ -192,12 +192,12 @@ fn gen_children<'a>(
     } else if element_index == 0 {
       ast.expression_call(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_child"))),
+        ast.expression_identifier(SPAN, ast.str(context.options.helper("_child"))),
         NONE,
         ast.vec_from_iter(
           [
             Some(Argument::Identifier(
-              ast.alloc_identifier_reference(SPAN, ast.atom(from)),
+              ast.alloc_identifier_reference(SPAN, ast.str(from)),
             )),
             if let Some(logical_index) = logical_index
               && logical_index != 0
@@ -222,16 +222,16 @@ fn gen_children<'a>(
       if element_index == 1 {
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_next"))),
+          ast.expression_identifier(SPAN, ast.str(context.options.helper("_next"))),
           NONE,
           ast.vec_from_iter(
             [
               Some(Argument::CallExpression(ast.alloc_call_expression(
                 SPAN,
-                ast.expression_identifier(SPAN, ast.atom(context.options.helper("_child"))),
+                ast.expression_identifier(SPAN, ast.str(context.options.helper("_child"))),
                 NONE,
                 ast.vec1(Argument::Identifier(
-                  ast.alloc_identifier_reference(SPAN, ast.atom(from)),
+                  ast.alloc_identifier_reference(SPAN, ast.str(from)),
                 )),
                 false,
               ))),
@@ -252,12 +252,12 @@ fn gen_children<'a>(
       } else if element_index > 1 {
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_nthChild"))),
+          ast.expression_identifier(SPAN, ast.str(context.options.helper("_nthChild"))),
           NONE,
           ast.vec_from_iter(
             [
               Some(Argument::Identifier(
-                ast.alloc_identifier_reference(SPAN, ast.atom(from)),
+                ast.alloc_identifier_reference(SPAN, ast.str(from)),
               )),
               Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
                 SPAN,
@@ -282,10 +282,10 @@ fn gen_children<'a>(
       } else {
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_child"))),
+          ast.expression_identifier(SPAN, ast.str(context.options.helper("_child"))),
           NONE,
           ast.vec1(Argument::Identifier(
-            ast.alloc_identifier_reference(SPAN, ast.atom(from)),
+            ast.alloc_identifier_reference(SPAN, ast.str(from)),
           )),
           false,
         )
@@ -300,7 +300,7 @@ fn gen_children<'a>(
         ast.vec1(ast.variable_declarator(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&variable)),
+          ast.binding_pattern_binding_identifier(SPAN, ast.str(&variable)),
           NONE,
           Some(expression_call),
           false,

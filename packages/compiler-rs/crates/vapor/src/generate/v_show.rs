@@ -15,11 +15,11 @@ pub fn gen_v_show<'a>(oper: DirectiveIRNode<'a>, context: &'a CodegenContext<'a>
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_applyVShow"))),
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_applyVShow"))),
       NONE,
       ast.vec_from_array([
         ast
-          .expression_identifier(SPAN, ast.atom(&format!("_n{element}")))
+          .expression_identifier(SPAN, ast.str(&format!("_n{element}")))
           .into(),
         ast
           .expression_arrow_function(

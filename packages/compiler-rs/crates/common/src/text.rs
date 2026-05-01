@@ -7,7 +7,7 @@ use oxc_ast::ast::{Expression, JSXChild, JSXElement, JSXElementName, JSXExpressi
 use crate::options::TransformOptions;
 
 fn is_all_empty_text(s: &str) -> bool {
-  let mut has_newline = false;
+  let mut has_newline = s.is_empty();
   for c in s.chars() {
     if !c.is_ascii_whitespace() {
       return false;
@@ -47,7 +47,7 @@ fn ends_with_newline_and_spaces(s: &str) -> bool {
 
 pub fn resolve_jsx_text<'a>(node: &'a JSXText) -> Cow<'a, str> {
   if is_all_empty_text(&node.value) {
-    return Cow::Owned(String::new());
+    return Cow::Borrowed("");
   }
 
   let mut value = decode_html_entities(&node.value);

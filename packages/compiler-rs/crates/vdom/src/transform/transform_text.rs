@@ -93,7 +93,7 @@ pub unsafe fn transform_text<'a>(
           } else {
             call_args.push(
               ast
-                .expression_string_literal(SPAN, ast.atom(&resolve_jsx_text(child)), None)
+                .expression_string_literal(SPAN, ast.str(&resolve_jsx_text(child)), None)
                 .into(),
             )
           }
@@ -146,7 +146,7 @@ pub unsafe fn transform_text<'a>(
           child.span(),
           NodeTypes::TextCallNode(ast.expression_call(
             child.span(),
-            ast.expression_identifier(SPAN, ast.atom(context.options.helper("_normalizeVNode"))),
+            ast.expression_identifier(SPAN, ast.str(context.options.helper("_normalizeVNode"))),
             NONE,
             call_args,
             false,
@@ -188,7 +188,7 @@ fn transform_branch<'a>(
   if exp.is_literal() || exp.evaluate_to_undefined() {
     *exp = ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_normalizeVNode"))),
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_normalizeVNode"))),
       NONE,
       ast.vec1(
         ast

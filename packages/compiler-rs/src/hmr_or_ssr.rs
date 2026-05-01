@@ -216,7 +216,7 @@ impl<'a> HmrOrSsrTransform<'a> {
               VariableDeclarationKind::Const,
               ast.binding_pattern_binding_identifier(SPAN, "__moduleId"),
               NONE,
-              Some(ast.expression_string_literal(SPAN, ast.atom(self.options.filename), None)),
+              Some(ast.expression_string_literal(SPAN, ast.str(self.options.filename), None)),
               false,
             )),
             false,
@@ -234,7 +234,7 @@ impl<'a> HmrOrSsrTransform<'a> {
             ))),
             ast.string_literal(
               SPAN,
-              ast.atom(
+              ast.str(
                 if let Some(runtime_module_name) = &self.options.runtime_module_name {
                   runtime_module_name.as_str()
                 } else {
@@ -257,7 +257,7 @@ impl<'a> HmrOrSsrTransform<'a> {
               ast.expression_identifier(SPAN, "ssrRegisterHelper"),
               NONE,
               ast.vec_from_array([
-                Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(local))),
+                Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.str(local))),
                 Argument::Identifier(ast.alloc_identifier_reference(SPAN, "__moduleId")),
               ]),
               false,
@@ -280,11 +280,11 @@ impl<'a> HmrOrSsrTransform<'a> {
               AssignmentOperator::Assign,
               AssignmentTarget::StaticMemberExpression(ast.alloc_static_member_expression(
                 SPAN,
-                ast.expression_identifier(SPAN, ast.atom(local)),
+                ast.expression_identifier(SPAN, ast.str(local)),
                 ast.identifier_name(SPAN, "__hmrId"),
                 false,
               )),
-              ast.expression_string_literal(SPAN, ast.atom(&id), None),
+              ast.expression_string_literal(SPAN, ast.str(&id), None),
             ),
           ));
           program.body.push(ast.statement_expression(
@@ -299,8 +299,8 @@ impl<'a> HmrOrSsrTransform<'a> {
               )),
               NONE,
               ast.vec_from_array([
-                Argument::StringLiteral(ast.alloc_string_literal(SPAN, ast.atom(&id), None)),
-                Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.atom(local))),
+                Argument::StringLiteral(ast.alloc_string_literal(SPAN, ast.str(&id), None)),
+                Argument::Identifier(ast.alloc_identifier_reference(SPAN, ast.str(local))),
               ]),
               false,
             ),
@@ -310,7 +310,7 @@ impl<'a> HmrOrSsrTransform<'a> {
             Expression::StaticMemberExpression(ast.alloc_static_member_expression(
               SPAN,
               ast.expression_identifier(SPAN, "mod"),
-              ast.identifier_name(SPAN, ast.atom(exported)),
+              ast.identifier_name(SPAN, ast.str(exported)),
               false,
             ));
           let exported_expression_render =
@@ -319,10 +319,10 @@ impl<'a> HmrOrSsrTransform<'a> {
               Expression::StaticMemberExpression(ast.alloc_static_member_expression(
                 SPAN,
                 ast.expression_identifier(SPAN, "mod"),
-                ast.identifier_name(SPAN, ast.atom(exported)),
+                ast.identifier_name(SPAN, ast.str(exported)),
                 false,
               )),
-              ast.identifier_name(SPAN, ast.atom("render")),
+              ast.identifier_name(SPAN, ast.str("render")),
               false,
             ));
           callbacks.push(Statement::ExpressionStatement(

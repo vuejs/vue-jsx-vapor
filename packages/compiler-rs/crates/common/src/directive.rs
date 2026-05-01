@@ -86,7 +86,7 @@ pub fn resolve_directive<'a>(
     && let JSXAttributeName::NamespacedName(_) = &node.name
   {
     if is_static {
-      Some(ast.expression_string_literal(SPAN, ast.atom(&arg_string), None))
+      Some(ast.expression_string_literal(SPAN, ast.str(&arg_string), None))
     } else {
       parse_expression(&arg_string, arg_span, ast.allocator, SourceType::jsx())
     }

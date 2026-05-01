@@ -32,12 +32,12 @@ pub fn gen_slot_outlet<'a>(
         ast.variable_declarator(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_n{}", id))),
+          ast.binding_pattern_binding_identifier(SPAN, ast.str(&format!("_n{}", id))),
           NONE,
           Some(
             ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(context.options.helper("_createSlot"))),
+              ast.expression_identifier(SPAN, ast.str(context.options.helper("_createSlot"))),
               NONE,
               ast.vec_from_iter(
                 [

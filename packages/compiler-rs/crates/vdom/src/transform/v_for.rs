@@ -74,7 +74,7 @@ pub unsafe fn transform_v_for<'a>(
     Some(ast.object_property(
       SPAN,
       PropertyKind::Init,
-      ast.property_key_static_identifier(SPAN, ast.atom("key")),
+      ast.property_key_static_identifier(SPAN, ast.str("key")),
       context.jsx_attribute_value_to_expression(&mut value.clone_in(context.allocator)),
       false,
       false,
@@ -102,7 +102,7 @@ pub unsafe fn transform_v_for<'a>(
   // iterator on exit after all children have been traversed
   let mut render_exp = ast.call_expression(
     SPAN,
-    ast.expression_identifier(SPAN, ast.atom(context.options.helper("_renderList"))),
+    ast.expression_identifier(SPAN, ast.str(context.options.helper("_renderList"))),
     NONE,
     ast.vec1(source.into()),
     false,
@@ -255,7 +255,7 @@ pub unsafe fn transform_v_for<'a>(
                       SPAN,
                       ast.expression_identifier(
                         SPAN,
-                        ast.atom(context.options.helper("_isMemoSame")),
+                        ast.str(context.options.helper("_isMemoSame")),
                       ),
                       NONE,
                       ast.vec_from_array([

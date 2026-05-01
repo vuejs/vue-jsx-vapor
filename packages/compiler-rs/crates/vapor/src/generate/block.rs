@@ -71,7 +71,7 @@ pub fn gen_block_content<'a>(
 
   let mut return_nodes = unsafe { &mut *context_block }.returns.iter().map(|n| {
     ast
-      .expression_identifier(SPAN, ast.atom(&format!("_n{n}")))
+      .expression_identifier(SPAN, ast.str(&format!("_n{n}")))
       .into()
   });
   statements.push(ast.statement_return(
@@ -119,7 +119,7 @@ pub fn gen_effects<'a>(
         SPAN,
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_renderEffect"))),
+          ast.expression_identifier(SPAN, ast.str(context.options.helper("_renderEffect"))),
           NONE,
           ast.vec1(
             ast

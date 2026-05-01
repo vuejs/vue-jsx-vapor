@@ -40,7 +40,7 @@ pub fn transform_v_model<'a>(
       key: if let Some(arg) = dir.arg {
         arg
       } else {
-        ast.expression_string_literal(SPAN, ast.atom("modelValue"), None)
+        ast.expression_string_literal(SPAN, ast.str("modelValue"), None)
       },
       value: dir.exp.unwrap(),
       model: true,

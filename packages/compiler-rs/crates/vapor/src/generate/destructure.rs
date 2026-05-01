@@ -112,7 +112,7 @@ impl<'a> CodegenContext<'a> {
             let properties = &parent.properties;
             path = ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(self.options.helper("_getRestElement"))),
+              ast.expression_identifier(SPAN, ast.str(self.options.helper("_getRestElement"))),
               NONE,
               ast.vec_from_array([
                 path.into(),
@@ -129,7 +129,7 @@ impl<'a> CodegenContext<'a> {
                           ast
                             .expression_string_literal(
                               SPAN,
-                              ast.atom(&p.key.name().unwrap_or(Cow::from(""))),
+                              ast.str(&p.key.name().unwrap_or(Cow::from(""))),
                               None,
                             )
                             .into()

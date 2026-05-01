@@ -59,7 +59,7 @@ pub fn transform_v_bind<'a>(
     props: vec![ast.object_property_kind_object_property(
       SPAN,
       PropertyKind::Init,
-      ast.property_key_static_identifier(dir.name.span(), ast.atom(&arg)),
+      ast.property_key_static_identifier(dir.name.span(), ast.str(&arg)),
       value,
       false,
       false,

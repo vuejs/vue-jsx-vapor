@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use napi::{Either, bindgen_prelude::Either3};
-use oxc_allocator::{CloneIn, FromIn, TakeIn};
+use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   AstBuilder, NONE,
   ast::{
@@ -10,7 +10,7 @@ use oxc_ast::{
     PropertyKind,
   },
 };
-use oxc_span::{GetSpan, Ident, SPAN, Span};
+use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ast::{NodeTypes, VNodeCall},
@@ -48,7 +48,7 @@ pub unsafe fn transform_element<'a>(
     // skip v-if / v-for generated fragment
     && node.span.end > node.span.start
   {
-    let name = ast.jsx_element_name_identifier(SPAN, ast.atom(context.options.helper("_Fragment")));
+    let name = ast.jsx_element_name_identifier(SPAN, ast.str(context.options.helper("_Fragment")));
     *unsafe { &mut *context_node } = ast.jsx_child_element(
       node.span,
       ast.jsx_opening_element(
@@ -198,9 +198,9 @@ pub unsafe fn transform_element<'a>(
         SPAN,
         ast.vec_from_iter(dynamic_prop_names.into_iter().map(|name| {
           if name.starts_with("\"") {
-            ast.expression_identifier(SPAN, ast.atom(&name))
+            ast.expression_identifier(SPAN, ast.str(&name))
           } else {
-            ast.expression_string_literal(SPAN, ast.atom(&name), None)
+            ast.expression_string_literal(SPAN, ast.str(&name), None)
           }
           .into()
         })),
@@ -437,7 +437,7 @@ pub fn build_props<'a>(
               }
               merge_args.push(ast.expression_call(
                 SPAN,
-                ast.expression_identifier(SPAN, ast.atom(context.options.helper("_toHandlers"))),
+                ast.expression_identifier(SPAN, ast.str(context.options.helper("_toHandlers"))),
                 NONE,
                 args,
                 false,
@@ -498,10 +498,7 @@ pub fn build_props<'a>(
                 let camelize_name = camelize(Cow::Borrowed(name));
                 if semantic
                   .scoping()
-                  .find_binding(
-                    scope_id,
-                    Ident::from_in(camelize_name.as_ref(), context.allocator),
-                  )
+                  .find_binding(scope_id, camelize_name.as_ref().into())
                   .is_some()
                 {
                   camelize_name
@@ -560,7 +557,7 @@ pub fn build_props<'a>(
     if merge_args.len() > 1 {
       Some(ast.expression_call(
         node.span,
-        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_mergeProps"))),
+        ast.expression_identifier(SPAN, ast.str(context.options.helper("_mergeProps"))),
         NONE,
         ast.vec_from_iter(merge_args.into_iter().map(|arg| arg.into())),
         false,
@@ -634,7 +631,7 @@ pub fn build_props<'a>(
           {
             class_prop.value = ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(context.options.helper("_normalizeClass"))),
+              ast.expression_identifier(SPAN, ast.str(context.options.helper("_normalizeClass"))),
               NONE,
               ast.vec1(class_prop.value.take_in(ast.allocator).into()),
               false,
@@ -647,7 +644,7 @@ pub fn build_props<'a>(
           {
             style_prop.value = ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(context.options.helper("_normalizeStyle"))),
+              ast.expression_identifier(SPAN, ast.str(context.options.helper("_normalizeStyle"))),
               NONE,
               ast.vec1(style_prop.value.take_in(ast.allocator).into()),
               false,
@@ -657,7 +654,7 @@ pub fn build_props<'a>(
           // dynamic key binding, wrap with `normalizeProps`
           *props_expression = ast.expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(context.options.helper("_normalizeProps"))),
+            ast.expression_identifier(SPAN, ast.str(context.options.helper("_normalizeProps"))),
             NONE,
             ast.vec1(props_expression.take_in(ast.allocator).into()),
             false,
@@ -670,7 +667,7 @@ pub fn build_props<'a>(
       _ => {
         *props_expression = ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_normalizeProps"))),
+          ast.expression_identifier(SPAN, ast.str(context.options.helper("_normalizeProps"))),
           NONE,
           ast.vec1(
             ast
@@ -678,7 +675,7 @@ pub fn build_props<'a>(
                 SPAN,
                 ast.expression_identifier(
                   SPAN,
-                  ast.atom(context.options.helper("_guardReactiveProps")),
+                  ast.str(context.options.helper("_guardReactiveProps")),
                 ),
                 NONE,
                 ast.vec1(props_expression.take_in(ast.allocator).into()),
@@ -771,7 +768,7 @@ pub fn build_directive_args<'a>(
   let ast = &context.ast;
   let mut dir_args = ast.vec();
   // built-in directive with runtime
-  dir_args.push(ast.expression_identifier(SPAN, ast.atom(runtime)));
+  dir_args.push(ast.expression_identifier(SPAN, ast.str(runtime)));
   let exp_is_none = dir.exp.is_none();
   if let Some(exp) = dir.exp.as_mut() {
     dir_args.push(context.process_expression(exp).0);
@@ -793,7 +790,7 @@ pub fn build_directive_args<'a>(
         ast.object_property_kind_object_property(
           SPAN,
           PropertyKind::Init,
-          ast.property_key_static_identifier(SPAN, ast.atom(modifier)),
+          ast.property_key_static_identifier(SPAN, ast.str(modifier)),
           ast.expression_boolean_literal(SPAN, true),
           false,
           false,

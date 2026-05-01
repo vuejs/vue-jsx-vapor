@@ -312,7 +312,7 @@ fn process_text_like_expressions<'a>(
         .to_expression_mut()
         .take_in(context.allocator),
       JSXChild::Text(node) => {
-        ast.expression_string_literal(node.span, ast.atom(&resolve_jsx_text(node)), None)
+        ast.expression_string_literal(node.span, ast.str(&resolve_jsx_text(node)), None)
       }
       JSXChild::Element(node) => Expression::JSXElement(node.take_in_box(context.allocator)),
       JSXChild::Fragment(node) => Expression::JSXFragment(node.take_in_box(context.allocator)),

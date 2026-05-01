@@ -34,7 +34,7 @@ pub fn gen_v_model<'a>(
       SPAN,
       ast.expression_identifier(
         SPAN,
-        ast.atom(
+        ast.str(
           context
             .options
             .helper(match model_type.unwrap_or_default() {
@@ -52,7 +52,7 @@ pub fn gen_v_model<'a>(
         [
           Some(
             ast
-              .expression_identifier(SPAN, ast.atom(&format!("_n{element}")))
+              .expression_identifier(SPAN, ast.str(&format!("_n{element}")))
               .into(),
           ),
           // getter
@@ -98,7 +98,7 @@ pub fn gen_v_model<'a>(
                     ast.object_property_kind_object_property(
                       SPAN,
                       PropertyKind::Init,
-                      ast.property_key_static_identifier(SPAN, ast.atom(modifier)),
+                      ast.property_key_static_identifier(SPAN, ast.str(modifier)),
                       ast.expression_boolean_literal(SPAN, true),
                       false,
                       false,
@@ -147,7 +147,7 @@ pub fn gen_model_handler<'a>(
         gen_expression(
           exp,
           context,
-          Some(ast.expression_identifier(SPAN, ast.atom("_value"))),
+          Some(ast.expression_identifier(SPAN, ast.str("_value"))),
           false,
         ),
       )),

@@ -106,7 +106,7 @@ pub fn gen_for<'a>(
     ast
       .member_expression_static(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(&item_var)),
+        ast.expression_identifier(SPAN, ast.str(&item_var)),
         ast.identifier_name(SPAN, "value"),
         false,
       )
@@ -122,7 +122,7 @@ pub fn gen_for<'a>(
       ast
         .member_expression_static(
           key_span,
-          ast.expression_identifier(SPAN, ast.atom(&key_var)),
+          ast.expression_identifier(SPAN, ast.str(&key_var)),
           ast.identifier_name(SPAN, "value"),
           false,
         )
@@ -137,7 +137,7 @@ pub fn gen_for<'a>(
       ast
         .member_expression_static(
           index_span,
-          ast.expression_identifier(SPAN, ast.atom(&index_var)),
+          ast.expression_identifier(SPAN, ast.str(&index_var)),
           ast.identifier_name(SPAN, "value"),
           false,
         )
@@ -160,7 +160,7 @@ pub fn gen_for<'a>(
         ast.vec1(ast.variable_declarator(
           SPAN,
           VariableDeclarationKind::Let,
-          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&selector_name)),
+          ast.binding_pattern_binding_identifier(SPAN, ast.str(&selector_name)),
           NONE,
           None,
           false,
@@ -174,11 +174,11 @@ pub fn gen_for<'a>(
         SPAN,
         AssignmentOperator::Assign,
         AssignmentTarget::AssignmentTargetIdentifier(
-          ast.alloc_identifier_reference(SPAN, ast.atom(&selector_name)),
+          ast.alloc_identifier_reference(SPAN, ast.str(&selector_name)),
         ),
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom("createSelector")),
+          ast.expression_identifier(SPAN, ast.str("createSelector")),
           NONE,
           ast.vec1(Argument::ArrowFunctionExpression(
             ast.alloc_arrow_function_expression(
@@ -221,7 +221,7 @@ pub fn gen_for<'a>(
           ast.vec_from_iter(args.into_iter().map(|arg| {
             ast.plain_formal_parameter(
               SPAN,
-              ast.binding_pattern_binding_identifier(SPAN, ast.atom(&arg)),
+              ast.binding_pattern_binding_identifier(SPAN, ast.str(&arg)),
             )
           })),
           NONE,
@@ -252,7 +252,7 @@ pub fn gen_for<'a>(
                     SPAN,
                     ast.expression_call(
                       SPAN,
-                      ast.expression_identifier(SPAN, ast.atom(&format!("_selector{id}_{i}"))),
+                      ast.expression_identifier(SPAN, ast.str(&format!("_selector{id}_{i}"))),
                       NONE,
                       ast.vec1(Argument::ArrowFunctionExpression(
                         ast.alloc_arrow_function_expression(
@@ -331,7 +331,7 @@ pub fn gen_for<'a>(
                 if let Some(raw_value) = raw_value {
                   Some(ast.plain_formal_parameter(
                     SPAN,
-                    ast.binding_pattern_binding_identifier(value_span, ast.atom(raw_value)),
+                    ast.binding_pattern_binding_identifier(value_span, ast.str(raw_value)),
                   ))
                 } else if raw_key.is_some() || raw_index.is_some() {
                   Some(ast.plain_formal_parameter(
@@ -344,7 +344,7 @@ pub fn gen_for<'a>(
                 if let Some(raw_key) = raw_key {
                   Some(ast.plain_formal_parameter(
                     SPAN,
-                    ast.binding_pattern_binding_identifier(key_span, ast.atom(raw_key)),
+                    ast.binding_pattern_binding_identifier(key_span, ast.str(raw_key)),
                   ))
                 } else if raw_index.is_some() {
                   Some(ast.plain_formal_parameter(
@@ -357,7 +357,7 @@ pub fn gen_for<'a>(
                 raw_index.map(|raw_index| {
                   ast.plain_formal_parameter(
                     SPAN,
-                    ast.binding_pattern_binding_identifier(index_span, ast.atom(raw_index)),
+                    ast.binding_pattern_binding_identifier(index_span, ast.str(raw_index)),
                   )
                 }),
               ]
@@ -428,12 +428,12 @@ pub fn gen_for<'a>(
         ast.variable_declarator(
           SPAN,
           VariableDeclarationKind::Const,
-          ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_n{id}"))),
+          ast.binding_pattern_binding_identifier(SPAN, ast.str(&format!("_n{id}"))),
           NONE,
           Some(
             ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(context.options.helper("_createFor"))),
+              ast.expression_identifier(SPAN, ast.str(context.options.helper("_createFor"))),
               NONE,
               ast.vec_from_iter(
                 [
@@ -447,7 +447,7 @@ pub fn gen_for<'a>(
                         .into(),
                     )
                   } else if selector_setup_expression.is_some() {
-                    Some(ast.expression_identifier(SPAN, ast.atom("void 0")).into())
+                    Some(ast.expression_identifier(SPAN, ast.str("void 0")).into())
                   } else {
                     None
                   },

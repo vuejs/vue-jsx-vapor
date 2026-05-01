@@ -133,7 +133,7 @@ pub fn build_slots<'a>(
         has_dynamic_slots = true;
         computed = true;
         arg_span = Span::new(arg.name.span.start + 1, arg.name.span.end - 1);
-        ast.atom(&splited[1].replace("_", "."))
+        ast.str(&splited[1].replace("_", "."))
       } else {
         arg_span = arg.name.span;
         arg.name.name
@@ -198,7 +198,7 @@ pub fn build_slots<'a>(
         has_dynamic_slots = true;
         ast.expression_identifier(
           name.span,
-          ast.atom(&name.name.name[1..name.name.name.len() - 1].replace("_", ".")),
+          ast.str(&name.name.name[1..name.name.name.len() - 1].replace("_", ".")),
         )
       } else {
         static_slot_name = Some(name.name.name.as_str());
@@ -332,7 +332,7 @@ pub fn build_slots<'a>(
           ast
             .expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(context.options.helper("_renderList"))),
+              ast.expression_identifier(SPAN, ast.str(context.options.helper("_renderList"))),
               NONE,
               ast.vec_from_array([
                 source.unwrap().into(),
@@ -465,7 +465,7 @@ pub fn build_slots<'a>(
           SPAN,
           ast.expression_identifier(
             SPAN,
-            ast.atom(if is_fragment || is_for_component {
+            ast.str(if is_fragment || is_for_component {
               ""
             } else {
               context.options.helper("_withCtx")
@@ -611,7 +611,7 @@ pub fn build_slots<'a>(
   if !dynamic_slots.is_empty() {
     slots = ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_createSlots"))),
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_createSlots"))),
       NONE,
       ast.vec_from_array([
         slots.into(),

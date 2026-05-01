@@ -48,7 +48,7 @@ pub fn gen_set_event<'a>(
         ast.alloc_object_property(
           SPAN,
           PropertyKind::Init,
-          ast.property_key_static_identifier(SPAN, ast.atom("effect")),
+          ast.property_key_static_identifier(SPAN, ast.str("effect")),
           ast.expression_boolean_literal(SPAN, true),
           false,
           false,
@@ -60,7 +60,7 @@ pub fn gen_set_event<'a>(
       ObjectPropertyKind::ObjectProperty(ast.alloc_object_property(
         SPAN,
         PropertyKind::Init,
-        ast.property_key_static_identifier(SPAN, ast.atom(&option)),
+        ast.property_key_static_identifier(SPAN, ast.str(&option)),
         ast.expression_boolean_literal(SPAN, true),
         false,
         false,
@@ -88,8 +88,8 @@ pub fn gen_set_event<'a>(
           oxc_ast::ast::AssignmentOperator::Assign,
           AssignmentTarget::StaticMemberExpression(ast.alloc_static_member_expression(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(&format!("_n{element}"))),
-            ast.identifier_name(SPAN, ast.atom(&format!("$evt{key_content}"))),
+            ast.expression_identifier(SPAN, ast.str(&format!("_n{element}"))),
+            ast.identifier_name(SPAN, ast.str(&format!("$evt{key_content}"))),
             false,
           )),
           handler,
@@ -101,7 +101,7 @@ pub fn gen_set_event<'a>(
   let mut arguments = ast.vec();
   arguments.push(
     ast
-      .expression_identifier(SPAN, ast.atom(&format!("_n{element}")))
+      .expression_identifier(SPAN, ast.str(&format!("_n{element}")))
       .into(),
   );
   arguments.push(name.into());
@@ -116,7 +116,7 @@ pub fn gen_set_event<'a>(
       SPAN,
       ast.expression_identifier(
         SPAN,
-        ast.atom(
+        ast.str(
           context
             .options
             .helper(if delegate { "_delegate" } else { "_on" }),
@@ -151,7 +151,7 @@ pub fn gen_event_handler<'a>(
   if !non_keys.is_empty() {
     handler_exp = ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withModifiers"))),
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_withModifiers"))),
       NONE,
       ast.vec_from_array([
         handler_exp.into(),
@@ -160,7 +160,7 @@ pub fn gen_event_handler<'a>(
             SPAN,
             ast.vec_from_iter(non_keys.iter().map(|key| {
               ast
-                .expression_string_literal(SPAN, ast.atom(key), None)
+                .expression_string_literal(SPAN, ast.str(key), None)
                 .into()
             })),
           )
@@ -173,7 +173,7 @@ pub fn gen_event_handler<'a>(
   if !keys.is_empty() {
     handler_exp = ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_withKeys"))),
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_withKeys"))),
       NONE,
       ast.vec_from_array([
         handler_exp.into(),
@@ -182,7 +182,7 @@ pub fn gen_event_handler<'a>(
             SPAN,
             ast.vec_from_iter(keys.iter().map(|key| {
               ast
-                .expression_string_literal(SPAN, ast.atom(key), None)
+                .expression_string_literal(SPAN, ast.str(key), None)
                 .into()
             })),
           )
@@ -224,11 +224,11 @@ pub fn gen_set_dynamic_events<'a>(
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_setDynamicEvents"))),
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_setDynamicEvents"))),
       NONE,
       ast.vec_from_array([
         ast
-          .expression_identifier(SPAN, ast.atom(&format!("_n{}", oper.element)))
+          .expression_identifier(SPAN, ast.str(&format!("_n{}", oper.element)))
           .into(),
         gen_expression(oper.value, context, None, false).into(),
       ]),

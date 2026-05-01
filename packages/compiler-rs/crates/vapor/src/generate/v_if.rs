@@ -87,7 +87,7 @@ pub fn gen_if<'a>(
 
   let expression = ast.expression_call(
     SPAN,
-    ast.expression_identifier(SPAN, ast.atom(context.options.helper("_createIf"))),
+    ast.expression_identifier(SPAN, ast.str(context.options.helper("_createIf"))),
     NONE,
     ast.vec_from_iter(
       [
@@ -135,7 +135,7 @@ pub fn gen_if<'a>(
       ast.vec1(ast.variable_declarator(
         SPAN,
         VariableDeclarationKind::Const,
-        ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_n{}", id))),
+        ast.binding_pattern_binding_identifier(SPAN, ast.str(&format!("_n{}", id))),
         NONE,
         Some(expression),
         false,

@@ -489,7 +489,7 @@ fn set_insertion_state_scenarios_v_for_append() {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n2 = _t0();
   		return _n2;
-  	}, (i) => i, 1);
+  	}, (i) => i);
   	return _n3;
   })();
   "#);

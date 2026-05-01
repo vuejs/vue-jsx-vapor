@@ -56,15 +56,15 @@ pub fn gen_create_component<'a>(
 
   let tag = if is_custom_element {
     ast
-      .expression_string_literal(SPAN, ast.atom(tag), None)
+      .expression_string_literal(SPAN, ast.str(tag), None)
       .into()
   } else if asset {
     ast
-      .expression_identifier(SPAN, ast.atom(&to_valid_asset_id(tag, "component")))
+      .expression_identifier(SPAN, ast.str(&to_valid_asset_id(tag, "component")))
       .into()
   } else {
     gen_expression(
-      ast.expression_identifier(tag_span, ast.atom(tag)),
+      ast.expression_identifier(tag_span, ast.str(tag)),
       context,
       None,
       false,
@@ -102,13 +102,13 @@ pub fn gen_create_component<'a>(
       ast.vec1(ast.variable_declarator(
         SPAN,
         VariableDeclarationKind::Const,
-        ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_n{id}"))),
+        ast.binding_pattern_binding_identifier(SPAN, ast.str(&format!("_n{id}"))),
         NONE,
         Some(ast.expression_call(
           SPAN,
           ast.expression_identifier(
             SPAN,
-            ast.atom(context.options.helper(if is_custom_element {
+            ast.str(context.options.helper(if is_custom_element {
               "_createPlainElement"
             } else {
               "_createComponent"
@@ -329,7 +329,7 @@ fn gen_static_props<'a>(
     properties.push(ast.object_property_kind_object_property(
       SPAN,
       PropertyKind::Init,
-      ast.property_key_static_identifier(SPAN, ast.atom("$")),
+      ast.property_key_static_identifier(SPAN, ast.str("$")),
       dynamic_props,
       false,
       false,
@@ -361,7 +361,7 @@ fn gen_dynamic_props<'a>(
       expr = if p.handler {
         Some(ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom(context.options.helper("_toHandlers"))),
+          ast.expression_identifier(SPAN, ast.str(context.options.helper("_toHandlers"))),
           NONE,
           ast.vec1(expression.into()),
           false,
@@ -507,14 +507,14 @@ fn gen_model<'a>(
     && !model_modifiers.is_empty()
   {
     let modifers_key = if let Expression::StringLiteral(key) = &key {
-      ast.property_key_static_identifier(SPAN, ast.atom(&get_modifier_prop_name(&key.value)))
+      ast.property_key_static_identifier(SPAN, ast.str(&get_modifier_prop_name(&key.value)))
     } else {
       ast
         .expression_binary(
           SPAN,
           gen_expression(key.clone_in(ast.allocator), context, None, false),
           BinaryOperator::Addition,
-          ast.expression_string_literal(SPAN, ast.atom("Modifiers"), None),
+          ast.expression_string_literal(SPAN, ast.str("Modifiers"), None),
         )
         .into()
     };
@@ -554,7 +554,7 @@ fn gen_model<'a>(
   let handler_value = gen_model_handler(value, context);
   if let Expression::StringLiteral(key) = &key {
     let key_name = format!("\"onUpdate:{}\"", key.value);
-    let key_frag = ast.property_key_static_identifier(key.span, ast.atom(&key_name));
+    let key_frag = ast.property_key_static_identifier(key.span, ast.str(&key_name));
     if let Some(handler_groups) = handler_groups {
       add_handler(
         handler_groups,
@@ -599,7 +599,7 @@ fn gen_model<'a>(
         ast
           .expression_binary(
             SPAN,
-            ast.expression_string_literal(SPAN, ast.atom("onUpdate:"), None),
+            ast.expression_string_literal(SPAN, ast.str("onUpdate:"), None),
             BinaryOperator::Addition,
             gen_expression(key, context, None, false),
           )

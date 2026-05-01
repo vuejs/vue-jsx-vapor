@@ -2,7 +2,7 @@ use common::ast::{RootNode, get_first_child};
 use common::directive::Directives;
 pub use common::options::TransformOptions;
 use common::walk::WalkIdentifiers;
-use common::walk_mut::{GetNodeId, WalkIdentifiersMut};
+use common::walk_mut::WalkIdentifiersMut;
 use indexmap::IndexSet;
 use oxc_allocator::{Allocator, CloneIn, TakeIn};
 use oxc_ast::ast::{
@@ -11,7 +11,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast::{AstBuilder, AstKind, NONE};
 use oxc_semantic::NodeId;
-use oxc_span::{GetSpan, Ident, SPAN, Span};
+use oxc_span::{GetSpan, SPAN, Span};
 use std::collections::HashMap;
 use std::{cell::RefCell, collections::HashSet, rc::Rc};
 pub mod cache_static;
@@ -159,7 +159,7 @@ impl<'a> TransformContext<'a> {
       }
 
       let mut identifiers = vec![];
-      let mut add_identifiers = |id: &Ident| {
+      let mut add_identifiers = |id: &str| {
         let name = id.as_ref() as *const str;
         identifiers.push(unsafe { &*name });
         self
@@ -202,7 +202,7 @@ impl<'a> TransformContext<'a> {
       span,
       self
         .ast
-        .atom(&format!("_hoisted_{}", self.options.hoists.borrow().len())),
+        .str(&format!("_hoisted_{}", self.options.hoists.borrow().len())),
     )
   }
 
@@ -217,8 +217,8 @@ impl<'a> TransformContext<'a> {
     let index = *self.cache_index.borrow();
     let cache = ast.alloc_computed_member_expression(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom("_cache")),
-      ast.expression_identifier(SPAN, ast.atom(&index.to_string())),
+      ast.expression_identifier(SPAN, ast.str("_cache")),
+      ast.expression_identifier(SPAN, ast.str(&index.to_string())),
       false,
     );
     let mut assing_expression = ast.expression_parenthesized(
@@ -244,7 +244,7 @@ impl<'a> TransformContext<'a> {
         ast.vec_from_array([
           ast.expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(self.options.helper("_setBlockTracking"))),
+            ast.expression_identifier(SPAN, ast.str(self.options.helper("_setBlockTracking"))),
             NONE,
             arguments,
             false,
@@ -262,7 +262,7 @@ impl<'a> TransformContext<'a> {
           ),
           ast.expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.atom(self.options.helper("_setBlockTracking"))),
+            ast.expression_identifier(SPAN, ast.str(self.options.helper("_setBlockTracking"))),
             NONE,
             ast.vec1(
               ast
@@ -302,7 +302,7 @@ impl<'a> TransformContext<'a> {
       && is_template(node)
     {
       let name =
-        ast.jsx_element_name_identifier(node.span, ast.atom(self.options.helper("_Fragment")));
+        ast.jsx_element_name_identifier(node.span, ast.str(self.options.helper("_Fragment")));
       ast.jsx_child_fragment(
         span,
         ast.jsx_opening_fragment(SPAN),

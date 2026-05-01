@@ -22,7 +22,7 @@ pub fn gen_set_template_ref<'a>(
   let mut arguments = ast.vec();
   arguments.push(
     ast
-      .expression_identifier(SPAN, ast.atom(&format!("_n{element}")))
+      .expression_identifier(SPAN, ast.str(&format!("_n{element}")))
       .into(),
   );
   arguments.push(gen_expression(value, context, None, false).into());
@@ -35,7 +35,7 @@ pub fn gen_set_template_ref<'a>(
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom("_setTemplateRef")), // will be generated in root scope
+      ast.expression_identifier(SPAN, ast.str("_setTemplateRef")), // will be generated in root scope
       NONE,
       arguments,
       false,

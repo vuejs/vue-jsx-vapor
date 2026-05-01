@@ -4,8 +4,7 @@ use napi::{
   Either,
   bindgen_prelude::{Either3, Either4},
 };
-use oxc_ast::ast::Expression;
-use oxc_span::Atom;
+use oxc_ast::ast::{Expression, Str};
 
 use crate::ir::index::{BlockIRNode, IRFor};
 
@@ -45,7 +44,7 @@ pub enum IRSlotType {
 #[derive(Debug)]
 pub struct IRSlotsStatic<'a> {
   pub slot_type: IRSlotType,
-  pub slots: IndexMap<Atom<'a>, BlockIRNode<'a>>,
+  pub slots: IndexMap<Str<'a>, BlockIRNode<'a>>,
 }
 
 #[derive(Debug)]

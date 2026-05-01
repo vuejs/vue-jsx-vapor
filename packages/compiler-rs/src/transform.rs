@@ -1,6 +1,6 @@
 use common::options::{RootJsx, TransformOptions};
 use napi::Either;
-use oxc_allocator::{FromIn, TakeIn};
+use oxc_allocator::TakeIn;
 use oxc_ast::{
   AstBuilder, NONE,
   ast::{Argument, Expression, ImportOrExportKind, Program, Statement, VariableDeclarationKind},
@@ -12,7 +12,7 @@ use oxc_ast_visit::{
     walk_function, walk_statement,
   },
 };
-use oxc_span::{GetSpan, Ident, SPAN};
+use oxc_span::{GetSpan, SPAN};
 
 use crate::hmr_or_ssr::HmrOrSsrTransform;
 
@@ -36,7 +36,7 @@ impl<'a> Transform<'a> {
         )
       {
         if options.ssr {
-          callee.name = Ident::from_in("_defineVaporSSRComponent", ast.allocator);
+          callee.name = "_defineVaporSSRComponent".into();
           options
             .helpers
             .borrow_mut()
@@ -121,11 +121,11 @@ impl<'a> Transform<'a> {
         SPAN,
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.atom("_delegateEvents")),
+          ast.expression_identifier(SPAN, ast.str("_delegateEvents")),
           NONE,
           oxc_allocator::Vec::from_iter_in(
             delegates.iter().map(|delegate| {
-              Argument::StringLiteral(ast.alloc(ast.string_literal(SPAN, ast.atom(delegate), None)))
+              Argument::StringLiteral(ast.alloc(ast.string_literal(SPAN, ast.str(delegate), None)))
             }),
             ast.allocator,
           ),
@@ -171,14 +171,14 @@ impl<'a> Transform<'a> {
           Some(ast.vec_from_iter(vdom_helpers.into_iter().map(|helper| {
             ast.import_declaration_specifier_import_specifier(
               SPAN,
-              ast.module_export_name_identifier_name(SPAN, ast.atom(helper)),
-              ast.binding_identifier(SPAN, ast.atom(format!("_{}", helper).as_str())),
+              ast.module_export_name_identifier_name(SPAN, ast.str(helper)),
+              ast.binding_identifier(SPAN, ast.str(format!("_{}", helper).as_str())),
               ImportOrExportKind::Value,
             )
           }))),
           ast.string_literal(
             SPAN,
-            ast.atom(
+            ast.str(
               if let Some(runtime_module_name) = &self.options.runtime_module_name {
                 runtime_module_name.as_str()
               } else {
@@ -215,14 +215,14 @@ impl<'a> Transform<'a> {
           Some(ast.vec_from_iter(vapor_helpers.into_iter().map(|helper| {
             ast.import_declaration_specifier_import_specifier(
               SPAN,
-              ast.module_export_name_identifier_name(SPAN, ast.atom(helper)),
-              ast.binding_identifier(SPAN, ast.atom(format!("_{}", helper).as_str())),
+              ast.module_export_name_identifier_name(SPAN, ast.str(helper)),
+              ast.binding_identifier(SPAN, ast.str(format!("_{}", helper).as_str())),
               ImportOrExportKind::Value,
             )
           }))),
           ast.string_literal(
             SPAN,
-            ast.atom(
+            ast.str(
               if let Some(runtime_module_name) = &self.options.runtime_module_name {
                 runtime_module_name.as_str()
               } else {
@@ -243,12 +243,12 @@ impl<'a> Transform<'a> {
           Some(ast.vec_from_iter(helpers.iter().map(|helper| {
             ast.import_declaration_specifier_import_specifier(
               SPAN,
-              ast.module_export_name_identifier_name(SPAN, ast.atom(helper)),
-              ast.binding_identifier(SPAN, ast.atom(format!("_{}", helper).as_str())),
+              ast.module_export_name_identifier_name(SPAN, ast.str(helper)),
+              ast.binding_identifier(SPAN, ast.str(format!("_{}", helper).as_str())),
               ImportOrExportKind::Value,
             )
           }))),
-          ast.string_literal(SPAN, ast.atom("vue"), None),
+          ast.string_literal(SPAN, ast.str("vue"), None),
           None,
           NONE,
           ImportOrExportKind::Value,
@@ -264,7 +264,7 @@ impl<'a> Transform<'a> {
         .enumerate()
         .map(|(index, template)| {
           let template_literal =
-            Argument::StringLiteral(ast.alloc_string_literal(SPAN, ast.atom(&template.0), None));
+            Argument::StringLiteral(ast.alloc_string_literal(SPAN, ast.str(&template.0), None));
 
           Statement::VariableDeclaration(
             ast.alloc_variable_declaration(
@@ -274,12 +274,12 @@ impl<'a> Transform<'a> {
                 ast.variable_declarator(
                   SPAN,
                   VariableDeclarationKind::Const,
-                  ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_t{index}"))),
+                  ast.binding_pattern_binding_identifier(SPAN, ast.str(&format!("_t{index}"))),
                   NONE,
                   Some(
                     ast.expression_call(
                       SPAN,
-                      ast.expression_identifier(SPAN, ast.atom("_template")),
+                      ast.expression_identifier(SPAN, ast.str("_template")),
                       NONE,
                       ast.vec_from_iter(
                         [
@@ -331,7 +331,7 @@ impl<'a> Transform<'a> {
           ast.vec1(ast.variable_declarator(
             SPAN,
             VariableDeclarationKind::Const,
-            ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_hoisted_{}", i + 1))),
+            ast.binding_pattern_binding_identifier(SPAN, ast.str(&format!("_hoisted_{}", i + 1))),
             NONE,
             Some(exp),
             false,

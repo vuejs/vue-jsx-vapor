@@ -91,7 +91,7 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
   let mut arguments = ast.vec();
   arguments.push(
     ast
-      .expression_identifier(SPAN, ast.atom(&format!("_n{}", oper.element)))
+      .expression_identifier(SPAN, ast.str(&format!("_n{}", oper.element)))
       .into(),
   );
   let resolved_helper = get_runtime_helper(
@@ -115,7 +115,7 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(context.options.helper(resolved_helper.name))),
+      ast.expression_identifier(SPAN, ast.str(context.options.helper(resolved_helper.name))),
       NONE,
       arguments,
       false,
@@ -238,7 +238,7 @@ pub fn gen_dynamic_props<'a>(
   let mut arguments = ast.vec();
   arguments.push(
     ast
-      .expression_identifier(SPAN, ast.atom(&format!("_n{}", oper.element)))
+      .expression_identifier(SPAN, ast.str(&format!("_n{}", oper.element)))
       .into(),
   );
   arguments.push(ast.expression_array(SPAN, ast.vec_from_iter(values)).into());
@@ -249,7 +249,7 @@ pub fn gen_dynamic_props<'a>(
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_setDynamicProps"))),
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_setDynamicProps"))),
       NONE,
       arguments,
       false,
@@ -325,14 +325,14 @@ pub fn gen_prop_key<'a>(
     } else {
       &format!("\"{}\"", key_name)
     };
-    return ast.property_key_static_identifier(node.span, ast.atom(key_name));
+    return ast.property_key_static_identifier(node.span, ast.str(key_name));
   }
 
   let mut key = gen_expression(node, context, None, false);
   if runtime_camelize {
     key = ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_camelize"))),
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_camelize"))),
       NONE,
       ast.vec1(key.into()),
       false,
@@ -341,7 +341,7 @@ pub fn gen_prop_key<'a>(
   if handler {
     key = ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.atom(context.options.helper("_toHandlerKey"))),
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_toHandlerKey"))),
       NONE,
       ast.vec1(key.into()),
       false,
@@ -351,7 +351,7 @@ pub fn gen_prop_key<'a>(
   if let Some(modifier) = modifier {
     let left = ast.expression_binary(
       SPAN,
-      ast.expression_string_literal(SPAN, ast.atom(&format!("\"{}\" + ", modifier)), None),
+      ast.expression_string_literal(SPAN, ast.str(&format!("\"{}\" + ", modifier)), None),
       BinaryOperator::Addition,
       key,
     );
@@ -363,7 +363,7 @@ pub fn gen_prop_key<'a>(
           BinaryOperator::Addition,
           ast.expression_string_literal(
             SPAN,
-            ast.atom(&format!("\"{}\" + ", handler_modifier_postfix)),
+            ast.str(&format!("\"{}\" + ", handler_modifier_postfix)),
             None,
           ),
         )

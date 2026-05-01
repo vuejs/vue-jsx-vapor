@@ -3,10 +3,10 @@ use std::borrow::Cow;
 use oxc_allocator::{Allocator, CloneIn, FromIn, TakeIn};
 use oxc_ast::{
   AstBuilder,
-  ast::{Expression, JSXAttributeValue},
+  ast::{Expression, JSXAttributeValue, Str},
 };
 use oxc_parser::Parser;
-use oxc_span::{Atom, GetSpan, SPAN, SourceType, Span};
+use oxc_span::{GetSpan, SPAN, SourceType, Span};
 use phf::phf_set;
 
 use crate::{options::TransformOptions, text::get_text_like_value};
@@ -73,7 +73,7 @@ pub fn parse_expression<'a>(
 ) -> Option<Expression<'a>> {
   Parser::new(
     allocator,
-    Atom::from_in(
+    Str::from_in(
       if span == SPAN {
         Cow::Borrowed(source)
       } else {

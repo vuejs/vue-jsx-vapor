@@ -52,9 +52,9 @@ pub fn gen_directives_for_element<'a>(
       let directive_var = ast.alloc_identifier_reference(
         SPAN,
         if asset {
-          ast.atom(&to_valid_asset_id(name, "directive"))
+          ast.str(&to_valid_asset_id(name, "directive"))
         } else {
-          ast.atom(name)
+          ast.str(name)
         },
       );
       let value = if let Some(exp) = item.dir.exp.take() {
@@ -134,12 +134,12 @@ pub fn gen_directives_for_element<'a>(
       SPAN,
       ast.expression_identifier(
         SPAN,
-        ast.atom(context.options.helper("_withVaporDirectives")),
+        ast.str(context.options.helper("_withVaporDirectives")),
       ),
       NONE,
       ast.vec_from_array([
         Argument::Identifier(
-          ast.alloc_identifier_reference(SPAN, ast.atom(&format!("_n{}", element))),
+          ast.alloc_identifier_reference(SPAN, ast.str(&format!("_n{}", element))),
         ),
         Argument::ArrayExpression(directives),
       ]),
@@ -163,7 +163,7 @@ pub fn gen_directive_modifiers<'a>(
       ast.object_property_kind_object_property(
         SPAN,
         PropertyKind::Init,
-        ast.property_key_static_identifier(SPAN, ast.atom(modifier)),
+        ast.property_key_static_identifier(SPAN, ast.str(modifier)),
         ast.expression_boolean_literal(SPAN, true),
         false,
         false,

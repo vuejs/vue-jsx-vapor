@@ -186,10 +186,7 @@ fn create_codegen_node_for_branch<'a>(
       // closes the current block.
       ast.expression_call(
         SPAN,
-        ast.expression_identifier(
-          SPAN,
-          ast.atom(context.options.helper("_createCommentVNode")),
-        ),
+        ast.expression_identifier(SPAN, ast.str(context.options.helper("_createCommentVNode"))),
         NONE,
         ast.vec_from_array([
           ast.expression_string_literal(SPAN, "", None).into(),

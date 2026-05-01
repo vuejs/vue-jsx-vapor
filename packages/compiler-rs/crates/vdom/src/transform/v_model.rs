@@ -86,7 +86,7 @@ pub fn transform_v_model<'a>(
         PropertyKind::Init,
         ast.property_key_static_identifier(
           SPAN,
-          ast.atom(&if is_simple_identifier(modifier) {
+          ast.str(&if is_simple_identifier(modifier) {
             modifier.clone()
           } else {
             format!("\"{}\"", modifier)
@@ -100,7 +100,7 @@ pub fn transform_v_model<'a>(
     });
     let modifiers_key = if let Some(arg) = dir.arg.as_ref() {
       if let Expression::StringLiteral(arg) = arg {
-        ast.property_key_static_identifier(SPAN, ast.atom(&get_modifier_prop_name(&arg.value)))
+        ast.property_key_static_identifier(SPAN, ast.str(&get_modifier_prop_name(&arg.value)))
       } else {
         computed = true;
         ast
@@ -135,7 +135,7 @@ pub fn transform_v_model<'a>(
     if let Expression::StringLiteral(_) = arg {
       ast.property_key_static_identifier(
         SPAN,
-        ast.atom(&format!("\"onUpdate:{}\"", prop_name.name().unwrap())),
+        ast.str(&format!("\"onUpdate:{}\"", prop_name.name().unwrap())),
       )
     } else {
       computed = true;
@@ -207,7 +207,7 @@ pub fn transform_v_model<'a>(
       if let PropertyKey::StaticIdentifier(name) = &prop_name
         && !is_simple_identifier(&name.name)
       {
-        ast.property_key_static_identifier(name.span, ast.atom(&format!("\"{}\"", name.name)))
+        ast.property_key_static_identifier(name.span, ast.str(&format!("\"{}\"", name.name)))
       } else {
         prop_name
       },

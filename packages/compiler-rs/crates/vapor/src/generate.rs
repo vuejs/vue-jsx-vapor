@@ -125,7 +125,7 @@ impl<'a> CodegenContext<'a> {
               SPAN,
               ast.expression_identifier(
                 SPAN,
-                ast.atom(self.options.helper("_createTemplateRefSetter")),
+                ast.str(self.options.helper("_createTemplateRefSetter")),
               ),
               NONE,
               ast.vec(),
@@ -148,16 +148,16 @@ impl<'a> CodegenContext<'a> {
             VariableDeclarationKind::Const,
             ast.binding_pattern_binding_identifier(
               SPAN,
-              ast.atom(&to_valid_asset_id(name, "component")),
+              ast.str(&to_valid_asset_id(name, "component")),
             ),
             NONE,
             Some(ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(self.options.helper("_resolveComponent"))),
+              ast.expression_identifier(SPAN, ast.str(self.options.helper("_resolveComponent"))),
               NONE,
               ast.vec_from_array([Argument::StringLiteral(ast.alloc_string_literal(
                 SPAN,
-                ast.atom(name),
+                ast.str(name),
                 None,
               ))]),
               false,
@@ -179,16 +179,16 @@ impl<'a> CodegenContext<'a> {
             VariableDeclarationKind::Const,
             ast.binding_pattern_binding_identifier(
               SPAN,
-              ast.atom(&to_valid_asset_id(name, "directive")),
+              ast.str(&to_valid_asset_id(name, "directive")),
             ),
             NONE,
             Some(ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.atom(self.options.helper("_resolveDirective"))),
+              ast.expression_identifier(SPAN, ast.str(self.options.helper("_resolveDirective"))),
               NONE,
               ast.vec1(Argument::StringLiteral(ast.alloc_string_literal(
                 SPAN,
-                ast.atom(name),
+                ast.str(name),
                 None,
               ))),
               false,

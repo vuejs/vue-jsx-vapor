@@ -21,7 +21,7 @@ pub fn gen_set_html<'a>(oper: SetHtmlIRNode<'a>, context: &'a CodegenContext<'a>
       SPAN,
       ast.expression_identifier(
         SPAN,
-        ast.atom(context.options.helper(if is_component {
+        ast.str(context.options.helper(if is_component {
           "_setBlockHtml"
         } else {
           "_setHtml"
@@ -30,7 +30,7 @@ pub fn gen_set_html<'a>(oper: SetHtmlIRNode<'a>, context: &'a CodegenContext<'a>
       NONE,
       ast.vec_from_array([
         ast
-          .expression_identifier(SPAN, ast.atom(&format!("_n{element}",)))
+          .expression_identifier(SPAN, ast.str(&format!("_n{element}",)))
           .into(),
         gen_expression(value, context, None, false).into(),
       ]),

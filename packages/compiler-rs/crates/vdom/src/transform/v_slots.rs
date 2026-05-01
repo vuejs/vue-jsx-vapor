@@ -176,7 +176,7 @@ pub unsafe fn transform_v_slots<'a>(
                       SPAN,
                       ast.expression_identifier(
                         SPAN,
-                        ast.atom(context.options.helper("_normalizeSlot")),
+                        ast.str(context.options.helper("_normalizeSlot")),
                       ),
                       NONE,
                       ast.vec1(prop.value.take_in(context.allocator).into()),

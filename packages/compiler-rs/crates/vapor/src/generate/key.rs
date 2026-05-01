@@ -47,7 +47,7 @@ pub fn gen_key<'a>(
     SPAN,
     ast.expression_identifier(
       SPAN,
-      ast.atom(context.options.helper("_createKeyedFragment")),
+      ast.str(context.options.helper("_createKeyedFragment")),
     ),
     NONE,
     ast.vec_from_array([expr.into(), block_fn.into()]),
@@ -60,7 +60,7 @@ pub fn gen_key<'a>(
     ast.vec1(ast.variable_declarator(
       SPAN,
       VariableDeclarationKind::Const,
-      ast.binding_pattern_binding_identifier(SPAN, ast.atom(&format!("_n{}", id))),
+      ast.binding_pattern_binding_identifier(SPAN, ast.str(&format!("_n{}", id))),
       NONE,
       Some(expression),
       false,
@@ -81,11 +81,11 @@ pub fn gen_set_block_key<'a>(
       SPAN,
       ast.expression_call(
         SPAN,
-        ast.expression_identifier(SPAN, ast.atom(context.options.helper("_setBlockKey"))),
+        ast.expression_identifier(SPAN, ast.str(context.options.helper("_setBlockKey"))),
         NONE,
         ast.vec_from_array([
           ast
-            .expression_identifier(SPAN, ast.atom(&format!("_n{}", element)))
+            .expression_identifier(SPAN, ast.str(&format!("_n{}", element)))
             .into(),
           value.into(),
         ]),

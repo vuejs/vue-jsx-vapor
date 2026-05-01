@@ -22,7 +22,7 @@ pub fn transform_v_bind<'a>(
     return None;
   }
 
-  let mut arg = ast.alloc_string_literal(SPAN, ast.atom(name_splited[0]), None);
+  let mut arg = ast.alloc_string_literal(SPAN, ast.str(name_splited[0]), None);
 
   let exp = if let Some(value) = &mut dir.value {
     jsx_attribute_value_to_expression(value, ast)
@@ -31,7 +31,7 @@ pub fn transform_v_bind<'a>(
   };
 
   if modifiers.contains(&"camel") {
-    arg.value = ast.atom(&camelize(arg.value.into()))
+    arg.value = ast.str(&camelize(arg.value.into()))
   }
 
   let modifier = if modifiers.contains(&"prop") {

@@ -2,6 +2,7 @@ use oxc_allocator::TakeIn;
 use oxc_ast::ast::{
   BinaryExpression, Expression, JSXAttribute, JSXAttributeValue, JSXChild, JSXElement,
 };
+use oxc_span::SPAN;
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, ForIRNode, IRFor, OperationNode},
@@ -93,7 +94,7 @@ pub unsafe fn transform_v_for<'a>(
       } else {
         child
       };
-      if !is_empty_text(child) {
+      if !is_empty_text(child) || matches!(child, JSXChild::Text(text) if text.span == SPAN) {
         if only_child {
           only_child = false;
           break;
