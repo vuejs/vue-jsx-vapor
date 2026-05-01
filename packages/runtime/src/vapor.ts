@@ -347,7 +347,7 @@ export function defineVaporComponent<
     },
   ) => VaporRenderResult<TypeBlock> | void,
   extraOptions?: VaporComponentOptions<
-    (keyof Props)[],
+    (keyof NoInfer<Props>)[],
     Emits,
     RuntimeEmitsKeys,
     Slots,
@@ -531,5 +531,5 @@ export const VaporFor = defineVaporComponent(
       props.getKey === undefined ? (item) => item : (props.getKey as any),
     )
   },
-  { props: ['in', 'getKey'] as any },
+  { props: ['in', 'getKey'] },
 )
