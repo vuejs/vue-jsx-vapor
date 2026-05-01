@@ -79,7 +79,6 @@ pub unsafe fn transform_element<'a>(
         context_node,
         context,
         context_block,
-        parent_node,
         get_effect_index,
         get_operation_index,
       )
@@ -106,7 +105,6 @@ pub unsafe fn transform_element<'a>(
   let props_result = build_props(
     directives,
     node,
-    parent_node,
     context,
     unsafe { &mut *context_block_ptr },
     is_component,
@@ -371,7 +369,6 @@ pub struct PropsResult<'a> {
 pub fn build_props<'a>(
   directives: &Directives<'a>,
   node: &'a mut JSXElement<'a>,
-  parent_node: &mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   is_component: bool,
@@ -456,7 +453,6 @@ pub fn build_props<'a>(
           directives,
           prop,
           unsafe { &mut *node },
-          parent_node,
           is_component,
           context,
           unsafe { &mut *context_block },
@@ -517,7 +513,6 @@ pub fn transform_prop<'a>(
   directives: &Directives<'a>,
   prop: &'a mut JSXAttribute<'a>,
   node: &'a mut JSXElement<'a>,
-  parent_node: &mut JSXChild<'a>,
   is_component: bool,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
@@ -559,7 +554,7 @@ pub fn transform_prop<'a>(
     "bind" => return transform_v_bind(prop, context),
     "on" => return transform_v_on(directives, prop, node, context, context_block),
     "model" => return transform_v_model(directives, prop, node, context, context_block),
-    "show" => return transform_v_show(prop, context, context_block, parent_node),
+    "show" => return transform_v_show(prop, context, context_block),
     "html" => return transform_v_html(directives, prop, node, context, context_block),
     "text" => return transform_v_text(directives, prop, node, context, context_block),
     _ => (),
@@ -606,7 +601,6 @@ pub fn transform_prop<'a>(
         asset,
         builtin: false,
         model_type: None,
-        deferred: false,
       }),
       Some(Rc::clone(&get_operation_index)),
     )

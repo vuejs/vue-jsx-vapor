@@ -20,7 +20,6 @@ pub unsafe fn transform_slot_outlet<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  parent_node: &'a mut JSXChild<'a>,
   get_effect_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
   get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
@@ -39,7 +38,6 @@ pub unsafe fn transform_slot_outlet<'a>(
     let props_result = build_props(
       directives,
       unsafe { &mut *(node.as_mut() as *mut _) },
-      parent_node,
       context,
       unsafe { &mut *context_block_ptr },
       false,

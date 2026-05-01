@@ -44,7 +44,6 @@ pub struct RootIRNode<'a> {
   pub components: IndexSet<&'a str>,
   pub directives: IndexSet<&'a str>,
   pub has_template_ref: bool,
-  pub has_deferred_v_show: bool,
 }
 
 #[derive(Debug)]
@@ -197,7 +196,6 @@ pub struct DirectiveIRNode<'a> {
   pub builtin: bool,
   pub asset: bool,
   pub model_type: Option<&'a str>,
-  pub deferred: bool,
 }
 
 #[derive(Debug)]

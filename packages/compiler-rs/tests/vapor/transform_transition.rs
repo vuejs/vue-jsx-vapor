@@ -39,17 +39,15 @@ fn v_show_with_appear() {
   import { applyVShow as _applyVShow, template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("<h1>foo");
   (() => {
-  	const deferredApplyVShows = [];
   	const _n1 = _createComponent(VaporTransition, {
   		appear: () => true,
   		onAppear: () => () => {},
   		persisted: () => true
   	}, { default: _withVaporCtx(() => {
   		const _n0 = _t0();
-  		deferredApplyVShows.push(() => _applyVShow(_n0, () => show));
+  		_applyVShow(_n0, () => show);
   		return _n0;
   	}) }, true);
-  	deferredApplyVShows.forEach((fn) => fn());
   	return _n1;
   })();
   "#);

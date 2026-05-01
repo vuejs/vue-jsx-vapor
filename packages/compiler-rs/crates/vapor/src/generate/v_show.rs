@@ -9,14 +9,9 @@ use crate::ir::index::DirectiveIRNode;
 
 pub fn gen_v_show<'a>(oper: DirectiveIRNode<'a>, context: &'a CodegenContext<'a>) -> Statement<'a> {
   let ast = &context.ast;
-  let DirectiveIRNode {
-    dir,
-    element,
-    deferred,
-    ..
-  } = oper;
+  let DirectiveIRNode { dir, element, .. } = oper;
 
-  let mut stmt = ast.statement_expression(
+  ast.statement_expression(
     SPAN,
     ast.expression_call(
       SPAN,
@@ -52,44 +47,5 @@ pub fn gen_v_show<'a>(oper: DirectiveIRNode<'a>, context: &'a CodegenContext<'a>
       ]),
       false,
     ),
-  );
-
-  if deferred {
-    stmt = ast.statement_expression(
-      SPAN,
-      ast.expression_call(
-        SPAN,
-        ast
-          .member_expression_static(
-            SPAN,
-            ast.expression_identifier(SPAN, "deferredApplyVShows"),
-            ast.identifier_name(SPAN, "push"),
-            false,
-          )
-          .into(),
-        NONE,
-        ast.vec1(
-          ast
-            .expression_arrow_function(
-              SPAN,
-              true,
-              false,
-              NONE,
-              ast.formal_parameters(
-                SPAN,
-                FormalParameterKind::ArrowFormalParameters,
-                ast.vec(),
-                NONE,
-              ),
-              NONE,
-              ast.function_body(SPAN, ast.vec(), ast.vec1(stmt)),
-            )
-            .into(),
-        ),
-        false,
-      ),
-    )
-  }
-
-  stmt
+  )
 }

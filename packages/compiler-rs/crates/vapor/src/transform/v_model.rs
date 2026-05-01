@@ -108,7 +108,6 @@ pub fn transform_v_model<'a>(
         model_type: Some(model_type),
         builtin: true,
         asset: false,
-        deferred: false,
       }),
       None,
     )
