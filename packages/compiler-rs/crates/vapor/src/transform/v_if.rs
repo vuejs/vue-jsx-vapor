@@ -11,7 +11,7 @@ use crate::{
 use common::{
   ast::RootNode,
   check::{is_constant_node, is_template},
-  directive::Directives,
+  directive::{Directives, find_prop},
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
   patch_flag::VaporBlockShape,
@@ -57,7 +57,7 @@ pub unsafe fn transform_v_if<'a>(
 
   let dynamic = &mut context_block.dynamic;
   dynamic.flags |= DynamicFlag::NonTemplate as i32;
-
+  let force_multi_root = should_force_multi_root(parent_node);
   if dir_name == "v-if" {
     let id = context.reference(dynamic);
     dynamic.flags |= DynamicFlag::Insert as i32;
@@ -81,7 +81,7 @@ pub unsafe fn transform_v_if<'a>(
 
       context_block.dynamic.operation = Some(Box::new(OperationNode::If(IfIRNode {
         id,
-        block_shape: encode_if_block_shape(&block, None),
+        block_shape: encode_if_block_shape(&block, force_multi_root, None),
         positive: block,
         index: context.next_if_index(),
         once: *context.in_v_once.borrow() || is_constant_node(dir_exp.as_ref().unwrap()),
@@ -165,20 +165,41 @@ pub unsafe fn transform_v_if<'a>(
     if let Some(negative) = last_if_node.negative.as_mut()
       && let Either::B(negative) = negative.as_mut()
     {
-      negative.block_shape = encode_if_block_shape(&negative.positive, None)
+      negative.block_shape = encode_if_block_shape(&negative.positive, force_multi_root, None)
     }
-    last_if_node.block_shape =
-      encode_if_block_shape(&last_if_node.positive, last_if_node.negative.as_ref())
+    last_if_node.block_shape = encode_if_block_shape(
+      &last_if_node.positive,
+      force_multi_root,
+      last_if_node.negative.as_ref(),
+    )
   }))
 }
 
 pub fn encode_if_block_shape(
   positive: &BlockIRNode,
+  force_multi_root: bool,
   negative: Option<&Box<Either<BlockIRNode, IfIRNode>>>,
 ) -> i32 {
   // Pack the true/false branch shapes into one integer so runtime `createIf()`
   // can decode the selected branch with a single bit-mask operation.
-  get_block_shape(positive) | (get_negative_block_shape(negative) << 2)
+  if force_multi_root {
+    VaporBlockShape::MultiRoot as i32 | (VaporBlockShape::MultiRoot as i32) << 2
+  } else {
+    get_block_shape(positive) | (get_negative_block_shape(negative) << 2)
+  }
+}
+
+// SSR renders `v-if` inside `<template v-for>` always output <!--[-->...<!--]-->.
+// should mark the block as multi-root
+pub fn should_force_multi_root(parent: &JSXChild) -> bool {
+  if let JSXChild::Element(parent) = parent
+    && is_template(parent)
+    && find_prop(parent, vec!["v-for"]).is_some()
+  {
+    true
+  } else {
+    false
+  }
 }
 
 fn get_negative_block_shape(negative: Option<&Box<Either<BlockIRNode, IfIRNode>>>) -> i32 {

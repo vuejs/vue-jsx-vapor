@@ -10,7 +10,10 @@ use crate::{
     BlockIRNode, CreateNodesIRNode, DynamicFlag, GetTextChildIRNode, IfIRNode, OperationNode,
     SetNodesIRNode,
   },
-  transform::{TransformContext, v_if::encode_if_block_shape},
+  transform::{
+    TransformContext,
+    v_if::{encode_if_block_shape, should_force_multi_root},
+  },
 };
 
 use common::{
@@ -346,13 +349,13 @@ pub fn process_conditional_expression<'a>(
 
   let is_const_test = is_constant_node(test);
   let test = test.take_in(context.allocator);
-
+  let force_multi_root = should_force_multi_root(parent_node);
   Box::new(move || {
     let block = exit_block();
 
     let mut operation = IfIRNode {
       id,
-      block_shape: encode_if_block_shape(&block, None),
+      block_shape: encode_if_block_shape(&block, force_multi_root, None),
       positive: block,
       index: context.next_if_index(),
       once: *context.in_v_once.borrow() || is_const_test,
@@ -386,6 +389,7 @@ fn set_negative<'a>(
   parent_node: &'a mut JSXChild<'a>,
 ) {
   let node = node.without_parentheses_mut().get_inner_expression_mut();
+  let force_multi_root = should_force_multi_root(parent_node);
   if let Expression::ConditionalExpression(node) = node {
     let node = node as *mut oxc_allocator::Box<ConditionalExpression>;
     let _context_block = context_block as *mut BlockIRNode;
@@ -441,7 +445,11 @@ fn set_negative<'a>(
   if let Some(negative) = operation.negative.as_mut()
     && let Either::B(negative) = negative.as_mut()
   {
-    negative.block_shape = encode_if_block_shape(&negative.positive, None)
+    negative.block_shape = encode_if_block_shape(&negative.positive, force_multi_root, None)
   }
-  operation.block_shape = encode_if_block_shape(&operation.positive, operation.negative.as_ref())
+  operation.block_shape = encode_if_block_shape(
+    &operation.positive,
+    force_multi_root,
+    operation.negative.as_ref(),
+  )
 }

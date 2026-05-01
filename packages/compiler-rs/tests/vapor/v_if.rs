@@ -344,6 +344,37 @@ fn v_on_with_v_if() {
 }
 
 #[test]
+fn v_if_in_template_v_for_forces_multi_root_shape() {
+  let code = transform(
+    r#"<template v-for={item in list}>
+      <span v-if={item.ok}>
+        <span>{item.text}</span>
+      </span>
+    </template>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { child as _child, createFor as _createFor, createIf as _createIf, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<span><span> ");
+  (() => {
+  	const _n0 = _createFor(() => list, (_for_item0) => {
+  		const _n2 = _createIf(() => _for_item0.value.ok, () => {
+  			const _n5 = _t0();
+  			const _n4 = _child(_n5);
+  			const _x4 = _txt(_n4);
+  			_setNodes(_x4, () => _for_item0.value.text);
+  			return _n5;
+  		}, null, 10);
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn template_v_if_with_normal_v_else() {
   let code = transform(
     r#"<><template v-if={foo}><div>hi</div><div>ho</div></template><div v-else/></>"#,
