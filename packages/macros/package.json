@@ -23,74 +23,74 @@
     ".": {
       "types": "./dist/index.d.ts",
       "jsx-vapor-dev": "./src/index.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./astro": {
       "types": "./dist/astro.d.ts",
       "jsx-vapor-dev": "./src/astro.ts",
-      "require": "./dist/astro.cjs",
-      "import": "./dist/astro.js"
+      "import": "./dist/astro.js",
+      "require": "./dist/astro.cjs"
     },
     "./rspack": {
       "types": "./dist/rspack.d.ts",
       "jsx-vapor-dev": "./src/rspack.ts",
-      "require": "./dist/rspack.cjs",
-      "import": "./dist/rspack.js"
+      "import": "./dist/rspack.js",
+      "require": "./dist/rspack.cjs"
     },
     "./vite": {
       "types": "./dist/vite.d.ts",
       "jsx-vapor-dev": "./src/vite.ts",
-      "require": "./dist/vite.cjs",
-      "import": "./dist/vite.js"
+      "import": "./dist/vite.js",
+      "require": "./dist/vite.cjs"
     },
     "./webpack": {
       "types": "./dist/webpack.d.ts",
       "jsx-vapor-dev": "./src/webpack.ts",
-      "require": "./dist/webpack.cjs",
-      "import": "./dist/webpack.js"
+      "import": "./dist/webpack.js",
+      "require": "./dist/webpack.cjs"
     },
     "./rollup": {
       "types": "./dist/rollup.d.ts",
       "jsx-vapor-dev": "./src/rollup.ts",
-      "require": "./dist/rollup.cjs",
-      "import": "./dist/rollup.js"
+      "import": "./dist/rollup.js",
+      "require": "./dist/rollup.cjs"
     },
     "./esbuild": {
       "types": "./dist/esbuild.d.ts",
       "jsx-vapor-dev": "./src/esbuild.ts",
-      "require": "./dist/esbuild.cjs",
-      "import": "./dist/esbuild.js"
+      "import": "./dist/esbuild.js",
+      "require": "./dist/esbuild.cjs"
     },
     "./nuxt": {
       "types": "./dist/nuxt.d.ts",
       "jsx-vapor-dev": "./src/nuxt.ts",
-      "require": "./dist/nuxt.cjs",
-      "import": "./dist/nuxt.js"
+      "import": "./dist/nuxt.js",
+      "require": "./dist/nuxt.cjs"
     },
     "./bun": {
       "types": "./dist/bun.d.ts",
       "jsx-vapor-dev": "./src/bun.ts",
-      "require": "./dist/bun.cjs",
-      "import": "./dist/bun.js"
+      "import": "./dist/bun.js",
+      "require": "./dist/bun.cjs"
     },
     "./api": {
       "types": "./dist/api.d.ts",
       "jsx-vapor-dev": "./src/api.ts",
-      "require": "./dist/api.cjs",
-      "import": "./dist/api.js"
+      "import": "./dist/api.js",
+      "require": "./dist/api.cjs"
     },
     "./raw": {
       "types": "./dist/raw.d.ts",
       "jsx-vapor-dev": "./src/raw.ts",
-      "require": "./dist/raw.cjs",
-      "import": "./dist/raw.js"
+      "import": "./dist/raw.js",
+      "require": "./dist/raw.cjs"
     },
     "./volar": {
       "types": "./dist/volar.d.ts",
       "jsx-vapor-dev": "./src/volar.ts",
-      "require": "./dist/volar.cjs",
-      "import": "./dist/volar.js"
+      "import": "./dist/volar.js",
+      "require": "./dist/volar.cjs"
     },
     "./*": "./*"
   },

@@ -22,8 +22,8 @@
     ".": {
       "types": "./dist/index.d.ts",
       "jsx-vapor-dev": "./src/index.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./*": "./*"
   },

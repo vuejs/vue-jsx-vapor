@@ -1,23 +1,29 @@
-import { customRef, watchSyncEffect, type ModelRef } from 'vue'
+import { customRef, watchSyncEffect, type ModelRef, type Ref } from 'vue'
 
-type DefineModelOptions<T = Record<string, any>> = {
+type DefineModelOptions<T = any, G = T, S = T> = {
+  get?: (v: T) => G
+  set?: (v: S) => any
   default?: any
-  get?: (v: T) => any
-  set?: (v: T) => any
 }
 
-const EMPTY_OBJ = {}
+const EMPTY_OBJ: any = {}
 
 export function useModel<
   M extends PropertyKey,
   T extends Record<string, any>,
   K extends keyof T,
->(props: T, name: K, options?: DefineModelOptions<T[K]>): ModelRef<T[K], M>
+  G = T[K],
+  S = T[K],
+>(
+  props: T,
+  name: K,
+  options?: DefineModelOptions<T[K]>,
+): ModelRef<T[K], M, G, S>
 export function useModel(
   props: Record<string, any>,
   name: string,
-  options: DefineModelOptions = {},
-): any {
+  options: DefineModelOptions = EMPTY_OBJ,
+): Ref {
   const res = customRef((track, trigger) => {
     let localValue: any = options && options.default
     let prevSetValue = EMPTY_OBJ

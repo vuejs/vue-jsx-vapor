@@ -55,7 +55,7 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
               arg.range[1] - 1,
             )
 
-            let formattedCss = ''
+            let formattedCss
             try {
               formattedCss = prettier
                 .format(

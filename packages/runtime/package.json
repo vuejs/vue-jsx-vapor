@@ -22,14 +22,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "jsx-vapor-dev": "./src/index.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./raw": {
       "types": "./dist/raw.d.ts",
       "jsx-vapor-dev": "./src/raw.ts",
-      "require": "./dist/raw.cjs",
-      "import": "./dist/raw.js"
+      "import": "./dist/raw.js",
+      "require": "./dist/raw.cjs"
     },
     "./*": "./*"
   },
