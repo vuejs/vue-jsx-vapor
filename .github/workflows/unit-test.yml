@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        node: [20.x, lts/*]
+        node: [20.19.0, lts/*]
         os:
           - ubuntu-latest
           # windows-latest, TODO: hash-sum result different with linux
