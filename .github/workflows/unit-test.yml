@@ -39,19 +39,19 @@ jobs:
         run: pnpm install
 
       - name: Build
-        run: nr build
+        run: pnpm run build
 
       - name: Lint
-        run: nr lint
+        run: pnpm run lint
 
       - name: Type Check
-        run: nr typecheck
+        run: pnpm run typecheck
 
       - name: Test
-        run: nr test
+        run: pnpm run test
 
       - name: Docs Build
-        run: nr docs:build
+        run: pnpm run docs:build
 
       - name: Playground Build
-        run: nr play:build
+        run: pnpm run play:build
