@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@vue-jsx-vapor/eslint": "workspace:*",
-    "@vue/theme": "^2.3.0",
+    "@vue/theme": "^2.4.0",
     "chart.js": "latest",
     "chartjs-plugin-datalabels": "latest",
     "jsx-repl": "0.0.14",
@@ -17,7 +17,7 @@
     "vue-jsx-vapor": "workspace:*"
   },
   "devDependencies": {
-    "@shikijs/vitepress-twoslash": "^3.21.0",
+    "@shikijs/vitepress-twoslash": "^4.0.2",
     "@ts-macro/twoslash": "^0.0.5",
     "vitepress": "2.0.0-alpha.16"
   }
