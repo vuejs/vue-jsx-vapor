@@ -168,27 +168,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "compiler-rs"
-version = "0.1.0"
-dependencies = [
- "common",
- "criterion",
- "insta",
- "napi",
- "napi-build",
- "napi-derive",
- "oxc_allocator",
- "oxc_ast",
- "oxc_ast_visit",
- "oxc_codegen",
- "oxc_parser",
- "oxc_semantic",
- "oxc_span",
- "vapor",
- "vdom",
-]
-
-[[package]]
 name = "console"
 version = "0.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1417,6 +1396,27 @@ name = "vsimd"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c3082ca00d5a5ef149bb8b555a72ae84c9c59f7250f013ac822ac2e49b19c64"
+
+[[package]]
+name = "vue-jsx-compiler"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "criterion",
+ "insta",
+ "napi",
+ "napi-build",
+ "napi-derive",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_codegen",
+ "oxc_parser",
+ "oxc_semantic",
+ "oxc_span",
+ "vapor",
+ "vdom",
+]
 
 [[package]]
 name = "walkdir"

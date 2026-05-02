@@ -1,7 +1,7 @@
 [package]
 authors = ["zhiyuanzmj <260480378@qq.com>"]
 edition = "2024"
-name = "compiler-rs"
+name = "vue-jsx-compiler"
 version = "0.1.0"
 
 [lib]

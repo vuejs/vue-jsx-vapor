@@ -2,7 +2,7 @@ import _defineStyle from './define-style'
 import jsxSortProps from './jsx-sort-props'
 import type { DefineStyleRuleOptions } from './define-style/types'
 import type { JsxSortPropsRuleOptions } from './jsx-sort-props/types'
-import type { Linter } from 'eslint'
+import type { Linter } from '@typescript-eslint/utils/ts-eslint'
 
 const ruleOptions = {
   'jsx-sort-props': jsxSortProps,
@@ -16,8 +16,8 @@ export interface RuleOptions {
 
 export type Rules = Partial<{
   [K in keyof RuleOptions]:
-    | Linter.RuleSeverity
-    | [Linter.RuleSeverity, ...RuleOptions[K]]
+    | Linter.Severity
+    | [Linter.Severity, ...RuleOptions[K]]
 }>
 
 export default ruleOptions
