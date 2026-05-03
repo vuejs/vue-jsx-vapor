@@ -7,7 +7,7 @@ export default async (options: RunOptions) => {
     repo: 'zhiyuanzmj/vuetify',
     branch: 'vue-jsx-compiler',
     install: 'pnpm install',
-    env: { CI: 'true' },
+    env: { CI: 'false' },
     test: 'vue-ecosystem-ci:test',
   })
 }
