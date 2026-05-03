@@ -163,7 +163,6 @@ async function runTasks(
 ) {
   const list = Array.isArray(tasks) ? tasks : [tasks]
   for (const task of list) {
-    // 如果 package.json 里有这个 script 就用 pnpm run，否则当作命令直接执行
     if (scripts[task] == null) {
       const [cmd, ...args] = task.split(' ')
       await $(cmd, args)
