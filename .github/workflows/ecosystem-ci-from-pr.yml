@@ -70,6 +70,8 @@ jobs:
       - run: pnpm run build
       - run: pnpm -C ecosystem-ci install
       - run: pnpm test:eco ${{ inputs.suite }}
+        env:
+          TZ: Asia/Shanghai
 
   execute-all:
     runs-on: ubuntu-latest
@@ -98,6 +100,8 @@ jobs:
       - run: pnpm run build
       - run: pnpm -C ecosystem-ci install
       - run: pnpm test:eco ${{ matrix.suite }}
+        env:
+          TZ: Asia/Shanghai
 
   update-comment:
     runs-on: ubuntu-latest

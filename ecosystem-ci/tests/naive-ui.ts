@@ -7,9 +7,6 @@ export default async (options: RunOptions) => {
     repo: 'zhiyuanzmj/naive-ui',
     branch: 'vue-jsx-compiler',
     install: 'pnpm install --ignore-workspace',
-    env: {
-      TZ: 'Asia/Shanghai',
-    },
     test: 'test',
   })
 }

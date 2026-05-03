@@ -39,3 +39,5 @@ jobs:
 
       - name: Run all suites
         run: pnpm test:eco
+        env:
+          TZ: Asia/Shanghai
