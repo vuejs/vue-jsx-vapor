@@ -7,6 +7,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# ecosystem-ci cloned repos
+ecosystem-ci/workspace
+
 # Runtime data
 pids
 *.pid

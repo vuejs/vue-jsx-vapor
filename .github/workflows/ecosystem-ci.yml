@@ -1,0 +1,41 @@
+name: ecosystem-ci-trigger
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+
+jobs:
+  ecosystem-ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install root deps
+        run: pnpm install
+
+      - name: Build vue-jsx-vapor
+        run: pnpm run build
+
+      - name: Run all suites
+        run: pnpm test:eco

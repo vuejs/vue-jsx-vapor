@@ -1,0 +1,157 @@
+name: ecosystem-ci-from-pr
+
+on:
+  workflow_dispatch:
+    inputs:
+      prNumber:
+        description: 'PR number'
+        required: true
+        type: string
+      branchName:
+        description: 'branch to checkout'
+        required: true
+        type: string
+        default: main
+      repo:
+        description: 'repository (owner/repo)'
+        required: true
+        type: string
+        default: vuejs/vue-jsx-vapor
+      commit:
+        description: 'commit sha'
+        required: false
+        type: string
+      suite:
+        description: 'suite to run, "-" means all'
+        required: false
+        type: string
+        default: '-'
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    outputs:
+      comment-id: ${{ steps.create-comment.outputs.result }}
+    permissions:
+      issues: write
+    steps:
+      - id: create-comment
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            const { data: comment } = await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.inputs.prNumber,
+              body: `⏳ Triggered ecosystem CI: [Open](${url})`,
+            })
+            return comment.id
+
+  execute-selected:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: init
+    if: inputs.suite != '-'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo }}
+          ref: ${{ inputs.commit || inputs.branchName }}
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - run: pnpm install
+      - run: pnpm run build
+      - run: pnpm -C ecosystem-ci install
+      - run: pnpm test:eco ${{ inputs.suite }}
+
+  execute-all:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: init
+    if: inputs.suite == '-'
+    strategy:
+      matrix:
+        suite:
+          - vuetify
+          - native-ui
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo }}
+          ref: ${{ inputs.commit || inputs.branchName }}
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - run: pnpm install
+      - run: pnpm run build
+      - run: pnpm -C ecosystem-ci install
+      - run: pnpm test:eco ${{ matrix.suite }}
+
+  update-comment:
+    runs-on: ubuntu-latest
+    needs: [init, execute-selected, execute-all]
+    if: always()
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: { jobs } } = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+              per_page: 100,
+            })
+
+            const selectedSuite = context.payload.inputs.suite
+            let results
+
+            if (selectedSuite !== '-') {
+              const job = jobs.find(j => j.name === 'execute-selected')
+              results = [{ suite: selectedSuite, conclusion: job?.conclusion, link: job?.html_url }]
+            } else {
+              results = jobs
+                .filter(j => j.name.startsWith('execute-all '))
+                .map(j => ({
+                  suite: j.name.replace(/^execute-all \(([^)]+)\)$/, '$1'),
+                  conclusion: j.conclusion,
+                  link: j.html_url,
+                }))
+            }
+
+            const emoji = { success: '✅', failure: '❌', cancelled: '⏹️' }
+            const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+
+            const table = results
+              .map(r => `| ${r.suite} | ${emoji[r.conclusion] ?? '❓'} [${r.conclusion}](${r.link}) |`)
+              .join('\n')
+
+            const body = `📝 Ran ecosystem CI: [Open](${url})\n\n| suite | result |\n|---|---|\n${table}`
+
+            try {
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: ${{ needs.init.outputs.comment-id }},
+              })
+            } catch {}
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.inputs.prNumber,
+              body,
+            })
