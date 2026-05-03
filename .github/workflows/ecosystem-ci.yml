@@ -1,4 +1,4 @@
-name: ecosystem-ci-trigger
+name: ecosystem-ci
 
 on:
   push:

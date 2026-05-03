@@ -4,21 +4,21 @@ on:
   workflow_dispatch:
     inputs:
       prNumber:
-        description: 'PR number'
+        description: PR number
         required: true
         type: string
       branchName:
-        description: 'branch to checkout'
+        description: branch to checkout
         required: true
         type: string
         default: main
       repo:
-        description: 'repository (owner/repo)'
+        description: repository (owner/repo)
         required: true
         type: string
         default: vuejs/vue-jsx-vapor
       commit:
-        description: 'commit sha'
+        description: commit sha
         required: false
         type: string
       suite:
