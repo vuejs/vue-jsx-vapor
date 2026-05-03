@@ -1,3 +1,13 @@
+## [3.2.12](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.11...v3.2.12) (2026-05-03)
+
+
+### Bug Fixes
+
+* **transition:** handle transition appear with slotted v-show at runtime ([aed4948](https://github.com/vuejs/vue-jsx-vapor/commit/aed49486f622a8eb605deea0c49aef25680e0364))
+* **types:** make generics with runtime props in defineVaporComponent ([778b0d0](https://github.com/vuejs/vue-jsx-vapor/commit/778b0d0630302fc9487e5e00da75bb803a433cc1)), closes [#13119](https://github.com/vuejs/vue-jsx-vapor/issues/13119)
+
+
+
 ## [3.2.11](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.10...v3.2.11) (2026-04-27)
 
 
