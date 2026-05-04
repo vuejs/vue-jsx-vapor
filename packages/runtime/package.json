@@ -19,22 +19,11 @@
     "runtime"
   ],
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "jsx-vapor-dev": "./src/index.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./raw": {
-      "types": "./dist/raw.d.ts",
-      "jsx-vapor-dev": "./src/raw.ts",
-      "import": "./dist/raw.js",
-      "require": "./dist/raw.cjs"
-    },
+    ".": "./dist/index.js",
+    "./raw": "./dist/raw.js",
     "./*": "./*"
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"

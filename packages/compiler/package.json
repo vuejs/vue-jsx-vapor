@@ -48,7 +48,7 @@
   },
   "scripts": {
     "artifacts": "napi artifacts",
-    "build": "napi build --platform --release",
+    "build": "napi build --platform --release --esm",
     "dev": "nodemon -w crates -e rs -x 'napi build --platform'",
     "format": "taplo format",
     "prepublishOnly": "napi prepublish -t npm",
