@@ -1,3 +1,7 @@
 <script vapor lang="tsx">
-defineRender(<legend>Component</legend>)
+const Comp = <legend>Component</legend>
 </script>
+
+<template>
+  <Comp></Comp>
+</template>

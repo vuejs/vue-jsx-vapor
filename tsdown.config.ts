@@ -6,14 +6,12 @@ export const config = (options: UserConfig = {}) =>
   defineConfig({
     entry: ['./src/*.ts', '!./**.d.ts'],
     clean: true,
-    format: ['cjs', 'esm'],
     fixedExtension: false,
     watch: !!process.env.DEV,
-    dts: !process.env.DEV,
-    external: ['vue'],
-    define: {
-      __DEV__: 'true',
+    dts: {
+      tsgo: true,
     },
+    external: ['vue'],
     plugins: [Raw({ transform: true })],
     outputOptions: {
       exports: 'named',

@@ -1,5 +1,4 @@
 import Vue from '@vitejs/plugin-vue'
-import DefineRender from '@vue-macros/define-render/vite'
 import { defineConfig } from 'vite'
 import Inspect from 'vite-plugin-inspect'
 import VueJsxVapor from 'vue-jsx-vapor/vite'
@@ -28,9 +27,6 @@ export default defineConfig({
         runtimeModuleName: 'vue-jsx-vapor',
         isCustomElement: (tag) => tag.includes('-'),
       },
-    }),
-    DefineRender({
-      vapor: true,
     }),
     Inspect(),
   ],

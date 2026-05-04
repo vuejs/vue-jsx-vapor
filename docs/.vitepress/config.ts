@@ -201,7 +201,6 @@ export default defineConfig({
             jsx: 1,
             jsxImportSource: 'vue-jsx-vapor',
             baseUrl: undefined,
-            customConditions: ['jsx-vapor-dev'],
           },
           tsmCompilerOptions: {
             plugins: [vueJsxVapor({ macros: true })],

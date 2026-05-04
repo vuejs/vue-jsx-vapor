@@ -4,14 +4,12 @@
   "version": "3.2.12",
   "private": true,
   "scripts": {
-    "dev": "node vite.js --port 5174",
-    "build": "node vite.js build"
+    "dev": "vite",
+    "build": "vite build"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.6",
-    "@vue-macros/define-render": "catalog:",
     "vite": "catalog:",
-    "vite-hyper-config": "^0.9.0",
     "vite-node": "^6.0.0",
     "vite-plugin-inspect": "^11.3.3",
     "vue": "catalog:",

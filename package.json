@@ -1,7 +1,7 @@
 {
   "type": "module",
   "version": "3.2.12",
-  "packageManager": "pnpm@10.33.2",
+  "packageManager": "pnpm@11.0.4",
   "description": "Vue JSX Vapor",
   "license": "MIT",
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
@@ -47,6 +47,7 @@
     "@sxzz/eslint-config": "^8.0.0",
     "@ts-macro/tsc": "catalog:",
     "@types/node": "^25.6.0",
+    "@typescript/native-preview": "7.0.0-dev.20260503.1",
     "bumpp": "^11.0.1",
     "conventional-changelog-cli": "^5.0.0",
     "eslint": "^10.3.0",
@@ -56,14 +57,5 @@
     "vite": "catalog:",
     "vitest": "catalog:",
     "vue-jsx-vapor": "workspace:*"
-  },
-  "pnpm": {
-    "overrides": {
-      "estree-walker": "2.0.2",
-      "ts-macro": "catalog:"
-    },
-    "patchedDependencies": {
-      "@vue-macros/volar": "patches/@vue-macros__volar.patch"
-    }
   }
 }

@@ -5,28 +5,31 @@ packages:
   - benchmark
   - ecosystem-ci
 
-defines:
-  - &vue-macros ^3.1.2
-  - &ts-macro ^0.3.7
-  - &vue 3.6.0-beta.8
+allowBuilds:
+  esbuild: true
+  vue-demi: true
 
 catalog:
   '@nuxt/kit': ^3.21.4
   '@nuxt/schema': ^3.21.4
 
-  '@vue/shared': *vue
-
-  '@vue-macros/common': *vue-macros
-  '@vue-macros/define-render': *vue-macros
-  '@vue-macros/jsx-directive': *vue-macros
-  '@vue-macros/volar': *vue-macros
-
-  '@ts-macro/tsc': *ts-macro
+  '@ts-macro/tsc': ^0.3.7
   '@types/hash-sum': ^1.0.2
+
+  '@vue-macros/volar': ^3.1.2
+
+  '@vue/shared': 3.6.0-beta.10
   hash-sum: ^2.0.0
-  ts-macro: *ts-macro
+  ts-macro: ^0.3.7
   unplugin: ^3.0.0
   unplugin-utils: ^0.3.1
   vite: ^8.0.10
   vitest: ^4.1.5
-  vue: *vue
+  vue: 3.6.0-beta.10
+
+patchedDependencies:
+  '@vue-macros/volar': patches/@vue-macros__volar.patch
+
+overrides:
+  estree-walker: '2.0.2'
+  ts-macro: 'catalog:'

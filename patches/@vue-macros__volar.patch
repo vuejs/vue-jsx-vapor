@@ -1,5 +1,5 @@
 diff --git a/dist/jsx-directive-Cfx4Hdxx.js b/dist/jsx-directive-Cfx4Hdxx.js
-index 2303eee6f5de9dc780363acf500eb95bad3f0b47..2ac646a65e6372fd0d08a9fa6efcaed30d93b364 100644
+index 2303eee6f5de9dc780363acf500eb95bad3f0b47..15933b5843d9a42a022f2cef1986ba663671422d 100644
 --- a/dist/jsx-directive-Cfx4Hdxx.js
 +++ b/dist/jsx-directive-Cfx4Hdxx.js
 @@ -1,6 +1,4 @@
@@ -9,27 +9,6 @@ index 2303eee6f5de9dc780363acf500eb95bad3f0b47..2ac646a65e6372fd0d08a9fa6efcaed3
  import { isHTMLTag, isSVGTag } from "@vue/shared";
  
  //#region src/jsx-directive/context.ts
-@@ -59,7 +57,7 @@ declare function __VLS_asFunctionalComponent<
-             expose?: any
-             slots?: any
-             emit?: any
--          } 
-+          }
-         };
- const __VLS_nativeElements = {
-   ...{} as SVGElementTagNameMap,
-@@ -71,9 +69,9 @@ declare function __VLS_getFunctionalComponentCtx<T, K, const S>(
-   s: S,
- ): S extends keyof typeof __VLS_nativeElements
-   ? { expose: (exposed: (typeof __VLS_nativeElements)[S]) => any }
--    : '__ctx' extends keyof __VLS_PickNotAny<K, {}> 
-+    : '__ctx' extends keyof __VLS_PickNotAny<K, {}>
-       ? K extends { __ctx?: infer Ctx } ? Ctx : never
--      : T extends (props: infer P, ctx: { expose: (exposed: infer Exposed) => void } & infer Ctx) => any 
-+      : T extends (props: infer P, ctx: { expose: (exposed: infer Exposed) => void } & infer Ctx) => any
-         ? Ctx & {
-             props: P,
-             expose: (
 @@ -122,6 +120,10 @@ function transformCtx(node, root, index, options) {
  	else addCode(codes, result);
  	return ctxName;
@@ -56,7 +35,7 @@ index 2303eee6f5de9dc780363acf500eb95bad3f0b47..2ac646a65e6372fd0d08a9fa6efcaed3
  				codes,
  				ast,
 diff --git a/dist/jsx-directive.js b/dist/jsx-directive.js
-index c8a8d4c79afe1ceecc68eacab1938262d3cd658e..b113fcde6c3b9c34308ed873e38b39158cf6614c 100644
+index c8a8d4c79afe1ceecc68eacab1938262d3cd658e..289718bd996af6b2fdaf783fe674c6d76bd09b3d 100644
 --- a/dist/jsx-directive.js
 +++ b/dist/jsx-directive.js
 @@ -1,4 +1,3 @@
@@ -64,8 +43,9 @@ index c8a8d4c79afe1ceecc68eacab1938262d3cd658e..b113fcde6c3b9c34308ed873e38b3915
  import { jsx_directive_default, plugin } from "./jsx-directive-Cfx4Hdxx.js";
  
  export { jsx_directive_default as default, plugin as "module.exports" };
+\ No newline at end of file
 diff --git a/dist/jsx-ref-DZlb-F7c.js b/dist/jsx-ref-DZlb-F7c.js
-index ffe0b9f6eab21f435b60e4eeb32e0931d629a1bd..52897702b7bd76e92d9ce90e1e29668ca88e66f4 100644
+index ffe0b9f6eab21f435b60e4eeb32e0931d629a1bd..a874bc6b4b38e64ee4fa7ea061070498408301cf 100644
 --- a/dist/jsx-ref-DZlb-F7c.js
 +++ b/dist/jsx-ref-DZlb-F7c.js
 @@ -1,5 +1,4 @@
