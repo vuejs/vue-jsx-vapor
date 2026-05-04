@@ -60,11 +60,11 @@ fn camel_modifier() {
 fn camel_modifier_with_no_expression() {
   let code = transform("<div foo-bar_camel />", None).code;
   assert_snapshot!(code, @r#"
-  import { setAttr as _setAttr, template as _template } from "vue";
+  import { setProp as _setProp, template as _template } from "vue";
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_setAttr(_n0, "foo-bar", true);
+  	_setProp(_n0, "fooBar", true);
   	return _n0;
   })();
   "#);
@@ -243,6 +243,24 @@ fn starts_with_underline() {
   		_setDOMProp(_n0, "_id", id);
   		_setDOMProp(_n0, "__id", id);
   	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn namespace_prop() {
+  let code = transform(
+    r#"<div xmlns:xlink="http://www.w3.org/1999/xlink" foo:bar={foo} />"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
+  const _t0 = _template("<div xmlns:xlink=http://www.w3.org/1999/xlink>", true);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setProp(_n0, "foo:bar", foo));
   	return _n0;
   })();
   "#);
