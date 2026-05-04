@@ -110,9 +110,9 @@ importers:
       '@vue-jsx-vapor/babel':
         specifier: 2.6.8
         version: 2.6.8
-      '@vue-jsx-vapor/compiler-rs':
+      '@vue-jsx-vapor/compiler':
         specifier: workspace:*
-        version: link:../packages/compiler-rs
+        version: link:../packages/compiler
       '@vue/babel-plugin-jsx':
         specifier: ^2.0.1
         version: 2.0.1(@babel/core@7.29.0)
@@ -172,7 +172,7 @@ importers:
         specifier: ^9.5.2
         version: 9.6.1
 
-  packages/compiler-rs:
+  packages/compiler:
     devDependencies:
       '@emnapi/core':
         specifier: ^1.10.0
@@ -269,9 +269,9 @@ importers:
 
   packages/vue-jsx-vapor:
     dependencies:
-      '@vue-jsx-vapor/compiler-rs':
+      '@vue-jsx-vapor/compiler':
         specifier: workspace:*
-        version: link:../compiler-rs
+        version: link:../compiler
       '@vue-jsx-vapor/macros':
         specifier: workspace:*
         version: link:../macros
@@ -6967,7 +6967,7 @@ snapshots:
       es-toolkit: 1.42.0
       js-yaml: 4.1.0
       obug: 2.1.1
-      semver: 7.7.3
+      semver: 7.7.4
       typanion: 3.14.0
     optionalDependencies:
       '@emnapi/runtime': 1.10.0

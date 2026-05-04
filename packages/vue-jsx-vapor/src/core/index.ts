@@ -1,4 +1,4 @@
-import { transform } from '@vue-jsx-vapor/compiler-rs'
+import { transform } from '@vue-jsx-vapor/compiler'
 import type { Options } from '../options'
 
 export type { Options }

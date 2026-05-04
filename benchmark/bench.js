@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { transformSync } from '@babel/core'
 import vueJsxVapor from '@vue-jsx-vapor/babel'
-import { transform as rsTransform } from '@vue-jsx-vapor/compiler-rs'
+import { transform as rsTransform } from '@vue-jsx-vapor/compiler'
 import vueJsx from '@vue/babel-plugin-jsx'
 import { writeFileSync } from 'node:fs'
 import path from 'node:path'

@@ -3,11 +3,7 @@ import vueJsxVapor from './packages/eslint/src/index'
 
 export default [
   {
-    ignores: [
-      '**/wasi-worker**',
-      '**/compiler-rs.wasi**',
-      '**/tutorial/**/*.tsx',
-    ],
+    ignores: ['**/wasi-worker**', '**/compiler.wasi**', '**/tutorial/**/*.tsx'],
   },
   ...(await sxzz()
     .removeRules(

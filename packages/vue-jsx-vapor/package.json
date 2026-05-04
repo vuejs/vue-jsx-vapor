@@ -173,7 +173,7 @@
     }
   },
   "dependencies": {
-    "@vue-jsx-vapor/compiler-rs": "workspace:*",
+    "@vue-jsx-vapor/compiler": "workspace:*",
     "@vue-jsx-vapor/macros": "workspace:*",
     "@vue-jsx-vapor/runtime": "workspace:*",
     "@vue/shared": "catalog:",

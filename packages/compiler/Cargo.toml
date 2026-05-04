@@ -1,0 +1,72 @@
+[package]
+authors = ["zhiyuanzmj <260480378@qq.com>"]
+edition = "2024"
+name = "compiler"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["napi"]
+napi = []
+
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.dependencies]
+napi = { version = "3.8.6", features = ["napi9"] }
+napi-derive = "3.5.5"
+
+oxc_parser = "0.128.0"
+oxc_ast = "0.128.0"
+oxc_allocator = "0.128.0"
+oxc_ast_visit = "0.128.0"
+oxc_semantic = "0.128.0"
+oxc_codegen = "0.128.0"
+oxc_span = "0.128.0"
+phf = "0.13.1"
+indexmap = "2.14.0"
+html-escape = "0.2.13"
+
+vdom = { path = "crates/vdom" }
+vapor = { path = "crates/vapor" }
+common = { path = "crates/common" }
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+
+oxc_parser = { workspace = true }
+oxc_ast = { workspace = true }
+oxc_ast_visit = { workspace = true }
+oxc_allocator = { workspace = true }
+oxc_semantic = { workspace = true }
+oxc_span = { workspace = true }
+oxc_codegen = { workspace = true }
+
+common = { workspace = true }
+vapor = { workspace = true }
+vdom = { workspace = true }
+
+[dev-dependencies]
+insta = "1.47.2"
+criterion = "0.7.0"
+
+[[bench]]
+name = "bench_vdom"
+harness = false
+
+[[bench]]
+name = "bench_vapor"
+harness = false
+
+[build-dependencies]
+napi-build = "2"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = "symbols"
+# panic = "abort"

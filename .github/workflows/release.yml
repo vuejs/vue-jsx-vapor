@@ -1,7 +1,7 @@
 name: Release
 env:
   DEBUG: napi:*
-  APP_NAME: compiler-rs
+  APP_NAME: compiler
   MACOSX_DEPLOYMENT_TARGET: '10.13'
   CARGO_INCREMENTAL: '1'
 permissions:
@@ -30,7 +30,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./packages/compiler-rs
+        working-directory: ./packages/compiler
 
     steps:
       - uses: actions/checkout@v5
@@ -100,7 +100,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./packages/compiler-rs
+        working-directory: ./packages/compiler
 
     steps:
       - uses: actions/checkout@v5
@@ -128,8 +128,8 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             ~/.napi-rs
-            ./packages/compiler-rs/.cargo-cache
-            ./packages/compiler-rs/target/
+            ./packages/compiler/.cargo-cache
+            ./packages/compiler/target/
           key: ${{ matrix.settings.target }}-cargo-${{ matrix.settings.host }}
       - uses: mlugg/setup-zig@v2
         if: ${{ contains(matrix.settings.target, 'musl') }}
@@ -163,21 +163,21 @@ jobs:
         if: matrix.settings.target != 'wasm32-wasip1-threads'
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: './packages/compiler-rs/*.node'
+          path: './packages/compiler/*.node'
           if-no-files-found: error
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         if: matrix.settings.target == 'wasm32-wasip1-threads'
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: './packages/compiler-rs/*.wasm'
+          path: './packages/compiler/*.wasm'
           if-no-files-found: error
   build-freebsd:
     runs-on: ubuntu-latest
     name: Build FreeBSD
     defaults:
       run:
-        working-directory: ./packages/compiler-rs
+        working-directory: ./packages/compiler
     steps:
       - uses: actions/checkout@v5
       - name: Build
@@ -221,7 +221,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bindings-freebsd
-          path: ./packages/compiler-rs/${{ env.APP_NAME }}.*.node
+          path: ./packages/compiler/${{ env.APP_NAME }}.*.node
           if-no-files-found: error
   test-macOS-windows-binding:
     name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
@@ -246,7 +246,7 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
     defaults:
       run:
-        working-directory: ./packages/compiler-rs
+        working-directory: ./packages/compiler
     steps:
       - uses: actions/checkout@v5
       - name: setup pnpm
@@ -267,7 +267,7 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: ./packages/compiler-rs/.
+          path: ./packages/compiler/.
       - name: List packages
         run: ls -R .
         shell: bash
@@ -292,7 +292,7 @@ jobs:
     runs-on: ${{ contains(matrix.target, 'aarch64') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     defaults:
       run:
-        working-directory: ./packages/compiler-rs
+        working-directory: ./packages/compiler
     steps:
       - uses: actions/checkout@v5
       - name: setup pnpm
@@ -328,7 +328,7 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: bindings-${{ matrix.target }}
-          path: ./packages/compiler-rs/.
+          path: ./packages/compiler/.
       - name: List packages
         run: ls -R .
         shell: bash
@@ -356,7 +356,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./packages/compiler-rs
+        working-directory: ./packages/compiler
     steps:
       - uses: actions/checkout@v5
       - name: setup pnpm
@@ -372,7 +372,7 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: bindings-wasm32-wasip1-threads
-          path: ./packages/compiler-rs/.
+          path: ./packages/compiler/.
       - name: List packages
         run: ls -R .
         shell: bash
@@ -391,7 +391,7 @@ jobs:
       - test-wasi
     defaults:
       run:
-        working-directory: ./packages/compiler-rs
+        working-directory: ./packages/compiler
     steps:
       - uses: actions/checkout@v5
       - name: setup pnpm
@@ -406,7 +406,7 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v5
         with:
-          path: ./packages/compiler-rs/artifacts
+          path: ./packages/compiler/artifacts
       - name: create npm dirs
         run: pnpm napi create-npm-dirs
       - name: Move artifacts
@@ -424,8 +424,8 @@ jobs:
             npm publish --access public
             cd ../../
             pnpm install --no-frozen-lockfile
-            pnpm run --filter="./packages/*" --filter="!compiler-rs" --parallel build
-            pnpm publish --filter="./packages/*" --filter="!compiler-rs" --access public --no-git-checks
+            pnpm run --filter="./packages/*" --filter="!compiler" --parallel build
+            pnpm publish --filter="./packages/*" --filter="!compiler" --access public --no-git-checks
           else
             echo "Not a release, skipping publish"
           fi
