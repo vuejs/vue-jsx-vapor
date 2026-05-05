@@ -38,6 +38,12 @@
       "import": "./dist/rspack.js",
       "require": "./dist/rspack.cjs"
     },
+    "./rsbuild": {
+      "types": "./dist/rsbuild.d.ts",
+      "jsx-vapor-dev": "./src/rsbuild.ts",
+      "import": "./dist/rsbuild.js",
+      "require": "./dist/rsbuild.cjs"
+    },
     "./vite": {
       "types": "./dist/vite.d.ts",
       "jsx-vapor-dev": "./src/vite.ts",
