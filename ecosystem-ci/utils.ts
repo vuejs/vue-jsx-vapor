@@ -141,6 +141,7 @@ export function applyOverrides(dir: string, overrides: Overrides) {
 
   pkg.pnpm ??= {}
   pkg.pnpm.overrides = { ...pkg.pnpm.overrides, ...overrides }
+  pkg.packageManager = 'pnpm@11.0.4'
 
   const workspacePath = path.join(dir, 'pnpm-workspace.yaml')
   if (fs.existsSync(workspacePath)) {

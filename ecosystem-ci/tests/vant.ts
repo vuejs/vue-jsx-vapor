@@ -4,9 +4,9 @@ import type { RunOptions } from '../types.ts'
 export default async (options: RunOptions) => {
   await runInRepo({
     ...options,
-    repo: 'zhiyuanzmj/naive-ui',
+    repo: 'zhiyuanzmj/vant',
     branch: 'vue-jsx-compiler',
-    install: 'pnpm install --no-frozen-lockfile --ignore-workspace',
+    install: 'pnpm install --no-frozen-lockfile',
     test: 'test',
   })
 }
