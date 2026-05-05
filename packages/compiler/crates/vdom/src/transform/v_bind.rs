@@ -18,7 +18,7 @@ pub fn transform_v_bind<'a>(
 
   let name_string = match &dir.name {
     JSXAttributeName::Identifier(name) => name.name.as_ref(),
-    JSXAttributeName::NamespacedName(_) => return None,
+    JSXAttributeName::NamespacedName(name) => name.span.source_text(context.source_text),
   };
   let name_splited: Vec<&str> = resolve_prop_name(name_string);
   let modifiers = name_splited[1..].to_vec();

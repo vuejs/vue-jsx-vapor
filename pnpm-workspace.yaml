@@ -5,9 +5,11 @@ packages:
   - benchmark
   - ecosystem-ci
 
-allowBuilds:
-  esbuild: true
-  vue-demi: true
+overrides:
+  estree-walker: 2.0.2
+  ts-macro: 'catalog:'
+patchedDependencies:
+  '@vue-macros/volar': patches/@vue-macros__volar.patch
 
 catalog:
   '@nuxt/kit': ^3.21.4
@@ -27,9 +29,6 @@ catalog:
   vitest: ^4.1.5
   vue: 3.6.0-beta.10
 
-patchedDependencies:
-  '@vue-macros/volar': patches/@vue-macros__volar.patch
-
-overrides:
-  estree-walker: '2.0.2'
-  ts-macro: 'catalog:'
+allowBuilds:
+  esbuild: true
+  vue-demi: true

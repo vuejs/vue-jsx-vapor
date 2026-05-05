@@ -23,6 +23,7 @@
     ".": "./dist/index.js",
     "./astro": "./dist/astro.js",
     "./rspack": "./dist/rspack.js",
+    "./rsbuild": "./dist/rsbuild.js",
     "./vite": "./dist/vite.js",
     "./webpack": "./dist/webpack.js",
     "./rollup": "./dist/rollup.js",

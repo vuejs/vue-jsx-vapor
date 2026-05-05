@@ -193,3 +193,23 @@ fn jsx_in_expression_container() {
   _openBlock(), _createElementBlock(_Fragment, null, [(_openBlock(), _createElementBlock("div", _hoisted_1))], 64);
   "#);
 }
+
+#[test]
+fn namespace_prop() {
+  let code = transform(
+    r#"<div xmlns:xlink="http://www.w3.org/1999/xlink" foo:bar={foo} />"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["foo:bar"];
+  _openBlock(), _createElementBlock("div", {
+  	"xmlns:xlink": "http://www.w3.org/1999/xlink",
+  	"foo:bar": foo
+  }, null, 8, _hoisted_1);
+  "#);
+}

@@ -1,7 +1,7 @@
-<script vapor lang="tsx">
-const Comp = <legend>Component</legend>
+<script setup vapor lang="tsx">
+const Comp = () => <legend>Component</legend>
 </script>
 
 <template>
-  <Comp></Comp>
+  <Comp />
 </template>

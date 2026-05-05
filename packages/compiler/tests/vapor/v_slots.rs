@@ -135,6 +135,54 @@ fn v_slot_with_v_slots() {
 }
 
 #[test]
+fn v_slots_with_children() {
+  let code = transform(
+    "<Comp v-slots={{ foo: () => <div /> }}><div /></Comp>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { template as _template } from "vue";
+  const _t0 = _template("<div>");
+  const _t1 = _template("<div>", true);
+  (() => {
+  	const _n0 = _createComponent(Comp, null, { $: [{
+  		default: () => (() => {
+  			const _n0 = _t0();
+  			return _n0;
+  		})(),
+  		foo: () => (() => {
+  			const _n0 = _t1();
+  			return _n0;
+  		})()
+  	}] }, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_slots_dynamic_with_children() {
+  let code = transform("<Comp v-slots={slots}><div /></Comp>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { template as _template } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n0 = _createComponent(Comp, null, { $: [{
+  		...slots,
+  		default: () => (() => {
+  			const _n0 = _t0();
+  			return _n0;
+  		})()
+  	}] }, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn should_raise_error_if_not_component() {
   let error = RefCell::new(None);
   transform(
@@ -147,21 +195,6 @@ fn should_raise_error_if_not_component() {
     }),
   );
   assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMisplaced));
-}
-
-#[test]
-fn should_raise_error_if_has_children() {
-  let error = RefCell::new(None);
-  transform(
-    "<Comp v-slots={obj}> </Comp>",
-    Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
-      ..Default::default()
-    }),
-  );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMixedSlotUsage));
 }
 
 #[test]
