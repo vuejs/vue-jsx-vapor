@@ -3,11 +3,12 @@ use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
   ast::{
-    Expression, JSXAttributeItem, JSXAttributeValue, JSXChild, JSXElement, NumberBase,
-    ObjectPropertyKind,
+    Expression, FormalParameterKind, JSXAttributeItem, JSXAttributeValue, JSXChild, JSXElement,
+    NumberBase, ObjectPropertyKind,
   },
 };
-use oxc_span::{GetSpan, SPAN};
+use oxc_semantic::ScopeFlags;
+use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{ast::NodeTypes, transform::TransformContext};
 use common::{
@@ -74,15 +75,6 @@ pub unsafe fn transform_v_slots<'a>(
       return None;
     }
 
-    if unsafe { &*node_ptr }
-      .children
-      .iter()
-      .any(|c| !is_empty_text(c))
-    {
-      context.options.on_error.as_ref()(ErrorCodes::VSlotMixedSlotUsage, node_span);
-      return None;
-    }
-
     if let Some(JSXAttributeValue::ExpressionContainer(value)) = &mut dir.value
       && let Some(expression) = value.expression.as_expression_mut()
     {
@@ -101,6 +93,9 @@ pub unsafe fn transform_v_slots<'a>(
           )),
         )
       }
+
+      proccess_default_children(node_ptr, expression, context);
+
       let mut has_dynamic_slots = true;
       let is_for_component = directives.tag_name == "For";
       if let Expression::ObjectExpression(obj) = expression
@@ -230,5 +225,88 @@ pub unsafe fn transform_v_slots<'a>(
     }
   } else {
     None
+  }
+}
+
+fn proccess_default_children<'a>(
+  node_ptr: *mut oxc_allocator::Box<JSXElement<'a>>,
+  expression: &mut Expression<'a>,
+  context: &'a TransformContext,
+) {
+  let ast = context.ast;
+  let node = unsafe { &*node_ptr };
+  if node.children.iter().any(|c| !is_empty_text(c)) {
+    let (scope_id, node_id) = {
+      let semantic = &context.options.semantic.borrow();
+      let node = semantic.nodes().get_node(node.node_id());
+      (node.scope_id(), node.id())
+    };
+    let semantic = &mut context.options.semantic.borrow_mut();
+    let scope_id = semantic.scoping_mut().add_scope(
+      Some(scope_id),
+      node_id,
+      ScopeFlags::Arrow | ScopeFlags::Function,
+    );
+    let default_slot = ast.object_property_kind_object_property(
+      SPAN,
+      oxc_ast::ast::PropertyKind::Init,
+      ast.property_key_static_identifier(SPAN, "default"),
+      ast.expression_arrow_function_with_scope_id_and_pure_and_pife(
+        SPAN,
+        true,
+        false,
+        NONE,
+        ast.alloc_formal_parameters(
+          SPAN,
+          FormalParameterKind::ArrowFormalParameters,
+          ast.vec(),
+          NONE,
+        ),
+        NONE,
+        ast.alloc_function_body(
+          SPAN,
+          ast.vec(),
+          ast.vec1(
+            ast.statement_expression(
+              SPAN,
+              ast.expression_jsx_element(
+                Span::new(0, 0),
+                ast.jsx_opening_element(
+                  SPAN,
+                  ast.jsx_element_name_identifier(SPAN, ""),
+                  NONE,
+                  ast.vec(),
+                ),
+                unsafe { &mut *node_ptr }
+                  .children
+                  .take_in(context.allocator),
+                Some(ast.jsx_closing_element(SPAN, ast.jsx_element_name_identifier(SPAN, ""))),
+              ),
+            ),
+          ),
+        ),
+        scope_id,
+        false,
+        false,
+      ),
+      false,
+      false,
+      false,
+    );
+    match expression {
+      Expression::ObjectExpression(obj) => {
+        obj.properties.insert(0, default_slot);
+      }
+      Expression::Identifier(_) => {
+        *expression = ast.expression_object(
+          SPAN,
+          ast.vec_from_array([
+            ast.object_property_kind_spread_property(SPAN, expression.take_in(ast.allocator)),
+            default_slot,
+          ]),
+        );
+      }
+      _ => {}
+    }
   }
 }

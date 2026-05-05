@@ -188,6 +188,53 @@ fn for_component_should_be_dynamic() {
 }
 
 #[test]
+fn v_slots_with_children() {
+  let code = transform(
+    "<Comp v-slots={{ foo: () => 'foo' }}><div /></Comp>",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(Comp, null, {
+  	_: 1,
+  	default: _normalizeSlot(() => (() => {
+  		const _cache = _createVNodeCache("631d214bc2c8427c");
+  		return [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))];
+  	})()),
+  	foo: _normalizeSlot(() => "foo")
+  });
+  "#);
+}
+
+#[test]
+fn v_slots_dynamic_with_children() {
+  let code = transform(
+    "<Comp v-slots={slots}><div /></Comp>",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(Comp, null, {
+  	...slots,
+  	default: () => (() => {
+  		const _cache = _createVNodeCache("631d214bc2c8427c");
+  		return [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))];
+  	})()
+  }, 1024);
+  "#);
+}
+
+#[test]
 fn should_raise_error_if_not_component() {
   let error = RefCell::new(None);
   transform(
@@ -201,22 +248,6 @@ fn should_raise_error_if_not_component() {
     }),
   );
   assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMisplaced));
-}
-
-#[test]
-fn should_raise_error_if_has_children() {
-  let error = RefCell::new(None);
-  transform(
-    "<Comp v-slots={obj}> </Comp>",
-    Some(TransformOptions {
-      interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
-      ..Default::default()
-    }),
-  );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMixedSlotUsage));
 }
 
 #[test]
