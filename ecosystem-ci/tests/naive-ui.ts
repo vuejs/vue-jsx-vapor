@@ -6,7 +6,7 @@ export default async (options: RunOptions) => {
     ...options,
     repo: 'zhiyuanzmj/naive-ui',
     branch: 'vue-jsx-compiler',
-    install: 'pnpm install --no-frozen-lockfile --ignore-workspace',
+    install: 'pnpm install --no-frozen-lockfile',
     test: 'test',
   })
 }
