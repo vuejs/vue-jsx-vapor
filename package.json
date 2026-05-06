@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "version": "3.2.12",
+  "version": "3.2.13",
   "packageManager": "pnpm@11.0.4",
   "description": "Vue JSX Vapor",
   "license": "MIT",

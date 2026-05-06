@@ -141,15 +141,14 @@ export function applyOverrides(dir: string, overrides: Overrides) {
 
   pkg.pnpm ??= {}
   pkg.pnpm.overrides = { ...pkg.pnpm.overrides, ...overrides }
+  pkg.packageManager = 'pnpm@11.0.4'
 
   const workspacePath = path.join(dir, 'pnpm-workspace.yaml')
-  if (fs.existsSync(workspacePath)) {
-    const content = fs.readFileSync(workspacePath, 'utf8')
-    const suffix = content.includes('dangerouslyAllowAllBuilds')
-      ? ''
-      : '\ndangerouslyAllowAllBuilds: true\n'
-    fs.writeFileSync(workspacePath, content + suffix)
-  }
+  const content = fs.existsSync(workspacePath)? fs.readFileSync(workspacePath, 'utf8'):''
+  const suffix = content.includes('dangerouslyAllowAllBuilds')
+    ? ''
+    : '\ndangerouslyAllowAllBuilds: true\n'
+  fs.writeFileSync(workspacePath, content + suffix)
 
   fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
   console.log('Applied overrides:', overrides)

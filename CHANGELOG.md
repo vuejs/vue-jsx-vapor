@@ -1,3 +1,18 @@
+## [3.2.13](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.12...v3.2.13) (2026-05-05)
+
+
+### Bug Fixes
+
+* **compiler:** handle namespaced props correctly ([f6520ae](https://github.com/vuejs/vue-jsx-vapor/commit/f6520aebdd631dff232e99c23e07dea4e2a2c234))
+
+
+### Features
+
+* add rsbuild plugin ([368e8ce](https://github.com/vuejs/vue-jsx-vapor/commit/368e8ce87334911b1598ac4f8258adb6cb9fd305))
+* **compiler:** v-slots and children co-usage ([1f30eb6](https://github.com/vuejs/vue-jsx-vapor/commit/1f30eb6e575c334af6ef1b896712d932feb98b35))
+
+
+
 ## [3.2.12](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.11...v3.2.12) (2026-05-03)
 
 
