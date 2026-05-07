@@ -50,7 +50,7 @@
     "bumpp": "^11.0.1",
     "conventional-changelog-cli": "^5.0.0",
     "eslint": "^10.3.0",
-    "tsdown": "^0.22.0-beta.3",
+    "tsdown": "^0.20.3",
     "typescript": "^6.0.3",
     "unplugin-raw": "^0.7.0",
     "vite": "catalog:",
