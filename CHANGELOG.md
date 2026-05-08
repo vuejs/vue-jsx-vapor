@@ -1,3 +1,12 @@
+## [3.2.14](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.13...v3.2.14) (2026-05-08)
+
+
+### Bug Fixes
+
+* **volar:** CJS default re-bundler ([7dc7aa3](https://github.com/vuejs/vue-jsx-vapor/commit/7dc7aa3dc594a0b04e5bdfd8e8de18ac67e099d5)), closes [#57](https://github.com/vuejs/vue-jsx-vapor/issues/57)
+
+
+
 ## [3.2.13](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.12...v3.2.13) (2026-05-05)
 
 
