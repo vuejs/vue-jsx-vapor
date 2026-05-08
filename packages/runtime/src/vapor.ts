@@ -60,7 +60,7 @@ type Tail<T extends any[]> = T extends [any, ...infer R] ? R : never
 
 export const createComponent = (
   type: VaporComponent | typeof Fragment | string,
-  ...args: Tail<Parameters<typeof Vue.createComponent>>
+  ...args: Tail<Parameters<typeof Vue.createComponentWithFallback>>
 ) => {
   if (type === Fragment) {
     const slots = args[1]
