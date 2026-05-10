@@ -254,7 +254,7 @@ impl<'a> TransformContext<'a> {
       tag,
       props,
       children,
-      patch_flag,
+      mut patch_flag,
       dynamic_props,
       directives,
       is_block,
@@ -263,6 +263,10 @@ impl<'a> TransformContext<'a> {
       v_for,
       ..
     } = node;
+
+    if !self.options.optimize {
+      patch_flag = None;
+    }
 
     // skip v-if / else-if generated fragment
     if tag.is_empty()
@@ -281,7 +285,14 @@ impl<'a> TransformContext<'a> {
         },
       )
     } else {
-      get_vnode_helper(self.options.ssr, is_component)
+      get_vnode_helper(
+        self.options.ssr,
+        if !self.options.optimize {
+          true
+        } else {
+          is_component
+        },
+      )
     };
     let mut result = ast.expression_call(
       SPAN,

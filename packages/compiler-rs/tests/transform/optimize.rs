@@ -506,3 +506,22 @@ fn should_not_optimize_in_define_component_with_setup() {
   } });
   "#);
 }
+
+#[test]
+fn disable_optimize() {
+  let code = transform(
+    r#"<div foo={foo}>{bar}</div>"#,
+    Some(TransformOptions {
+      interop: true,
+      optimize: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNode as _createVNode } from "vue";
+  const _hoisted_1 = ["foo"];
+  _createVNode("div", { foo }, [_normalizeVNode(bar)], null, _hoisted_1);
+  "#);
+}

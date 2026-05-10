@@ -103,7 +103,7 @@ pub unsafe fn transform_text<'a>(
           if let Expression::ConditionalExpression(exp) = exp {
             transform_condition_expression(exp, unsafe { &mut *context_node }, context);
             continue;
-          } else if exp.is_literal() {
+          } else if exp.is_literal() || !context.options.optimize {
             call_args.push(
               context
                 .process_expression(child.expression.to_expression_mut())

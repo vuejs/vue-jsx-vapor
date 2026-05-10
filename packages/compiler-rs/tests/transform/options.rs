@@ -62,8 +62,8 @@ pub fn optimize_slots() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createVNode as _createVNode, withCtx as _withCtx } from "vue";
   _createVNode(Comp, null, {
-  	default: _withCtx(() => [_normalizeVNode(() => foo)]),
+  	default: _withCtx(() => [_normalizeVNode(foo)]),
   	_: 2
-  }, 1024);
+  });
   "#);
 }
