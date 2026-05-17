@@ -213,3 +213,23 @@ fn namespace_prop() {
   }, null, 8, _hoisted_1);
   "#);
 }
+
+#[test]
+fn deduped_props() {
+  let code = transform(
+    r#"<div foo="foo" foo={foo} />"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["foo"];
+  _openBlock(), _createElementBlock("div", {
+  	foo: "foo",
+  	foo
+  }, null, 8, _hoisted_1);
+  "#);
+}

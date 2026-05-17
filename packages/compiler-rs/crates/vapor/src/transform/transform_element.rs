@@ -602,24 +602,21 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
       continue;
     };
     let name = &key.value;
-    let existing = deduped.iter_mut().find(|i| {
-      if let Expression::StringLiteral(key) = &i.key {
-        key.value == name
-      } else {
-        false
-      }
-    });
-    // prop names and event handler names can be the same but serve different purposes
-    // e.g. `:appear="true"` is a prop while `@appear="handler"` is an event handler
-    if let Some(existing) = existing
+    if (name == "style" || name == "class" || prop.handler)
+      && let Some(existing) = deduped.iter_mut().find(|i| {
+        if let Expression::StringLiteral(key) = &i.key {
+          key.value == name
+        } else {
+          false
+        }
+      })
+      // prop names and event handler names can be the same but serve different purposes
+      // e.g. `:appear="true"` is a prop while `@appear="handler"` is an event handler
       && existing.handler.eq(&prop.handler)
     {
-      if name == "style" || name == "class" || prop.handler {
-        for value in prop.values {
-          existing.values.push(value)
-        }
+      for value in prop.values {
+        existing.values.push(value)
       }
-    // unexpected duplicate, should have emitted error during parse
     } else {
       deduped.push(prop);
     }

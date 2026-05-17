@@ -265,3 +265,17 @@ fn namespace_prop() {
   })();
   "#);
 }
+
+#[test]
+fn deduped_props() {
+  let code = transform(r#"<div foo="foo" foo={foo} />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
+  const _t0 = _template("<div foo=foo>", true);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setProp(_n0, "foo", foo));
+  	return _n0;
+  })();
+  "#);
+}
