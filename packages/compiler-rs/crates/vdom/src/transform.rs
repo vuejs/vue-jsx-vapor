@@ -95,8 +95,6 @@ impl<'a> TransformContext<'a> {
   }
 
   pub fn transform(&'a self, expression: Expression<'a>) -> Expression<'a> {
-    let allocator = self.allocator;
-    self.collect_scope_identifiers(expression.node_id());
     if let Expression::JSXFragment(frag) = &expression
       && let Some(child) = get_first_child(&frag.children)
       && let JSXChild::Text(child) = child
@@ -105,11 +103,70 @@ impl<'a> TransformContext<'a> {
         .ast
         .expression_string_literal(child.span, child.value, child.raw);
     }
-    *self.root_node.borrow_mut() = RootNode::from(allocator, expression, false);
+    let node_id = expression.node_id();
+    self.collect_scope_identifiers(node_id);
+    *self.root_node.borrow_mut() = RootNode::from(
+      self.ast,
+      self.options,
+      expression,
+      false,
+      self.get_key(node_id),
+    );
     unsafe {
       self.transform_node(self.root_node.as_ptr(), None);
     }
     self.generate()
+  }
+
+  fn get_key(&self, node_id: NodeId) -> Option<i32> {
+    if !self.options.optimize {
+      return None;
+    }
+
+    let semantic = self.options.semantic.borrow();
+    let node = semantic.nodes().get_node(node_id);
+    let scope_node_id = semantic.scoping().get_node_id(node.scope_id());
+    let scope_node = semantic.nodes().kind(scope_node_id);
+    if matches!(
+      scope_node,
+      AstKind::IfStatement(_) | AstKind::SwitchStatement(_)
+    ) || (matches!(scope_node, AstKind::BlockStatement(_))
+      && matches!(
+        semantic.nodes().parent_kind(scope_node_id),
+        AstKind::SwitchCase(_) | AstKind::IfStatement(_)
+      ))
+    {
+      *self.options.key_index.borrow_mut() += 1;
+      return Some(*self.options.key_index.borrow());
+    }
+
+    for ancestor in semantic.nodes().ancestors(node_id) {
+      if ancestor.id() == scope_node_id
+        || matches!(
+          ancestor.kind(),
+          AstKind::JSXElement(_) | AstKind::JSXFragment(_)
+        )
+      {
+        break;
+      }
+      match ancestor.kind() {
+        AstKind::IfStatement(_) => {
+          *self.options.key_index.borrow_mut() += 1;
+          return Some(*self.options.key_index.borrow());
+        }
+        AstKind::ConditionalExpression(condition_exp)
+          if !matches!(
+            semantic.nodes().parent_kind(condition_exp.node_id()),
+            AstKind::JSXExpressionContainer(_)
+          ) =>
+        {
+          *self.options.key_index.borrow_mut() += 1;
+          return Some(*self.options.key_index.borrow());
+        }
+        _ => {}
+      }
+    }
+    None
   }
 
   fn collect_scope_identifiers(&self, node_id: NodeId) {

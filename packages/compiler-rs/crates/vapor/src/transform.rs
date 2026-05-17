@@ -131,9 +131,8 @@ impl<'a> TransformContext<'a> {
   }
 
   pub fn transform(&'a self, expression: Expression<'a>) -> Expression<'a> {
-    let allocator = self.allocator;
     let ir = RootIRNode::default();
-    *self.node.borrow_mut() = RootNode::from(allocator, expression, true);
+    *self.node.borrow_mut() = RootNode::from(self.ast, self.options, expression, true, None);
     *self.block.borrow_mut() = BlockIRNode::new();
     *self.ir.borrow_mut() = ir;
     self.transform_node(None, None);

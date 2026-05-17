@@ -525,3 +525,94 @@ fn disable_optimize() {
   _createVNode("div", { foo }, [_normalizeVNode(bar)], null, _hoisted_1);
   "#);
 }
+
+#[test]
+fn if_statement_return_jsx() {
+  let code = transform(
+    r#"function Comp(props) {
+      if (props.foo) {
+        return <div key={props.foo}>{props.foo}</div>
+      } else if (props.bar) return (<div />)
+      return <span />
+    }"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = { key: 1 };
+  const _hoisted_2 = { key: 2 };
+  function Comp(props) {
+  	if (props.foo) {
+  		return _openBlock(), _createElementBlock("div", _hoisted_1, [_normalizeVNode(() => props.foo)]);
+  	} else if (props.bar) return _openBlock(), _createElementBlock("div", _hoisted_2);
+  	return _openBlock(), _createElementBlock("span");
+  }
+  "#);
+}
+
+#[test]
+fn conditional_expression_return_jsx() {
+  let code = transform(
+    r#"function Comp(props) {
+      return props.foo ? (<div>{props.foo}</div>) : props.bar ? <div /> : <span />
+    }"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = { key: 1 };
+  const _hoisted_2 = { key: 2 };
+  const _hoisted_3 = { key: 3 };
+  function Comp(props) {
+  	return props.foo ? (_openBlock(), _createElementBlock("div", _hoisted_1, [_normalizeVNode(() => props.foo)])) : props.bar ? (_openBlock(), _createElementBlock("div", _hoisted_2)) : (_openBlock(), _createElementBlock("span", _hoisted_3));
+  }
+  "#);
+}
+
+#[test]
+fn switch_return_jsx() {
+  let code = transform(
+    r#"function Comp(props) {
+      switch(props.foo) {
+        case 'foo': {
+          return <div>{props.foo}</div>
+        }
+        case 'bar': 
+          return [<div />]
+        default:
+          return <span />
+      }
+    }"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = { key: 1 };
+  const _hoisted_2 = { key: 2 };
+  const _hoisted_3 = { key: 3 };
+  function Comp(props) {
+  	switch (props.foo) {
+  		case "foo": {
+  			return _openBlock(), _createElementBlock("div", _hoisted_1, [_normalizeVNode(() => props.foo)]);
+  		}
+  		case "bar": return [(_openBlock(), _createElementBlock("div", _hoisted_2))];
+  		default: return _openBlock(), _createElementBlock("span", _hoisted_3);
+  	}
+  }
+  "#);
+}
