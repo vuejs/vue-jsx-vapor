@@ -127,7 +127,6 @@ pub struct SetDynamicEventsIRNode<'a> {
 
 #[derive(Debug)]
 pub struct SetTextIRNode<'a> {
-  pub set_text: bool,
   pub element: i32,
   pub values: Vec<Expression<'a>>,
   pub generated: bool,

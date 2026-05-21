@@ -70,7 +70,6 @@ pub fn transform_v_text<'a>(
       context_block,
       context.is_operation(vec![&exp]),
       OperationNode::SetText(SetTextIRNode {
-        set_text: true,
         values: vec![exp],
         element,
         generated: true,
