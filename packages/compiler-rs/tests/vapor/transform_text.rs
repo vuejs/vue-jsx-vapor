@@ -14,7 +14,7 @@ fn static_template() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div><div>hello</div><input><span>", true);
+  const _t0 = _template("<div><div>hello</div><input><span>", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -52,7 +52,7 @@ fn consecutive_text() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   (() => {
   	const _n2 = _t0();
   	const _n0 = _createNodes(() => msg, " ");
@@ -67,7 +67,7 @@ fn escapes_raw_static_text() {
 
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div>\xA0", true);
+  const _t0 = _template("<div>\xA0", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -86,7 +86,7 @@ fn escapes_raw_static_text_when_generating_the_template_string() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<code>\xA0&lt;script&gt;\xA0", true);
+  const _t0 = _template("<code>\xA0&lt;script&gt;\xA0", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -99,7 +99,7 @@ fn should_not_escape_quotes_in_root_level_text_nodes() {
   let code = transform(r#"<>Howdy y'all</>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("Howdy y'all");
+  const _t0 = _template("Howdy y'all", false, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -112,7 +112,7 @@ fn should_not_escape_double_quotes_in_root_level_text_nodes() {
   let code = transform(r#"<>Say "hello"</>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("Say \"hello\"");
+  const _t0 = _template("Say \"hello\"", false, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -126,7 +126,7 @@ fn should_not_escape_quotes_in_template_v_if_text() {
   let code = transform(r#"<template v-if="ok">Howdy y'all</template>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("Howdy y'all");
+  const _t0 = _template("Howdy y'all", false, true);
   (() => {
   	const _n0 = _createIf(() => "ok", () => {
   		const _n2 = _t0();
@@ -144,7 +144,7 @@ fn should_not_escape_quotes_in_component_slot_text() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("Howdy y'all");
+  const _t0 = _template("Howdy y'all", false, true);
   (() => {
   	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
   		const _n0 = _t0();
@@ -179,7 +179,7 @@ fn conditional_expression() {
   import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span> ");
-  const _t1 = _template("<div>fail");
+  const _t1 = _template("<div>fail", false, true);
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
@@ -204,8 +204,8 @@ fn multiple_conditional() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template(" ");
-  const _t1 = _template("<span>");
+  const _t0 = _template(" ", false, true);
+  const _t1 = _template("<span>", false, true);
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _createNodes(() => ok);
@@ -308,9 +308,9 @@ fn expression_map() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div>1", true);
+  const _t0 = _template("<div>1", true, true);
   const _t1 = _template("<span> ", true);
-  const _t2 = _template("<br>", true);
+  const _t2 = _template("<br>", true, true);
   (() => {
   	const _n0 = _createNodes(() => Array.from({ length: count.value }).map((_, index) => {
   		if (index > 1) {
@@ -415,7 +415,7 @@ fn fragment_with_empty_interpolation() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("Parent");
+  const _t0 = _template("Parent", false, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;

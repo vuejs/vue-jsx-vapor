@@ -40,10 +40,18 @@ pub struct SlotScope<'a> {
   pub identifiers: Vec<&'a str>,
 }
 
+#[derive(Debug)]
+pub struct Template {
+  pub content: String,
+  pub ns: i32,
+  pub root: bool,
+  pub _static: bool,
+}
+
 pub struct TransformOptions<'a> {
   pub allocator: Allocator,
   pub semantic: RefCell<Semantic<'a>>,
-  pub templates: RefCell<Vec<(String, bool, i32)>>,
+  pub templates: RefCell<Vec<Template>>,
   pub helpers: RefCell<BTreeSet<&'a str>>,
   pub delegates: RefCell<BTreeSet<&'a str>>,
   pub hoists: RefCell<Vec<Expression<'a>>>,

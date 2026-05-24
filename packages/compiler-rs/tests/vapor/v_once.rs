@@ -94,7 +94,7 @@ fn inside_v_once() {
   let code = transform("<div v-once><div v-once/></div>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div><div>", true);
+  const _t0 = _template("<div><div>", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -107,7 +107,7 @@ fn with_v_if() {
   let code = transform("<div v-if={expr} v-once />", None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", true, true);
   (() => {
   	const _n0 = _createIf(() => expr, () => {
   		const _n2 = _t0();
@@ -123,8 +123,8 @@ fn with_v_if_else() {
   let code = transform("<><div v-if={expr} v-once /><p v-else/></>", None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("<div>");
-  const _t1 = _template("<p>");
+  const _t0 = _template("<div>", false, true);
+  const _t1 = _template("<p>", false, true);
   (() => {
   	const _n0 = _createIf(() => expr, () => {
   		const _n2 = _t0();
@@ -149,7 +149,7 @@ fn with_conditional_expression() {
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span> ");
-  const _t1 = _template("<div>fail");
+  const _t1 = _template("<div>fail", false, true);
   const _t2 = _template("<div>", true);
   (() => {
   	const _n5 = _t2();

@@ -61,8 +61,9 @@ pub unsafe fn transform_children<'a>(
     }
     let mut tag = "";
     let mut next_is_interpolation = false;
+    let is_text_child = matches!(&child, JSXChild::Text(_));
     let exit_context = context.create(
-      if let JSXChild::Text(_) = child
+      if is_text_child
         && let Some(next) = unsafe { &mut *children_ptr }.get_mut(i + 1)
         && let JSXChild::ExpressionContainer(exp) = next
         && !matches!(
@@ -93,31 +94,38 @@ pub unsafe fn transform_children<'a>(
     );
 
     let mut parent_dynamic = context.parent_dynamic.borrow_mut();
-    let child_dynamic = &mut context_block.dynamic;
-    let flags = child_dynamic.flags;
+    let flags = context_block.dynamic.flags;
     if is_fragment_or_component {
       if next_is_interpolation {
         context.template.borrow_mut().clear();
       } else {
-        context.register_template(child_dynamic, Some(tag));
-        context.reference(child_dynamic);
+        context.register_template(
+          context_block,
+          Some(tag),
+          is_text_child || context.can_use_static_template(&context_block, tag),
+        );
+        context.reference(&mut context_block.dynamic);
         if flags & DynamicFlag::NonTemplate as i32 == 0 || flags & DynamicFlag::Insert as i32 != 0 {
-          context_block.returns.push(child_dynamic.id.unwrap());
+          context_block
+            .returns
+            .push(context_block.dynamic.id.unwrap());
         }
       }
     } else {
       parent_children_template.push(Cow::Owned(context.template.take()));
     }
 
-    if child_dynamic.has_dynamic_child
-      || child_dynamic.id.is_some()
+    if context_block.dynamic.has_dynamic_child
+      || context_block.dynamic.id.is_some()
       || flags & DynamicFlag::NonTemplate as i32 != 0
       || flags & DynamicFlag::Insert as i32 != 0
     {
       parent_dynamic.has_dynamic_child = true;
     }
 
-    parent_dynamic.children.insert(i, mem::take(child_dynamic));
+    parent_dynamic
+      .children
+      .insert(i, mem::take(&mut context_block.dynamic));
 
     exit_context();
     i += 1;

@@ -238,10 +238,7 @@ pub fn transform_native_element<'a>(
     template += &format!("</{}>", tag)
   }
 
-  if single_root {
-    let ir = &mut context.ir.borrow_mut();
-    ir.root_template_index = Some(context.options.templates.borrow().len())
-  }
+  *context.template_root.borrow_mut() = single_root;
 
   if let JSXChild::Element(parent_node) = parent_node
     && let JSXElementName::Identifier(name) = &parent_node.opening_element.name
@@ -249,7 +246,7 @@ pub fn transform_native_element<'a>(
   {
     let dynamic = &mut context_block.dynamic;
     context.reference(dynamic);
-    dynamic.template = Some(context.push_template(template, Some(tag)));
+    dynamic.template = Some(context.push_template(template, Some(tag), false));
     dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
   } else {
     *context.template.borrow_mut() = format!("{}{}", context.template.borrow(), template);

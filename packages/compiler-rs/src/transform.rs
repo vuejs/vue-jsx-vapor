@@ -263,8 +263,11 @@ impl<'a> Transform<'a> {
         .iter()
         .enumerate()
         .map(|(index, template)| {
-          let template_literal =
-            Argument::StringLiteral(ast.alloc_string_literal(SPAN, ast.str(&template.0), None));
+          let template_literal = Argument::StringLiteral(ast.alloc_string_literal(
+            SPAN,
+            ast.str(&template.content),
+            None,
+          ));
 
           Statement::VariableDeclaration(
             ast.alloc_variable_declaration(
@@ -284,19 +287,30 @@ impl<'a> Transform<'a> {
                       ast.vec_from_iter(
                         [
                           Some(template_literal),
-                          if template.1 {
-                            Some(ast.expression_boolean_literal(SPAN, template.1).into())
-                          } else if template.2 > 0 {
+                          if template.root {
+                            Some(ast.expression_boolean_literal(SPAN, template.root).into())
+                          } else if template._static || template.ns > 0 {
                             Some(ast.expression_boolean_literal(SPAN, false).into())
                           } else {
                             None
                           },
-                          if template.2 > 0 {
+                          if template._static {
+                            Some(
+                              ast
+                                .expression_boolean_literal(SPAN, template._static)
+                                .into(),
+                            )
+                          } else if template.ns > 0 {
+                            Some(ast.expression_boolean_literal(SPAN, false).into())
+                          } else {
+                            None
+                          },
+                          if template.ns > 0 {
                             Some(
                               ast
                                 .expression_numeric_literal(
                                   SPAN,
-                                  template.2 as f64,
+                                  template.ns as f64,
                                   None,
                                   oxc_ast::ast::NumberBase::Hex,
                                 )

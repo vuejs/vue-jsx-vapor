@@ -31,7 +31,7 @@ fn component_generate_multi_root_component() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("123");
+  const _t0 = _template("123", false, true);
   (() => {
   	const _n0 = _createComponent(Comp);
   	const _n1 = _t0();
@@ -214,7 +214,7 @@ fn static_props_unquoted_when_value_has_no_special_chars() {
   let code = transform("<div id=\"foo\" class=\"bar\" />", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div id=foo class=bar>", true);
+  const _t0 = _template("<div id=foo class=bar>", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -227,7 +227,7 @@ fn static_props_quoted_when_value_contains_whitespace() {
   let code = transform(r#"<div title="has whitespace" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"has whitespace\">", true);
+  const _t0 = _template("<div title=\"has whitespace\">", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -240,7 +240,7 @@ fn static_props_quoted_when_value_contains_right_angle_bracket() {
   let code = transform(r#"<div data-expr="a>b" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div data-expr=\"a>b\">", true);
+  const _t0 = _template("<div data-expr=\"a>b\">", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -253,7 +253,7 @@ fn static_props_quoted_when_value_contains_left_angle_bracket() {
   let code = transform(r#"<div data-expr="a<b" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div data-expr=\"a<b\">", true);
+  const _t0 = _template("<div data-expr=\"a<b\">", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -266,7 +266,7 @@ fn static_props_quoted_when_value_contains_equal_bracket() {
   let code = transform(r#"<div data-expr="a=b" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div data-expr=\"a=b\">", true);
+  const _t0 = _template("<div data-expr=\"a=b\">", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -279,7 +279,7 @@ fn static_props_quoted_when_value_contains_single_quote() {
   let code = transform(r#"<div title="it's" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"it's\">", true);
+  const _t0 = _template("<div title=\"it's\">", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -292,7 +292,7 @@ fn static_props_quoted_when_value_contains_backtick() {
   let code = transform(r#"<div title="foo`bar" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"foo`bar\">", true);
+  const _t0 = _template("<div title=\"foo`bar\">", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -305,7 +305,7 @@ fn static_props_escapes_double_quotes_in_value() {
   let code = transform(r#"<div title='say "hello"' />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"say &quot;hello&quot;\">", true);
+  const _t0 = _template("<div title=\"say &quot;hello&quot;\">", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -340,7 +340,7 @@ fn static_props_space_omitted_after_quoted_attribute() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"has whitespace\"alt=\"&quot;contains quotes&quot;\"data-targets=\"foo>bar\">", true);
+  const _t0 = _template("<div title=\"has whitespace\"alt=\"&quot;contains quotes&quot;\"data-targets=\"foo>bar\">", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -353,7 +353,7 @@ fn props_children() {
   let code = transform("<div id=\"foo\"><span/></div>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div id=foo><span>", true);
+  const _t0 = _template("<div id=foo><span>", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -627,7 +627,7 @@ fn svg() {
   let code = transform(r#"<svg><circle r="40"></circle></svg>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<svg><circle r=40>", true, 1);
+  const _t0 = _template("<svg><circle r=40>", true, true, 1);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -640,7 +640,7 @@ fn math_ml() {
   let code = transform(r#"<math><mrow><mi>x</mi></mrow></math>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<math><mrow><mi>x", true, 2);
+  const _t0 = _template("<math><mrow><mi>x", true, true, 2);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -653,9 +653,9 @@ fn fragment_in_fragment() {
   let code = transform(r#"<>foo<>bar</>baz</>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("foo");
-  const _t1 = _template("bar");
-  const _t2 = _template("baz");
+  const _t0 = _template("foo", false, true);
+  const _t1 = _template("bar", false, true);
+  const _t2 = _template("baz", false, true);
   (() => {
   	const _n0 = _t0();
   	const _n1 = _t1();
@@ -711,8 +711,8 @@ fn is_not_component() {
   .code;
   assert_snapshot!(code, @r#"
   import { createPlainElement as _createPlainElement, template as _template } from "vue";
-  const _t0 = _template("<foo>");
-  const _t1 = _template("<foo:bar>");
+  const _t0 = _template("<foo>", false, true);
+  const _t1 = _template("<foo:bar>", false, true);
   (() => {
   	const _n0 = _createPlainElement("foo-bar");
   	const _n1 = _t0();

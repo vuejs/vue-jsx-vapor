@@ -34,7 +34,7 @@ fn empty_expression() {
   let code = transform(r#"<div foo={} bar=""></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div bar>", true);
+  const _t0 = _template("<div bar>", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -189,7 +189,7 @@ fn number_value() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("<div depth=0>");
+  const _t0 = _template("<div depth=0>", false, true);
   (() => {
   	const _n0 = _t0();
   	const _n1 = _createComponent(Comp, { depth: () => 0 });
@@ -203,7 +203,7 @@ fn class_with_svg_elements() {
   let code = transform(r#"<svg class={cls}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setAttr as _setAttr, template as _template } from "vue";
-  const _t0 = _template("<svg>", true, 1);
+  const _t0 = _template("<svg>", true, false, 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setAttr(_n0, "class", cls, true));
@@ -217,7 +217,7 @@ fn bind_with_svg_elements() {
   let code = transform(r#"<svg {...obj}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<svg>", true, 1);
+  const _t0 = _template("<svg>", true, false, 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [obj], true));

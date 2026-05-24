@@ -6,7 +6,7 @@ fn key() {
   let code = transform("<div key={id} />", None).code;
   assert_snapshot!(code, @r#"
   import { createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   (() => {
   	const _n0 = _createKeyedFragment(() => id, () => {
   		const _n2 = _t0();
@@ -22,7 +22,7 @@ fn key_with_v_once() {
   let code = transform(r#"<div v-once key={id} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -36,7 +36,7 @@ fn key_with_v_if() {
   let code = transform("<div v-if={id} key={id} />", None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   (() => {
   	const _n0 = _createIf(() => id, () => {
   		const _n2 = _createKeyedFragment(() => id, () => {
@@ -63,7 +63,7 @@ fn key_with_anchor_insertion_in_middle() {
   .code;
   assert_snapshot!(code, @r#"
   import { child as _child, createKeyedFragment as _createKeyedFragment, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   const _t1 = _template("<div><div></div><!><div>", true);
   (() => {
   	const _n4 = _t1();
@@ -84,7 +84,7 @@ fn key_in_component() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createKeyedFragment as _createKeyedFragment, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   (() => {
   	const _n3 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
   		const _n0 = _createKeyedFragment(() => key, () => {

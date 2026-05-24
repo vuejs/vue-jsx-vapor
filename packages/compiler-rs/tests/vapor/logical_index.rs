@@ -17,7 +17,7 @@ fn child_nth_child_next_with_logical_index() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { child as _child, createIf as _createIf, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   const _t1 = _template("<div><div></div><!><div></div>", true);
   (() => {
   	const _n5 = _t1();
@@ -52,7 +52,7 @@ fn nth_child_with_logical_index() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { child as _child, createIf as _createIf, next as _next, nthChild as _nthChild, renderEffect as _renderEffect, setInsertionState as _setInsertionState, setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   const _t1 = _template("<div><div></div><!><div></div><!><div><button>", true);
   (() => {
   	const _n6 = _t1();
@@ -375,7 +375,7 @@ fn set_insertion_state_scenarios_v_if_prepend() {
   .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   const _t1 = _template("<div><span>A", true);
   (() => {
   	const _n3 = _t1();
@@ -402,7 +402,7 @@ fn set_insertion_state_scenarios_v_if_insert() {
   .code;
   assert_snapshot!(code, @r#"
   import { child as _child, createIf as _createIf, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   const _t1 = _template("<div><span>A</span><!><p>B", true);
   (() => {
   	const _n4 = _t1();
@@ -429,7 +429,7 @@ fn set_insertion_state_scenarios_v_if_append() {
   .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   const _t1 = _template("<div><span>A</span>", true);
   (() => {
   	const _n3 = _t1();
@@ -507,7 +507,7 @@ fn set_insertion_state_scenarios_key_prepend() {
   .code;
   assert_snapshot!(code, @r#"
   import { createKeyedFragment as _createKeyedFragment, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   const _t1 = _template("<div><span>A", true);
   (() => {
   	const _n3 = _t1();
@@ -533,7 +533,7 @@ fn set_insertion_state_scenarios_key_append() {
   .code;
   assert_snapshot!(code, @r#"
   import { createKeyedFragment as _createKeyedFragment, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   const _t1 = _template("<div><span>A</span>", true);
   (() => {
   	const _n3 = _t1();
@@ -543,6 +543,34 @@ fn set_insertion_state_scenarios_key_append() {
   		return _n2;
   	});
   	return _n3;
+  })();
+  "#);
+}
+
+#[test]
+fn set_insertion_state_scenarios_key_in_middle() {
+  let code = transform(
+    "<div>
+      <span>A</span>
+      <div key={id} />
+      <span>B</span>
+    </div>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { child as _child, createKeyedFragment as _createKeyedFragment, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<div>", false, true);
+  const _t1 = _template("<div><span>A</span><!><span>B", true);
+  (() => {
+  	const _n4 = _t1();
+  	const _n3 = _next(_child(_n4), 1);
+  	_setInsertionState(_n4, _n3, 1, true);
+  	const _n0 = _createKeyedFragment(() => id, () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	});
+  	return _n4;
   })();
   "#);
 }
@@ -605,8 +633,8 @@ fn set_insertion_state_scenarios_v_if_with_v_else_should_share_same_logical_inde
   .code;
   assert_snapshot!(code, @r#"
   import { child as _child, createIf as _createIf, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>if");
-  const _t1 = _template("<div>else");
+  const _t0 = _template("<div>if", false, true);
+  const _t1 = _template("<div>else", false, true);
   const _t2 = _template("<div><span>A</span><!><p>B", true);
   (() => {
   	const _n6 = _t2();
@@ -639,9 +667,9 @@ fn set_insertion_state_scenarios_v_if_with_v_else_if_and_v_else_should_share_sam
   .code;
   assert_snapshot!(code, @r#"
   import { child as _child, createIf as _createIf, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>if");
-  const _t1 = _template("<div>else-if");
-  const _t2 = _template("<div>else");
+  const _t0 = _template("<div>if", false, true);
+  const _t1 = _template("<div>else-if", false, true);
+  const _t2 = _template("<div>else", false, true);
   const _t3 = _template("<div><span>A</span><!><p>B", true);
   (() => {
   	const _n8 = _t3();
@@ -675,8 +703,8 @@ fn set_insertion_state_scenarios_v_if_and_v_else_prepend() {
   .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>if");
-  const _t1 = _template("<div>else");
+  const _t0 = _template("<div>if", false, true);
+  const _t1 = _template("<div>else", false, true);
   const _t2 = _template("<div><span>A", true);
   (() => {
   	const _n5 = _t2();
@@ -706,8 +734,8 @@ fn set_insertion_state_scenarios_v_if_and_v_else_append() {
   .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>if");
-  const _t1 = _template("<div>else");
+  const _t0 = _template("<div>if", false, true);
+  const _t1 = _template("<div>else", false, true);
   const _t2 = _template("<div><span>A</span>", true);
   (() => {
   	const _n5 = _t2();
@@ -739,8 +767,8 @@ fn set_insertion_state_scenarios_v_if_and_v_else_followed_by_component() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>if");
-  const _t1 = _template("<div>else");
+  const _t0 = _template("<div>if", false, true);
+  const _t1 = _template("<div>else", false, true);
   const _t2 = _template("<div><span>A</span>", true);
   (() => {
   	const _n6 = _t2();
@@ -774,8 +802,8 @@ fn set_insertion_state_scenarios_component_followed_by_v_if_v_else() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>if");
-  const _t1 = _template("<div>else");
+  const _t0 = _template("<div>if", false, true);
+  const _t1 = _template("<div>else", false, true);
   const _t2 = _template("<div><span>A", true);
   (() => {
   	const _n6 = _t2();
@@ -809,8 +837,8 @@ fn set_insertion_state_scenarios_component_and_v_if_v_else_and_component() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>if");
-  const _t1 = _template("<div>else");
+  const _t0 = _template("<div>if", false, true);
+  const _t1 = _template("<div>else", false, true);
   const _t2 = _template("<div>", true);
   (() => {
   	const _n7 = _t2();

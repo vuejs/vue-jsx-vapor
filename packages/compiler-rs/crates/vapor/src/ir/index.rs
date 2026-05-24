@@ -40,7 +40,6 @@ impl<'a> Default for BlockIRNode<'a> {
 
 #[derive(Debug, Default)]
 pub struct RootIRNode<'a> {
-  pub root_template_index: Option<usize>,
   pub components: IndexSet<&'a str>,
   pub directives: IndexSet<&'a str>,
   pub has_template_ref: bool,

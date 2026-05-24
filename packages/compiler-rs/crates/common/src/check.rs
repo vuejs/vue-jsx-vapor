@@ -154,6 +154,14 @@ pub fn is_custom_element(node: &JSXElement) -> bool {
   }
 }
 
+pub fn is_native_tag(tag: &str) -> bool {
+  !tag.contains("-")
+    && tag
+      .chars()
+      .next()
+      .is_some_and(|c| !(c.is_ascii_uppercase() || !c.is_ascii() || c == '_' || c == '$'))
+}
+
 pub fn is_fragment_node(node: &JSXChild) -> bool {
   match node {
     JSXChild::Fragment(_) => true,

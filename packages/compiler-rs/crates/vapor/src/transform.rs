@@ -1,6 +1,7 @@
 use common::ast::RootNode;
 use common::directive::{Directives, Modifiers};
 use common::expression::get_constant_expression_text;
+use common::options::Template;
 pub use common::options::TransformOptions;
 use oxc_allocator::{Allocator, TakeIn};
 use oxc_ast::ast::{Expression, JSXAttributeItem, JSXChild, JSXElement};
@@ -38,7 +39,9 @@ use crate::{
   },
 };
 
-use common::check::{is_constant_node, is_inline_tag, is_math_ml_tag, is_svg_tag, is_template};
+use common::check::{
+  is_constant_node, is_inline_tag, is_math_ml_tag, is_native_tag, is_svg_tag, is_template,
+};
 
 pub struct DirectiveTransformResult<'a> {
   pub key: Expression<'a>,
@@ -78,12 +81,16 @@ pub struct TransformContext<'a> {
   pub options: &'a TransformOptions<'a>,
 
   pub template: RefCell<String>,
+  pub template_root: RefCell<bool>,
   pub children_template: RefCell<Vec<Cow<'a, str>>>,
 
   pub in_v_once: RefCell<bool>,
   pub in_v_for: RefCell<i32>,
 
   pub seen: Rc<RefCell<HashSet<u32>>>,
+
+  pub effect_index: RefCell<usize>,
+  pub operation_index: RefCell<usize>,
 
   // whether this node is the last effective child of its parent
   // (all siblings after it are components, which don't appear in HTML template)
@@ -112,10 +119,13 @@ impl<'a> TransformContext<'a> {
       source_text: *options.source_text.borrow(),
       index: RefCell::new(0),
       template: RefCell::new(String::new()),
+      template_root: RefCell::new(false),
       children_template: RefCell::new(Vec::new()),
       in_v_once: RefCell::new(*options.in_v_once.borrow()),
       in_v_for: RefCell::new(*options.in_v_for.borrow()),
       seen: Rc::new(RefCell::new(HashSet::new())),
+      effect_index: RefCell::new(0),
+      operation_index: RefCell::new(0),
       is_last_effective_child: RefCell::new(true),
       is_on_rightmost_path: RefCell::new(true),
       has_inline_ancestor_needing_close: RefCell::new(false),
@@ -215,21 +225,34 @@ impl<'a> TransformContext<'a> {
     context_block.operation.insert(index, operation);
   }
 
-  pub fn push_template(&self, content: String, tag: Option<&str>) -> i32 {
-    let ir = self.ir.borrow_mut();
-    let root_template_index = ir.root_template_index;
-    let len = self.options.templates.borrow().len();
-    let root = root_template_index.map(|i| i.eq(&len)).unwrap_or(false);
-    let existing = self
-      .options
-      .templates
-      .borrow()
-      .iter()
-      .position(|i| i.0.eq(&content) && i.1.eq(&root));
-    if let Some(existing) = existing {
-      return existing as i32;
+  pub fn can_use_static_template(&self, block: &BlockIRNode, tag: &str) -> bool {
+    if self.template.borrow().is_empty() {
+      return false;
     }
-    let namespace = if let Some(tag) = tag {
+    if *self.in_v_for.borrow() > 0 {
+      return false;
+    }
+    if block.dynamic.has_dynamic_child {
+      return false;
+    }
+    if block.effect.len() != *self.effect_index.borrow() {
+      return false;
+    }
+    if block.operation.len() != *self.operation_index.borrow() {
+      return false;
+    }
+    if tag == "template" {
+      return false;
+    }
+
+    is_native_tag(tag)
+  }
+
+  pub fn push_template(&self, content: String, tag: Option<&str>, _static: bool) -> i32 {
+    let len = self.options.templates.borrow().len();
+    let root = *self.template_root.borrow();
+    // root_template_index.map(|i| i.eq(&len)).unwrap_or(false);
+    let ns = if let Some(tag) = tag {
       if is_svg_tag(tag) {
         1
       } else if is_math_ml_tag(tag) {
@@ -240,21 +263,33 @@ impl<'a> TransformContext<'a> {
     } else {
       0
     };
-    self
-      .options
-      .templates
-      .borrow_mut()
-      .push((content, root, namespace));
+    let existing = self.options.templates.borrow().iter().position(|i| {
+      i.content.eq(&content) && i.root.eq(&root) && i._static.eq(&_static) && i.ns.eq(&ns)
+    });
+    if let Some(existing) = existing {
+      return existing as i32;
+    }
+    self.options.templates.borrow_mut().push(Template {
+      content,
+      root,
+      ns,
+      _static,
+    });
     len as i32
   }
 
-  pub fn register_template(&self, dynamic: &mut IRDynamicInfo, tag: Option<&str>) -> i32 {
+  pub fn register_template(
+    &self,
+    block: &mut BlockIRNode<'a>,
+    tag: Option<&str>,
+    _static: bool,
+  ) -> i32 {
     let template = self.template.borrow();
     if template.is_empty() {
       return -1;
     }
-    let id = self.push_template(template.clone(), tag);
-    dynamic.template = Some(id);
+    let id = self.push_template(template.clone(), tag, _static);
+    block.dynamic.template = Some(id);
     id
   }
 
@@ -266,6 +301,11 @@ impl<'a> TransformContext<'a> {
   ) -> Box<dyn FnOnce() -> BlockIRNode<'a> + 'a> {
     let block = mem::take(&mut *context_block);
     let template = mem::take(&mut *self.template.borrow_mut());
+    let template_root = self.template_root.replace(false);
+    let effect_index = *self.effect_index.borrow();
+    *self.effect_index.borrow_mut() = ir.effect.len();
+    let operation_index = *self.operation_index.borrow();
+    *self.operation_index.borrow_mut() = ir.operation.len();
     let children_template = mem::take(&mut *self.children_template.borrow_mut());
 
     *context_block = ir;
@@ -275,14 +315,17 @@ impl<'a> TransformContext<'a> {
 
     (Box::new(move || {
       // exit
-      self.register_template(&mut context_block.dynamic, None);
+      self.register_template(context_block, None, false);
       let return_block = mem::take(context_block);
       *context_block = block;
       *self.template.borrow_mut() = template;
+      *self.template_root.borrow_mut() = template_root;
       *self.children_template.borrow_mut() = children_template;
       if is_v_for {
         *self.in_v_for.borrow_mut() -= 1;
       }
+      *self.effect_index.borrow_mut() = effect_index;
+      *self.operation_index.borrow_mut() = operation_index;
       return_block
     }) as Box<dyn FnOnce() -> BlockIRNode<'a>>) as _
   }
@@ -405,6 +448,8 @@ impl<'a> TransformContext<'a> {
       .replace(has_inline_ancestor_needing_close);
     self.children_template.take();
     mem::take(&mut block.dynamic);
+    let effect_index = self.effect_index.replace(block.effect.len());
+    let operation_index = self.operation_index.replace(block.operation.len());
 
     move || {
       self.index.replace(index);
@@ -418,6 +463,8 @@ impl<'a> TransformContext<'a> {
       self
         .has_inline_ancestor_needing_close
         .replace(has_inline_ancestor_needing_close);
+      *self.effect_index.borrow_mut() = effect_index;
+      *self.operation_index.borrow_mut() = operation_index;
     }
   }
 
@@ -536,7 +583,7 @@ impl<'a> TransformContext<'a> {
       }
 
       if is_root {
-        self.register_template(&mut context_block.dynamic, None);
+        self.register_template(context_block, None, false);
       }
     }
   }

@@ -28,7 +28,7 @@ fn comments() {
   let code = transform("<>{/*foo*/}<div>{/*bar*/}</div></>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -153,7 +153,7 @@ fn anchor_insertion_in_middle() {
   // ensure the insertion anchor is generated before the insertion statement
   assert_snapshot!(code, @r#"
   import { child as _child, createIf as _createIf, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   const _t1 = _template("<div><div></div><!><div>", true);
   (() => {
   	const _n4 = _t1();
@@ -211,7 +211,7 @@ fn next_child_and_nthchild_should_be_above_the_set_insertion_state() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { child as _child, createIf as _createIf, next as _next, nthChild as _nthChild, renderEffect as _renderEffect, setInsertionState as _setInsertionState, setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", false, true);
   const _t1 = _template("<div><div></div><!><div></div><!><div><button>", true);
   (() => {
   	const _n6 = _t1();
