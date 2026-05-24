@@ -725,3 +725,15 @@ fn is_not_component() {
   })();
   "#)
 }
+
+#[test]
+fn component_vue_vnode_hooks() {
+  let code = transform(r#"<Foo onVue:mounted={handleMounted} />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Foo, { onVnodeMounted: () => handleMounted }, null, true);
+  	return _n0;
+  })();
+  "#)
+}
