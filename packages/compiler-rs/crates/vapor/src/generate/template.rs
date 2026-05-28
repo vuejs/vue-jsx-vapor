@@ -1,4 +1,6 @@
+use std::cell::RefCell;
 use std::mem;
+use std::rc::Rc;
 
 use oxc_ast::NONE;
 use oxc_ast::ast::Argument;
@@ -8,6 +10,7 @@ use oxc_ast::ast::VariableDeclarationKind;
 use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
+use crate::generate::block::FlushBeforeDynamic;
 use crate::generate::directive::gen_directives_for_element;
 use crate::generate::operation::gen_operation_with_insertion_state;
 use crate::ir::index::BlockIRNode;
@@ -16,10 +19,12 @@ use crate::ir::index::IRDynamicInfo;
 
 pub fn gen_self<'a>(
   statements: &mut oxc_allocator::Vec<'a, Statement<'a>>,
-  dynamic: IRDynamicInfo<'a>,
+  mut dynamic: IRDynamicInfo<'a>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
+  flush_before_dynamic: Rc<RefCell<FlushBeforeDynamic<'a>>>,
 ) {
+  flush_before_dynamic.borrow_mut().as_mut()(&mut dynamic, statements);
   let ast = &context.ast;
   let IRDynamicInfo {
     id,
@@ -78,6 +83,7 @@ pub fn gen_self<'a>(
       context_block,
       statements.len(),
       format!("_n{}", id.unwrap_or(0)).as_str(),
+      Rc::clone(&flush_before_dynamic),
     );
   }
 }
@@ -89,6 +95,7 @@ fn gen_children<'a>(
   context_block: &'a mut BlockIRNode<'a>,
   mut statement_index: usize,
   from: &str,
+  flush_before_dynamic: Rc<RefCell<FlushBeforeDynamic<'a>>>,
 ) {
   let ast = &context.ast;
 
@@ -102,7 +109,13 @@ fn gen_children<'a>(
     }
 
     if child.flags & DynamicFlag::Insert as i32 != 0 && child.template.is_some() {
-      gen_self(statements, child, context, unsafe { &mut *_context_block });
+      gen_self(
+        statements,
+        child,
+        context,
+        unsafe { &mut *_context_block },
+        Rc::clone(&flush_before_dynamic),
+      );
       continue;
     }
 
@@ -117,7 +130,13 @@ fn gen_children<'a>(
     };
 
     if id.is_none() && !child.has_dynamic_child {
-      gen_self(statements, child, context, unsafe { &mut *_context_block });
+      gen_self(
+        statements,
+        child,
+        context,
+        unsafe { &mut *_context_block },
+        Rc::clone(&flush_before_dynamic),
+      );
       continue;
     }
 
@@ -312,7 +331,13 @@ fn gen_children<'a>(
 
     let child_children = mem::take(&mut child.children);
     if id.eq(&child.anchor) && !child.has_dynamic_child {
-      gen_self(statements, child, context, unsafe { &mut *_context_block });
+      gen_self(
+        statements,
+        child,
+        context,
+        unsafe { &mut *_context_block },
+        Rc::clone(&flush_before_dynamic),
+      );
     }
 
     if let Some(id) = id
@@ -329,6 +354,7 @@ fn gen_children<'a>(
       unsafe { &mut *_context_block },
       statement_index,
       variable.as_str(),
+      Rc::clone(&flush_before_dynamic),
     );
     prev = Some((variable, element_index));
   }

@@ -16,7 +16,7 @@ use crate::{
   generate::{
     CodegenContext, block::gen_block_content, expression::gen_expression, operation::gen_operation,
   },
-  ir::index::{BlockIRNode, ForIRNode, IREffect, OperationNode},
+  ir::index::{BlockIRNode, ForIRNode, IRDynamicInfo, IREffect, OperationNode},
 };
 
 /**
@@ -477,24 +477,27 @@ fn match_patterns<'a>(
   let mut effect_patterns = vec![];
   let mut selector_patterns = vec![];
   let mut key_only_binding_patterns = vec![];
+  let mut removed_effect_indexes = vec![];
 
   if let Some(key_prop) = key_prop {
     let key_content = key_prop.span().source_text(context.source_text);
     let effects = &mut render.effect;
     let mut kept = Vec::with_capacity(effects.len());
     let mut old = std::mem::take(effects);
-    for effect in old.drain(..) {
+    for (index, effect) in old.drain(..).enumerate() {
       let effect_ptr = &effect as *const _;
       if let Some(selector) =
         match_selector_pattern(unsafe { &*effect_ptr }, key_content, id_map, context)
       {
         effect_patterns.push(effect);
         selector_patterns.push(selector);
+        removed_effect_indexes.push(index);
       } else if !effect.operations.is_empty()
         && let Some(ast) = get_expression(unsafe { &*effect_ptr })
         && key_content.eq(ast.span().source_text(context.source_text))
       {
         key_only_binding_patterns.push(effect);
+        removed_effect_indexes.push(index);
       } else {
         kept.push(effect)
       }
@@ -502,11 +505,42 @@ fn match_patterns<'a>(
     *effects = kept;
   }
 
+  if !removed_effect_indexes.is_empty() {
+    shift_effect_boundaries(&mut render.dynamic, &mut removed_effect_indexes);
+  }
+
   (
     effect_patterns,
     selector_patterns,
     key_only_binding_patterns,
   )
+}
+
+fn shift_effect_boundaries(dynamic: &mut IRDynamicInfo, removed_effect_indexes: &mut Vec<usize>) {
+  if let Some(operation) = &mut dynamic.operation
+    && let Some(effect_index) = match operation.as_mut() {
+      OperationNode::If(operation) => operation.effect_index.as_mut(),
+      OperationNode::For(operation) => operation.effect_index.as_mut(),
+      OperationNode::CreateComponent(operation) => operation.effect_index.as_mut(),
+      OperationNode::SlotOutlet(operation) => operation.effect_index.as_mut(),
+      OperationNode::Key(operation) => operation.effect_index.as_mut(),
+      _ => None,
+    }
+  {
+    let mut offset = 0;
+    for removed_index in removed_effect_indexes.iter() {
+      if removed_index < effect_index {
+        offset += 1;
+      } else {
+        break;
+      }
+    }
+    *effect_index -= offset;
+  }
+
+  for child in dynamic.children.iter_mut() {
+    shift_effect_boundaries(child, removed_effect_indexes);
+  }
 }
 
 fn match_selector_pattern<'a>(

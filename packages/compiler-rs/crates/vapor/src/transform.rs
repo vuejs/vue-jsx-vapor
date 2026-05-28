@@ -198,7 +198,9 @@ impl<'a> TransformContext<'a> {
       return self.register_operation(context_block, operation, get_operation_index);
     }
 
+    let mut has_get_effect_index = false;
     let index = if let Some(get_effect_index) = get_effect_index {
+      has_get_effect_index = true;
       get_effect_index.borrow_mut()() as usize
     } else {
       context_block.effect.len()
@@ -209,6 +211,29 @@ impl<'a> TransformContext<'a> {
         operations: vec![operation],
       },
     );
+    if has_get_effect_index {
+      self.shift_effect_boundaries(index, &mut context_block.dynamic);
+    }
+  }
+
+  fn shift_effect_boundaries(&self, index: usize, dynamic: &mut IRDynamicInfo) {
+    if let Some(operation) = dynamic.operation.as_mut()
+      && let Some(effect_index) = match operation.as_mut() {
+        OperationNode::If(operation) => operation.effect_index.as_mut(),
+        OperationNode::For(operation) => operation.effect_index.as_mut(),
+        OperationNode::CreateComponent(operation) => operation.effect_index.as_mut(),
+        OperationNode::SlotOutlet(operation) => operation.effect_index.as_mut(),
+        OperationNode::Key(operation) => operation.effect_index.as_mut(),
+        _ => None,
+      }
+      && *effect_index >= index
+    {
+      *effect_index += 1;
+    };
+
+    for child in dynamic.children.iter_mut() {
+      self.shift_effect_boundaries(index, child);
+    }
   }
 
   pub fn register_operation(

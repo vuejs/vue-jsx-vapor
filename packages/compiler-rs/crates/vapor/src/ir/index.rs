@@ -54,11 +54,15 @@ pub struct IfIRNode<'a> {
   pub negative: Option<Box<Either<BlockIRNode<'a>, IfIRNode<'a>>>>,
   pub once: bool,
   pub index: i32,
+
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
   pub last: bool,
+
+  pub operation_index: Option<usize>,
+  pub effect_index: Option<usize>,
 }
 
 #[derive(Debug)]
@@ -66,11 +70,15 @@ pub struct KeyIRNode<'a> {
   pub id: i32,
   pub value: Expression<'a>,
   pub block: BlockIRNode<'a>,
+
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
   pub last: bool,
+
+  pub operation_index: Option<usize>,
+  pub effect_index: Option<usize>,
 }
 
 #[derive(Debug)]
@@ -99,6 +107,9 @@ pub struct ForIRNode<'a> {
   pub logical_index: Option<i32>,
   pub append: bool,
   pub last: bool,
+
+  pub operation_index: Option<usize>,
+  pub effect_index: Option<usize>,
 }
 
 #[derive(Debug)]
@@ -208,11 +219,15 @@ pub struct CreateComponentIRNode<'a> {
   pub root: bool,
   pub once: bool,
   pub is_custom_element: bool,
+
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
   pub last: bool,
+
+  pub operation_index: Option<usize>,
+  pub effect_index: Option<usize>,
 }
 
 #[derive(Debug)]
@@ -223,11 +238,15 @@ pub struct SlotOutletIRNode<'a> {
   pub fallback: Option<BlockIRNode<'a>>,
   pub no_slotted: bool,
   pub once: bool,
+
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
   pub last: bool,
+
+  pub operation_index: Option<usize>,
+  pub effect_index: Option<usize>,
 }
 
 #[derive(Debug)]

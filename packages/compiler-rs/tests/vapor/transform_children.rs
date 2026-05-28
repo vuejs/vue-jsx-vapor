@@ -231,3 +231,83 @@ fn next_child_and_nthchild_should_be_above_the_set_insertion_state() {
   })();
   "#);
 }
+
+#[test]
+fn flushes_previous_effects_before_creating_child_component() {
+  let code = transform(
+    "<>
+      <div>parent: { useId() }</div>
+      <Child />
+    </>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n0 = _t0();
+  	const _x0 = _txt(_n0);
+  	_setNodes(_x0, "parent: ", () => useId());
+  	const _n1 = _createComponent(Child);
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn flushes_parent_props_before_creating_child_component() {
+  let code = transform("<div id={useId()}><Child /></div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { renderEffect as _renderEffect, setInsertionState as _setInsertionState, setProp as _setProp, template as _template } from "vue";
+  const _t0 = _template("<div>", true);
+  (() => {
+  	const _n1 = _t0();
+  	_renderEffect(() => _setProp(_n1, "id", useId()));
+  	_setInsertionState(_n1, null, 0, true);
+  	const _n0 = _createComponent(Child);
+  	return _n1;
+  })();
+  "#);
+}
+
+#[test]
+fn does_not_flush_later_v_for_effects_before_child_component() {
+  let code = transform(
+    "<div v-for={row in rows} key={row.id}>
+      <span v-text={selected === row.id ? 'danger' : ''}></span>
+      <Child />
+      <span>{ useId() }</span>
+    </div>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { child as _child, createFor as _createFor, next as _next, setInsertionState as _setInsertionState, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
+  const _t0 = _template("<div><span> </span><!><span> ");
+  (() => {
+  	let _selector0_0;
+  	const _n0 = _createFor(() => rows, (_for_item0) => {
+  		const _n6 = _t0();
+  		const _n2 = _child(_n6);
+  		const _n5 = _next(_n2, 1);
+  		const _n4 = _next(_n5, 2);
+  		const _x2 = _txt(_n2);
+  		_setInsertionState(_n6, _n5, 1, true);
+  		const _n3 = _createComponent(Child);
+  		const _x4 = _txt(_n4);
+  		_setNodes(_x4, () => useId());
+  		_selector0_0(() => {
+  			_setText(_x2, _toDisplayString(selected === _for_item0.value.id ? "danger" : ""));
+  		});
+  		return _n6;
+  	}, (row) => row.id, void 0, ({ createSelector }) => {
+  		_selector0_0 = createSelector(() => selected);
+  	});
+  	return _n0;
+  })();
+  "#);
+}

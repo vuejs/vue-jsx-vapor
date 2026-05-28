@@ -114,8 +114,8 @@ fn static_key() {
   const _t0 = _template("<div>");
   (() => {
   	const _n0 = _t0();
-  	const _n1 = _createComponent(Comp);
   	_setBlockKey(_n0, 1);
+  	const _n1 = _createComponent(Comp);
   	_setBlockKey(_n1, 1);
   	return [_n0, _n1];
   })();
@@ -138,8 +138,8 @@ fn boolean_static_expression_key() {
   const _t0 = _template("<div>");
   (() => {
   	const _n0 = _t0();
-  	const _n1 = _createComponent(Comp);
   	_setBlockKey(_n0, true);
+  	const _n1 = _createComponent(Comp);
   	_setBlockKey(_n1, true);
   	return [_n0, _n1];
   })();
@@ -162,8 +162,8 @@ fn null_static_expression_key() {
   const _t0 = _template("<div>");
   (() => {
   	const _n0 = _t0();
-  	const _n1 = _createComponent(Comp);
   	_setBlockKey(_n0, null);
+  	const _n1 = _createComponent(Comp);
   	_setBlockKey(_n1, null);
   	return [_n0, _n1];
   })();
@@ -186,8 +186,8 @@ fn v_once_with_static_key() {
   const _t0 = _template("<div>");
   (() => {
   	const _n0 = _t0();
-  	const _n1 = _createComponent(Comp, null, null, null, true);
   	_setBlockKey(_n0, "foo");
+  	const _n1 = _createComponent(Comp, null, null, null, true);
   	_setBlockKey(_n1, "foo");
   	return [_n0, _n1];
   })();
@@ -210,8 +210,8 @@ fn key_without_value() {
   const _t0 = _template("<div>");
   (() => {
   	const _n0 = _t0();
-  	const _n1 = _createComponent(Comp);
   	_setBlockKey(_n0, true);
+  	const _n1 = _createComponent(Comp);
   	_setBlockKey(_n1, true);
   	return [_n0, _n1];
   })();
