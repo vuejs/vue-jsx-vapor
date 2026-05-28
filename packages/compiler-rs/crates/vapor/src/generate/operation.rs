@@ -70,7 +70,6 @@ pub fn gen_operation_with_insertion_state<'a>(
           if_ir_node.anchor,
           if_ir_node.logical_index,
           if_ir_node.append,
-          if_ir_node.last,
           context,
         ))
       }
@@ -82,7 +81,6 @@ pub fn gen_operation_with_insertion_state<'a>(
           for_ir_node.anchor,
           for_ir_node.logical_index,
           for_ir_node.append,
-          for_ir_node.last,
           context,
         ))
       }
@@ -94,7 +92,6 @@ pub fn gen_operation_with_insertion_state<'a>(
           create_component_ir_node.anchor,
           create_component_ir_node.logical_index,
           create_component_ir_node.append,
-          create_component_ir_node.last,
           context,
         ))
       }
@@ -106,7 +103,6 @@ pub fn gen_operation_with_insertion_state<'a>(
           slot_outlet_ir_node.anchor,
           slot_outlet_ir_node.logical_index,
           slot_outlet_ir_node.append,
-          slot_outlet_ir_node.last,
           context,
         ))
       }
@@ -118,7 +114,6 @@ pub fn gen_operation_with_insertion_state<'a>(
           key_ir_node.anchor,
           key_ir_node.logical_index,
           key_ir_node.append,
-          key_ir_node.last,
           context,
         ))
       }
@@ -171,7 +166,6 @@ pub fn gen_insertion_state<'a>(
   anchor: Option<i32>,
   logical_index: Option<i32>,
   append: bool,
-  last: bool,
   context: &CodegenContext<'a>,
 ) -> Statement<'a> {
   let ast = &context.ast;
@@ -215,13 +209,6 @@ pub fn gen_insertion_state<'a>(
               NumberBase::Hex,
             ))
           }),
-          if last {
-            Some(Argument::BooleanLiteral(
-              ast.alloc_boolean_literal(SPAN, true),
-            ))
-          } else {
-            None
-          },
         ]
         .into_iter()
         .flatten(),

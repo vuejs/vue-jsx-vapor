@@ -349,7 +349,7 @@ fn v_if_v_if_or_v_elses() {
   		const _n2 = _t0();
   		return _n2;
   	}, null, 1, true);
-  	_setInsertionState(_n8, null, 1, true);
+  	_setInsertionState(_n8, null, 1);
   	const _n3 = _createIf(() => "bar", () => {
   		const _n5 = _t1();
   		return _n5;

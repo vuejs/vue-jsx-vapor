@@ -146,8 +146,6 @@ fn process_dynamic_children<'a>(
 ) {
   let mut prev_dynamics = VecDeque::new();
   let mut static_count = 0;
-  let mut dynamic_count = 0;
-  let mut last_insertion_child = None;
   let children = &mut context_block.dynamic.children as *mut Vec<IRDynamicInfo>;
 
   // Track logical index for each child.
@@ -161,7 +159,6 @@ fn process_dynamic_children<'a>(
     let child_ptr = child as *mut IRDynamicInfo;
     if flags & DynamicFlag::Insert as i32 != 0 {
       child.logical_index = Some(logical_index);
-      last_insertion_child = Some(unsafe { &mut *child_ptr });
       prev_dynamics.push_back(child);
       logical_index += 1;
     }
@@ -185,7 +182,6 @@ fn process_dynamic_children<'a>(
             false,
           );
         }
-        dynamic_count += prev_dynamics.len();
         prev_dynamics.clear();
       }
       static_count += 1;
@@ -194,27 +190,15 @@ fn process_dynamic_children<'a>(
   }
 
   if !prev_dynamics.is_empty() {
+    let logical_index = prev_dynamics.get(0).unwrap().logical_index.unwrap();
     register_insertion(
       &mut prev_dynamics,
       context,
       context_block,
       // the logical index of append child
-      (dynamic_count + static_count) as i32,
+      logical_index,
       true,
     );
-  }
-
-  if let Some(last_insertion_child) = last_insertion_child
-    && let Some(operation) = last_insertion_child.operation.as_mut()
-  {
-    match operation.as_mut() {
-      OperationNode::If(operation) => operation.last = true,
-      OperationNode::For(operation) => operation.last = true,
-      OperationNode::CreateComponent(operation) => operation.last = true,
-      OperationNode::SlotOutlet(operation) => operation.last = true,
-      OperationNode::Key(operation) => operation.last = true,
-      _ => (),
-    };
   }
 }
 

@@ -59,7 +59,6 @@ pub struct IfIRNode<'a> {
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
-  pub last: bool,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -75,7 +74,6 @@ pub struct KeyIRNode<'a> {
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
-  pub last: bool,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -106,7 +104,6 @@ pub struct ForIRNode<'a> {
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
-  pub last: bool,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -224,7 +221,6 @@ pub struct CreateComponentIRNode<'a> {
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
-  pub last: bool,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -243,7 +239,6 @@ pub struct SlotOutletIRNode<'a> {
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
-  pub last: bool,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,

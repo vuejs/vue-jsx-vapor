@@ -91,7 +91,6 @@ pub unsafe fn transform_v_if<'a>(
         logical_index: None,
         parent: None,
         append: false,
-        last: false,
         operation_index: Some(*context.operation_index.borrow()),
         effect_index: Some(*context.effect_index.borrow()),
       })));
@@ -160,7 +159,6 @@ pub unsafe fn transform_v_if<'a>(
         logical_index: None,
         negative: None,
         append: false,
-        last: false,
         operation_index: None,
         effect_index: None,
       })))
