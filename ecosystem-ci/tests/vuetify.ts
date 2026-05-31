@@ -1,7 +1,7 @@
-import { runInRepo } from '../utils.ts'
+// import { runInRepo } from '../utils.ts'
 import type { RunOptions } from '../types.ts'
 
-export default async (options: RunOptions) => {
+export default async () => {
   // await runInRepo({
   //   ...options,
   //   repo: 'zhiyuanzmj/vuetify',
