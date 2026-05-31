@@ -127,23 +127,33 @@ fn gen_dynamic_slot<'a>(
     gen_loop_slot(slot, context, context_block)
   };
   if with_function {
-    ast.expression_arrow_function(
+    ast.expression_call(
       SPAN,
-      true,
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_withVaporCtx"))),
+      NONE,
+      ast.vec1(
+        ast
+          .expression_arrow_function(
+            SPAN,
+            true,
+            false,
+            NONE,
+            ast.formal_parameters(
+              SPAN,
+              FormalParameterKind::ArrowFormalParameters,
+              ast.vec(),
+              NONE,
+            ),
+            NONE,
+            ast.function_body(
+              SPAN,
+              ast.vec(),
+              ast.vec1(ast.statement_expression(SPAN, frag)),
+            ),
+          )
+          .into(),
+      ),
       false,
-      NONE,
-      ast.formal_parameters(
-        SPAN,
-        FormalParameterKind::ArrowFormalParameters,
-        ast.vec(),
-        NONE,
-      ),
-      NONE,
-      ast.function_body(
-        SPAN,
-        ast.vec(),
-        ast.vec1(ast.statement_expression(SPAN, frag)),
-      ),
     )
   } else {
     frag

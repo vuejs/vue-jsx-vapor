@@ -107,13 +107,13 @@ fn on_component_dynamically_named_slot() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, { $: [() => ({
+  	const _n1 = _createComponent(Comp, null, { $: [_withVaporCtx(() => ({
   		name: named,
   		fn: _withVaporCtx((_slotProps0) => {
   			const _n0 = _createNodes(() => _slotProps0.foo + bar);
   			return _n0;
   		})
-  	})] }, true);
+  	}))] }, true);
   	return _n1;
   })();
   "#);
@@ -398,13 +398,13 @@ fn dynamic_slots_name() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { $: [() => ({
+  	const _n2 = _createComponent(Comp, null, { $: [_withVaporCtx(() => ({
   		name,
   		fn: _withVaporCtx(() => {
   			const _n0 = _createNodes(() => foo);
   			return _n0;
   		})
-  	})] }, true);
+  	}))] }, true);
   	return _n2;
   })();
   "#);
@@ -423,13 +423,13 @@ fn dynamic_slots_name_with_v_for() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createForSlots as _createForSlots, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { $: [() => _createForSlots(list, (item) => ({
+  	const _n2 = _createComponent(Comp, null, { $: [_withVaporCtx(() => _createForSlots(list, (item) => ({
   		name: item,
   		fn: _withVaporCtx((_slotProps0) => {
   			const _n0 = _createNodes(() => _slotProps0.bar);
   			return _n0;
   		})
-  	}))] }, true);
+  	})))] }, true);
   	return _n2;
   })();
   "#);
@@ -646,14 +646,370 @@ fn default_slot_with_v_for_directive() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createForSlots as _createForSlots, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { $: [() => _createForSlots(list, (item) => ({
+  	const _n2 = _createComponent(Comp, null, { $: [_withVaporCtx(() => _createForSlots(list, (item) => ({
   		name: "default",
   		fn: _withVaporCtx(() => {
   			const _n0 = _createNodes(() => item);
   			return _n0;
   		})
-  	}))] }, true);
+  	})))] }, true);
   	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_with_only_static_elements_should_have_with_vapor_ctx() {
+  let code = transform(
+    r#"<Comp>
+      <template v-slot:default>
+        <div>static content</div>
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template("<div>static content", false, true);
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _t0();
+  		return _n0;
+  	}) }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_with_component_should_have_with_vapor_ctx() {
+  let code = transform(
+    r#"<Comp>
+      <template v-slot:default>
+        <ChildComp />
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert!(code.contains("withVaporCtx"));
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _createComponent(ChildComp);
+  		return _n0;
+  	}) }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_with_slot_outlet_should_have_with_vapor_ctx() {
+  let code = transform(
+    r#"<Comp>
+      <template v-slot:default>
+        <slot />
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert!(code.contains("withVaporCtx"));
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createSlot as _createSlot, withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _createSlot("default");
+  		return _n0;
+  	}) }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn dynamic_slot_source_with_slot_outlet_should_have_with_vapor_ctx() {
+  let code = transform(
+    r#"<Comp>
+      <template v-for={(_, name) in slots} v-slot:$name$>
+        <slot name={name} />
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert!(code.contains("_createForSlots"));
+  assert!(code.contains("fn: _withVaporCtx(() =>"));
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createForSlots as _createForSlots, createSlot as _createSlot, withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { $: [_withVaporCtx(() => _createForSlots(slots, (_, name) => ({
+  		name,
+  		fn: _withVaporCtx(() => {
+  			const _n0 = _createSlot(() => name);
+  			return _n0;
+  		})
+  	})))] }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_with_component_inside_v_if_should_have_with_vapor_ctx() {
+  let code = transform(
+    r#"<Comp>
+      <template v-slot:default>
+        <div v-if={show}>
+          <ChildComp />
+        </div>
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert!(code.contains("withVaporCtx"));
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n5 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _createIf(() => show, () => {
+  			const _n3 = _t0();
+  			_setInsertionState(_n3, null, 0);
+  			const _n2 = _createComponent(ChildComp);
+  			return _n3;
+  		}, null, 1);
+  		return _n0;
+  	}) }, true);
+  	return _n5;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_with_component_inside_v_for_should_have_with_vapor_ctx() {
+  let code = transform(
+    r#"<Comp>
+      <template v-slot:default>
+        <div v-for={item in items}>
+          <ChildComp />
+        </div>
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert!(code.contains("withVaporCtx"));
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, setInsertionState as _setInsertionState, template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n5 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _createFor(() => items, (_for_item0) => {
+  			const _n3 = _t0();
+  			_setInsertionState(_n3, null, 0);
+  			const _n2 = _createComponent(ChildComp);
+  			return _n3;
+  		}, void 0, 1);
+  		return _n0;
+  	}) }, true);
+  	return _n5;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_with_nested_v_if_containing_component_should_have_with_vapor_ctx() {
+  let code = transform(
+    r#"<Comp>
+      <template v-slot:default>
+        <div v-if={a}>
+          <span v-if={b}>
+            <ChildComp />
+          </span>
+        </div>
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert!(code.contains("withVaporCtx"));
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template("<span>");
+  const _t1 = _template("<div>");
+  (() => {
+  	const _n8 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _createIf(() => a, () => {
+  			const _n6 = _t1();
+  			_setInsertionState(_n6, null, 0);
+  			const _n2 = _createIf(() => b, () => {
+  				const _n5 = _t0();
+  				_setInsertionState(_n5, null, 0);
+  				const _n4 = _createComponent(ChildComp);
+  				return _n5;
+  			}, null, 1);
+  			return _n6;
+  		}, null, 1);
+  		return _n0;
+  	}) }, true);
+  	return _n8;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_with_only_text_interpolation_should_have_with_vapor_ctx() {
+  let code = transform(
+    r#"<Comp>
+      <template v-slot:default>
+        {message}
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _createNodes(() => message);
+  		return _n0;
+  	}) }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_with_v_if_but_no_component_should_have_with_vapor_ctx() {
+  let code = transform(
+    r#"<Comp>
+      <template v-slot:default>
+        <div v-if={show}>content</div>
+        <span v-else>fallback</span>
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template("<div>content", false, true);
+  const _t1 = _template("<span>fallback", false, true);
+  (() => {
+  	const _n7 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _createIf(() => show, () => {
+  			const _n2 = _t0();
+  			return _n2;
+  		}, () => {
+  			const _n4 = _t1();
+  			return _n4;
+  		}, 5, false, 0);
+  		return _n0;
+  	}) }, true);
+  	return _n7;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_with_v_for_but_no_component_should_have_with_vapor_ctx() {
+  let code = transform(
+    r#"<Comp>
+      <template v-slot:default>
+        <div v-for={item in items}>{item}</div>
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, template as _template, txt as _txt, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n4 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _createFor(() => items, (_for_item0) => {
+  			const _n2 = _t0();
+  			const _x2 = _txt(_n2);
+  			_setNodes(_x2, () => _for_item0.value);
+  			return _n2;
+  		}, void 0, 1);
+  		return _n0;
+  	}) }, true);
+  	return _n4;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_with_custom_element_should_have_with_vapor_ctx() {
+  let code = transform(
+    r#"<Comp>
+      <template v-slot:default>
+        <my-element></my-element>
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert!(code.contains("withVaporCtx"));
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createPlainElement as _createPlainElement, withVaporCtx as _withVaporCtx } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _createPlainElement("my-element");
+  		return _n0;
+  	}) }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_with_custom_element_inside_v_if_should_have_with_vapor_ctx() {
+  let code = transform(
+    r#"<Comp>
+      <template v-slot:default>
+        <div v-if={show}>
+          <my-element></my-element>
+        </div>
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert!(code.contains("withVaporCtx"));
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, createPlainElement as _createPlainElement, setInsertionState as _setInsertionState, template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n5 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _createIf(() => show, () => {
+  			const _n3 = _t0();
+  			_setInsertionState(_n3, null, 0);
+  			const _n2 = _createPlainElement("my-element");
+  			return _n3;
+  		}, null, 1);
+  		return _n0;
+  	}) }, true);
+  	return _n5;
   })();
   "#);
 }
