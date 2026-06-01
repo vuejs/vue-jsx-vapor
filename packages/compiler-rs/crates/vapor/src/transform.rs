@@ -101,6 +101,10 @@ pub struct TransformContext<'a> {
   // whether there is an inline ancestor that needs closing
   // (i.e. is an inline tag and not on the rightmost path)
   pub has_inline_ancestor_needing_close: RefCell<bool>,
+  // If an ancestor in the same template must close explicitly, descendants
+  // with matching tags must also close so the browser doesn't consume the
+  // ancestor close tag for the descendant.
+  pub template_close_tags: RefCell<HashSet<&'a str>>,
 
   global_id: RefCell<i32>,
   if_index: RefCell<i32>,
@@ -129,6 +133,7 @@ impl<'a> TransformContext<'a> {
       is_last_effective_child: RefCell::new(true),
       is_on_rightmost_path: RefCell::new(true),
       has_inline_ancestor_needing_close: RefCell::new(false),
+      template_close_tags: RefCell::new(HashSet::new()),
       global_id: RefCell::new(0),
       if_index: RefCell::new(0),
       node: RefCell::new(RootNode::new(allocator)),
@@ -471,6 +476,7 @@ impl<'a> TransformContext<'a> {
     let has_inline_ancestor_needing_close = self
       .has_inline_ancestor_needing_close
       .replace(has_inline_ancestor_needing_close);
+    let template_close_tags = self.template_close_tags.take();
     self.children_template.take();
     mem::take(&mut block.dynamic);
     let effect_index = self.effect_index.replace(block.effect.len());
@@ -488,6 +494,7 @@ impl<'a> TransformContext<'a> {
       self
         .has_inline_ancestor_needing_close
         .replace(has_inline_ancestor_needing_close);
+      *self.template_close_tags.borrow_mut() = template_close_tags;
       *self.effect_index.borrow_mut() = effect_index;
       *self.operation_index.borrow_mut() = operation_index;
     }
@@ -498,6 +505,7 @@ impl<'a> TransformContext<'a> {
     context_block: Option<&'a mut BlockIRNode<'a>>,
     parent_node: Option<&mut JSXChild<'a>>,
   ) {
+    let parent_ptr = parent_node.map(|node| node as *mut _);
     unsafe {
       let context_block = if let Some(context_block) = context_block {
         context_block
@@ -513,7 +521,7 @@ impl<'a> TransformContext<'a> {
       if !is_root {
         let context = self as *const TransformContext;
         let node = &mut *self.node.borrow_mut() as *mut _;
-        let parent_node = parent_node.unwrap() as *mut _;
+        let parent_node = parent_ptr.unwrap();
         let directives_ptr = &mut directives as *mut _;
         if let JSXChild::Element(element) = &mut *node {
           directives = Directives::new(element, self.options);
@@ -598,7 +606,13 @@ impl<'a> TransformContext<'a> {
       }
 
       let node = &mut self.node.borrow_mut().take_in(self.allocator);
-      transform_children(&directives, node, self, &mut *block);
+      transform_children(
+        &directives,
+        node,
+        self,
+        &mut *block,
+        parent_ptr.map(|node| &*node),
+      );
 
       let mut i = exit_fns.len();
       while i > 0 {

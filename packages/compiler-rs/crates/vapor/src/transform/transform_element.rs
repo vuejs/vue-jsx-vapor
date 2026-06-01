@@ -1,4 +1,4 @@
-use std::{borrow::Cow, cell::RefCell, mem, rc::Rc};
+use std::{borrow::Cow, cell::RefCell, collections::HashSet, mem, rc::Rc};
 
 use napi::{Either, bindgen_prelude::Either3};
 use oxc_allocator::TakeIn;
@@ -266,6 +266,31 @@ pub fn transform_native_element<'a>(
   }
 }
 
+pub fn get_child_template_close_tags<'a>(
+  tag: &'a str,
+  parent_node: Option<&JSXChild<'a>>,
+  context: &TransformContext<'a>,
+) -> HashSet<&'a str> {
+  let inherited = context.template_close_tags.borrow().clone();
+  let Some(parent_node) = parent_node else {
+    return inherited;
+  };
+  if tag.is_empty() || is_void_tag(tag) || can_omit_end_tag(tag, parent_node, context) {
+    return inherited;
+  }
+
+  let mut tags = inherited;
+  tags.insert(tag);
+  tags
+}
+
+pub fn is_in_same_template_as_parent<'a>(tag: &'a str, parent_tag_name: &str) -> bool {
+  if parent_tag_name.is_empty() || matches!(parent_tag_name, "template") {
+    return false;
+  }
+  is_valid_html_nesting(parent_tag_name, tag)
+}
+
 fn can_omit_end_tag<'a>(
   tag: &str,
   parent_node: &JSXChild<'a>,
@@ -275,6 +300,13 @@ fn can_omit_end_tag<'a>(
   // so closing tags can be omitted
   if RootNode::is_single_root(parent_node) {
     return true;
+  }
+
+  let template_close_tags = context.template_close_tags.borrow();
+  if !template_close_tags.is_empty()
+    && (template_close_tags.contains(tag) || is_always_close_tag(tag) || is_formatting_tag(tag))
+  {
+    return false;
   }
 
   // Elements in the alwaysClose list cannot have their end tags omitted

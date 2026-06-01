@@ -179,6 +179,70 @@ fn same_name_nested_tags2() {
   "#);
 }
 
+#[test]
+fn same_name_descendant_before_an_ancestor_close() {
+  let code = transform(
+    "<div><div><section><div>x</div></section></div><p>after</p></div>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div><div><section><div>x</div></div><p>after", true, true);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn same_name_boundary_does_not_cross_component_templates() {
+  let code = transform(
+    "<main><div><Comp><div><section><div>x</div></section></div></Comp></div><p>after</p></main>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { child as _child, setInsertionState as _setInsertionState, template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template("<div><section><div>x", false, true);
+  const _t1 = _template("<main><div></div><p>after", true);
+  (() => {
+  	const _n3 = _t1();
+  	const _n2 = _child(_n3);
+  	_setInsertionState(_n2, null, 0);
+  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n0 = _t0();
+  		return _n0;
+  	}) });
+  	return _n3;
+  })();
+  "#);
+}
+
+#[test]
+fn same_name_boundary_does_not_cross_invalid_nesting_templates() {
+  let code = transform(
+    "<main><div><p><div>x</div></p></div><section>after</section></main>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { child as _child, template as _template } from "vue";
+  const _t0 = _template("<div>x");
+  const _t1 = _template("<main><div><p></div><section>after", true);
+  (() => {
+  	const _n2 = _t1();
+  	const _p0 = _child(_n2);
+  	const _n1 = _child(_p0);
+  	const _n0 = _t0();
+  	insert(_n0, _n1);
+  	return _n2;
+  })();
+  "#);
+}
+
 // void tags never need closing tags
 #[test]
 fn void_tags() {
@@ -582,7 +646,7 @@ fn inline_block_ancestor_relationships6() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div><span><div><span><div>text</div></div></span><p>after", true, true);
+  const _t0 = _template("<div><span><div><span><div>text</div></span></div></span><p>after", true, true);
   (() => {
   	const _n0 = _t0();
   	return _n0;

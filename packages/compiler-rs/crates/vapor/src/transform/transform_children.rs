@@ -5,7 +5,10 @@ use oxc_ast::ast::{JSXChild, JSXExpression};
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, InsertNodeIRNode, OperationNode},
-  transform::TransformContext,
+  transform::{
+    TransformContext,
+    transform_element::{get_child_template_close_tags, is_in_same_template_as_parent},
+  },
 };
 
 use common::{
@@ -17,10 +20,11 @@ use common::{
 
 /// # SAFETY
 pub unsafe fn transform_children<'a>(
-  directives: &Directives,
+  directives: &Directives<'a>,
   node: &mut JSXChild<'a>,
   context: &TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
+  parent_node: Option<&JSXChild<'a>>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let is_fragment_or_component =
     RootNode::is_root(node) || is_fragment_node(node) || directives.is_component;
@@ -31,6 +35,11 @@ pub unsafe fn transform_children<'a>(
 
   let _node = node as *mut _;
   let parent_tag_name = directives.tag_name;
+  let child_template_close_tags = if !is_fragment_or_component {
+    get_child_template_close_tags(parent_tag_name, parent_node, context)
+  } else {
+    Default::default()
+  };
   let children = match node {
     JSXChild::Element(node) => &mut node.children,
     JSXChild::Fragment(node) => &mut node.children,
@@ -88,6 +97,12 @@ pub unsafe fn transform_children<'a>(
       parent_tag_name,
       unsafe { &mut *_context_block },
     );
+    let is_same_template = is_in_same_template_as_parent(tag, parent_tag_name);
+    if is_same_template {
+      *context.template_close_tags.borrow_mut() = child_template_close_tags.clone();
+    } else {
+      context.template_close_tags.borrow_mut().clear();
+    }
     context.transform_node(
       Some(unsafe { &mut *_context_block }),
       Some(unsafe { &mut *_node }),
