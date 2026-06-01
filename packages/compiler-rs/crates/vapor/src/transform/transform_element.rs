@@ -28,7 +28,7 @@ use common::{
   ast::RootNode,
   check::{
     get_directive_name, is_always_close_tag, is_block_tag, is_built_in_directive,
-    is_formatting_tag, is_template, is_void_tag,
+    is_formatting_tag, is_inline_tag, is_template, is_void_tag,
   },
   directive::{Directives, resolve_directive, resolve_prop_name},
   dom::is_valid_html_nesting,
@@ -270,18 +270,19 @@ pub fn get_child_template_close_tags<'a>(
   tag: &'a str,
   parent_node: Option<&JSXChild<'a>>,
   context: &TransformContext<'a>,
-) -> HashSet<&'a str> {
-  let inherited = context.template_close_tags.borrow().clone();
+) -> (HashSet<&'a str>, bool) {
+  let inherited_tags = context.template_close_tags.borrow().clone();
+  let inherited_blocks = context.template_close_blocks.borrow().clone();
   let Some(parent_node) = parent_node else {
-    return inherited;
+    return (inherited_tags, inherited_blocks);
   };
   if tag.is_empty() || is_void_tag(tag) || can_omit_end_tag(tag, parent_node, context) {
-    return inherited;
+    return (inherited_tags, inherited_blocks);
   }
 
-  let mut tags = inherited;
+  let mut tags = inherited_tags;
   tags.insert(tag);
-  tags
+  (tags, inherited_blocks || is_inline_tag(tag))
 }
 
 pub fn is_in_same_template_as_parent<'a>(tag: &'a str, parent_tag_name: &str) -> bool {
@@ -303,8 +304,10 @@ fn can_omit_end_tag<'a>(
   }
 
   let template_close_tags = context.template_close_tags.borrow();
-  if !template_close_tags.is_empty()
-    && (template_close_tags.contains(tag) || is_always_close_tag(tag) || is_formatting_tag(tag))
+  let template_close_blocks = context.template_close_blocks.borrow().clone();
+  if (!template_close_tags.is_empty()
+    && (template_close_tags.contains(tag) || is_always_close_tag(tag) || is_formatting_tag(tag)))
+    || (template_close_blocks && is_block_tag(tag))
   {
     return false;
   }
@@ -327,12 +330,6 @@ fn can_omit_end_tag<'a>(
     }
   {
     return *context.is_on_rightmost_path.borrow();
-  }
-
-  // For inline element containing block element, if the inline ancestor
-  // is not on rightmost path, the block must close to avoid parsing issues
-  if is_block_tag(tag) && *context.has_inline_ancestor_needing_close.borrow() {
-    return false;
   }
 
   *context.is_last_effective_child.borrow()

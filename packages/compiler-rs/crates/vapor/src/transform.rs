@@ -39,9 +39,7 @@ use crate::{
   },
 };
 
-use common::check::{
-  is_constant_node, is_inline_tag, is_math_ml_tag, is_native_tag, is_svg_tag, is_template,
-};
+use common::check::{is_constant_node, is_math_ml_tag, is_native_tag, is_svg_tag, is_template};
 
 pub struct DirectiveTransformResult<'a> {
   pub key: Expression<'a>,
@@ -98,13 +96,13 @@ pub struct TransformContext<'a> {
   // whether this node is on the rightmost path of the tree
   // (all ancestors are also last effective children)
   pub is_on_rightmost_path: RefCell<bool>,
-  // whether there is an inline ancestor that needs closing
-  // (i.e. is an inline tag and not on the rightmost path)
-  pub has_inline_ancestor_needing_close: RefCell<bool>,
   // If an ancestor in the same template must close explicitly, descendants
   // with matching tags must also close so the browser doesn't consume the
   // ancestor close tag for the descendant.
   pub template_close_tags: RefCell<HashSet<&'a str>>,
+  // Inline ancestors with explicit close tags also require block descendants
+  // in the same template to close explicitly.
+  pub template_close_blocks: RefCell<bool>,
 
   global_id: RefCell<i32>,
   if_index: RefCell<i32>,
@@ -132,7 +130,7 @@ impl<'a> TransformContext<'a> {
       operation_index: RefCell::new(0),
       is_last_effective_child: RefCell::new(true),
       is_on_rightmost_path: RefCell::new(true),
-      has_inline_ancestor_needing_close: RefCell::new(false),
+      template_close_blocks: RefCell::new(false),
       template_close_tags: RefCell::new(HashSet::new()),
       global_id: RefCell::new(0),
       if_index: RefCell::new(0),
@@ -443,27 +441,9 @@ impl<'a> TransformContext<'a> {
     node: JSXChild<'a>,
     index: i32,
     is_last_effective_child: bool,
-    parent_tag_name: &str,
     block: &mut BlockIRNode<'a>,
   ) -> impl FnOnce() {
     let is_on_rightmost_path = *self.is_on_rightmost_path.borrow() && is_last_effective_child;
-
-    // propagate the inline ancestor status
-    let mut has_inline_ancestor_needing_close = *self.has_inline_ancestor_needing_close.borrow();
-    if parent_tag_name == "template" {
-      // <template> acts as a boundary ensuring its content is parsed as a fragment,
-      // protecting inner blocks from outer inline contexts.
-      has_inline_ancestor_needing_close = false;
-    } else if !parent_tag_name.is_empty()
-      && !has_inline_ancestor_needing_close
-      && !is_on_rightmost_path
-      && is_inline_tag(parent_tag_name)
-    {
-      // Logic: if current node (parent of the node being created) is inline
-      // AND it's not on the rightmost path, then it needs closing.
-      // Any block child inside will need to be careful.
-      has_inline_ancestor_needing_close = true;
-    }
 
     self.node.replace(node);
     let index = self.index.replace(index);
@@ -473,9 +453,7 @@ impl<'a> TransformContext<'a> {
       .is_last_effective_child
       .replace(is_last_effective_child);
     let is_on_rightmost_path = self.is_on_rightmost_path.replace(is_on_rightmost_path);
-    let has_inline_ancestor_needing_close = self
-      .has_inline_ancestor_needing_close
-      .replace(has_inline_ancestor_needing_close);
+    let template_close_blocks = self.template_close_blocks.take();
     let template_close_tags = self.template_close_tags.take();
     self.children_template.take();
     mem::take(&mut block.dynamic);
@@ -491,9 +469,7 @@ impl<'a> TransformContext<'a> {
         .is_last_effective_child
         .replace(is_last_effective_child);
       self.is_on_rightmost_path.replace(is_on_rightmost_path);
-      self
-        .has_inline_ancestor_needing_close
-        .replace(has_inline_ancestor_needing_close);
+      self.template_close_blocks.replace(template_close_blocks);
       *self.template_close_tags.borrow_mut() = template_close_tags;
       *self.effect_index.borrow_mut() = effect_index;
       *self.operation_index.borrow_mut() = operation_index;

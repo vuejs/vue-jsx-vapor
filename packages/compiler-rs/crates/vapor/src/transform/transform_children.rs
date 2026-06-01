@@ -35,7 +35,7 @@ pub unsafe fn transform_children<'a>(
 
   let _node = node as *mut _;
   let parent_tag_name = directives.tag_name;
-  let child_template_close_tags = if !is_fragment_or_component {
+  let (child_template_close_tags, child_template_close_blocks) = if !is_fragment_or_component {
     get_child_template_close_tags(parent_tag_name, parent_node, context)
   } else {
     Default::default()
@@ -94,14 +94,15 @@ pub unsafe fn transform_children<'a>(
       } else {
         true
       },
-      parent_tag_name,
       unsafe { &mut *_context_block },
     );
     let is_same_template = is_in_same_template_as_parent(tag, parent_tag_name);
     if is_same_template {
       *context.template_close_tags.borrow_mut() = child_template_close_tags.clone();
+      *context.template_close_blocks.borrow_mut() = child_template_close_blocks;
     } else {
       context.template_close_tags.borrow_mut().clear();
+      *context.template_close_blocks.borrow_mut() = false;
     }
     context.transform_node(
       Some(unsafe { &mut *_context_block }),
