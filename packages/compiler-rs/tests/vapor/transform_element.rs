@@ -459,11 +459,11 @@ fn props_merging_style() {
 fn props_merging_class() {
   let code = transform("<div class=\"foo\" class={{ bar: isBar }} />", None).code;
   assert_snapshot!(code, @r#"
-  import { renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
+  import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClass(_n0, ["foo", { bar: isBar }]));
+  	_renderEffect(() => _setClassName("n0", isBar ? 1 : 0, " bar", "foo"));
   	return _n0;
   })();
   "#);

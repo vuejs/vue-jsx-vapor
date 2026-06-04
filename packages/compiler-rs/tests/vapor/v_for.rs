@@ -100,14 +100,14 @@ fn selector_pattern2() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, setClass as _setClass, template as _template } from "vue";
+  import { createFor as _createFor, setClassName as _setClassName, template as _template } from "vue";
   const _t0 = _template("<tr>");
   (() => {
   	let _selector0_0;
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
   		_selector0_0(() => {
-  			_setClass(_n2, selected === _for_item0.value.id ? "danger" : "");
+  			_setClassName("n2", selected === _for_item0.value.id ? 1 : 0, "danger");
   		});
   		return _n2;
   	}, (row) => row.id, void 0, ({ createSelector }) => {
@@ -131,12 +131,12 @@ fn selector_pattern3() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
+  import { createFor as _createFor, renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
   const _t0 = _template("<tr>");
   (() => {
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
-  		_renderEffect(() => _setClass(_n2, _for_item0.value.label === _for_item0.value.id ? "danger" : ""));
+  		_renderEffect(() => _setClassName("n2", _for_item0.value.label === _for_item0.value.id ? 1 : 0, "danger"));
   		return _n2;
   	}, (row) => row.id);
   	return _n0;
@@ -156,14 +156,14 @@ fn selector_pattern4() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, setClass as _setClass, template as _template } from "vue";
+  import { createFor as _createFor, setClassName as _setClassName, template as _template } from "vue";
   const _t0 = _template("<tr>");
   (() => {
   	let _selector0_0;
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
   		_selector0_0(() => {
-  			_setClass(_n2, { danger: _for_item0.value.id === selected });
+  			_setClassName("n2", _for_item0.value.id === selected ? 1 : 0, "danger");
   		});
   		return _n2;
   	}, (row) => row.id, void 0, ({ createSelector }) => {
@@ -186,12 +186,12 @@ fn should_not_selector_pattern() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
+  import { createFor as _createFor, renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
   const _t0 = _template("<tr>");
   (() => {
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
-  		_renderEffect(() => _setClass(_n2, { danger: _for_item0.value.id === selected ? danger : null }));
+  		_renderEffect(() => _setClassName("n2", (_for_item0.value.id === selected ? danger : null) ? 1 : 0, "danger"));
   		return _n2;
   	}, (row) => row.id);
   	return _n0;
@@ -218,6 +218,27 @@ fn multi_effect() {
   		});
   		return _n2;
   	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn multi_class_name_helper_with_repeated_v_for_value() {
+  let code = transform(
+    r#"<div v-for={todo in todos} key={todo.id} class={{ completed: todo.completed, editing: todo === editedTodo }} />"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createFor as _createFor, renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n0 = _createFor(() => todos, (_for_item0) => {
+  		const _n2 = _t0();
+  		_renderEffect(() => _setClassName("n2", (_for_item0.value.completed ? 1 : 0) | (_for_item0.value === editedTodo ? 2 : 0), [" completed", " editing"]));
+  		return _n2;
+  	}, (todo) => todo.id);
   	return _n0;
   })();
   "#);

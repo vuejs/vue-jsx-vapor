@@ -1,10 +1,18 @@
 use std::borrow::Cow;
 
 use common::text::capitalize;
+use common::text::get_text_like_value;
 use napi::bindgen_prelude::Either3;
+use oxc_allocator::CloneIn;
+use oxc_allocator::TakeIn;
 use oxc_ast::NONE;
+use oxc_ast::ast::ArrayExpressionElement;
 use oxc_ast::ast::BinaryOperator;
+use oxc_ast::ast::ConditionalExpression;
 use oxc_ast::ast::Expression;
+use oxc_ast::ast::NumberBase;
+use oxc_ast::ast::ObjectExpression;
+use oxc_ast::ast::ObjectPropertyKind;
 use oxc_ast::ast::PropertyKey;
 use oxc_ast::ast::PropertyKind;
 use oxc_ast::ast::Statement;
@@ -38,6 +46,11 @@ fn helpers<'a>(name: &str, is_svg: bool) -> HelperConfig<'a> {
     },
     "setClass" => HelperConfig {
       name: "_setClass",
+      need_key: false,
+      is_svg,
+    },
+    "setClassName" => HelperConfig {
+      name: "setClassName",
       need_key: false,
       is_svg,
     },
@@ -78,9 +91,10 @@ fn helpers<'a>(name: &str, is_svg: bool) -> HelperConfig<'a> {
 pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>) -> Statement<'a> {
   let ast = &context.ast;
   let SetPropIRNode {
+    element,
     prop: IRProp {
       key,
-      values,
+      mut values,
       modifier,
       ..
     },
@@ -91,18 +105,22 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
   let mut arguments = ast.vec();
   arguments.push(
     ast
-      .expression_identifier(SPAN, ast.str(&format!("_n{}", oper.element)))
+      .expression_identifier(SPAN, ast.str(&format!("_n{}", element)))
       .into(),
   );
-  let resolved_helper = get_runtime_helper(
-    tag,
-    if let Expression::StringLiteral(key) = &key {
-      &key.value
-    } else {
-      ""
-    },
-    modifier,
-  );
+  let key_value = if let Expression::StringLiteral(key) = &key {
+    &key.value
+  } else {
+    ""
+  };
+  let resolved_helper = get_runtime_helper(tag, key_value, modifier);
+  if key_value == "class"
+    && !resolved_helper.is_svg
+    && resolved_helper.name == "_setClass"
+    && let Some(class_name) = gen_set_class_name(element, &mut values, context)
+  {
+    return class_name;
+  }
   if resolved_helper.need_key {
     arguments.push(gen_expression(key, context, None, false).into());
   }
@@ -121,6 +139,307 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
       false,
     ),
   )
+}
+
+struct ClassNameEntry<'a> {
+  class_name: Cow<'a, str>,
+  condition: Option<Expression<'a>>,
+  negate: bool,
+  value: Option<bool>,
+}
+
+// Runtime uses signed bitwise shifts when iterating fragments, so 31 entries
+// is the largest safe flag set (1 << 30).
+const MAX_CLASS_NAME_ENTRIES: usize = 31;
+
+fn gen_set_class_name<'a>(
+  element: i32,
+  values: &mut Vec<Expression<'a>>,
+  context: &'a CodegenContext<'a>,
+) -> Option<Statement<'a>> {
+  let ast = context.ast;
+  let Some((prefix, suffix, entries)) = resolve_class_name(values, context) else {
+    return None;
+  };
+
+  let mut class_fragments: oxc_allocator::Vec<ArrayExpressionElement> = ast.vec();
+  let entries_len = entries.len();
+  for entry in entries.iter() {
+    class_fragments.push(
+      ast
+        .expression_string_literal(
+          SPAN,
+          if prefix.is_empty() && entries_len == 1 {
+            ast.str(entry.class_name.as_ref())
+          } else {
+            ast.str(format!(" {}", entry.class_name).as_ref())
+          },
+          None,
+        )
+        .into(),
+    );
+  }
+
+  let fragments = if entries_len == 1 {
+    class_fragments.remove(0).into_expression()
+  } else {
+    ast.expression_array(SPAN, class_fragments)
+  };
+
+  let flags = gen_class_flags(entries, context);
+
+  Some(
+    ast.statement_expression(
+      SPAN,
+      ast.expression_call(
+        SPAN,
+        ast.expression_identifier(SPAN, ast.str(context.options.helper("_setClassName"))),
+        NONE,
+        ast.vec_from_iter(
+          [
+            Some(
+              ast
+                .expression_string_literal(SPAN, ast.str(&format!("n{}", element)), None)
+                .into(),
+            ),
+            Some(flags.into()),
+            Some(fragments.into()),
+            if !prefix.is_empty() {
+              Some(
+                ast
+                  .expression_string_literal(SPAN, ast.str(&prefix), None)
+                  .into(),
+              )
+            } else if !suffix.is_empty() {
+              Some(ast.expression_string_literal(SPAN, "", None).into())
+            } else {
+              None
+            },
+            if !suffix.is_empty() {
+              Some(
+                ast
+                  .expression_string_literal(SPAN, ast.str(&suffix), None)
+                  .into(),
+              )
+            } else {
+              None
+            },
+          ]
+          .into_iter()
+          .flatten(),
+        ),
+        false,
+      ),
+    ),
+  )
+}
+
+fn resolve_class_name<'a>(
+  values: &mut Vec<Expression<'a>>,
+  context: &'a CodegenContext<'a>,
+) -> Option<(Cow<'a, str>, Cow<'a, str>, Vec<ClassNameEntry<'a>>)> {
+  let mut prefix = Cow::Borrowed("");
+  let mut suffix = Cow::Borrowed("");
+  let mut entries: Vec<ClassNameEntry> = vec![];
+  let mut saw_dynamic = false;
+  let mut saw_suffix = false;
+
+  for value in values.iter_mut() {
+    if let Some(static_value) = get_text_like_value(value, true) {
+      let normalized = normalize_class(static_value);
+      if !normalized.is_empty() {
+        if saw_suffix {
+          suffix = append_class(suffix, normalized);
+        } else if saw_dynamic {
+          saw_suffix = true;
+          suffix = append_class(suffix, normalized);
+        } else {
+          prefix = append_class(prefix, normalized)
+        }
+      }
+      continue;
+    };
+
+    if saw_suffix {
+      return None;
+    }
+    saw_dynamic = true;
+
+    if let Expression::ObjectExpression(value) = value {
+      if !resolve_object_class_name(value, &mut entries, context) {
+        return None;
+      }
+    } else if let Expression::ConditionalExpression(value) = value {
+      if !resolve_condition_class_name(value, &mut entries, context) {
+        return None;
+      }
+    } else {
+      return None;
+    }
+  }
+
+  if entries.len() <= MAX_CLASS_NAME_ENTRIES {
+    Some((prefix, suffix, entries))
+  } else {
+    None
+  }
+}
+
+fn resolve_object_class_name<'a>(
+  value: &mut ObjectExpression<'a>,
+  entries: &mut Vec<ClassNameEntry<'a>>,
+  context: &'a CodegenContext<'a>,
+) -> bool {
+  for prop in value.properties.iter_mut() {
+    if let ObjectPropertyKind::ObjectProperty(prop) = prop {
+      if prop.computed {
+        return false;
+      }
+
+      let Some(raw_class_name) = (match &prop.key {
+        PropertyKey::StaticIdentifier(key) => Some(key.name.as_str()),
+        PropertyKey::StringLiteral(key) => Some(key.value.as_str()),
+        _ => None,
+      }) else {
+        return false;
+      };
+
+      let class_name = normalize_class(Cow::Borrowed(raw_class_name));
+      // Empty normalized keys contribute no class and no flag bit.
+      if class_name.is_empty() {
+        continue;
+      }
+
+      let mut value = None;
+      let condition = if let Expression::BooleanLiteral(prop_value) = &prop.value {
+        value = Some(prop_value.value);
+        None
+      } else {
+        Some(prop.value.clone_in(context.ast.allocator))
+      };
+      entries.push(ClassNameEntry {
+        class_name,
+        condition,
+        negate: false,
+        value,
+      })
+    } else {
+      return false;
+    }
+  }
+  true
+}
+
+fn resolve_condition_class_name<'a>(
+  value: &mut ConditionalExpression<'a>,
+  entries: &mut Vec<ClassNameEntry<'a>>,
+  context: &'a CodegenContext<'a>,
+) -> bool {
+  let consequent = get_text_like_value(&value.consequent, false).map(normalize_class);
+  let alternate = get_text_like_value(&value.alternate, false).map(normalize_class);
+  let consequent_is_empty = consequent
+    .as_ref()
+    .is_some_and(|consequent| consequent.is_empty());
+  let alternate_is_empty = alternate
+    .as_ref()
+    .is_some_and(|alternate| alternate.is_empty());
+
+  if let Some(consequent) = consequent
+    && alternate_is_empty
+  {
+    entries.push(ClassNameEntry {
+      class_name: consequent,
+      condition: Some(value.test.take_in(context.ast.allocator)),
+      negate: false,
+      value: None,
+    });
+    true
+  } else if let Some(alternate) = alternate
+    && consequent_is_empty
+  {
+    entries.push(ClassNameEntry {
+      class_name: alternate,
+      condition: Some(value.test.take_in(context.ast.allocator)),
+      negate: true,
+      value: None,
+    });
+    true
+  } else {
+    false
+  }
+}
+
+fn normalize_class<'a>(base: Cow<'a, str>) -> Cow<'a, str> {
+  let normalized = base.split_whitespace().collect::<Vec<_>>().join(" ");
+
+  match base {
+    Cow::Borrowed(s) if normalized == s => Cow::Borrowed(s),
+    Cow::Owned(s) if normalized == s => Cow::Owned(s),
+    _ => Cow::Owned(normalized),
+  }
+}
+
+fn gen_class_flags<'a>(
+  entries: Vec<ClassNameEntry<'a>>,
+  context: &'a CodegenContext<'a>,
+) -> Expression<'a> {
+  let ast = context.ast;
+  let mut values = ast.vec();
+
+  for (index, entry) in entries.into_iter().enumerate() {
+    let bit = 1 << index;
+    if let Some(value) = entry.value {
+      values.push(if value == true {
+        ast.expression_numeric_literal(SPAN, bit as f64, None, NumberBase::Binary)
+      } else {
+        ast.number_0()
+      });
+      continue;
+    }
+
+    values.push(ast.expression_parenthesized(
+      SPAN,
+      ast.expression_conditional(
+        SPAN,
+        gen_expression(entry.condition.unwrap(), context, None, false),
+        if entry.negate {
+          ast.number_0()
+        } else {
+          ast.expression_numeric_literal(SPAN, bit as f64, None, NumberBase::Binary)
+        },
+        if entry.negate {
+          ast.expression_numeric_literal(SPAN, bit as f64, None, NumberBase::Binary)
+        } else {
+          ast.number_0()
+        },
+      ),
+    ));
+  }
+
+  let values_len = values.len();
+  if values.len() > 1 {
+    let mut result = values.remove(0);
+    for value in values {
+      result = ast.expression_binary(SPAN, result, BinaryOperator::BitwiseOR, value);
+    }
+    result
+  } else if values_len == 1 {
+    values.remove(0)
+  } else {
+    ast.number_0()
+  }
+}
+
+fn append_class<'a>(base: Cow<'a, str>, value: Cow<'a, str>) -> Cow<'a, str> {
+  if !base.is_empty() {
+    if !value.is_empty() {
+      Cow::Owned(format!("{} {}", base, value))
+    } else {
+      base
+    }
+  } else {
+    value
+  }
 }
 
 fn get_runtime_helper<'a>(tag: &str, key: &str, modifier: Option<&str>) -> HelperConfig<'a> {
