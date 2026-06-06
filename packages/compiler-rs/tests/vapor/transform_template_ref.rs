@@ -6,7 +6,7 @@ fn static_ref() {
   let code = transform("<div ref=\"foo\" />", None).code;
   assert_snapshot!(code, @r#"
   import { createTemplateRefSetter as _createTemplateRefSetter, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _setTemplateRef = _createTemplateRefSetter();
   	const _n0 = _t0();
@@ -21,7 +21,7 @@ fn dynamic_ref() {
   let code = transform("<div ref={foo} />", None).code;
   assert_snapshot!(code, @r#"
   import { createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _setTemplateRef = _createTemplateRefSetter();
   	const _n0 = _t0();
@@ -69,7 +69,7 @@ fn ref_v_if() {
   let code = transform("<div ref={foo} v-if={true} />", None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _setTemplateRef = _createTemplateRefSetter();
   	const _n0 = _createIf(() => true, () => {

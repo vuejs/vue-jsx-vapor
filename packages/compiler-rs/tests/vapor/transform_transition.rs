@@ -65,7 +65,7 @@ fn work_with_v_if() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<h1>foo", false, true);
+  const _t0 = _template("<h1>foo", 2);
   (() => {
   	const _n3 = _createComponent(VaporTransition, null, { default: _withVaporCtx(() => {
   		const _n0 = _createIf(() => show, () => {
@@ -93,9 +93,9 @@ fn work_with_v_if_v_else() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<h1>1", false, true);
-  const _t1 = _template("<h2>2", false, true);
-  const _t2 = _template("<h3>3", false, true);
+  const _t0 = _template("<h1>1", 2);
+  const _t1 = _template("<h2>2", 2);
+  const _t2 = _template("<h3>3", 2);
   (() => {
   	const _n9 = _createComponent(VaporTransition, null, { default: _withVaporCtx(() => {
   		const _n0 = _createIf(() => condition == 1, () => {
@@ -131,9 +131,9 @@ fn work_with_condition_expression() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<h1>1", false, true);
-  const _t1 = _template("<h2>2", false, true);
-  const _t2 = _template("<h3>3", false, true);
+  const _t0 = _template("<h1>1", 2);
+  const _t1 = _template("<h2>2", 2);
+  const _t2 = _template("<h3>3", 2);
   (() => {
   	const _n7 = _createComponent(VaporTransition, null, { default: _withVaporCtx(() => {
   		const _n0 = _createIf(() => condition == 1, () => {
@@ -165,7 +165,7 @@ fn transition_work_with_dynamic_keyed_children() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createKeyedFragment as _createKeyedFragment, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<h1>foo", false, true);
+  const _t0 = _template("<h1>foo", 2);
   (() => {
   	const _n3 = _createComponent(VaporTransition, null, { default: _withVaporCtx(() => {
   		const _n0 = _createKeyedFragment(() => foo, () => {

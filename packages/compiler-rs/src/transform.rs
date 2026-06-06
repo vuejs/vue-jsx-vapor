@@ -1,9 +1,15 @@
-use common::options::{RootJsx, TransformOptions};
+use common::{
+  options::{RootJsx, TransformOptions},
+  patch_flag::TemplateFlags,
+};
 use napi::Either;
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   AstBuilder, NONE,
-  ast::{Argument, Expression, ImportOrExportKind, Program, Statement, VariableDeclarationKind},
+  ast::{
+    Argument, Expression, ImportOrExportKind, NumberBase, Program, Statement,
+    VariableDeclarationKind,
+  },
 };
 use oxc_ast_visit::{
   VisitMut,
@@ -269,6 +275,16 @@ impl<'a> Transform<'a> {
             None,
           ));
 
+          let flags = if template.root {
+            TemplateFlags::ROOT as i32
+          } else {
+            0
+          } | if template._static {
+            TemplateFlags::STATIC as i32
+          } else {
+            0
+          };
+
           Statement::VariableDeclaration(
             ast.alloc_variable_declaration(
               SPAN,
@@ -287,17 +303,15 @@ impl<'a> Transform<'a> {
                       ast.vec_from_iter(
                         [
                           Some(template_literal),
-                          if template.root {
-                            Some(ast.expression_boolean_literal(SPAN, template.root).into())
-                          } else if template._static || template.ns > 0 {
-                            Some(ast.expression_boolean_literal(SPAN, false).into())
-                          } else {
-                            None
-                          },
-                          if template._static {
+                          if flags > 0 {
                             Some(
                               ast
-                                .expression_boolean_literal(SPAN, template._static)
+                                .expression_numeric_literal(
+                                  SPAN,
+                                  flags as f64,
+                                  None,
+                                  NumberBase::Hex,
+                                )
                                 .into(),
                             )
                           } else if template.ns > 0 {
@@ -312,7 +326,7 @@ impl<'a> Transform<'a> {
                                   SPAN,
                                   template.ns as f64,
                                   None,
-                                  oxc_ast::ast::NumberBase::Hex,
+                                  NumberBase::Hex,
                                 )
                                 .into(),
                             )

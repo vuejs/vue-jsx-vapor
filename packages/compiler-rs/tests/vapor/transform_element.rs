@@ -31,7 +31,7 @@ fn component_generate_multi_root_component() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("123", false, true);
+  const _t0 = _template("123", 2);
   (() => {
   	const _n0 = _createComponent(Comp);
   	const _n1 = _t0();
@@ -247,7 +247,7 @@ fn static_props_unquoted_when_value_has_no_special_chars() {
   let code = transform("<div id=\"foo\" class=\"bar\" />", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div id=foo class=bar>", true, true);
+  const _t0 = _template("<div id=foo class=bar>", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -260,7 +260,7 @@ fn static_props_quoted_when_value_contains_whitespace() {
   let code = transform(r#"<div title="has whitespace" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"has whitespace\">", true, true);
+  const _t0 = _template("<div title=\"has whitespace\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -273,7 +273,7 @@ fn static_props_quoted_when_value_contains_right_angle_bracket() {
   let code = transform(r#"<div data-expr="a>b" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div data-expr=\"a>b\">", true, true);
+  const _t0 = _template("<div data-expr=\"a>b\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -286,7 +286,7 @@ fn static_props_quoted_when_value_contains_left_angle_bracket() {
   let code = transform(r#"<div data-expr="a<b" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div data-expr=\"a<b\">", true, true);
+  const _t0 = _template("<div data-expr=\"a<b\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -299,7 +299,7 @@ fn static_props_quoted_when_value_contains_equal_bracket() {
   let code = transform(r#"<div data-expr="a=b" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div data-expr=\"a=b\">", true, true);
+  const _t0 = _template("<div data-expr=\"a=b\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -312,7 +312,7 @@ fn static_props_quoted_when_value_contains_single_quote() {
   let code = transform(r#"<div title="it's" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"it's\">", true, true);
+  const _t0 = _template("<div title=\"it's\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -325,7 +325,7 @@ fn static_props_quoted_when_value_contains_backtick() {
   let code = transform(r#"<div title="foo`bar" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"foo`bar\">", true, true);
+  const _t0 = _template("<div title=\"foo`bar\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -338,7 +338,7 @@ fn static_props_escapes_double_quotes_in_value() {
   let code = transform(r#"<div title='say "hello"' />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"say &quot;hello&quot;\">", true, true);
+  const _t0 = _template("<div title=\"say &quot;hello&quot;\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -355,7 +355,7 @@ fn static_props_mixed_quoting_with_boolean_attribute() {
   .code;
   assert_snapshot!(code, @r#"
   import { setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div title=\"has whitespace\"data-targets=\"foo>bar\">", true);
+  const _t0 = _template("<div title=\"has whitespace\"data-targets=\"foo>bar\">", 1);
   (() => {
   	const _n0 = _t0();
   	_setProp(_n0, "inert", true);
@@ -373,7 +373,7 @@ fn static_props_space_omitted_after_quoted_attribute() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"has whitespace\"alt=\"&quot;contains quotes&quot;\"data-targets=\"foo>bar\">", true, true);
+  const _t0 = _template("<div title=\"has whitespace\"alt=\"&quot;contains quotes&quot;\"data-targets=\"foo>bar\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -386,7 +386,7 @@ fn props_children() {
   let code = transform("<div id=\"foo\"><span/></div>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div id=foo><span>", true, true);
+  const _t0 = _template("<div id=foo><span>", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -399,7 +399,7 @@ fn dynamic_props() {
   let code = transform("<div {...obj} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [obj]));
@@ -413,7 +413,7 @@ fn dynamic_props_after_static_prop() {
   let code = transform("<div id=\"foo\" {...obj} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [{ id: "foo" }, obj]));
@@ -427,7 +427,7 @@ fn dynamic_props_before_static_prop() {
   let code = transform("<div {...obj} id=\"foo\" />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [obj, { id: "foo" }]));
@@ -441,7 +441,7 @@ fn dynamic_props_between_static_prop() {
   let code = transform("<div id=\"foo\" {...obj} class=\"bar\" />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [
@@ -460,7 +460,7 @@ fn props_merging_event_handlers() {
   assert_snapshot!(code, @r#"
   _delegateEvents("click");
   import { delegate as _delegate, delegateEvents as _delegateEvents, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_delegate(_n0, "click", a);
@@ -479,7 +479,7 @@ fn props_merging_style() {
   .code;
   assert_snapshot!(code, @r#"
   import { setStyle as _setStyle, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_setStyle(_n0, ["color: green", { color: "red" }]);
@@ -493,7 +493,7 @@ fn props_merging_class() {
   let code = transform("<div class=\"foo\" class={{ bar: isBar }} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, isBar ? 1 : 0, " bar", "foo"));
@@ -507,7 +507,7 @@ fn v_on() {
   let code = transform("<div v-on={obj} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicEvents as _setDynamicEvents, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicEvents(_n0, obj));
@@ -556,7 +556,7 @@ fn invalid_table_nesting_with_dynamic_child() {
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { child as _child, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<tr><td> ");
-  const _t1 = _template("<table>", true);
+  const _t1 = _template("<table>", 1);
   (() => {
   	const _n2 = _t1();
   	const _n1 = _t0();
@@ -660,7 +660,7 @@ fn svg() {
   let code = transform(r#"<svg><circle r="40"></circle></svg>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<svg><circle r=40>", true, true, 1);
+  const _t0 = _template("<svg><circle r=40>", 3, 1);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -673,7 +673,7 @@ fn math_ml() {
   let code = transform(r#"<math><mrow><mi>x</mi></mrow></math>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<math><mrow><mi>x", true, true, 2);
+  const _t0 = _template("<math><mrow><mi>x", 3, 2);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -686,9 +686,9 @@ fn fragment_in_fragment() {
   let code = transform(r#"<>foo<>bar</>baz</>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("foo", false, true);
-  const _t1 = _template("bar", false, true);
-  const _t2 = _template("baz", false, true);
+  const _t0 = _template("foo", 2);
+  const _t1 = _template("bar", 2);
+  const _t2 = _template("baz", 2);
   (() => {
   	const _n0 = _t0();
   	const _n1 = _t1();
@@ -744,8 +744,8 @@ fn is_not_component() {
   .code;
   assert_snapshot!(code, @r#"
   import { createPlainElement as _createPlainElement, template as _template } from "vue";
-  const _t0 = _template("<foo>", false, true);
-  const _t1 = _template("<foo:bar>", false, true);
+  const _t0 = _template("<foo>", 2);
+  const _t1 = _template("<foo:bar>", 2);
   (() => {
   	const _n0 = _createPlainElement("foo-bar");
   	const _n1 = _t0();

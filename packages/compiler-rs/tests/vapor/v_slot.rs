@@ -10,7 +10,7 @@ fn implicit_default_slot() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<div>", false, true);
+  const _t0 = _template("<div>", 2);
   (() => {
   	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
   		const _n0 = _t0();
@@ -80,7 +80,7 @@ fn on_component_named_slot_multiple() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("foo", false, true);
+  const _t0 = _template("foo", 2);
   (() => {
   	const _n5 = _createComponent(Comp, null, {
   		left: _withVaporCtx(() => {
@@ -302,9 +302,9 @@ fn named_slots_with_implicit_default_slot() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("foo", false, true);
-  const _t1 = _template("bar", false, true);
-  const _t2 = _template("<span>", false, true);
+  const _t0 = _template("foo", 2);
+  const _t1 = _template("bar", 2);
+  const _t2 = _template("<span>", 2);
   (() => {
   	const _n4 = _createComponent(Comp, null, {
   		one: _withVaporCtx(() => {
@@ -335,8 +335,8 @@ fn named_slots_with_comment() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("foo", false, true);
-  const _t1 = _template("<span>", false, true);
+  const _t0 = _template("foo", 2);
+  const _t1 = _template("<span>", 2);
   (() => {
   	const _n4 = _createComponent(Comp, null, {
   		one: _withVaporCtx(() => {
@@ -450,10 +450,10 @@ fn dynamic_slots_name_with_v_if_and_v_else_if() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("condition slot", false, true);
-  const _t1 = _template("another condition", false, true);
-  const _t2 = _template("other condition", false, true);
-  const _t3 = _template("else condition", false, true);
+  const _t0 = _template("condition slot", 2);
+  const _t1 = _template("another condition", 2);
+  const _t2 = _template("other condition", 2);
+  const _t3 = _template("else condition", 2);
   (() => {
   	const _n8 = _createComponent(Comp, null, { $: [() => condition ? {
   		name: "condition",
@@ -672,7 +672,7 @@ fn slot_with_only_static_elements_should_have_with_vapor_ctx() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<div>static content", false, true);
+  const _t0 = _template("<div>static content", 2);
   (() => {
   	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
   		const _n0 = _t0();
@@ -908,8 +908,8 @@ fn slot_with_v_if_but_no_component_should_have_with_vapor_ctx() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<div>content", false, true);
-  const _t1 = _template("<span>fallback", false, true);
+  const _t0 = _template("<div>content", 2);
+  const _t1 = _template("<span>fallback", 2);
   (() => {
   	const _n7 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
   		const _n0 = _createIf(() => show, () => {

@@ -390,7 +390,7 @@ fn gen_class_flags<'a>(
     let bit = 1 << index;
     if let Some(value) = entry.value {
       values.push(if value == true {
-        ast.expression_numeric_literal(SPAN, bit as f64, None, NumberBase::Binary)
+        ast.expression_numeric_literal(SPAN, bit as f64, None, NumberBase::Hex)
       } else {
         ast.number_0()
       });
@@ -405,10 +405,10 @@ fn gen_class_flags<'a>(
         if entry.negate {
           ast.number_0()
         } else {
-          ast.expression_numeric_literal(SPAN, bit as f64, None, NumberBase::Binary)
+          ast.expression_numeric_literal(SPAN, bit as f64, None, NumberBase::Hex)
         },
         if entry.negate {
-          ast.expression_numeric_literal(SPAN, bit as f64, None, NumberBase::Binary)
+          ast.expression_numeric_literal(SPAN, bit as f64, None, NumberBase::Hex)
         } else {
           ast.number_0()
         },

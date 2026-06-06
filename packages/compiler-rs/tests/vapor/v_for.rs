@@ -483,7 +483,7 @@ fn fast_remove_flag() {
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span> ");
-  const _t1 = _template("<div>", true);
+  const _t1 = _template("<div>", 1);
   (() => {
   	const _n3 = _t1();
   	_setInsertionState(_n3, null, 0);

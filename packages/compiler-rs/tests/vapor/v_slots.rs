@@ -35,7 +35,7 @@ fn function_expression_children() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("<div>", true, true);
+  const _t0 = _template("<div>", 3);
   (() => {
   	const _n0 = _createComponent(Comp, null, { $: [{ default: () => (() => {
   		const _n0 = _t0();
@@ -58,7 +58,7 @@ fn object_expression_children() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("foo", false, true);
+  const _t0 = _template("foo", 2);
   (() => {
   	const _n0 = _createComponent(Comp, null, { $: [{ default: () => (() => {
   		const _n0 = _t0();
@@ -81,7 +81,7 @@ fn object_expression_children_with_computed_property() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("foo", false, true);
+  const _t0 = _template("foo", 2);
   (() => {
   	const _n0 = _createComponent(Comp, null, { $: [() => ({ [foo]: () => (() => {
   		const _n0 = _t0();
@@ -144,8 +144,8 @@ fn v_slots_with_children() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("<div>", false, true);
-  const _t1 = _template("<div>", true, true);
+  const _t0 = _template("<div>", 2);
+  const _t1 = _template("<div>", 3);
   (() => {
   	const _n0 = _createComponent(Comp, null, { $: [{
   		default: () => (() => {
@@ -168,7 +168,7 @@ fn v_slots_dynamic_with_children() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("<div>", false, true);
+  const _t0 = _template("<div>", 2);
   (() => {
   	const _n0 = _createComponent(Comp, null, { $: [{
   		...slots,

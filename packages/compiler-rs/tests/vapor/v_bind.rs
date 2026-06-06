@@ -6,7 +6,7 @@ fn basic() {
   let code = transform("<div id={id}/>", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setProp(_n0, "id", id));
@@ -20,7 +20,7 @@ fn no_expression() {
   let code = transform("<div id />", None).code;
   assert_snapshot!(code, @r#"
   import { setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_setProp(_n0, "id", true);
@@ -34,7 +34,7 @@ fn empty_expression() {
   let code = transform(r#"<div foo={} bar=""></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div bar>", true, true);
+  const _t0 = _template("<div bar>", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -47,7 +47,7 @@ fn camel_modifier() {
   let code = transform("<div foo-bar_camel={id}/>", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setProp(_n0, "fooBar", id));
@@ -61,7 +61,7 @@ fn camel_modifier_with_no_expression() {
   let code = transform("<div foo-bar_camel />", None).code;
   assert_snapshot!(code, @r#"
   import { setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_setProp(_n0, "fooBar", true);
@@ -75,7 +75,7 @@ fn prop_modifier() {
   let code = transform("<div fooBar_prop={id}/>", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDOMProp as _setDOMProp, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDOMProp(_n0, "fooBar", id));
@@ -89,7 +89,7 @@ fn prop_modifier_with_no_expression() {
   let code = transform("<div fooBar_prop />", None).code;
   assert_snapshot!(code, @r#"
   import { setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_setProp(_n0, "fooBar", true);
@@ -103,7 +103,7 @@ fn attr_modifier() {
   let code = transform("<div foo-bar_attr={id}/>", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setAttr as _setAttr, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setAttr(_n0, "foo-bar", id));
@@ -117,7 +117,7 @@ fn attr_modifier_with_no_expression() {
   let code = transform("<div foo-bar_attr />", None).code;
   assert_snapshot!(code, @r#"
   import { setAttr as _setAttr, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_setAttr(_n0, "foo-bar", true);
@@ -152,7 +152,7 @@ fn with_constant_value() {
   .code;
   assert_snapshot!(code, @r#"
   import { setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div e=2 f=foo1 g=1 h=1>", true);
+  const _t0 = _template("<div e=2 f=foo1 g=1 h=1>", 1);
   (() => {
   	const _n0 = _t0();
   	_setProp(_n0, "a", void 0);
@@ -189,7 +189,7 @@ fn number_value() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("<div depth=0>", false, true);
+  const _t0 = _template("<div depth=0>", 2);
   (() => {
   	const _n0 = _t0();
   	const _n1 = _createComponent(Comp, { depth: 0 });
@@ -203,7 +203,7 @@ fn class_with_svg_elements() {
   let code = transform(r#"<svg class={cls}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setAttr as _setAttr, template as _template } from "vue";
-  const _t0 = _template("<svg>", true, false, 1);
+  const _t0 = _template("<svg>", 1, 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setAttr(_n0, "class", cls, true));
@@ -217,7 +217,7 @@ fn bind_with_svg_elements() {
   let code = transform(r#"<svg {...obj}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<svg>", true, false, 1);
+  const _t0 = _template("<svg>", 1, 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [obj], true));
@@ -235,7 +235,7 @@ fn starts_with_underline() {
   .code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, renderEffect as _renderEffect, setDOMProp as _setDOMProp, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_applyTextModel(_n0, () => model, (_value) => model = _value);
@@ -257,7 +257,7 @@ fn namespace_prop() {
   .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div xmlns:xlink=http://www.w3.org/1999/xlink>", true);
+  const _t0 = _template("<div xmlns:xlink=http://www.w3.org/1999/xlink>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setProp(_n0, "foo:bar", foo));
@@ -271,7 +271,7 @@ fn deduped_props() {
   let code = transform(r#"<div foo="foo" foo={foo} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div foo=foo>", true);
+  const _t0 = _template("<div foo=foo>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setProp(_n0, "foo", foo));
@@ -285,7 +285,7 @@ fn simple_object_class_name_helper() {
   let code = transform(r#"<div class={{ active: isActive }}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, isActive ? 1 : 0, "active"));
@@ -303,7 +303,7 @@ fn ternary_string_class_name_helper() {
   .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, selected === row.id ? 1 : 0, "danger"));
@@ -321,7 +321,7 @@ fn reverse_ternary_string_class_name_helper() {
   .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, selected === row.id ? 0 : 1, "danger"));
@@ -341,7 +341,7 @@ fn static_class_after_conditional_uses_class_name_helper_with_suffix() {
   .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, selected === row.id ? 1 : 0, "danger", "", "foo"));
@@ -357,7 +357,7 @@ fn static_class_with_simple_object_class_name_helper() {
   let code = transform(r#"<div class="foo" class={{ bar: isBar }} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, isBar ? 1 : 0, " bar", "foo"));
@@ -375,7 +375,7 @@ fn static_class_in_reverse_order_uses_class_name_helper_with_suffix() {
   let code = transform(r#"<div class={{ bar: isBar }} class="foo" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, isBar ? 1 : 0, "bar", "", "foo"));
@@ -395,7 +395,7 @@ fn static_class_after_multiple_object_class_name_helper_uses_suffix() {
   .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, (ok ? 1 : 0) | (bar ? 2 : 0), [" active", " foo"], "", "tail"));
@@ -413,7 +413,7 @@ fn multiple_simple_object_class_name_helper() {
   let code = transform(r#"<div class={{ active: ok, foo: bar }} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, (ok ? 1 : 0) | (bar ? 2 : 0), [" active", " foo"]));
@@ -435,7 +435,7 @@ fn static_class_with_multiple_object_class_name_helper() {
   .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, (selected === row.id ? 1 : 0) | (active ? 2 : 0), [" danger", " is-active"], "foo"));
@@ -452,7 +452,7 @@ fn object_class_with_multi_token_key() {
   let code = transform(r#"<div class={{ 'foo bar': isActive }} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, isActive ? 1 : 0, "foo bar"));
@@ -470,7 +470,7 @@ fn static_class_with_overlapping_object_class() {
   let code = transform(r#"<div class="bar" class={{ bar: isBar }} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, isBar ? 1 : 0, " bar", "bar"));
@@ -492,7 +492,7 @@ fn static_class_with_overlapping_multi_token_object_class() {
   .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, isActive ? 1 : 0, " foo bar", "foo"));
@@ -514,7 +514,7 @@ fn class_name_helper_normalizes_static_and_string_class_values() {
   .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, ok ? 1 : 0, " baz", "foo bar"));
@@ -535,7 +535,7 @@ fn class_name_helper_falls_back_when_bit_flags_are_exhausted() {
   let code = transform(&source, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClass(_n0, {
@@ -589,7 +589,7 @@ fn class_name_helper_supports_the_max_safe_bit_flag() {
   let code = transform(&source, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClassName(_n0, (a0 ? 1 : 0) | (a1 ? 2 : 0) | (a2 ? 4 : 0) | (a3 ? 8 : 0) | (a4 ? 16 : 0) | (a5 ? 32 : 0) | (a6 ? 64 : 0) | (a7 ? 128 : 0) | (a8 ? 256 : 0) | (a9 ? 512 : 0) | (a10 ? 1024 : 0) | (a11 ? 2048 : 0) | (a12 ? 4096 : 0) | (a13 ? 8192 : 0) | (a14 ? 16384 : 0) | (a15 ? 32768 : 0) | (a16 ? 65536 : 0) | (a17 ? 131072 : 0) | (a18 ? 262144 : 0) | (a19 ? 524288 : 0) | (a20 ? 1048576 : 0) | (a21 ? 2097152 : 0) | (a22 ? 4194304 : 0) | (a23 ? 8388608 : 0) | (a24 ? 16777216 : 0) | (a25 ? 33554432 : 0) | (a26 ? 67108864 : 0) | (a27 ? 134217728 : 0) | (a28 ? 268435456 : 0) | (a29 ? 536870912 : 0) | (a30 ? 1073741824 : 0), [
@@ -638,7 +638,7 @@ fn computed_object_class_key_falls_back_to_set_class() {
   let code = transform(r#"<div class={{ [name]: active }} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClass(_n0, { [name]: active }));
@@ -655,7 +655,7 @@ fn array_class_falls_back_to_set_class() {
   let code = transform(r#"<div class={[foo, { danger: active }]} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setClass(_n0, [foo, { danger: active }]));
@@ -676,7 +676,7 @@ fn class_with_v_bind_object_falls_back_to_dynamic_props() {
   .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [{ class: ["foo", { bar: isBar }] }, mayBeHasClass]));

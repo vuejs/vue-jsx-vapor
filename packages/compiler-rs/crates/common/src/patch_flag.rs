@@ -146,3 +146,12 @@ pub enum VaporBlockShape {
   SingleRoot = 1,
   MultiRoot = 2,
 }
+
+/**
+ * Flags used by vapor template factories, shared between the compiler and the
+ * runtime.
+ */
+pub enum TemplateFlags {
+  ROOT = 1,
+  STATIC = 1 << 1,
+}
