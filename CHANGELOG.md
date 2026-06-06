@@ -1,3 +1,30 @@
+## [3.2.15](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.14...v3.2.15) (2026-06-06)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** bind dynamic slot sources to owner ([1419092](https://github.com/vuejs/vue-jsx-vapor/commit/141909289fa186bb21015358a17a4270c7b56cd9))
+* **compiler/vapor:** normalize vue vnode hook listeners ([d3a931c](https://github.com/vuejs/vue-jsx-vapor/commit/d3a931c1509d8ac1d03fba0553ab5f69df6b50e6))
+* **compiler/vapor:** preserve close tags across template abbreviation ([f11ae18](https://github.com/vuejs/vue-jsx-vapor/commit/f11ae18831d98979373f13bd1f4a967d0394c7a6))
+* **compiler/vapor:** preserve hydration cursor for nested insertions ([70aaa1d](https://github.com/vuejs/vue-jsx-vapor/commit/70aaa1dfc30bee348a9e76c3d498dcee0878211c))
+* **compiler/vapor:** preserve useId evaluation order before dynamic ([34c8016](https://github.com/vuejs/vue-jsx-vapor/commit/34c80167e10ad4d9798250b59bf4d9b29fb26fdb))
+* **compiler/vapor:** track close tags during template abbreviation ([8f3aa22](https://github.com/vuejs/vue-jsx-vapor/commit/8f3aa22e5265208ddbed09ec40bbbdd353bf7ccb))
+* **compiler/vdom:** avoid generating patch flags and createElementVNode ([78de9a7](https://github.com/vuejs/vue-jsx-vapor/commit/78de9a7969004159086b5028c0074066df82c2e8))
+* **compiler/vdom:** generate keys for JSX inside control flow ([f848304](https://github.com/vuejs/vue-jsx-vapor/commit/f848304c354800c5422d85137ce24d98718faebb))
+* **compiler:** allow deduped props ([f5d7437](https://github.com/vuejs/vue-jsx-vapor/commit/f5d74378922052cc3eefb1a4781acc3b6fc7aa12))
+
+
+### Features
+
+* **compiler:** add static template hydration fast path ([eb23b35](https://github.com/vuejs/vue-jsx-vapor/commit/eb23b35631041602170a8b8ca2e156fc1a79d72d))
+
+
+### Performance Improvements
+
+* **compiler/vapor:** add fast path for static class names ([cf94787](https://github.com/vuejs/vue-jsx-vapor/commit/cf94787498780549ca776bc8d965b53c75e33413))
+
+
+
 ## [3.2.14](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.13...v3.2.14) (2026-05-08)
 
 
