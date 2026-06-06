@@ -289,7 +289,7 @@ fn does_not_flush_later_v_for_effects_before_child_component() {
   import { child as _child, createFor as _createFor, next as _next, setInsertionState as _setInsertionState, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
   const _t0 = _template("<div><span> </span><!><span> ");
   (() => {
-  	let _selector0_0;
+  	const _selector0 = createSelector(() => selected);
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n6 = _t0();
   		const _n2 = _child(_n6);
@@ -300,13 +300,12 @@ fn does_not_flush_later_v_for_effects_before_child_component() {
   		const _n3 = _createComponent(Child);
   		const _x4 = _txt(_n4);
   		_setNodes(_x4, () => useId());
-  		_selector0_0(() => {
+  		_selector0(_for_item0.value.id, () => {
   			_setText(_x2, _toDisplayString(selected === _for_item0.value.id ? "danger" : ""));
   		});
   		return _n6;
-  	}, (row) => row.id, void 0, ({ createSelector }) => {
-  		_selector0_0 = createSelector(() => selected);
-  	});
+  	}, (row) => row.id);
+  	n0.onReset(_selector0.reset);
   	return _n0;
   })();
   "#);

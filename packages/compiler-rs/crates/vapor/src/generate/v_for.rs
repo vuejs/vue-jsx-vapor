@@ -5,8 +5,8 @@ use oxc_allocator::CloneIn;
 use oxc_ast::{
   NONE,
   ast::{
-    Argument, AssignmentOperator, AssignmentTarget, BinaryExpression, BinaryOperator, Expression,
-    FormalParameterKind, NumberBase, Statement, VariableDeclarationKind,
+    Argument, BinaryExpression, BinaryOperator, Expression, FormalParameterKind, NumberBase,
+    Statement, VariableDeclarationKind,
   },
 };
 use oxc_ast_visit::Visit;
@@ -148,64 +148,91 @@ pub fn gen_for<'a>(
 
   let (effect_patterns, selector_patterns, key_only_binding_patterns) =
     match_patterns(&mut render, &key_prop, &id_map, context);
+  let key_prop_for_effects = if !selector_patterns.is_empty() {
+    key_prop.as_ref().map(|expr| expr.clone_in(ast.allocator))
+  } else {
+    None
+  };
   let mut selector_declarations = ast.vec();
-  let mut selector_setup = ast.vec();
 
+  let selector_patterns_len = selector_patterns.len();
+  let mut on_reset_calls = ast.vec();
   for (i, selector) in selector_patterns.into_iter().enumerate() {
-    let selector_name = format!("_selector{id}_{i}");
+    let selector_name = ast.str(&if selector_patterns_len > 1 {
+      format!("_selector{id}_{i}")
+    } else {
+      format!("_selector{id}")
+    });
     selector_declarations.push(Statement::VariableDeclaration(
       ast.alloc_variable_declaration(
         SPAN,
-        VariableDeclarationKind::Let,
+        VariableDeclarationKind::Const,
         ast.vec1(ast.variable_declarator(
           SPAN,
-          VariableDeclarationKind::Let,
-          ast.binding_pattern_binding_identifier(SPAN, ast.str(&selector_name)),
+          VariableDeclarationKind::Const,
+          ast.binding_pattern_binding_identifier(SPAN, selector_name),
           NONE,
-          None,
+          Some(ast.expression_call(
+            SPAN,
+            ast.expression_identifier(SPAN, ast.str("createSelector")),
+            NONE,
+            ast.vec1(Argument::ArrowFunctionExpression(
+              ast.alloc_arrow_function_expression(
+                SPAN,
+                true,
+                false,
+                NONE,
+                ast.formal_parameters(
+                  SPAN,
+                  FormalParameterKind::ArrowFormalParameters,
+                  ast.vec(),
+                  NONE,
+                ),
+                NONE,
+                ast.function_body(
+                  SPAN,
+                  ast.vec(),
+                  ast.vec1(
+                    ast.statement_expression(SPAN, gen_expression(selector, context, None, false)),
+                  ),
+                ),
+              ),
+            )),
+            false,
+          )),
           false,
         )),
         false,
       ),
     ));
-    selector_setup.push(ast.statement_expression(
-      SPAN,
-      ast.expression_assignment(
+    on_reset_calls.push(
+      ast.statement_expression(
         SPAN,
-        AssignmentOperator::Assign,
-        AssignmentTarget::AssignmentTargetIdentifier(
-          ast.alloc_identifier_reference(SPAN, ast.str(&selector_name)),
-        ),
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.str("createSelector")),
-          NONE,
-          ast.vec1(Argument::ArrowFunctionExpression(
-            ast.alloc_arrow_function_expression(
+          ast
+            .member_expression_static(
               SPAN,
-              true,
+              ast.expression_identifier(SPAN, ast.str(&format!("n{}", id))),
+              ast.identifier_name(SPAN, "onReset"),
               false,
-              NONE,
-              ast.formal_parameters(
+            )
+            .into(),
+          NONE,
+          ast.vec1(
+            ast
+              .member_expression_static(
                 SPAN,
-                FormalParameterKind::ArrowFormalParameters,
-                ast.vec(),
-                NONE,
-              ),
-              NONE,
-              ast.function_body(
-                SPAN,
-                ast.vec(),
-                ast.vec1(
-                  ast.statement_expression(SPAN, gen_expression(selector, context, None, false)),
-                ),
-              ),
-            ),
-          )),
+                ast.expression_identifier(SPAN, selector_name),
+                ast.identifier_name(SPAN, "reset"),
+                false,
+              )
+              .into(),
+          ),
           false,
         ),
       ),
-    ));
+    );
   }
 
   let block_fn = context.with_id(
@@ -248,31 +275,50 @@ pub fn gen_for<'a>(
                       &vec![],
                     );
                   }
-                  statements.push(ast.statement_expression(
-                    SPAN,
-                    ast.expression_call(
+                  statements.push(
+                    ast.statement_expression(
                       SPAN,
-                      ast.expression_identifier(SPAN, ast.str(&format!("_selector{id}_{i}"))),
-                      NONE,
-                      ast.vec1(Argument::ArrowFunctionExpression(
-                        ast.alloc_arrow_function_expression(
+                      ast.expression_call(
+                        SPAN,
+                        ast.expression_identifier(
                           SPAN,
-                          false,
-                          false,
-                          NONE,
-                          ast.formal_parameters(
-                            SPAN,
-                            FormalParameterKind::ArrowFormalParameters,
-                            ast.vec(),
-                            NONE,
-                          ),
-                          NONE,
-                          ast.function_body(SPAN, ast.vec(), body),
+                          ast.str(&if selector_patterns_len > 1 {
+                            format!("_selector{id}_{i}")
+                          } else {
+                            format!("_selector{id}")
+                          }),
                         ),
-                      )),
-                      false,
+                        NONE,
+                        ast.vec_from_array([
+                          gen_expression(
+                            key_prop_for_effects
+                              .as_ref()
+                              .map(|i| i.clone_in(ast.allocator))
+                              .unwrap(),
+                            context,
+                            None,
+                            false,
+                          )
+                          .into(),
+                          Argument::ArrowFunctionExpression(ast.alloc_arrow_function_expression(
+                            SPAN,
+                            false,
+                            false,
+                            NONE,
+                            ast.formal_parameters(
+                              SPAN,
+                              FormalParameterKind::ArrowFormalParameters,
+                              ast.vec(),
+                              NONE,
+                            ),
+                            NONE,
+                            ast.function_body(SPAN, ast.vec(), body),
+                          )),
+                        ]),
+                        false,
+                      ),
                     ),
-                  ));
+                  );
                 }
 
                 for effect in key_only_binding_patterns {
@@ -380,46 +426,7 @@ pub fn gen_for<'a>(
       None
     };
 
-  let ast = &context.ast;
-
   statements.extend(selector_declarations);
-
-  let selector_setup_expression = if !selector_setup.is_empty() {
-    Some(
-      ast
-        .expression_arrow_function(
-          SPAN,
-          false,
-          false,
-          NONE,
-          ast.formal_parameters(
-            SPAN,
-            FormalParameterKind::ArrowFormalParameters,
-            ast.vec1(ast.plain_formal_parameter(
-              SPAN,
-              ast.binding_pattern_object_pattern(
-                SPAN,
-                ast.vec1(ast.binding_property(
-                  SPAN,
-                  ast.property_key_static_identifier(SPAN, "createSelector"),
-                  ast.binding_pattern_binding_identifier(SPAN, "createSelector"),
-                  true,
-                  false,
-                )),
-                NONE,
-              ),
-            )),
-            NONE,
-          ),
-          NONE,
-          ast.function_body(SPAN, ast.vec(), selector_setup),
-        )
-        .into(),
-    )
-  } else {
-    None
-  };
-
   statements.push(Statement::VariableDeclaration(
     ast.alloc_variable_declaration(
       SPAN,
@@ -446,12 +453,9 @@ pub fn gen_for<'a>(
                         .expression_numeric_literal(SPAN, flags as f64, None, NumberBase::Hex)
                         .into(),
                     )
-                  } else if selector_setup_expression.is_some() {
-                    Some(ast.expression_identifier(SPAN, ast.str("void 0")).into())
                   } else {
                     None
                   },
-                  selector_setup_expression,
                   // todo: hydrationNode
                 ]
                 .into_iter()
@@ -465,7 +469,8 @@ pub fn gen_for<'a>(
       ),
       false,
     ),
-  ))
+  ));
+  statements.extend(on_reset_calls);
 }
 
 fn match_patterns<'a>(
