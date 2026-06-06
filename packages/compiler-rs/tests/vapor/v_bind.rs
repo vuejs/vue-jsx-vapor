@@ -288,7 +288,7 @@ fn simple_object_class_name_helper() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", isActive ? 1 : 0, "active"));
+  	_renderEffect(() => _setClassName(_n0, isActive ? 1 : 0, "active"));
   	return _n0;
   })();
   "#);
@@ -306,7 +306,7 @@ fn ternary_string_class_name_helper() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", selected === row.id ? 1 : 0, "danger"));
+  	_renderEffect(() => _setClassName(_n0, selected === row.id ? 1 : 0, "danger"));
   	return _n0;
   })();
   "#);
@@ -324,12 +324,12 @@ fn reverse_ternary_string_class_name_helper() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", selected === row.id ? 0 : 1, "danger"));
+  	_renderEffect(() => _setClassName(_n0, selected === row.id ? 0 : 1, "danger"));
   	return _n0;
   })();
   "#);
 
-  assert!(code.contains(r#"_setClassName("n0", selected === row.id ? 0 : 1, "danger")"#));
+  assert!(code.contains(r#"_setClassName(_n0, selected === row.id ? 0 : 1, "danger")"#));
 }
 
 #[test]
@@ -344,14 +344,12 @@ fn static_class_after_conditional_uses_class_name_helper_with_suffix() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", selected === row.id ? 1 : 0, "danger", "", "foo"));
+  	_renderEffect(() => _setClassName(_n0, selected === row.id ? 1 : 0, "danger", "", "foo"));
   	return _n0;
   })();
   "#);
 
-  assert!(
-    code.contains(r#"_setClassName("n0", selected === row.id ? 1 : 0, "danger", "", "foo")"#)
-  );
+  assert!(code.contains(r#"_setClassName(_n0, selected === row.id ? 1 : 0, "danger", "", "foo")"#));
 }
 
 #[test]
@@ -362,12 +360,12 @@ fn static_class_with_simple_object_class_name_helper() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", isBar ? 1 : 0, " bar", "foo"));
+  	_renderEffect(() => _setClassName(_n0, isBar ? 1 : 0, " bar", "foo"));
   	return _n0;
   })();
   "#);
 
-  assert!(code.contains(r#"_setClassName("n0", isBar ? 1 : 0"#));
+  assert!(code.contains(r#"_setClassName(_n0, isBar ? 1 : 0"#));
   assert!(code.contains(r#"" bar", "foo""#));
   assert!(!code.contains("{ bar:"));
 }
@@ -380,12 +378,12 @@ fn static_class_in_reverse_order_uses_class_name_helper_with_suffix() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", isBar ? 1 : 0, "bar", "", "foo"));
+  	_renderEffect(() => _setClassName(_n0, isBar ? 1 : 0, "bar", "", "foo"));
   	return _n0;
   })();
   "#);
 
-  assert!(code.contains(r#"_setClassName("n0", isBar ? 1 : 0, "bar", "", "foo")"#));
+  assert!(code.contains(r#"_setClassName(_n0, isBar ? 1 : 0, "bar", "", "foo")"#));
 }
 
 #[test]
@@ -400,13 +398,13 @@ fn static_class_after_multiple_object_class_name_helper_uses_suffix() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", (ok ? 1 : 0) | (bar ? 2 : 0), [" active", " foo"], "", "tail"));
+  	_renderEffect(() => _setClassName(_n0, (ok ? 1 : 0) | (bar ? 2 : 0), [" active", " foo"], "", "tail"));
   	return _n0;
   })();
   "#);
 
   assert!(code.contains(
-    r#"_setClassName("n0", (ok ? 1 : 0) | (bar ? 2 : 0), [" active", " foo"], "", "tail")"#
+    r#"_setClassName(_n0, (ok ? 1 : 0) | (bar ? 2 : 0), [" active", " foo"], "", "tail")"#
   ));
 }
 
@@ -418,12 +416,12 @@ fn multiple_simple_object_class_name_helper() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", (ok ? 1 : 0) | (bar ? 2 : 0), [" active", " foo"]));
+  	_renderEffect(() => _setClassName(_n0, (ok ? 1 : 0) | (bar ? 2 : 0), [" active", " foo"]));
   	return _n0;
   })();
   "#);
 
-  assert!(code.contains(r#"_setClassName("n0", (ok ? 1 : 0) | (bar ? 2 : 0)"#));
+  assert!(code.contains(r#"_setClassName(_n0, (ok ? 1 : 0) | (bar ? 2 : 0)"#));
   assert!(code.contains(r#"[" active", " foo"]"#));
   assert!(!code.contains("{ active:"));
 }
@@ -440,12 +438,12 @@ fn static_class_with_multiple_object_class_name_helper() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", (selected === row.id ? 1 : 0) | (active ? 2 : 0), [" danger", " is-active"], "foo"));
+  	_renderEffect(() => _setClassName(_n0, (selected === row.id ? 1 : 0) | (active ? 2 : 0), [" danger", " is-active"], "foo"));
   	return _n0;
   })();
   "#);
 
-  assert!(code.contains(r#"_setClassName("n0", (selected === row.id ? 1 : 0) | (active ? 2 : 0), [" danger", " is-active"], "foo")"#));
+  assert!(code.contains(r#"_setClassName(_n0, (selected === row.id ? 1 : 0) | (active ? 2 : 0), [" danger", " is-active"], "foo")"#));
   assert!(!code.contains("{ danger:"));
 }
 
@@ -457,12 +455,12 @@ fn object_class_with_multi_token_key() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", isActive ? 1 : 0, "foo bar"));
+  	_renderEffect(() => _setClassName(_n0, isActive ? 1 : 0, "foo bar"));
   	return _n0;
   })();
   "#);
 
-  assert!(code.contains(r#"_setClassName("n0", isActive ? 1 : 0"#));
+  assert!(code.contains(r#"_setClassName(_n0, isActive ? 1 : 0"#));
   assert!(code.contains(r#""foo bar""#));
   assert!(!code.contains("'foo bar':"));
 }
@@ -475,12 +473,12 @@ fn static_class_with_overlapping_object_class() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", isBar ? 1 : 0, " bar", "bar"));
+  	_renderEffect(() => _setClassName(_n0, isBar ? 1 : 0, " bar", "bar"));
   	return _n0;
   })();
   "#);
 
-  assert!(code.contains(r#"_setClassName("n0", isBar ? 1 : 0"#));
+  assert!(code.contains(r#"_setClassName(_n0, isBar ? 1 : 0"#));
   assert!(code.contains(r#"" bar", "bar""#));
   assert!(!code.contains("{ bar:"));
 }
@@ -497,12 +495,12 @@ fn static_class_with_overlapping_multi_token_object_class() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", isActive ? 1 : 0, " foo bar", "foo"));
+  	_renderEffect(() => _setClassName(_n0, isActive ? 1 : 0, " foo bar", "foo"));
   	return _n0;
   })();
   "#);
 
-  assert!(code.contains(r#"_setClassName("n0", isActive ? 1 : 0"#));
+  assert!(code.contains(r#"_setClassName(_n0, isActive ? 1 : 0"#));
   assert!(code.contains(r#"" foo bar", "foo""#));
   assert!(!code.contains("'foo bar':"));
 }
@@ -519,12 +517,12 @@ fn class_name_helper_normalizes_static_and_string_class_values() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", ok ? 1 : 0, " baz", "foo bar"));
+  	_renderEffect(() => _setClassName(_n0, ok ? 1 : 0, " baz", "foo bar"));
   	return _n0;
   })();
   "#);
 
-  assert!(code.contains(r#"_setClassName("n0", ok ? 1 : 0, " baz", "foo bar")"#));
+  assert!(code.contains(r#"_setClassName(_n0, ok ? 1 : 0, " baz", "foo bar")"#));
 }
 
 #[test]
@@ -594,7 +592,7 @@ fn class_name_helper_supports_the_max_safe_bit_flag() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", (a0 ? 1 : 0) | (a1 ? 2 : 0) | (a2 ? 4 : 0) | (a3 ? 8 : 0) | (a4 ? 16 : 0) | (a5 ? 32 : 0) | (a6 ? 64 : 0) | (a7 ? 128 : 0) | (a8 ? 256 : 0) | (a9 ? 512 : 0) | (a10 ? 1024 : 0) | (a11 ? 2048 : 0) | (a12 ? 4096 : 0) | (a13 ? 8192 : 0) | (a14 ? 16384 : 0) | (a15 ? 32768 : 0) | (a16 ? 65536 : 0) | (a17 ? 131072 : 0) | (a18 ? 262144 : 0) | (a19 ? 524288 : 0) | (a20 ? 1048576 : 0) | (a21 ? 2097152 : 0) | (a22 ? 4194304 : 0) | (a23 ? 8388608 : 0) | (a24 ? 16777216 : 0) | (a25 ? 33554432 : 0) | (a26 ? 67108864 : 0) | (a27 ? 134217728 : 0) | (a28 ? 268435456 : 0) | (a29 ? 536870912 : 0) | (a30 ? 1073741824 : 0), [
+  	_renderEffect(() => _setClassName(_n0, (a0 ? 1 : 0) | (a1 ? 2 : 0) | (a2 ? 4 : 0) | (a3 ? 8 : 0) | (a4 ? 16 : 0) | (a5 ? 32 : 0) | (a6 ? 64 : 0) | (a7 ? 128 : 0) | (a8 ? 256 : 0) | (a9 ? 512 : 0) | (a10 ? 1024 : 0) | (a11 ? 2048 : 0) | (a12 ? 4096 : 0) | (a13 ? 8192 : 0) | (a14 ? 16384 : 0) | (a15 ? 32768 : 0) | (a16 ? 65536 : 0) | (a17 ? 131072 : 0) | (a18 ? 262144 : 0) | (a19 ? 524288 : 0) | (a20 ? 1048576 : 0) | (a21 ? 2097152 : 0) | (a22 ? 4194304 : 0) | (a23 ? 8388608 : 0) | (a24 ? 16777216 : 0) | (a25 ? 33554432 : 0) | (a26 ? 67108864 : 0) | (a27 ? 134217728 : 0) | (a28 ? 268435456 : 0) | (a29 ? 536870912 : 0) | (a30 ? 1073741824 : 0), [
   		" c0",
   		" c1",
   		" c2",

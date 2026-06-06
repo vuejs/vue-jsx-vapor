@@ -496,7 +496,7 @@ fn props_merging_class() {
   const _t0 = _template("<div>", true);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClassName("n0", isBar ? 1 : 0, " bar", "foo"));
+  	_renderEffect(() => _setClassName(_n0, isBar ? 1 : 0, " bar", "foo"));
   	return _n0;
   })();
   "#);

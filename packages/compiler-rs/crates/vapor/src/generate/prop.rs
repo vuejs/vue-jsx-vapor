@@ -199,7 +199,7 @@ fn gen_set_class_name<'a>(
           [
             Some(
               ast
-                .expression_string_literal(SPAN, ast.str(&format!("n{}", element)), None)
+                .expression_identifier(SPAN, ast.str(&format!("_n{}", element)))
                 .into(),
             ),
             Some(flags.into()),

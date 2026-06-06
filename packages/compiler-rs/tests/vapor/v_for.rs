@@ -76,7 +76,7 @@ fn key_only_binding_pattern2() {
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
   		_selector0(_for_item0.value.id, () => {
-  			_setClassName("n2", _for_item0.value.id === state.selected ? 1 : 0, "danger");
+  			_setClassName(_n2, _for_item0.value.id === state.selected ? 1 : 0, "danger");
   		});
   		return _n2;
   	}, (row) => row.id);
@@ -135,7 +135,7 @@ fn selector_pattern2() {
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
   		_selector0(_for_item0.value.id, () => {
-  			_setClassName("n2", selected === _for_item0.value.id ? 1 : 0, "danger");
+  			_setClassName(_n2, selected === _for_item0.value.id ? 1 : 0, "danger");
   		});
   		return _n2;
   	}, (row) => row.id);
@@ -163,7 +163,7 @@ fn selector_pattern3() {
   (() => {
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
-  		_renderEffect(() => _setClassName("n2", _for_item0.value.label === _for_item0.value.id ? 1 : 0, "danger"));
+  		_renderEffect(() => _setClassName(_n2, _for_item0.value.label === _for_item0.value.id ? 1 : 0, "danger"));
   		return _n2;
   	}, (row) => row.id);
   	return _n0;
@@ -190,7 +190,7 @@ fn selector_pattern4() {
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
   		_selector0(_for_item0.value.id, () => {
-  			_setClassName("n2", _for_item0.value.id === selected ? 1 : 0, "danger");
+  			_setClassName(_n2, _for_item0.value.id === selected ? 1 : 0, "danger");
   		});
   		return _n2;
   	}, (row) => row.id);
@@ -217,7 +217,7 @@ fn should_not_selector_pattern() {
   (() => {
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
-  		_renderEffect(() => _setClassName("n2", (_for_item0.value.id === selected ? danger : null) ? 1 : 0, "danger"));
+  		_renderEffect(() => _setClassName(_n2, (_for_item0.value.id === selected ? danger : null) ? 1 : 0, "danger"));
   		return _n2;
   	}, (row) => row.id);
   	return _n0;
@@ -246,7 +246,7 @@ fn multiple_selector_patterns_on_one_v_for() {
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
   		_selector0_0(_for_item0.value.id, () => {
-  			_setClassName("n2", selected === _for_item0.value.id ? 1 : 0, "a");
+  			_setClassName(_n2, selected === _for_item0.value.id ? 1 : 0, "a");
   		});
   		_selector0_1(_for_item0.value.id, () => {
   			_setProp(_n2, "title", active === _for_item0.value.id ? "b" : "");
@@ -297,7 +297,7 @@ fn multi_class_name_helper_with_repeated_v_for_value() {
   (() => {
   	const _n0 = _createFor(() => todos, (_for_item0) => {
   		const _n2 = _t0();
-  		_renderEffect(() => _setClassName("n2", (_for_item0.value.completed ? 1 : 0) | (_for_item0.value === editedTodo ? 2 : 0), [" completed", " editing"]));
+  		_renderEffect(() => _setClassName(_n2, (_for_item0.value.completed ? 1 : 0) | (_for_item0.value === editedTodo ? 2 : 0), [" completed", " editing"]));
   		return _n2;
   	}, (todo) => todo.id);
   	return _n0;
