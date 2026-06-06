@@ -192,7 +192,7 @@ fn number_value() {
   const _t0 = _template("<div depth=0>", false, true);
   (() => {
   	const _n0 = _t0();
-  	const _n1 = _createComponent(Comp, { depth: () => 0 });
+  	const _n1 = _createComponent(Comp, { depth: 0 });
   	return [_n0, _n1];
   })();
   "#);

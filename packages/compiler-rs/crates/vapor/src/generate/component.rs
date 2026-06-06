@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use std::mem;
 
+use common::check::is_constant_node;
 use common::directive::Modifiers;
 use common::directive::get_modifier_prop_name;
 use common::text::capitalize;
@@ -72,7 +73,7 @@ pub fn gen_create_component<'a>(
     .into()
   };
 
-  let raw_props = gen_raw_props(props, context);
+  let raw_props = gen_raw_props(props, context, true);
   let _context_block = context_block as *mut BlockIRNode;
   let raw_slots = gen_raw_slots(slots, context, unsafe { &mut *_context_block });
 
@@ -131,6 +132,7 @@ pub fn gen_create_component<'a>(
 pub fn gen_raw_props<'a>(
   mut props: Vec<IRProps<'a>>,
   context: &'a CodegenContext<'a>,
+  direct_static_literal_props: bool,
 ) -> Option<Expression<'a>> {
   let props_len = props.len();
   if let Either3::A(static_props) = &props[0] {
@@ -143,6 +145,7 @@ pub fn gen_raw_props<'a>(
         static_props,
         context,
         gen_dynamic_props(props, context),
+        direct_static_literal_props,
       ))
     } else {
       None
@@ -153,6 +156,7 @@ pub fn gen_raw_props<'a>(
       vec![],
       context,
       gen_dynamic_props(props, context),
+      direct_static_literal_props,
     ))
   } else {
     None
@@ -193,6 +197,7 @@ fn gen_static_props<'a>(
   props: IRPropsStatic<'a>,
   context: &'a CodegenContext<'a>,
   dynamic_props: Option<Expression<'a>>,
+  direct_static_literal_props: bool,
 ) -> Expression<'a> {
   let ast = &context.ast;
   let mut properties = ast.vec();
@@ -210,7 +215,7 @@ fn gen_static_props<'a>(
       );
       if key_name.is_empty() {
         // dynamic key handlers are emitted as-is
-        gen_prop(&mut properties, prop, context, true);
+        gen_prop(&mut properties, prop, context, true, false);
         continue;
       }
 
@@ -269,8 +274,7 @@ fn gen_static_props<'a>(
         .unwrap();
       let prop_model_modifiers = prop.model_modifiers.clone();
       prop.model = false;
-      // normal (non-handler) props
-      gen_prop(&mut properties, prop, context, true);
+      gen_prop(&mut properties, prop, context, true, false);
       gen_model(
         Some(&mut handler_groups),
         &mut properties,
@@ -280,7 +284,14 @@ fn gen_static_props<'a>(
         context,
       );
     } else {
-      gen_prop(&mut properties, prop, context, true);
+      // normal (non-handler) props
+      gen_prop(
+        &mut properties,
+        prop,
+        context,
+        true,
+        direct_static_literal_props,
+      );
     }
   }
 
@@ -349,12 +360,12 @@ fn gen_dynamic_props<'a>(
     let mut expr = None;
     if let Either3::A(p) = p {
       if !p.is_empty() {
-        frags.push(gen_static_props(p, context, None))
+        frags.push(gen_static_props(p, context, None, false))
       }
       continue;
     } else if let Either3::B(p) = p {
       let mut properties = ast.vec();
-      gen_prop(&mut properties, p, context, false);
+      gen_prop(&mut properties, p, context, false, false);
       expr = Some(ast.expression_object(SPAN, properties));
     } else if let Either3::C(p) = p {
       let expression = gen_expression(p.value, context, None, false);
@@ -406,7 +417,9 @@ fn gen_prop<'a>(
   mut prop: IRProp<'a>,
   context: &'a CodegenContext<'a>,
   is_static: bool,
+  mut direct_static_literal: bool,
 ) {
+  direct_static_literal = direct_static_literal && is_direct_static_literal_prop(&prop);
   let ast = &context.ast;
   let model = prop.model;
   let handler = prop.handler;
@@ -444,24 +457,28 @@ fn gen_prop<'a>(
   } else {
     let values = gen_prop_value(values, context);
     if is_static {
-      ast.expression_arrow_function(
-        SPAN,
-        true,
-        false,
-        NONE,
-        ast.formal_parameters(
+      if direct_static_literal {
+        values
+      } else {
+        ast.expression_arrow_function(
           SPAN,
-          FormalParameterKind::ArrowFormalParameters,
-          ast.vec(),
+          true,
+          false,
           NONE,
-        ),
-        NONE,
-        ast.function_body(
-          SPAN,
-          ast.vec(),
-          ast.vec1(ast.statement_expression(SPAN, values)),
-        ),
-      )
+          ast.formal_parameters(
+            SPAN,
+            FormalParameterKind::ArrowFormalParameters,
+            ast.vec(),
+            NONE,
+          ),
+          NONE,
+          ast.function_body(
+            SPAN,
+            ast.vec(),
+            ast.vec1(ast.statement_expression(SPAN, values)),
+          ),
+        )
+      }
     } else {
       values
     }
@@ -489,6 +506,18 @@ fn gen_prop<'a>(
   if let Some(model) = model {
     properties.extend(model);
   }
+}
+
+// Top-level raw props can carry literal values directly for static primitives.
+// The runtime accepts both literal values and getter functions, but literals
+// avoid re-evaluation overhead. Keep handlers, v-model, merged values, and
+// dynamic expressions as getter sources to maintain reactivity and merge semantics.
+fn is_direct_static_literal_prop(prop: &IRProp) -> bool {
+  matches!(prop.key, Expression::StringLiteral(_))
+    && prop.values.len() == 1
+    && is_constant_node(&prop.values[0])
+    && !prop.handler
+    && !prop.model
 }
 
 fn gen_model<'a>(

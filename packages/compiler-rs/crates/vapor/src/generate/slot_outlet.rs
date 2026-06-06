@@ -71,7 +71,7 @@ pub fn gen_slot_outlet<'a>(
                     )
                   },
                   if !props.is_empty()
-                    && let Some(props) = gen_raw_props(props, context)
+                    && let Some(props) = gen_raw_props(props, context, false)
                   {
                     Some(props.into())
                   } else if fallback.is_some() {

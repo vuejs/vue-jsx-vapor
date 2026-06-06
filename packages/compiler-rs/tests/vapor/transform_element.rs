@@ -75,8 +75,41 @@ fn component_static_props() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, {
-  		id: () => "foo",
-  		class: () => "bar"
+  		id: "foo",
+  		class: "bar"
+  	}, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn component_static_literal_bind_props() {
+  let code = transform("<Foo literal={'bar'} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Foo, { literal: "bar" }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn component_dynamic_non_literal_prop_values_stay_as_getter_sources() {
+  let code = transform(
+    r#"<Foo foo={bar} obj={{ a: 1 }} fn={() => bar} onClick={foo} />"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Foo, {
+  		foo: () => bar,
+  		obj: { a: 1 },
+  		fn: () => () => bar,
+  		onClick: () => foo
   	}, null, true);
   	return _n0;
   })();
@@ -96,7 +129,7 @@ fn component_dynamic_props_after_static_prop() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, {
-  		id: () => "foo",
+  		id: "foo",
   		$: [() => obj]
   	}, null, true);
   	return _n0;
@@ -123,7 +156,7 @@ fn component_dynamic_props_between_static_prop() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, {
-  		id: () => "foo",
+  		id: "foo",
   		$: [() => obj, { class: () => "bar" }]
   	}, null, true);
   	return _n0;
@@ -734,6 +767,19 @@ fn component_vue_vnode_hooks() {
   (() => {
   	const _n0 = _createComponent(Foo, { onVnodeMounted: () => handleMounted }, null, true);
   	return _n0;
+  })();
+  "#)
+}
+
+#[test]
+fn component_keeps_is_props() {
+  let code = transform(r#"<><Comp is={'Parent'} /><Comp is="Parent" /></>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, { is: "Parent" });
+  	const _n1 = _createComponent(Comp, { is: "Parent" });
+  	return [_n0, _n1];
   })();
   "#)
 }

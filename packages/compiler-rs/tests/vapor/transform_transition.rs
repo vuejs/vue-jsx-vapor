@@ -15,7 +15,7 @@ fn basic() {
   import { applyVShow as _applyVShow, template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("<h1>foo");
   (() => {
-  	const _n1 = _createComponent(VaporTransition, { persisted: () => true }, { default: _withVaporCtx(() => {
+  	const _n1 = _createComponent(VaporTransition, { persisted: true }, { default: _withVaporCtx(() => {
   		const _n0 = _t0();
   		_applyVShow(_n0, () => show);
   		return _n0;
@@ -40,9 +40,9 @@ fn v_show_with_appear() {
   const _t0 = _template("<h1>foo");
   (() => {
   	const _n1 = _createComponent(VaporTransition, {
-  		appear: () => true,
+  		appear: true,
   		onAppear: () => () => {},
-  		persisted: () => true
+  		persisted: true
   	}, { default: _withVaporCtx(() => {
   		const _n0 = _t0();
   		_applyVShow(_n0, () => show);
