@@ -1,3 +1,19 @@
+## [3.2.16](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.15...v3.2.16) (2026-06-06)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** emit dynamic component handlers directly ([08b9efa](https://github.com/vuejs/vue-jsx-vapor/commit/08b9efac20ce424bad1575c2677b5f179bda924a))
+* **compiler/vapor:** use identify instead of string_literal for ([293db26](https://github.com/vuejs/vue-jsx-vapor/commit/293db26f9b3232ed75ed14b8ab6e47be624ec19f))
+
+
+### Performance Improvements
+
+* **compiler/vapor:** encode template options as flags ([333dbff](https://github.com/vuejs/vue-jsx-vapor/commit/333dbff51b325e6f9b087d72e06004554a424261))
+* **compiler/vapor:** inline static component literal props ([8aa7bfc](https://github.com/vuejs/vue-jsx-vapor/commit/8aa7bfcbc09505f92809eb6fcde7de23bef814b2))
+
+
+
 ## [3.2.15](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.14...v3.2.15) (2026-06-06)
 
 
