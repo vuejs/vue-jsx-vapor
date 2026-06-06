@@ -354,7 +354,7 @@ fn component_with_dynamic_arguments() {
   (() => {
   	const _n0 = _createComponent(Comp, { $: [() => ({
   		[arg]: foo,
-  		["onUpdate:" + arg]: () => (_value) => foo = _value
+  		["onUpdate:" + arg]: (_value) => foo = _value
   	})] }, null, true);
   	return _n0;
   })();
@@ -371,7 +371,7 @@ fn component_with_dynamic_arguments_with_v_for() {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n2 = _createComponent(Comp, { $: [() => ({
   			[_for_item0.value.arg]: foo,
-  			["onUpdate:" + _for_item0.value.arg]: () => (_value) => foo = _value
+  			["onUpdate:" + _for_item0.value.arg]: (_value) => foo = _value
   		})] });
   		return _n2;
   	}, void 0, 2);
@@ -389,10 +389,10 @@ fn component_should_generate_model_value_modifiers() {
   	const _n0 = _createComponent(Comp, {
   		modelValue: () => foo,
   		"onUpdate:modelValue": () => (_value) => foo = _value,
-  		modelModifiers: () => ({
+  		modelModifiers: {
   			trim: true,
   			"bar-baz": true
-  		})
+  		}
   	}, null, true);
   	return _n0;
   })();
@@ -412,10 +412,10 @@ fn component_with_arguments_should_generate_model_modifiers() {
   	const _n0 = _createComponent(Comp, {
   		foo: () => foo,
   		"onUpdate:foo": () => (_value) => foo = _value,
-  		fooModifiers: () => ({ trim: true }),
+  		fooModifiers: { trim: true },
   		"onUpdate:foo-bar": () => (_value) => bar = _value,
   		"foo-bar": () => bar,
-  		"foo-barModifiers": () => ({ number: true })
+  		"foo-barModifiers": { number: true }
   	}, null, true);
   	return _n0;
   })();
@@ -434,12 +434,12 @@ fn component_with_dynamic_arguments_should_generate_model_modifiers() {
   (() => {
   	const _n0 = _createComponent(Comp, { $: [() => ({
   		[foo]: foo,
-  		["onUpdate:" + foo]: () => (_value) => foo = _value,
-  		[foo + "Modifiers"]: () => ({ trim: true })
+  		["onUpdate:" + foo]: (_value) => foo = _value,
+  		[foo + "Modifiers"]: { trim: true }
   	}), () => ({
   		[bar.value]: bar,
-  		["onUpdate:" + bar.value]: () => (_value) => bar = _value,
-  		[bar.value + "Modifiers"]: () => ({ number: true })
+  		["onUpdate:" + bar.value]: (_value) => bar = _value,
+  		[bar.value + "Modifiers"]: { number: true }
   	})] }, null, true);
   	return _n0;
   })();
