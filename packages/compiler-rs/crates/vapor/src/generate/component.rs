@@ -514,10 +514,9 @@ fn gen_prop<'a>(
   }
 }
 
-// Top-level raw props can carry literal values directly for static primitives.
-// The runtime accepts both literal values and getter functions, but literals
-// avoid re-evaluation overhead. Keep handlers, v-model, merged values, and
-// dynamic expressions as getter sources to maintain reactivity and merge semantics.
+// Static literal values are safe to emit directly because reading them cannot
+// touch reactive state. Keep handlers, v-model values, and dynamic expressions
+// as getter sources to preserve lazy access and merge semantics.
 fn is_direct_static_literal_prop(prop: &IRProp) -> bool {
   matches!(prop.key, Expression::StringLiteral(_))
     && prop.values.len() == 1
