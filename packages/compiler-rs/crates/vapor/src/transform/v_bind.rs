@@ -1,5 +1,5 @@
 use common::{
-  check::is_reserved_prop,
+  check::{is_boolean_attr, is_reserved_prop},
   directive::{Directives, resolve_prop_name},
   expression::jsx_attribute_value_to_expression,
   text::{camelize, get_text_like_value},
@@ -46,9 +46,15 @@ pub fn transform_v_bind<'a>(
       jsx_attribute_value_to_expression(value, ast)
     }
   } else {
+    let value =
+      if !directives.is_component && !directives.is_custom_element && is_boolean_attr(&arg.value) {
+        ast.expression_string_literal(SPAN, "", None)
+      } else {
+        ast.expression_boolean_literal(SPAN, true)
+      };
     return Some(DirectiveTransformResult::new(
       Expression::StringLiteral(arg),
-      ast.expression_boolean_literal(SPAN, true),
+      value,
     ));
   };
 

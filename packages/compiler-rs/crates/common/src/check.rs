@@ -229,6 +229,16 @@ pub fn is_built_in_directive(prop_name: &str) -> bool {
   BUILD_IN_DIRECTIVE.contains(prop_name)
 }
 
+static BOOLEAN_ATTRS: phf::Set<&'static str> = phf_set! {
+  "itemscope", "allowfullscreen", "formnovalidate", "ismap", "nomodule", "novalidate", "readonly",
+  "async", "autofocus", "autoplay", "controls", "default", "defer", "disabled", "hidden",
+  "inert", "loop", "open", "required", "reversed", "scoped", "seamless",
+  "checked", "muted", "multiple", "selected"
+};
+pub fn is_boolean_attr(prop_name: &str) -> bool {
+  BOOLEAN_ATTRS.contains(prop_name)
+}
+
 pub fn is_simple_identifier(s: &str) -> bool {
   if s.is_empty() {
     return false;

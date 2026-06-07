@@ -354,11 +354,10 @@ fn static_props_mixed_quoting_with_boolean_attribute() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div title=\"has whitespace\"data-targets=\"foo>bar\">", 1);
+  import { template as _template } from "vue";
+  const _t0 = _template("<div title=\"has whitespace\"inert data-targets=\"foo>bar\">", 3);
   (() => {
   	const _n0 = _t0();
-  	_setProp(_n0, "inert", true);
   	return _n0;
   })();
   "#);

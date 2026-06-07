@@ -18,7 +18,13 @@ pub fn get_constant_expression_text<'a>(
   if let Some(value) = get_text_like_value(exp, false) {
     Some(value)
   } else {
-    let content = exp.span().source_text(&options.source_text.borrow());
+    let span = exp.span();
+    if span == SPAN
+      && let Expression::BooleanLiteral(value) = exp
+    {
+      return Some(Cow::Borrowed(if value.value { "true" } else { "false" }));
+    }
+    let content = span.source_text(&options.source_text.borrow());
     if is_literal_whitelisted(content) || is_globally_allowed(content) {
       Some(Cow::Borrowed(content))
     } else {
