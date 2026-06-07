@@ -142,6 +142,14 @@ fn gen_children<'a>(
 
     let element_index = index as i32 + offset;
     let logical_index = child.logical_index;
+
+    // nthChild defaults the logical index to the element index at runtime, so
+    // the third argument is only needed when hydration uses a different index.
+    let nth_child_logical_index = if child.logical_index.is_some_and(|c| c == element_index) {
+      None
+    } else {
+      logical_index
+    };
     // p for "placeholder" variables that are meant for possible reuse by
     // other access paths
     let variable = if let Some(id) = id {
@@ -193,7 +201,7 @@ fn gen_children<'a>(
                 None,
                 NumberBase::Hex,
               ))),
-              logical_index.map(|logical_index| {
+              nth_child_logical_index.map(|logical_index| {
                 Argument::NumericLiteral(ast.alloc_numeric_literal(
                   SPAN,
                   logical_index as f64,
@@ -284,7 +292,7 @@ fn gen_children<'a>(
                 None,
                 NumberBase::Hex,
               ))),
-              logical_index.map(|logical_index| {
+              nth_child_logical_index.map(|logical_index| {
                 Argument::NumericLiteral(ast.alloc_numeric_literal(
                   SPAN,
                   logical_index as f64,

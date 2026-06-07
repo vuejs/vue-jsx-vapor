@@ -104,7 +104,7 @@ impl<'a> TransformContext<'a> {
             NONE,
             Some(ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.str(self.options.helper("_resolveComponent"))),
+              ast.expression_identifier(SPAN, ast.str(self.options.helper("_resolveComponent1"))),
               NONE,
               ast.vec_from_array([Argument::StringLiteral(ast.alloc_string_literal(
                 SPAN,

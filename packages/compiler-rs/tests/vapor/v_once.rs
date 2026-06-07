@@ -204,7 +204,7 @@ fn execution_order() {
   	const _n4 = _t0();
   	const _n0 = _child(_n4);
   	const _n1 = _next(_n0, 1);
-  	const _n2 = _nthChild(_n4, 3, 3);
+  	const _n2 = _nthChild(_n4, 3);
   	const _n3 = _next(_n2, 4);
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, foo);

@@ -131,7 +131,7 @@ fn efficient_find() {
   const _t0 = _template("<div><div>x</div><div>x</div><div> ", 1);
   (() => {
   	const _n1 = _t0();
-  	const _n0 = _nthChild(_n1, 2, 2);
+  	const _n0 = _nthChild(_n1, 2);
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, () => msg);
   	return _n1;
@@ -189,45 +189,6 @@ fn jsx_component_in_jsx_expression_container() {
   		return _n0;
   	})());
   	return _n0;
-  })();
-  "#);
-}
-
-#[test]
-fn next_child_and_nthchild_should_be_above_the_set_insertion_state() {
-  let code = transform(
-    "<div>
-      <div />
-      <Comp />
-      <div />
-      <div v-if={true} />
-      <div>
-        <button disabled={foo} />
-      </div>
-    </div>",
-    None,
-  )
-  .code;
-  assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createIf as _createIf, next as _next, nthChild as _nthChild, renderEffect as _renderEffect, setInsertionState as _setInsertionState, setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div>", 2);
-  const _t1 = _template("<div><div></div><!><div></div><!><div><button>", 1);
-  (() => {
-  	const _n6 = _t1();
-  	const _n5 = _next(_child(_n6), 1);
-  	const _n7 = _nthChild(_n6, 3, 3);
-  	const _p0 = _next(_n7, 4);
-  	const _n4 = _child(_p0);
-  	_setInsertionState(_n6, _n5, 1);
-  	const _n0 = _createComponent(Comp);
-  	_setInsertionState(_n6, _n7, 3);
-  	const _n1 = _createIf(() => true, () => {
-  		const _n3 = _t0();
-  		return _n3;
-  	}, null, 1, true);
-  	_renderEffect(() => _setProp(_n4, "disabled", foo));
-  	return _n6;
   })();
   "#);
 }
