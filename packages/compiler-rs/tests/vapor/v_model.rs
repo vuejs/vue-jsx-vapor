@@ -464,3 +464,19 @@ fn component_v_model_should_merge_with_explicit() {
   })();
   "#);
 }
+
+#[test]
+fn v_model_after_dynamic_bind_keeps_model_getters() {
+  let code = transform("<Comp {...obj} v-model_trim={foo} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, { $: [() => obj, {
+  		modelValue: () => foo,
+  		"onUpdate:modelValue": () => (_value) => foo = _value,
+  		modelModifiers: { trim: true }
+  	}] }, null, true);
+  	return _n0;
+  })();
+  "#);
+}

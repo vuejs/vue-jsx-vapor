@@ -144,7 +144,7 @@ pub fn gen_raw_props<'a>(
       Some(gen_static_props(
         static_props,
         context,
-        gen_dynamic_props(props, context),
+        gen_dynamic_props(props, context, direct_static_literal_props),
         direct_static_literal_props,
       ))
     } else {
@@ -155,7 +155,7 @@ pub fn gen_raw_props<'a>(
     Some(gen_static_props(
       vec![],
       context,
-      gen_dynamic_props(props, context),
+      gen_dynamic_props(props, context, direct_static_literal_props),
       direct_static_literal_props,
     ))
   } else {
@@ -353,6 +353,7 @@ fn gen_static_props<'a>(
 fn gen_dynamic_props<'a>(
   props: Vec<IRProps<'a>>,
   context: &'a CodegenContext<'a>,
+  direct_static_literal_props: bool,
 ) -> Option<Expression<'a>> {
   let ast = &context.ast;
   let mut frags = ast.vec();
@@ -360,7 +361,12 @@ fn gen_dynamic_props<'a>(
     let mut expr = None;
     if let Either3::A(p) = p {
       if !p.is_empty() {
-        frags.push(gen_static_props(p, context, None, false))
+        frags.push(gen_static_props(
+          p,
+          context,
+          None,
+          direct_static_literal_props,
+        ))
       }
       continue;
     } else if let Either3::B(p) = p {

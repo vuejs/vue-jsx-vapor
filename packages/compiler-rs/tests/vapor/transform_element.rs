@@ -143,7 +143,7 @@ fn component_dynamic_props_before_static_prop() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const _n0 = _createComponent(Foo, { $: [() => obj, { id: () => "foo" }] }, null, true);
+  	const _n0 = _createComponent(Foo, { $: [() => obj, { id: "foo" }] }, null, true);
   	return _n0;
   })();
   "#);
@@ -157,7 +157,7 @@ fn component_dynamic_props_between_static_prop() {
   (() => {
   	const _n0 = _createComponent(Foo, {
   		id: "foo",
-  		$: [() => obj, { class: () => "bar" }]
+  		$: [() => obj, { class: "bar" }]
   	}, null, true);
   	return _n0;
   })();
@@ -779,6 +779,19 @@ fn component_keeps_is_props() {
   	const _n0 = _createComponent(Comp, { is: "Parent" });
   	const _n1 = _createComponent(Comp, { is: "Parent" });
   	return [_n0, _n1];
+  })();
+  "#)
+}
+
+#[test]
+fn v_on_obj_before_static_event_keeps_handler_getters() {
+  let code = transform(r#"<Foo v-on={obj} onFoo={bar} />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { toHandlers as _toHandlers } from "vue";
+  (() => {
+  	const _n0 = _createComponent(Foo, { $: [() => _toHandlers(obj), { onFoo: () => bar }] }, null, true);
+  	return _n0;
   })();
   "#)
 }
