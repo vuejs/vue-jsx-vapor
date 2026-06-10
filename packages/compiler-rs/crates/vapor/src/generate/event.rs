@@ -43,19 +43,19 @@ pub fn gen_set_event<'a>(
     None
   } else {
     let mut properties = ast.vec();
-    if effect {
-      properties.push(ObjectPropertyKind::ObjectProperty(
-        ast.alloc_object_property(
-          SPAN,
-          PropertyKind::Init,
-          ast.property_key_static_identifier(SPAN, ast.str("effect")),
-          ast.expression_boolean_literal(SPAN, true),
-          false,
-          false,
-          false,
-        ),
-      ))
-    }
+    // if effect {
+    //   properties.push(ObjectPropertyKind::ObjectProperty(
+    //     ast.alloc_object_property(
+    //       SPAN,
+    //       PropertyKind::Init,
+    //       ast.property_key_static_identifier(SPAN, ast.str("effect")),
+    //       ast.expression_boolean_literal(SPAN, true),
+    //       false,
+    //       false,
+    //       false,
+    //     ),
+    //   ))
+    // }
     properties.extend(options.into_iter().map(|option| {
       ObjectPropertyKind::ObjectProperty(ast.alloc_object_property(
         SPAN,
@@ -116,11 +116,13 @@ pub fn gen_set_event<'a>(
       SPAN,
       ast.expression_identifier(
         SPAN,
-        ast.str(
-          context
-            .options
-            .helper(if delegate { "_delegate" } else { "_on" }),
-        ),
+        ast.str(context.options.helper(if effect {
+          "_onBinding"
+        } else if delegate {
+          "_delegate"
+        } else {
+          "_on"
+        })),
       ),
       NONE,
       arguments,
