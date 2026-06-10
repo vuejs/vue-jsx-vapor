@@ -58,8 +58,7 @@ fn nth_child_with_logical_index() {
   	const _n6 = _t1();
   	const _n5 = _next(_child(_n6), 1);
   	const _n7 = _nthChild(_n6, 3);
-  	const _p0 = _next(_n7, 4);
-  	const _n4 = _child(_p0);
+  	const _n4 = _child(_next(_n7, 4));
   	_setInsertionState(_n6, _n5, 1);
   	const _n0 = _createComponent(Comp);
   	_setInsertionState(_n6, _n7, 3);
@@ -97,8 +96,7 @@ fn nth_child_keeps_logical_index_when_it_differs_from_element_index() {
   (() => {
   	const _n5 = _t1();
   	const _n6 = _nthChild(_n5, 2, 3);
-  	const _p0 = _next(_n6, 4);
-  	const _n4 = _child(_p0);
+  	const _n4 = _child(_next(_n6, 4));
   	_setInsertionState(_n5, 0, 0);
   	const _n0 = _createComponent(Comp);
   	_setInsertionState(_n5, _n6, 3);
@@ -111,6 +109,37 @@ fn nth_child_keeps_logical_index_when_it_differs_from_element_index() {
   })();
   "#,
   );
+}
+
+#[test]
+fn inline_placeholder_keeps_logical_index_when_it_differs_from_element_index() {
+  let code = transform(
+    r#"<div>
+      <Comp />
+      <i />
+      <b />
+      <section><span>{{ msg }}</span></section>
+    </div>"#,
+    None,
+  )
+  .code;
+
+  assert!(code.contains("_child(_nthChild("));
+  assert!(code.contains(", 2, 3)"));
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { child as _child, nthChild as _nthChild, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div><i></i><b></b><section><span> ", 1);
+  (() => {
+  	const _n2 = _t0();
+  	const _n1 = _child(_nthChild(_n2, 2, 3));
+  	_setInsertionState(_n2, 0, 0);
+  	const _n0 = _createComponent(Comp);
+  	const _x1 = _txt(_n1);
+  	_setNodes(_x1, () => ({ msg }));
+  	return _n2;
+  })();
+  "#);
 }
 
 #[test]

@@ -234,7 +234,7 @@ fn same_name_boundary_does_not_cross_invalid_nesting_templates() {
   const _t1 = _template("<main><div><p></div><section>after", 1);
   (() => {
   	const _n2 = _t1();
-  	const _p0 = _child(_n2);
+  	let _p0 = _child(_n2);
   	const _n1 = _child(_p0);
   	const _n0 = _t0();
   	insert(_n0, _n1);
