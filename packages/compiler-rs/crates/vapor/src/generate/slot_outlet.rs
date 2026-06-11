@@ -19,8 +19,7 @@ pub fn gen_slot_outlet<'a>(
     name,
     fallback,
     props,
-    once,
-    no_slotted,
+    flags,
     ..
   } = oper;
 
@@ -81,20 +80,22 @@ pub fn gen_slot_outlet<'a>(
                   },
                   if let Some(fallback) = fallback {
                     Some(gen_block(fallback, context, context_block, ast.vec()).into())
-                  } else if no_slotted || once {
+                  } else if flags > 0 {
                     Some(ast.expression_identifier(SPAN, "void 0").into())
                   } else {
                     None
                   },
-                  if no_slotted {
-                    Some(ast.expression_boolean_literal(SPAN, true).into())
-                  } else if once {
-                    Some(ast.expression_boolean_literal(SPAN, false).into())
-                  } else {
-                    None
-                  },
-                  if once {
-                    Some(ast.expression_boolean_literal(SPAN, true).into())
+                  if flags > 0 {
+                    Some(
+                      ast
+                        .expression_numeric_literal(
+                          SPAN,
+                          flags as f64,
+                          None,
+                          oxc_ast::ast::NumberBase::Hex,
+                        )
+                        .into(),
+                    )
                   } else {
                     None
                   },

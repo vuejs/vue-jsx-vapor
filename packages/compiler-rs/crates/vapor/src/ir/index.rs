@@ -232,8 +232,7 @@ pub struct SlotOutletIRNode<'a> {
   pub name: Expression<'a>,
   pub props: Vec<IRProps<'a>>,
   pub fallback: Option<BlockIRNode<'a>>,
-  pub no_slotted: bool,
-  pub once: bool,
+  pub flags: i32,
 
   pub parent: Option<i32>,
   pub anchor: Option<i32>,

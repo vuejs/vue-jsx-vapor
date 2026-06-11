@@ -83,7 +83,7 @@ fn on_slot_outlet() {
   (() => {
   	const _n1 = _t0();
   	_setInsertionState(_n1, null, 0);
-  	const _n0 = _createSlot("default", void 0, false, true);
+  	const _n0 = _createSlot("default", void 0, 2);
   	return _n1;
   })();
   "#)

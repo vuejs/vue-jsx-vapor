@@ -155,3 +155,12 @@ pub enum TemplateFlags {
   ROOT = 1,
   STATIC = 1 << 1,
 }
+
+/**
+ * Flags used by vapor slot outlets, shared between the compiler and the
+ * runtime.
+ */
+pub enum VaporSlotFlags {
+  NoSlotted = 1,
+  Once = 1 << 1,
+}
