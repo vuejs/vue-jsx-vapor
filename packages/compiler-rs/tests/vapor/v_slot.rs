@@ -12,10 +12,10 @@ fn implicit_default_slot() {
   import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("<div>", 2);
   (() => {
-  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n1 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _t0();
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n1;
   })();
   "#);
@@ -28,15 +28,15 @@ fn on_component_default_slot() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx((scope) => {
+  	const _n1 = _createComponent(Comp, null, _withVaporCtx((scope) => {
   		const _n0 = _createNodes(() => scope.foo + bar);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n1;
   })();
   "#);
 
-  assert!(code.contains("default: _withVaporCtx((scope) =>"));
+  assert!(code.contains("_withVaporCtx((scope) =>"));
   assert!(code.contains("scope.foo + bar"));
 }
 
@@ -161,10 +161,10 @@ fn slot_prop_alias_uses_original_key() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.msg);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -181,10 +181,10 @@ fn slot_prop_nested_destructuring() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.foo.bar);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -201,10 +201,10 @@ fn slot_prop_computed_key_destructuring() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx((_slotProps0) => {
   		const _n0 = _createNodes(() => ({ val: _slotProps0[key.value] }));
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -221,10 +221,10 @@ fn slot_prop_rest_destructuring() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { getRestElement as _getRestElement, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx((_slotProps0) => {
   		const _n0 = _createNodes(() => _getRestElement(_slotProps0, ["foo"]).bar);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -241,10 +241,10 @@ fn slot_prop_array_rest_destructuring() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.arr.slice(1)[0]);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -261,10 +261,10 @@ fn slot_prop_rest_with_computed_keys_preserved() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { getRestElement as _getRestElement, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.foo + _getRestElement(_slotProps0, ["foo", key]).other);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -281,10 +281,10 @@ fn slot_prop_assignment() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.foo++, () => _slotProps0.bar.value = 1);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -372,14 +372,14 @@ fn nested_slots_scoping() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n4 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
-  		const _n1 = _createComponent(Inner, null, { default: _withVaporCtx((_slotProps1) => {
+  	const _n4 = _createComponent(Comp, null, _withVaporCtx((_slotProps0) => {
+  		const _n1 = _createComponent(Inner, null, _withVaporCtx((_slotProps1) => {
   			const _n0 = _createNodes(() => _slotProps0.foo + _slotProps1.bar + baz);
   			return _n0;
-  		}) });
+  		}));
   		const _n2 = _createNodes(() => _slotProps0.foo + bar + baz);
   		return [_n1, _n2];
-  	}) }, true);
+  	}), true);
   	return _n4;
   })();
   "#);
@@ -513,10 +513,10 @@ fn nested_component_slot() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n1 = _createComponent(A, null, { default: _withVaporCtx(() => {
+  	const _n1 = _createComponent(A, null, _withVaporCtx(() => {
   		const _n0 = _createComponent(B);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n1;
   })();
   "#);
@@ -529,10 +529,10 @@ fn slot_tag_only() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createSlot as _createSlot, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n1 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createSlot("default");
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n1;
   })();
   "#);
@@ -545,13 +545,13 @@ fn slot_tag_with_v_if() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, createSlot as _createSlot, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n3 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n3 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createIf(() => ok, () => {
   			const _n2 = _createSlot("default");
   			return _n2;
   		});
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n3;
   })();
   "#);
@@ -564,13 +564,13 @@ fn slot_tag_with_v_for() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, createSlot as _createSlot, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n3 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n3 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createFor(() => b, (_for_item0) => {
   			const _n2 = _createSlot("default");
   			return _n2;
   		}, void 0, 16);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n3;
   })();
   "#);
@@ -584,11 +584,11 @@ fn slot_tag_with_template() {
   import { createSlot as _createSlot, template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("<template>");
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n1 = _t0();
   		const _n0 = _createSlot("default");
   		return [_n0, _n1];
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -601,13 +601,13 @@ fn slot_tag_with_nested_component() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createSlot as _createSlot, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
-  		const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx(() => {
+  		const _n1 = _createComponent(Comp, null, _withVaporCtx(() => {
   			const _n0 = _createSlot("default");
   			return _n0;
-  		}) });
+  		}));
   		return _n1;
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -674,10 +674,10 @@ fn slot_with_only_static_elements_should_have_with_vapor_ctx() {
   import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("<div>static content", 2);
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _t0();
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -699,10 +699,10 @@ fn slot_with_component_should_have_with_vapor_ctx() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createComponent(ChildComp);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -724,10 +724,10 @@ fn slot_with_slot_outlet_should_have_with_vapor_ctx() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createSlot as _createSlot, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createSlot("default");
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -781,7 +781,7 @@ fn slot_with_component_inside_v_if_should_have_with_vapor_ctx() {
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("<div>");
   (() => {
-  	const _n5 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n5 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createIf(() => show, () => {
   			const _n3 = _t0();
   			_setInsertionState(_n3, null, 0);
@@ -789,7 +789,7 @@ fn slot_with_component_inside_v_if_should_have_with_vapor_ctx() {
   			return _n3;
   		});
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n5;
   })();
   "#);
@@ -814,7 +814,7 @@ fn slot_with_component_inside_v_for_should_have_with_vapor_ctx() {
   import { createFor as _createFor, setInsertionState as _setInsertionState, template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("<div>");
   (() => {
-  	const _n5 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n5 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createFor(() => items, (_for_item0) => {
   			const _n3 = _t0();
   			_setInsertionState(_n3, null, 0);
@@ -822,7 +822,7 @@ fn slot_with_component_inside_v_for_should_have_with_vapor_ctx() {
   			return _n3;
   		}, void 0, 8);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n5;
   })();
   "#);
@@ -850,7 +850,7 @@ fn slot_with_nested_v_if_containing_component_should_have_with_vapor_ctx() {
   const _t0 = _template("<span>");
   const _t1 = _template("<div>");
   (() => {
-  	const _n8 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n8 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createIf(() => a, () => {
   			const _n6 = _t1();
   			_setInsertionState(_n6, null, 0);
@@ -863,7 +863,7 @@ fn slot_with_nested_v_if_containing_component_should_have_with_vapor_ctx() {
   			return _n6;
   		});
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n8;
   })();
   "#);
@@ -884,10 +884,10 @@ fn slot_with_only_text_interpolation_should_have_with_vapor_ctx() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createNodes(() => message);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -911,7 +911,7 @@ fn slot_with_v_if_but_no_component_should_have_with_vapor_ctx() {
   const _t0 = _template("<div>content", 2);
   const _t1 = _template("<span>fallback", 2);
   (() => {
-  	const _n7 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n7 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createIf(() => show, () => {
   			const _n2 = _t0();
   			return _n2;
@@ -920,7 +920,7 @@ fn slot_with_v_if_but_no_component_should_have_with_vapor_ctx() {
   			return _n4;
   		}, 37);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n7;
   })();
   "#);
@@ -942,7 +942,7 @@ fn slot_with_v_for_but_no_component_should_have_with_vapor_ctx() {
   import { createFor as _createFor, template as _template, txt as _txt, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("<div> ");
   (() => {
-  	const _n4 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n4 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createFor(() => items, (_for_item0) => {
   			const _n2 = _t0();
   			const _x2 = _txt(_n2);
@@ -950,7 +950,7 @@ fn slot_with_v_for_but_no_component_should_have_with_vapor_ctx() {
   			return _n2;
   		}, void 0, 8);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n4;
   })();
   "#);
@@ -972,10 +972,10 @@ fn slot_with_custom_element_should_have_with_vapor_ctx() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createPlainElement as _createPlainElement, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n2 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createPlainElement("my-element");
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n2;
   })();
   "#);
@@ -1000,7 +1000,7 @@ fn slot_with_custom_element_inside_v_if_should_have_with_vapor_ctx() {
   import { createIf as _createIf, createPlainElement as _createPlainElement, setInsertionState as _setInsertionState, template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("<div>");
   (() => {
-  	const _n5 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n5 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createIf(() => show, () => {
   			const _n3 = _t0();
   			_setInsertionState(_n3, null, 0);
@@ -1008,7 +1008,7 @@ fn slot_with_custom_element_inside_v_if_should_have_with_vapor_ctx() {
   			return _n3;
   		});
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n5;
   })();
   "#);

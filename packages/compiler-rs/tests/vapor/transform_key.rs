@@ -86,13 +86,13 @@ fn key_in_component() {
   import { createKeyedFragment as _createKeyedFragment, template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("<div>", 2);
   (() => {
-  	const _n3 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n3 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createKeyedFragment(() => key, () => {
   			const _n2 = _t0();
   			return _n2;
   		});
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n3;
   })();
   "#);

@@ -50,7 +50,7 @@ fn function_ref() {
   const _t0 = _template("<div>");
   (() => {
   	const _setTemplateRef = _createTemplateRefSetter();
-  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx((_slotProps0) => {
+  	const _n1 = _createComponent(Comp, null, _withVaporCtx((_slotProps0) => {
   		const _n0 = _t0();
   		_renderEffect(() => _setTemplateRef(_n0, (bar) => {
   			foo.value = bar;
@@ -58,7 +58,7 @@ fn function_ref() {
   			console.log(foo.value, _slotProps0.baz);
   		}));
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n1;
   })();
   "#);

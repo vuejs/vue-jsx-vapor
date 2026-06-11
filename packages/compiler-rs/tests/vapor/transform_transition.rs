@@ -15,11 +15,11 @@ fn basic() {
   import { applyVShow as _applyVShow, template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("<h1>foo");
   (() => {
-  	const _n1 = _createComponent(VaporTransition, { persisted: true }, { default: _withVaporCtx(() => {
+  	const _n1 = _createComponent(VaporTransition, { persisted: true }, _withVaporCtx(() => {
   		const _n0 = _t0();
   		_applyVShow(_n0, () => show);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n1;
   })();
   "#);
@@ -43,11 +43,11 @@ fn v_show_with_appear() {
   		appear: true,
   		onAppear: () => () => {},
   		persisted: true
-  	}, { default: _withVaporCtx(() => {
+  	}, _withVaporCtx(() => {
   		const _n0 = _t0();
   		_applyVShow(_n0, () => show);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n1;
   })();
   "#);
@@ -67,13 +67,13 @@ fn work_with_v_if() {
   import { createIf as _createIf, template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("<h1>foo", 2);
   (() => {
-  	const _n3 = _createComponent(VaporTransition, null, { default: _withVaporCtx(() => {
+  	const _n3 = _createComponent(VaporTransition, null, _withVaporCtx(() => {
   		const _n0 = _createIf(() => show, () => {
   			const _n2 = _t0();
   			return _n2;
   		});
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n3;
   })();
   "#);
@@ -97,7 +97,7 @@ fn work_with_v_if_v_else() {
   const _t1 = _template("<h2>2", 2);
   const _t2 = _template("<h3>3", 2);
   (() => {
-  	const _n9 = _createComponent(VaporTransition, null, { default: _withVaporCtx(() => {
+  	const _n9 = _createComponent(VaporTransition, null, _withVaporCtx(() => {
   		const _n0 = _createIf(() => condition == 1, () => {
   			const _n2 = _t0();
   			return _n2;
@@ -109,7 +109,7 @@ fn work_with_v_if_v_else() {
   			return _n7;
   		}, 69), 37);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n9;
   })();
   "#);
@@ -135,7 +135,7 @@ fn work_with_condition_expression() {
   const _t1 = _template("<h2>2", 2);
   const _t2 = _template("<h3>3", 2);
   (() => {
-  	const _n7 = _createComponent(VaporTransition, null, { default: _withVaporCtx(() => {
+  	const _n7 = _createComponent(VaporTransition, null, _withVaporCtx(() => {
   		const _n0 = _createIf(() => condition == 1, () => {
   			const _n2 = _t0();
   			return _n2;
@@ -147,7 +147,7 @@ fn work_with_condition_expression() {
   			return _n6;
   		}, 65), 37);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n7;
   })();
   "#);
@@ -167,13 +167,13 @@ fn transition_work_with_dynamic_keyed_children() {
   import { createKeyedFragment as _createKeyedFragment, template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("<h1>foo", 2);
   (() => {
-  	const _n3 = _createComponent(VaporTransition, null, { default: _withVaporCtx(() => {
+  	const _n3 = _createComponent(VaporTransition, null, _withVaporCtx(() => {
   		const _n0 = _createKeyedFragment(() => foo, () => {
   			const _n2 = _t0();
   			return _n2;
   		});
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n3;
   })();
   "#);

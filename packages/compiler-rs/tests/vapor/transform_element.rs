@@ -26,6 +26,23 @@ fn component_generate_single_root_component() {
 }
 
 #[test]
+fn emit_single_default_slot_as_raw_slot_function() {
+  let code = transform("<Card><div/></Card>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  const _t0 = _template("<div>", 2);
+  (() => {
+  	const _n1 = _createComponent(Card, null, _withVaporCtx(() => {
+  		const _n0 = _t0();
+  		return _n0;
+  	}), true);
+  	return _n1;
+  })();
+  "#);
+}
+
+#[test]
 fn component_generate_multi_root_component() {
   let code = transform("<><Comp/>123</>", None).code;
   assert_snapshot!(code, @r#"
@@ -575,10 +592,10 @@ fn zcustom_element() {
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { createPlainElement as _createPlainElement, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n1 = _createPlainElement("my-custom-element", null, { default: _withVaporCtx(() => {
+  	const _n1 = _createPlainElement("my-custom-element", null, _withVaporCtx(() => {
   		const _n0 = _createNodes(() => foo);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n1;
   })();
   "#)

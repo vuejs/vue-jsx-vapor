@@ -27,8 +27,18 @@ pub fn gen_raw_slots<'a>(
     return None;
   }
   if let Either4::A(_) = &slots[0] {
+    let mut static_slots = slots.remove(0);
+    if let Either4::A(static_slots) = &mut static_slots
+      && static_slots.slots.len() == 1
+      && let Some(default_slot) = static_slots.slots.shift_remove("default")
+    {
+      return Some(gen_slot_block_with_props(
+        default_slot,
+        context,
+        context_block,
+      ));
+    }
     // single static slot
-    let static_slots = slots.remove(0);
     if let Either4::A(static_slots) = static_slots {
       Some(gen_static_slots(
         static_slots.slots,

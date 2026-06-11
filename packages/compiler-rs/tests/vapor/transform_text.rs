@@ -146,10 +146,10 @@ fn should_not_escape_quotes_in_component_slot_text() {
   import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
   const _t0 = _template("Howdy y'all", 2);
   (() => {
-  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n1 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _t0();
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n1;
   })();
   "#);
@@ -366,10 +366,10 @@ fn slot_interpolation() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n1 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createNodes(() => Hello);
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n1;
   })();
   "#)
@@ -382,10 +382,10 @@ fn slot_literal_interpolation() {
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n1 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _createNodes("Hello");
   		return _n0;
-  	}) }, true);
+  	}), true);
   	return _n1;
   })();
   "#)

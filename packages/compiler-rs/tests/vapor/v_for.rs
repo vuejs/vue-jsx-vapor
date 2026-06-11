@@ -506,10 +506,10 @@ fn on_component() {
   import { createFor as _createFor, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
-  		const _n3 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n3 = _createComponent(Comp, null, _withVaporCtx(() => {
   			const _n2 = _createNodes(() => _for_item0.value);
   			return _n2;
-  		}) });
+  		}));
   		return _n3;
   	}, void 0, 2);
   	return _n0;
@@ -575,10 +575,10 @@ fn on_template_with_single_component_child() {
   import { createFor as _createFor, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
-  		const _n3 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n3 = _createComponent(Comp, null, _withVaporCtx(() => {
   			const _n2 = _createNodes(() => _for_item0.value);
   			return _n2;
-  		}) });
+  		}));
   		return _n3;
   	}, void 0, 2);
   	return _n0;

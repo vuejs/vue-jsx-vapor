@@ -212,10 +212,10 @@ fn same_name_boundary_does_not_cross_component_templates() {
   	const _n3 = _t1();
   	const _n2 = _child(_n3);
   	_setInsertionState(_n2, null, 0);
-  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n1 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n0 = _t0();
   		return _n0;
-  	}) });
+  	}));
   	return _n3;
   })();
   "#);
