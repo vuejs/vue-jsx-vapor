@@ -23,7 +23,7 @@ fn basic() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value);
   		return _n2;
-  	}, (item) => item.id);
+  	}, (item) => item.id, 8);
   	return _n0;
   })();
   "#);
@@ -51,7 +51,7 @@ fn key_only_binding_pattern() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value.id + _for_item0.value.id);
   		return _n2;
-  	}, (row) => row.id);
+  	}, (row) => row.id, 8);
   	return _n0;
   })();
   "#);
@@ -79,7 +79,7 @@ fn key_only_binding_pattern2() {
   			_setClassName(_n2, _for_item0.value.id === state.selected ? 1 : 0, "danger");
   		});
   		return _n2;
-  	}, (row) => row.id);
+  	}, (row) => row.id, 8);
   	n0.onReset(_selector0.reset);
   	return _n0;
   })();
@@ -109,7 +109,7 @@ fn selector_pattern1() {
   			_setText(_x2, _toDisplayString(selected === _for_item0.value.id ? "danger" : ""));
   		});
   		return _n2;
-  	}, (row) => row.id);
+  	}, (row) => row.id, 8);
   	n0.onReset(_selector0.reset);
   	return _n0;
   })();
@@ -138,7 +138,7 @@ fn selector_pattern2() {
   			_setClassName(_n2, selected === _for_item0.value.id ? 1 : 0, "danger");
   		});
   		return _n2;
-  	}, (row) => row.id);
+  	}, (row) => row.id, 8);
   	n0.onReset(_selector0.reset);
   	return _n0;
   })();
@@ -165,7 +165,7 @@ fn selector_pattern3() {
   		const _n2 = _t0();
   		_renderEffect(() => _setClassName(_n2, _for_item0.value.label === _for_item0.value.id ? 1 : 0, "danger"));
   		return _n2;
-  	}, (row) => row.id);
+  	}, (row) => row.id, 8);
   	return _n0;
   })();
   "#);
@@ -193,7 +193,7 @@ fn selector_pattern4() {
   			_setClassName(_n2, _for_item0.value.id === selected ? 1 : 0, "danger");
   		});
   		return _n2;
-  	}, (row) => row.id);
+  	}, (row) => row.id, 8);
   	n0.onReset(_selector0.reset);
   	return _n0;
   })();
@@ -219,7 +219,7 @@ fn should_not_selector_pattern() {
   		const _n2 = _t0();
   		_renderEffect(() => _setClassName(_n2, (_for_item0.value.id === selected ? danger : null) ? 1 : 0, "danger"));
   		return _n2;
-  	}, (row) => row.id);
+  	}, (row) => row.id, 8);
   	return _n0;
   })();
   "#);
@@ -252,7 +252,7 @@ fn multiple_selector_patterns_on_one_v_for() {
   			_setProp(_n2, "title", active === _for_item0.value.id ? "b" : "");
   		});
   		return _n2;
-  	}, (row) => row.id);
+  	}, (row) => row.id, 8);
   	n0.onReset(_selector0_0.reset);
   	n0.onReset(_selector0_1.reset);
   	return _n0;
@@ -278,7 +278,7 @@ fn multi_effect() {
   			_setProp(_n2, "index", _for_key0.value);
   		});
   		return _n2;
-  	});
+  	}, void 0, 8);
   	return _n0;
   })();
   "#);
@@ -299,7 +299,7 @@ fn multi_class_name_helper_with_repeated_v_for_value() {
   		const _n2 = _t0();
   		_renderEffect(() => _setClassName(_n2, (_for_item0.value.completed ? 1 : 0) | (_for_item0.value === editedTodo ? 2 : 0), [" completed", " editing"]));
   		return _n2;
-  	}, (todo) => todo.id);
+  	}, (todo) => todo.id, 8);
   	return _n0;
   })();
   "#);
@@ -326,9 +326,9 @@ fn nested_v_for() {
   			const _x4 = _txt(_n4);
   			_setNodes(_x4, () => _for_item1.value + _for_item0.value);
   			return _n4;
-  		}, void 0, 1);
+  		}, void 0, 9);
   		return _n5;
-  	});
+  	}, void 0, 8);
   	return _n0;
   })();
   "#);
@@ -351,7 +351,7 @@ fn object_value_key_and_index() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => id, () => _for_item0.value, () => _for_index0.value);
   		return _n2;
-  	}, (value, key, index) => id);
+  	}, (value, key, index) => id, 8);
   	return _n0;
   })();
   "#);
@@ -374,7 +374,7 @@ fn object_de_structured_value() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value.id, () => _for_item0.value.value);
   		return _n2;
-  	}, ({ id, value }) => id);
+  	}, ({ id, value }) => id, 8);
   	return _n0;
   })();
   "#);
@@ -397,7 +397,7 @@ fn object_de_structured_value_with_rest() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value.id + _getRestElement(_for_item0.value, ["id"]) + _for_key0.value);
   		return _n2;
-  	}, ({ id, ...other }, index) => id);
+  	}, ({ id, ...other }, index) => id, 8);
   	return _n0;
   })();
   "#);
@@ -420,7 +420,7 @@ fn array_de_structured_value() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value[0] + _for_item0.value[1] + _for_key0.value);
   		return _n2;
-  	}, ([id, other], index) => id);
+  	}, ([id, other], index) => id, 8);
   	return _n0;
   })();
   "#);
@@ -439,7 +439,7 @@ fn array_de_structured_value_with_rest() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value[0] + _for_item0.value.slice(3) + _for_key0.value + _for_item0.value[1][0] + _for_item0.value[2].bar);
   		return _n2;
-  	}, ([id, [foo], {bar}, ...other], index) => id);
+  	}, ([id, [foo], {bar}, ...other], index) => id, 8);
   	return _n0;
   })();
   "#);
@@ -464,7 +464,7 @@ fn aliases_with_complex_expressions() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value.foo + baz + _for_item0.value.baz[0]);
   		return _n2;
-  	});
+  	}, void 0, 8);
   	return _n0;
   })();
   "#);
@@ -492,7 +492,7 @@ fn fast_remove_flag() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value + i);
   		return _n2;
-  	}, void 0, 1);
+  	}, void 0, 9);
   	return _n3;
   })();
   "#);
@@ -518,6 +518,52 @@ fn on_component() {
 }
 
 #[test]
+fn v_for_on_slot_outlet_marks_fragment_block() {
+  let code = transform(
+    "<slot v-for={item in list} name={item.name} key={item.id} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createFor as _createFor, createSlot as _createSlot } from "vue";
+  (() => {
+  	const _n0 = _createFor(() => list, (_for_item0) => {
+  		const _n2 = _createSlot(() => _for_item0.value.name);
+  		return _n2;
+  	}, (item) => item.id, 16);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_single_node_flag_is_not_set_for_fragment_item_blocks() {
+  let code = transform(
+    "<template v-for={item in list}><div>{ item }</div><span>{ item }</span></template>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> </div>");
+  const _t1 = _template("<span> ");
+  (() => {
+  	const _n0 = _createFor(() => list, (_for_item0) => {
+  		const _n2 = _t0();
+  		const _n3 = _t1();
+  		const _x2 = _txt(_n2);
+  		_setNodes(_x2, () => _for_item0.value);
+  		const _x3 = _txt(_n3);
+  		_setNodes(_x3, () => _for_item0.value);
+  		return [_n2, _n3];
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn on_template_with_single_component_child() {
   let code = transform(
     "<template v-for={item in list}><Comp>{item}</Comp></template>",
@@ -535,6 +581,88 @@ fn on_template_with_single_component_child() {
   		}) });
   		return _n3;
   	}, void 0, 2);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_on_template_with_element_and_component_v_if_branches() {
+  let code = transform(
+    "<template v-for={item in items}>
+      <div v-if={item.id===1}>hi</div>
+      <Comp v-else></Comp>
+    </template>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>hi");
+  (() => {
+  	const _n0 = _createFor(() => items, (_for_item0) => {
+  		const _n2 = _createIf(() => _for_item0.value.id === 1, () => {
+  			const _n4 = _t0();
+  			return _n4;
+  		}, () => {
+  			const _n6 = _createComponent(Comp);
+  			return _n6;
+  		}, 10, false, 0);
+  		return _n2;
+  	}, void 0, 16);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_on_template_with_nested_v_for_child_marks_fragment_block() {
+  let code = transform(
+    "<template v-for={row in rows}><div v-for={item in row}>{ item }</div></template>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n0 = _createFor(() => rows, (_for_item0) => {
+  		const _n2 = _createFor(() => _for_item0.value, (_for_item1) => {
+  			const _n4 = _t0();
+  			const _x4 = _txt(_n4);
+  			_setNodes(_x4, () => _for_item1.value);
+  			return _n4;
+  		}, void 0, 8);
+  		return _n2;
+  	}, void 0, 16);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_on_template_with_keyed_child_marks_fragment_block() {
+  let code = transform(
+    "<template v-for={item in items}><div key={item.id}>{ item.text }</div></template>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, createKeyedFragment as _createKeyedFragment, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n0 = _createFor(() => items, (_for_item0) => {
+  		const _n2 = _createKeyedFragment(() => _for_item0.value.id, () => {
+  			const _n4 = _t0();
+  			const _x4 = _txt(_n4);
+  			_setNodes(_x4, () => _for_item0.value.text);
+  			return _n4;
+  		});
+  		return _n2;
+  	}, void 0, 16);
   	return _n0;
   })();
   "#);
@@ -583,7 +711,7 @@ fn identifiers() {
   		})());
   		_renderEffect(() => _setProp(_n2, "id", _for_key0.value));
   		return _n2;
-  	});
+  	}, void 0, 8);
   	return _n0;
   })();
   "#);
@@ -606,7 +734,7 @@ fn expression_object() {
   		_setNodes(_x2, () => _for_item0.value);
   		_renderEffect(() => _setProp(_n2, "id", _for_key0.value));
   		return _n2;
-  	});
+  	}, void 0, 8);
   	return _n0;
   })();
   "#);
@@ -625,7 +753,7 @@ fn template_v_for_with_slotlet() {
   	const _n0 = _createFor(() => items, (_for_item0) => {
   		const _n2 = _createSlot("default");
   		return _n2;
-  	});
+  	}, void 0, 16);
   	return _n0;
   })();
   "#)
@@ -640,7 +768,7 @@ fn v_for_on_slotlet() {
   	const _n0 = _createFor(() => items, (_for_item0) => {
   		const _n2 = _createSlot("default");
   		return _n2;
-  	});
+  	}, void 0, 16);
   	return _n0;
   })();
   "#)

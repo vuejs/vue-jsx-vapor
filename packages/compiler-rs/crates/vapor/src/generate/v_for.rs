@@ -38,6 +38,15 @@ pub enum VaporVForFlags {
    * v-for inside v-ince
    */
   Once = 1 << 2,
+  /**
+   * v-for item block is a single DOM Node.
+   */
+  IsSingleNode = 1 << 3,
+  /**
+   * v-for item block is known to be a VaporFragment, so runtime can use
+   * fragment-specific insert/remove helpers.
+   */
+  IsFragment = 1 << 4,
 }
 
 pub fn gen_for<'a>(
@@ -235,6 +244,9 @@ pub fn gen_for<'a>(
     );
   }
 
+  let fragment_block = is_fragment_block(&render);
+  let single_node_block = !component && is_single_node_block(&render);
+
   let block_fn = context.with_id(
     || {
       ast.expression_arrow_function(
@@ -351,6 +363,12 @@ pub fn gen_for<'a>(
   }
   if component {
     flags |= VaporVForFlags::IsComponent as i32;
+  }
+  if fragment_block {
+    flags |= VaporVForFlags::IsFragment as i32;
+  }
+  if single_node_block {
+    flags |= VaporVForFlags::IsSingleNode as i32;
   }
   if once {
     flags |= VaporVForFlags::Once as i32;
@@ -471,6 +489,43 @@ pub fn gen_for<'a>(
     ),
   ));
   statements.extend(on_reset_calls);
+}
+
+fn is_single_node_block(block: &BlockIRNode) -> bool {
+  let Some(child) = get_single_returned_child(block) else {
+    return false;
+  };
+  child.template.is_some()
+}
+
+fn is_fragment_block(block: &BlockIRNode) -> bool {
+  let child = get_single_returned_child(block);
+  let Some(operation) = child.map(|child| child.operation.as_deref()).flatten() else {
+    return false;
+  };
+  matches!(
+    operation,
+    // <slot/>
+    OperationNode::SlotOutlet(_) |
+    // <template v-for> with a single v-for child
+    OperationNode::For(_) |
+    // <template v-for> with a single dynamic :key child
+    OperationNode::Key(_)
+  ) || // <template v-for> with a single dynamic v-if child
+    matches!(operation, OperationNode::If(op) if !op.once)
+}
+
+fn get_single_returned_child<'a>(block: &'a BlockIRNode) -> Option<&'a IRDynamicInfo<'a>> {
+  if block.returns.len() != 1 {
+    return None;
+  }
+  let id = block.returns[0];
+  for child in block.dynamic.children.iter() {
+    if child.id.is_some_and(|i| i == id) {
+      return Some(child);
+    }
+  }
+  None
 }
 
 fn match_patterns<'a>(

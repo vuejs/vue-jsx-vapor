@@ -531,7 +531,7 @@ fn set_insertion_state_scenarios_v_for_prepend() {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n2 = _t0();
   		return _n2;
-  	}, (i) => i);
+  	}, (i) => i, 8);
   	return _n3;
   })();
   "#);
@@ -557,7 +557,7 @@ fn set_insertion_state_scenarios_v_for_append() {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n2 = _t0();
   		return _n2;
-  	}, (i) => i);
+  	}, (i) => i, 8);
   	return _n3;
   })();
   "#);

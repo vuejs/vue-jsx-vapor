@@ -407,7 +407,7 @@ fn does_not_flush_later_v_for_effects_before_child_component() {
   			_setText(_x2, _toDisplayString(selected === _for_item0.value.id ? "danger" : ""));
   		});
   		return _n6;
-  	}, (row) => row.id);
+  	}, (row) => row.id, 8);
   	n0.onReset(_selector0.reset);
   	return _n0;
   })();

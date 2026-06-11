@@ -568,7 +568,7 @@ fn slot_tag_with_v_for() {
   		const _n0 = _createFor(() => b, (_for_item0) => {
   			const _n2 = _createSlot("default");
   			return _n2;
-  		});
+  		}, void 0, 16);
   		return _n0;
   	}) }, true);
   	return _n3;
@@ -820,7 +820,7 @@ fn slot_with_component_inside_v_for_should_have_with_vapor_ctx() {
   			_setInsertionState(_n3, null, 0);
   			const _n2 = _createComponent(ChildComp);
   			return _n3;
-  		}, void 0, 1);
+  		}, void 0, 8);
   		return _n0;
   	}) }, true);
   	return _n5;
@@ -948,7 +948,7 @@ fn slot_with_v_for_but_no_component_should_have_with_vapor_ctx() {
   			const _x2 = _txt(_n2);
   			_setNodes(_x2, () => _for_item0.value);
   			return _n2;
-  		}, void 0, 1);
+  		}, void 0, 8);
   		return _n0;
   	}) }, true);
   	return _n4;

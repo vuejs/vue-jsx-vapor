@@ -82,6 +82,7 @@ pub unsafe fn transform_v_for<'a>(
   let mut only_child = false;
   if let JSXChild::Element(parent_node) = parent_node
     && !(is_jsx_component(parent_node) || is_custom_element(parent_node))
+    && !is_template(parent_node)
   {
     let index = *context.index.borrow() as usize;
     for (i, child) in parent_node.children.iter().enumerate() {

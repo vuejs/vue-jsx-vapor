@@ -98,7 +98,7 @@ fn ref_v_for() {
   		const _n2 = _t0();
   		_renderEffect(() => _setTemplateRef(_n2, foo, true));
   		return _n2;
-  	}, void 0, 4);
+  	}, void 0, 12);
   	return _n0;
   })();
   "#);

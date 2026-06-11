@@ -178,7 +178,7 @@ fn with_v_for() {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n2 = _t0();
   		return _n2;
-  	}, void 0, 4);
+  	}, void 0, 12);
   	return _n0;
   })();
   "#);
