@@ -159,7 +159,7 @@ fn component() {
   				{ world: true }
   			]]);
   			return _n4;
-  		}, null, 1, true);
+  		}, null, 17);
   		return _n1;
   	}) }, true);
   	_withVaporDirectives(_n0, [[_directive_test]]);

@@ -549,7 +549,7 @@ fn slot_tag_with_v_if() {
   		const _n0 = _createIf(() => ok, () => {
   			const _n2 = _createSlot("default");
   			return _n2;
-  		}, null, 1);
+  		});
   		return _n0;
   	}) }, true);
   	return _n3;
@@ -787,7 +787,7 @@ fn slot_with_component_inside_v_if_should_have_with_vapor_ctx() {
   			_setInsertionState(_n3, null, 0);
   			const _n2 = _createComponent(ChildComp);
   			return _n3;
-  		}, null, 1);
+  		});
   		return _n0;
   	}) }, true);
   	return _n5;
@@ -859,9 +859,9 @@ fn slot_with_nested_v_if_containing_component_should_have_with_vapor_ctx() {
   				_setInsertionState(_n5, null, 0);
   				const _n4 = _createComponent(ChildComp);
   				return _n5;
-  			}, null, 1);
+  			});
   			return _n6;
-  		}, null, 1);
+  		});
   		return _n0;
   	}) }, true);
   	return _n8;
@@ -918,7 +918,7 @@ fn slot_with_v_if_but_no_component_should_have_with_vapor_ctx() {
   		}, () => {
   			const _n4 = _t1();
   			return _n4;
-  		}, 5, false, 0);
+  		}, 37);
   		return _n0;
   	}) }, true);
   	return _n7;
@@ -1006,7 +1006,7 @@ fn slot_with_custom_element_inside_v_if_should_have_with_vapor_ctx() {
   			_setInsertionState(_n3, null, 0);
   			const _n2 = _createPlainElement("my-element");
   			return _n3;
-  		}, null, 1);
+  		});
   		return _n0;
   	}) }, true);
   	return _n5;

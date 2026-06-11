@@ -17,7 +17,59 @@ fn basic() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => msg);
   		return _n2;
-  	}, null, 1);
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn omits_default_single_root_flags() {
+  let code = transform("<div v-if={ok} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>", 3);
+  (() => {
+  	const _n0 = _createIf(() => ok, () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn packs_once_flag() {
+  let code = transform("<div v-if={ok} v-once />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>", 3);
+  (() => {
+  	const _n0 = _createIf(() => ok, () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	}, null, 17);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn packs_branch_index() {
+  let code = transform("<><div v-if={foo}>foo</div><div v-else>bar</div></>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>foo", 2);
+  const _t1 = _template("<div>bar", 2);
+  (() => {
+  	const _n0 = _createIf(() => foo, () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	}, () => {
+  		const _n4 = _t1();
+  		return _n4;
+  	}, 37);
   	return _n0;
   })();
   "#);
@@ -75,7 +127,7 @@ fn template_v_if_with_v_for() {
   			return _n4;
   		}, (item, index) => index, 8);
   		return _n2;
-  	}, null, 1);
+  	});
   	return _n0;
   })();
   "#);
@@ -91,7 +143,7 @@ fn template_v_if_with_text() {
   	const _n0 = _createIf(() => foo, () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, 1);
+  	});
   	return _n0;
   })();
   "#);
@@ -107,7 +159,7 @@ fn template_v_if_with_single_element() {
   	const _n0 = _createIf(() => foo, () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, 1);
+  	});
   	return _n0;
   })();
   "#);
@@ -152,7 +204,7 @@ fn template_v_if_with_v_for_inside() {
   			return _n4;
   		}, void 0, 8);
   		return _n2;
-  	}, null, 1);
+  	});
   	return _n0;
   })();
   "#);
@@ -181,7 +233,7 @@ fn template_v_if_with_key() {
   			return _n4;
   		});
   		return _n2;
-  	}, null, 1);
+  	});
   	return _n0;
   })();
   "#);
@@ -201,11 +253,11 @@ fn dedupe_same_template() {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, 1);
+  	});
   	const _n3 = _createIf(() => ok, () => {
   		const _n5 = _t0();
   		return _n5;
-  	}, null, 1);
+  	});
   	return [_n0, _n3];
   })();
   "#);
@@ -221,7 +273,7 @@ fn component() {
   	const _n0 = _createIf(() => foo, () => {
   		const _n2 = _createComponent(Comp, null, null, true);
   		return _n2;
-  	}, null, 1);
+  	});
   	return _n0;
   })();
   "#);
@@ -236,7 +288,7 @@ fn template_v_if_with_single_slot_child() {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _createSlot("default");
   		return _n2;
-  	}, null, 1);
+  	});
   	return _n0;
   })();
   "#);
@@ -251,7 +303,7 @@ fn v_if_on_slot() {
   	const _n0 = _createIf(() => "ok", () => {
   		const _n2 = _createSlot("default");
   		return _n2;
-  	}, null, 1, true);
+  	}, null, 17);
   	return _n0;
   })();
   "#);
@@ -271,7 +323,7 @@ fn v_if_v_else() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, 5, false, 0);
+  	}, 37);
   	return _n0;
   })();
   "#);
@@ -291,7 +343,7 @@ fn v_if_v_if_else() {
   	}, () => _createIf(() => orNot, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, null, 1), 5, false, 0);
+  	}), 37);
   	return _n0;
   })();
   "#);
@@ -319,7 +371,7 @@ fn v_if_v_else_if_v_else() {
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	}, 5, false, 1), 5, false, 0);
+  	}, 69), 37);
   	return _n0;
   })();
   "#);
@@ -348,7 +400,7 @@ fn v_if_v_if_or_v_elses() {
   	const _n0 = _createIf(() => "foo", () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, 1, true);
+  	}, null, 17);
   	_setInsertionState(_n8, null, 1);
   	const _n3 = _createIf(() => "bar", () => {
   		const _n5 = _t1();
@@ -356,7 +408,7 @@ fn v_if_v_if_or_v_elses() {
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	}, 5, true, 1);
+  	}, 21);
   	return _n8;
   })();
   "#);
@@ -392,7 +444,7 @@ fn comment_between_branches() {
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	}, 5, false, 1), 5, false, 0);
+  	}, 69), 37);
   	const _n9 = _t3();
   	return [_n0, _n9];
   })();
@@ -414,7 +466,7 @@ fn v_on_with_v_if() {
   		const _n2 = _t0();
   		_renderEffect(() => _setDynamicEvents(_n2, { click: clickEvent }));
   		return _n2;
-  	}, null, 1, true);
+  	}, null, 17);
   	return _n0;
   })();
   "#);
@@ -471,7 +523,7 @@ fn template_v_if_with_normal_v_else() {
   	}, () => {
   		const _n5 = _t2();
   		return _n5;
-  	}, 6, false, 0);
+  	}, 38);
   	return _n0;
   })();
   "#);

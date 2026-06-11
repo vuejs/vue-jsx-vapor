@@ -608,7 +608,7 @@ fn v_for_on_template_with_element_and_component_v_if_branches() {
   		}, () => {
   			const _n6 = _createComponent(Comp);
   			return _n6;
-  		}, 10, false, 0);
+  		}, 42);
   		return _n2;
   	}, void 0, 16);
   	return _n0;
