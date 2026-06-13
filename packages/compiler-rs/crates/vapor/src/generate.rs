@@ -153,7 +153,7 @@ impl<'a> CodegenContext<'a> {
             NONE,
             Some(ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.str(self.options.helper("_resolveComponent1"))),
+              ast.expression_identifier(SPAN, ast.str(self.options.helper("_resolveComponent"))),
               NONE,
               ast.vec_from_array([Argument::StringLiteral(ast.alloc_string_literal(
                 SPAN,

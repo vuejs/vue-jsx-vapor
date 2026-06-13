@@ -464,7 +464,6 @@ impl<'a> TransformContext<'a> {
       self.index.replace(index);
       self.in_v_once.replace(in_v_once);
       self.template.replace(template);
-      self.index.replace(index);
       self
         .is_last_effective_child
         .replace(is_last_effective_child);
