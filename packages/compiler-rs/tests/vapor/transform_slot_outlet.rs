@@ -52,7 +52,7 @@ fn default_slot_outlet_with_props() {
   import { createSlot as _createSlot } from "vue";
   (() => {
   	const _n0 = _createSlot("default", {
-  		foo: () => "bar",
+  		foo: "bar",
   		baz: () => qux,
   		"foo-bar": () => foo - bar
   	});
@@ -68,7 +68,7 @@ fn statically_named_slot_outlet_with_props() {
   import { createSlot as _createSlot } from "vue";
   (() => {
   	const _n0 = _createSlot("foo", {
-  		foo: () => "bar",
+  		foo: "bar",
   		baz: () => qux
   	});
   	return _n0;
@@ -83,7 +83,7 @@ fn dynamically_named_slot_outlet_with_props() {
   import { createSlot as _createSlot } from "vue";
   (() => {
   	const _n0 = _createSlot(() => foo, {
-  		foo: () => "bar",
+  		foo: "bar",
   		baz: () => qux
   	});
   	return _n0;

@@ -73,7 +73,7 @@ pub fn gen_create_component<'a>(
     .into()
   };
 
-  let raw_props = gen_raw_props(props, context, true);
+  let raw_props = gen_raw_props(props, context);
   let _context_block = context_block as *mut BlockIRNode;
   let raw_slots = gen_raw_slots(slots, context, unsafe { &mut *_context_block });
 
@@ -132,7 +132,6 @@ pub fn gen_create_component<'a>(
 pub fn gen_raw_props<'a>(
   mut props: Vec<IRProps<'a>>,
   context: &'a CodegenContext<'a>,
-  direct_static_literal_props: bool,
 ) -> Option<Expression<'a>> {
   let props_len = props.len();
   if let Either3::A(static_props) = &props[0] {
@@ -144,8 +143,7 @@ pub fn gen_raw_props<'a>(
       Some(gen_static_props(
         static_props,
         context,
-        gen_dynamic_props(props, context, direct_static_literal_props),
-        direct_static_literal_props,
+        gen_dynamic_props(props, context),
       ))
     } else {
       None
@@ -155,8 +153,7 @@ pub fn gen_raw_props<'a>(
     Some(gen_static_props(
       vec![],
       context,
-      gen_dynamic_props(props, context, direct_static_literal_props),
-      direct_static_literal_props,
+      gen_dynamic_props(props, context),
     ))
   } else {
     None
@@ -197,7 +194,6 @@ fn gen_static_props<'a>(
   props: IRPropsStatic<'a>,
   context: &'a CodegenContext<'a>,
   dynamic_props: Option<Expression<'a>>,
-  direct_static_literal_props: bool,
 ) -> Expression<'a> {
   let ast = &context.ast;
   let mut properties = ast.vec();
@@ -215,7 +211,7 @@ fn gen_static_props<'a>(
       );
       if key_name.is_empty() {
         // dynamic key handlers are emitted as-is
-        gen_prop(&mut properties, prop, context, true, false);
+        gen_prop(&mut properties, prop, context, true);
         continue;
       }
 
@@ -274,7 +270,7 @@ fn gen_static_props<'a>(
         .unwrap();
       let prop_model_modifiers = prop.model_modifiers.clone();
       prop.model = false;
-      gen_prop(&mut properties, prop, context, true, false);
+      gen_prop(&mut properties, prop, context, true);
       gen_model(
         Some(&mut handler_groups),
         &mut properties,
@@ -285,13 +281,7 @@ fn gen_static_props<'a>(
       );
     } else {
       // normal (non-handler) props
-      gen_prop(
-        &mut properties,
-        prop,
-        context,
-        true,
-        direct_static_literal_props,
-      );
+      gen_prop(&mut properties, prop, context, true);
     }
   }
 
@@ -353,7 +343,6 @@ fn gen_static_props<'a>(
 fn gen_dynamic_props<'a>(
   props: Vec<IRProps<'a>>,
   context: &'a CodegenContext<'a>,
-  direct_static_literal_props: bool,
 ) -> Option<Expression<'a>> {
   let ast = &context.ast;
   let mut frags = ast.vec();
@@ -361,17 +350,12 @@ fn gen_dynamic_props<'a>(
     let mut expr = None;
     if let Either3::A(p) = p {
       if !p.is_empty() {
-        frags.push(gen_static_props(
-          p,
-          context,
-          None,
-          direct_static_literal_props,
-        ))
+        frags.push(gen_static_props(p, context, None))
       }
       continue;
     } else if let Either3::B(p) = p {
       let mut properties = ast.vec();
-      gen_prop(&mut properties, p, context, false, false);
+      gen_prop(&mut properties, p, context, false);
       expr = Some(ast.expression_object(SPAN, properties));
     } else if let Either3::C(p) = p {
       let expression = gen_expression(p.value, context, None, false);
@@ -423,9 +407,8 @@ fn gen_prop<'a>(
   mut prop: IRProp<'a>,
   context: &'a CodegenContext<'a>,
   is_static: bool,
-  mut direct_static_literal: bool,
 ) {
-  direct_static_literal = direct_static_literal && is_direct_static_literal_prop(&prop);
+  let direct_static_literal = is_direct_static_literal_prop(&prop);
   let ast = &context.ast;
   let model = prop.model;
   let handler = prop.handler;
