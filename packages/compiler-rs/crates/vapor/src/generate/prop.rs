@@ -245,7 +245,7 @@ fn resolve_class_name<'a>(
   let mut saw_suffix = false;
 
   for value in values.iter_mut() {
-    if let Some(static_value) = get_text_like_value(value, true) {
+    if let Some(static_value) = get_text_like_value(value) {
       let normalized = normalize_class(static_value);
       if !normalized.is_empty() {
         if saw_suffix {
@@ -335,8 +335,8 @@ fn resolve_condition_class_name<'a>(
   entries: &mut Vec<ClassNameEntry<'a>>,
   context: &'a CodegenContext<'a>,
 ) -> bool {
-  let consequent = get_text_like_value(&value.consequent, false).map(normalize_class);
-  let alternate = get_text_like_value(&value.alternate, false).map(normalize_class);
+  let consequent = get_text_like_value(&value.consequent).map(normalize_class);
+  let alternate = get_text_like_value(&value.alternate).map(normalize_class);
   let consequent_is_empty = consequent
     .as_ref()
     .is_some_and(|consequent| consequent.is_empty());

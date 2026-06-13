@@ -186,7 +186,7 @@ fn combine_values<'a>(
       && !is_set_text
       && !matches!(value, Expression::StringLiteral(_))
       && !is_constant_node(&value);
-    let literal_expression_value = get_text_like_value(&value, false);
+    let literal_expression_value = get_text_like_value(&value);
     let exp = gen_expression(value, context, None, should_wrap);
     if is_set_text && literal_expression_value.is_none() {
       // dynamic, wrap with toDisplayString

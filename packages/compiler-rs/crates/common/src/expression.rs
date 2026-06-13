@@ -15,7 +15,7 @@ pub fn get_constant_expression_text<'a>(
   exp: &Expression<'a>,
   options: &TransformOptions<'a>,
 ) -> Option<Cow<'a, str>> {
-  if let Some(value) = get_text_like_value(exp, false) {
+  if let Some(value) = get_text_like_value(exp) {
     Some(value)
   } else {
     let span = exp.span();

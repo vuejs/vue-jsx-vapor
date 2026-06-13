@@ -44,7 +44,7 @@ pub fn transform_v_text<'a>(
     return None;
   }
 
-  let literal = get_text_like_value(&exp, false);
+  let literal = get_text_like_value(&exp);
   if let Some(literal) = literal {
     *context.children_template.borrow_mut() = vec![escape_html(literal)];
   } else {

@@ -113,9 +113,66 @@ fn component_static_literal_bind_props() {
 }
 
 #[test]
+fn component_constant_bind_props_are_direct_raw_prop_values() {
+  let code = transform(
+    r#"<Foo
+      size={16}
+      disabled={false}
+      tabindex={0}
+      nullable={null}
+      missing={undefined}
+      big={1n}
+      label={`Save ${1}`}
+      items={[1, "two", false, null, undefined]}
+      options={{ placement: "bottom", offset: 8, nested: { enabled: true } }}
+    />"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Foo, {
+  		size: 16,
+  		disabled: false,
+  		tabindex: 0,
+  		nullable: null,
+  		missing: undefined,
+  		big: 1n,
+  		label: "Save 1",
+  		items: [
+  			1,
+  			"two",
+  			false,
+  			null,
+  			undefined
+  		],
+  		options: {
+  			placement: "bottom",
+  			offset: 8,
+  			nested: { enabled: true }
+  		}
+  	}, null, true);
+  	return _n0;
+  })();
+  "#);
+
+  assert!(code.contains("size: 16"));
+  assert!(code.contains("disabled: false"));
+  assert!(code.contains("tabindex: 0"));
+  assert!(code.contains("nullable: null"));
+  assert!(code.contains("missing: undefined"));
+  assert!(code.contains("big: 1n"));
+  assert!(code.contains("label: \"Save 1\""));
+  assert!(code.contains("placement: \"bottom\""));
+  assert!(code.contains("offset: 8"));
+  assert!(code.contains("nested: { enabled: true }"));
+}
+
+#[test]
 fn component_dynamic_non_literal_prop_values_stay_as_getter_sources() {
   let code = transform(
-    r#"<Foo foo={bar} obj={{ a: 1 }} fn={() => bar} onClick={foo} />"#,
+    r#"<Foo foo={bar} obj={{ a: bar }} handler={onClick} formatter={v => v.toFixed(2)} fn={() => bar} onClick={foo} />"#,
     None,
   )
   .code;
@@ -124,13 +181,22 @@ fn component_dynamic_non_literal_prop_values_stay_as_getter_sources() {
   (() => {
   	const _n0 = _createComponent(Foo, {
   		foo: () => bar,
-  		obj: { a: 1 },
+  		obj: () => ({ a: bar }),
+  		handler: () => onClick,
+  		formatter: () => (v) => v.toFixed(2),
   		fn: () => () => bar,
   		onClick: () => foo
   	}, null, true);
   	return _n0;
   })();
   "#);
+
+  assert!(code.contains("foo: () => bar"));
+  assert!(code.contains("obj: () => ({ a: bar })"));
+  assert!(code.contains("handler: () => onClick"));
+  assert!(code.contains("formatter: () => (v) => v.toFixed(2)"));
+  assert!(code.contains("fn: () => () => bar"));
+  assert!(code.contains("onClick: () => foo"));
 }
 
 #[test]

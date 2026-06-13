@@ -519,10 +519,10 @@ fn gen_prop<'a>(
 // as getter sources to preserve lazy access and merge semantics.
 fn is_direct_static_literal_prop(prop: &IRProp) -> bool {
   matches!(prop.key, Expression::StringLiteral(_))
-    && prop.values.len() == 1
-    && is_constant_node(&prop.values[0])
     && !prop.handler
     && !prop.model
+    && prop.values.len() == 1
+    && is_constant_node(&prop.values[0])
 }
 
 fn gen_model<'a>(
