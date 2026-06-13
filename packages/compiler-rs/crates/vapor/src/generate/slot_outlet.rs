@@ -40,7 +40,13 @@ pub fn gen_slot_outlet<'a>(
               NONE,
               ast.vec_from_iter(
                 [
-                  if let Expression::StringLiteral(name) = name {
+                  if matches!(&name, Expression::StringLiteral(name) if name.value == "default")
+                    && props.is_empty()
+                    && fallback.is_none()
+                    && flags == 0
+                  {
+                    None
+                  } else if let Expression::StringLiteral(name) = name {
                     Some(ast.expression_string_literal(SPAN, name.value, None).into())
                   } else {
                     Some(

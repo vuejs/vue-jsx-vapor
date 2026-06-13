@@ -530,7 +530,7 @@ fn slot_tag_only() {
   import { createSlot as _createSlot, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
   	const _n1 = _createComponent(Comp, null, _withVaporCtx(() => {
-  		const _n0 = _createSlot("default");
+  		const _n0 = _createSlot();
   		return _n0;
   	}), true);
   	return _n1;
@@ -586,7 +586,7 @@ fn slot_tag_with_template() {
   (() => {
   	const _n2 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n1 = _t0();
-  		const _n0 = _createSlot("default");
+  		const _n0 = _createSlot();
   		return [_n0, _n1];
   	}), true);
   	return _n2;
@@ -603,7 +603,7 @@ fn slot_tag_with_nested_component() {
   (() => {
   	const _n2 = _createComponent(Comp, null, _withVaporCtx(() => {
   		const _n1 = _createComponent(Comp, null, _withVaporCtx(() => {
-  			const _n0 = _createSlot("default");
+  			const _n0 = _createSlot();
   			return _n0;
   		}));
   		return _n1;
@@ -725,7 +725,7 @@ fn slot_with_slot_outlet_should_have_with_vapor_ctx() {
   import { createSlot as _createSlot, withVaporCtx as _withVaporCtx } from "vue";
   (() => {
   	const _n2 = _createComponent(Comp, null, _withVaporCtx(() => {
-  		const _n0 = _createSlot("default");
+  		const _n0 = _createSlot();
   		return _n0;
   	}), true);
   	return _n2;

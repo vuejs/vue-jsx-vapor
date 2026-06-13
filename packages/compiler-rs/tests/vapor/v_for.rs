@@ -751,7 +751,7 @@ fn template_v_for_with_slotlet() {
   import { createFor as _createFor, createSlot as _createSlot } from "vue";
   (() => {
   	const _n0 = _createFor(() => items, (_for_item0) => {
-  		const _n2 = _createSlot("default");
+  		const _n2 = _createSlot();
   		return _n2;
   	}, void 0, 16);
   	return _n0;

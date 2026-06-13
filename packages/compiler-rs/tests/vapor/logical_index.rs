@@ -659,7 +659,7 @@ fn set_insertion_state_scenarios_slot_prepend() {
   (() => {
   	const _n1 = _t0();
   	_setInsertionState(_n1, 0, 0);
-  	const _n0 = _createSlot("default");
+  	const _n0 = _createSlot();
   	return _n1;
   })();
   "#);
@@ -681,7 +681,7 @@ fn set_insertion_state_scenarios_slot_append() {
   (() => {
   	const _n1 = _t0();
   	_setInsertionState(_n1, null, 1);
-  	const _n0 = _createSlot("default");
+  	const _n0 = _createSlot();
   	return _n1;
   })();
   "#);

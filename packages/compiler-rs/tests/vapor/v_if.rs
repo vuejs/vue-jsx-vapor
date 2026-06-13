@@ -286,7 +286,7 @@ fn template_v_if_with_single_slot_child() {
   import { createIf as _createIf, createSlot as _createSlot } from "vue";
   (() => {
   	const _n0 = _createIf(() => ok, () => {
-  		const _n2 = _createSlot("default");
+  		const _n2 = _createSlot();
   		return _n2;
   	});
   	return _n0;

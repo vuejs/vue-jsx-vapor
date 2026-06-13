@@ -15,7 +15,7 @@ fn default_slot_outlet() {
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot } from "vue";
   (() => {
-  	const _n0 = _createSlot("default");
+  	const _n0 = _createSlot();
   	return _n0;
   })();
   "#);
