@@ -310,7 +310,7 @@ impl<'a> Transform<'a> {
                                   SPAN,
                                   flags as f64,
                                   None,
-                                  NumberBase::Hex,
+                                  NumberBase::Decimal,
                                 )
                                 .into(),
                             )
@@ -326,7 +326,7 @@ impl<'a> Transform<'a> {
                                   SPAN,
                                   template.ns as f64,
                                   None,
-                                  NumberBase::Hex,
+                                  NumberBase::Decimal,
                                 )
                                 .into(),
                             )

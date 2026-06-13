@@ -136,7 +136,7 @@ fn with_constant_value() {
       d={1 ? 2 : 3}
       e={(2)}
       f={`foo${1}`}
-      g={1}
+      g={1.1}
       h={'1'}
       i={true}
       j={null}
@@ -152,7 +152,7 @@ fn with_constant_value() {
   .code;
   assert_snapshot!(code, @r#"
   import { setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div e=2 f=foo1 g=1 h=1>", 1);
+  const _t0 = _template("<div e=2 f=foo1 g=1.1 h=1>", 1);
   (() => {
   	const _n0 = _t0();
   	_setProp(_n0, "a", void 0);

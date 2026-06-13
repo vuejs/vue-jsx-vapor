@@ -290,7 +290,7 @@ impl<'a> TransformContext<'a> {
     if is_v_node {
       let mut arguments = ast.vec1(
         ast
-          .expression_numeric_literal(SPAN, -1_f64, None, NumberBase::Hex)
+          .expression_numeric_literal(SPAN, -1_f64, None, NumberBase::Decimal)
           .into(),
       );
       if in_v_once {
@@ -315,7 +315,7 @@ impl<'a> TransformContext<'a> {
               ast.identifier_name(SPAN, "cacheIndex"),
               false,
             )),
-            ast.expression_numeric_literal(SPAN, index as f64, None, NumberBase::Hex),
+            ast.expression_numeric_literal(SPAN, index as f64, None, NumberBase::Decimal),
           ),
           ast.expression_call(
             SPAN,
@@ -323,7 +323,7 @@ impl<'a> TransformContext<'a> {
             NONE,
             ast.vec1(
               ast
-                .expression_numeric_literal(SPAN, 1_f64, None, NumberBase::Hex)
+                .expression_numeric_literal(SPAN, 1_f64, None, NumberBase::Decimal)
                 .into(),
             ),
             false,

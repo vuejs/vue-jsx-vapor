@@ -325,7 +325,7 @@ impl<'a> TransformContext<'a> {
           if let Some(patch_flag) = patch_flag {
             Some(
               ast
-                .expression_numeric_literal(SPAN, patch_flag as f64, None, NumberBase::Hex)
+                .expression_numeric_literal(SPAN, patch_flag as f64, None, NumberBase::Decimal)
                 .into(),
             )
           } else if dynamic_props.is_some() {

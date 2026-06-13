@@ -112,7 +112,7 @@ pub fn gen_if<'a>(
         if let Some(flags) = flags {
           Some(
             ast
-              .expression_numeric_literal(SPAN, flags as f64, None, NumberBase::Hex)
+              .expression_numeric_literal(SPAN, flags as f64, None, NumberBase::Decimal)
               .into(),
           )
         } else {

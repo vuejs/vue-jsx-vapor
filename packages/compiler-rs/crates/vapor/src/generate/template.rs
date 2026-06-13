@@ -335,7 +335,7 @@ fn gen_access_path<'a>(
             Some(ast.expression_identifier(SPAN, ast.str(&prev.0)).into()),
             logical_index.map(|logical_index| {
               ast
-                .expression_numeric_literal(SPAN, logical_index as f64, None, NumberBase::Hex)
+                .expression_numeric_literal(SPAN, logical_index as f64, None, NumberBase::Decimal)
                 .into()
             }),
           ]
@@ -366,7 +366,7 @@ fn gen_access_path<'a>(
             if logical_index != 0 {
               Some(
                 ast
-                  .expression_numeric_literal(SPAN, logical_index as f64, None, NumberBase::Hex)
+                  .expression_numeric_literal(SPAN, logical_index as f64, None, NumberBase::Decimal)
                   .into(),
               )
             } else {
@@ -399,7 +399,7 @@ fn gen_access_path<'a>(
           Some(first_child.into()),
           logical_index.map(|logical_index| {
             ast
-              .expression_numeric_literal(SPAN, logical_index as f64, None, NumberBase::Hex)
+              .expression_numeric_literal(SPAN, logical_index as f64, None, NumberBase::Decimal)
               .into()
           }),
         ]
@@ -527,7 +527,7 @@ fn gen_nth_child<'a>(
         Some(from.into()),
         Some(
           ast
-            .expression_numeric_literal(SPAN, element_index as f64, None, NumberBase::Hex)
+            .expression_numeric_literal(SPAN, element_index as f64, None, NumberBase::Decimal)
             .into(),
         ),
         // nthChild defaults the logical index to the element index at runtime, so
@@ -538,7 +538,7 @@ fn gen_nth_child<'a>(
           } else {
             Some(
               ast
-                .expression_numeric_literal(SPAN, logical_index as f64, None, NumberBase::Hex)
+                .expression_numeric_literal(SPAN, logical_index as f64, None, NumberBase::Decimal)
                 .into(),
             )
           }

@@ -229,7 +229,7 @@ fn transform_branch<'a>(
       SPAN,
       PropertyKind::Init,
       ast.property_key_static_identifier(SPAN, "key"),
-      ast.expression_numeric_literal(SPAN, key as f64, None, NumberBase::Hex),
+      ast.expression_numeric_literal(SPAN, key as f64, None, NumberBase::Decimal),
       false,
       false,
       false,

@@ -58,7 +58,7 @@ impl<'a> RootNode {
           ast.jsx_attribute_value_expression_container(
             SPAN,
             ast
-              .expression_numeric_literal(SPAN, key as f64, None, oxc_ast::ast::NumberBase::Hex)
+              .expression_numeric_literal(SPAN, key as f64, None, oxc_ast::ast::NumberBase::Decimal)
               .into(),
           ),
         ),

@@ -468,7 +468,7 @@ pub fn gen_for<'a>(
                   if flags > 0 {
                     Some(
                       ast
-                        .expression_numeric_literal(SPAN, flags as f64, None, NumberBase::Hex)
+                        .expression_numeric_literal(SPAN, flags as f64, None, NumberBase::Decimal)
                         .into(),
                     )
                   } else {

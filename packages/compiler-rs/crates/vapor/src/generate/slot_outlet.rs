@@ -92,7 +92,7 @@ pub fn gen_slot_outlet<'a>(
                           SPAN,
                           flags as f64,
                           None,
-                          oxc_ast::ast::NumberBase::Hex,
+                          oxc_ast::ast::NumberBase::Decimal,
                         )
                         .into(),
                     )

@@ -188,7 +188,7 @@ pub fn gen_insertion_state<'a>(
                 SPAN,
                 0 as f64,
                 None,
-                NumberBase::Hex,
+                NumberBase::Decimal,
               ))) // runtime anchor value for prepend
             } else if append {
               Some(Argument::NullLiteral(ast.alloc_null_literal(SPAN)))
@@ -206,7 +206,7 @@ pub fn gen_insertion_state<'a>(
               SPAN,
               logical_index as f64,
               None,
-              NumberBase::Hex,
+              NumberBase::Decimal,
             ))
           }),
         ]
