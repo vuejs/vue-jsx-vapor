@@ -43,6 +43,51 @@ fn on_normal_element() {
 }
 
 #[test]
+fn on_normal_element_with_dynamic_key() {
+  let code = transform(
+    r#"<div v-memo={[updateKey]} key={updateKey}></div>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _withMemo([updateKey], () => (_openBlock(), _createElementBlock("div", { key: updateKey })), _cache, 0);
+  })();
+  "#)
+}
+
+#[test]
+fn on_normal_element_with_dynamic_key_nested_in_v_for() {
+  let code = transform(
+    r#"<div v-for={item in items}>
+      <div
+        v-memo={[item.id, updateKey]}
+        key={get(item, updateKey)}
+      >{ item }</div>
+    </div>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, withMemo as _withMemo } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("div", null, [_withMemo([item.id, updateKey], () => (_openBlock(), _createElementBlock("div", { key: get(item, updateKey) }, [_normalizeVNode(() => item)])), _cache, 0)]))), 256);
+  })();
+  "#)
+}
+
+#[test]
 fn on_component() {
   let code = transform(
     r#"<Comp v-memo={[x]}></Comp>"#,
