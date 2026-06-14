@@ -7,7 +7,7 @@ export default async (options: RunOptions) => {
     repo: 'zhiyuanzmj/vuetify',
     branch: 'vue-jsx-compiler',
     install: 'pnpm install --no-frozen-lockfile',
-    env: { CI: 'false' },
+    env: { CI: 'true' },
     test: 'vue-ecosystem-ci:test',
   })
 }
