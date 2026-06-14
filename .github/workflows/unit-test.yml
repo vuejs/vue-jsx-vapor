@@ -53,8 +53,8 @@ jobs:
       - name: Test
         run: pnpm run test
 
-      # - name: Docs Build
-      #   run: pnpm run docs:build
+      - name: Docs Build
+        run: pnpm run docs:build
 
       - name: Playground Build
         run: pnpm run play:build
