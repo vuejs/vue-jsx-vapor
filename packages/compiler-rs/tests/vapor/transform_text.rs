@@ -143,13 +143,13 @@ fn should_not_escape_quotes_in_component_slot_text() {
   let code = transform("<Comp>Howdy y'all</Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  import { template as _template } from "vue";
   const _t0 = _template("Howdy y'all", 2);
   (() => {
-  	const _n1 = _createComponent(Comp, null, _withVaporCtx(() => {
+  	const _n1 = _createComponent(Comp, null, () => {
   		const _n0 = _t0();
   		return _n0;
-  	}), true);
+  	}, true);
   	return _n1;
   })();
   "#);
@@ -364,12 +364,11 @@ fn slot_interpolation() {
   let code = transform(r#"<Comp>{Hello}</Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, _withVaporCtx(() => {
+  	const _n1 = _createComponent(Comp, null, () => {
   		const _n0 = _createNodes(() => Hello);
   		return _n0;
-  	}), true);
+  	}, true);
   	return _n1;
   })();
   "#)
@@ -380,12 +379,11 @@ fn slot_literal_interpolation() {
   let code = transform(r#"<Comp>{ "Hello" }</Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, _withVaporCtx(() => {
+  	const _n1 = _createComponent(Comp, null, () => {
   		const _n0 = _createNodes("Hello");
   		return _n0;
-  	}), true);
+  	}, true);
   	return _n1;
   })();
   "#)

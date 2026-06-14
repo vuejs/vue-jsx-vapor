@@ -83,16 +83,16 @@ fn key_in_component() {
   let code = transform("<Comp><div key={key} /></Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createKeyedFragment as _createKeyedFragment, template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  import { createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
   (() => {
-  	const _n3 = _createComponent(Comp, null, _withVaporCtx(() => {
+  	const _n3 = _createComponent(Comp, null, () => {
   		const _n0 = _createKeyedFragment(() => key, () => {
   			const _n2 = _t0();
   			return _n2;
   		});
   		return _n0;
-  	}), true);
+  	}, true);
   	return _n3;
   })();
   "#);

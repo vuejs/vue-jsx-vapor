@@ -160,13 +160,13 @@ fn slots_component() {
   let code = transform(r#"<slots.foo foo={bar}><div /></slots.foo>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  import { template as _template } from "vue";
   const _t0 = _template("<div>", 2);
   (() => {
-  	const _n1 = _createComponent(slots.foo, { foo: () => bar }, _withVaporCtx(() => {
+  	const _n1 = _createComponent(slots.foo, { foo: () => bar }, () => {
   		const _n0 = _t0();
   		return _n0;
-  	}), true);
+  	}, true);
   	return _n1;
   })();
   "#);
@@ -177,13 +177,13 @@ fn dollor_slots_component() {
   let code = transform(r#"<$slots.foo foo={bar}><div /></$slots.foo>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  import { template as _template } from "vue";
   const _t0 = _template("<div>", 2);
   (() => {
-  	const _n1 = _createComponent($slots.foo, { foo: () => bar }, _withVaporCtx(() => {
+  	const _n1 = _createComponent($slots.foo, { foo: () => bar }, () => {
   		const _n0 = _t0();
   		return _n0;
-  	}), true);
+  	}, true);
   	return _n1;
   })();
   "#);

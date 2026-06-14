@@ -110,17 +110,16 @@ fn v_slot_with_v_slots() {
   .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, _withVaporCtx((_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, (_slotProps0) => {
   		const _n0 = _createComponent(Comp, { bar: () => _slotProps0.bar }, { $: [{
   			bar: _slotProps0.bar,
   			default: ({ foo }) => (() => {
   				const _n0 = _createNodes(() => foo + bar, () => (() => {
-  					const _n2 = _createComponent(Comp, null, _withVaporCtx((_slotProps0) => {
+  					const _n2 = _createComponent(Comp, null, (_slotProps0) => {
   						const _n0 = _createNodes(() => bar, () => _slotProps0.baz);
   						return _n0;
-  					}), true);
+  					}, true);
   					return _n2;
   				})());
   				return _n0;
@@ -128,7 +127,7 @@ fn v_slot_with_v_slots() {
   		}] });
   		const _n1 = _createNodes(() => _slotProps0.bar);
   		return [_n0, _n1];
-  	}), true);
+  	}, true);
   	return _n2;
   })();
   "#);
