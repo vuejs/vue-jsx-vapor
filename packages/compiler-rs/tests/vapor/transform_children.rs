@@ -304,7 +304,7 @@ fn anchor_insertion_in_middle() {
   	const _n0 = _createIf(() => 1, () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, 17);
+  	}, null, 49);
   	return _n4;
   })();
   "#);

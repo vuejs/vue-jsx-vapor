@@ -112,7 +112,7 @@ fn with_v_if() {
   	const _n0 = _createIf(() => expr, () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, 17);
+  	}, null, 49);
   	return _n0;
   })();
   "#);
@@ -132,7 +132,7 @@ fn with_v_if_else() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, 21);
+  	}, 117);
   	return _n0;
   })();
   "#);
@@ -162,7 +162,7 @@ fn with_conditional_expression() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, 21);
+  	}, 85);
   	return _n5;
   })();
   "#);

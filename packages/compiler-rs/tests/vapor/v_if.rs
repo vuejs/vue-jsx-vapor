@@ -1,8 +1,15 @@
 use std::cell::RefCell;
 
-use common::{error::ErrorCodes, options::TransformOptions};
+use common::{
+  error::ErrorCodes,
+  options::TransformOptions,
+  patch_flag::{VaporBlockShape, VaporIfFlags},
+};
 use compiler_rs::transform;
 use insta::assert_snapshot;
+
+const SINGLE_ROOT_NO_SCOPE: i32 =
+  VaporBlockShape::SingleRoot as i32 | VaporIfFlags::TrueNoScope as i32;
 
 #[test]
 fn basic() {
@@ -24,19 +31,94 @@ fn basic() {
 }
 
 #[test]
-fn omits_default_single_root_flags() {
-  let code = transform("<div v-if={ok} />", None).code;
+fn omits_default_single_root_flags_when_branch_needs_scope() {
+  let code = transform("<div v-if={ok}>{msg}</div>", None).code;
   assert_snapshot!(code, @r#"
-  import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("<div>", 3);
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ", 1);
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
+  		const _x2 = _txt(_n2);
+  		_setNodes(_x2, () => msg);
   		return _n2;
   	});
   	return _n0;
   })();
   "#);
+}
+
+#[test]
+fn marks_pure_static_single_root_branch_as_no_scope() {
+  let code = transform("<div v-if={ok}>static</div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>static", 3);
+  (() => {
+  	const _n0 = _createIf(() => ok, () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	}, null, 33);
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains(&format!("}}, null, {SINGLE_ROOT_NO_SCOPE})")));
+}
+
+#[test]
+fn marks_pure_static_multi_root_branch_as_no_scope() {
+  let code = transform(
+    "<template v-if={ok}><div>one</div><p>two</p></template>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>one</div>", 2);
+  const _t1 = _template("<p>two", 2);
+  (() => {
+  	const _n0 = _createIf(() => ok, () => {
+  		const _n2 = _t0();
+  		const _n3 = _t1();
+  		return [_n2, _n3];
+  	}, null, 34);
+  	return _n0;
+  })();
+  "#);
+
+  assert!(code.contains(&format!(
+    "}}, null, {})",
+    VaporBlockShape::MultiRoot as i32 | VaporIfFlags::TrueNoScope as i32
+  )));
+}
+
+#[test]
+fn does_not_mark_scoped_branches_as_no_scope() {
+  let cases = [
+    "<div v-if={ok}>{msg}</div>",
+    "<div v-if={ok} class={foo}></div>",
+    "<div v-if={ok} onClick={foo}></div>",
+    "<Comp v-if={ok} />",
+    "<div v-if={ok} ref=\"el\"></div>",
+    "<template v-if={ok}><div/>{msg}</template>",
+    "<div v-if={ok}><span v-if={bar} /></div>",
+  ];
+
+  for source in cases {
+    let code = transform(source, None).code;
+    assert!(
+      !code.contains(&format!(", null, {SINGLE_ROOT_NO_SCOPE})")),
+      "{source}"
+    );
+    assert!(
+      !code.contains(&format!(
+        ", null, {}",
+        VaporBlockShape::MultiRoot as i32 | VaporIfFlags::TrueNoScope as i32
+      )),
+      "{source}"
+    );
+  }
 }
 
 #[test]
@@ -49,7 +131,7 @@ fn packs_once_flag() {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, 17);
+  	}, null, 49);
   	return _n0;
   })();
   "#);
@@ -69,7 +151,7 @@ fn packs_branch_index() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, 37);
+  	}, 229);
   	return _n0;
   })();
   "#);
@@ -143,7 +225,7 @@ fn template_v_if_with_text() {
   	const _n0 = _createIf(() => foo, () => {
   		const _n2 = _t0();
   		return _n2;
-  	});
+  	}, null, 33);
   	return _n0;
   })();
   "#);
@@ -159,7 +241,7 @@ fn template_v_if_with_single_element() {
   	const _n0 = _createIf(() => foo, () => {
   		const _n2 = _t0();
   		return _n2;
-  	});
+  	}, null, 33);
   	return _n0;
   })();
   "#);
@@ -181,7 +263,7 @@ fn template_v_if_with_multiple_element() {
   		const _n2 = _t0();
   		const _n3 = _t1();
   		return [_n2, _n3];
-  	}, null, 2);
+  	}, null, 34);
   	return _n0;
   })();
   "#);
@@ -253,11 +335,11 @@ fn dedupe_same_template() {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
   		return _n2;
-  	});
+  	}, null, 33);
   	const _n3 = _createIf(() => ok, () => {
   		const _n5 = _t0();
   		return _n5;
-  	});
+  	}, null, 33);
   	return [_n0, _n3];
   })();
   "#);
@@ -323,7 +405,7 @@ fn v_if_v_else() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, 37);
+  	}, 229);
   	return _n0;
   })();
   "#);
@@ -343,7 +425,7 @@ fn v_if_v_if_else() {
   	}, () => _createIf(() => orNot, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}), 37);
+  	}, null, 33), 165);
   	return _n0;
   })();
   "#);
@@ -352,7 +434,7 @@ fn v_if_v_if_else() {
 #[test]
 fn v_if_v_else_if_v_else() {
   let code = transform(
-    "<><div v-if={ok}/><p v-else-if={orNot}/><template v-else>fine</template></>",
+    "<><div v-if={ok}/><p v-else-if={orNot}/><p v-else-if={false}/><template v-else>fine</template></>",
     None,
   )
   .code;
@@ -368,10 +450,13 @@ fn v_if_v_else_if_v_else() {
   	}, () => _createIf(() => orNot, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, () => {
-  		const _n7 = _t2();
+  	}, () => _createIf(() => false, () => {
+  		const _n7 = _t1();
   		return _n7;
-  	}, 69), 37);
+  	}, () => {
+  		const _n10 = _t2();
+  		return _n10;
+  	}, 117), 293), 165);
   	return _n0;
   })();
   "#);
@@ -381,8 +466,8 @@ fn v_if_v_else_if_v_else() {
 fn v_if_v_if_or_v_elses() {
   let code = transform(
     "<div>
-      <span v-if=\"foo\">foo</span>
-      <span v-if=\"bar\">bar</span>
+      <span v-if={foo}>foo</span>
+      <span v-if={bar}>bar</span>
       <span v-else>baz</span>
     </div>",
     None,
@@ -397,18 +482,18 @@ fn v_if_v_if_or_v_elses() {
   (() => {
   	const _n8 = _t3();
   	_setInsertionState(_n8, null, 0);
-  	const _n0 = _createIf(() => "foo", () => {
+  	const _n0 = _createIf(() => foo, () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, 17);
+  	}, null, 33);
   	_setInsertionState(_n8, null, 1);
-  	const _n3 = _createIf(() => "bar", () => {
+  	const _n3 = _createIf(() => bar, () => {
   		const _n5 = _t1();
   		return _n5;
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	}, 21);
+  	}, 357);
   	return _n8;
   })();
   "#);
@@ -444,7 +529,7 @@ fn comment_between_branches() {
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	}, 69), 37);
+  	}, 357), 165);
   	const _n9 = _t3();
   	return [_n0, _n9];
   })();
@@ -523,7 +608,7 @@ fn template_v_if_with_normal_v_else() {
   	}, () => {
   		const _n5 = _t2();
   		return _n5;
-  	}, 38);
+  	}, 230);
   	return _n0;
   })();
   "#);

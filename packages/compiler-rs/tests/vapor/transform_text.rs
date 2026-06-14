@@ -131,7 +131,7 @@ fn should_not_escape_quotes_in_template_v_if_text() {
   	const _n0 = _createIf(() => "ok", () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, 17);
+  	}, null, 49);
   	return _n0;
   })();
   "#);
@@ -192,7 +192,7 @@ fn conditional_expression() {
   	}, () => {
   		const _n6 = _createNodes(null);
   		return _n6;
-  	}, 65), 37);
+  	}, 289), 133);
   	return _n0;
   })();
   "#);
@@ -213,7 +213,7 @@ fn multiple_conditional() {
   	}, () => {
   		const _n4 = _createNodes(() => fail);
   		return _n4;
-  	}, 37);
+  	}, 133);
   	const _n5 = _t0();
   	const _n6 = _createIf(() => foo, () => {
   		const _n8 = _createNodes(() => foo);
@@ -221,7 +221,7 @@ fn multiple_conditional() {
   	}, () => {
   		const _n10 = _t1();
   		return _n10;
-  	}, 69);
+  	}, 325);
   	return [
   		_n0,
   		_n5,
