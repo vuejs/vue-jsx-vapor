@@ -352,3 +352,24 @@ fn expression_with_type() {
   })();
   "#);
 }
+
+#[test]
+fn should_prioritize_right_over_middle_for_click_event_normalization() {
+  let code = transform(
+    "<><div onClick_middle_right={test}/><div onClick_right_middle={test}/></>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  _delegateEvents("contextmenu");
+  import { delegateEvents as _delegateEvents, template as _template, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n0 = _t0();
+  	const _n1 = _t0();
+  	_n0.$evtcontextmenu = _withModifiers(test, ["middle", "right"]);
+  	_n1.$evtcontextmenu = _withModifiers(test, ["right", "middle"]);
+  	return [_n0, _n1];
+  })();
+  "#);
+}

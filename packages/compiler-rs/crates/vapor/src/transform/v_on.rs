@@ -89,15 +89,14 @@ pub fn transform_v_on<'a>(
   let is_static_click = arg.value == "click";
 
   // normalize click.right and click.middle since they don't actually fire
-  if non_key_modifiers
+  if non_key_modifiers.iter().any(|modifier| modifier == "right") && is_static_click {
+    arg.value = ast.str("contextmenu");
+  } else if non_key_modifiers
     .iter()
     .any(|modifier| modifier == "middle")
     && is_static_click
   {
     arg.value = ast.str("mouseup");
-  }
-  if non_key_modifiers.iter().any(|modifier| modifier == "right") && is_static_click {
-    arg.value = ast.str("contextmenu");
   }
 
   // don't gen keys guard for non-keyboard events
