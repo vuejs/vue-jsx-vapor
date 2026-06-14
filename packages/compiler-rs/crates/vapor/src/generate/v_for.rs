@@ -154,7 +154,7 @@ pub fn gen_for<'a>(
           NONE,
           Some(ast.expression_call(
             SPAN,
-            ast.expression_identifier(SPAN, ast.str("createSelector")),
+            ast.expression_identifier(SPAN, ast.str(context.options.helper("_createSelector"))),
             NONE,
             ast.vec1(Argument::ArrowFunctionExpression(
               ast.alloc_arrow_function_expression(
@@ -193,7 +193,7 @@ pub fn gen_for<'a>(
           ast
             .member_expression_static(
               SPAN,
-              ast.expression_identifier(SPAN, ast.str(&format!("n{}", id))),
+              ast.expression_identifier(SPAN, ast.str(&format!("_n{}", id))),
               ast.identifier_name(SPAN, "onReset"),
               false,
             )
@@ -448,7 +448,6 @@ pub fn gen_for<'a>(
                   } else {
                     None
                   },
-                  // todo: hydrationNode
                 ]
                 .into_iter()
                 .flatten(),

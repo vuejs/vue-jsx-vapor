@@ -69,10 +69,10 @@ fn key_only_binding_pattern2() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, setClassName as _setClassName, template as _template } from "vue";
+  import { createFor as _createFor, createSelector as _createSelector, setClassName as _setClassName, template as _template } from "vue";
   const _t0 = _template("<tr>");
   (() => {
-  	const _selector0 = createSelector(() => state.selected);
+  	const _selector0 = _createSelector(() => state.selected);
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
   		_selector0(_for_item0.value.id, () => {
@@ -80,7 +80,7 @@ fn key_only_binding_pattern2() {
   		});
   		return _n2;
   	}, (row) => row.id, 8);
-  	n0.onReset(_selector0.reset);
+  	_n0.onReset(_selector0.reset);
   	return _n0;
   })();
   "#);
@@ -98,10 +98,10 @@ fn selector_pattern1() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
+  import { createFor as _createFor, createSelector as _createSelector, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
   const _t0 = _template("<tr> ");
   (() => {
-  	const _selector0 = createSelector(() => selected);
+  	const _selector0 = _createSelector(() => selected);
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
   		const _x2 = _txt(_n2);
@@ -110,7 +110,7 @@ fn selector_pattern1() {
   		});
   		return _n2;
   	}, (row) => row.id, 8);
-  	n0.onReset(_selector0.reset);
+  	_n0.onReset(_selector0.reset);
   	return _n0;
   })();
   "#);
@@ -128,10 +128,10 @@ fn selector_pattern2() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, setClassName as _setClassName, template as _template } from "vue";
+  import { createFor as _createFor, createSelector as _createSelector, setClassName as _setClassName, template as _template } from "vue";
   const _t0 = _template("<tr>");
   (() => {
-  	const _selector0 = createSelector(() => selected);
+  	const _selector0 = _createSelector(() => selected);
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
   		_selector0(_for_item0.value.id, () => {
@@ -139,7 +139,7 @@ fn selector_pattern2() {
   		});
   		return _n2;
   	}, (row) => row.id, 8);
-  	n0.onReset(_selector0.reset);
+  	_n0.onReset(_selector0.reset);
   	return _n0;
   })();
   "#);
@@ -183,10 +183,10 @@ fn selector_pattern4() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, setClassName as _setClassName, template as _template } from "vue";
+  import { createFor as _createFor, createSelector as _createSelector, setClassName as _setClassName, template as _template } from "vue";
   const _t0 = _template("<tr>");
   (() => {
-  	const _selector0 = createSelector(() => selected);
+  	const _selector0 = _createSelector(() => selected);
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
   		_selector0(_for_item0.value.id, () => {
@@ -194,7 +194,7 @@ fn selector_pattern4() {
   		});
   		return _n2;
   	}, (row) => row.id, 8);
-  	n0.onReset(_selector0.reset);
+  	_n0.onReset(_selector0.reset);
   	return _n0;
   })();
   "#);
@@ -238,11 +238,11 @@ fn multiple_selector_patterns_on_one_v_for() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, setClassName as _setClassName, setProp as _setProp, template as _template } from "vue";
+  import { createFor as _createFor, createSelector as _createSelector, setClassName as _setClassName, setProp as _setProp, template as _template } from "vue";
   const _t0 = _template("<tr>");
   (() => {
-  	const _selector0_0 = createSelector(() => selected);
-  	const _selector0_1 = createSelector(() => active);
+  	const _selector0_0 = _createSelector(() => selected);
+  	const _selector0_1 = _createSelector(() => active);
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
   		_selector0_0(_for_item0.value.id, () => {
@@ -253,8 +253,8 @@ fn multiple_selector_patterns_on_one_v_for() {
   		});
   		return _n2;
   	}, (row) => row.id, 8);
-  	n0.onReset(_selector0_0.reset);
-  	n0.onReset(_selector0_1.reset);
+  	_n0.onReset(_selector0_0.reset);
+  	_n0.onReset(_selector0_1.reset);
   	return _n0;
   })();
   "#);

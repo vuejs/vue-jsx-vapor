@@ -389,10 +389,10 @@ fn does_not_flush_later_v_for_effects_before_child_component() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, next as _next, setInsertionState as _setInsertionState, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
+  import { child as _child, createFor as _createFor, createSelector as _createSelector, next as _next, setInsertionState as _setInsertionState, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
   const _t0 = _template("<div><span> </span><!><span> ");
   (() => {
-  	const _selector0 = createSelector(() => selected);
+  	const _selector0 = _createSelector(() => selected);
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n6 = _t0();
   		const _n2 = _child(_n6);
@@ -408,7 +408,7 @@ fn does_not_flush_later_v_for_effects_before_child_component() {
   		});
   		return _n6;
   	}, (row) => row.id, 8);
-  	n0.onReset(_selector0.reset);
+  	_n0.onReset(_selector0.reset);
   	return _n0;
   })();
   "#);
