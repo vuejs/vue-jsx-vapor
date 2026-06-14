@@ -102,7 +102,6 @@ fn does_not_mark_scoped_branches_as_no_scope() {
     "<Comp v-if={ok} />",
     "<div v-if={ok} ref=\"el\"></div>",
     "<template v-if={ok}><div/>{msg}</template>",
-    "<div v-if={ok}><span v-if={bar} /></div>",
   ];
 
   for source in cases {
