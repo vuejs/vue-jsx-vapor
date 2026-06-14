@@ -114,6 +114,34 @@ fn on_v_for() {
 }
 
 #[test]
+fn on_v_for_with_compound_key_expression() {
+  let code = transform(
+    r#"<div v-for={{ x, y } in list} key={get(x)} v-memo={[x, y === z]}>
+      <span>foobar</span>
+    </div>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
+  		const _memo = [x, y === z];
+  		if (_cached && _cached.el && _cached.key === get(x) && _isMemoSame(_cached, _memo)) return _cached;
+  		const _item = (_openBlock(), _createElementBlock("div", { key: get(x) }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, "foobar", -1))]));
+  		_item.memo = _memo;
+  		return _item;
+  	}, _cache, 1), 128);
+  })();
+  "#)
+}
+
+#[test]
 fn on_template_v_for() {
   let code = transform(
     r#"<template v-for={{ x, y } in list} key={x} v-memo={[x, y === z]}>
@@ -142,9 +170,11 @@ fn on_template_v_for() {
 }
 
 #[test]
-fn element_v_for_key_expression_v_memo() {
+fn on_template_v_for_with_compound_key_expression() {
   let code = transform(
-    r#"<span v-for={data in tableData} key={getId(data)} v-memo={getLetter(data)}></span>"#,
+    r#"<template v-for={{ x, y } in list} key={get(x)} v-memo={[x, y === z]}>
+      <span>foobar</span>
+    </template>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -153,16 +183,16 @@ fn element_v_for_key_expression_v_memo() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createElementBlock as _createElementBlock, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(tableData, (data, __, ___, _cached) => {
-  		const _memo = getLetter(data);
-  		if (_cached && _cached.el && _cached.key === getId(data) && _isMemoSame(_cached, _memo)) return _cached;
-  		const _item = (_openBlock(), _createElementBlock("span", { key: getId(data) }));
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
+  		const _memo = [x, y === z];
+  		if (_cached && _cached.el && _cached.key === get(x) && _isMemoSame(_cached, _memo)) return _cached;
+  		const _item = (_openBlock(), _createElementBlock(_Fragment, { key: get(x) }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, "foobar", -1))], 64));
   		_item.memo = _memo;
   		return _item;
-  	}, _cache, 0), 128);
+  	}, _cache, 1), 128);
   })();
   "#)
 }
