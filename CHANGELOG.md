@@ -1,3 +1,35 @@
+## [3.2.17](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.16...v3.2.17) (2026-06-14)
+
+
+### Bug Fixes
+
+* **compiler-vapor:** align click modifier normalization with vdom ([74fafc2](https://github.com/vuejs/vue-jsx-vapor/commit/74fafc2813eb811c0eb9f5208a21a578b11922b7))
+* **compiler/vapor:** correct createSelector helper name ([87569ad](https://github.com/vuejs/vue-jsx-vapor/commit/87569ade4d7429e8a85f3b117630d94c050d9f62))
+* **compiler/vapor:** prevent generate duplicate key ([46e81c9](https://github.com/vuejs/vue-jsx-vapor/commit/46e81c9f965f9db949af331250cf73af351a2857))
+
+
+### Features
+
+* **compiler/vapor:** fold constant native bindings into templates ([ae3d018](https://github.com/vuejs/vue-jsx-vapor/commit/ae3d018a81ffd51035deb12b3c7438df595d5fdc))
+
+
+### Performance Improvements
+
+* **compiler-vapor:** omit redundant nthChild logical index ([320da95](https://github.com/vuejs/vue-jsx-vapor/commit/320da9547bcd9c84268c544b2abe9e8b2a607df7))
+* **compiler/vapor:** allow direct values in dynamic prop sources ([b6cf4c0](https://github.com/vuejs/vue-jsx-vapor/commit/b6cf4c098d94fd69f78c665c88f2ec8705a2b233))
+* **compiler/vapor:** emit v-model modifiers as direct values ([7c57801](https://github.com/vuejs/vue-jsx-vapor/commit/7c578010b04356c2d2ce375a6bd64549df7eb87e))
+* **compiler/vapor:** inline single-use DOM lookup placeholders ([e23dc74](https://github.com/vuejs/vue-jsx-vapor/commit/e23dc74e4bec995aeadc41ad0a94d88cdbc5d144))
+* **compiler/vapor:** reduce v-if branch scope overhead ([e4a9a9b](https://github.com/vuejs/vue-jsx-vapor/commit/e4a9a9bf04da8776882b07a8f489656ba941fe44))
+* **compiler/vapor:** specialize v-for block operations ([ec4aa00](https://github.com/vuejs/vue-jsx-vapor/commit/ec4aa000daff6e1ef522ac6e30719724c32da476))
+* **compiler/vapor:** use onBinding helper for reactive events ([25eba17](https://github.com/vuejs/vue-jsx-vapor/commit/25eba175780cbaf00ccf389e2044f3691d6a8b60))
+
+
+### Reverts
+
+* remove vuetify CI ([cf47052](https://github.com/vuejs/vue-jsx-vapor/commit/cf47052a304c4bd43e169478aa170e5b7c6ff1f2))
+
+
+
 ## [3.2.16](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.15...v3.2.16) (2026-06-06)
 
 
