@@ -544,13 +544,10 @@ fn if_statement_return_jsx() {
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = { key: 2 };
+  const _hoisted_1 = { key: 1 };
   function Comp(props) {
   	if (props.foo) {
-  		return _openBlock(), _createElementBlock("div", {
-  			key: 1,
-  			key: props.foo
-  		}, [_normalizeVNode(() => props.foo)]);
+  		return _openBlock(), _createElementBlock("div", { key: props.foo }, [_normalizeVNode(() => props.foo)]);
   	} else if (props.bar) return _openBlock(), _createElementBlock("div", _hoisted_1);
   	return _openBlock(), _createElementBlock("span");
   }

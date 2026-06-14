@@ -93,7 +93,14 @@ impl<'a> RootNode {
           }
         }
         Expression::JSXElement(mut node) => {
-          if let Some(key_attribute) = key_attribute {
+          if let Some(key_attribute) = key_attribute
+            && node
+              .opening_element
+              .attributes
+              .iter()
+              .find(|attr| attr.as_attribute().is_some_and(|attr| attr.is_key()))
+              .is_none()
+          {
             node.opening_element.attributes.insert(0, key_attribute);
           }
           ast.vec1(JSXChild::Element(ast.alloc(node.take_in(allocator))))
