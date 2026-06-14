@@ -29,11 +29,13 @@ pub fn gen_if<'a>(
     once,
     index,
     block_shape,
+    slot_root,
     ..
   } = oper;
   let flags = gen_if_flags(
     block_shape,
     once,
+    slot_root,
     if negative.is_some() {
       Some(index)
     } else {
@@ -144,8 +146,11 @@ pub fn gen_if<'a>(
   }
 }
 
-fn gen_if_flags(block_shape: i32, once: bool, index: Option<i32>) -> Option<i32> {
+fn gen_if_flags(block_shape: i32, once: bool, slot_root: bool, index: Option<i32>) -> Option<i32> {
   let mut flags = block_shape;
+  if slot_root {
+    flags |= VaporIfFlags::SlotRoot as i32;
+  }
   if once {
     flags |= VaporIfFlags::Once as i32;
   } else if let Some(index) = index {

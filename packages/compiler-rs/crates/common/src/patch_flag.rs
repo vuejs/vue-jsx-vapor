@@ -141,6 +141,41 @@ pub enum SlotFlags {
   FORWARDED = 3,
 }
 
+/**
+ * Flags to optimize vapor `createFor` runtime behavior, shared between the
+ * compiler and the runtime
+ */
+pub enum VaporVForFlags {
+  /**
+   * v-for is the only child of a parent container, so it can take the fast
+   * path with textContent = '' when the whole list is emptied
+   */
+  FastRemove = 1,
+  /**
+   * v-for used on component - we can skip creating child scopes for each block
+   * because the component itself already has a scope.
+   */
+  IsComponent = 1 << 1,
+  /**
+   * v-for inside v-ince
+   */
+  Once = 1 << 2,
+  /**
+   * v-for item block is a single DOM Node.
+   */
+  IsSingleNode = 1 << 3,
+  /**
+   * v-for item block is known to be a VaporFragment, so runtime can use
+   * fragment-specific insert/remove helpers.
+   */
+  IsFragment = 1 << 4,
+  /**
+   * v-for sits on a slot content/fallback root chain and can change slot
+   * validity.
+   */
+  SlotRoot = 1 << 5,
+}
+
 pub enum VaporBlockShape {
   Empty = 0,
   SingleRoot = 1,
@@ -155,11 +190,12 @@ pub enum VaporBlockShape {
  * - bit 4: v-once
  * - bit 5: true branch does not need EffectScope
  * - bit 6: false branch does not need EffectScope
- * - bits 7+: branch index + 1 for keyed dynamic fragments
+ * - bit 7: v-if sits on a slot content/fallback root chain
+ * - bits 8+: branch index + 1 for keyed dynamic fragments
  *
  * Examples:
  * - v-once, true single-root, no false branch: 1 | ONCE = 17
- * - keyed index 0, true/false single-root: 1 | (1 << 2) | (1 << 7) = 133
+ * - keyed index 0, true/false single-root: 1 | (1 << 2) | (1 << 8) = 261
  */
 pub enum VaporIfFlags {
   /**
@@ -182,10 +218,15 @@ pub enum VaporIfFlags {
    */
   FalseNoScope = 1 << 6,
   /**
+   * v-if sits on a slot content/fallback root chain and can change slot
+   * validity.
+   */
+  SlotRoot = 1 << 7,
+  /**
    * Shift for keyed branch index. The encoded value is index + 1, so decoded
    * zero means "not keyed" and source index 0 still round-trips.
    */
-  IndexShift = 7,
+  IndexShift = 8,
 }
 
 /**
@@ -204,4 +245,5 @@ pub enum TemplateFlags {
 pub enum VaporSlotFlags {
   NoSlotted = 1,
   Once = 1 << 1,
+  SlotRoot = 1 << 2,
 }

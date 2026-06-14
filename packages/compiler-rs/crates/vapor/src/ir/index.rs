@@ -53,6 +53,7 @@ pub struct IfIRNode<'a> {
   pub positive: BlockIRNode<'a>,
   pub negative: Option<Box<Either<BlockIRNode<'a>, IfIRNode<'a>>>>,
   pub once: bool,
+  pub slot_root: bool,
   pub index: i32,
 
   pub parent: Option<i32>,
@@ -98,6 +99,7 @@ pub struct ForIRNode<'a> {
   pub key_prop: Option<Expression<'a>>,
   pub render: BlockIRNode<'a>,
   pub once: bool,
+  pub slot_root: bool,
   pub component: bool,
   pub only_child: bool,
   pub parent: Option<i32>,

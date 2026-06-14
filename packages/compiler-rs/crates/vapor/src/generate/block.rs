@@ -2,6 +2,8 @@ use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
 
+use common::patch_flag::VaporSlotFlags;
+use napi::Either;
 use oxc_ast::NONE;
 use oxc_ast::ast::{
   ArrayExpressionElement, Expression, FormalParameter, FormalParameterKind, Statement,
@@ -11,7 +13,9 @@ use oxc_span::SPAN;
 use crate::generate::CodegenContext;
 use crate::generate::operation::gen_operations;
 use crate::generate::template::gen_self;
-use crate::ir::index::{BlockIRNode, IRDynamicInfo, IREffect, OperationNode};
+use crate::ir::index::{
+  BlockIRNode, ForIRNode, IRDynamicInfo, IREffect, IfIRNode, OperationNode, SlotOutletIRNode,
+};
 
 pub fn gen_block<'a>(
   oper: BlockIRNode<'a>,
@@ -212,4 +216,63 @@ pub fn gen_effects<'a>(
       ),
     )
   }
+}
+
+pub fn mark_slot_root_operations<'a>(block: &mut BlockIRNode<'a>) {
+  let block_ptr = block as *mut _;
+  for returned in block.returns.iter() {
+    let Some(child) = find_returned_dynamic(unsafe { &mut *block_ptr }, *returned) else {
+      continue;
+    };
+    let Some(operation) = &mut child.operation else {
+      continue;
+    };
+
+    match operation.as_mut() {
+      OperationNode::If(operation) => mark_slot_root_if(operation),
+      OperationNode::For(operation) => mark_slot_root_for(operation),
+      OperationNode::SlotOutlet(operation) => mark_slot_root_slot_outlet(operation),
+      _ => {}
+    }
+  }
+}
+
+fn mark_slot_root_if(operation: &mut IfIRNode) {
+  if !operation.once {
+    operation.slot_root = true;
+  }
+  mark_slot_root_operations(&mut operation.positive);
+
+  let Some(negative) = operation.negative.as_mut() else {
+    return;
+  };
+  match negative.as_mut() {
+    Either::A(negative) => mark_slot_root_operations(negative),
+    Either::B(negative) => mark_slot_root_if(negative),
+  }
+}
+
+fn mark_slot_root_for(operation: &mut ForIRNode) {
+  if !operation.once {
+    operation.slot_root = true;
+  }
+  mark_slot_root_operations(&mut operation.render);
+}
+
+fn mark_slot_root_slot_outlet(operation: &mut SlotOutletIRNode) {
+  operation.flags |= VaporSlotFlags::SlotRoot as i32;
+  if let Some(fallback) = operation.fallback.as_mut() {
+    mark_slot_root_operations(fallback);
+  }
+}
+
+pub fn find_returned_dynamic<'a>(
+  block: &'a mut BlockIRNode<'a>,
+  id: i32,
+) -> Option<&'a mut IRDynamicInfo<'a>> {
+  block
+    .dynamic
+    .children
+    .iter_mut()
+    .find(|child| child.id.is_some_and(|i| i == id))
 }

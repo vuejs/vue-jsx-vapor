@@ -150,7 +150,7 @@ fn packs_branch_index() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, 229);
+  	}, 357);
   	return _n0;
   })();
   "#);
@@ -182,6 +182,32 @@ fn template() {
   		];
   	}, null, 2);
   	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_if_and_extra_at_root() {
+  let code = transform(
+    r#"<><div v-if={foo}>foo</div><div v-else-if={bar}>bar</div><div>baz</div></>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>foo", 2);
+  const _t1 = _template("<div>bar", 2);
+  const _t2 = _template("<div>baz", 2);
+  (() => {
+  	const _n0 = _createIf(() => foo, () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	}, () => _createIf(() => bar, () => {
+  		const _n4 = _t1();
+  		return _n4;
+  	}, null, 33), 293);
+  	const _n6 = _t2();
+  	return [_n0, _n6];
   })();
   "#);
 }
@@ -404,7 +430,7 @@ fn v_if_v_else() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, 229);
+  	}, 357);
   	return _n0;
   })();
   "#);
@@ -424,7 +450,7 @@ fn v_if_v_if_else() {
   	}, () => _createIf(() => orNot, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, null, 33), 165);
+  	}, null, 33), 293);
   	return _n0;
   })();
   "#);
@@ -455,7 +481,7 @@ fn v_if_v_else_if_v_else() {
   	}, () => {
   		const _n10 = _t2();
   		return _n10;
-  	}, 117), 293), 165);
+  	}, 117), 549), 293);
   	return _n0;
   })();
   "#);
@@ -492,7 +518,7 @@ fn v_if_v_if_or_v_elses() {
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	}, 357);
+  	}, 613);
   	return _n8;
   })();
   "#);
@@ -528,7 +554,7 @@ fn comment_between_branches() {
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	}, 357), 165);
+  	}, 613), 293);
   	const _n9 = _t3();
   	return [_n0, _n9];
   })();
@@ -607,7 +633,7 @@ fn template_v_if_with_normal_v_else() {
   	}, () => {
   		const _n5 = _t2();
   		return _n5;
-  	}, 230);
+  	}, 358);
   	return _n0;
   })();
   "#);

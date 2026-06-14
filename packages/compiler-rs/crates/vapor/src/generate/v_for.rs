@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use common::{expression::is_globally_allowed, walk::WalkIdentifiers};
+use common::{expression::is_globally_allowed, patch_flag::VaporVForFlags, walk::WalkIdentifiers};
 use oxc_allocator::CloneIn;
 use oxc_ast::{
   NONE,
@@ -18,36 +18,6 @@ use crate::{
   },
   ir::index::{BlockIRNode, ForIRNode, IRDynamicInfo, IREffect, OperationNode},
 };
-
-/**
- * Flags to optimize vapor `createFor` runtime behavior, shared between the
- * compiler and the runtime
- */
-pub enum VaporVForFlags {
-  /**
-   * v-for is the only child of a parent container, so it can take the fast
-   * path with textContent = '' when the whole list is emptied
-   */
-  FastRemove = 1,
-  /**
-   * v-for used on component - we can skip creating child scopes for each block
-   * because the component itself already has a scope.
-   */
-  IsComponent = 1 << 1,
-  /**
-   * v-for inside v-ince
-   */
-  Once = 1 << 2,
-  /**
-   * v-for item block is a single DOM Node.
-   */
-  IsSingleNode = 1 << 3,
-  /**
-   * v-for item block is known to be a VaporFragment, so runtime can use
-   * fragment-specific insert/remove helpers.
-   */
-  IsFragment = 1 << 4,
-}
 
 pub fn gen_for<'a>(
   statements: &mut oxc_allocator::Vec<'a, Statement<'a>>,
@@ -67,6 +37,7 @@ pub fn gen_for<'a>(
     once,
     component,
     only_child,
+    slot_root,
     ..
   } = oper;
 
@@ -372,6 +343,9 @@ pub fn gen_for<'a>(
   }
   if once {
     flags |= VaporVForFlags::Once as i32;
+  }
+  if slot_root {
+    flags |= VaporVForFlags::SlotRoot as i32;
   }
 
   let gen_callback =

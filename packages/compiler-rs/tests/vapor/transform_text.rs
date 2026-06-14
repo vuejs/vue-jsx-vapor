@@ -192,7 +192,7 @@ fn conditional_expression() {
   	}, () => {
   		const _n6 = _createNodes(null);
   		return _n6;
-  	}, 289), 133);
+  	}, 545), 261);
   	return _n0;
   })();
   "#);
@@ -213,7 +213,7 @@ fn multiple_conditional() {
   	}, () => {
   		const _n4 = _createNodes(() => fail);
   		return _n4;
-  	}, 133);
+  	}, 261);
   	const _n5 = _t0();
   	const _n6 = _createIf(() => foo, () => {
   		const _n8 = _createNodes(() => foo);
@@ -221,7 +221,7 @@ fn multiple_conditional() {
   	}, () => {
   		const _n10 = _t1();
   		return _n10;
-  	}, 325);
+  	}, 581);
   	return [
   		_n0,
   		_n5,

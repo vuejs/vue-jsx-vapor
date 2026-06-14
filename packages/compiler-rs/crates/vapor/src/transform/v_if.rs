@@ -93,6 +93,7 @@ pub unsafe fn transform_v_if<'a>(
         append: false,
         operation_index: Some(*context.operation_index.borrow()),
         effect_index: Some(*context.effect_index.borrow()),
+        slot_root: false,
       })));
     }));
   }
@@ -161,6 +162,7 @@ pub unsafe fn transform_v_if<'a>(
         append: false,
         operation_index: None,
         effect_index: None,
+        slot_root: false,
       })))
     }
 

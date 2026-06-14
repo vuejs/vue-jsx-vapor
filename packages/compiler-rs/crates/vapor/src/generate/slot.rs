@@ -9,7 +9,11 @@ use oxc_ast::{
 use oxc_span::{GetSpan, SPAN};
 
 use crate::{
-  generate::{CodegenContext, block::gen_block, expression::gen_expression},
+  generate::{
+    CodegenContext,
+    block::{gen_block, mark_slot_root_operations},
+    expression::gen_expression,
+  },
   ir::{
     component::{IRSlotDynamicBasic, IRSlotDynamicConditional, IRSlots},
     index::{BlockIRNode, IRFor},
@@ -387,6 +391,7 @@ fn gen_slot_block_with_props<'a>(
 
   let ast = &context.ast;
 
+  mark_slot_root_operations(&mut oper);
   let block_fn = context.with_id(
     || {
       gen_block(
