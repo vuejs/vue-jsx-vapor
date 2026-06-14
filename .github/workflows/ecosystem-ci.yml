@@ -44,3 +44,4 @@ jobs:
         run: pnpm test:eco
         env:
           TZ: Asia/Shanghai
+          CI: true
