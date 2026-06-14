@@ -1,16 +1,14 @@
 use std::borrow::Cow;
 
 use common::{
-  check::{is_delegated_events, is_keyboard_event},
+  check::is_keyboard_event,
   directive::{Directives, Modifiers, resolve_modifiers},
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
 };
 use oxc_ast::{
   NONE,
-  ast::{
-    Expression, FormalParameterKind, JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXElement,
-  },
+  ast::{Expression, FormalParameterKind, JSXAttribute, JSXAttributeName},
 };
 use oxc_span::SPAN;
 
@@ -22,7 +20,6 @@ use crate::{
 pub fn transform_v_on<'a>(
   directives: &Directives,
   dir: &'a mut JSXAttribute<'a>,
-  node: &JSXElement<'a>,
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
@@ -133,15 +130,6 @@ pub fn transform_v_on<'a>(
     });
   }
 
-  // Only delegate if:
-  // - no dynamic event name
-  // - no event option modifiers (passive, capture, once)
-  // - no handlers for the same static event on this element that use .stop
-  // - is a delegatable
-  let delegate = modifiers.options.is_empty()
-    && !has_stop_handler_for_static_event(node, &arg.value)
-    && is_delegated_events(&arg.value);
-
   let element = context.reference(&mut context_block.dynamic);
   context.register_operation(
     context_block,
@@ -150,32 +138,10 @@ pub fn transform_v_on<'a>(
       element,
       value: exp,
       modifiers,
-      delegate,
       effect: false,
       key: Expression::StringLiteral(arg),
     }),
     None,
   );
   None
-}
-
-fn has_stop_handler_for_static_event(node: &JSXElement, event_name: &str) -> bool {
-  node.opening_element.attributes.iter().any(|prop| {
-    if let JSXAttributeItem::Attribute(prop) = prop {
-      let name = prop.name.get_identifier().name;
-      if !name.starts_with("on") {
-        return false;
-      }
-      if !name.split('_').any(|m| m == "stop") {
-        return false;
-      }
-      name.starts_with(&format!(
-        "on{}{}",
-        event_name[..1].to_uppercase(),
-        &event_name[1..]
-      ))
-    } else {
-      false
-    }
-  })
 }

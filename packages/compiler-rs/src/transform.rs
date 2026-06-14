@@ -121,25 +121,6 @@ impl<'a> Transform<'a> {
     }
 
     let mut statements = vec![];
-    let delegates = self.options.delegates.take();
-    if !delegates.is_empty() {
-      statements.push(ast.statement_expression(
-        SPAN,
-        ast.expression_call(
-          SPAN,
-          ast.expression_identifier(SPAN, ast.str("_delegateEvents")),
-          NONE,
-          oxc_allocator::Vec::from_iter_in(
-            delegates.iter().map(|delegate| {
-              Argument::StringLiteral(ast.alloc(ast.string_literal(SPAN, ast.str(delegate), None)))
-            }),
-            ast.allocator,
-          ),
-          false,
-        ),
-      ));
-    }
-
     let mut helpers = self.options.helpers.take();
     if !helpers.is_empty() {
       if helpers.contains("defineVaporSSRComponent") {

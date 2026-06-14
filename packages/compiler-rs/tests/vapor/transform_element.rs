@@ -540,13 +540,12 @@ fn dynamic_props_between_static_prop() {
 fn props_merging_event_handlers() {
   let code = transform("<div onClick_foo={a} onClick_bar={b} />", None).code;
   assert_snapshot!(code, @r#"
-  _delegateEvents("click");
-  import { delegate as _delegate, delegateEvents as _delegateEvents, template as _template } from "vue";
+  import { on as _on, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
-  	_delegate(_n0, "click", a);
-  	_delegate(_n0, "click", b);
+  	_on(_n0, "click", a);
+  	_on(_n0, "click", b);
   	return _n0;
   })();
   "#);

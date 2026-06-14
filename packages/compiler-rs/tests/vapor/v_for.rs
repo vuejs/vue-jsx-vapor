@@ -12,14 +12,13 @@ fn basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  _delegateEvents("click");
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { createFor as _createFor, delegateEvents as _delegateEvents, template as _template, txt as _txt } from "vue";
+  import { createFor as _createFor, on as _on, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   (() => {
   	const _n0 = _createFor(() => items, (_for_item0) => {
   		const _n2 = _t0();
-  		_n2.$evtclick = () => remove(_for_item0.value);
+  		_on(_n2, "click", () => remove(_for_item0.value));
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value);
   		return _n2;

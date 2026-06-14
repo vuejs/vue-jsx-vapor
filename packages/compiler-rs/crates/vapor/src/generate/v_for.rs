@@ -250,13 +250,7 @@ pub fn gen_for<'a>(
                   let mut body = ast.vec();
                   for oper in effect.operations {
                     let _context_block = context_block as *mut BlockIRNode;
-                    gen_operation(
-                      &mut body,
-                      oper,
-                      context,
-                      unsafe { &mut *_context_block },
-                      &vec![],
-                    );
+                    gen_operation(&mut body, oper, context, unsafe { &mut *_context_block });
                   }
                   statements.push(
                     ast.statement_expression(
@@ -307,13 +301,7 @@ pub fn gen_for<'a>(
                 for effect in key_only_binding_patterns {
                   for oper in effect.operations {
                     let _context_block = context_block as *mut BlockIRNode;
-                    gen_operation(
-                      statements,
-                      oper,
-                      context,
-                      unsafe { &mut *_context_block },
-                      &vec![],
-                    )
+                    gen_operation(statements, oper, context, unsafe { &mut *_context_block })
                   }
                 }
               })),

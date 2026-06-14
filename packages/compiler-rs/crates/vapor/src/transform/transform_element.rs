@@ -551,7 +551,7 @@ pub fn transform_prop<'a>(
   let dir_name_raw = get_directive_name(name);
   match dir_name_raw {
     "bind" => return transform_v_bind(directives, prop, context),
-    "on" => return transform_v_on(directives, prop, node, context, context_block),
+    "on" => return transform_v_on(directives, prop, context, context_block),
     "model" => return transform_v_model(directives, prop, node, context, context_block),
     "show" => return transform_v_show(prop, context, context_block),
     "html" => return transform_v_html(directives, prop, node, context, context_block),

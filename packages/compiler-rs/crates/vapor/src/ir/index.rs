@@ -158,7 +158,6 @@ pub struct SetEventIRNode<'a> {
   pub key: Expression<'a>,
   pub value: Expression<'a>,
   pub modifiers: Modifiers<'a>,
-  pub delegate: bool,
   // Whether it's in effect
   pub effect: bool,
 }

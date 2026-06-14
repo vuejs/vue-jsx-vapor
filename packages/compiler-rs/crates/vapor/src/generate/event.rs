@@ -2,11 +2,8 @@ use std::borrow::Cow;
 
 use common::directive::Modifiers;
 use oxc_ast::NONE;
-use oxc_ast::ast::{
-  AssignmentTarget, Expression, FormalParameterKind, ObjectPropertyKind, PropertyKind, Statement,
-  StringLiteral,
-};
-use oxc_span::{GetSpan, SPAN};
+use oxc_ast::ast::{Expression, FormalParameterKind, ObjectPropertyKind, PropertyKind, Statement};
+use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
 use crate::generate::expression::gen_expression;
@@ -15,7 +12,6 @@ use crate::ir::index::{SetDynamicEventsIRNode, SetEventIRNode};
 pub fn gen_set_event<'a>(
   oper: SetEventIRNode<'a>,
   context: &'a CodegenContext<'a>,
-  event_opers: &Vec<(i32, StringLiteral)>,
 ) -> Statement<'a> {
   let ast = &context.ast;
   let SetEventIRNode {
@@ -27,17 +23,10 @@ pub fn gen_set_event<'a>(
       keys,
       non_keys,
     },
-    delegate,
     effect,
     ..
   } = oper;
 
-  let key_content = if let Expression::StringLiteral(key) = &key {
-    key.value.as_str()
-  } else {
-    ""
-  };
-  let key_strat = key.span().start;
   let name = gen_expression(key, context, None, false);
   let event_options = if options.is_empty() && !effect {
     None
@@ -71,33 +60,6 @@ pub fn gen_set_event<'a>(
   };
   let handler = gen_event_handler(context, vec![value], &keys, &non_keys, false);
 
-  if delegate {
-    // key is static
-    context.options.delegates.borrow_mut().insert(key_content);
-    // if this is the only delegated event of this name on this element,
-    // we can generate optimized handler attachment code
-    // e.g. n1.$evtclick = () => {}
-    if !event_opers
-      .iter()
-      .any(|op| op.1.span.start != key_strat && op.0 == oper.element && op.1.value == key_content)
-    {
-      return ast.statement_expression(
-        SPAN,
-        ast.expression_assignment(
-          SPAN,
-          oxc_ast::ast::AssignmentOperator::Assign,
-          AssignmentTarget::StaticMemberExpression(ast.alloc_static_member_expression(
-            SPAN,
-            ast.expression_identifier(SPAN, ast.str(&format!("_n{element}"))),
-            ast.identifier_name(SPAN, ast.str(&format!("$evt{key_content}"))),
-            false,
-          )),
-          handler,
-        ),
-      );
-    }
-  }
-
   let mut arguments = ast.vec();
   arguments.push(
     ast
@@ -116,13 +78,11 @@ pub fn gen_set_event<'a>(
       SPAN,
       ast.expression_identifier(
         SPAN,
-        ast.str(context.options.helper(if effect {
-          "_onBinding"
-        } else if delegate {
-          "_delegate"
-        } else {
-          "_on"
-        })),
+        ast.str(
+          context
+            .options
+            .helper(if effect { "_onBinding" } else { "_on" }),
+        ),
       ),
       NONE,
       arguments,

@@ -70,13 +70,9 @@ pub fn gen_self<'a>(
 
   if let Some(operation) = operation {
     let _context_block = context_block as *mut BlockIRNode;
-    gen_operation_with_insertion_state(
-      statements,
-      *operation,
-      context,
-      unsafe { &mut *_context_block },
-      &vec![],
-    );
+    gen_operation_with_insertion_state(statements, *operation, context, unsafe {
+      &mut *_context_block
+    });
   }
 
   if has_dynamic_child {
