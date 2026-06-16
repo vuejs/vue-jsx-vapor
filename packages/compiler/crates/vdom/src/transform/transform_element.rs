@@ -724,31 +724,30 @@ pub fn dedupe_properties<'a>(
           deduped.push(property);
         } else if let Some(name) = prop.key.name() {
           let name = name.as_ref();
-          if let Some(existing) = deduped.iter_mut().find(|i| match i {
-            ObjectPropertyKind::ObjectProperty(i) => i
-              .key
-              .name()
-              .map(|key_name| key_name.eq(name))
-              .unwrap_or_default(),
-            ObjectPropertyKind::SpreadProperty(_) => false,
-          }) && let ObjectPropertyKind::ObjectProperty(existing) = existing
+          if (name == "style" || name == "class" || is_event(name))
+            && let Some(existing) = deduped.iter_mut().find(|i| match i {
+              ObjectPropertyKind::ObjectProperty(i) => i
+                .key
+                .name()
+                .map(|key_name| key_name.eq(name))
+                .unwrap_or_default(),
+              ObjectPropertyKind::SpreadProperty(_) => false,
+            })
+            && let ObjectPropertyKind::ObjectProperty(existing) = existing
           {
-            if name == "style" || name == "class" || is_event(name) {
-              if let Expression::ArrayExpression(value) = &mut existing.value {
-                value
-                  .elements
-                  .push(prop.value.take_in(ast.allocator).into());
-              } else {
-                existing.value = ast.expression_array(
-                  existing.span(),
-                  ast.vec_from_array([
-                    existing.value.take_in(ast.allocator).into(),
-                    prop.value.take_in(ast.allocator).into(),
-                  ]),
-                )
-              }
+            if let Expression::ArrayExpression(value) = &mut existing.value {
+              value
+                .elements
+                .push(prop.value.take_in(ast.allocator).into());
+            } else {
+              existing.value = ast.expression_array(
+                existing.span(),
+                ast.vec_from_array([
+                  existing.value.take_in(ast.allocator).into(),
+                  prop.value.take_in(ast.allocator).into(),
+                ]),
+              )
             }
-            // unexpected duplicate, should have emitted error during parse
           } else {
             deduped.push(property.take_in(ast.allocator));
           };

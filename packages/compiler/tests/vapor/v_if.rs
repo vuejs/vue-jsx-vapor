@@ -1,8 +1,15 @@
 use std::cell::RefCell;
 
-use common::{error::ErrorCodes, options::TransformOptions};
+use common::{
+  error::ErrorCodes,
+  options::TransformOptions,
+  patch_flag::{VaporBlockShape, VaporIfFlags},
+};
 use compiler::transform;
 use insta::assert_snapshot;
+
+const SINGLE_ROOT_NO_SCOPE: i32 =
+  VaporBlockShape::SingleRoot as i32 | VaporIfFlags::TrueNoScope as i32;
 
 #[test]
 fn basic() {
@@ -10,14 +17,140 @@ fn basic() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> ", true);
+  const _t0 = _template("<div> ", 1);
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => msg);
   		return _n2;
-  	}, null, 1);
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn omits_default_single_root_flags_when_branch_needs_scope() {
+  let code = transform("<div v-if={ok}>{msg}</div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ", 1);
+  (() => {
+  	const _n0 = _createIf(() => ok, () => {
+  		const _n2 = _t0();
+  		const _x2 = _txt(_n2);
+  		_setNodes(_x2, () => msg);
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn marks_pure_static_single_root_branch_as_no_scope() {
+  let code = transform("<div v-if={ok}>static</div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>static", 3);
+  (() => {
+  	const _n0 = _createIf(() => ok, () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	}, null, 33);
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains(&format!("}}, null, {SINGLE_ROOT_NO_SCOPE})")));
+}
+
+#[test]
+fn marks_pure_static_multi_root_branch_as_no_scope() {
+  let code = transform(
+    "<template v-if={ok}><div>one</div><p>two</p></template>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>one</div>", 2);
+  const _t1 = _template("<p>two", 2);
+  (() => {
+  	const _n0 = _createIf(() => ok, () => {
+  		const _n2 = _t0();
+  		const _n3 = _t1();
+  		return [_n2, _n3];
+  	}, null, 34);
+  	return _n0;
+  })();
+  "#);
+
+  assert!(code.contains(&format!(
+    "}}, null, {})",
+    VaporBlockShape::MultiRoot as i32 | VaporIfFlags::TrueNoScope as i32
+  )));
+}
+
+#[test]
+fn does_not_mark_scoped_branches_as_no_scope() {
+  let cases = [
+    "<div v-if={ok}>{msg}</div>",
+    "<div v-if={ok} class={foo}></div>",
+    "<div v-if={ok} onClick={foo}></div>",
+    "<Comp v-if={ok} />",
+    "<div v-if={ok} ref=\"el\"></div>",
+    "<template v-if={ok}><div/>{msg}</template>",
+  ];
+
+  for source in cases {
+    let code = transform(source, None).code;
+    assert!(
+      !code.contains(&format!(", null, {SINGLE_ROOT_NO_SCOPE})")),
+      "{source}"
+    );
+    assert!(
+      !code.contains(&format!(
+        ", null, {}",
+        VaporBlockShape::MultiRoot as i32 | VaporIfFlags::TrueNoScope as i32
+      )),
+      "{source}"
+    );
+  }
+}
+
+#[test]
+fn packs_once_flag() {
+  let code = transform("<div v-if={ok} v-once />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>", 3);
+  (() => {
+  	const _n0 = _createIf(() => ok, () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	}, null, 49);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn packs_branch_index() {
+  let code = transform("<><div v-if={foo}>foo</div><div v-else>bar</div></>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>foo", 2);
+  const _t1 = _template("<div>bar", 2);
+  (() => {
+  	const _n0 = _createIf(() => foo, () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	}, () => {
+  		const _n4 = _t1();
+  		return _n4;
+  	}, 357);
   	return _n0;
   })();
   "#);
@@ -32,8 +165,8 @@ fn template() {
   .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, renderEffect as _renderEffect, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
-  const _t0 = _template("<div></div>");
-  const _t1 = _template("hello");
+  const _t0 = _template("<div></div>", 2);
+  const _t1 = _template("hello", 2);
   const _t2 = _template("<p> ");
   (() => {
   	const _n0 = _createIf(() => ok, () => {
@@ -49,6 +182,32 @@ fn template() {
   		];
   	}, null, 2);
   	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_if_and_extra_at_root() {
+  let code = transform(
+    r#"<><div v-if={foo}>foo</div><div v-else-if={bar}>bar</div><div>baz</div></>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>foo", 2);
+  const _t1 = _template("<div>bar", 2);
+  const _t2 = _template("<div>baz", 2);
+  (() => {
+  	const _n0 = _createIf(() => foo, () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	}, () => _createIf(() => bar, () => {
+  		const _n4 = _t1();
+  		return _n4;
+  	}, null, 33), 293);
+  	const _n6 = _t2();
+  	return [_n0, _n6];
   })();
   "#);
 }
@@ -73,9 +232,86 @@ fn template_v_if_with_v_for() {
   			const _x4 = _txt(_n4);
   			_setNodes(_x4, "item: ", () => _for_item0.value);
   			return _n4;
-  		}, (item, index) => index, 1);
+  		}, (item, index) => index, 8);
   		return _n2;
-  	}, null, 1);
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn template_v_if_with_text() {
+  let code = transform(r#"<template v-if={foo}>hello</template>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("hello", 2);
+  (() => {
+  	const _n0 = _createIf(() => foo, () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	}, null, 33);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn template_v_if_with_single_element() {
+  let code = transform(r#"<template v-if={foo}><div>hi</div></template>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>hi", 2);
+  (() => {
+  	const _n0 = _createIf(() => foo, () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	}, null, 33);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn template_v_if_with_multiple_element() {
+  let code = transform(
+    r#"<template v-if={foo}><div>hi</div><div>ho</div></template>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>hi</div>", 2);
+  const _t1 = _template("<div>ho", 2);
+  (() => {
+  	const _n0 = _createIf(() => foo, () => {
+  		const _n2 = _t0();
+  		const _n3 = _t1();
+  		return [_n2, _n3];
+  	}, null, 34);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn template_v_if_with_v_for_inside() {
+  let code = transform(
+    r#"<template v-if={foo}><div v-for={i in list}/></template>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createFor as _createFor, createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n0 = _createIf(() => foo, () => {
+  		const _n2 = _createFor(() => list, (_for_item0) => {
+  			const _n4 = _t0();
+  			return _n4;
+  		}, void 0, 8);
+  		return _n2;
+  	});
   	return _n0;
   })();
   "#);
@@ -104,7 +340,7 @@ fn template_v_if_with_key() {
   			return _n4;
   		});
   		return _n2;
-  	}, null, 1);
+  	});
   	return _n0;
   })();
   "#);
@@ -119,16 +355,16 @@ fn dedupe_same_template() {
   .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("<div>hello");
+  const _t0 = _template("<div>hello", 2);
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, 1);
+  	}, null, 33);
   	const _n3 = _createIf(() => ok, () => {
   		const _n5 = _t0();
   		return _n5;
-  	}, null, 1);
+  	}, null, 33);
   	return [_n0, _n3];
   })();
   "#);
@@ -144,7 +380,7 @@ fn component() {
   	const _n0 = _createIf(() => foo, () => {
   		const _n2 = _createComponent(Comp, null, null, true);
   		return _n2;
-  	}, null, 1);
+  	});
   	return _n0;
   })();
   "#);
@@ -157,9 +393,9 @@ fn template_v_if_with_single_slot_child() {
   import { createIf as _createIf, createSlot as _createSlot } from "vue";
   (() => {
   	const _n0 = _createIf(() => ok, () => {
-  		const _n2 = _createSlot("default");
+  		const _n2 = _createSlot();
   		return _n2;
-  	}, null, 1);
+  	});
   	return _n0;
   })();
   "#);
@@ -174,7 +410,7 @@ fn v_if_on_slot() {
   	const _n0 = _createIf(() => "ok", () => {
   		const _n2 = _createSlot("default");
   		return _n2;
-  	}, null, 1, true);
+  	}, null, 17);
   	return _n0;
   })();
   "#);
@@ -185,8 +421,8 @@ fn v_if_v_else() {
   let code = transform("<><div v-if={ok}/><p v-else/></>", None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("<div>");
-  const _t1 = _template("<p>");
+  const _t0 = _template("<div>", 2);
+  const _t1 = _template("<p>", 2);
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
@@ -194,7 +430,7 @@ fn v_if_v_else() {
   	}, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, 5, false, 0);
+  	}, 357);
   	return _n0;
   })();
   "#);
@@ -205,8 +441,8 @@ fn v_if_v_if_else() {
   let code = transform("<><div v-if={ok}/><p v-else-if={orNot}/></>", None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("<div>");
-  const _t1 = _template("<p>");
+  const _t0 = _template("<div>", 2);
+  const _t1 = _template("<p>", 2);
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
@@ -214,7 +450,7 @@ fn v_if_v_if_else() {
   	}, () => _createIf(() => orNot, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, null, 1), 5, false, 0);
+  	}, null, 33), 293);
   	return _n0;
   })();
   "#);
@@ -223,15 +459,15 @@ fn v_if_v_if_else() {
 #[test]
 fn v_if_v_else_if_v_else() {
   let code = transform(
-    "<><div v-if={ok}/><p v-else-if={orNot}/><template v-else>fine</template></>",
+    "<><div v-if={ok}/><p v-else-if={orNot}/><p v-else-if={false}/><template v-else>fine</template></>",
     None,
   )
   .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("<div>");
-  const _t1 = _template("<p>");
-  const _t2 = _template("fine");
+  const _t0 = _template("<div>", 2);
+  const _t1 = _template("<p>", 2);
+  const _t2 = _template("fine", 2);
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
@@ -239,10 +475,13 @@ fn v_if_v_else_if_v_else() {
   	}, () => _createIf(() => orNot, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, () => {
-  		const _n7 = _t2();
+  	}, () => _createIf(() => false, () => {
+  		const _n7 = _t1();
   		return _n7;
-  	}, 5, false, 1), 5, false, 0);
+  	}, () => {
+  		const _n10 = _t2();
+  		return _n10;
+  	}, 117), 549), 293);
   	return _n0;
   })();
   "#);
@@ -252,8 +491,8 @@ fn v_if_v_else_if_v_else() {
 fn v_if_v_if_or_v_elses() {
   let code = transform(
     "<div>
-      <span v-if=\"foo\">foo</span>
-      <span v-if=\"bar\">bar</span>
+      <span v-if={foo}>foo</span>
+      <span v-if={bar}>bar</span>
       <span v-else>baz</span>
     </div>",
     None,
@@ -261,25 +500,25 @@ fn v_if_v_if_or_v_elses() {
   .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
-  const _t0 = _template("<span>foo");
-  const _t1 = _template("<span>bar");
-  const _t2 = _template("<span>baz");
-  const _t3 = _template("<div>", true);
+  const _t0 = _template("<span>foo", 2);
+  const _t1 = _template("<span>bar", 2);
+  const _t2 = _template("<span>baz", 2);
+  const _t3 = _template("<div>", 1);
   (() => {
   	const _n8 = _t3();
   	_setInsertionState(_n8, null, 0);
-  	const _n0 = _createIf(() => "foo", () => {
+  	const _n0 = _createIf(() => foo, () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, 1, true);
-  	_setInsertionState(_n8, null, 1, true);
-  	const _n3 = _createIf(() => "bar", () => {
+  	}, null, 33);
+  	_setInsertionState(_n8, null, 1);
+  	const _n3 = _createIf(() => bar, () => {
   		const _n5 = _t1();
   		return _n5;
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	}, 5, true, 1);
+  	}, 613);
   	return _n8;
   })();
   "#);
@@ -301,10 +540,10 @@ fn comment_between_branches() {
   .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("<div>");
-  const _t1 = _template("<p>");
-  const _t2 = _template("fine");
-  const _t3 = _template("<div>text");
+  const _t0 = _template("<div>", 2);
+  const _t1 = _template("<p>", 2);
+  const _t2 = _template("fine", 2);
+  const _t3 = _template("<div>text", 2);
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
@@ -315,7 +554,7 @@ fn comment_between_branches() {
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	}, 5, false, 1), 5, false, 0);
+  	}, 613), 293);
   	const _n9 = _t3();
   	return [_n0, _n9];
   })();
@@ -331,13 +570,13 @@ fn v_on_with_v_if() {
   .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, renderEffect as _renderEffect, setDynamicEvents as _setDynamicEvents, template as _template } from "vue";
-  const _t0 = _template("<button>w/ v-if", true);
+  const _t0 = _template("<button>w/ v-if", 1);
   (() => {
   	const _n0 = _createIf(() => true, () => {
   		const _n2 = _t0();
   		_renderEffect(() => _setDynamicEvents(_n2, { click: clickEvent }));
   		return _n2;
-  	}, null, 1, true);
+  	}, null, 17);
   	return _n0;
   })();
   "#);
@@ -368,7 +607,7 @@ fn v_if_in_template_v_for_forces_multi_root_shape() {
   			return _n5;
   		}, null, 10);
   		return _n2;
-  	});
+  	}, void 0, 16);
   	return _n0;
   })();
   "#);
@@ -383,9 +622,9 @@ fn template_v_if_with_normal_v_else() {
   .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("<div>hi</div>");
-  const _t1 = _template("<div>ho");
-  const _t2 = _template("<div>");
+  const _t0 = _template("<div>hi</div>", 2);
+  const _t1 = _template("<div>ho", 2);
+  const _t2 = _template("<div>", 2);
   (() => {
   	const _n0 = _createIf(() => foo, () => {
   		const _n2 = _t0();
@@ -394,7 +633,7 @@ fn template_v_if_with_normal_v_else() {
   	}, () => {
   		const _n5 = _t2();
   		return _n5;
-  	}, 6, false, 0);
+  	}, 358);
   	return _n0;
   })();
   "#);

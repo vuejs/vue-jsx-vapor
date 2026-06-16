@@ -1,6 +1,5 @@
-use oxc_allocator::CloneIn;
 use oxc_ast::NONE;
-use oxc_ast::ast::{Argument, Expression, NumberBase, Statement, StringLiteral};
+use oxc_ast::ast::{Argument, NumberBase, Statement};
 use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
@@ -30,28 +29,11 @@ pub fn gen_operations<'a>(
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) {
-  let event_opers = opers
-    .iter()
-    .filter_map(|op| {
-      if let OperationNode::SetEvent(op) = op
-        && op.delegate
-        && let Expression::StringLiteral(key) = &op.key
-      {
-        Some((op.element, key.as_ref().clone_in(context.ast.allocator)))
-      } else {
-        None
-      }
-    })
-    .collect::<Vec<_>>();
   let _context_block = context_block as *mut BlockIRNode;
   for operation in opers {
-    gen_operation_with_insertion_state(
-      statements,
-      operation,
-      context,
-      unsafe { &mut *_context_block },
-      &event_opers,
-    );
+    gen_operation_with_insertion_state(statements, operation, context, unsafe {
+      &mut *_context_block
+    });
   }
 }
 
@@ -60,7 +42,6 @@ pub fn gen_operation_with_insertion_state<'a>(
   oper: OperationNode<'a>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  event_opers: &Vec<(i32, StringLiteral)>,
 ) {
   match &oper {
     OperationNode::If(if_ir_node) => {
@@ -70,7 +51,6 @@ pub fn gen_operation_with_insertion_state<'a>(
           if_ir_node.anchor,
           if_ir_node.logical_index,
           if_ir_node.append,
-          if_ir_node.last,
           context,
         ))
       }
@@ -82,7 +62,6 @@ pub fn gen_operation_with_insertion_state<'a>(
           for_ir_node.anchor,
           for_ir_node.logical_index,
           for_ir_node.append,
-          for_ir_node.last,
           context,
         ))
       }
@@ -94,7 +73,6 @@ pub fn gen_operation_with_insertion_state<'a>(
           create_component_ir_node.anchor,
           create_component_ir_node.logical_index,
           create_component_ir_node.append,
-          create_component_ir_node.last,
           context,
         ))
       }
@@ -106,7 +84,6 @@ pub fn gen_operation_with_insertion_state<'a>(
           slot_outlet_ir_node.anchor,
           slot_outlet_ir_node.logical_index,
           slot_outlet_ir_node.append,
-          slot_outlet_ir_node.last,
           context,
         ))
       }
@@ -118,7 +95,6 @@ pub fn gen_operation_with_insertion_state<'a>(
           key_ir_node.anchor,
           key_ir_node.logical_index,
           key_ir_node.append,
-          key_ir_node.last,
           context,
         ))
       }
@@ -126,7 +102,7 @@ pub fn gen_operation_with_insertion_state<'a>(
     _ => (),
   };
 
-  gen_operation(statements, oper, context, context_block, event_opers);
+  gen_operation(statements, oper, context, context_block);
 }
 
 pub fn gen_operation<'a>(
@@ -134,7 +110,6 @@ pub fn gen_operation<'a>(
   oper: OperationNode<'a>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  event_opers: &Vec<(i32, StringLiteral)>,
 ) {
   match oper {
     OperationNode::If(oper) => statements.push(gen_if(oper, context, context_block, false)),
@@ -144,7 +119,7 @@ pub fn gen_operation<'a>(
     OperationNode::SetDynamicProps(oper) => statements.push(gen_dynamic_props(oper, context)),
     OperationNode::SetDynamicEvents(oper) => statements.push(gen_set_dynamic_events(oper, context)),
     OperationNode::SetNodes(oper) => statements.push(gen_set_nodes(oper, context)),
-    OperationNode::SetEvent(oper) => statements.push(gen_set_event(oper, context, event_opers)),
+    OperationNode::SetEvent(oper) => statements.push(gen_set_event(oper, context)),
     OperationNode::SetHtml(oper) => statements.push(gen_set_html(oper, context)),
     OperationNode::SetTemplateRef(oper) => statements.push(gen_set_template_ref(oper, context)),
     OperationNode::CreateNodes(oper) => statements.push(gen_create_nodes(oper, context)),
@@ -171,7 +146,6 @@ pub fn gen_insertion_state<'a>(
   anchor: Option<i32>,
   logical_index: Option<i32>,
   append: bool,
-  last: bool,
   context: &CodegenContext<'a>,
 ) -> Statement<'a> {
   let ast = &context.ast;
@@ -194,7 +168,7 @@ pub fn gen_insertion_state<'a>(
                 SPAN,
                 0 as f64,
                 None,
-                NumberBase::Hex,
+                NumberBase::Decimal,
               ))) // runtime anchor value for prepend
             } else if append {
               Some(Argument::NullLiteral(ast.alloc_null_literal(SPAN)))
@@ -212,16 +186,9 @@ pub fn gen_insertion_state<'a>(
               SPAN,
               logical_index as f64,
               None,
-              NumberBase::Hex,
+              NumberBase::Decimal,
             ))
           }),
-          if last {
-            Some(Argument::BooleanLiteral(
-              ast.alloc_boolean_literal(SPAN, true),
-            ))
-          } else {
-            None
-          },
         ]
         .into_iter()
         .flatten(),

@@ -1,3 +1,78 @@
+## [3.2.17](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.16...v3.2.17) (2026-06-14)
+
+
+### Bug Fixes
+
+* **compiler-vapor:** align click modifier normalization with vdom ([74fafc2](https://github.com/vuejs/vue-jsx-vapor/commit/74fafc2813eb811c0eb9f5208a21a578b11922b7))
+* **compiler/vapor:** correct createSelector helper name ([87569ad](https://github.com/vuejs/vue-jsx-vapor/commit/87569ade4d7429e8a85f3b117630d94c050d9f62))
+* **compiler/vapor:** prevent generate duplicate key ([46e81c9](https://github.com/vuejs/vue-jsx-vapor/commit/46e81c9f965f9db949af331250cf73af351a2857))
+
+
+### Features
+
+* **compiler/vapor:** fold constant native bindings into templates ([ae3d018](https://github.com/vuejs/vue-jsx-vapor/commit/ae3d018a81ffd51035deb12b3c7438df595d5fdc))
+
+
+### Performance Improvements
+
+* **compiler-vapor:** omit redundant nthChild logical index ([320da95](https://github.com/vuejs/vue-jsx-vapor/commit/320da9547bcd9c84268c544b2abe9e8b2a607df7))
+* **compiler/vapor:** allow direct values in dynamic prop sources ([b6cf4c0](https://github.com/vuejs/vue-jsx-vapor/commit/b6cf4c098d94fd69f78c665c88f2ec8705a2b233))
+* **compiler/vapor:** emit v-model modifiers as direct values ([7c57801](https://github.com/vuejs/vue-jsx-vapor/commit/7c578010b04356c2d2ce375a6bd64549df7eb87e))
+* **compiler/vapor:** inline single-use DOM lookup placeholders ([e23dc74](https://github.com/vuejs/vue-jsx-vapor/commit/e23dc74e4bec995aeadc41ad0a94d88cdbc5d144))
+* **compiler/vapor:** reduce v-if branch scope overhead ([e4a9a9b](https://github.com/vuejs/vue-jsx-vapor/commit/e4a9a9bf04da8776882b07a8f489656ba941fe44))
+* **compiler/vapor:** specialize v-for block operations ([ec4aa00](https://github.com/vuejs/vue-jsx-vapor/commit/ec4aa000daff6e1ef522ac6e30719724c32da476))
+* **compiler/vapor:** use onBinding helper for reactive events ([25eba17](https://github.com/vuejs/vue-jsx-vapor/commit/25eba175780cbaf00ccf389e2044f3691d6a8b60))
+
+
+### Reverts
+
+* remove vuetify CI ([cf47052](https://github.com/vuejs/vue-jsx-vapor/commit/cf47052a304c4bd43e169478aa170e5b7c6ff1f2))
+
+
+
+## [3.2.16](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.15...v3.2.16) (2026-06-06)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** emit dynamic component handlers directly ([08b9efa](https://github.com/vuejs/vue-jsx-vapor/commit/08b9efac20ce424bad1575c2677b5f179bda924a))
+* **compiler/vapor:** use identify instead of string_literal for ([293db26](https://github.com/vuejs/vue-jsx-vapor/commit/293db26f9b3232ed75ed14b8ab6e47be624ec19f))
+
+
+### Performance Improvements
+
+* **compiler/vapor:** encode template options as flags ([333dbff](https://github.com/vuejs/vue-jsx-vapor/commit/333dbff51b325e6f9b087d72e06004554a424261))
+* **compiler/vapor:** inline static component literal props ([8aa7bfc](https://github.com/vuejs/vue-jsx-vapor/commit/8aa7bfcbc09505f92809eb6fcde7de23bef814b2))
+
+
+
+## [3.2.15](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.14...v3.2.15) (2026-06-06)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** bind dynamic slot sources to owner ([1419092](https://github.com/vuejs/vue-jsx-vapor/commit/141909289fa186bb21015358a17a4270c7b56cd9))
+* **compiler/vapor:** normalize vue vnode hook listeners ([d3a931c](https://github.com/vuejs/vue-jsx-vapor/commit/d3a931c1509d8ac1d03fba0553ab5f69df6b50e6))
+* **compiler/vapor:** preserve close tags across template abbreviation ([f11ae18](https://github.com/vuejs/vue-jsx-vapor/commit/f11ae18831d98979373f13bd1f4a967d0394c7a6))
+* **compiler/vapor:** preserve hydration cursor for nested insertions ([70aaa1d](https://github.com/vuejs/vue-jsx-vapor/commit/70aaa1dfc30bee348a9e76c3d498dcee0878211c))
+* **compiler/vapor:** preserve useId evaluation order before dynamic ([34c8016](https://github.com/vuejs/vue-jsx-vapor/commit/34c80167e10ad4d9798250b59bf4d9b29fb26fdb))
+* **compiler/vapor:** track close tags during template abbreviation ([8f3aa22](https://github.com/vuejs/vue-jsx-vapor/commit/8f3aa22e5265208ddbed09ec40bbbdd353bf7ccb))
+* **compiler/vdom:** avoid generating patch flags and createElementVNode ([78de9a7](https://github.com/vuejs/vue-jsx-vapor/commit/78de9a7969004159086b5028c0074066df82c2e8))
+* **compiler/vdom:** generate keys for JSX inside control flow ([f848304](https://github.com/vuejs/vue-jsx-vapor/commit/f848304c354800c5422d85137ce24d98718faebb))
+* **compiler:** allow deduped props ([f5d7437](https://github.com/vuejs/vue-jsx-vapor/commit/f5d74378922052cc3eefb1a4781acc3b6fc7aa12))
+
+
+### Features
+
+* **compiler:** add static template hydration fast path ([eb23b35](https://github.com/vuejs/vue-jsx-vapor/commit/eb23b35631041602170a8b8ca2e156fc1a79d72d))
+
+
+### Performance Improvements
+
+* **compiler/vapor:** add fast path for static class names ([cf94787](https://github.com/vuejs/vue-jsx-vapor/commit/cf94787498780549ca776bc8d965b53c75e33413))
+
+
+
 ## [3.2.14](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.13...v3.2.14) (2026-05-08)
 
 

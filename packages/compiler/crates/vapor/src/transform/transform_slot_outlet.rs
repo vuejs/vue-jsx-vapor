@@ -11,7 +11,7 @@ use crate::{
 };
 use common::{
   directive::Directives, error::ErrorCodes, expression::jsx_attribute_value_to_expression,
-  text::is_empty_text,
+  patch_flag::VaporSlotFlags, text::is_empty_text,
 };
 
 /// # SAFETY
@@ -87,18 +87,22 @@ pub unsafe fn transform_slot_outlet<'a>(
 
   Some(Box::new(move || {
     let fallback = exit_block.map(|exit_block| exit_block());
+    let mut flags = 0;
+    if *context.in_v_once.borrow() {
+      flags |= VaporSlotFlags::Once as i32;
+    }
     context_block.dynamic.operation = Some(Box::new(OperationNode::SlotOutlet(SlotOutletIRNode {
       id,
       name: slot_name.unwrap_or(context.ast.expression_string_literal(SPAN, "default", None)),
       props: ir_props,
       fallback,
-      no_slotted: false,
-      once: *context.in_v_once.borrow(),
+      flags,
       parent: None,
       anchor: None,
       logical_index: None,
       append: false,
-      last: false,
+      operation_index: Some(*context.operation_index.borrow()),
+      effect_index: Some(*context.effect_index.borrow()),
     })));
   }))
 }

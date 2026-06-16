@@ -12,14 +12,14 @@ fn basic() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { applyVShow as _applyVShow, template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  import { applyVShow as _applyVShow, template as _template } from "vue";
   const _t0 = _template("<h1>foo");
   (() => {
-  	const _n1 = _createComponent(VaporTransition, { persisted: () => true }, { default: _withVaporCtx(() => {
+  	const _n1 = _createComponent(VaporTransition, { persisted: true }, () => {
   		const _n0 = _t0();
   		_applyVShow(_n0, () => show);
   		return _n0;
-  	}) }, true);
+  	}, true);
   	return _n1;
   })();
   "#);
@@ -36,18 +36,18 @@ fn v_show_with_appear() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { applyVShow as _applyVShow, template as _template, withVaporCtx as _withVaporCtx } from "vue";
+  import { applyVShow as _applyVShow, template as _template } from "vue";
   const _t0 = _template("<h1>foo");
   (() => {
   	const _n1 = _createComponent(VaporTransition, {
-  		appear: () => true,
+  		appear: true,
   		onAppear: () => () => {},
-  		persisted: () => true
-  	}, { default: _withVaporCtx(() => {
+  		persisted: true
+  	}, () => {
   		const _n0 = _t0();
   		_applyVShow(_n0, () => show);
   		return _n0;
-  	}) }, true);
+  	}, true);
   	return _n1;
   })();
   "#);
@@ -64,16 +64,16 @@ fn work_with_v_if() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<h1>foo");
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<h1>foo", 2);
   (() => {
-  	const _n3 = _createComponent(VaporTransition, null, { default: _withVaporCtx(() => {
+  	const _n3 = _createComponent(VaporTransition, null, () => {
   		const _n0 = _createIf(() => show, () => {
   			const _n2 = _t0();
   			return _n2;
-  		}, null, 1);
+  		}, null, 161);
   		return _n0;
-  	}) }, true);
+  	}, true);
   	return _n3;
   })();
   "#);
@@ -92,12 +92,12 @@ fn work_with_v_if_v_else() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<h1>1");
-  const _t1 = _template("<h2>2");
-  const _t2 = _template("<h3>3");
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<h1>1", 2);
+  const _t1 = _template("<h2>2", 2);
+  const _t2 = _template("<h3>3", 2);
   (() => {
-  	const _n9 = _createComponent(VaporTransition, null, { default: _withVaporCtx(() => {
+  	const _n9 = _createComponent(VaporTransition, null, () => {
   		const _n0 = _createIf(() => condition == 1, () => {
   			const _n2 = _t0();
   			return _n2;
@@ -107,9 +107,9 @@ fn work_with_v_if_v_else() {
   		}, () => {
   			const _n7 = _t2();
   			return _n7;
-  		}, 5, false, 1), 5, false, 0);
+  		}, 741), 421);
   		return _n0;
-  	}) }, true);
+  	}, true);
   	return _n9;
   })();
   "#);
@@ -130,12 +130,12 @@ fn work_with_condition_expression() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<h1>1");
-  const _t1 = _template("<h2>2");
-  const _t2 = _template("<h3>3");
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<h1>1", 2);
+  const _t1 = _template("<h2>2", 2);
+  const _t2 = _template("<h3>3", 2);
   (() => {
-  	const _n7 = _createComponent(VaporTransition, null, { default: _withVaporCtx(() => {
+  	const _n7 = _createComponent(VaporTransition, null, () => {
   		const _n0 = _createIf(() => condition == 1, () => {
   			const _n2 = _t0();
   			return _n2;
@@ -145,9 +145,9 @@ fn work_with_condition_expression() {
   		}, () => {
   			const _n6 = _t2();
   			return _n6;
-  		}, 1, false, 1), 5, false, 0);
+  		}, 673), 421);
   		return _n0;
-  	}) }, true);
+  	}, true);
   	return _n7;
   })();
   "#);
@@ -164,16 +164,16 @@ fn transition_work_with_dynamic_keyed_children() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createKeyedFragment as _createKeyedFragment, template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("<h1>foo");
+  import { createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
+  const _t0 = _template("<h1>foo", 2);
   (() => {
-  	const _n3 = _createComponent(VaporTransition, null, { default: _withVaporCtx(() => {
+  	const _n3 = _createComponent(VaporTransition, null, () => {
   		const _n0 = _createKeyedFragment(() => foo, () => {
   			const _n2 = _t0();
   			return _n2;
   		});
   		return _n0;
-  	}) }, true);
+  	}, true);
   	return _n3;
   })();
   "#);

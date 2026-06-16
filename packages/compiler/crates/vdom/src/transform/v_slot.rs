@@ -581,7 +581,7 @@ pub fn build_slots<'a>(
     ast.property_key_static_identifier(SPAN, "_"),
     // 2 = compiled but dynamic = can skip normalization, but must run diff
     // 1 = compiled and static = can skip normalization AND diff as optimized
-    ast.expression_numeric_literal(SPAN, slot_flag as i32 as f64, None, NumberBase::Hex),
+    ast.expression_numeric_literal(SPAN, slot_flag as i32 as f64, None, NumberBase::Decimal),
     false,
     false,
     false,
@@ -656,7 +656,7 @@ fn build_dynamic_slot<'a>(
       SPAN,
       PropertyKind::Init,
       ast.property_key_static_identifier(SPAN, "key"),
-      ast.expression_numeric_literal(SPAN, index as f64, None, NumberBase::Hex),
+      ast.expression_numeric_literal(SPAN, index as f64, None, NumberBase::Decimal),
       false,
       false,
       false,

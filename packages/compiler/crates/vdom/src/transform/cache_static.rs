@@ -94,7 +94,7 @@ pub fn cache_static_children<'a>(
                 SPAN,
                 PatchFlags::Cached as i32 as f64,
                 None,
-                NumberBase::Hex,
+                NumberBase::Decimal,
               )
               .into(),
           );

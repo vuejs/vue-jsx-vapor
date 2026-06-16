@@ -26,12 +26,29 @@ fn component_generate_single_root_component() {
 }
 
 #[test]
+fn emit_single_default_slot_as_raw_slot_function() {
+  let code = transform("<Card><div/></Card>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { template as _template } from "vue";
+  const _t0 = _template("<div>", 2);
+  (() => {
+  	const _n1 = _createComponent(Card, null, () => {
+  		const _n0 = _t0();
+  		return _n0;
+  	}, true);
+  	return _n1;
+  })();
+  "#);
+}
+
+#[test]
 fn component_generate_multi_root_component() {
   let code = transform("<><Comp/>123</>", None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("123");
+  const _t0 = _template("123", 2);
   (() => {
   	const _n0 = _createComponent(Comp);
   	const _n1 = _t0();
@@ -75,12 +92,111 @@ fn component_static_props() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, {
-  		id: () => "foo",
-  		class: () => "bar"
+  		id: "foo",
+  		class: "bar"
   	}, null, true);
   	return _n0;
   })();
   "#);
+}
+
+#[test]
+fn component_static_literal_bind_props() {
+  let code = transform("<Foo literal={'bar'} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Foo, { literal: "bar" }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn component_constant_bind_props_are_direct_raw_prop_values() {
+  let code = transform(
+    r#"<Foo
+      size={16}
+      disabled={false}
+      tabindex={0}
+      nullable={null}
+      missing={undefined}
+      big={1n}
+      label={`Save ${1}`}
+      items={[1, "two", false, null, undefined]}
+      options={{ placement: "bottom", offset: 8, nested: { enabled: true } }}
+    />"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Foo, {
+  		size: 16,
+  		disabled: false,
+  		tabindex: 0,
+  		nullable: null,
+  		missing: undefined,
+  		big: 1n,
+  		label: "Save 1",
+  		items: [
+  			1,
+  			"two",
+  			false,
+  			null,
+  			undefined
+  		],
+  		options: {
+  			placement: "bottom",
+  			offset: 8,
+  			nested: { enabled: true }
+  		}
+  	}, null, true);
+  	return _n0;
+  })();
+  "#);
+
+  assert!(code.contains("size: 16"));
+  assert!(code.contains("disabled: false"));
+  assert!(code.contains("tabindex: 0"));
+  assert!(code.contains("nullable: null"));
+  assert!(code.contains("missing: undefined"));
+  assert!(code.contains("big: 1n"));
+  assert!(code.contains("label: \"Save 1\""));
+  assert!(code.contains("placement: \"bottom\""));
+  assert!(code.contains("offset: 8"));
+  assert!(code.contains("nested: { enabled: true }"));
+}
+
+#[test]
+fn component_dynamic_non_literal_prop_values_stay_as_getter_sources() {
+  let code = transform(
+    r#"<Foo foo={bar} obj={{ a: bar }} handler={onClick} formatter={v => v.toFixed(2)} fn={() => bar} onClick={foo} />"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Foo, {
+  		foo: () => bar,
+  		obj: () => ({ a: bar }),
+  		handler: () => onClick,
+  		formatter: () => (v) => v.toFixed(2),
+  		fn: () => () => bar,
+  		onClick: () => foo
+  	}, null, true);
+  	return _n0;
+  })();
+  "#);
+
+  assert!(code.contains("foo: () => bar"));
+  assert!(code.contains("obj: () => ({ a: bar })"));
+  assert!(code.contains("handler: () => onClick"));
+  assert!(code.contains("formatter: () => (v) => v.toFixed(2)"));
+  assert!(code.contains("fn: () => () => bar"));
+  assert!(code.contains("onClick: () => foo"));
 }
 
 #[test]
@@ -96,7 +212,7 @@ fn component_dynamic_props_after_static_prop() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, {
-  		id: () => "foo",
+  		id: "foo",
   		$: [() => obj]
   	}, null, true);
   	return _n0;
@@ -110,7 +226,7 @@ fn component_dynamic_props_before_static_prop() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const _n0 = _createComponent(Foo, { $: [() => obj, { id: () => "foo" }] }, null, true);
+  	const _n0 = _createComponent(Foo, { $: [() => obj, { id: "foo" }] }, null, true);
   	return _n0;
   })();
   "#);
@@ -123,8 +239,8 @@ fn component_dynamic_props_between_static_prop() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, {
-  		id: () => "foo",
-  		$: [() => obj, { class: () => "bar" }]
+  		id: "foo",
+  		$: [() => obj, { class: "bar" }]
   	}, null, true);
   	return _n0;
   })();
@@ -214,7 +330,7 @@ fn static_props_unquoted_when_value_has_no_special_chars() {
   let code = transform("<div id=\"foo\" class=\"bar\" />", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div id=foo class=bar>", true);
+  const _t0 = _template("<div id=foo class=bar>", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -227,7 +343,7 @@ fn static_props_quoted_when_value_contains_whitespace() {
   let code = transform(r#"<div title="has whitespace" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"has whitespace\">", true);
+  const _t0 = _template("<div title=\"has whitespace\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -240,7 +356,7 @@ fn static_props_quoted_when_value_contains_right_angle_bracket() {
   let code = transform(r#"<div data-expr="a>b" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div data-expr=\"a>b\">", true);
+  const _t0 = _template("<div data-expr=\"a>b\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -253,7 +369,7 @@ fn static_props_quoted_when_value_contains_left_angle_bracket() {
   let code = transform(r#"<div data-expr="a<b" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div data-expr=\"a<b\">", true);
+  const _t0 = _template("<div data-expr=\"a<b\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -266,7 +382,7 @@ fn static_props_quoted_when_value_contains_equal_bracket() {
   let code = transform(r#"<div data-expr="a=b" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div data-expr=\"a=b\">", true);
+  const _t0 = _template("<div data-expr=\"a=b\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -279,7 +395,7 @@ fn static_props_quoted_when_value_contains_single_quote() {
   let code = transform(r#"<div title="it's" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"it's\">", true);
+  const _t0 = _template("<div title=\"it's\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -292,7 +408,7 @@ fn static_props_quoted_when_value_contains_backtick() {
   let code = transform(r#"<div title="foo`bar" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"foo`bar\">", true);
+  const _t0 = _template("<div title=\"foo`bar\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -305,7 +421,7 @@ fn static_props_escapes_double_quotes_in_value() {
   let code = transform(r#"<div title='say "hello"' />"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"say &quot;hello&quot;\">", true);
+  const _t0 = _template("<div title=\"say &quot;hello&quot;\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -321,11 +437,10 @@ fn static_props_mixed_quoting_with_boolean_attribute() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<div title=\"has whitespace\"data-targets=\"foo>bar\">", true);
+  import { template as _template } from "vue";
+  const _t0 = _template("<div title=\"has whitespace\"inert data-targets=\"foo>bar\">", 3);
   (() => {
   	const _n0 = _t0();
-  	_setProp(_n0, "inert", true);
   	return _n0;
   })();
   "#);
@@ -340,7 +455,7 @@ fn static_props_space_omitted_after_quoted_attribute() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"has whitespace\"alt=\"&quot;contains quotes&quot;\"data-targets=\"foo>bar\">", true);
+  const _t0 = _template("<div title=\"has whitespace\"alt=\"&quot;contains quotes&quot;\"data-targets=\"foo>bar\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -353,7 +468,7 @@ fn props_children() {
   let code = transform("<div id=\"foo\"><span/></div>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div id=foo><span>", true);
+  const _t0 = _template("<div id=foo><span>", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -366,7 +481,7 @@ fn dynamic_props() {
   let code = transform("<div {...obj} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [obj]));
@@ -380,7 +495,7 @@ fn dynamic_props_after_static_prop() {
   let code = transform("<div id=\"foo\" {...obj} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [{ id: "foo" }, obj]));
@@ -394,7 +509,7 @@ fn dynamic_props_before_static_prop() {
   let code = transform("<div {...obj} id=\"foo\" />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [obj, { id: "foo" }]));
@@ -408,7 +523,7 @@ fn dynamic_props_between_static_prop() {
   let code = transform("<div id=\"foo\" {...obj} class=\"bar\" />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicProps(_n0, [
@@ -425,13 +540,12 @@ fn dynamic_props_between_static_prop() {
 fn props_merging_event_handlers() {
   let code = transform("<div onClick_foo={a} onClick_bar={b} />", None).code;
   assert_snapshot!(code, @r#"
-  _delegateEvents("click");
-  import { delegate as _delegate, delegateEvents as _delegateEvents, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  import { on as _on, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
-  	_delegate(_n0, "click", a);
-  	_delegate(_n0, "click", b);
+  	_on(_n0, "click", a);
+  	_on(_n0, "click", b);
   	return _n0;
   })();
   "#);
@@ -446,7 +560,7 @@ fn props_merging_style() {
   .code;
   assert_snapshot!(code, @r#"
   import { setStyle as _setStyle, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_setStyle(_n0, ["color: green", { color: "red" }]);
@@ -459,11 +573,11 @@ fn props_merging_style() {
 fn props_merging_class() {
   let code = transform("<div class=\"foo\" class={{ bar: isBar }} />", None).code;
   assert_snapshot!(code, @r#"
-  import { renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setClass(_n0, ["foo", { bar: isBar }]));
+  	_renderEffect(() => _setClassName(_n0, isBar ? 1 : 0, " bar", "foo"));
   	return _n0;
   })();
   "#);
@@ -474,7 +588,7 @@ fn v_on() {
   let code = transform("<div v-on={obj} />", None).code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicEvents as _setDynamicEvents, template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
   	_renderEffect(() => _setDynamicEvents(_n0, obj));
@@ -523,7 +637,7 @@ fn invalid_table_nesting_with_dynamic_child() {
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { child as _child, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<tr><td> ");
-  const _t1 = _template("<table>", true);
+  const _t1 = _template("<table>", 1);
   (() => {
   	const _n2 = _t1();
   	const _n1 = _t0();
@@ -541,12 +655,12 @@ fn zcustom_element() {
   let code = transform(r#"<my-custom-element>{foo}</my-custom-element>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
-  import { createPlainElement as _createPlainElement, withVaporCtx as _withVaporCtx } from "vue";
+  import { createPlainElement as _createPlainElement } from "vue";
   (() => {
-  	const _n1 = _createPlainElement("my-custom-element", null, { default: _withVaporCtx(() => {
+  	const _n1 = _createPlainElement("my-custom-element", null, () => {
   		const _n0 = _createNodes(() => foo);
   		return _n0;
-  	}) }, true);
+  	}, true);
   	return _n1;
   })();
   "#)
@@ -627,7 +741,7 @@ fn svg() {
   let code = transform(r#"<svg><circle r="40"></circle></svg>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<svg><circle r=40>", true, 1);
+  const _t0 = _template("<svg><circle r=40>", 3, 1);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -640,7 +754,7 @@ fn math_ml() {
   let code = transform(r#"<math><mrow><mi>x</mi></mrow></math>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<math><mrow><mi>x", true, 2);
+  const _t0 = _template("<math><mrow><mi>x", 3, 2);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -653,9 +767,9 @@ fn fragment_in_fragment() {
   let code = transform(r#"<>foo<>bar</>baz</>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("foo");
-  const _t1 = _template("bar");
-  const _t2 = _template("baz");
+  const _t0 = _template("foo", 2);
+  const _t1 = _template("bar", 2);
+  const _t2 = _template("baz", 2);
   (() => {
   	const _n0 = _t0();
   	const _n1 = _t1();
@@ -711,8 +825,8 @@ fn is_not_component() {
   .code;
   assert_snapshot!(code, @r#"
   import { createPlainElement as _createPlainElement, template as _template } from "vue";
-  const _t0 = _template("<foo>");
-  const _t1 = _template("<foo:bar>");
+  const _t0 = _template("<foo>", 2);
+  const _t1 = _template("<foo:bar>", 2);
   (() => {
   	const _n0 = _createPlainElement("foo-bar");
   	const _n1 = _t0();
@@ -722,6 +836,44 @@ fn is_not_component() {
   		_n1,
   		_n2
   	];
+  })();
+  "#)
+}
+
+#[test]
+fn component_vue_vnode_hooks() {
+  let code = transform(r#"<Foo onVue:mounted={handleMounted} />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Foo, { onVnodeMounted: () => handleMounted }, null, true);
+  	return _n0;
+  })();
+  "#)
+}
+
+#[test]
+fn component_keeps_is_props() {
+  let code = transform(r#"<><Comp is={'Parent'} /><Comp is="Parent" /></>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, { is: "Parent" });
+  	const _n1 = _createComponent(Comp, { is: "Parent" });
+  	return [_n0, _n1];
+  })();
+  "#)
+}
+
+#[test]
+fn v_on_obj_before_static_event_keeps_handler_getters() {
+  let code = transform(r#"<Foo v-on={obj} onFoo={bar} />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { toHandlers as _toHandlers } from "vue";
+  (() => {
+  	const _n0 = _createComponent(Foo, { $: [() => _toHandlers(obj), { onFoo: () => bar }] }, null, true);
+  	return _n0;
   })();
   "#)
 }

@@ -143,14 +143,11 @@ pub fn to_valid_asset_id(name: &str, _type: &str) -> String {
   format!("_{_type}_{out}")
 }
 
-pub fn get_text_like_value<'a>(
-  node: &Expression<'a>,
-  exclude_number: bool,
-) -> Option<Cow<'a, str>> {
+pub fn get_text_like_value<'a>(node: &Expression<'a>) -> Option<Cow<'a, str>> {
   let node = node.without_parentheses().get_inner_expression();
   if let Expression::StringLiteral(node) = node {
     return Some(Cow::Borrowed(node.value.as_str()));
-  } else if !exclude_number && node.is_number_literal() {
+  } else if node.is_number_literal() {
     if let Expression::NumericLiteral(node) = node {
       return Some(Cow::Owned(node.value.to_string()));
     } else if let Expression::BigIntLiteral(node) = node {
@@ -161,7 +158,7 @@ pub fn get_text_like_value<'a>(
     for i in 0..node.quasis.len() {
       result += node.quasis[i].value.cooked.unwrap().as_ref();
       if let Some(expression) = node.expressions.get(i) {
-        let expression_value = get_text_like_value(expression, false)?;
+        let expression_value = get_text_like_value(expression)?;
         result += &expression_value;
       }
     }

@@ -1,9 +1,15 @@
-use common::options::{RootJsx, TransformOptions};
+use common::{
+  options::{RootJsx, TransformOptions},
+  patch_flag::TemplateFlags,
+};
 use napi::Either;
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   AstBuilder, NONE,
-  ast::{Argument, Expression, ImportOrExportKind, Program, Statement, VariableDeclarationKind},
+  ast::{
+    Argument, Expression, ImportOrExportKind, NumberBase, Program, Statement,
+    VariableDeclarationKind,
+  },
 };
 use oxc_ast_visit::{
   VisitMut,
@@ -115,25 +121,6 @@ impl<'a> Transform<'a> {
     }
 
     let mut statements = vec![];
-    let delegates = self.options.delegates.take();
-    if !delegates.is_empty() {
-      statements.push(ast.statement_expression(
-        SPAN,
-        ast.expression_call(
-          SPAN,
-          ast.expression_identifier(SPAN, ast.str("_delegateEvents")),
-          NONE,
-          oxc_allocator::Vec::from_iter_in(
-            delegates.iter().map(|delegate| {
-              Argument::StringLiteral(ast.alloc(ast.string_literal(SPAN, ast.str(delegate), None)))
-            }),
-            ast.allocator,
-          ),
-          false,
-        ),
-      ));
-    }
-
     let mut helpers = self.options.helpers.take();
     if !helpers.is_empty() {
       if helpers.contains("defineVaporSSRComponent") {
@@ -263,8 +250,21 @@ impl<'a> Transform<'a> {
         .iter()
         .enumerate()
         .map(|(index, template)| {
-          let template_literal =
-            Argument::StringLiteral(ast.alloc_string_literal(SPAN, ast.str(&template.0), None));
+          let template_literal = Argument::StringLiteral(ast.alloc_string_literal(
+            SPAN,
+            ast.str(&template.content),
+            None,
+          ));
+
+          let flags = if template.root {
+            TemplateFlags::ROOT as i32
+          } else {
+            0
+          } | if template._static {
+            TemplateFlags::STATIC as i32
+          } else {
+            0
+          };
 
           Statement::VariableDeclaration(
             ast.alloc_variable_declaration(
@@ -284,21 +284,30 @@ impl<'a> Transform<'a> {
                       ast.vec_from_iter(
                         [
                           Some(template_literal),
-                          if template.1 {
-                            Some(ast.expression_boolean_literal(SPAN, template.1).into())
-                          } else if template.2 > 0 {
-                            Some(ast.expression_boolean_literal(SPAN, false).into())
-                          } else {
-                            None
-                          },
-                          if template.2 > 0 {
+                          if flags > 0 {
                             Some(
                               ast
                                 .expression_numeric_literal(
                                   SPAN,
-                                  template.2 as f64,
+                                  flags as f64,
                                   None,
-                                  oxc_ast::ast::NumberBase::Hex,
+                                  NumberBase::Decimal,
+                                )
+                                .into(),
+                            )
+                          } else if template.ns > 0 {
+                            Some(ast.expression_boolean_literal(SPAN, false).into())
+                          } else {
+                            None
+                          },
+                          if template.ns > 0 {
+                            Some(
+                              ast
+                                .expression_numeric_literal(
+                                  SPAN,
+                                  template.ns as f64,
+                                  None,
+                                  NumberBase::Decimal,
                                 )
                                 .into(),
                             )

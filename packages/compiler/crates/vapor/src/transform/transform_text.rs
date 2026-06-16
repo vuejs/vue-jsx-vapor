@@ -257,10 +257,7 @@ fn process_text_container<'a>(
   seen: &mut HashSet<u32>,
 ) {
   let values = process_text_like_expressions(children, context, seen);
-  let literals = values
-    .iter()
-    .map(|e| get_text_like_value(e, false))
-    .collect::<Vec<_>>();
+  let literals = values.iter().map(get_text_like_value).collect::<Vec<_>>();
   if literals.iter().all(|l| l.is_some()) {
     *context.children_template.borrow_mut() = literals
       .into_iter()
@@ -365,7 +362,9 @@ pub fn process_conditional_expression<'a>(
       anchor: None,
       logical_index: None,
       append: false,
-      last: false,
+      operation_index: Some(*context.operation_index.borrow()),
+      effect_index: Some(*context.effect_index.borrow()),
+      slot_root: false,
     };
     let _context_block = context_block as *mut BlockIRNode;
     set_negative(
@@ -418,7 +417,9 @@ fn set_negative<'a>(
       logical_index: None,
       parent: None,
       append: false,
-      last: false,
+      operation_index: None,
+      effect_index: None,
+      slot_root: false,
     };
     set_negative(
       unsafe { &mut *node }.alternate.take_in(context.allocator),

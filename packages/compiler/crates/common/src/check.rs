@@ -154,6 +154,14 @@ pub fn is_custom_element(node: &JSXElement) -> bool {
   }
 }
 
+pub fn is_native_tag(tag: &str) -> bool {
+  !tag.contains("-")
+    && tag
+      .chars()
+      .next()
+      .is_some_and(|c| !(c.is_ascii_uppercase() || !c.is_ascii() || c == '_' || c == '$'))
+}
+
 pub fn is_fragment_node(node: &JSXChild) -> bool {
   match node {
     JSXChild::Fragment(_) => true,
@@ -221,6 +229,16 @@ pub fn is_built_in_directive(prop_name: &str) -> bool {
   BUILD_IN_DIRECTIVE.contains(prop_name)
 }
 
+static BOOLEAN_ATTRS: phf::Set<&'static str> = phf_set! {
+  "itemscope", "allowfullscreen", "formnovalidate", "ismap", "nomodule", "novalidate", "readonly",
+  "async", "autofocus", "autoplay", "controls", "default", "defer", "disabled", "hidden",
+  "inert", "loop", "open", "required", "reversed", "scoped", "seamless",
+  "checked", "muted", "multiple", "selected"
+};
+pub fn is_boolean_attr(prop_name: &str) -> bool {
+  BOOLEAN_ATTRS.contains(prop_name)
+}
+
 pub fn is_simple_identifier(s: &str) -> bool {
   if s.is_empty() {
     return false;
@@ -239,18 +257,6 @@ pub fn is_simple_identifier(s: &str) -> bool {
     }
   }
   true
-}
-
-// events
-static DELEGATED_EVENTS: phf::Set<&'static str> = phf_set! {
-  "beforeinput", "click", "dblclick", "contextmenu", "focusin", "focusout", "input",
-  "keydown", "keyup", "mousedown", "mousemove", "mouseout", "mouseover", "mouseup",
-  "pointerdown", "pointermove", "pointerout", "pointerover", "pointerup",
-  "touchend", "touchmove", "touchstart",
-};
-
-pub fn is_delegated_events(s: &str) -> bool {
-  DELEGATED_EVENTS.contains(s)
 }
 
 pub fn is_event_option_modifier(modifier: &str) -> bool {

@@ -64,7 +64,13 @@ export const createComponent = (
 ) => {
   if (type === Fragment) {
     const slots = args[1]
-    return slots && typeof slots.default === 'function' ? slots.default() : []
+    return slots
+      ? typeof slots === 'function'
+        ? slots()
+        : typeof slots.default === 'function'
+          ? slots.default()
+          : []
+      : []
   }
   return Vue.createComponentWithFallback(
     createProxyComponent(Vue.resolveDynamicComponent(type) as VaporComponent),

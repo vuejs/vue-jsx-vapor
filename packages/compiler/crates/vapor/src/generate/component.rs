@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use std::mem;
 
+use common::check::is_constant_node;
 use common::directive::Modifiers;
 use common::directive::get_modifier_prop_name;
 use common::text::capitalize;
@@ -269,7 +270,6 @@ fn gen_static_props<'a>(
         .unwrap();
       let prop_model_modifiers = prop.model_modifiers.clone();
       prop.model = false;
-      // normal (non-handler) props
       gen_prop(&mut properties, prop, context, true);
       gen_model(
         Some(&mut handler_groups),
@@ -280,6 +280,7 @@ fn gen_static_props<'a>(
         context,
       );
     } else {
+      // normal (non-handler) props
       gen_prop(&mut properties, prop, context, true);
     }
   }
@@ -407,6 +408,7 @@ fn gen_prop<'a>(
   context: &'a CodegenContext<'a>,
   is_static: bool,
 ) {
+  let direct_static_literal = is_direct_static_literal_prop(&prop);
   let ast = &context.ast;
   let model = prop.model;
   let handler = prop.handler;
@@ -444,24 +446,28 @@ fn gen_prop<'a>(
   } else {
     let values = gen_prop_value(values, context);
     if is_static {
-      ast.expression_arrow_function(
-        SPAN,
-        true,
-        false,
-        NONE,
-        ast.formal_parameters(
+      if direct_static_literal {
+        values
+      } else {
+        ast.expression_arrow_function(
           SPAN,
-          FormalParameterKind::ArrowFormalParameters,
-          ast.vec(),
+          true,
+          false,
           NONE,
-        ),
-        NONE,
-        ast.function_body(
-          SPAN,
-          ast.vec(),
-          ast.vec1(ast.statement_expression(SPAN, values)),
-        ),
-      )
+          ast.formal_parameters(
+            SPAN,
+            FormalParameterKind::ArrowFormalParameters,
+            ast.vec(),
+            NONE,
+          ),
+          NONE,
+          ast.function_body(
+            SPAN,
+            ast.vec(),
+            ast.vec1(ast.statement_expression(SPAN, values)),
+          ),
+        )
+      }
     } else {
       values
     }
@@ -489,6 +495,17 @@ fn gen_prop<'a>(
   if let Some(model) = model {
     properties.extend(model);
   }
+}
+
+// Static literal values are safe to emit directly because reading them cannot
+// touch reactive state. Keep handlers, v-model values, and dynamic expressions
+// as getter sources to preserve lazy access and merge semantics.
+fn is_direct_static_literal_prop(prop: &IRProp) -> bool {
+  matches!(prop.key, Expression::StringLiteral(_))
+    && !prop.handler
+    && !prop.model
+    && prop.values.len() == 1
+    && is_constant_node(&prop.values[0])
 }
 
 fn gen_model<'a>(
@@ -524,24 +541,7 @@ fn gen_model<'a>(
       SPAN,
       PropertyKind::Init,
       modifers_key,
-      ast.expression_arrow_function(
-        SPAN,
-        true,
-        false,
-        NONE,
-        ast.formal_parameters(
-          SPAN,
-          FormalParameterKind::ArrowFormalParameters,
-          ast.vec(),
-          NONE,
-        ),
-        NONE,
-        ast.function_body(
-          SPAN,
-          ast.vec(),
-          ast.vec1(ast.statement_expression(SPAN, modifiers_val)),
-        ),
-      ),
+      modifiers_val,
       false,
       false,
       !is_static,
@@ -604,24 +604,7 @@ fn gen_model<'a>(
             gen_expression(key, context, None, false),
           )
           .into(),
-        ast.expression_arrow_function(
-          SPAN,
-          true,
-          false,
-          NONE,
-          ast.formal_parameters(
-            SPAN,
-            FormalParameterKind::ArrowFormalParameters,
-            ast.vec(),
-            NONE,
-          ),
-          NONE,
-          ast.function_body(
-            SPAN,
-            ast.vec(),
-            ast.vec1(ast.statement_expression(SPAN, handler_value)),
-          ),
-        ),
+        handler_value,
         false,
         false,
         !is_static,

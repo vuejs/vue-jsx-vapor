@@ -1,3 +1,5 @@
+use common::patch_flag::VaporBlockShape;
+use common::patch_flag::VaporIfFlags;
 use napi::Either;
 use oxc_ast::NONE;
 use oxc_ast::ast::FormalParameterKind;
@@ -27,8 +29,19 @@ pub fn gen_if<'a>(
     once,
     index,
     block_shape,
+    slot_root,
     ..
   } = oper;
+  let flags = gen_if_flags(
+    block_shape,
+    once,
+    slot_root,
+    if negative.is_some() {
+      Some(index)
+    } else {
+      None
+    },
+  );
 
   let condition_expr = ast.expression_arrow_function(
     SPAN,
@@ -58,7 +71,6 @@ pub fn gen_if<'a>(
   );
 
   let mut negative_arg = None;
-  let mut negative_is_some = false;
   if let Some(negative) = negative {
     let negative = *negative;
     negative_arg = Some(match negative {
@@ -82,7 +94,6 @@ pub fn gen_if<'a>(
         ),
       ),
     });
-    negative_is_some = true;
   }
 
   let expression = ast.expression_call(
@@ -95,27 +106,15 @@ pub fn gen_if<'a>(
         Some(positive_arg.into()),
         if let Some(negative_arg) = negative_arg {
           Some(negative_arg.into())
-        } else {
+        } else if flags.is_some() {
           Some(ast.expression_null_literal(SPAN).into())
-        },
-        Some(
-          ast
-            .expression_numeric_literal(SPAN, block_shape as f64, None, NumberBase::Hex)
-            .into(),
-        ),
-        if once {
-          Some(ast.expression_boolean_literal(SPAN, true).into())
-        } else if negative_is_some {
-          Some(ast.expression_boolean_literal(SPAN, false).into())
         } else {
           None
         },
-        // index is only used when the branch can change
-        // for transition keys and keep-alive caching
-        if negative_is_some {
+        if let Some(flags) = flags {
           Some(
             ast
-              .expression_numeric_literal(SPAN, index as f64, None, NumberBase::Hex)
+              .expression_numeric_literal(SPAN, flags as f64, None, NumberBase::Decimal)
               .into(),
           )
         } else {
@@ -145,4 +144,26 @@ pub fn gen_if<'a>(
   } else {
     ast.statement_expression(SPAN, expression)
   }
+}
+
+fn gen_if_flags(block_shape: i32, once: bool, slot_root: bool, index: Option<i32>) -> Option<i32> {
+  let mut flags = block_shape;
+  if slot_root {
+    flags |= VaporIfFlags::SlotRoot as i32;
+  }
+  if once {
+    flags |= VaporIfFlags::Once as i32;
+  } else if let Some(index) = index {
+    // The encoded index is shifted by +1 so runtime can use 0 as the unkeyed
+    // sentinel while preserving source index 0.
+    flags |= (index + 1) << VaporIfFlags::IndexShift as i32;
+  }
+
+  // This is the only omitted-flags case: true branch is single-root, false
+  // branch is empty, and there is no once/index metadata.
+  if flags == VaporBlockShape::SingleRoot as i32 {
+    return None;
+  }
+
+  return Some(flags);
 }

@@ -69,7 +69,7 @@ pub unsafe fn transform_v_memo<'a>(
                   SPAN,
                   *context.cache_index.borrow() as f64,
                   None,
-                  NumberBase::Hex,
+                  NumberBase::Decimal,
                 )
                 .into(),
             ]),

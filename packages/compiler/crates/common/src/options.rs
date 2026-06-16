@@ -40,12 +40,19 @@ pub struct SlotScope<'a> {
   pub identifiers: Vec<&'a str>,
 }
 
+#[derive(Debug)]
+pub struct Template {
+  pub content: String,
+  pub ns: i32,
+  pub root: bool,
+  pub _static: bool,
+}
+
 pub struct TransformOptions<'a> {
   pub allocator: Allocator,
   pub semantic: RefCell<Semantic<'a>>,
-  pub templates: RefCell<Vec<(String, bool, i32)>>,
+  pub templates: RefCell<Vec<Template>>,
   pub helpers: RefCell<BTreeSet<&'a str>>,
-  pub delegates: RefCell<BTreeSet<&'a str>>,
   pub hoists: RefCell<Vec<Expression<'a>>>,
   pub on_error: Box<dyn Fn(ErrorCodes, Span) + 'a>,
   pub create_root_jsx: RefCell<Option<CreateRootJSX<'a>>>,
@@ -65,6 +72,7 @@ pub struct TransformOptions<'a> {
   pub identifiers: RefCell<HashMap<&'a str, i32>>,
   pub slot_scopes: RefCell<IndexMap<Span, SlotScope<'a>>>,
   pub cache_index: RefCell<i32>,
+  pub key_index: RefCell<i32>,
   pub optimize: bool,
   pub runtime_module_name: Option<String>,
   pub scope_identifiers_map: RefCell<HashMap<Span, (bool, Vec<&'a str>)>>,
@@ -80,7 +88,6 @@ impl<'a> Default for TransformOptions<'a> {
       source_type: RefCell::new(SourceType::jsx()),
       templates: RefCell::new(vec![]),
       helpers: RefCell::new(BTreeSet::new()),
-      delegates: RefCell::new(BTreeSet::new()),
       hoists: RefCell::new(vec![]),
       source_map: false,
       on_error: Box::new(|_, _| {}),
@@ -97,6 +104,7 @@ impl<'a> Default for TransformOptions<'a> {
       identifiers: RefCell::new(HashMap::new()),
       slot_scopes: RefCell::new(IndexMap::new()),
       cache_index: RefCell::new(0),
+      key_index: RefCell::new(0),
       optimize: true,
       runtime_module_name: None,
       scope_identifiers_map: RefCell::new(HashMap::new()),

@@ -14,7 +14,7 @@ fn static_template() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div><div>hello</div><input><span>", true);
+  const _t0 = _template("<div><div>hello</div><input><span>", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -52,7 +52,7 @@ fn consecutive_text() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
-  const _t0 = _template("<div>");
+  const _t0 = _template("<div>", 2);
   (() => {
   	const _n2 = _t0();
   	const _n0 = _createNodes(() => msg, " ");
@@ -67,7 +67,7 @@ fn escapes_raw_static_text() {
 
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div>\xA0", true);
+  const _t0 = _template("<div>\xA0", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -86,7 +86,7 @@ fn escapes_raw_static_text_when_generating_the_template_string() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<code>\xA0&lt;script&gt;\xA0", true);
+  const _t0 = _template("<code>\xA0&lt;script&gt;\xA0", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -99,7 +99,7 @@ fn should_not_escape_quotes_in_root_level_text_nodes() {
   let code = transform(r#"<>Howdy y'all</>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("Howdy y'all");
+  const _t0 = _template("Howdy y'all", 2);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -112,7 +112,7 @@ fn should_not_escape_double_quotes_in_root_level_text_nodes() {
   let code = transform(r#"<>Say "hello"</>"#, None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("Say \"hello\"");
+  const _t0 = _template("Say \"hello\"", 2);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -126,12 +126,12 @@ fn should_not_escape_quotes_in_template_v_if_text() {
   let code = transform(r#"<template v-if="ok">Howdy y'all</template>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template("Howdy y'all");
+  const _t0 = _template("Howdy y'all", 2);
   (() => {
   	const _n0 = _createIf(() => "ok", () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, 1, true);
+  	}, null, 49);
   	return _n0;
   })();
   "#);
@@ -143,13 +143,13 @@ fn should_not_escape_quotes_in_component_slot_text() {
   let code = transform("<Comp>Howdy y'all</Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { template as _template, withVaporCtx as _withVaporCtx } from "vue";
-  const _t0 = _template("Howdy y'all");
+  import { template as _template } from "vue";
+  const _t0 = _template("Howdy y'all", 2);
   (() => {
-  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n1 = _createComponent(Comp, null, () => {
   		const _n0 = _t0();
   		return _n0;
-  	}) }, true);
+  	}, true);
   	return _n1;
   })();
   "#);
@@ -160,7 +160,7 @@ fn text_like() {
   let code = transform("<div>{ (2) }{`foo${1}`}{1}{1n}</div>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div>2foo111", true);
+  const _t0 = _template("<div>2foo111", 1);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -179,7 +179,7 @@ fn conditional_expression() {
   import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span> ");
-  const _t1 = _template("<div>fail");
+  const _t1 = _template("<div>fail", 2);
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
@@ -192,7 +192,7 @@ fn conditional_expression() {
   	}, () => {
   		const _n6 = _createNodes(null);
   		return _n6;
-  	}, 1, false, 1), 5, false, 0);
+  	}, 545), 261);
   	return _n0;
   })();
   "#);
@@ -204,8 +204,8 @@ fn multiple_conditional() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template } from "vue";
-  const _t0 = _template(" ");
-  const _t1 = _template("<span>");
+  const _t0 = _template(" ", 2);
+  const _t1 = _template("<span>", 2);
   (() => {
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _createNodes(() => ok);
@@ -213,7 +213,7 @@ fn multiple_conditional() {
   	}, () => {
   		const _n4 = _createNodes(() => fail);
   		return _n4;
-  	}, 5, false, 0);
+  	}, 261);
   	const _n5 = _t0();
   	const _n6 = _createIf(() => foo, () => {
   		const _n8 = _createNodes(() => foo);
@@ -221,7 +221,7 @@ fn multiple_conditional() {
   	}, () => {
   		const _n10 = _t1();
   		return _n10;
-  	}, 5, false, 1);
+  	}, 581);
   	return [
   		_n0,
   		_n5,
@@ -237,7 +237,7 @@ fn logical_expression() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> ", true);
+  const _t0 = _template("<div> ", 1);
   (() => {
   	const _n0 = _createNodes(() => ok && (() => {
   		const _n0 = _t0();
@@ -256,7 +256,7 @@ fn logical_expression_or() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> ", true);
+  const _t0 = _template("<div> ", 1);
   (() => {
   	const _n0 = _t0();
   	const _x0 = _txt(_n0);
@@ -277,7 +277,7 @@ fn logical_expression_coalesce() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div> ", true);
+  const _t0 = _template("<div> ", 1);
   (() => {
   	const _n0 = _t0();
   	const _x0 = _txt(_n0);
@@ -308,9 +308,9 @@ fn expression_map() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template, txt as _txt } from "vue";
-  const _t0 = _template("<div>1", true);
-  const _t1 = _template("<span> ", true);
-  const _t2 = _template("<br>", true);
+  const _t0 = _template("<div>1", 3);
+  const _t1 = _template("<span> ", 1);
+  const _t2 = _template("<br>", 3);
   (() => {
   	const _n0 = _createNodes(() => Array.from({ length: count.value }).map((_, index) => {
   		if (index > 1) {
@@ -349,7 +349,7 @@ fn expression_with_comment() {
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { child as _child, template as _template } from "vue";
-  const _t0 = _template("<div> <a>", true);
+  const _t0 = _template("<div> <a>", 1);
   (() => {
   	const _n1 = _t0();
   	const _n0 = _child(_n1);
@@ -364,12 +364,11 @@ fn slot_interpolation() {
   let code = transform(r#"<Comp>{Hello}</Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n1 = _createComponent(Comp, null, () => {
   		const _n0 = _createNodes(() => Hello);
   		return _n0;
-  	}) }, true);
+  	}, true);
   	return _n1;
   })();
   "#)
@@ -380,12 +379,11 @@ fn slot_literal_interpolation() {
   let code = transform(r#"<Comp>{ "Hello" }</Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { withVaporCtx as _withVaporCtx } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  	const _n1 = _createComponent(Comp, null, () => {
   		const _n0 = _createNodes("Hello");
   		return _n0;
-  	}) }, true);
+  	}, true);
   	return _n1;
   })();
   "#)
@@ -415,7 +413,7 @@ fn fragment_with_empty_interpolation() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("Parent");
+  const _t0 = _template("Parent", 2);
   (() => {
   	const _n0 = _t0();
   	return _n0;

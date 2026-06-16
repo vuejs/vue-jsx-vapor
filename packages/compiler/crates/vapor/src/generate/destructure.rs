@@ -92,7 +92,7 @@ impl<'a> CodegenContext<'a> {
                   SPAN,
                   index as f64,
                   None,
-                  NumberBase::Hex,
+                  NumberBase::Decimal,
                 ))),
                 false,
               );
@@ -101,7 +101,7 @@ impl<'a> CodegenContext<'a> {
                 .member_expression_computed(
                   SPAN,
                   path,
-                  ast.expression_numeric_literal(SPAN, index as f64, None, NumberBase::Hex),
+                  ast.expression_numeric_literal(SPAN, index as f64, None, NumberBase::Decimal),
                   false,
                 )
                 .into();

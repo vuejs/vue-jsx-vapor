@@ -41,7 +41,7 @@ fn empty_expression() {
   let code = transform("<div foo={}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div>", true);
+  const _t0 = _template("<div>", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -210,6 +210,26 @@ fn namespace_prop() {
   _openBlock(), _createElementBlock("div", {
   	"xmlns:xlink": "http://www.w3.org/1999/xlink",
   	"foo:bar": foo
+  }, null, 8, _hoisted_1);
+  "#);
+}
+
+#[test]
+fn deduped_props() {
+  let code = transform(
+    r#"<div foo="foo" foo={foo} />"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["foo"];
+  _openBlock(), _createElementBlock("div", {
+  	foo: "foo",
+  	foo
   }, null, 8, _hoisted_1);
   "#);
 }

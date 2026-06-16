@@ -103,7 +103,7 @@ pub unsafe fn transform_text<'a>(
           if let Expression::ConditionalExpression(exp) = exp {
             transform_condition_expression(exp, unsafe { &mut *context_node }, context);
             continue;
-          } else if exp.is_literal() {
+          } else if exp.is_literal() || !context.options.optimize {
             call_args.push(
               context
                 .process_expression(child.expression.to_expression_mut())
@@ -229,7 +229,7 @@ fn transform_branch<'a>(
       SPAN,
       PropertyKind::Init,
       ast.property_key_static_identifier(SPAN, "key"),
-      ast.expression_numeric_literal(SPAN, key as f64, None, NumberBase::Hex),
+      ast.expression_numeric_literal(SPAN, key as f64, None, NumberBase::Decimal),
       false,
       false,
       false,

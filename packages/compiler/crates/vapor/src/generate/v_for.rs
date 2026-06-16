@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-use common::{expression::is_globally_allowed, walk::WalkIdentifiers};
+use common::{expression::is_globally_allowed, patch_flag::VaporVForFlags, walk::WalkIdentifiers};
 use oxc_allocator::CloneIn;
 use oxc_ast::{
   NONE,
   ast::{
-    Argument, AssignmentOperator, AssignmentTarget, BinaryExpression, BinaryOperator, Expression,
-    FormalParameterKind, NumberBase, Statement, VariableDeclarationKind,
+    Argument, BinaryExpression, BinaryOperator, Expression, FormalParameterKind, NumberBase,
+    Statement, VariableDeclarationKind,
   },
 };
 use oxc_ast_visit::Visit;
@@ -16,29 +16,8 @@ use crate::{
   generate::{
     CodegenContext, block::gen_block_content, expression::gen_expression, operation::gen_operation,
   },
-  ir::index::{BlockIRNode, ForIRNode, IREffect, OperationNode},
+  ir::index::{BlockIRNode, ForIRNode, IRDynamicInfo, IREffect, OperationNode},
 };
-
-/**
- * Flags to optimize vapor `createFor` runtime behavior, shared between the
- * compiler and the runtime
- */
-pub enum VaporVForFlags {
-  /**
-   * v-for is the only child of a parent container, so it can take the fast
-   * path with textContent = '' when the whole list is emptied
-   */
-  FastRemove = 1,
-  /**
-   * v-for used on component - we can skip creating child scopes for each block
-   * because the component itself already has a scope.
-   */
-  IsComponent = 1 << 1,
-  /**
-   * v-for inside v-ince
-   */
-  Once = 1 << 2,
-}
 
 pub fn gen_for<'a>(
   statements: &mut oxc_allocator::Vec<'a, Statement<'a>>,
@@ -58,6 +37,7 @@ pub fn gen_for<'a>(
     once,
     component,
     only_child,
+    slot_root,
     ..
   } = oper;
 
@@ -148,65 +128,95 @@ pub fn gen_for<'a>(
 
   let (effect_patterns, selector_patterns, key_only_binding_patterns) =
     match_patterns(&mut render, &key_prop, &id_map, context);
+  let key_prop_for_effects = if !selector_patterns.is_empty() {
+    key_prop.as_ref().map(|expr| expr.clone_in(ast.allocator))
+  } else {
+    None
+  };
   let mut selector_declarations = ast.vec();
-  let mut selector_setup = ast.vec();
 
+  let selector_patterns_len = selector_patterns.len();
+  let mut on_reset_calls = ast.vec();
   for (i, selector) in selector_patterns.into_iter().enumerate() {
-    let selector_name = format!("_selector{id}_{i}");
+    let selector_name = ast.str(&if selector_patterns_len > 1 {
+      format!("_selector{id}_{i}")
+    } else {
+      format!("_selector{id}")
+    });
     selector_declarations.push(Statement::VariableDeclaration(
       ast.alloc_variable_declaration(
         SPAN,
-        VariableDeclarationKind::Let,
+        VariableDeclarationKind::Const,
         ast.vec1(ast.variable_declarator(
           SPAN,
-          VariableDeclarationKind::Let,
-          ast.binding_pattern_binding_identifier(SPAN, ast.str(&selector_name)),
+          VariableDeclarationKind::Const,
+          ast.binding_pattern_binding_identifier(SPAN, selector_name),
           NONE,
-          None,
+          Some(ast.expression_call(
+            SPAN,
+            ast.expression_identifier(SPAN, ast.str(context.options.helper("_createSelector"))),
+            NONE,
+            ast.vec1(Argument::ArrowFunctionExpression(
+              ast.alloc_arrow_function_expression(
+                SPAN,
+                true,
+                false,
+                NONE,
+                ast.formal_parameters(
+                  SPAN,
+                  FormalParameterKind::ArrowFormalParameters,
+                  ast.vec(),
+                  NONE,
+                ),
+                NONE,
+                ast.function_body(
+                  SPAN,
+                  ast.vec(),
+                  ast.vec1(
+                    ast.statement_expression(SPAN, gen_expression(selector, context, None, false)),
+                  ),
+                ),
+              ),
+            )),
+            false,
+          )),
           false,
         )),
         false,
       ),
     ));
-    selector_setup.push(ast.statement_expression(
-      SPAN,
-      ast.expression_assignment(
+    on_reset_calls.push(
+      ast.statement_expression(
         SPAN,
-        AssignmentOperator::Assign,
-        AssignmentTarget::AssignmentTargetIdentifier(
-          ast.alloc_identifier_reference(SPAN, ast.str(&selector_name)),
-        ),
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.str("createSelector")),
-          NONE,
-          ast.vec1(Argument::ArrowFunctionExpression(
-            ast.alloc_arrow_function_expression(
+          ast
+            .member_expression_static(
               SPAN,
-              true,
+              ast.expression_identifier(SPAN, ast.str(&format!("_n{}", id))),
+              ast.identifier_name(SPAN, "onReset"),
               false,
-              NONE,
-              ast.formal_parameters(
+            )
+            .into(),
+          NONE,
+          ast.vec1(
+            ast
+              .member_expression_static(
                 SPAN,
-                FormalParameterKind::ArrowFormalParameters,
-                ast.vec(),
-                NONE,
-              ),
-              NONE,
-              ast.function_body(
-                SPAN,
-                ast.vec(),
-                ast.vec1(
-                  ast.statement_expression(SPAN, gen_expression(selector, context, None, false)),
-                ),
-              ),
-            ),
-          )),
+                ast.expression_identifier(SPAN, selector_name),
+                ast.identifier_name(SPAN, "reset"),
+                false,
+              )
+              .into(),
+          ),
           false,
         ),
       ),
-    ));
+    );
   }
+
+  let fragment_block = is_fragment_block(&render);
+  let single_node_block = !component && is_single_node_block(&render);
 
   let block_fn = context.with_id(
     || {
@@ -240,51 +250,58 @@ pub fn gen_for<'a>(
                   let mut body = ast.vec();
                   for oper in effect.operations {
                     let _context_block = context_block as *mut BlockIRNode;
-                    gen_operation(
-                      &mut body,
-                      oper,
-                      context,
-                      unsafe { &mut *_context_block },
-                      &vec![],
-                    );
+                    gen_operation(&mut body, oper, context, unsafe { &mut *_context_block });
                   }
-                  statements.push(ast.statement_expression(
-                    SPAN,
-                    ast.expression_call(
+                  statements.push(
+                    ast.statement_expression(
                       SPAN,
-                      ast.expression_identifier(SPAN, ast.str(&format!("_selector{id}_{i}"))),
-                      NONE,
-                      ast.vec1(Argument::ArrowFunctionExpression(
-                        ast.alloc_arrow_function_expression(
+                      ast.expression_call(
+                        SPAN,
+                        ast.expression_identifier(
                           SPAN,
-                          false,
-                          false,
-                          NONE,
-                          ast.formal_parameters(
-                            SPAN,
-                            FormalParameterKind::ArrowFormalParameters,
-                            ast.vec(),
-                            NONE,
-                          ),
-                          NONE,
-                          ast.function_body(SPAN, ast.vec(), body),
+                          ast.str(&if selector_patterns_len > 1 {
+                            format!("_selector{id}_{i}")
+                          } else {
+                            format!("_selector{id}")
+                          }),
                         ),
-                      )),
-                      false,
+                        NONE,
+                        ast.vec_from_array([
+                          gen_expression(
+                            key_prop_for_effects
+                              .as_ref()
+                              .map(|i| i.clone_in(ast.allocator))
+                              .unwrap(),
+                            context,
+                            None,
+                            false,
+                          )
+                          .into(),
+                          Argument::ArrowFunctionExpression(ast.alloc_arrow_function_expression(
+                            SPAN,
+                            false,
+                            false,
+                            NONE,
+                            ast.formal_parameters(
+                              SPAN,
+                              FormalParameterKind::ArrowFormalParameters,
+                              ast.vec(),
+                              NONE,
+                            ),
+                            NONE,
+                            ast.function_body(SPAN, ast.vec(), body),
+                          )),
+                        ]),
+                        false,
+                      ),
                     ),
-                  ));
+                  );
                 }
 
                 for effect in key_only_binding_patterns {
                   for oper in effect.operations {
                     let _context_block = context_block as *mut BlockIRNode;
-                    gen_operation(
-                      statements,
-                      oper,
-                      context,
-                      unsafe { &mut *_context_block },
-                      &vec![],
-                    )
+                    gen_operation(statements, oper, context, unsafe { &mut *_context_block })
                   }
                 }
               })),
@@ -306,8 +323,17 @@ pub fn gen_for<'a>(
   if component {
     flags |= VaporVForFlags::IsComponent as i32;
   }
+  if fragment_block {
+    flags |= VaporVForFlags::IsFragment as i32;
+  }
+  if single_node_block {
+    flags |= VaporVForFlags::IsSingleNode as i32;
+  }
   if once {
     flags |= VaporVForFlags::Once as i32;
+  }
+  if slot_root {
+    flags |= VaporVForFlags::SlotRoot as i32;
   }
 
   let gen_callback =
@@ -380,46 +406,7 @@ pub fn gen_for<'a>(
       None
     };
 
-  let ast = &context.ast;
-
   statements.extend(selector_declarations);
-
-  let selector_setup_expression = if !selector_setup.is_empty() {
-    Some(
-      ast
-        .expression_arrow_function(
-          SPAN,
-          false,
-          false,
-          NONE,
-          ast.formal_parameters(
-            SPAN,
-            FormalParameterKind::ArrowFormalParameters,
-            ast.vec1(ast.plain_formal_parameter(
-              SPAN,
-              ast.binding_pattern_object_pattern(
-                SPAN,
-                ast.vec1(ast.binding_property(
-                  SPAN,
-                  ast.property_key_static_identifier(SPAN, "createSelector"),
-                  ast.binding_pattern_binding_identifier(SPAN, "createSelector"),
-                  true,
-                  false,
-                )),
-                NONE,
-              ),
-            )),
-            NONE,
-          ),
-          NONE,
-          ast.function_body(SPAN, ast.vec(), selector_setup),
-        )
-        .into(),
-    )
-  } else {
-    None
-  };
-
   statements.push(Statement::VariableDeclaration(
     ast.alloc_variable_declaration(
       SPAN,
@@ -443,16 +430,12 @@ pub fn gen_for<'a>(
                   if flags > 0 {
                     Some(
                       ast
-                        .expression_numeric_literal(SPAN, flags as f64, None, NumberBase::Hex)
+                        .expression_numeric_literal(SPAN, flags as f64, None, NumberBase::Decimal)
                         .into(),
                     )
-                  } else if selector_setup_expression.is_some() {
-                    Some(ast.expression_identifier(SPAN, ast.str("void 0")).into())
                   } else {
                     None
                   },
-                  selector_setup_expression,
-                  // todo: hydrationNode
                 ]
                 .into_iter()
                 .flatten(),
@@ -465,7 +448,45 @@ pub fn gen_for<'a>(
       ),
       false,
     ),
-  ))
+  ));
+  statements.extend(on_reset_calls);
+}
+
+fn is_single_node_block(block: &BlockIRNode) -> bool {
+  let Some(child) = get_single_returned_child(block) else {
+    return false;
+  };
+  child.template.is_some()
+}
+
+fn is_fragment_block(block: &BlockIRNode) -> bool {
+  let child = get_single_returned_child(block);
+  let Some(operation) = child.map(|child| child.operation.as_deref()).flatten() else {
+    return false;
+  };
+  matches!(
+    operation,
+    // <slot/>
+    OperationNode::SlotOutlet(_) |
+    // <template v-for> with a single v-for child
+    OperationNode::For(_) |
+    // <template v-for> with a single dynamic :key child
+    OperationNode::Key(_)
+  ) || // <template v-for> with a single dynamic v-if child
+    matches!(operation, OperationNode::If(op) if !op.once)
+}
+
+fn get_single_returned_child<'a>(block: &'a BlockIRNode) -> Option<&'a IRDynamicInfo<'a>> {
+  if block.returns.len() != 1 {
+    return None;
+  }
+  let id = block.returns[0];
+  for child in block.dynamic.children.iter() {
+    if child.id.is_some_and(|i| i == id) {
+      return Some(child);
+    }
+  }
+  None
 }
 
 fn match_patterns<'a>(
@@ -477,24 +498,27 @@ fn match_patterns<'a>(
   let mut effect_patterns = vec![];
   let mut selector_patterns = vec![];
   let mut key_only_binding_patterns = vec![];
+  let mut removed_effect_indexes = vec![];
 
   if let Some(key_prop) = key_prop {
     let key_content = key_prop.span().source_text(context.source_text);
     let effects = &mut render.effect;
     let mut kept = Vec::with_capacity(effects.len());
     let mut old = std::mem::take(effects);
-    for effect in old.drain(..) {
+    for (index, effect) in old.drain(..).enumerate() {
       let effect_ptr = &effect as *const _;
       if let Some(selector) =
         match_selector_pattern(unsafe { &*effect_ptr }, key_content, id_map, context)
       {
         effect_patterns.push(effect);
         selector_patterns.push(selector);
+        removed_effect_indexes.push(index);
       } else if !effect.operations.is_empty()
         && let Some(ast) = get_expression(unsafe { &*effect_ptr })
         && key_content.eq(ast.span().source_text(context.source_text))
       {
         key_only_binding_patterns.push(effect);
+        removed_effect_indexes.push(index);
       } else {
         kept.push(effect)
       }
@@ -502,11 +526,42 @@ fn match_patterns<'a>(
     *effects = kept;
   }
 
+  if !removed_effect_indexes.is_empty() {
+    shift_effect_boundaries(&mut render.dynamic, &mut removed_effect_indexes);
+  }
+
   (
     effect_patterns,
     selector_patterns,
     key_only_binding_patterns,
   )
+}
+
+fn shift_effect_boundaries(dynamic: &mut IRDynamicInfo, removed_effect_indexes: &mut Vec<usize>) {
+  if let Some(operation) = &mut dynamic.operation
+    && let Some(effect_index) = match operation.as_mut() {
+      OperationNode::If(operation) => operation.effect_index.as_mut(),
+      OperationNode::For(operation) => operation.effect_index.as_mut(),
+      OperationNode::CreateComponent(operation) => operation.effect_index.as_mut(),
+      OperationNode::SlotOutlet(operation) => operation.effect_index.as_mut(),
+      OperationNode::Key(operation) => operation.effect_index.as_mut(),
+      _ => None,
+    }
+  {
+    let mut offset = 0;
+    for removed_index in removed_effect_indexes.iter() {
+      if removed_index < effect_index {
+        offset += 1;
+      } else {
+        break;
+      }
+    }
+    *effect_index -= offset;
+  }
+
+  for child in dynamic.children.iter_mut() {
+    shift_effect_boundaries(child, removed_effect_indexes);
+  }
 }
 
 fn match_selector_pattern<'a>(

@@ -5,7 +5,10 @@ use oxc_ast::ast::{JSXChild, JSXExpression};
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, InsertNodeIRNode, OperationNode},
-  transform::TransformContext,
+  transform::{
+    TransformContext,
+    transform_element::{get_child_template_close_tags, is_in_same_template_as_parent},
+  },
 };
 
 use common::{
@@ -17,10 +20,11 @@ use common::{
 
 /// # SAFETY
 pub unsafe fn transform_children<'a>(
-  directives: &Directives,
+  directives: &Directives<'a>,
   node: &mut JSXChild<'a>,
   context: &TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
+  parent_node: Option<&JSXChild<'a>>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let is_fragment_or_component =
     RootNode::is_root(node) || is_fragment_node(node) || directives.is_component;
@@ -31,6 +35,11 @@ pub unsafe fn transform_children<'a>(
 
   let _node = node as *mut _;
   let parent_tag_name = directives.tag_name;
+  let (child_template_close_tags, child_template_close_blocks) = if !is_fragment_or_component {
+    get_child_template_close_tags(parent_tag_name, parent_node, context)
+  } else {
+    Default::default()
+  };
   let children = match node {
     JSXChild::Element(node) => &mut node.children,
     JSXChild::Fragment(node) => &mut node.children,
@@ -61,8 +70,9 @@ pub unsafe fn transform_children<'a>(
     }
     let mut tag = "";
     let mut next_is_interpolation = false;
+    let is_text_child = matches!(&child, JSXChild::Text(_));
     let exit_context = context.create(
-      if let JSXChild::Text(_) = child
+      if is_text_child
         && let Some(next) = unsafe { &mut *children_ptr }.get_mut(i + 1)
         && let JSXChild::ExpressionContainer(exp) = next
         && !matches!(
@@ -84,40 +94,54 @@ pub unsafe fn transform_children<'a>(
       } else {
         true
       },
-      parent_tag_name,
       unsafe { &mut *_context_block },
     );
+    let is_same_template = is_in_same_template_as_parent(tag, parent_tag_name);
+    if is_same_template {
+      *context.template_close_tags.borrow_mut() = child_template_close_tags.clone();
+      *context.template_close_blocks.borrow_mut() = child_template_close_blocks;
+    } else {
+      context.template_close_tags.borrow_mut().clear();
+      *context.template_close_blocks.borrow_mut() = false;
+    }
     context.transform_node(
       Some(unsafe { &mut *_context_block }),
       Some(unsafe { &mut *_node }),
     );
 
     let mut parent_dynamic = context.parent_dynamic.borrow_mut();
-    let child_dynamic = &mut context_block.dynamic;
-    let flags = child_dynamic.flags;
+    let flags = context_block.dynamic.flags;
     if is_fragment_or_component {
       if next_is_interpolation {
         context.template.borrow_mut().clear();
       } else {
-        context.register_template(child_dynamic, Some(tag));
-        context.reference(child_dynamic);
+        context.register_template(
+          context_block,
+          Some(tag),
+          is_text_child || context.can_use_static_template(&context_block, tag),
+        );
+        context.reference(&mut context_block.dynamic);
         if flags & DynamicFlag::NonTemplate as i32 == 0 || flags & DynamicFlag::Insert as i32 != 0 {
-          context_block.returns.push(child_dynamic.id.unwrap());
+          context_block
+            .returns
+            .push(context_block.dynamic.id.unwrap());
         }
       }
     } else {
       parent_children_template.push(Cow::Owned(context.template.take()));
     }
 
-    if child_dynamic.has_dynamic_child
-      || child_dynamic.id.is_some()
+    if context_block.dynamic.has_dynamic_child
+      || context_block.dynamic.id.is_some()
       || flags & DynamicFlag::NonTemplate as i32 != 0
       || flags & DynamicFlag::Insert as i32 != 0
     {
       parent_dynamic.has_dynamic_child = true;
     }
 
-    parent_dynamic.children.insert(i, mem::take(child_dynamic));
+    parent_dynamic
+      .children
+      .insert(i, mem::take(&mut context_block.dynamic));
 
     exit_context();
     i += 1;
@@ -138,8 +162,6 @@ fn process_dynamic_children<'a>(
 ) {
   let mut prev_dynamics = VecDeque::new();
   let mut static_count = 0;
-  let mut dynamic_count = 0;
-  let mut last_insertion_child = None;
   let children = &mut context_block.dynamic.children as *mut Vec<IRDynamicInfo>;
 
   // Track logical index for each child.
@@ -153,7 +175,6 @@ fn process_dynamic_children<'a>(
     let child_ptr = child as *mut IRDynamicInfo;
     if flags & DynamicFlag::Insert as i32 != 0 {
       child.logical_index = Some(logical_index);
-      last_insertion_child = Some(unsafe { &mut *child_ptr });
       prev_dynamics.push_back(child);
       logical_index += 1;
     }
@@ -177,7 +198,6 @@ fn process_dynamic_children<'a>(
             false,
           );
         }
-        dynamic_count += prev_dynamics.len();
         prev_dynamics.clear();
       }
       static_count += 1;
@@ -186,27 +206,15 @@ fn process_dynamic_children<'a>(
   }
 
   if !prev_dynamics.is_empty() {
+    let logical_index = prev_dynamics.get(0).unwrap().logical_index.unwrap();
     register_insertion(
       &mut prev_dynamics,
       context,
       context_block,
       // the logical index of append child
-      (dynamic_count + static_count) as i32,
+      logical_index,
       true,
     );
-  }
-
-  if let Some(last_insertion_child) = last_insertion_child
-    && let Some(operation) = last_insertion_child.operation.as_mut()
-  {
-    match operation.as_mut() {
-      OperationNode::If(operation) => operation.last = true,
-      OperationNode::For(operation) => operation.last = true,
-      OperationNode::CreateComponent(operation) => operation.last = true,
-      OperationNode::SlotOutlet(operation) => operation.last = true,
-      OperationNode::Key(operation) => operation.last = true,
-      _ => (),
-    };
   }
 }
 

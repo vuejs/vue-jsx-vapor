@@ -12,18 +12,17 @@ fn basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  _delegateEvents("click");
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { createFor as _createFor, delegateEvents as _delegateEvents, template as _template, txt as _txt } from "vue";
+  import { createFor as _createFor, on as _on, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   (() => {
   	const _n0 = _createFor(() => items, (_for_item0) => {
   		const _n2 = _t0();
-  		_n2.$evtclick = () => remove(_for_item0.value);
+  		_on(_n2, "click", () => remove(_for_item0.value));
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value);
   		return _n2;
-  	}, (item) => item.id);
+  	}, (item) => item.id, 8);
   	return _n0;
   })();
   "#);
@@ -51,7 +50,36 @@ fn key_only_binding_pattern() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value.id + _for_item0.value.id);
   		return _n2;
-  	}, (row) => row.id);
+  	}, (row) => row.id, 8);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn key_only_binding_pattern2() {
+  let code = transform(
+    r#"<tr
+      v-for={row in rows}
+      key={row.id}
+      class={row.id === state.selected ? 'danger' : ''}
+    ></tr>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createFor as _createFor, createSelector as _createSelector, setClassName as _setClassName, template as _template } from "vue";
+  const _t0 = _template("<tr>");
+  (() => {
+  	const _selector0 = _createSelector(() => state.selected);
+  	const _n0 = _createFor(() => rows, (_for_item0) => {
+  		const _n2 = _t0();
+  		_selector0(_for_item0.value.id, () => {
+  			_setClassName(_n2, _for_item0.value.id === state.selected ? 1 : 0, "danger");
+  		});
+  		return _n2;
+  	}, (row) => row.id, 8);
+  	_n0.onReset(_selector0.reset);
   	return _n0;
   })();
   "#);
@@ -69,20 +97,19 @@ fn selector_pattern1() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
+  import { createFor as _createFor, createSelector as _createSelector, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
   const _t0 = _template("<tr> ");
   (() => {
-  	let _selector0_0;
+  	const _selector0 = _createSelector(() => selected);
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
   		const _x2 = _txt(_n2);
-  		_selector0_0(() => {
+  		_selector0(_for_item0.value.id, () => {
   			_setText(_x2, _toDisplayString(selected === _for_item0.value.id ? "danger" : ""));
   		});
   		return _n2;
-  	}, (row) => row.id, void 0, ({ createSelector }) => {
-  		_selector0_0 = createSelector(() => selected);
-  	});
+  	}, (row) => row.id, 8);
+  	_n0.onReset(_selector0.reset);
   	return _n0;
   })();
   "#);
@@ -100,19 +127,18 @@ fn selector_pattern2() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, setClass as _setClass, template as _template } from "vue";
+  import { createFor as _createFor, createSelector as _createSelector, setClassName as _setClassName, template as _template } from "vue";
   const _t0 = _template("<tr>");
   (() => {
-  	let _selector0_0;
+  	const _selector0 = _createSelector(() => selected);
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
-  		_selector0_0(() => {
-  			_setClass(_n2, selected === _for_item0.value.id ? "danger" : "");
+  		_selector0(_for_item0.value.id, () => {
+  			_setClassName(_n2, selected === _for_item0.value.id ? 1 : 0, "danger");
   		});
   		return _n2;
-  	}, (row) => row.id, void 0, ({ createSelector }) => {
-  		_selector0_0 = createSelector(() => selected);
-  	});
+  	}, (row) => row.id, 8);
+  	_n0.onReset(_selector0.reset);
   	return _n0;
   })();
   "#);
@@ -131,14 +157,14 @@ fn selector_pattern3() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
+  import { createFor as _createFor, renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
   const _t0 = _template("<tr>");
   (() => {
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
-  		_renderEffect(() => _setClass(_n2, _for_item0.value.label === _for_item0.value.id ? "danger" : ""));
+  		_renderEffect(() => _setClassName(_n2, _for_item0.value.label === _for_item0.value.id ? 1 : 0, "danger"));
   		return _n2;
-  	}, (row) => row.id);
+  	}, (row) => row.id, 8);
   	return _n0;
   })();
   "#);
@@ -156,19 +182,18 @@ fn selector_pattern4() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, setClass as _setClass, template as _template } from "vue";
+  import { createFor as _createFor, createSelector as _createSelector, setClassName as _setClassName, template as _template } from "vue";
   const _t0 = _template("<tr>");
   (() => {
-  	let _selector0_0;
+  	const _selector0 = _createSelector(() => selected);
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
-  		_selector0_0(() => {
-  			_setClass(_n2, { danger: _for_item0.value.id === selected });
+  		_selector0(_for_item0.value.id, () => {
+  			_setClassName(_n2, _for_item0.value.id === selected ? 1 : 0, "danger");
   		});
   		return _n2;
-  	}, (row) => row.id, void 0, ({ createSelector }) => {
-  		_selector0_0 = createSelector(() => selected);
-  	});
+  	}, (row) => row.id, 8);
+  	_n0.onReset(_selector0.reset);
   	return _n0;
   })();
   "#);
@@ -186,14 +211,49 @@ fn should_not_selector_pattern() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createFor as _createFor, renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
+  import { createFor as _createFor, renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
   const _t0 = _template("<tr>");
   (() => {
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n2 = _t0();
-  		_renderEffect(() => _setClass(_n2, { danger: _for_item0.value.id === selected ? danger : null }));
+  		_renderEffect(() => _setClassName(_n2, (_for_item0.value.id === selected ? danger : null) ? 1 : 0, "danger"));
   		return _n2;
-  	}, (row) => row.id);
+  	}, (row) => row.id, 8);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn multiple_selector_patterns_on_one_v_for() {
+  let code = transform(
+    r#"<tr
+        v-for={row in rows}
+        key={row.id}
+        class={selected === row.id ? 'a' : ''}
+        title={active === row.id ? 'b' : ''}
+      ></tr>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createFor as _createFor, createSelector as _createSelector, setClassName as _setClassName, setProp as _setProp, template as _template } from "vue";
+  const _t0 = _template("<tr>");
+  (() => {
+  	const _selector0_0 = _createSelector(() => selected);
+  	const _selector0_1 = _createSelector(() => active);
+  	const _n0 = _createFor(() => rows, (_for_item0) => {
+  		const _n2 = _t0();
+  		_selector0_0(_for_item0.value.id, () => {
+  			_setClassName(_n2, selected === _for_item0.value.id ? 1 : 0, "a");
+  		});
+  		_selector0_1(_for_item0.value.id, () => {
+  			_setProp(_n2, "title", active === _for_item0.value.id ? "b" : "");
+  		});
+  		return _n2;
+  	}, (row) => row.id, 8);
+  	_n0.onReset(_selector0_0.reset);
+  	_n0.onReset(_selector0_1.reset);
   	return _n0;
   })();
   "#);
@@ -217,7 +277,28 @@ fn multi_effect() {
   			_setProp(_n2, "index", _for_key0.value);
   		});
   		return _n2;
-  	});
+  	}, void 0, 8);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn multi_class_name_helper_with_repeated_v_for_value() {
+  let code = transform(
+    r#"<div v-for={todo in todos} key={todo.id} class={{ completed: todo.completed, editing: todo === editedTodo }} />"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createFor as _createFor, renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n0 = _createFor(() => todos, (_for_item0) => {
+  		const _n2 = _t0();
+  		_renderEffect(() => _setClassName(_n2, (_for_item0.value.completed ? 1 : 0) | (_for_item0.value === editedTodo ? 2 : 0), [" completed", " editing"]));
+  		return _n2;
+  	}, (todo) => todo.id, 8);
   	return _n0;
   })();
   "#);
@@ -238,15 +319,15 @@ fn nested_v_for() {
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n5 = _t1();
-  		_setInsertionState(_n5, null, 0, true);
+  		_setInsertionState(_n5, null, 0);
   		const _n2 = _createFor(() => _for_item0.value, (_for_item1) => {
   			const _n4 = _t0();
   			const _x4 = _txt(_n4);
   			_setNodes(_x4, () => _for_item1.value + _for_item0.value);
   			return _n4;
-  		}, void 0, 1);
+  		}, void 0, 9);
   		return _n5;
-  	});
+  	}, void 0, 8);
   	return _n0;
   })();
   "#);
@@ -269,7 +350,7 @@ fn object_value_key_and_index() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => id, () => _for_item0.value, () => _for_index0.value);
   		return _n2;
-  	}, (value, key, index) => id);
+  	}, (value, key, index) => id, 8);
   	return _n0;
   })();
   "#);
@@ -292,7 +373,7 @@ fn object_de_structured_value() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value.id, () => _for_item0.value.value);
   		return _n2;
-  	}, ({ id, value }) => id);
+  	}, ({ id, value }) => id, 8);
   	return _n0;
   })();
   "#);
@@ -315,7 +396,7 @@ fn object_de_structured_value_with_rest() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value.id + _getRestElement(_for_item0.value, ["id"]) + _for_key0.value);
   		return _n2;
-  	}, ({ id, ...other }, index) => id);
+  	}, ({ id, ...other }, index) => id, 8);
   	return _n0;
   })();
   "#);
@@ -338,7 +419,7 @@ fn array_de_structured_value() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value[0] + _for_item0.value[1] + _for_key0.value);
   		return _n2;
-  	}, ([id, other], index) => id);
+  	}, ([id, other], index) => id, 8);
   	return _n0;
   })();
   "#);
@@ -357,7 +438,7 @@ fn array_de_structured_value_with_rest() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value[0] + _for_item0.value.slice(3) + _for_key0.value + _for_item0.value[1][0] + _for_item0.value[2].bar);
   		return _n2;
-  	}, ([id, [foo], {bar}, ...other], index) => id);
+  	}, ([id, [foo], {bar}, ...other], index) => id, 8);
   	return _n0;
   })();
   "#);
@@ -382,7 +463,7 @@ fn aliases_with_complex_expressions() {
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value.foo + baz + _for_item0.value.baz[0]);
   		return _n2;
-  	});
+  	}, void 0, 8);
   	return _n0;
   })();
   "#);
@@ -401,16 +482,16 @@ fn fast_remove_flag() {
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span> ");
-  const _t1 = _template("<div>", true);
+  const _t1 = _template("<div>", 1);
   (() => {
   	const _n3 = _t1();
-  	_setInsertionState(_n3, null, 0, true);
+  	_setInsertionState(_n3, null, 0);
   	const _n0 = _createFor(() => i, (_for_item0) => {
   		const _n2 = _t0();
   		const _x2 = _txt(_n2);
   		_setNodes(_x2, () => _for_item0.value + i);
   		return _n2;
-  	}, void 0, 1);
+  	}, void 0, 9);
   	return _n3;
   })();
   "#);
@@ -421,15 +502,61 @@ fn on_component() {
   let code = transform("<Comp v-for={item in list}>{item}</Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createFor as _createFor, withVaporCtx as _withVaporCtx } from "vue";
+  import { createFor as _createFor } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
-  		const _n3 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n3 = _createComponent(Comp, null, () => {
   			const _n2 = _createNodes(() => _for_item0.value);
   			return _n2;
-  		}) });
+  		});
   		return _n3;
   	}, void 0, 2);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_on_slot_outlet_marks_fragment_block() {
+  let code = transform(
+    "<slot v-for={item in list} name={item.name} key={item.id} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createFor as _createFor, createSlot as _createSlot } from "vue";
+  (() => {
+  	const _n0 = _createFor(() => list, (_for_item0) => {
+  		const _n2 = _createSlot(() => _for_item0.value.name);
+  		return _n2;
+  	}, (item) => item.id, 16);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_single_node_flag_is_not_set_for_fragment_item_blocks() {
+  let code = transform(
+    "<template v-for={item in list}><div>{ item }</div><span>{ item }</span></template>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> </div>");
+  const _t1 = _template("<span> ");
+  (() => {
+  	const _n0 = _createFor(() => list, (_for_item0) => {
+  		const _n2 = _t0();
+  		const _n3 = _t1();
+  		const _x2 = _txt(_n2);
+  		_setNodes(_x2, () => _for_item0.value);
+  		const _x3 = _txt(_n3);
+  		_setNodes(_x3, () => _for_item0.value);
+  		return [_n2, _n3];
+  	});
   	return _n0;
   })();
   "#);
@@ -444,15 +571,97 @@ fn on_template_with_single_component_child() {
   .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createFor as _createFor, withVaporCtx as _withVaporCtx } from "vue";
+  import { createFor as _createFor } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
-  		const _n3 = _createComponent(Comp, null, { default: _withVaporCtx(() => {
+  		const _n3 = _createComponent(Comp, null, () => {
   			const _n2 = _createNodes(() => _for_item0.value);
   			return _n2;
-  		}) });
+  		});
   		return _n3;
   	}, void 0, 2);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_on_template_with_element_and_component_v_if_branches() {
+  let code = transform(
+    "<template v-for={item in items}>
+      <div v-if={item.id===1}>hi</div>
+      <Comp v-else></Comp>
+    </template>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<div>hi");
+  (() => {
+  	const _n0 = _createFor(() => items, (_for_item0) => {
+  		const _n2 = _createIf(() => _for_item0.value.id === 1, () => {
+  			const _n4 = _t0();
+  			return _n4;
+  		}, () => {
+  			const _n6 = _createComponent(Comp);
+  			return _n6;
+  		}, 298);
+  		return _n2;
+  	}, void 0, 16);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_on_template_with_nested_v_for_child_marks_fragment_block() {
+  let code = transform(
+    "<template v-for={row in rows}><div v-for={item in row}>{ item }</div></template>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n0 = _createFor(() => rows, (_for_item0) => {
+  		const _n2 = _createFor(() => _for_item0.value, (_for_item1) => {
+  			const _n4 = _t0();
+  			const _x4 = _txt(_n4);
+  			_setNodes(_x4, () => _for_item1.value);
+  			return _n4;
+  		}, void 0, 8);
+  		return _n2;
+  	}, void 0, 16);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_on_template_with_keyed_child_marks_fragment_block() {
+  let code = transform(
+    "<template v-for={item in items}><div key={item.id}>{ item.text }</div></template>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, createKeyedFragment as _createKeyedFragment, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n0 = _createFor(() => items, (_for_item0) => {
+  		const _n2 = _createKeyedFragment(() => _for_item0.value.id, () => {
+  			const _n4 = _t0();
+  			const _x4 = _txt(_n4);
+  			_setNodes(_x4, () => _for_item0.value.text);
+  			return _n4;
+  		});
+  		return _n2;
+  	}, void 0, 16);
   	return _n0;
   })();
   "#);
@@ -501,7 +710,7 @@ fn identifiers() {
   		})());
   		_renderEffect(() => _setProp(_n2, "id", _for_key0.value));
   		return _n2;
-  	});
+  	}, void 0, 8);
   	return _n0;
   })();
   "#);
@@ -524,7 +733,7 @@ fn expression_object() {
   		_setNodes(_x2, () => _for_item0.value);
   		_renderEffect(() => _setProp(_n2, "id", _for_key0.value));
   		return _n2;
-  	});
+  	}, void 0, 8);
   	return _n0;
   })();
   "#);
@@ -541,9 +750,9 @@ fn template_v_for_with_slotlet() {
   import { createFor as _createFor, createSlot as _createSlot } from "vue";
   (() => {
   	const _n0 = _createFor(() => items, (_for_item0) => {
-  		const _n2 = _createSlot("default");
+  		const _n2 = _createSlot();
   		return _n2;
-  	});
+  	}, void 0, 16);
   	return _n0;
   })();
   "#)
@@ -558,7 +767,7 @@ fn v_for_on_slotlet() {
   	const _n0 = _createFor(() => items, (_for_item0) => {
   		const _n2 = _createSlot("default");
   		return _n2;
-  	});
+  	}, void 0, 16);
   	return _n0;
   })();
   "#)

@@ -9,7 +9,11 @@ use oxc_ast::{
 use oxc_span::{GetSpan, SPAN};
 
 use crate::{
-  generate::{CodegenContext, block::gen_block, expression::gen_expression},
+  generate::{
+    CodegenContext,
+    block::{gen_block, mark_slot_root_operations},
+    expression::gen_expression,
+  },
   ir::{
     component::{IRSlotDynamicBasic, IRSlotDynamicConditional, IRSlots},
     index::{BlockIRNode, IRFor},
@@ -27,8 +31,18 @@ pub fn gen_raw_slots<'a>(
     return None;
   }
   if let Either4::A(_) = &slots[0] {
+    let mut static_slots = slots.remove(0);
+    if let Either4::A(static_slots) = &mut static_slots
+      && static_slots.slots.len() == 1
+      && let Some(default_slot) = static_slots.slots.shift_remove("default")
+    {
+      return Some(gen_slot_block_with_props(
+        default_slot,
+        context,
+        context_block,
+      ));
+    }
     // single static slot
-    let static_slots = slots.remove(0);
     if let Either4::A(static_slots) = static_slots {
       Some(gen_static_slots(
         static_slots.slots,
@@ -102,9 +116,7 @@ fn gen_dynamic_slots<'a>(
       Either4::A(slot) => {
         gen_static_slots(slot.slots, context, unsafe { &mut *context_block }, None).into()
       }
-      Either4::B(slot) => {
-        gen_dynamic_slot(slot, context, unsafe { &mut *context_block }, true).into()
-      }
+      Either4::B(slot) => gen_dynamic_slot(slot, context, unsafe { &mut *context_block }).into(),
       Either4::C(slot) => {
         gen_conditional_slot(slot, context, unsafe { &mut *context_block }, true).into()
       }
@@ -118,36 +130,14 @@ fn gen_dynamic_slot<'a>(
   slot: IRSlotDynamicBasic<'a>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  with_function: bool,
 ) -> Expression<'a> {
-  let ast = &context.ast;
   let frag = if slot._loop.is_none() {
     gen_basic_dynamic_slot(slot, context, context_block)
   } else {
     gen_loop_slot(slot, context, context_block)
   };
-  if with_function {
-    ast.expression_arrow_function(
-      SPAN,
-      true,
-      false,
-      NONE,
-      ast.formal_parameters(
-        SPAN,
-        FormalParameterKind::ArrowFormalParameters,
-        ast.vec(),
-        NONE,
-      ),
-      NONE,
-      ast.function_body(
-        SPAN,
-        ast.vec(),
-        ast.vec1(ast.statement_expression(SPAN, frag)),
-      ),
-    )
-  } else {
-    frag
-  }
+
+  frag
 }
 
 fn gen_basic_dynamic_slot<'a>(
@@ -328,12 +318,10 @@ fn gen_conditional_slot<'a>(
   let expression = ast.expression_conditional(
     SPAN,
     gen_expression(condition, context, None, false),
-    gen_dynamic_slot(positive, context, unsafe { &mut *context_block }, false),
+    gen_dynamic_slot(positive, context, unsafe { &mut *context_block }),
     if let Some(negative) = negative {
       match *negative {
-        Either::A(negative) => {
-          gen_dynamic_slot(negative, context, unsafe { &mut *context_block }, false)
-        }
+        Either::A(negative) => gen_dynamic_slot(negative, context, unsafe { &mut *context_block }),
         Either::B(negative) => {
           gen_conditional_slot(negative, context, unsafe { &mut *context_block }, false)
         }
@@ -403,6 +391,7 @@ fn gen_slot_block_with_props<'a>(
 
   let ast = &context.ast;
 
+  mark_slot_root_operations(&mut oper);
   let block_fn = context.with_id(
     || {
       gen_block(
@@ -425,14 +414,5 @@ fn gen_slot_block_with_props<'a>(
     exit_scope();
   };
 
-  // wrap with withVaporCtx to track slot owner for:
-  // 1. createSlot to get correct rawSlots in forwarded slots
-  // 2. scopeId inheritance for components created inside slots
-  ast.expression_call(
-    SPAN,
-    ast.expression_identifier(SPAN, ast.str(context.options.helper("_withVaporCtx"))),
-    NONE,
-    ast.vec1(block_fn.into()),
-    false,
-  )
+  block_fn
 }

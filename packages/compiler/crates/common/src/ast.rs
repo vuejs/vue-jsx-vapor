@@ -1,11 +1,14 @@
 use std::cell::Cell;
 
 use oxc_allocator::{Allocator, FromIn, TakeIn};
-use oxc_ast::ast::{Expression, JSXChild, JSXClosingFragment, JSXFragment, JSXOpeningFragment};
+use oxc_ast::{
+  AstBuilder, NONE,
+  ast::{Expression, JSXChild, JSXClosingFragment, JSXFragment, JSXOpeningFragment},
+};
 use oxc_semantic::NodeId;
 use oxc_span::{GetSpan, SPAN, Span};
 
-use crate::text::is_empty_text;
+use crate::{options::TransformOptions, text::is_empty_text};
 
 #[derive(Debug)]
 pub struct RootNode;
@@ -39,29 +42,71 @@ impl<'a> RootNode {
     ))
   }
   pub fn from(
-    allocator: &'a Allocator,
+    ast: &'a AstBuilder,
+    options: &TransformOptions<'a>,
     expression: Expression<'a>,
     ignore_fragment: bool,
+    key: Option<i32>,
   ) -> JSXChild<'a> {
+    let allocator = ast.allocator;
     let mut is_fragment = false;
-    let children = match expression {
-      Expression::JSXFragment(mut node) => {
-        is_fragment = true;
-        if ignore_fragment {
-          node.children.take_in(allocator)
-        } else {
-          oxc_allocator::Vec::from_array_in([JSXChild::Fragment(node)], allocator)
+    let key_attribute = key.map(|key| {
+      ast.jsx_attribute_item_attribute(
+        SPAN,
+        ast.jsx_attribute_name_identifier(SPAN, "key"),
+        Some(
+          ast.jsx_attribute_value_expression_container(
+            SPAN,
+            ast
+              .expression_numeric_literal(SPAN, key as f64, None, oxc_ast::ast::NumberBase::Decimal)
+              .into(),
+          ),
+        ),
+      )
+    });
+    let children =
+      match expression {
+        Expression::JSXFragment(mut node) => {
+          is_fragment = true;
+          if ignore_fragment {
+            node.children.take_in(allocator)
+          } else {
+            if let Some(key_attribute) = key_attribute {
+              let fargment = options.helper("_Fragment");
+              ast.vec1(ast.jsx_child_element(
+                SPAN,
+                ast.jsx_opening_element(
+                  SPAN,
+                  ast.jsx_element_name_identifier_reference(SPAN, fargment),
+                  NONE,
+                  ast.vec1(key_attribute),
+                ),
+                node.children.take_in(allocator),
+                Some(ast.alloc_jsx_closing_element(
+                  SPAN,
+                  ast.jsx_element_name_identifier(SPAN, fargment),
+                )),
+              ))
+            } else {
+              ast.vec1(JSXChild::Fragment(node))
+            }
+          }
         }
-      }
-      Expression::JSXElement(mut node) => oxc_allocator::Vec::from_array_in(
-        [JSXChild::Element(oxc_allocator::Box::new_in(
-          node.take_in(allocator),
-          allocator,
-        ))],
-        allocator,
-      ),
-      _ => oxc_allocator::Vec::new_in(allocator),
-    };
+        Expression::JSXElement(mut node) => {
+          if let Some(key_attribute) = key_attribute
+            && node
+              .opening_element
+              .attributes
+              .iter()
+              .find(|attr| attr.as_attribute().is_some_and(|attr| attr.is_key()))
+              .is_none()
+          {
+            node.opening_element.attributes.insert(0, key_attribute);
+          }
+          ast.vec1(JSXChild::Element(ast.alloc(node.take_in(allocator))))
+        }
+        _ => ast.vec(),
+      };
 
     let mut is_single_root = false;
     if !is_fragment {

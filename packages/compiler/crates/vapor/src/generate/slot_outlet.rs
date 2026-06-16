@@ -3,7 +3,7 @@ use oxc_ast::ast::{Expression, Statement, VariableDeclarationKind};
 use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
-use crate::generate::block::gen_block;
+use crate::generate::block::{gen_block, mark_slot_root_operations};
 use crate::generate::component::gen_raw_props;
 use crate::generate::expression::gen_expression;
 use crate::ir::index::{BlockIRNode, SlotOutletIRNode};
@@ -19,8 +19,7 @@ pub fn gen_slot_outlet<'a>(
     name,
     fallback,
     props,
-    once,
-    no_slotted,
+    flags,
     ..
   } = oper;
 
@@ -41,7 +40,13 @@ pub fn gen_slot_outlet<'a>(
               NONE,
               ast.vec_from_iter(
                 [
-                  if let Expression::StringLiteral(name) = name {
+                  if matches!(&name, Expression::StringLiteral(name) if name.value == "default")
+                    && props.is_empty()
+                    && fallback.is_none()
+                    && flags == 0
+                  {
+                    None
+                  } else if let Expression::StringLiteral(name) = name {
                     Some(ast.expression_string_literal(SPAN, name.value, None).into())
                   } else {
                     Some(
@@ -74,27 +79,30 @@ pub fn gen_slot_outlet<'a>(
                     && let Some(props) = gen_raw_props(props, context)
                   {
                     Some(props.into())
-                  } else if fallback.is_some() {
+                  } else if fallback.is_some() || flags > 0 {
                     Some(ast.expression_null_literal(SPAN).into())
                   } else {
                     None
                   },
-                  if let Some(fallback) = fallback {
+                  if let Some(mut fallback) = fallback {
+                    mark_slot_root_operations(&mut fallback);
                     Some(gen_block(fallback, context, context_block, ast.vec()).into())
-                  } else if no_slotted || once {
-                    Some(ast.expression_identifier(SPAN, "void 0").into())
+                  } else if flags > 0 {
+                    Some(ast.expression_null_literal(SPAN).into())
                   } else {
                     None
                   },
-                  if no_slotted {
-                    Some(ast.expression_boolean_literal(SPAN, true).into())
-                  } else if once {
-                    Some(ast.expression_boolean_literal(SPAN, false).into())
-                  } else {
-                    None
-                  },
-                  if once {
-                    Some(ast.expression_boolean_literal(SPAN, true).into())
+                  if flags > 0 {
+                    Some(
+                      ast
+                        .expression_numeric_literal(
+                          SPAN,
+                          flags as f64,
+                          None,
+                          oxc_ast::ast::NumberBase::Decimal,
+                        )
+                        .into(),
+                    )
                   } else {
                     None
                   },

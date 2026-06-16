@@ -40,7 +40,6 @@ impl<'a> Default for BlockIRNode<'a> {
 
 #[derive(Debug, Default)]
 pub struct RootIRNode<'a> {
-  pub root_template_index: Option<usize>,
   pub components: IndexSet<&'a str>,
   pub directives: IndexSet<&'a str>,
   pub has_template_ref: bool,
@@ -54,12 +53,16 @@ pub struct IfIRNode<'a> {
   pub positive: BlockIRNode<'a>,
   pub negative: Option<Box<Either<BlockIRNode<'a>, IfIRNode<'a>>>>,
   pub once: bool,
+  pub slot_root: bool,
   pub index: i32,
+
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
-  pub last: bool,
+
+  pub operation_index: Option<usize>,
+  pub effect_index: Option<usize>,
 }
 
 #[derive(Debug)]
@@ -67,11 +70,14 @@ pub struct KeyIRNode<'a> {
   pub id: i32,
   pub value: Expression<'a>,
   pub block: BlockIRNode<'a>,
+
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
-  pub last: bool,
+
+  pub operation_index: Option<usize>,
+  pub effect_index: Option<usize>,
 }
 
 #[derive(Debug)]
@@ -93,13 +99,16 @@ pub struct ForIRNode<'a> {
   pub key_prop: Option<Expression<'a>>,
   pub render: BlockIRNode<'a>,
   pub once: bool,
+  pub slot_root: bool,
   pub component: bool,
   pub only_child: bool,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
-  pub last: bool,
+
+  pub operation_index: Option<usize>,
+  pub effect_index: Option<usize>,
 }
 
 #[derive(Debug)]
@@ -127,7 +136,6 @@ pub struct SetDynamicEventsIRNode<'a> {
 
 #[derive(Debug)]
 pub struct SetTextIRNode<'a> {
-  pub set_text: bool,
   pub element: i32,
   pub values: Vec<Expression<'a>>,
   pub generated: bool,
@@ -150,7 +158,6 @@ pub struct SetEventIRNode<'a> {
   pub key: Expression<'a>,
   pub value: Expression<'a>,
   pub modifiers: Modifiers<'a>,
-  pub delegate: bool,
   // Whether it's in effect
   pub effect: bool,
 }
@@ -210,11 +217,14 @@ pub struct CreateComponentIRNode<'a> {
   pub root: bool,
   pub once: bool,
   pub is_custom_element: bool,
+
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
-  pub last: bool,
+
+  pub operation_index: Option<usize>,
+  pub effect_index: Option<usize>,
 }
 
 #[derive(Debug)]
@@ -223,13 +233,15 @@ pub struct SlotOutletIRNode<'a> {
   pub name: Expression<'a>,
   pub props: Vec<IRProps<'a>>,
   pub fallback: Option<BlockIRNode<'a>>,
-  pub no_slotted: bool,
-  pub once: bool,
+  pub flags: i32,
+
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
   pub logical_index: Option<i32>,
   pub append: bool,
-  pub last: bool,
+
+  pub operation_index: Option<usize>,
+  pub effect_index: Option<usize>,
 }
 
 #[derive(Debug)]

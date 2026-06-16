@@ -235,6 +235,22 @@ fn element_v_for_key_expression_prefixing() {
 }
 
 #[test]
+fn element_v_for_key_expression_prefixing_on_simple_expression() {
+  let code = transform(
+    r#"<div v-for={item in items} key={itemKey}>test</div>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("div", { key: itemKey }, "test"))), 128);
+  "#)
+}
+
+#[test]
 fn template_v_for_key_expression_prefixing() {
   let code = transform(
     r#"<template v-for={item in items} key={itemKey(item)}>test</template>"#,
@@ -250,6 +266,26 @@ fn template_v_for_key_expression_prefixing() {
   (() => {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, { key: itemKey(item) }, [_cache[0] || (_cache[0] = _normalizeVNode("test", -1))], 64))), 128);
+  })();
+  "#)
+}
+
+#[test]
+fn template_v_for_key_expression_prefixing_on_simple_expression() {
+  let code = transform(
+    r#"<template v-for={item in items} key={itemKey}>test</template>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, { key: itemKey }, [_cache[0] || (_cache[0] = _normalizeVNode("test", -1))], 64))), 128);
   })();
   "#)
 }

@@ -1,4 +1,4 @@
-use std::{borrow::Cow, cell::RefCell, mem, rc::Rc};
+use std::{borrow::Cow, cell::RefCell, collections::HashSet, mem, rc::Rc};
 
 use napi::{Either, bindgen_prelude::Either3};
 use oxc_allocator::TakeIn;
@@ -28,7 +28,7 @@ use common::{
   ast::RootNode,
   check::{
     get_directive_name, is_always_close_tag, is_block_tag, is_built_in_directive,
-    is_formatting_tag, is_template, is_void_tag,
+    is_formatting_tag, is_inline_tag, is_template, is_void_tag,
   },
   directive::{Directives, resolve_directive, resolve_prop_name},
   dom::is_valid_html_nesting,
@@ -238,10 +238,7 @@ pub fn transform_native_element<'a>(
     template += &format!("</{}>", tag)
   }
 
-  if single_root {
-    let ir = &mut context.ir.borrow_mut();
-    ir.root_template_index = Some(context.options.templates.borrow().len())
-  }
+  *context.template_root.borrow_mut() = single_root;
 
   if let JSXChild::Element(parent_node) = parent_node
     && let JSXElementName::Identifier(name) = &parent_node.opening_element.name
@@ -249,7 +246,7 @@ pub fn transform_native_element<'a>(
   {
     let dynamic = &mut context_block.dynamic;
     context.reference(dynamic);
-    dynamic.template = Some(context.push_template(template, Some(tag)));
+    dynamic.template = Some(context.push_template(template, Some(tag), false));
     dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
   } else {
     *context.template.borrow_mut() = format!("{}{}", context.template.borrow(), template);
@@ -269,6 +266,32 @@ pub fn transform_native_element<'a>(
   }
 }
 
+pub fn get_child_template_close_tags<'a>(
+  tag: &'a str,
+  parent_node: Option<&JSXChild<'a>>,
+  context: &TransformContext<'a>,
+) -> (HashSet<&'a str>, bool) {
+  let inherited_tags = context.template_close_tags.borrow().clone();
+  let inherited_blocks = context.template_close_blocks.borrow().clone();
+  let Some(parent_node) = parent_node else {
+    return (inherited_tags, inherited_blocks);
+  };
+  if tag.is_empty() || is_void_tag(tag) || can_omit_end_tag(tag, parent_node, context) {
+    return (inherited_tags, inherited_blocks);
+  }
+
+  let mut tags = inherited_tags;
+  tags.insert(tag);
+  (tags, inherited_blocks || is_inline_tag(tag))
+}
+
+pub fn is_in_same_template_as_parent<'a>(tag: &'a str, parent_tag_name: &str) -> bool {
+  if parent_tag_name.is_empty() || matches!(parent_tag_name, "template") {
+    return false;
+  }
+  is_valid_html_nesting(parent_tag_name, tag)
+}
+
 fn can_omit_end_tag<'a>(
   tag: &str,
   parent_node: &JSXChild<'a>,
@@ -278,6 +301,15 @@ fn can_omit_end_tag<'a>(
   // so closing tags can be omitted
   if RootNode::is_single_root(parent_node) {
     return true;
+  }
+
+  let template_close_tags = context.template_close_tags.borrow();
+  let template_close_blocks = context.template_close_blocks.borrow().clone();
+  if (!template_close_tags.is_empty()
+    && (template_close_tags.contains(tag) || is_always_close_tag(tag) || is_formatting_tag(tag)))
+    || (template_close_blocks && is_block_tag(tag))
+  {
+    return false;
   }
 
   // Elements in the alwaysClose list cannot have their end tags omitted
@@ -298,12 +330,6 @@ fn can_omit_end_tag<'a>(
     }
   {
     return *context.is_on_rightmost_path.borrow();
-  }
-
-  // For inline element containing block element, if the inline ancestor
-  // is not on rightmost path, the block must close to avoid parsing issues
-  if is_block_tag(tag) && *context.has_inline_ancestor_needing_close.borrow() {
-    return false;
   }
 
   *context.is_last_effective_child.borrow()
@@ -343,7 +369,8 @@ pub fn transform_component_element<'a>(
       anchor: None,
       logical_index: None,
       append: false,
-      last: false,
+      operation_index: Some(*context.operation_index.borrow()),
+      effect_index: Some(*context.effect_index.borrow()),
     },
   )));
 
@@ -524,7 +551,7 @@ pub fn transform_prop<'a>(
   let dir_name_raw = get_directive_name(name);
   match dir_name_raw {
     "bind" => return transform_v_bind(directives, prop, context),
-    "on" => return transform_v_on(directives, prop, node, context, context_block),
+    "on" => return transform_v_on(directives, prop, context, context_block),
     "model" => return transform_v_model(directives, prop, node, context, context_block),
     "show" => return transform_v_show(prop, context, context_block),
     "html" => return transform_v_html(directives, prop, node, context, context_block),
@@ -602,24 +629,21 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
       continue;
     };
     let name = &key.value;
-    let existing = deduped.iter_mut().find(|i| {
-      if let Expression::StringLiteral(key) = &i.key {
-        key.value == name
-      } else {
-        false
-      }
-    });
-    // prop names and event handler names can be the same but serve different purposes
-    // e.g. `:appear="true"` is a prop while `@appear="handler"` is an event handler
-    if let Some(existing) = existing
+    if (name == "style" || name == "class" || prop.handler)
+      && let Some(existing) = deduped.iter_mut().find(|i| {
+        if let Expression::StringLiteral(key) = &i.key {
+          key.value == name
+        } else {
+          false
+        }
+      })
+      // prop names and event handler names can be the same but serve different purposes
+      // e.g. `:appear="true"` is a prop while `@appear="handler"` is an event handler
       && existing.handler.eq(&prop.handler)
     {
-      if name == "style" || name == "class" || prop.handler {
-        for value in prop.values {
-          existing.values.push(value)
-        }
+      for value in prop.values {
+        existing.values.push(value)
       }
-    // unexpected duplicate, should have emitted error during parse
     } else {
       deduped.push(prop);
     }

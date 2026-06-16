@@ -9,7 +9,7 @@ fn basic() {
   let code = transform("<input v-model={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
-  const _t0 = _template("<input>", true);
+  const _t0 = _template("<input>", 1);
   (() => {
   	const _n0 = _t0();
   	_applyTextModel(_n0, () => model, (_value) => model = _value);
@@ -23,7 +23,7 @@ fn modifiers_number() {
   let code = transform("<input v-model_number={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
-  const _t0 = _template("<input>", true);
+  const _t0 = _template("<input>", 1);
   (() => {
   	const _n0 = _t0();
   	_applyTextModel(_n0, () => model, (_value) => model = _value, { number: true });
@@ -37,7 +37,7 @@ fn modifiers_trim() {
   let code = transform("<input v-model_trim={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
-  const _t0 = _template("<input>", true);
+  const _t0 = _template("<input>", 1);
   (() => {
   	const _n0 = _t0();
   	_applyTextModel(_n0, () => model, (_value) => model = _value, { trim: true });
@@ -51,7 +51,7 @@ fn modifiers_lazy() {
   let code = transform("<input v-model_lazy={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
-  const _t0 = _template("<input>", true);
+  const _t0 = _template("<input>", 1);
   (() => {
   	const _n0 = _t0();
   	_applyTextModel(_n0, () => model, (_value) => model = _value, { lazy: true });
@@ -65,7 +65,7 @@ fn should_support_input_text() {
   let code = transform("<input type=\"text\" v-model={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
-  const _t0 = _template("<input type=text>", true);
+  const _t0 = _template("<input type=text>", 1);
   (() => {
   	const _n0 = _t0();
   	_applyTextModel(_n0, () => model, (_value) => model = _value);
@@ -79,7 +79,7 @@ fn should_support_input_radio() {
   let code = transform("<input type=\"radio\" v-model={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyRadioModel as _applyRadioModel, template as _template } from "vue";
-  const _t0 = _template("<input type=radio>", true);
+  const _t0 = _template("<input type=radio>", 1);
   (() => {
   	const _n0 = _t0();
   	_applyRadioModel(_n0, () => model, (_value) => model = _value);
@@ -93,7 +93,7 @@ fn should_support_input_checkbox() {
   let code = transform("<input type=\"checkbox\" v-model={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyCheckboxModel as _applyCheckboxModel, template as _template } from "vue";
-  const _t0 = _template("<input type=checkbox>", true);
+  const _t0 = _template("<input type=checkbox>", 1);
   (() => {
   	const _n0 = _t0();
   	_applyCheckboxModel(_n0, () => model, (_value) => model = _value);
@@ -107,7 +107,7 @@ fn should_support_select() {
   let code = transform("<select v-model={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applySelectModel as _applySelectModel, template as _template } from "vue";
-  const _t0 = _template("<select>", true);
+  const _t0 = _template("<select>", 1);
   (() => {
   	const _n0 = _t0();
   	_applySelectModel(_n0, () => model, (_value) => model = _value);
@@ -121,7 +121,7 @@ fn should_support_textarea() {
   let code = transform("<textarea v-model={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
-  const _t0 = _template("<textarea>", true);
+  const _t0 = _template("<textarea>", 1);
   (() => {
   	const _n0 = _t0();
   	_applyTextModel(_n0, () => model, (_value) => model = _value);
@@ -135,7 +135,7 @@ fn should_support_input_dynamic_type() {
   let code = transform("<input type={foo} v-model={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyDynamicModel as _applyDynamicModel, renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
-  const _t0 = _template("<input>", true);
+  const _t0 = _template("<input>", 1);
   (() => {
   	const _n0 = _t0();
   	_applyDynamicModel(_n0, () => model, (_value) => model = _value);
@@ -150,7 +150,7 @@ fn should_support_dynamic_props() {
   let code = transform("<input {...obj} v-model={model} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyDynamicModel as _applyDynamicModel, renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
-  const _t0 = _template("<input>", true);
+  const _t0 = _template("<input>", 1);
   (() => {
   	const _n0 = _t0();
   	_applyDynamicModel(_n0, () => model, (_value) => model = _value);
@@ -165,7 +165,7 @@ fn should_support_member_expression() {
   let code = transform("<input v-model={setupRef.child} />", None).code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
-  const _t0 = _template("<input>", true);
+  const _t0 = _template("<input>", 1);
   (() => {
   	const _n0 = _t0();
   	_applyTextModel(_n0, () => setupRef.child, (_value) => setupRef.child = _value);
@@ -354,7 +354,7 @@ fn component_with_dynamic_arguments() {
   (() => {
   	const _n0 = _createComponent(Comp, { $: [() => ({
   		[arg]: foo,
-  		["onUpdate:" + arg]: () => (_value) => foo = _value
+  		["onUpdate:" + arg]: (_value) => foo = _value
   	})] }, null, true);
   	return _n0;
   })();
@@ -371,7 +371,7 @@ fn component_with_dynamic_arguments_with_v_for() {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n2 = _createComponent(Comp, { $: [() => ({
   			[_for_item0.value.arg]: foo,
-  			["onUpdate:" + _for_item0.value.arg]: () => (_value) => foo = _value
+  			["onUpdate:" + _for_item0.value.arg]: (_value) => foo = _value
   		})] });
   		return _n2;
   	}, void 0, 2);
@@ -389,10 +389,10 @@ fn component_should_generate_model_value_modifiers() {
   	const _n0 = _createComponent(Comp, {
   		modelValue: () => foo,
   		"onUpdate:modelValue": () => (_value) => foo = _value,
-  		modelModifiers: () => ({
+  		modelModifiers: {
   			trim: true,
   			"bar-baz": true
-  		})
+  		}
   	}, null, true);
   	return _n0;
   })();
@@ -412,10 +412,10 @@ fn component_with_arguments_should_generate_model_modifiers() {
   	const _n0 = _createComponent(Comp, {
   		foo: () => foo,
   		"onUpdate:foo": () => (_value) => foo = _value,
-  		fooModifiers: () => ({ trim: true }),
+  		fooModifiers: { trim: true },
   		"onUpdate:foo-bar": () => (_value) => bar = _value,
   		"foo-bar": () => bar,
-  		"foo-barModifiers": () => ({ number: true })
+  		"foo-barModifiers": { number: true }
   	}, null, true);
   	return _n0;
   })();
@@ -434,12 +434,12 @@ fn component_with_dynamic_arguments_should_generate_model_modifiers() {
   (() => {
   	const _n0 = _createComponent(Comp, { $: [() => ({
   		[foo]: foo,
-  		["onUpdate:" + foo]: () => (_value) => foo = _value,
-  		[foo + "Modifiers"]: () => ({ trim: true })
+  		["onUpdate:" + foo]: (_value) => foo = _value,
+  		[foo + "Modifiers"]: { trim: true }
   	}), () => ({
   		[bar.value]: bar,
-  		["onUpdate:" + bar.value]: () => (_value) => bar = _value,
-  		[bar.value + "Modifiers"]: () => ({ number: true })
+  		["onUpdate:" + bar.value]: (_value) => bar = _value,
+  		[bar.value + "Modifiers"]: { number: true }
   	})] }, null, true);
   	return _n0;
   })();
@@ -460,6 +460,22 @@ fn component_v_model_should_merge_with_explicit() {
   		modelValue: () => counter,
   		"onUpdate:modelValue": () => [(_value) => counter = _value, onUpdate]
   	}, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_model_after_dynamic_bind_keeps_model_getters() {
+  let code = transform("<Comp {...obj} v-model_trim={foo} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, { $: [() => obj, {
+  		modelValue: () => foo,
+  		"onUpdate:modelValue": () => (_value) => foo = _value,
+  		modelModifiers: { trim: true }
+  	}] }, null, true);
   	return _n0;
   })();
   "#);
