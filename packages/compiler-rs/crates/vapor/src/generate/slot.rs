@@ -2,9 +2,10 @@ use std::borrow::Cow;
 
 use indexmap::IndexMap;
 use napi::bindgen_prelude::{Either, Either4};
+use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
-  ast::{Expression, FormalParameterKind, PropertyKind, Str},
+  ast::{Expression, FormalParameterKind, ObjectPropertyKind, PropertyKind, Str},
 };
 use oxc_span::{GetSpan, SPAN};
 
@@ -89,7 +90,17 @@ fn gen_static_slots<'a>(
       false,
     ))
   }
-  if let Some(dynamic_slots) = dynamic_slots {
+  if let Some(mut dynamic_slots) = dynamic_slots {
+    if dynamic_slots.len() == 1
+      && let Some(Either4::D(slot)) = dynamic_slots.get_mut(0)
+      && let Expression::ObjectExpression(slots) = &mut slot.slots
+      && slots.properties.len() == 1
+      && let Some(ObjectPropertyKind::ObjectProperty(prop)) = slots.properties.get_mut(0)
+      && prop.key.is_specific_id("default")
+      && prop.value.is_function()
+    {
+      return gen_expression(prop.value.take_in(ast.allocator), context, None, false);
+    }
     properties.push(ast.object_property_kind_object_property(
       SPAN,
       PropertyKind::Init,

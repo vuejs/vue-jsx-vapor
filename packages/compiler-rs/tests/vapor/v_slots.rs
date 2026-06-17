@@ -14,10 +14,10 @@ fn basic() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const _n0 = _createComponent(Comp, null, { $: [{ default: ({ foo }) => (() => {
+  	const _n0 = _createComponent(Comp, null, ({ foo }) => (() => {
   		const _n0 = _createNodes(() => foo + bar);
   		return _n0;
-  	})() }] }, true);
+  	})(), true);
   	return _n0;
   })();
   "#);
@@ -37,10 +37,10 @@ fn function_expression_children() {
   import { template as _template } from "vue";
   const _t0 = _template("<div>", 3);
   (() => {
-  	const _n0 = _createComponent(Comp, null, { $: [{ default: () => (() => {
+  	const _n0 = _createComponent(Comp, null, () => (() => {
   		const _n0 = _t0();
   		return _n0;
-  	})() }] }, true);
+  	})(), true);
   	return _n0;
   })();
   "#);
@@ -60,10 +60,10 @@ fn object_expression_children() {
   import { template as _template } from "vue";
   const _t0 = _template("foo", 2);
   (() => {
-  	const _n0 = _createComponent(Comp, null, { $: [{ default: () => (() => {
+  	const _n0 = _createComponent(Comp, null, () => (() => {
   		const _n0 = _t0();
   		return _n0;
-  	})() }] }, true);
+  	})(), true);
   	return _n0;
   })();
   "#);
