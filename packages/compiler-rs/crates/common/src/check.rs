@@ -495,8 +495,5 @@ pub fn is_referenced_identifier<'a>(id: &IdentifierReference, parent: Option<Ast
 }
 
 pub fn is_slots_component(name: &str) -> bool {
-  name.starts_with("slots.")
-    || name.starts_with("$slots.")
-    || name.starts_with("this.$slots.")
-    || name.starts_with("this.slots.")
+  name.starts_with("slots.") || name.starts_with("$slots.") || name.starts_with("this.$slots.")
 }

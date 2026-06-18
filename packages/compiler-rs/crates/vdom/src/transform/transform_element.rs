@@ -82,8 +82,9 @@ pub unsafe fn transform_element<'a>(
   // The goal of the transform is to create a codegenNode implementing the
   // VNodeCall interface.
   let vnode_tag = directives.tag_name;
-  if vnode_tag == "slot" || is_slots_component(directives.tag_name) {
-    unsafe { transform_slot_outlet(directives, context_node, context) };
+  let is_slots = is_slots_component(directives.tag_name);
+  if vnode_tag == "slot" || is_slots {
+    unsafe { transform_slot_outlet(directives, is_slots, context_node, context) };
     return None;
   }
   if matches!(vnode_tag, "Transition" | "TransitionGroup") {

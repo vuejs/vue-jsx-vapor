@@ -159,15 +159,14 @@ fn named_slot_outlet_with_props_and_fallback() {
 fn slots_component() {
   let code = transform(r#"<slots.foo foo={bar}><div /></slots.foo>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { template as _template } from "vue";
+  import { createSlot as _createSlot, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
   (() => {
-  	const _n1 = _createComponent(slots.foo, { foo: () => bar }, () => {
-  		const _n0 = _t0();
-  		return _n0;
-  	}, true);
-  	return _n1;
+  	const _n0 = _createSlot("foo", { foo: () => bar }, () => {
+  		const _n1 = _t0();
+  		return _n1;
+  	});
+  	return _n0;
   })();
   "#);
 }
@@ -176,15 +175,14 @@ fn slots_component() {
 fn dollor_slots_component() {
   let code = transform(r#"<$slots.foo foo={bar}><div /></$slots.foo>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { template as _template } from "vue";
+  import { createSlot as _createSlot, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
   (() => {
-  	const _n1 = _createComponent($slots.foo, { foo: () => bar }, () => {
-  		const _n0 = _t0();
-  		return _n0;
-  	}, true);
-  	return _n1;
+  	const _n0 = _createSlot("foo", { foo: () => bar }, () => {
+  		const _n1 = _t0();
+  		return _n1;
+  	});
+  	return _n0;
   })();
   "#);
 }
