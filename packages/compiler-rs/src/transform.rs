@@ -184,6 +184,7 @@ impl<'a> Transform<'a> {
         "setNodes",
         "createNodes",
         "createComponent",
+        "normalizeVaporSlots",
         "defineVaporSSRComponent",
       ]
       .into_iter()

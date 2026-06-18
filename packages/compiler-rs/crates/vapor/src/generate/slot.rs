@@ -131,7 +131,45 @@ fn gen_dynamic_slots<'a>(
       Either4::C(slot) => {
         gen_conditional_slot(slot, context, unsafe { &mut *context_block }, true).into()
       }
-      Either4::D(slot) => gen_expression(slot.slots, context, None, false).into(),
+      Either4::D(slot) => {
+        let expression = gen_expression(slot.slots, context, None, false);
+        if slot.dynamic {
+          ast
+            .expression_arrow_function(
+              SPAN,
+              true,
+              false,
+              NONE,
+              ast.formal_parameters(
+                SPAN,
+                FormalParameterKind::ArrowFormalParameters,
+                ast.vec(),
+                NONE,
+              ),
+              NONE,
+              ast.function_body(
+                SPAN,
+                ast.vec(),
+                ast.vec1(ast.statement_expression(
+                  SPAN,
+                  ast.expression_call(
+                    SPAN,
+                    ast.expression_identifier(
+                      SPAN,
+                      ast.str(context.options.helper("_normalizeVaporSlots")),
+                    ),
+                    NONE,
+                    ast.vec1(expression.into()),
+                    false,
+                  ),
+                )),
+              ),
+            )
+            .into()
+        } else {
+          expression.into()
+        }
+      }
     })
   }
   ast.expression_array(SPAN, elements)

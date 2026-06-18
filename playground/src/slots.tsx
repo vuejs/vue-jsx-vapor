@@ -15,7 +15,7 @@ const Comp = defineVaporComponent(
     },
   ) => {
     expose({ baz: ref(1) })
-    return slots.default?.({ foo: 1 })
+    return slots.default ? <slots.default foo={1}></slots.default> : []
   },
 )
 
@@ -55,11 +55,24 @@ export default () => {
 
   const exposed = useRef<InstanceType<typeof Comp>['exposed']>()
   const exposed1 = useRef<InstanceType<typeof Comp1>>()
-  console.log(exposed.value!.baz, exposed1.value!.bar)
+  setTimeout(() => {
+    console.log(exposed.value?.baz, exposed1.value?.bar)
+  })
+  const slots = ref({
+    default: () => <div>default slot</div>,
+  })
   return (
     <>
-      <Comp>{1}</Comp>
+      <button
+        onClick={() => {
+          slots.value = { default: () => <div>updated slot</div> }
+        }}
+      >
+        update slots
+      </button>
+      <Comp ref={exposed}>{{ ...slots.value }}</Comp>
       <Comp1
+        ref={exposed1}
         foo={foo}
         v-slots={{
           default: ({ foo }) => [foo],

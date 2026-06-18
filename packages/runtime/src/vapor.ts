@@ -270,6 +270,16 @@ export function createNodes(...values: any[]) {
   return resolveValues(values)
 }
 
+export function normalizeVaporSlots(obj: Record<string, Function> | Function) {
+  if (typeof obj === 'function') {
+    return obj
+  } else if (typeof obj === 'object') {
+    return Object.entries(obj).map(([name, fn]) => ({ name, fn }))
+  } else {
+    return obj
+  }
+}
+
 // defineVaporComponent
 
 export type DefineVaporComponent<

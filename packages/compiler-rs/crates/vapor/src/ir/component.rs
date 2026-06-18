@@ -66,6 +66,7 @@ pub struct IRSlotDynamicConditional<'a> {
 #[derive(Debug)]
 pub struct IRSlotsExpression<'a> {
   pub slot_type: IRSlotType,
+  pub dynamic: bool,
   pub slots: Expression<'a>,
 }
 

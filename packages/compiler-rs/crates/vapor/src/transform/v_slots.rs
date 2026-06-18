@@ -77,6 +77,7 @@ pub unsafe fn transform_v_slots<'a>(
       return None;
     }
 
+    let mut dynamic = false;
     if let Some(JSXAttributeValue::ExpressionContainer(value)) = &mut dir.value {
       let expression = value.expression.to_expression_mut();
       if expression.is_function() {
@@ -93,31 +94,23 @@ pub unsafe fn transform_v_slots<'a>(
           )),
         );
       } else if let Expression::ObjectExpression(exp) = expression {
-        for prop in exp.properties.iter() {
-          if let ObjectPropertyKind::ObjectProperty(prop) = prop
-            && prop.computed
-          {
-            *expression = ast.expression_arrow_function(
-              SPAN,
-              true,
-              false,
-              NONE,
-              ast.formal_parameters(
-                SPAN,
-                FormalParameterKind::ArrowFormalParameters,
-                ast.vec(),
-                NONE,
-              ),
-              NONE,
-              ast.function_body(
-                SPAN,
-                ast.vec(),
-                ast.vec1(ast.statement_expression(SPAN, expression.take_in(context.allocator))),
-              ),
-            );
-            break;
+        for prop in exp.properties.iter_mut() {
+          match prop {
+            ObjectPropertyKind::ObjectProperty(prop)
+              if prop.computed || !prop.value.is_function() =>
+            {
+              dynamic = true;
+              continue;
+            }
+            ObjectPropertyKind::SpreadProperty(_) => {
+              dynamic = true;
+              continue;
+            }
+            _ => {}
           }
         }
+      } else {
+        dynamic = true;
       }
 
       proccess_default_children(node_ptr, expression, context);
@@ -126,6 +119,7 @@ pub unsafe fn transform_v_slots<'a>(
       Some(Box::new(move || {
         context_block.slots = vec![Either4::D(IRSlotsExpression {
           slot_type: IRSlotType::EXPRESSION,
+          dynamic,
           slots,
         })];
       }))
