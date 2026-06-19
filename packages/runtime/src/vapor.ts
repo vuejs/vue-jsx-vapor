@@ -10,14 +10,13 @@ import {
   type ExtractDefaultPropTypes,
   type ExtractPropTypes,
   type ShallowRef,
-  type StaticSlots,
   type TypeEmitsToOptions,
   type VaporComponent,
   type VaporComponentInstance,
-  type VaporComponentInstanceConstructor,
   type VaporComponentOptions,
   type VaporPublicProps,
   type VaporRenderResult,
+  type VaporSlot,
   type VNode,
 } from 'vue'
 import * as Vue from 'vue'
@@ -281,6 +280,15 @@ export function normalizeVaporSlots(obj: Record<string, Function> | Function) {
 }
 
 // defineVaporComponent
+
+type StaticSlots = Record<string, VaporSlot>
+
+type VaporComponentInstanceConstructor<T extends VaporComponentInstance> = {
+  __isFragment?: never
+  __isTeleport?: never
+  __isSuspense?: never
+  new (...args: any[]): T
+}
 
 export type DefineVaporComponent<
   RuntimePropsOptions = {},

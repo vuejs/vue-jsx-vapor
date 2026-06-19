@@ -11,11 +11,12 @@ import type {
   EmitsOptions,
   Fragment,
   FunctionalVaporComponent,
-  NodeRef,
+  Ref,
   Suspense,
   SuspenseProps,
   TeleportProps,
   VaporComponent,
+  VaporComponentInstance,
   VaporTeleport,
 } from 'vue'
 
@@ -25,6 +26,10 @@ type HTMLElementEventHandler = {
   ) => any
 }
 
+type NodeRef =
+  | string
+  | Ref
+  | ((ref: Element | VaporComponentInstance, refs: Record<string, any>) => void)
 type ReservedProps = { key?: () => PropertyKey; ref?: NodeRef }
 type RawProps = Record<string, any> & ReservedProps
 
