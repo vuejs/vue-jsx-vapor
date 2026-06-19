@@ -142,12 +142,12 @@ fn component() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, resolveDirective as _resolveDirective, setInsertionState as _setInsertionState, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+  import { createIf as _createIf, extend as _extend, resolveDirective as _resolveDirective, setInsertionState as _setInsertionState, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const _t0 = _template("<div>");
   (() => {
   	const _directive_test = _resolveDirective("test");
   	const _directive_hello = _resolveDirective("hello");
-  	const _n0 = _createComponent(Comp, null, () => {
+  	const _n0 = _createComponent(Comp, null, _extend(() => {
   		const _n1 = _createIf(() => true, () => {
   			const _n4 = _t0();
   			_setInsertionState(_n4, null, 0);
@@ -161,7 +161,7 @@ fn component() {
   			return _n4;
   		}, null, 17);
   		return _n1;
-  	}, true);
+  	}, { _: 8 }), true);
   	_withVaporDirectives(_n0, [[_directive_test]]);
   	return _n0;
   })();

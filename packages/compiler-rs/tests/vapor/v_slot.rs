@@ -26,11 +26,12 @@ fn on_component_default_slot() {
   let code = transform("<Comp v-slot={scope}>{ scope.foo + bar }</Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, (scope) => {
+  	const _n1 = _createComponent(Comp, null, _extend((scope) => {
   		const _n0 = _createNodes(() => scope.foo + bar);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n1;
   })();
   "#);
@@ -48,11 +49,12 @@ fn on_component_named_slot() {
   .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { named: (_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, { named: _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => ({ foo: _slotProps0.foo }), () => ({ foo: _slotProps0.foo }));
   		return _n0;
-  	} }, true);
+  	}, { _: 8 }) }, true);
   	return _n2;
   })();
   "#);
@@ -131,11 +133,12 @@ fn nested_component_should_not_inherit_parent_slots() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
   	const _n2 = _createComponent(Comp, null, {
-  		header: () => {
+  		header: _extend(() => {
   			return null;
-  		},
+  		}, { _: 8 }),
   		default: () => {
   			const _n1 = _createComponent(Bar);
   			return _n1;
@@ -155,11 +158,12 @@ fn slot_prop_alias_uses_original_key() {
   .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, (_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.msg);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n2;
   })();
   "#);
@@ -174,11 +178,12 @@ fn slot_prop_nested_destructuring() {
   .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, (_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.foo.bar);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n2;
   })();
   "#);
@@ -193,11 +198,12 @@ fn slot_prop_computed_key_destructuring() {
   .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, (_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => ({ val: _slotProps0[key.value] }));
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n2;
   })();
   "#);
@@ -212,12 +218,12 @@ fn slot_prop_rest_destructuring() {
   .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { getRestElement as _getRestElement } from "vue";
+  import { extend as _extend, getRestElement as _getRestElement } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, (_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => _getRestElement(_slotProps0, ["foo"]).bar);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n2;
   })();
   "#);
@@ -232,11 +238,12 @@ fn slot_prop_array_rest_destructuring() {
   .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, (_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.arr.slice(1)[0]);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n2;
   })();
   "#);
@@ -251,12 +258,12 @@ fn slot_prop_rest_with_computed_keys_preserved() {
   .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { getRestElement as _getRestElement } from "vue";
+  import { extend as _extend, getRestElement as _getRestElement } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, (_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.foo + _getRestElement(_slotProps0, ["foo", key]).other);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n2;
   })();
   "#);
@@ -271,11 +278,12 @@ fn slot_prop_assignment() {
   .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, (_slotProps0) => {
+  	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.foo++, () => _slotProps0.bar.value = 1);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n2;
   })();
   "#);
@@ -361,12 +369,13 @@ fn nested_slots_scoping() {
   .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
   	const _n4 = _createComponent(Comp, null, (_slotProps0) => {
-  		const _n1 = _createComponent(Inner, null, (_slotProps1) => {
+  		const _n1 = _createComponent(Inner, null, _extend((_slotProps1) => {
   			const _n0 = _createNodes(() => _slotProps0.foo + _slotProps1.bar + baz);
   			return _n0;
-  		});
+  		}, { _: 8 }));
   		const _n2 = _createNodes(() => _slotProps0.foo + bar + baz);
   		return [_n1, _n2];
   	}, true);
@@ -485,10 +494,11 @@ fn quote_slot_name() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, { "nav-bar-title-before": () => {
+  	const _n1 = _createComponent(Comp, null, { "nav-bar-title-before": _extend(() => {
   		return null;
-  	} }, true);
+  	}, { _: 8 }) }, true);
   	return _n1;
   })();
   "#);
@@ -514,16 +524,16 @@ fn marks_root_v_if_slot_content_as_slot_root() {
   let code = transform("<Comp><span v-if={show}/></Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, template as _template } from "vue";
+  import { createIf as _createIf, extend as _extend, template as _template } from "vue";
   const _t0 = _template("<span>", 2);
   (() => {
-  	const _n3 = _createComponent(Comp, null, () => {
+  	const _n3 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createIf(() => show, () => {
   			const _n2 = _t0();
   			return _n2;
   		}, null, 161);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n3;
   })();
   "#);
@@ -557,10 +567,10 @@ fn marks_root_slot_outlet_fallbck_as_slot_root() {
   let code = transform("<Comp><slot><span v-if={show}/></slot></Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, createSlot as _createSlot, template as _template } from "vue";
+  import { createIf as _createIf, createSlot as _createSlot, extend as _extend, template as _template } from "vue";
   const _t0 = _template("<span>", 2);
   (() => {
-  	const _n4 = _createComponent(Comp, null, () => {
+  	const _n4 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createSlot("default", null, () => {
   			const _n1 = _createIf(() => show, () => {
   				const _n3 = _t0();
@@ -569,7 +579,7 @@ fn marks_root_slot_outlet_fallbck_as_slot_root() {
   			return _n1;
   		}, 4);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n4;
   })();
   "#);
@@ -580,12 +590,12 @@ fn slot_tag_only() {
   let code = transform(r#"<Comp><slot /></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createSlot as _createSlot } from "vue";
+  import { createSlot as _createSlot, extend as _extend } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, () => {
+  	const _n1 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createSlot("default", null, null, 4);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n1;
   })();
   "#);
@@ -596,15 +606,15 @@ fn slot_tag_with_v_if() {
   let code = transform(r#"<Comp><slot v-if={ok} /></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, createSlot as _createSlot } from "vue";
+  import { createIf as _createIf, createSlot as _createSlot, extend as _extend } from "vue";
   (() => {
-  	const _n3 = _createComponent(Comp, null, () => {
+  	const _n3 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createIf(() => ok, () => {
   			const _n2 = _createSlot("default", null, null, 4);
   			return _n2;
   		}, null, 129);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n3;
   })();
   "#);
@@ -615,15 +625,15 @@ fn slot_tag_with_v_for() {
   let code = transform(r#"<Comp><slot v-for={a in b} /></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createFor as _createFor, createSlot as _createSlot } from "vue";
+  import { createFor as _createFor, createSlot as _createSlot, extend as _extend } from "vue";
   (() => {
-  	const _n3 = _createComponent(Comp, null, () => {
+  	const _n3 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createFor(() => b, (_for_item0) => {
   			const _n2 = _createSlot("default", null, null, 4);
   			return _n2;
   		}, void 0, 48);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n3;
   })();
   "#);
@@ -634,12 +644,12 @@ fn slot_tag_with_template() {
   let code = transform(r#"<Comp><template v-slot><slot /></template></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createSlot as _createSlot } from "vue";
+  import { createSlot as _createSlot, extend as _extend } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, () => {
+  	const _n2 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createSlot("default", null, null, 4);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n2;
   })();
   "#);
@@ -650,13 +660,13 @@ fn slot_tag_with_nested_component() {
   let code = transform(r#"<Comp><Comp><slot/></Comp></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createSlot as _createSlot } from "vue";
+  import { createSlot as _createSlot, extend as _extend } from "vue";
   (() => {
   	const _n2 = _createComponent(Comp, null, () => {
-  		const _n1 = _createComponent(Comp, null, () => {
+  		const _n1 = _createComponent(Comp, null, _extend(() => {
   			const _n0 = _createSlot("default", null, null, 4);
   			return _n0;
-  		});
+  		}, { _: 8 }));
   		return _n1;
   	}, true);
   	return _n2;
@@ -771,12 +781,12 @@ fn slot_with_slot_outlet_should_not_need_with_vapor_ctx() {
   assert!(!code.contains("withVaporCtx"));
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createSlot as _createSlot } from "vue";
+  import { createSlot as _createSlot, extend as _extend } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, () => {
+  	const _n2 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createSlot("default", null, null, 4);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n2;
   })();
   "#);
@@ -827,10 +837,10 @@ fn slot_with_component_inside_v_if_should_not_need_with_vapor_ctx() {
   assert!(!code.contains("withVaporCtx"));
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
+  import { createIf as _createIf, extend as _extend, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div>");
   (() => {
-  	const _n5 = _createComponent(Comp, null, () => {
+  	const _n5 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createIf(() => show, () => {
   			const _n3 = _t0();
   			_setInsertionState(_n3, null, 0);
@@ -838,7 +848,7 @@ fn slot_with_component_inside_v_if_should_not_need_with_vapor_ctx() {
   			return _n3;
   		}, null, 129);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n5;
   })();
   "#);
@@ -860,10 +870,10 @@ fn slot_with_component_inside_v_for_should_not_need_with_vapor_ctx() {
   assert!(!code.contains("withVaporCtx"));
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createFor as _createFor, setInsertionState as _setInsertionState, template as _template } from "vue";
+  import { createFor as _createFor, extend as _extend, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div>");
   (() => {
-  	const _n5 = _createComponent(Comp, null, () => {
+  	const _n5 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createFor(() => items, (_for_item0) => {
   			const _n3 = _t0();
   			_setInsertionState(_n3, null, 0);
@@ -871,7 +881,7 @@ fn slot_with_component_inside_v_for_should_not_need_with_vapor_ctx() {
   			return _n3;
   		}, void 0, 40);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n5;
   })();
   "#);
@@ -895,11 +905,11 @@ fn slot_with_nested_v_if_containing_component_should_not_need_with_vapor_ctx() {
   assert!(!code.contains("withVaporCtx"));
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
+  import { createIf as _createIf, extend as _extend, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<span>");
   const _t1 = _template("<div>");
   (() => {
-  	const _n8 = _createComponent(Comp, null, () => {
+  	const _n8 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createIf(() => a, () => {
   			const _n6 = _t1();
   			_setInsertionState(_n6, null, 0);
@@ -912,7 +922,7 @@ fn slot_with_nested_v_if_containing_component_should_not_need_with_vapor_ctx() {
   			return _n6;
   		}, null, 129);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n8;
   })();
   "#);
@@ -931,11 +941,12 @@ fn slot_with_only_text_interpolation_should_not_need_with_vapor_ctx() {
   .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, () => {
+  	const _n2 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createNodes(() => message);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n2;
   })();
   "#);
@@ -955,11 +966,11 @@ fn slot_with_v_if_but_no_component_should_not_need_with_vapor_ctx() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, template as _template } from "vue";
+  import { createIf as _createIf, extend as _extend, template as _template } from "vue";
   const _t0 = _template("<div>content", 2);
   const _t1 = _template("<span>fallback", 2);
   (() => {
-  	const _n7 = _createComponent(Comp, null, () => {
+  	const _n7 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createIf(() => show, () => {
   			const _n2 = _t0();
   			return _n2;
@@ -968,7 +979,7 @@ fn slot_with_v_if_but_no_component_should_not_need_with_vapor_ctx() {
   			return _n4;
   		}, 485);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n7;
   })();
   "#);
@@ -987,10 +998,10 @@ fn slot_with_v_for_but_no_component_should_not_need_with_vapor_ctx() {
   .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createFor as _createFor, template as _template, txt as _txt } from "vue";
+  import { createFor as _createFor, extend as _extend, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   (() => {
-  	const _n4 = _createComponent(Comp, null, () => {
+  	const _n4 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createFor(() => items, (_for_item0) => {
   			const _n2 = _t0();
   			const _x2 = _txt(_n2);
@@ -998,7 +1009,7 @@ fn slot_with_v_for_but_no_component_should_not_need_with_vapor_ctx() {
   			return _n2;
   		}, void 0, 40);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n4;
   })();
   "#);
@@ -1045,10 +1056,10 @@ fn slot_with_custom_element_inside_v_if_should_not_need_with_vapor_ctx() {
   assert!(!code.contains("withVaporCtx"));
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, createPlainElement as _createPlainElement, setInsertionState as _setInsertionState, template as _template } from "vue";
+  import { createIf as _createIf, createPlainElement as _createPlainElement, extend as _extend, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div>");
   (() => {
-  	const _n5 = _createComponent(Comp, null, () => {
+  	const _n5 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createIf(() => show, () => {
   			const _n3 = _t0();
   			_setInsertionState(_n3, null, 0);
@@ -1056,7 +1067,7 @@ fn slot_with_custom_element_inside_v_if_should_not_need_with_vapor_ctx() {
   			return _n3;
   		}, null, 129);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n5;
   })();
   "#);

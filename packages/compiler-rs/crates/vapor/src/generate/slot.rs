@@ -12,16 +12,16 @@ use oxc_span::{GetSpan, SPAN};
 use crate::{
   generate::{
     CodegenContext,
-    block::{gen_block, mark_slot_root_operations},
+    block::{find_returned_dynamic, gen_block, mark_slot_root_operations},
     expression::gen_expression,
   },
   ir::{
     component::{IRSlotDynamicBasic, IRSlotDynamicConditional, IRSlots},
-    index::{BlockIRNode, IRFor},
+    index::{BlockIRNode, IRFor, OperationNode},
   },
 };
 
-use common::check::is_simple_identifier;
+use common::{check::is_simple_identifier, patch_flag::VaporSlotFlags};
 
 pub fn gen_raw_slots<'a>(
   mut slots: Vec<IRSlots<'a>>,
@@ -41,6 +41,7 @@ pub fn gen_raw_slots<'a>(
         default_slot,
         context,
         context_block,
+        true,
       ));
     }
     // single static slot
@@ -84,7 +85,7 @@ fn gen_static_slots<'a>(
       SPAN,
       PropertyKind::Init,
       ast.property_key_static_identifier(SPAN, ast.str(name)),
-      gen_slot_block_with_props(oper, context, unsafe { &mut *context_block }),
+      gen_slot_block_with_props(oper, context, unsafe { &mut *context_block }, true),
       false,
       false,
       false,
@@ -211,7 +212,7 @@ fn gen_basic_dynamic_slot<'a>(
         SPAN,
         PropertyKind::Init,
         ast.property_key_static_identifier(SPAN, ast.str("fn")),
-        gen_slot_block_with_props(slot._fn, context, context_block),
+        gen_slot_block_with_props(slot._fn, context, context_block, false),
         false,
         false,
         false,
@@ -273,7 +274,7 @@ fn gen_loop_slot<'a>(
         SPAN,
         PropertyKind::Init,
         ast.property_key_static_identifier(SPAN, ast.str("fn")),
-        gen_slot_block_with_props(_fn, context, context_block),
+        gen_slot_block_with_props(_fn, context, context_block, false),
         false,
         false,
         false,
@@ -408,6 +409,7 @@ fn gen_slot_block_with_props<'a>(
   mut oper: BlockIRNode<'a>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
+  emit_non_stable_flag: bool,
 ) -> Expression<'a> {
   let mut props_name = Cow::Borrowed("");
   let mut props_loc = SPAN;
@@ -439,9 +441,9 @@ fn gen_slot_block_with_props<'a>(
   );
 
   let ast = &context.ast;
-
   mark_slot_root_operations(&mut oper);
-  let block_fn = context.with_id(
+  let none_stable_slot_root = emit_non_stable_flag && !has_stable_slot_root(&mut oper, context);
+  let mut block_fn = context.with_id(
     || {
       gen_block(
         oper,
@@ -459,9 +461,84 @@ fn gen_slot_block_with_props<'a>(
     },
     id_map,
   );
+  // Dynamic slot sources keep rawSlots.$, so runtime stays conservative.
+  if none_stable_slot_root {
+    block_fn = ast.expression_call(
+      SPAN,
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_extend"))),
+      NONE,
+      ast.vec_from_array([
+        block_fn.into(),
+        ast
+          .expression_object(
+            SPAN,
+            ast.vec1(ast.object_property_kind_object_property(
+              SPAN,
+              PropertyKind::Init,
+              ast.property_key_static_identifier(SPAN, "_"),
+              ast.expression_numeric_literal(
+                SPAN,
+                VaporSlotFlags::NonStable as i32 as f64,
+                None,
+                oxc_ast::ast::NumberBase::Decimal,
+              ),
+              false,
+              false,
+              false,
+            )),
+          )
+          .into(),
+      ]),
+      false,
+    )
+  }
   if let Some(exit_scope) = exit_scope {
     exit_scope();
   };
 
   block_fn
+}
+
+fn has_stable_slot_root<'a>(block: &mut BlockIRNode<'a>, context: &CodegenContext<'a>) -> bool {
+  let mut has_valid_root = false;
+  let block_ptr = block as *mut BlockIRNode;
+  for id in block.returns.iter() {
+    let Some(child) = find_returned_dynamic(unsafe { &mut *block_ptr }, *id) else {
+      continue;
+    };
+    let Some(operation) = child.operation.as_mut() else {
+      if is_stable_template_slot_root(child.template, context) {
+        has_valid_root = true
+      }
+      continue;
+    };
+
+    match operation.as_mut() {
+      OperationNode::CreateComponent(_) => {
+        has_valid_root = true;
+        continue;
+      }
+      OperationNode::Key(operation) => {
+        if has_stable_slot_root(&mut operation.block, context) {
+          has_valid_root = true;
+          continue;
+        }
+        return false;
+      }
+      _ => return false,
+    }
+  }
+  has_valid_root
+}
+
+fn is_stable_template_slot_root(template: Option<i32>, context: &CodegenContext) -> bool {
+  let Some(template) = template else {
+    return false;
+  };
+  context
+    .options
+    .templates
+    .borrow()
+    .get(template as usize)
+    .is_some_and(|i| !i.content.is_empty())
 }

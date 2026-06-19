@@ -364,11 +364,12 @@ fn slot_interpolation() {
   let code = transform(r#"<Comp>{Hello}</Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, () => {
+  	const _n1 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createNodes(() => Hello);
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n1;
   })();
   "#)
@@ -379,11 +380,12 @@ fn slot_literal_interpolation() {
   let code = transform(r#"<Comp>{ "Hello" }</Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
-  	const _n1 = _createComponent(Comp, null, () => {
+  	const _n1 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createNodes("Hello");
   		return _n0;
-  	}, true);
+  	}, { _: 8 }), true);
   	return _n1;
   })();
   "#)

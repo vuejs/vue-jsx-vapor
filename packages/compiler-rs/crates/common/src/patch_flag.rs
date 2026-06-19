@@ -246,4 +246,7 @@ pub enum VaporSlotFlags {
   NoSlotted = 1,
   Once = 1 << 1,
   SlotRoot = 1 << 2,
+  // Per-slot function metadata. The slot root can start invalid or become
+  // invalid, so fallback may be reachable and needs SlotFragment tracking.
+  NonStable = 1 << 3,
 }
