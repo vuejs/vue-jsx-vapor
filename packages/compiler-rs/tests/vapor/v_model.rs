@@ -161,6 +161,20 @@ fn should_support_dynamic_props() {
 }
 
 #[test]
+fn non_identifier_modifiers_should_be_quoted() {
+  let code = transform("<input v-model_foo-bar={model} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { applyTextModel as _applyTextModel, template as _template } from "vue";
+  const _t0 = _template("<input>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_applyTextModel(_n0, () => model, (_value) => model = _value, { "foo-bar": true });
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn should_support_member_expression() {
   let code = transform("<input v-model={setupRef.child} />", None).code;
   assert_snapshot!(code, @r#"
