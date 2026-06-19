@@ -148,15 +148,16 @@ pub fn gen_block_content<'a>(
   });
   statements.push(ast.statement_return(
     SPAN,
-    Some(if return_nodes.len() > 1 {
-      ast.expression_array(SPAN, ast.vec_from_iter(return_nodes))
-    } else if let Some(node) = return_nodes.next()
-      && let ArrayExpressionElement::Identifier(node) = node
-    {
-      ast.expression_identifier(SPAN, node.name)
-    } else {
-      ast.expression_null_literal(SPAN)
-    }),
+    Some(
+      if return_nodes.len() == 1
+        && let Some(node) = return_nodes.next()
+        && let ArrayExpressionElement::Identifier(node) = node
+      {
+        ast.expression_identifier(SPAN, node.name)
+      } else {
+        ast.expression_array(SPAN, ast.vec_from_iter(return_nodes))
+      },
+    ),
   ));
 
   if let Some(reset_block) = reset_block {

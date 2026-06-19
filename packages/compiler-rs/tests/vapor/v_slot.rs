@@ -137,7 +137,7 @@ fn nested_component_should_not_inherit_parent_slots() {
   (() => {
   	const _n2 = _createComponent(Comp, null, {
   		header: _extend(() => {
-  			return null;
+  			return [];
   		}, { _: 8 }),
   		default: () => {
   			const _n1 = _createComponent(Bar);
@@ -497,7 +497,7 @@ fn quote_slot_name() {
   import { extend as _extend } from "vue";
   (() => {
   	const _n1 = _createComponent(Comp, null, { "nav-bar-title-before": _extend(() => {
-  		return null;
+  		return [];
   	}, { _: 8 }) }, true);
   	return _n1;
   })();
@@ -687,7 +687,7 @@ fn default_slot_with_v_if_directive() {
   	const _n1 = _createComponent(Comp, null, { $: [() => show ? {
   		name: "default",
   		fn: () => {
-  			return null;
+  			return [];
   		}
   	} : undefined] }, true);
   	return _n1;
