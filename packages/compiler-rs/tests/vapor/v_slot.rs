@@ -1142,3 +1142,21 @@ fn error_on_v_slot_usage_on_plain_elements() {
   );
   assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMisplaced));
 }
+
+#[test]
+fn slot_v_else_missing_adjacent_v_if_should_report_compiler_error() {
+  let error = RefCell::new(None);
+  transform(
+    "<>
+      <Comp><template v-slot:foo v-else>foo</template></Comp>
+      <Comp><template v-slot:foo v-else-if={ok}>foo</template></Comp>
+    </>",
+    Some(TransformOptions {
+      on_error: Box::new(|e, _| {
+        *error.borrow_mut() = Some(e);
+      }),
+      ..Default::default()
+    }),
+  );
+  assert_eq!(*error.borrow(), Some(ErrorCodes::VElseNoAdjacentIf));
+}
