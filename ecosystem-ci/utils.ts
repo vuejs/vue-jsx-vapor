@@ -138,19 +138,28 @@ export function buildOverrides(release?: string): Overrides {
 export function applyOverrides(dir: string, overrides: Overrides) {
   const pkgPath = path.join(dir, 'package.json')
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
-
-  pkg.pnpm ??= {}
-  pkg.pnpm.overrides = { ...pkg.pnpm.overrides, ...overrides }
-  pkg.packageManager = 'pnpm@11.0.4'
+  pkg.packageManager = 'pnpm@11.0.8'
+  fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
 
   const workspacePath = path.join(dir, 'pnpm-workspace.yaml')
-  const content = fs.existsSync(workspacePath)? fs.readFileSync(workspacePath, 'utf8'):''
+  let content = fs.existsSync(workspacePath)
+    ? fs.readFileSync(workspacePath, 'utf8')
+    : ''
   const suffix = content.includes('dangerouslyAllowAllBuilds')
     ? ''
     : '\ndangerouslyAllowAllBuilds: true\n'
+  const overrideContent = `overrides:\n  ${Object.entries(overrides)
+    .map(([key, value]) => `'${key}': ${value}`)
+    .join('\n  ')}`
+  if (content.includes(`overrides:\n  'vue-jsx-vapor'`)) {
+    return
+  } else if (content.includes('overrides:')) {
+    content = content.replace('overrides:', overrideContent)
+  } else {
+    content += overrideContent
+  }
+  content = content.replace(/minimumReleaseAge: \d*\n/, '')
   fs.writeFileSync(workspacePath, content + suffix)
-
-  fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
   console.log('Applied overrides:', overrides)
 }
 
