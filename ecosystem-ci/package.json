@@ -6,7 +6,6 @@
     "test": "node index.ts"
   },
   "dependencies": {
-    "@types/node": "^24.0.12",
     "cac": "^6.7.14",
     "execa": "^9.5.2"
   }

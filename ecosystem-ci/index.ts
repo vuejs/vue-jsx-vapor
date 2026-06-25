@@ -1,7 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { exit } from 'node:process'
+import { cwd, exit } from 'node:process'
 import { cac } from 'cac'
+import { execa } from 'execa'
 import { root, workspace } from './utils.ts'
 import type { RunOptions } from './types.ts'
 
@@ -14,19 +15,24 @@ cli
   })
   .option('--tag <tag>', 'vue-jsx-vapor tag to use')
   .option('--commit <commit>', 'vue-jsx-vapor commit sha to use')
-  .option(
-    '--release <version>',
-    'use a specific release from npm or pkg.pr.new (e.g. "3.2.0" or "@abc1234")',
-  )
   .action(async (suites: string[], options: RunOptions) => {
     fs.mkdirSync(workspace, { recursive: true })
 
     const suitesToRun = getSuitesToRun(suites)
     const runOptions = {
+      ...options,
       root,
       workspace,
-      release: options.release,
     }
+
+    await execa(
+      'pnpm',
+      ['-C', './packages/vue-jsx-vapor', 'pack', '--out', '%s.tgz'],
+      {
+        cwd: path.dirname(cwd()),
+        stdio: 'inherit',
+      },
+    )
 
     for (const suite of suitesToRun) {
       console.log(`\n${'─'.repeat(60)}`)
