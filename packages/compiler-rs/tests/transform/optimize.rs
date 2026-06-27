@@ -14,13 +14,10 @@ fn should_optimize_in_functional_compoennt() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   function Comp() {
-  	return _openBlock(), _createBlock(Comp, null, {
-  		default: _withCtx(() => [_normalizeVNode(() => foo)]),
-  		_: 1
-  	});
+  	return _openBlock(), _createBlock(Comp, null, _normalizeSlots(foo), 1024);
   }
   "#);
 }
@@ -41,19 +38,13 @@ fn should_not_optimize_in_functional_compoennt_with_params() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   function Comp({ foo }) {
   	{
-  		_openBlock(), _createBlock(Comp, null, {
-  			default: _withCtx(() => [_normalizeVNode(() => foo)]),
-  			_: 2
-  		}, 1024);
+  		_openBlock(), _createBlock(Comp, null, _normalizeSlots(foo), 1024);
   	}
-  	return _openBlock(), _createBlock(Comp, null, {
-  		default: _withCtx(() => [_normalizeVNode(() => foo)]),
-  		_: 2
-  	}, 1024);
+  	return _openBlock(), _createBlock(Comp, null, _normalizeSlots(foo), 1024);
   }
   "#);
 }
@@ -315,8 +306,8 @@ fn should_not_cache_in_for_in_statement() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick", "onBlur"];
   for (let i in [
   	1,
@@ -329,10 +320,7 @@ fn should_not_cache_in_for_in_statement() {
   		onBlur: () => foo
   	}, null, 40, _hoisted_1)));
   }
-  _openBlock(), _createBlock(Comp, null, {
-  	default: _withCtx(() => [_normalizeVNode(() => foo)]),
-  	_: 1
-  });
+  _openBlock(), _createBlock(Comp, null, _normalizeSlots(foo), 1024);
   "#);
 }
 
@@ -386,24 +374,18 @@ fn should_not_optimize_multiple_statments() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode, normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const Comp = defineComponent((props) => {
   	return () => {
   		const Foo = (_openBlock(), _createElementBlock(_Fragment, null, [_normalizeVNode(() => props.foo)], 64));
   		return (() => {
   			const _cache = _createVNodeCache("631d214bc2c8427c");
-  			return _openBlock(), _createBlock(Comp, { onClick: _cache[0] || (_cache[0] = () => props.bar) }, {
-  				default: _withCtx(() => [_normalizeVNode(() => Foo)]),
-  				_: 2
-  			}, 1024);
+  			return _openBlock(), _createBlock(Comp, { onClick: _cache[0] || (_cache[0] = () => props.bar) }, _normalizeSlots(Foo), 1024);
   		})();
   	};
   });
-  export default () => (_openBlock(), _createBlock(Comp, null, {
-  	default: _withCtx(() => [_normalizeVNode(() => Foo)]),
-  	_: 1
-  }));
+  export default () => (_openBlock(), _createBlock(Comp, null, _normalizeSlots(Foo), 1024));
   "#);
 }
 

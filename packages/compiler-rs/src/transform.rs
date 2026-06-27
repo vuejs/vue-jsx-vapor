@@ -141,17 +141,22 @@ impl<'a> Transform<'a> {
         });
       };
 
-      let vdom_helpers = vec!["createVNodeCache", "normalizeVNode", "normalizeSlot"]
-        .into_iter()
-        .filter(|helper| {
-          if helpers.contains(*helper) {
-            helpers.remove(*helper);
-            true
-          } else {
-            false
-          }
-        })
-        .collect::<Vec<_>>();
+      let vdom_helpers = vec![
+        "createVNodeCache",
+        "normalizeVNode",
+        "normalizeSlot",
+        "normalizeSlots",
+      ]
+      .into_iter()
+      .filter(|helper| {
+        if helpers.contains(*helper) {
+          helpers.remove(*helper);
+          true
+        } else {
+          false
+        }
+      })
+      .collect::<Vec<_>>();
       if !vdom_helpers.is_empty() {
         statements.push(Statement::ImportDeclaration(ast.alloc_import_declaration(
           SPAN,

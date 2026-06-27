@@ -269,13 +269,19 @@ export function createNodes(...values: any[]) {
   return resolveValues(values)
 }
 
-export function normalizeVaporSlots(obj: Record<string, Function> | Function) {
-  if (typeof obj === 'function') {
-    return obj
-  } else if (typeof obj === 'object') {
-    return Object.entries(obj).map(([name, fn]) => ({ name, fn }))
+export function normalizeVaporSlots(slots: any) {
+  if (typeof slots === 'function') {
+    return { name: 'default', fn: slots }
+  } else if (
+    Object.prototype.toString.call(slots) === '[object Object]' &&
+    !isBlock(slots)
+  ) {
+    return Object.entries(slots).map(([name, fn]) => ({ name, fn }))
   } else {
-    return obj
+    return {
+      name: 'default',
+      fn: () => createNodes(slots),
+    }
   }
 }
 

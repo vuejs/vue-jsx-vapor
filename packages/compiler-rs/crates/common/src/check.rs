@@ -497,3 +497,41 @@ pub fn is_referenced_identifier<'a>(id: &IdentifierReference, parent: Option<Ast
 pub fn is_slots_component(name: &str) -> bool {
   name.starts_with("slots.") || name.starts_with("$slots.") || name.starts_with("this.$slots.")
 }
+
+pub fn is_slots_expression(exp: &Expression) -> Option<bool> {
+  match exp.get_inner_expression() {
+    Expression::ObjectExpression(_)
+    | Expression::FunctionExpression(_)
+    | Expression::ArrowFunctionExpression(_) => Some(false),
+    Expression::Identifier(_) => Some(true),
+    Expression::StaticMemberExpression(exp)
+      if matches!(exp.object, Expression::ThisExpression(_)) && exp.property.name == "$slots" =>
+    {
+      Some(true)
+    }
+    Expression::LogicalExpression(exp) => {
+      if let Some(result) = is_slots_expression(&exp.right)
+        && result == false
+      {
+        // prevent render false text (e.g., `createVNode(Comp, null, false)`)
+        Some(true)
+      } else {
+        None
+      }
+    }
+    Expression::ConditionalExpression(exp) => {
+      if let Some(result) = is_slots_expression(&exp.consequent)
+        && result == false
+      {
+        Some(true)
+      } else if let Some(result) = is_slots_expression(&exp.alternate)
+        && result == false
+      {
+        Some(true)
+      } else {
+        None
+      }
+    }
+    _ => None,
+  }
+}

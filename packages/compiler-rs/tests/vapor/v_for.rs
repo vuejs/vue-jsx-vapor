@@ -501,15 +501,12 @@ fn fast_remove_flag() {
 fn on_component() {
   let code = transform("<Comp v-for={item in list}>{item}</Comp>", None).code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createFor as _createFor, extend as _extend } from "vue";
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
-  		const _n3 = _createComponent(Comp, null, _extend(() => {
-  			const _n2 = _createNodes(() => _for_item0.value);
-  			return _n2;
-  		}, { _: 8 }));
-  		return _n3;
+  		const _n2 = _createComponent(Comp, null, { $: [() => _normalizeVaporSlots(_for_item0.value)] });
+  		return _n2;
   	}, void 0, 2);
   	return _n0;
   })();
@@ -570,15 +567,12 @@ fn on_template_with_single_component_child() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createFor as _createFor, extend as _extend } from "vue";
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
-  		const _n3 = _createComponent(Comp, null, _extend(() => {
-  			const _n2 = _createNodes(() => _for_item0.value);
-  			return _n2;
-  		}, { _: 8 }));
-  		return _n3;
+  		const _n2 = _createComponent(Comp, null, { $: [() => _normalizeVaporSlots(_for_item0.value)] });
+  		return _n2;
   	}, void 0, 2);
   	return _n0;
   })();

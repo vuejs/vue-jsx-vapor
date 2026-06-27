@@ -110,6 +110,16 @@ export const normalizeSlot = (rawSlot: Function): Slot => {
   }) as Slot
 }
 
+export const normalizeSlots = (slots: any): Record<string, any> | Function => {
+  return typeof slots === 'function' ||
+    (Object.prototype.toString.call(slots) === '[object Object]' &&
+      !isVNode(slots))
+    ? slots
+    : {
+        default: withCtx(() => [normalizeVNode(() => slots)]),
+      }
+}
+
 // defineComponent
 
 type RenderFunction = () => VNodeChild | {}

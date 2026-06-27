@@ -235,6 +235,74 @@ fn v_slots_dynamic_with_children() {
 }
 
 #[test]
+fn identify_children() {
+  let code = transform(
+    "<Comp>{slots}</Comp>",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(Comp, null, _normalizeSlots(slots), 1024);
+  "#);
+}
+
+#[test]
+fn this_expression_slots_children() {
+  let code = transform(
+    "<Comp>{this.$slots}</Comp>",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(Comp, null, _normalizeSlots(this.$slots), 1024);
+  "#);
+}
+
+#[test]
+fn condition_expression_children() {
+  let code = transform(
+    "<Comp>{slots ? { default: () => <div /> } : undefined}</Comp>",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(Comp, null, _normalizeSlots(slots ? { default: () => (_openBlock(), _createElementBlock("div")) } : undefined), 1024);
+  "#);
+}
+
+#[test]
+fn logical_expression_children() {
+  let code = transform(
+    "<Comp>{slots || { default: () => <div /> }}</Comp>",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(Comp, null, _normalizeSlots(slots || { default: () => (_openBlock(), _createElementBlock("div")) }), 1024);
+  "#);
+}
+
+#[test]
 fn should_raise_error_if_not_component() {
   let error = RefCell::new(None);
   transform(

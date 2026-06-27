@@ -654,14 +654,11 @@ fn invalid_table_nesting_with_dynamic_child() {
 fn zcustom_element() {
   let code = transform(r#"<my-custom-element>{foo}</my-custom-element>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
-  import { createPlainElement as _createPlainElement, extend as _extend } from "vue";
+  import { normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
+  import { createPlainElement as _createPlainElement } from "vue";
   (() => {
-  	const _n1 = _createPlainElement("my-custom-element", null, _extend(() => {
-  		const _n0 = _createNodes(() => foo);
-  		return _n0;
-  	}, { _: 8 }), true);
-  	return _n1;
+  	const _n0 = _createPlainElement("my-custom-element", null, { $: [() => _normalizeVaporSlots(foo)] }, true);
+  	return _n0;
   })();
   "#)
 }

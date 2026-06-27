@@ -17,7 +17,9 @@ use crate::{
   },
   transform::TransformContext,
 };
-use common::{directive::Directives, error::ErrorCodes, text::is_empty_text};
+use common::{
+  check::is_slots_expression, directive::Directives, error::ErrorCodes, text::is_empty_text,
+};
 
 /// # SAFETY
 pub unsafe fn transform_v_slots<'a>(
@@ -50,7 +52,7 @@ pub unsafe fn transform_v_slots<'a>(
         .get_mut(first_child_index)
       && let JSXChild::ExpressionContainer(exp) = child
       && let Some(exp) = exp.expression.as_expression_mut()
-      && (matches!(exp, Expression::ObjectExpression(_)) || exp.is_function())
+      && is_slots_expression(exp).is_some()
     {
       unsafe { &mut *node_ptr }
         .opening_element

@@ -12,8 +12,8 @@ use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{ast::NodeTypes, transform::TransformContext};
 use common::{
-  directive::Directives, error::ErrorCodes, options::SlotScope, patch_flag::PatchFlags,
-  text::is_empty_text,
+  check::is_slots_expression, directive::Directives, error::ErrorCodes, options::SlotScope,
+  patch_flag::PatchFlags, text::is_empty_text,
 };
 
 /// # SAFETY
@@ -47,19 +47,34 @@ pub unsafe fn transform_v_slots<'a>(
         .get_mut(first_child_index)
       && let JSXChild::ExpressionContainer(exp) = child
       && let Some(exp) = exp.expression.as_expression_mut()
-      && (matches!(exp, Expression::ObjectExpression(_)) || exp.is_function())
+      && let Some(maybe_slots) = is_slots_expression(exp)
     {
-      let ast = &context.ast;
-      unsafe { &mut *node_ptr }
-        .opening_element
-        .attributes
-        .push(ast.jsx_attribute_item_attribute(
+      unsafe { &mut *node_ptr }.opening_element.attributes.push(
+        ast.jsx_attribute_item_attribute(
           SPAN,
           ast.jsx_attribute_name_identifier(SPAN, "v-slots"),
           Some(
-            ast.jsx_attribute_value_expression_container(SPAN, exp.take_in(ast.allocator).into()),
+            ast.jsx_attribute_value_expression_container(
+              SPAN,
+              if maybe_slots {
+                ast.expression_call(
+                  SPAN,
+                  ast.expression_identifier(
+                    SPAN,
+                    ast.str(context.options.helper("_normalizeSlots")),
+                  ),
+                  NONE,
+                  ast.vec1(exp.take_in(ast.allocator).into()),
+                  false,
+                )
+              } else {
+                exp.take_in(ast.allocator)
+              }
+              .into(),
+            ),
           ),
-        ));
+        ),
+      );
       if let JSXAttributeItem::Attribute(attribute) =
         node.opening_element.attributes.last_mut().unwrap()
       {
