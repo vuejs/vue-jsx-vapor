@@ -117,7 +117,7 @@ export function applyOverrides(dir: string) {
   fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
 
   const overrides = {
-    'vue-jsx-vapor': `file:/${path.resolve(root, '..', 'packages', 'vue-jsx-vapor')}/vue-jsx-vapor.tgz`,
+    'vue-jsx-vapor': `link:${path.resolve(root, '..', 'packages', 'vue-jsx-vapor')}`,
   }
 
   const workspacePath = path.join(dir, 'pnpm-workspace.yaml')

@@ -1,8 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { cwd, exit } from 'node:process'
+import { exit } from 'node:process'
 import { cac } from 'cac'
-import { execa } from 'execa'
 import { root, workspace } from './utils.ts'
 import type { RunOptions } from './types.ts'
 
@@ -24,15 +23,6 @@ cli
       root,
       workspace,
     }
-
-    await execa(
-      'pnpm',
-      ['-C', './packages/vue-jsx-vapor', 'pack', '--out', '%s.tgz'],
-      {
-        cwd: path.dirname(cwd()),
-        stdio: 'inherit',
-      },
-    )
 
     for (const suite of suitesToRun) {
       console.log(`\n${'─'.repeat(60)}`)
