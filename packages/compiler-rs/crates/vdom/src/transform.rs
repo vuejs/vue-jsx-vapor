@@ -61,6 +61,7 @@ pub struct TransformContext<'a> {
 
   pub source_text: &'a str,
   pub root_node: RefCell<JSXChild<'a>>,
+  pub root_assign_name: Option<&'a str>,
 
   pub ast: &'a AstBuilder<'a>,
   pub constant_cache: RefCell<HashMap<Span, ConstantTypes>>,
@@ -74,12 +75,42 @@ pub struct TransformContext<'a> {
 }
 
 impl<'a> TransformContext<'a> {
-  pub fn new(options: &'a TransformOptions<'a>, ast: &'a AstBuilder<'a>) -> Self {
+  pub fn new(
+    node: Expression<'a>,
+    options: &'a TransformOptions<'a>,
+    ast: &'a AstBuilder<'a>,
+  ) -> Self {
     let allocator = &options.allocator;
+    let root_node_id = node.node_id();
+    TransformContext::collect_scope_identifiers(options, root_node_id);
+
+    let mut root_assign_name = None;
+    let semantic = options.semantic.borrow();
+    if let Some(parent_node) = match semantic.nodes().parent_kind(root_node_id) {
+      AstKind::ParenthesizedExpression(exp) => {
+        if let AstKind::AssignmentExpression(exp) = semantic.nodes().parent_kind(exp.node_id()) {
+          Some(exp)
+        } else {
+          None
+        }
+      }
+      AstKind::AssignmentExpression(exp) => Some(exp),
+      _ => None,
+    } {
+      root_assign_name = parent_node.left.get_identifier_name();
+    }
+
     TransformContext {
       allocator,
       seen: Rc::new(RefCell::new(HashSet::new())),
-      root_node: RefCell::new(RootNode::new(allocator)),
+      root_node: RefCell::new(RootNode::from(
+        ast,
+        options,
+        node,
+        false,
+        TransformContext::get_key(options, root_node_id),
+      )),
+      root_assign_name,
       source_text: *options.source_text.borrow(),
       ast,
       constant_cache: RefCell::new(HashMap::new()),
@@ -94,36 +125,45 @@ impl<'a> TransformContext<'a> {
     }
   }
 
-  pub fn transform(&'a self, expression: Expression<'a>) -> Expression<'a> {
-    if let Expression::JSXFragment(frag) = &expression
+  pub fn transform(self) -> Expression<'a> {
+    let root_node = self.root_node.as_ptr();
+    if let JSXChild::Fragment(root_node) = unsafe { &*root_node }
+      && let Some(node) = root_node.children.first()
+      && let JSXChild::Fragment(frag) = node
       && let Some(child) = get_first_child(&frag.children)
       && let JSXChild::Text(child) = child
     {
-      return self
-        .ast
-        .expression_string_literal(child.span, child.value, child.raw);
+      let ast = self.ast;
+      return ast.expression_call(
+        SPAN,
+        ast.expression_identifier(SPAN, ast.str(self.options.helper("_createVNode"))),
+        NONE,
+        ast.vec_from_array([
+          ast
+            .expression_identifier(SPAN, ast.str(self.options.helper("_Fragment")))
+            .into(),
+          ast.expression_null_literal(SPAN).into(),
+          self
+            .ast
+            .expression_string_literal(child.span, child.value, child.raw)
+            .into(),
+        ]),
+        false,
+      );
     }
-    let node_id = expression.node_id();
-    self.collect_scope_identifiers(node_id);
-    *self.root_node.borrow_mut() = RootNode::from(
-      self.ast,
-      self.options,
-      expression,
-      false,
-      self.get_key(node_id),
-    );
+
     unsafe {
-      self.transform_node(self.root_node.as_ptr(), None);
+      self.transform_node(root_node, None);
     }
     self.generate()
   }
 
-  fn get_key(&self, node_id: NodeId) -> Option<i32> {
-    if !self.options.optimize {
+  fn get_key(options: &'a TransformOptions<'a>, node_id: NodeId) -> Option<i32> {
+    if !options.optimize {
       return None;
     }
 
-    let semantic = self.options.semantic.borrow();
+    let semantic = options.semantic.borrow();
     let node = semantic.nodes().get_node(node_id);
     let scope_node_id = semantic.scoping().get_node_id(node.scope_id());
     let scope_node = semantic.nodes().kind(scope_node_id);
@@ -136,8 +176,8 @@ impl<'a> TransformContext<'a> {
         AstKind::SwitchCase(_) | AstKind::IfStatement(_)
       ))
     {
-      *self.options.key_index.borrow_mut() += 1;
-      return Some(*self.options.key_index.borrow());
+      *options.key_index.borrow_mut() += 1;
+      return Some(*options.key_index.borrow());
     }
 
     for ancestor in semantic.nodes().ancestors(node_id) {
@@ -151,8 +191,8 @@ impl<'a> TransformContext<'a> {
       }
       match ancestor.kind() {
         AstKind::IfStatement(_) => {
-          *self.options.key_index.borrow_mut() += 1;
-          return Some(*self.options.key_index.borrow());
+          *options.key_index.borrow_mut() += 1;
+          return Some(*options.key_index.borrow());
         }
         AstKind::ConditionalExpression(condition_exp)
           if !matches!(
@@ -160,8 +200,8 @@ impl<'a> TransformContext<'a> {
             AstKind::JSXExpressionContainer(_)
           ) =>
         {
-          *self.options.key_index.borrow_mut() += 1;
-          return Some(*self.options.key_index.borrow());
+          *options.key_index.borrow_mut() += 1;
+          return Some(*options.key_index.borrow());
         }
         _ => {}
       }
@@ -169,11 +209,11 @@ impl<'a> TransformContext<'a> {
     None
   }
 
-  fn collect_scope_identifiers(&self, node_id: NodeId) {
-    if !self.options.optimize {
+  fn collect_scope_identifiers(options: &'a TransformOptions<'a>, node_id: NodeId) {
+    if !options.optimize {
       return;
     }
-    let semantic = self.options.semantic.borrow();
+    let semantic = options.semantic.borrow();
     for scope_id in semantic
       .scoping()
       .scope_ancestors(semantic.nodes().get_node(node_id).scope_id())
@@ -184,8 +224,7 @@ impl<'a> TransformContext<'a> {
       let node_id = semantic.scoping().get_node_id(scope_id);
       let scope_node = semantic.nodes().get_node(node_id);
       let scope_span = scope_node.span();
-      if self
-        .options
+      if options
         .scope_identifiers_map
         .borrow()
         .get(&scope_span)
@@ -219,8 +258,7 @@ impl<'a> TransformContext<'a> {
       let mut add_identifiers = |id: &str| {
         let name = id.as_ref() as *const str;
         identifiers.push(unsafe { &*name });
-        self
-          .options
+        options
           .identifiers
           .borrow_mut()
           .entry(unsafe { &*name })
@@ -240,8 +278,7 @@ impl<'a> TransformContext<'a> {
           add_identifiers(id.0);
         }
       }
-      self
-        .options
+      options
         .scope_identifiers_map
         .borrow_mut()
         .insert(scope_span, (true, identifiers));
@@ -491,7 +528,7 @@ impl<'a> TransformContext<'a> {
 
   /// # SAFETY
   pub unsafe fn transform_node(
-    self: &'a TransformContext<'a>,
+    self: &TransformContext<'a>,
     node: *mut JSXChild<'a>,
     parent_node: Option<&mut JSXChild<'a>>,
   ) {

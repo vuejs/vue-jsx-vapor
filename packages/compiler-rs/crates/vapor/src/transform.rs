@@ -114,7 +114,11 @@ pub struct TransformContext<'a> {
 }
 
 impl<'a> TransformContext<'a> {
-  pub fn new(options: &'a TransformOptions<'a>, ast: &'a AstBuilder<'a>) -> Self {
+  pub fn new(
+    node: Expression<'a>,
+    options: &'a TransformOptions<'a>,
+    ast: &'a AstBuilder<'a>,
+  ) -> Self {
     let allocator = &options.allocator;
     TransformContext {
       allocator,
@@ -134,7 +138,7 @@ impl<'a> TransformContext<'a> {
       template_close_tags: RefCell::new(HashSet::new()),
       global_id: RefCell::new(0),
       if_index: RefCell::new(0),
-      node: RefCell::new(RootNode::new(allocator)),
+      node: RefCell::new(RootNode::from(ast, options, node, true, None)),
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
       ir: Rc::new(RefCell::new(RootIRNode::default())),
       block: RefCell::new(BlockIRNode::new()),
@@ -143,14 +147,12 @@ impl<'a> TransformContext<'a> {
     }
   }
 
-  pub fn transform(&'a self, expression: Expression<'a>) -> Expression<'a> {
+  pub fn transform(self) -> Expression<'a> {
     let ir = RootIRNode::default();
-    *self.node.borrow_mut() = RootNode::from(self.ast, self.options, expression, true, None);
     *self.block.borrow_mut() = BlockIRNode::new();
     *self.ir.borrow_mut() = ir;
     self.transform_node(None, None);
-    let generate_context: *const CodegenContext = &CodegenContext::new(self);
-    (unsafe { &*generate_context }).generate()
+    CodegenContext::new(self).generate()
   }
 
   pub fn increase_id(&self) -> i32 {

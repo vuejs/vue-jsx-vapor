@@ -1055,3 +1055,42 @@ fn non_block_fragment_should_not_stable() {
   _openBlock(), _createElementBlock("div", null, [_createVNode(_Fragment, null, [_createVNode(DynamicComponent.value)])]);
   "#)
 }
+
+#[test]
+fn reassign_variable_as_component_should_work() {
+  let code = transform(
+    r#"
+    let buttonNodes = <button></button>
+    if (wave) {
+      buttonNodes = (
+        <Wave>
+          {buttonNodes}
+          {(()=> (
+            <Wave>
+              {buttonNodes}
+            </Wave>
+          ))()}
+        </Wave>
+      )
+    }
+    "#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode, normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  let buttonNodes = (_openBlock(), _createElementBlock("button"));
+  if (wave) {
+  	buttonNodes = ((buttonNodes) => {
+  		return _openBlock(), _createBlock(Wave, { key: 1 }, {
+  			default: _withCtx(() => [_normalizeVNode(() => buttonNodes), _normalizeVNode(() => (() => (_openBlock(), _createBlock(Wave, null, _normalizeSlots(buttonNodes), 1024)))())]),
+  			_: 1
+  		});
+  	})(buttonNodes);
+  }
+  "#)
+}

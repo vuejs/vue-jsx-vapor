@@ -46,7 +46,7 @@ pub struct CodegenContext<'a> {
 }
 
 impl<'a> CodegenContext<'a> {
-  pub fn new(context: &'a TransformContext<'a>) -> CodegenContext<'a> {
+  pub fn new(context: TransformContext<'a>) -> CodegenContext<'a> {
     let ir = context.ir.take();
     let block = context.block.take();
     *context.options.in_v_for.borrow_mut() = *context.in_v_for.borrow();
@@ -107,7 +107,7 @@ impl<'a> CodegenContext<'a> {
   }
 
   // IR -> JS codegen
-  pub fn generate(self: &'a CodegenContext<'a>) -> Expression<'a> {
+  pub fn generate(self: CodegenContext<'a>) -> Expression<'a> {
     let ast = &self.ast;
     let mut statements = ast.vec();
 
@@ -203,7 +203,7 @@ impl<'a> CodegenContext<'a> {
     let context_block = &mut *self.block.borrow_mut() as *mut BlockIRNode;
     statements.extend(gen_block_content(
       None,
-      self,
+      unsafe { &*(&self as *const _) },
       unsafe { &mut *context_block },
       None,
     ));

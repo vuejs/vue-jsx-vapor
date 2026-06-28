@@ -83,12 +83,10 @@ impl<'a> Transform<'a> {
       let node = (&mut *node_ptr).take_in(&options.allocator);
       let expression = if vdom {
         use vdom::transform::TransformContext;
-        let transform_context: *const TransformContext = &TransformContext::new(options, &*ast_ptr);
-        (&*transform_context).transform(node)
+        TransformContext::new(node, options, &*ast_ptr).transform()
       } else {
         use vapor::transform::TransformContext;
-        let transform_context: *const TransformContext = &TransformContext::new(options, &*ast_ptr);
-        (&*transform_context).transform(node)
+        TransformContext::new(node, options, &*ast_ptr).transform()
       };
       RootJsx {
         node_ptr,

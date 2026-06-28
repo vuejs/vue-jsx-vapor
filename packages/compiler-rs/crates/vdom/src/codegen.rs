@@ -19,7 +19,7 @@ use crate::{
 
 impl<'a> TransformContext<'a> {
   // IR -> JS codegen
-  pub fn generate(&'a self) -> Expression<'a> {
+  pub fn generate(self) -> Expression<'a> {
     let ast = &self.ast;
     let mut statements = ast.vec();
 
@@ -161,7 +161,7 @@ impl<'a> TransformContext<'a> {
           NodeTypes::TextCallNode(exp) => exp,
           NodeTypes::CacheExpression(exp) => exp,
         };
-        if statements.is_empty() {
+        if statements.is_empty() && self.root_assign_name.is_none() {
           return exp;
         }
         statements.push(ast.statement_return(SPAN, Some(exp)))
@@ -180,7 +180,14 @@ impl<'a> TransformContext<'a> {
           ast.formal_parameters(
             SPAN,
             FormalParameterKind::ArrowFormalParameters,
-            ast.vec(),
+            if let Some(root_assign_name) = self.root_assign_name {
+              ast.vec1(ast.plain_formal_parameter(
+                SPAN,
+                ast.binding_pattern_binding_identifier(SPAN, root_assign_name),
+              ))
+            } else {
+              ast.vec()
+            },
             NONE,
           ),
           NONE,
@@ -188,13 +195,17 @@ impl<'a> TransformContext<'a> {
         ),
       ),
       NONE,
-      ast.vec(),
+      if let Some(root_assign_name) = self.root_assign_name {
+        ast.vec1(ast.expression_identifier(SPAN, root_assign_name).into())
+      } else {
+        ast.vec()
+      },
       false,
     )
   }
 
   pub fn gen_node_list(
-    &'a self,
+    &self,
     children: VNodeCallChildren<'a>,
     codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
   ) -> Expression<'a> {
@@ -220,7 +231,7 @@ impl<'a> TransformContext<'a> {
   }
 
   pub fn gen_node(
-    &'a self,
+    &self,
     node: JSXChild<'a>,
     codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
   ) -> Option<Expression<'a>> {
@@ -245,7 +256,7 @@ impl<'a> TransformContext<'a> {
   }
 
   pub fn gen_vnode_call(
-    &'a self,
+    &self,
     node: VNodeCall<'a>,
     codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
   ) -> Expression<'a> {
