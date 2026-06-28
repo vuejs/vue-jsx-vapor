@@ -30,7 +30,7 @@ pub unsafe fn transform_v_slots<'a>(
   let node_span = node.span;
   let node_ptr = node as *mut oxc_allocator::Box<JSXElement>;
   let is_component = directives.is_component;
-  if is_component {
+  if is_component && directives.v_slots.is_none() {
     let mut first_child_index = None;
     for (i, child) in unsafe { &mut *node_ptr }.children.iter().enumerate() {
       if !is_empty_text(child) {
@@ -250,14 +250,14 @@ fn proccess_default_children<'a>(
 ) {
   let ast = context.ast;
   let node = unsafe { &*node_ptr };
+  let semantic_ptr = context.options.semantic.as_ptr();
   if node.children.iter().any(|c| !is_empty_text(c)) {
     let (scope_id, node_id) = {
-      let semantic = &context.options.semantic.borrow();
-      let node = semantic.nodes().get_node(node.node_id());
+      let node = unsafe { &*semantic_ptr }.nodes().get_node(node.node_id());
       (node.scope_id(), node.id())
     };
-    let semantic = &mut context.options.semantic.borrow_mut();
-    let scope_id = semantic.scoping_mut().add_scope(
+
+    let scope_id = unsafe { &mut *semantic_ptr }.scoping_mut().add_scope(
       Some(scope_id),
       node_id,
       ScopeFlags::Arrow | ScopeFlags::Function,
@@ -316,8 +316,8 @@ fn proccess_default_children<'a>(
         *expression = ast.expression_object(
           SPAN,
           ast.vec_from_array([
-            ast.object_property_kind_spread_property(SPAN, expression.take_in(ast.allocator)),
             default_slot,
+            ast.object_property_kind_spread_property(SPAN, expression.take_in(ast.allocator)),
           ]),
         );
       }

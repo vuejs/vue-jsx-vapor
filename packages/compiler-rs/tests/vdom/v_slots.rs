@@ -129,8 +129,8 @@ fn object_expression_children_with_computed_property() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
-  _openBlock(), _createBlock(Comp, null, { [foo]: () => "foo" }, 1024);
+  import { Fragment as _Fragment, createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(Comp, null, { [foo]: () => _createVNode(_Fragment, null, "foo") }, 1024);
   "#);
 }
 
@@ -225,11 +225,31 @@ fn v_slots_dynamic_with_children() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, {
-  	...slots,
   	default: () => (() => {
   		const _cache = _createVNodeCache("631d214bc2c8427c");
   		return [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))];
-  	})()
+  	})(),
+  	...slots
+  }, 1024);
+  "#);
+}
+
+#[test]
+fn v_slots_dynamic_with_identify_children() {
+  let code = transform(
+    "<Comp v-slots={slots}>{defaultSlot}</Comp>",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(Comp, null, {
+  	default: () => [_normalizeVNode(() => defaultSlot)],
+  	...slots
   }, 1024);
   "#);
 }
