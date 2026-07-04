@@ -323,6 +323,34 @@ fn logical_expression_children() {
 }
 
 #[test]
+fn identify_slots_in_nested_component_should_be_dynamic() {
+  let code = transform(
+    r#"() => {
+      const child = <div />
+      return <Comp>
+        <ContextProvider>{child}</ContextProvider>
+      </Comp>
+    }"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  () => {
+  	const child = (_openBlock(), _createElementBlock("div"));
+  	return _openBlock(), _createBlock(Comp, null, {
+  		default: _withCtx(() => [_createVNode(ContextProvider, null, _normalizeSlots(child), 1024)]),
+  		_: 2
+  	}, 1024);
+  };
+  "#);
+}
+
+#[test]
 fn should_raise_error_if_not_component() {
   let error = RefCell::new(None);
   transform(

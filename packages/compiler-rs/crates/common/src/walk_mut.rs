@@ -33,6 +33,7 @@ type OnIdentifier<'a> =
 pub struct WalkIdentifiersMut<'a> {
   on_identifier: OnIdentifier<'a>,
   has_this: bool,
+  has_jsx: bool,
   pub options: &'a TransformOptions<'a>,
   pub roots: Vec<RootJsx<'a>>,
   pub root_scope_id: Option<ScopeId>,
@@ -46,6 +47,7 @@ impl<'a> WalkIdentifiersMut<'a> {
       root_scope_id: None,
       roots: vec![],
       has_this: false,
+      has_jsx: false,
     }
   }
 
@@ -83,23 +85,25 @@ impl<'a> WalkIdentifiersMut<'a> {
   }
 
   pub fn visit(&mut self, it: &mut Expression<'a>) -> (bool, bool) {
-    self.root_scope_id = Some(
-      self
-        .options
-        .semantic
-        .borrow()
-        .nodes()
-        .get_node(it.node_id())
-        .scope_id(),
-    );
+    if it.node_id().index() != 0 {
+      self.root_scope_id = Some(
+        self
+          .options
+          .semantic
+          .borrow()
+          .nodes()
+          .get_node(it.node_id())
+          .scope_id(),
+      );
+    }
     self.visit_expression(it);
-    let has_jsx = !self.roots.is_empty();
+    self.has_jsx = !self.roots.is_empty();
     for root in self.roots.drain(..) {
       unsafe {
         *root.node_ptr = root.expression;
       }
     }
-    (self.has_this, has_jsx)
+    (self.has_this, self.has_jsx)
   }
 }
 
