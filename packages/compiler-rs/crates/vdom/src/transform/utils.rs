@@ -179,3 +179,7 @@ pub fn inject_prop<'a>(
     node.props = props_with_injection
   }
 }
+
+pub fn is_dynamic_slots_component(tag_name: &str) -> bool {
+  tag_name.ends_with("Provider") || tag_name.ends_with("Isolator")
+}

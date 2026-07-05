@@ -883,9 +883,9 @@ fn should_not_mark_stable_slot_in_funciton_with_params() {
 }
 
 #[test]
-fn provider_component_should_be_dynamic() {
+fn provider_component_should_use_dynamic_slots() {
   let code = transform(
-    r#"<ContextProvider><div /></ContextProvider>"#,
+    r#"<ContextProvider>{slots.default?.()}</ContextProvider>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -893,15 +893,32 @@ fn provider_component_should_be_dynamic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createBlock(ContextProvider, null, {
-  		default: _withCtx(() => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]),
-  		_: 2
-  	}, 1024);
-  })();
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  _openBlock(), _createBlock(ContextProvider, null, {
+  	default: _withCtx(() => [_normalizeVNode(() => slots.default?.())]),
+  	_: 2
+  }, 1024);
+  "#);
+}
+
+#[test]
+fn isolator_component_should_use_dynamic_slots() {
+  let code = transform(
+    r#"<ContextIsolator>{slots.default?.()}</ContextIsolator>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  _openBlock(), _createBlock(ContextIsolator, null, {
+  	default: _withCtx(() => [_normalizeVNode(() => slots.default?.())]),
+  	_: 2
+  }, 1024);
   "#);
 }
 

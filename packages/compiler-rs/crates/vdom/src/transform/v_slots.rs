@@ -10,7 +10,10 @@ use oxc_ast::{
 use oxc_semantic::ScopeFlags;
 use oxc_span::{GetSpan, SPAN, Span};
 
-use crate::{ast::NodeTypes, transform::TransformContext};
+use crate::{
+  ast::NodeTypes,
+  transform::{TransformContext, utils::is_dynamic_slots_component},
+};
 use common::{
   check::is_slots_expression, directive::Directives, error::ErrorCodes, options::SlotScope,
   patch_flag::PatchFlags, text::is_empty_text,
@@ -117,7 +120,7 @@ pub unsafe fn transform_v_slots<'a>(
         && context.options.optimize
       {
         let semantic = context.options.semantic.as_ptr();
-        if !directives.tag_name.ends_with("Provider")
+        if !is_dynamic_slots_component(directives.tag_name)
           && !obj.properties.iter().any(|p| match p {
             ObjectPropertyKind::ObjectProperty(p) => p.computed || !p.value.is_function(),
             _ => true,

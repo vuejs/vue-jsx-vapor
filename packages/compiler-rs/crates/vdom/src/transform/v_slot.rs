@@ -24,6 +24,7 @@ use crate::{
   transform::{
     TransformContext,
     cache_static::cache_static_children,
+    utils::is_dynamic_slots_component,
     v_for::{create_for_loop_params, get_for_parse_result},
     v_if::get_parent_condition,
   },
@@ -563,7 +564,7 @@ pub fn build_slots<'a>(
     }
   }
 
-  if tag_name.ends_with("Provider") {
+  if is_dynamic_slots_component(tag_name) {
     has_dynamic_slots = true;
   }
   let slot_flag = if has_dynamic_slots {
