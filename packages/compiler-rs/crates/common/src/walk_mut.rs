@@ -32,8 +32,8 @@ type OnIdentifier<'a> =
 // Return value indicates whether the AST walked can be a constant
 pub struct WalkIdentifiersMut<'a> {
   on_identifier: OnIdentifier<'a>,
-  has_this: bool,
-  has_jsx: bool,
+  pub has_this: bool,
+  pub has_jsx: bool,
   pub options: &'a TransformOptions<'a>,
   pub roots: Vec<RootJsx<'a>>,
   pub root_scope_id: Option<ScopeId>,
@@ -84,7 +84,7 @@ impl<'a> WalkIdentifiersMut<'a> {
     }
   }
 
-  pub fn visit(&mut self, it: &mut Expression<'a>) -> (bool, bool) {
+  pub fn visit(&mut self, it: &mut Expression<'a>) {
     if it.node_id().index() != 0 {
       self.root_scope_id = Some(
         self
@@ -103,7 +103,6 @@ impl<'a> WalkIdentifiersMut<'a> {
         *root.node_ptr = root.expression;
       }
     }
-    (self.has_this, self.has_jsx)
   }
 }
 

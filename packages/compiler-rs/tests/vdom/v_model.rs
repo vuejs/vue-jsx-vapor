@@ -256,8 +256,7 @@ fn should_not_cache_update_handler_if_it_refers_v_for_scope_variables() {
   .code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
-  const _hoisted_1 = ["onUpdate:modelValue"];
-  _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": ($event) => foo[i] = $event }, null, 8, _hoisted_1)), [[_vModelText, foo[i]]])), 256);
+  _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": ($event) => foo[i] = $event }, null, 512)), [[_vModelText, foo[i]]])), 256);
   "#)
 }
 
@@ -276,7 +275,7 @@ fn should_not_cache_update_handler_if_it_inside_v_once() {
   import { createElementVNode as _createElementVNode, setBlockTracking as _setBlockTracking, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div", null, [_withDirectives(_createElementVNode("input", { "onUpdate:modelValue": ($event) => foo = $event }, null, 8, ["onUpdate:modelValue"]), [[_vModelText, foo]])])).cacheIndex = 0, _setBlockTracking(1), _cache[0]);
+  	return _cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div", null, [_withDirectives(_createElementVNode("input", { "onUpdate:modelValue": ($event) => foo = $event }, null, 512), [[_vModelText, foo]])])).cacheIndex = 0, _setBlockTracking(1), _cache[0]);
   })();
   "#)
 }
@@ -293,9 +292,8 @@ fn should_mark_update_handler_dynamic_if_it_refers_slot_scope_variables() {
   .code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, vModelText as _vModelText, withCtx as _withCtx, withDirectives as _withDirectives } from "vue";
-  const _hoisted_1 = ["onUpdate:modelValue"];
   _openBlock(), _createBlock(Comp, null, {
-  	default: _withCtx(({ foo }) => [_withDirectives(_createElementVNode("input", { "onUpdate:modelValue": ($event) => foo.bar = $event }, null, 8, _hoisted_1), [[_vModelText, foo.bar]])]),
+  	default: _withCtx(({ foo }) => [_withDirectives(_createElementVNode("input", { "onUpdate:modelValue": ($event) => foo.bar = $event }, null, 512), [[_vModelText, foo.bar]])]),
   	_: 1
   });
   "#)
@@ -469,16 +467,16 @@ fn v_model_with_event() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock(_Fragment, null, [_createVNode(Comp, {
+  	return _openBlock(), _createElementBlock(_Fragment, null, [(_openBlock(), _createBlock(Comp, {
   		modelValue: model,
   		"onUpdate:modelValue": [_cache[0] || (_cache[0] = ($event) => model = $event), foo]
-  	}, null, 8, ["modelValue", "onUpdate:modelValue"]), _createVNode(Comp, {
+  	}, null, 8, ["modelValue", "onUpdate:modelValue"])), (_openBlock(), _createBlock(Comp, {
   		"onUpdate:modelValue": [foo, _cache[1] || (_cache[1] = ($event) => model = $event)],
   		modelValue: model
-  	}, null, 8, ["onUpdate:modelValue", "modelValue"])], 64);
+  	}, null, 8, ["onUpdate:modelValue", "modelValue"]))], 64);
   })();
   "#);
 }

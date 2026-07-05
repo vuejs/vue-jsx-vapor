@@ -1,5 +1,5 @@
 use common::{error::ErrorCodes, text::is_empty_text};
-use oxc_ast::ast::{JSXAttribute, JSXElement, PropertyKind};
+use oxc_ast::ast::{JSXAttribute, JSXAttributeValue, JSXElement, PropertyKind};
 use oxc_span::{GetSpan, SPAN};
 
 use crate::transform::{DirectiveTransformResult, TransformContext};
@@ -9,8 +9,17 @@ pub fn transform_v_html<'a>(
   node: &JSXElement,
   context: &'a TransformContext<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
-  let exp = if let Some(value) = &mut dir.value {
-    context.jsx_attribute_value_to_expression(value)
+  let mut has_jsx = false;
+  let exp = if let Some(value) = dir.value.as_mut() {
+    if let JSXAttributeValue::ExpressionContainer(value) = value
+      && let Some(value) = value.expression.as_expression_mut()
+    {
+      let result = context.process_expression(value);
+      has_jsx = result.3;
+      result.0
+    } else {
+      context.jsx_attribute_value_to_expression(value)
+    }
   } else {
     context.options.on_error.as_ref()(ErrorCodes::VHtmlNoExpression, dir.span);
     return None;
@@ -33,6 +42,6 @@ pub fn transform_v_html<'a>(
       false,
     )],
     runtime: None,
-    has_jsx: false,
+    has_jsx,
   })
 }

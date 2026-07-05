@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 
+use indexmap::IndexSet;
 use napi::{Either, bindgen_prelude::Either3};
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
@@ -195,6 +196,9 @@ pub unsafe fn transform_element<'a>(
 
     // patchFlag & dynamicPropNames
     let vnode_dynamic_props = if !dynamic_prop_names.is_empty() {
+      if !is_fragment && is_component {
+        should_use_block = true;
+      }
       Some(ast.expression_array(
         SPAN,
         ast.vec_from_iter(dynamic_prop_names.into_iter().map(|name| {
@@ -247,7 +251,7 @@ pub struct PropsResult<'a> {
   pub props: Option<Expression<'a>>,
   pub directives: Option<ArrayExpression<'a>>,
   pub patch_flag: i32,
-  pub dynamic_prop_names: Vec<Cow<'a, str>>,
+  pub dynamic_prop_names: IndexSet<Cow<'a, str>>,
   pub should_use_block: bool,
   pub name_prop: Option<JSXAttribute<'a>>,
 }
@@ -268,7 +272,7 @@ pub fn build_props<'a>(
       props: None,
       directives: None,
       patch_flag: 0,
-      dynamic_prop_names: vec![],
+      dynamic_prop_names: IndexSet::new(),
       should_use_block: false,
       name_prop,
     };
@@ -288,7 +292,7 @@ pub fn build_props<'a>(
   let mut has_hydration_event_binding = false;
   let mut has_dynamic_keys = false;
   let mut has_vnode_hook = false;
-  let mut dynamic_prop_names = vec![];
+  let mut dynamic_prop_names = IndexSet::new();
 
   // mark template ref on v-for
   let ref_v_for_marker = || -> Option<ObjectPropertyKind> {
@@ -309,7 +313,7 @@ pub fn build_props<'a>(
 
   let has_ref_ptr = &mut has_ref as *mut _;
   let has_dynamic_keys_ptr = &mut has_dynamic_keys as *mut _;
-  let mut analyze_patch_flag = |prop: &ObjectPropertyKind<'a>| {
+  let mut analyze_patch_flag = |prop: &ObjectPropertyKind<'a>, has_jsx: bool| {
     let ObjectPropertyKind::ObjectProperty(prop) = prop else {
       return;
     };
@@ -343,13 +347,14 @@ pub fn build_props<'a>(
         value = arg.to_expression();
       }
 
-      if matches!(value, Expression::LogicalExpression(value) if value.span() == SPAN)
-        || (get_constant_type(
-          Either::B(value),
-          context,
-          &mut context.codegen_map.borrow_mut(),
-        ) as i32)
-          > 0
+      if !(has_jsx && !value.is_function())
+        && (matches!(value, Expression::LogicalExpression(value) if value.span() == SPAN)
+          || (get_constant_type(
+            Either::B(value),
+            context,
+            &mut context.codegen_map.borrow_mut(),
+          ) as i32)
+            > 0)
       {
         // skip if the prop is a cached handler or has constant values
         return;
@@ -359,16 +364,16 @@ pub fn build_props<'a>(
         *unsafe { &mut *has_ref_ptr } = true;
       } else if name == "class" {
         has_class_binding = true;
+        if is_component {
+          dynamic_prop_names.insert(name);
+        }
       } else if name == "style" {
         has_style_binding = true;
-      } else if name != "key" && !dynamic_prop_names.contains(&name) {
-        dynamic_prop_names.push(name.clone());
-      }
-
-      // treat the dynamic class and style binding of the component as dynamic props
-      if is_component && (name == "class" || name == "style") && !dynamic_prop_names.contains(&name)
-      {
-        dynamic_prop_names.push(name);
+        if is_component {
+          dynamic_prop_names.insert(name);
+        }
+      } else if name != "key" {
+        dynamic_prop_names.insert(name.clone());
       }
     } else {
       *unsafe { &mut *has_dynamic_keys_ptr } = true;
@@ -527,7 +532,9 @@ pub fn build_props<'a>(
             should_use_block = true;
           }
           if !context.options.ssr {
-            props.iter().for_each(&mut analyze_patch_flag);
+            props.iter().for_each(|prop| {
+              analyze_patch_flag(prop, has_jsx);
+            });
           }
           properties.extend(props);
           if let Some(runtime) = runtime {

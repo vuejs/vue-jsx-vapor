@@ -484,7 +484,9 @@ impl<'a> TransformContext<'a> {
       }),
       self.options,
     );
-    let (has_this, has_jsx) = walk_identifiers.visit(&mut value);
+    walk_identifiers.visit(&mut value);
+    let has_this = walk_identifiers.has_this;
+    let has_jsx = walk_identifiers.has_jsx;
     if has_this {
       has_ref = true;
     };

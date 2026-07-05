@@ -2,7 +2,7 @@ use common::{check::is_void_tag, error::ErrorCodes, text::is_empty_text};
 use napi::Either;
 use oxc_ast::{
   NONE,
-  ast::{JSXAttribute, JSXElement, PropertyKind},
+  ast::{JSXAttribute, JSXAttributeValue, JSXElement, PropertyKind},
 };
 use oxc_span::{GetSpan, SPAN};
 
@@ -15,8 +15,17 @@ pub fn transform_v_text<'a>(
   node: &JSXElement,
   context: &'a TransformContext<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
-  let exp = if let Some(value) = &mut dir.value {
-    context.jsx_attribute_value_to_expression(value)
+  let mut has_jsx = false;
+  let exp = if let Some(value) = dir.value.as_mut() {
+    if let JSXAttributeValue::ExpressionContainer(value) = value
+      && let Some(value) = value.expression.as_expression_mut()
+    {
+      let result = context.process_expression(value);
+      has_jsx = result.3;
+      result.0
+    } else {
+      context.jsx_attribute_value_to_expression(value)
+    }
   } else {
     context.options.on_error.as_ref()(ErrorCodes::VTextNoExpression, dir.span);
     return None;
@@ -45,7 +54,7 @@ pub fn transform_v_text<'a>(
         context,
         &mut context.codegen_map.borrow_mut(),
       ) as i32
-        > 0
+        > 1
       {
         exp
       } else {
@@ -62,6 +71,6 @@ pub fn transform_v_text<'a>(
       false,
     )],
     runtime: None,
-    has_jsx: false,
+    has_jsx,
   })
 }

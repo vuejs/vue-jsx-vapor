@@ -340,6 +340,8 @@ pub fn get_constant_type<'a>(
         }
       } else if node.is_literal() {
         ConstantTypes::CanStringify
+      } else if node.is_function() {
+        ConstantTypes::CanSkipPatch
       } else {
         let mut has_ref = false;
         WalkIdentifiers::new(
