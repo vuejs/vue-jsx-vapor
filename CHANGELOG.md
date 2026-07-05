@@ -1,3 +1,48 @@
+## [3.2.18](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.16...v3.2.18) (2026-07-05)
+
+
+### Bug Fixes
+
+* **compiler-vapor:** align click modifier normalization with vdom ([74fafc2](https://github.com/vuejs/vue-jsx-vapor/commit/74fafc2813eb811c0eb9f5208a21a578b11922b7))
+* **compiler-vapor:** quote native v-model modifier keys ([758a8b8](https://github.com/vuejs/vue-jsx-vapor/commit/758a8b861ade84e2a91dfa1d7781e8c9eb2cc37e))
+* **compiler/vapor:** correct createSelector helper name ([87569ad](https://github.com/vuejs/vue-jsx-vapor/commit/87569ade4d7429e8a85f3b117630d94c050d9f62))
+* **compiler/vapor:** prevent generate duplicate key ([46e81c9](https://github.com/vuejs/vue-jsx-vapor/commit/46e81c9f965f9db949af331250cf73af351a2857))
+* **compiler/vapor:** report slot v-else without adjacent v-if ([b38d697](https://github.com/vuejs/vue-jsx-vapor/commit/b38d6975dba41c053d08770dad59ea0fb55e4950))
+* **compiler/vapor:** return empty blocks for empty output ([1a46408](https://github.com/vuejs/vue-jsx-vapor/commit/1a46408b1c7d5710e77620ac2924abed83e92f37))
+* **compiler/vdom:** identify slots in nested component should be dynamic ([9dddc83](https://github.com/vuejs/vue-jsx-vapor/commit/9dddc830df25860bd00cd1c920dc500adcbf6985))
+* **compiler/vdom:** isolator component should use dynamic slots ([414a3d5](https://github.com/vuejs/vue-jsx-vapor/commit/414a3d5614f96713ed97e7f15e2fc54332208898))
+* **compiler/vdom:** mark components with dynamic props as block ([0954004](https://github.com/vuejs/vue-jsx-vapor/commit/095400411c98071ce804794e0b15ffec7f63b6be))
+* **compiler/vdom:** prevent handling children slots when using v-slots ([a958a5e](https://github.com/vuejs/vue-jsx-vapor/commit/a958a5ee1dc6afec5e9bb9db7ad48031ab53d7d8))
+* **compiler/vdom:** prevent reassigning root element causing maximum ([93c0c4e](https://github.com/vuejs/vue-jsx-vapor/commit/93c0c4e12c249d2cd03458bcfe54267f0ba26794))
+
+
+### Features
+
+* **compiler/vapor:** fold constant native bindings into templates ([ae3d018](https://github.com/vuejs/vue-jsx-vapor/commit/ae3d018a81ffd51035deb12b3c7438df595d5fdc))
+* **compiler/vapor:** support dynamic slots for object slots ([47ec717](https://github.com/vuejs/vue-jsx-vapor/commit/47ec7171d88425789ab04c094d0e58f7550d7fe3))
+* **compiler:** handle $slots.default as slot element ([df1580d](https://github.com/vuejs/vue-jsx-vapor/commit/df1580d8341e68d29f72112f47d428ede49f3a8c))
+* support identify slots ([dbe2fed](https://github.com/vuejs/vue-jsx-vapor/commit/dbe2fed3c2e71144bdc1c84e54a7c72ab6143333))
+
+
+### Performance Improvements
+
+* **compiler-vapor:** omit redundant nthChild logical index ([320da95](https://github.com/vuejs/vue-jsx-vapor/commit/320da9547bcd9c84268c544b2abe9e8b2a607df7))
+* **compiler/vapor:** allow direct values in dynamic prop sources ([b6cf4c0](https://github.com/vuejs/vue-jsx-vapor/commit/b6cf4c098d94fd69f78c665c88f2ec8705a2b233))
+* **compiler/vapor:** emit v-model modifiers as direct values ([7c57801](https://github.com/vuejs/vue-jsx-vapor/commit/7c578010b04356c2d2ce375a6bd64549df7eb87e))
+* **compiler/vapor:** inline single-use DOM lookup placeholders ([e23dc74](https://github.com/vuejs/vue-jsx-vapor/commit/e23dc74e4bec995aeadc41ad0a94d88cdbc5d144))
+* **compiler/vapor:** reduce v-if branch scope overhead ([e4a9a9b](https://github.com/vuejs/vue-jsx-vapor/commit/e4a9a9bf04da8776882b07a8f489656ba941fe44))
+* **compiler/vapor:** skip SlotFragment for stable slot fallback ([8b930ce](https://github.com/vuejs/vue-jsx-vapor/commit/8b930ce39d38a0c735ffe3982db0bfa64b25f770))
+* **compiler/vapor:** specialize v-for block operations ([ec4aa00](https://github.com/vuejs/vue-jsx-vapor/commit/ec4aa000daff6e1ef522ac6e30719724c32da476))
+* **compiler/vapor:** use onBinding helper for reactive events ([25eba17](https://github.com/vuejs/vue-jsx-vapor/commit/25eba175780cbaf00ccf389e2044f3691d6a8b60))
+
+
+### Reverts
+
+* **compiler/vapor:** handle $slots.default as slot element ([86f8990](https://github.com/vuejs/vue-jsx-vapor/commit/86f8990732ec2ebfb114f011b6d288116ae2b3ce))
+* remove vuetify CI ([cf47052](https://github.com/vuejs/vue-jsx-vapor/commit/cf47052a304c4bd43e169478aa170e5b7c6ff1f2))
+
+
+
 ## [3.2.17](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.16...v3.2.17) (2026-06-14)
 
 
