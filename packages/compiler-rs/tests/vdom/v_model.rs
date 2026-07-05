@@ -609,19 +609,3 @@ fn should_error_if_mal_formed_expression() {
   );
   assert_eq!(*error.borrow(), Some(ErrorCodes::VModelMalformedExpression));
 }
-
-#[test]
-fn used_on_scope_variable() {
-  let error = RefCell::new(None);
-  transform(
-    r#"<span v-for={i in list} v-model={i} />"#,
-    Some(TransformOptions {
-      interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
-      ..Default::default()
-    }),
-  );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelOnScopeVariable));
-}

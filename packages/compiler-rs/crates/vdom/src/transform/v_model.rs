@@ -49,16 +49,6 @@ pub fn transform_v_model<'a>(
     return None;
   };
 
-  if context
-    .options
-    .identifiers
-    .borrow()
-    .contains_key(exp.span().source_text(context.source_text))
-  {
-    context.options.on_error.as_ref()(ErrorCodes::VModelOnScopeVariable, exp.span());
-    return None;
-  }
-
   let dir = resolve_directive(_dir, context.ast);
   let tag = node
     .opening_element
