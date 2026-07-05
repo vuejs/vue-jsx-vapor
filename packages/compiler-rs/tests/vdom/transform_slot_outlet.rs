@@ -227,11 +227,11 @@ fn slots_component() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  import { createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
   	const _slots = _useSlots();
-  	return _renderSlot(_slots, "foo", { foo: bar }, () => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]);
+  	return _renderSlot(_slots, "foo", { foo: bar });
   })();
   "#);
 }
@@ -248,11 +248,11 @@ fn dollor_slots_component() {
   .code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  import { createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
   	const _slots = _useSlots();
-  	return _renderSlot(_slots, "foo", { foo: bar }, () => [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]);
+  	return _renderSlot(_slots, "foo", { foo: bar });
   })();
   "#);
 }

@@ -20,7 +20,6 @@ pub unsafe fn transform_slot_outlet<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  is_slots: bool,
   get_effect_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
   get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
@@ -55,13 +54,7 @@ pub unsafe fn transform_slot_outlet<'a>(
       }
     }
 
-    if is_slots {
-      slot_name = directives
-        .tag_name
-        .split("slots.")
-        .nth(1)
-        .map(|name| context.ast.expression_string_literal(SPAN, name, None))
-    } else if let Some(name_prop) = props_result.name_prop
+    if let Some(name_prop) = props_result.name_prop
       && let Some(value) = &mut name_prop.value
     {
       slot_name = Some(jsx_attribute_value_to_expression(value, context.ast))

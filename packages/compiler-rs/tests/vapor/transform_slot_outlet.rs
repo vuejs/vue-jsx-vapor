@@ -156,38 +156,6 @@ fn named_slot_outlet_with_props_and_fallback() {
 }
 
 #[test]
-fn slots_component() {
-  let code = transform(r#"<slots.foo foo={bar}><div /></slots.foo>"#, None).code;
-  assert_snapshot!(code, @r#"
-  import { createSlot as _createSlot, template as _template } from "vue";
-  const _t0 = _template("<div>", 2);
-  (() => {
-  	const _n0 = _createSlot("foo", { foo: () => bar }, () => {
-  		const _n1 = _t0();
-  		return _n1;
-  	});
-  	return _n0;
-  })();
-  "#);
-}
-
-#[test]
-fn dollor_slots_component() {
-  let code = transform(r#"<$slots.foo foo={bar}><div /></$slots.foo>"#, None).code;
-  assert_snapshot!(code, @r#"
-  import { createSlot as _createSlot, template as _template } from "vue";
-  const _t0 = _template("<div>", 2);
-  (() => {
-  	const _n0 = _createSlot("foo", { foo: () => bar }, () => {
-  		const _n1 = _t0();
-  		return _n1;
-  	});
-  	return _n0;
-  })();
-  "#);
-}
-
-#[test]
 fn root_v_if_fallbck() {
   let code = transform(r#"<slot><span v-if={ok}/></slot>"#, None).code;
   assert_snapshot!(code, @r#"

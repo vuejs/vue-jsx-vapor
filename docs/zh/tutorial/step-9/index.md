@@ -5,7 +5,7 @@ next: false
 ---
 
 # 插槽
-  
+
 <script setup>
 import appCode from '~/tutorial/step-9/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-9/app-solved.tsx?raw'
@@ -36,9 +36,7 @@ const apps = {
 除了通过 props 传递数据，父组件还可以通过插槽向子组件传递 JSX：
 
 ```jsx
-<Comp>
-  这是默认插槽内容！
-</Comp>
+<Comp>这是默认插槽内容！</Comp>
 ```
 
 我们有三种方式使用插槽：
@@ -60,12 +58,10 @@ const Comp = (props, { slots }) => {
 ```
 
 > 具名插槽
+
 ```jsx
 const Comp = (props, { slots }) => {
-  return [
-    <slot>后备内容</slot>,
-    <slot name="title">标题后备内容</slot>
-  ]
+  return [<slot>后备内容</slot>, <slot name="title">标题后备内容</slot>]
 }
 ```
 
@@ -74,9 +70,9 @@ const Comp = (props, { slots }) => {
 ```jsx
 const Comp = (props) => {
   const slots = defineSlots({
-    default: () => <>后备内容</>
+    default: () => <>后备内容</>,
   })
-  return <slots.default>后备内容</slots.default>
+  return <slots.default />
 }
 ```
 

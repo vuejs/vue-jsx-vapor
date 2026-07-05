@@ -48,9 +48,7 @@ Configuration:
 import jsxMacros from '@vue-jsx-vapor/macros/vite'
 
 export default {
-  plugins: [
-    jsxMacros()
-  ]
+  plugins: [jsxMacros()],
 }
 ```
 
@@ -70,8 +68,8 @@ VueJsxVapor({
      *
      * Set alias to an empty array to disable the defineComponent macro.
      */
-    alias: []
-  }
+    alias: [],
+  },
 })
 ```
 
@@ -113,9 +111,9 @@ import { defineComponent, useAttrs, withAsyncContext } from 'vue'
 defineComponent(
   async (props) => {
     let __temp, __restore
-    ;([__temp, __restore] = withAsyncContext(() => nextTick())),
+    ;(([__temp, __restore] = withAsyncContext(() => nextTick())),
       await __temp,
-      __restore()
+      __restore())
     const attrs = useAttrs()
     return () => (
       <div>
@@ -283,7 +281,6 @@ export default () => {
   compRef.value?.foo
   //             ^?
 
-
   return <Comp ref={compRef} foo={1 as const} />
 }
 ```
@@ -342,7 +339,11 @@ function Comp({ color = 'red' }) {
       }
     }
   `)
-  return <div color="red" class="foo bar">foo</div>
+  return (
+    <div color="red" class="foo bar">
+      foo
+    </div>
+  )
 }
 
 defineStyle(`

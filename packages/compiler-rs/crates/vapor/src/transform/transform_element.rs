@@ -28,7 +28,7 @@ use common::{
   ast::RootNode,
   check::{
     get_directive_name, is_always_close_tag, is_block_tag, is_built_in_directive,
-    is_formatting_tag, is_inline_tag, is_slots_component, is_template, is_void_tag,
+    is_formatting_tag, is_inline_tag, is_template, is_void_tag,
   },
   directive::{Directives, resolve_directive, resolve_prop_name},
   dom::is_valid_html_nesting,
@@ -72,15 +72,13 @@ pub unsafe fn transform_element<'a>(
 
   let tag = directives.tag_name;
   let tag_span = node.opening_element.name.span();
-  let is_slots = is_slots_component(directives.tag_name);
-  if tag == "slot" || is_slots {
+  if tag == "slot" {
     return unsafe {
       transform_slot_outlet(
         directives,
         context_node,
         context,
         context_block,
-        is_slots,
         get_effect_index,
         get_operation_index,
       )

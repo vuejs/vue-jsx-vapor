@@ -9,15 +9,16 @@
 2. **Naming Conventions**: Hyphenated prop names and component names are not automatically converted to camelCase. Use camelCase naming consistently throughout your codebase.
 
 3. **`v-model` Syntax**: Array expressions are not supported with `v-model`. Use the explicit modifier syntax instead:
-    ```tsx
-      <>
-        {/* ❌ Not supported */}
-        <input v-model={[foo, ['trim']]} />
-        
-        {/* ✅ Use this instead */}
-        <input v-model:$name$_trim={foo} />
-      </>
-    ```
+
+   ```tsx
+   <>
+     {/* ❌ Not supported */}
+     <input v-model={[foo, ['trim']]} />
+
+     {/* ✅ Use this instead */}
+     <input v-model:$name$_trim={foo} />
+   </>
+   ```
 
 4. **`v-models` Directive**: The `v-models` directive is not supported. Define multiple `v-model` bindings separately.
 
@@ -65,7 +66,7 @@ export default () => {
       vueJsxVapor({
         macros: true,
       }),
-    ]
+    ],
   })
   ```
 
@@ -78,9 +79,12 @@ export default () => {
     return <>{foo}</>
   })
   // Compiles to:
-  const Comp = defineVaporComponent((_props) => {
-    return <>{_props.foo}</>
-  }, { props: ['foo'] })
+  const Comp = defineVaporComponent(
+    (_props) => {
+      return <>{_props.foo}</>
+    },
+    { props: ['foo'] },
+  )
 
   export default () => {
     const foo = ref('foo')
@@ -101,7 +105,7 @@ console.log([foo, setFoo(1), setFoo])
 
 // Vue
 const foo = ref(0)
-console.log([foo.value, foo.value = 1, val => foo.value = val])
+console.log([foo.value, (foo.value = 1), (val) => (foo.value = val)])
 ```
 
 ### `useEffect` → `watchEffect`
@@ -202,7 +206,7 @@ const Comp = ({ count }) => {
 const Comp = ({ count, ref }) => {
   useImperativeHandle(ref, () => {
     return {
-      count: count * 2
+      count: count * 2,
     }
   }, [count])
   return <div>{count}</div>
@@ -210,11 +214,13 @@ const Comp = ({ count, ref }) => {
 
 // Vue
 const Comp = ({ count }) => {
-  defineExpose(computed(() => {
-    return {
-      count: count * 2
-    }
-  }))
+  defineExpose(
+    computed(() => {
+      return {
+        count: count * 2,
+      }
+    }),
+  )
   return <div>{count}</div>
 }
 ```

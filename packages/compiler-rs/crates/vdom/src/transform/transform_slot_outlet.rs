@@ -61,12 +61,13 @@ pub unsafe fn transform_slot_outlet<'a>(
           } else {
             None
           },
-          if node
-            .children
-            .iter()
-            .filter(|child| !is_empty_text(child))
-            .count()
-            != 0
+          if !is_slots
+            && node
+              .children
+              .iter()
+              .filter(|child| !is_empty_text(child))
+              .count()
+              != 0
           {
             let mut fragment = ast.jsx_child_fragment(
               node_span,

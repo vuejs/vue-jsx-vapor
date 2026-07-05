@@ -18,7 +18,6 @@ export declare const enum ErrorCodes {
   VSlotMisplaced = 40,
   VModelNoExpression = 41,
   VModelMalformedExpression = 42,
-  VModelOnScopeVariable = 43,
   KeepAliveInvalidChildren = 46,
   VHtmlNoExpression = 53,
   VHtmlWithChildren = 54,
