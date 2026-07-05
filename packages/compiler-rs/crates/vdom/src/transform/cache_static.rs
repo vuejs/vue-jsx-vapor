@@ -38,6 +38,9 @@ pub fn cache_static_children<'a>(
   context: &TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
 ) {
+  if !context.options.optimize {
+    return;
+  }
   let codegen_map_ptr = codegen_map as *mut HashMap<Span, NodeTypes>;
   let child_len = children.len();
   let mut to_cache = vec![];

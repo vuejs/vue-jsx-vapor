@@ -286,6 +286,9 @@ impl<'a> TransformContext<'a> {
   }
 
   pub fn hoist(&self, exp: &mut Expression<'a>) -> Expression<'a> {
+    if !self.options.optimize {
+      return exp.take_in(self.allocator);
+    }
     let span = exp.span();
     self
       .options
@@ -307,6 +310,9 @@ impl<'a> TransformContext<'a> {
     in_v_once: bool,
     need_array_spread: bool,
   ) -> Expression<'a> {
+    if !self.options.optimize {
+      return value;
+    }
     let ast = &self.ast;
     let index = *self.cache_index.borrow();
     let cache = ast.alloc_computed_member_expression(
