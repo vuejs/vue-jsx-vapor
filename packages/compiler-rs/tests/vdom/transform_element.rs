@@ -462,7 +462,8 @@ fn props_merging_class() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createElementBlock as _createElementBlock, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
+  import { normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", { class: _normalizeClass(["foo", { bar: isBar }]) }, null, 2);
   "#)
 }
@@ -498,7 +499,8 @@ mod patch_flag_analysis {
     )
     .code;
     assert_snapshot!(code, @r#"
-    import { createElementBlock as _createElementBlock, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
+    import { normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
+    import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     _openBlock(), _createElementBlock("div", { class: _normalizeClass(foo) }, null, 2);
     "#)
   }
@@ -551,7 +553,8 @@ mod patch_flag_analysis {
     )
     .code;
     assert_snapshot!(code, @r#"
-    import { createElementBlock as _createElementBlock, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, openBlock as _openBlock } from "vue";
+    import { normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
+    import { createElementBlock as _createElementBlock, normalizeStyle as _normalizeStyle, openBlock as _openBlock } from "vue";
     const _hoisted_1 = ["foo", "baz"];
     _openBlock(), _createElementBlock("div", {
     	id: "foo",
@@ -575,7 +578,8 @@ mod patch_flag_analysis {
     )
     .code;
     assert_snapshot!(code, @r#"
-    import { createBlock as _createBlock, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, openBlock as _openBlock } from "vue";
+    import { normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
+    import { createBlock as _createBlock, normalizeStyle as _normalizeStyle, openBlock as _openBlock } from "vue";
     _openBlock(), _createBlock(Foo, {
     	id: foo,
     	class: _normalizeClass(cls),

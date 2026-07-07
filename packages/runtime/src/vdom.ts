@@ -1,5 +1,6 @@
 import {
   defineComponent as __defineComponent,
+  normalizeClass as _normalizeClass,
   cloneVNode,
   Comment,
   createBlock,
@@ -119,6 +120,8 @@ export const normalizeSlots = (slots: any): Record<string, any> | Function => {
         default: withCtx(() => [normalizeVNode(() => slots)]),
       }
 }
+
+export const normalizeClass = (value: unknown) => _normalizeClass(value) || null
 
 // defineComponent
 

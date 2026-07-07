@@ -154,7 +154,8 @@ fn prevent_hoisted_expression_with_this() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createElementBlock as _createElementBlock, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
+  import { normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", { class: _normalizeClass(this.foo) }, null, 2);
   "#);
 }

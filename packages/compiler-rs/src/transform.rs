@@ -144,6 +144,7 @@ impl<'a> Transform<'a> {
         "normalizeVNode",
         "normalizeSlot",
         "normalizeSlots",
+        "normalizeClass",
       ]
       .into_iter()
       .filter(|helper| {

@@ -504,8 +504,8 @@ fn cache_class_with_static_object_value() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
+  import { normalizeVNode as _normalizeVNode, normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { class: _normalizeClass({ foo: true }) };
   _openBlock(), _createElementBlock("div", null, [_createElementVNode("span", _hoisted_1, [_normalizeVNode(() => bar)])]);
   "#);
@@ -596,8 +596,8 @@ fn should_not_cache_elements_with_cached_handlers_with_other_bindings() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
-  import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
+  import { createVNodeCache as _createVNodeCache, normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", {
