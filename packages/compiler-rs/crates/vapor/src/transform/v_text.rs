@@ -21,8 +21,10 @@ pub fn transform_v_text<'a>(
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
-  let exp = if let Some(value) = &mut dir.value {
-    jsx_attribute_value_to_expression(value, context.ast)
+  let exp = if let Some(value) = &mut dir.value
+    && let Some(value) = jsx_attribute_value_to_expression(value, context.ast)
+  {
+    value
   } else {
     context.options.on_error.as_ref()(ErrorCodes::VTextNoExpression, dir.span);
     return None;

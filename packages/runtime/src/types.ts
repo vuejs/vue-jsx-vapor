@@ -1,4 +1,5 @@
 import type {
+  Directive,
   EmitsOptions,
   EmitsToProps,
   SetupContext,
@@ -33,3 +34,13 @@ export type SlotsToProps<
         | ('default' extends keyof Slots ? Slots['default'] | Slots : Slots)
         | NoInfer<Element>
     }
+
+export type DirectiveArgs<T extends Directive> =
+  T extends Directive<any, infer Value, infer Modifiers, infer Argument>
+    ?
+        | Value
+        | [Value]
+        | [Value, Argument]
+        | [Value, Array<Modifiers>]
+        | [Value, Argument, Array<Modifiers>]
+    : unknown

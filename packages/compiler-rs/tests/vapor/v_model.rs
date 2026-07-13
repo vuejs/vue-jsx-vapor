@@ -494,3 +494,68 @@ fn v_model_after_dynamic_bind_keeps_model_getters() {
   })();
   "#);
 }
+
+#[test]
+fn array_args() {
+  let code = transform(
+    "<Comp v-model={[foo, bar, ['modify1', 'modify2']]} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, { $: [() => ({
+  		[bar]: foo,
+  		["onUpdate:" + bar]: (_value) => foo = _value,
+  		[bar + "Modifiers"]: {
+  			modify1: true,
+  			modify2: true
+  		}
+  	})] }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_modifiers() {
+  let code = transform("<Comp v-model={[foo, ['modify1', 'modify2']]} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, {
+  		modelValue: () => foo,
+  		"onUpdate:modelValue": () => (_value) => foo = _value,
+  		modelModifiers: {
+  			modify1: true,
+  			modify2: true
+  		}
+  	}, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_arg() {
+  let code = transform(
+    "<Comp v-model:foo={[foo, bar, ['modify1', 'modify2']]} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, {
+  		foo: () => foo,
+  		"onUpdate:foo": () => (_value) => foo = _value,
+  		fooModifiers: {
+  			modify1: true,
+  			modify2: true
+  		}
+  	}, null, true);
+  	return _n0;
+  })();
+  "#);
+}

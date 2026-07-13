@@ -205,3 +205,80 @@ fn should_not_resolve_directive() {
   };
   "#);
 }
+
+#[test]
+fn array_args() {
+  let code = transform(
+    "<div v-example={[foo, bar, ['modify1', 'modify2']]} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	const _n0 = _t0();
+  	_withVaporDirectives(_n0, [[
+  		_directive_example,
+  		() => foo,
+  		bar,
+  		{
+  			modify1: true,
+  			modify2: true
+  		}
+  	]]);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_modifiers() {
+  let code = transform("<div v-example={[foo, ['modify1', 'modify2']]} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	const _n0 = _t0();
+  	_withVaporDirectives(_n0, [[
+  		_directive_example,
+  		() => foo,
+  		void 0,
+  		{
+  			modify1: true,
+  			modify2: true
+  		}
+  	]]);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_arg() {
+  let code = transform(
+    "<div v-example:foo={[foo, bar, ['modify1', 'modify2']]} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	const _n0 = _t0();
+  	_withVaporDirectives(_n0, [[
+  		_directive_example,
+  		() => foo,
+  		"foo",
+  		{
+  			modify1: true,
+  			modify2: true
+  		}
+  	]]);
+  	return _n0;
+  })();
+  "#);
+}

@@ -65,7 +65,7 @@ pub fn transform_v_bind<'a>(
         value,
       ));
     } else {
-      jsx_attribute_value_to_expression(value, ast)
+      jsx_attribute_value_to_expression(value, ast)?
     }
   } else {
     let value =

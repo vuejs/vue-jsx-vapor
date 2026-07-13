@@ -62,6 +62,7 @@ pub fn transform_v_on<'a>(
   let exp = value
     .as_mut()
     .map(|value| jsx_attribute_value_to_expression(value, ast))
+    .flatten()
     .unwrap_or(ast.expression_arrow_function(
       SPAN,
       false,

@@ -2,7 +2,7 @@
 
 用于 JSX 的 Vue 内置指令。
 
-|           指令           |        Vue         |       Volar        |
+|             指令              |        Vue         |       Volar        |
 | :---------------------------: | :----------------: | :----------------: |
 | `v-if`, `v-else-if`, `v-else` | :white_check_mark: | :white_check_mark: |
 |      `v-slot`, `v-slots`      | :white_check_mark: | :white_check_mark: |
@@ -10,22 +10,6 @@
 |           `v-model`           | :white_check_mark: | :white_check_mark: |
 |      `v-html`, `v-text`       | :white_check_mark: |         /          |
 |           `v-once`            | :white_check_mark: |         /          |
-
-## 动态参数
-
-也可以在指令参数中使用变量。
-因为 JSX 不支持 `[]` 关键字，所以使用 `$` 代替。
-
-## 修饰符
-
-修饰符是以 `_` 表示的特殊后缀，表示指令应以某种特殊方式绑定。
-因为 JSX 不支持 `.` 关键字，所以用 `_` 代替。
-
-```tsx
-<form onSubmit_prevent>
-  <input v-model_number={value} />
-</form>
-```
 
 ## `v-if`, `v-else-if`, `v-else`
 
@@ -111,7 +95,22 @@ export default () => (
 
 :::
 
-## `v-model`
+## 修饰符
+
+修饰符是以 `_` 表示的特殊后缀，表示指令应以某种特殊方式绑定。
+因为 JSX 不支持 `.` 关键字，所以用 `_` 代替。
+
+```tsx
+<form onSubmit_prevent>
+  <input v-model_number={value} />
+</form>
+```
+
+## 动态参数
+
+动态参数可以通过变量的形式传递给数组值的第二个参数，第三个参数为指令的修饰符。
+
+### `v-model`
 
 ```tsx twoslash
 import { ref } from 'vue'
@@ -127,10 +126,29 @@ export default () => {
   const name = ref('model')
   return (
     <Comp
-      v-model:$name_value$={foo.value}
+      v-model={[foo.value, name.value]}
       v-model:model={foo.value}
       //       ^|
     />
   )
 }
+```
+
+### `v-slot`
+
+```tsx twoslash
+const Comp = () => {
+  const slots = defineSlots<{
+    default: () => any
+  }>()
+  return <div />
+}
+
+export default (_, { slots }: { slots: { default: () => any } }) => (
+  <Comp>
+    <template v-for={(Slot, name) in slots} v-slot={[scope, name]}>
+      <Slot {...scope} />
+    </template>
+  </Comp>
+)
 ```

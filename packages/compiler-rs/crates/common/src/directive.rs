@@ -1,8 +1,12 @@
 use std::borrow::Cow;
 
+use oxc_allocator::TakeIn;
 use oxc_ast::{
   AstBuilder,
-  ast::{Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXElement},
+  ast::{
+    ArrayExpressionElement, Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName,
+    JSXAttributeValue, JSXElement,
+  },
 };
 use oxc_span::{SPAN, SourceType, Span};
 
@@ -40,9 +44,11 @@ pub fn resolve_directive<'a>(
   ast: &AstBuilder<'a>,
 ) -> DirectiveNode<'a> {
   let mut arg_string = Cow::default();
+  let mut is_namespace = false;
   let (arg_span, name_string) = match &node.name {
     JSXAttributeName::Identifier(name) => (name.span, name.name.as_str()),
     JSXAttributeName::NamespacedName(name) => {
+      is_namespace = true;
       arg_string = Cow::Borrowed(name.name.name.as_str());
       (
         Span::new(name.name.span.start + 1, name.name.span.end - 1),
@@ -50,22 +56,59 @@ pub fn resolve_directive<'a>(
       )
     }
   };
+  let mut arg = None;
   let mut modifiers = vec![];
   let mut is_static = true;
+  let exp = if let Some(value) = node.value.as_mut() {
+    if let JSXAttributeValue::ExpressionContainer(value) = value
+      && let Some(Expression::ArrayExpression(arr)) = value.expression.as_expression_mut()
+      && !arr.elements.is_empty()
+      && let Some(value) = arr.elements.remove(0).as_expression_mut()
+    {
+      if !arr.elements.is_empty()
+        && arr
+          .elements
+          .get(0)
+          .is_some_and(|element| !matches!(element, ArrayExpressionElement::ArrayExpression(_)))
+        && let Some(element) = arr.elements.remove(0).as_expression_mut()
+        && !is_namespace
+      {
+        is_static = element.is_literal();
+        arg = Some(element.take_in(ast.allocator));
+      }
+      if !arr.elements.is_empty()
+        && let Some(Expression::ArrayExpression(element)) =
+          arr.elements.remove(0).as_expression_mut()
+      {
+        for modify in element.elements.iter() {
+          if let Some(Expression::StringLiteral(modify)) = modify.as_expression() {
+            modifiers.push(modify.value.to_string());
+          }
+        }
+      }
+      Some(value.take_in(ast.allocator))
+    } else {
+      jsx_attribute_value_to_expression(value, ast)
+    }
+  } else {
+    None
+  };
 
   if !matches!(node.name, JSXAttributeName::NamespacedName(_)) {
-    let name_string_splited: Vec<&str> = resolve_prop_name(name_string);
-    if name_string_splited.len() > 1 {
-      modifiers = name_string_splited[1..]
-        .iter()
-        .map(|s| s.to_string())
-        .collect();
+    if modifiers.is_empty() {
+      let name_string_splited: Vec<&str> = resolve_prop_name(name_string);
+      if name_string_splited.len() > 1 {
+        modifiers = name_string_splited[1..]
+          .iter()
+          .map(|s| s.to_string())
+          .collect();
+      }
     }
   } else {
     let splited = arg_string.split("$").collect::<Vec<_>>();
     if splited.len() > 2 {
       is_static = false;
-      if !splited[2].is_empty() {
+      if modifiers.is_empty() && !splited[2].is_empty() {
         modifiers = splited[2][1..]
           .split("_")
           .map(|s| s.to_string())
@@ -78,28 +121,25 @@ pub fn resolve_directive<'a>(
         .map(|s| s.to_string())
         .collect::<Vec<_>>();
       arg_string = Cow::Owned(splited.remove(0));
-      modifiers = splited;
+      if modifiers.is_empty() {
+        modifiers = splited;
+      }
     }
   }
 
-  let arg = if !arg_string.is_empty()
+  if !arg_string.is_empty()
     && let JSXAttributeName::NamespacedName(_) = &node.name
   {
-    if is_static {
+    arg = if is_static {
       Some(ast.expression_string_literal(SPAN, ast.str(&arg_string), None))
     } else {
       parse_expression(&arg_string, arg_span, ast.allocator, SourceType::jsx())
     }
-  } else {
-    None
   };
 
   DirectiveNode {
     arg,
-    exp: node
-      .value
-      .as_mut()
-      .map(|value| jsx_attribute_value_to_expression(value, ast)),
+    exp,
     modifiers,
     span: node.span,
   }

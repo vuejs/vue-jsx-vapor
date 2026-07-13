@@ -944,3 +944,71 @@ fn for_component_should_be_dynamic() {
   })();
   "#);
 }
+
+#[test]
+fn array_args() {
+  let code = transform(
+    "<Comp v-slot={[foo, bar]}>
+      {foo}
+    </Com>",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  _openBlock(), _createBlock(Comp, null, {
+  	[bar]: _withCtx((foo) => [_normalizeVNode(() => foo)]),
+  	_: 2
+  }, 1024);
+  "#);
+}
+
+#[test]
+fn array_args_with_template() {
+  let code = transform(
+    "<Comp>
+      <template v-slot={[foo, bar]}>
+        {foo}
+      </template>
+    </Com>",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  _openBlock(), _createBlock(Comp, null, {
+  	[bar]: _withCtx((foo) => [_normalizeVNode(() => foo)]),
+  	_: 2
+  }, 1024);
+  "#);
+}
+
+#[test]
+fn array_args_with_arg() {
+  let code = transform(
+    "<Comp v-slot:foo={[foo, bar]}>
+      {foo}
+    </Comp>",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  _openBlock(), _createBlock(Comp, null, {
+  	foo: _withCtx((foo) => [_normalizeVNode(() => foo)]),
+  	_: 1
+  });
+  "#);
+}

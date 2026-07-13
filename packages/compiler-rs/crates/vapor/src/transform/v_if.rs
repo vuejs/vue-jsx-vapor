@@ -49,7 +49,8 @@ pub unsafe fn transform_v_if<'a>(
   let dir_exp = dir
     .value
     .as_mut()
-    .map(|value| jsx_attribute_value_to_expression(value, context.ast));
+    .map(|value| jsx_attribute_value_to_expression(value, context.ast))
+    .flatten();
   if dir_name != "v-else" && dir_exp.is_none() {
     context.options.on_error.as_ref()(ErrorCodes::VIfNoExpression, dir.span);
     return None;

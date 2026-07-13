@@ -441,8 +441,9 @@ pub fn build_props<'a>(
         let prop_name = prop.name.get_identifier().name;
         if prop_name.eq("v-on") {
           // v-on={obj}
-          if let Some(prop_value) = &mut prop.value {
-            let value = jsx_attribute_value_to_expression(prop_value, context.ast);
+          if let Some(prop_value) = &mut prop.value
+            && let Some(value) = jsx_attribute_value_to_expression(prop_value, context.ast)
+          {
             if is_component {
               if !results.is_empty() {
                 dynamic_args.push(Either3::A(dedupe_properties(results)));

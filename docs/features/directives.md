@@ -2,28 +2,14 @@
 
 Vue JSX Vapor provides full support for Vue's built-in directives within JSX syntax.
 
-| Directive                     | Vue                | Volar              |
+|           Directive           |        Vue         |       Volar        |
 | :---------------------------: | :----------------: | :----------------: |
 | `v-if`, `v-else-if`, `v-else` | :white_check_mark: | :white_check_mark: |
-| `v-slot`, `v-slots`           | :white_check_mark: | :white_check_mark: |
-| `v-for`                       | :white_check_mark: | :white_check_mark: |
-| `v-model`                     | :white_check_mark: | :white_check_mark: |
-| `v-html`, `v-text`            | :white_check_mark: |         /          |
-| `v-once`                      | :white_check_mark: |         /          |
-
-## Dynamic Arguments
-
-Variables can be used as directive arguments. Since JSX does not support the `[]` syntax used in Vue templates, use `$` as a substitute.
-
-## Modifiers
-
-Modifiers are special postfixes denoted by `_` that indicate a directive should be bound in a particular way. Since JSX does not support the `.` character in attribute names, use `_` as a substitute.
-
-```tsx
-<form onSubmit_prevent>
-  <input v-model_number={value} />
-</form>
-```
+|      `v-slot`, `v-slots`      | :white_check_mark: | :white_check_mark: |
+|            `v-for`            | :white_check_mark: | :white_check_mark: |
+|           `v-model`           | :white_check_mark: | :white_check_mark: |
+|      `v-html`, `v-text`       | :white_check_mark: |         /          |
+|           `v-once`            | :white_check_mark: |         /          |
 
 ## `v-if`, `v-else-if`, `v-else`
 
@@ -113,9 +99,21 @@ export default () => (
 
 :::
 
-## `v-model`
+## Modifiers
 
-Two-way binding directive with support for dynamic model names and modifiers.
+Modifiers are special postfixes denoted by `_` that indicate a directive should be bound in a particular way. Since JSX does not support the `.` character in attribute names, use `_` as a substitute.
+
+```tsx
+<form onSubmit_prevent>
+  <input v-model_number={value} />
+</form>
+```
+
+## Dynamic Arguments
+
+Variables can be used as directive argument by passing it as the second element of the array value. The third element of the array is used for directive modifiers.
+
+### `v-model`
 
 ```tsx twoslash
 import { ref } from 'vue'
@@ -131,10 +129,29 @@ export default () => {
   const name = ref('model')
   return (
     <Comp
-      v-model:$name_value$={foo.value}
+      v-model={[foo.value, name.value]}
       v-model:model={foo.value}
       //       ^|
     />
   )
 }
+```
+
+### `v-slot`
+
+```tsx twoslash
+const Comp = () => {
+  const slots = defineSlots<{
+    default: () => any
+  }>()
+  return <div />
+}
+
+export default (_, { slots }: { slots: { default: () => any } }) => (
+  <Comp>
+    <template v-for={(Slot, name) in slots} v-slot={[scope, name]}>
+      <Slot {...scope} />
+    </template>
+  </Comp>
+)
 ```

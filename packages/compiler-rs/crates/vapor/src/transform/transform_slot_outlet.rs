@@ -57,7 +57,7 @@ pub unsafe fn transform_slot_outlet<'a>(
     if let Some(name_prop) = props_result.name_prop
       && let Some(value) = &mut name_prop.value
     {
-      slot_name = Some(jsx_attribute_value_to_expression(value, context.ast))
+      slot_name = jsx_attribute_value_to_expression(value, context.ast)
     }
 
     if let Some(runtime_directive) =

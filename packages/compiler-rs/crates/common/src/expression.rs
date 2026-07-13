@@ -102,15 +102,20 @@ pub fn parse_expression<'a>(
 pub fn jsx_attribute_value_to_expression<'a>(
   value: &mut JSXAttributeValue<'a>,
   ast: &AstBuilder<'a>,
-) -> Expression<'a> {
+) -> Option<Expression<'a>> {
   match value {
-    JSXAttributeValue::Element(value) => Expression::JSXElement(value.clone_in(ast.allocator)),
-    JSXAttributeValue::Fragment(value) => Expression::JSXFragment(value.clone_in(ast.allocator)),
+    JSXAttributeValue::Element(value) => {
+      Some(Expression::JSXElement(value.clone_in(ast.allocator)))
+    }
+    JSXAttributeValue::Fragment(value) => {
+      Some(Expression::JSXFragment(value.clone_in(ast.allocator)))
+    }
     JSXAttributeValue::StringLiteral(value) => {
-      ast.expression_string_literal(value.span, value.value, value.raw)
+      Some(ast.expression_string_literal(value.span, value.value, value.raw))
     }
-    JSXAttributeValue::ExpressionContainer(value) => {
-      value.expression.to_expression_mut().take_in(ast.allocator)
-    }
+    JSXAttributeValue::ExpressionContainer(value) => value
+      .expression
+      .as_expression_mut()
+      .map(|exp| exp.take_in(ast.allocator)),
   }
 }

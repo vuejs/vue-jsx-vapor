@@ -607,3 +607,84 @@ fn should_error_if_mal_formed_expression() {
   );
   assert_eq!(*error.borrow(), Some(ErrorCodes::VModelMalformedExpression));
 }
+
+#[test]
+fn array_args() {
+  let code = transform(
+    "<Comp v-model={[foo, bar, ['modify1', 'modify2']]} />",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _openBlock(), _createBlock(Comp, _normalizeProps({
+  		[bar]: foo,
+  		["onUpdate:" + bar]: _cache[0] || (_cache[0] = ($event) => foo = $event),
+  		[bar + "modifiers"]: {
+  			modify1: true,
+  			modify2: true
+  		}
+  	}), null, 16);
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_modifiers() {
+  let code = transform(
+    "<Comp v-model={[foo, ['modify1', 'modify2']]} />",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _openBlock(), _createBlock(Comp, {
+  		modelValue: foo,
+  		"onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => foo = $event),
+  		modelModifiers: {
+  			modify1: true,
+  			modify2: true
+  		}
+  	}, null, 8, ["modelValue"]);
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_arg() {
+  let code = transform(
+    "<Comp v-model:foo_m1={[foo, bar, ['modify1', 'modify2']]} />",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _openBlock(), _createBlock(Comp, {
+  		"foo": foo,
+  		"onUpdate:foo": _cache[0] || (_cache[0] = ($event) => foo = $event),
+  		fooModifiers: {
+  			modify1: true,
+  			modify2: true
+  		}
+  	}, null, 8, ["foo"]);
+  })();
+  "#);
+}

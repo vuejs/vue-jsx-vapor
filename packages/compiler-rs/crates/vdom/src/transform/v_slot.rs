@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 use common::{
-  check::is_template,
-  directive::{Directives, find_prop},
+  check::{is_simple_identifier, is_template},
+  directive::{Directives, find_prop, resolve_directive},
   error::ErrorCodes,
   options::SlotScope,
   patch_flag::SlotFlags,
@@ -13,11 +13,11 @@ use oxc_ast::{
   NONE,
   ast::{
     Argument, ArrayExpressionElement, ConditionalExpression, Expression, FormalParameterKind,
-    JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement, NumberBase, ObjectPropertyKind,
-    PropertyKey, PropertyKind, Statement,
+    JSXAttributeValue, JSXChild, JSXElement, NumberBase, ObjectPropertyKind, PropertyKey,
+    PropertyKind, Statement,
   },
 };
-use oxc_span::{GetSpan, SPAN, Span};
+use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   ast::{ForNode, VNodeCallChildren},
@@ -96,7 +96,7 @@ pub unsafe fn track_slot_scopes<'a>(
 }
 
 pub fn build_slots<'a>(
-  directives: &mut Directives<'a>,
+  directives: &'a mut Directives<'a>,
   node: &'a mut JSXElement<'a>,
   context: &'a TransformContext<'a>,
 ) -> (Expression<'a>, bool) {
@@ -123,28 +123,32 @@ pub fn build_slots<'a>(
 
   // 1. Check for slot with slotProps on component itself.
   //    <Comp v-slot="{ prop }"/>
-  let on_component_slot = directives.v_slot.as_ref();
-  if let Some(on_component_slot) = on_component_slot {
-    let mut arg_name = None;
-    let mut arg_span = SPAN;
+  let mut on_component_slot_span = None;
+  let mut on_component_slot_value_span = None;
+  if let Some(mut dir) = directives
+    .v_slot
+    .as_mut()
+    .map(|node| resolve_directive(node, ast))
+  {
     let mut computed = false;
-    if let JSXAttributeName::NamespacedName(arg) = &on_component_slot.name {
-      let splited = arg.name.name.split("$").collect::<Vec<_>>();
-      arg_name = Some(if splited.len() > 2 {
-        has_dynamic_slots = true;
-        computed = true;
-        arg_span = Span::new(arg.name.span.start + 1, arg.name.span.end - 1);
-        ast.str(&splited[1].replace("_", "."))
-      } else {
-        arg_span = arg.name.span;
-        arg.name.name
-      })
-    };
+    on_component_slot_span = Some(dir.span);
+    on_component_slot_value_span = dir.exp.map(|exp| exp.span());
     slots_properties.push(ast.object_property_kind_object_property(
       SPAN,
       PropertyKind::Init,
-      if let Some(arg_name) = arg_name {
-        ast.property_key_static_identifier(arg_span, arg_name)
+      if let Some(slot_name) = dir.arg.take() {
+        if let Some(value) = if let Expression::StringLiteral(name) = &slot_name {
+          Some(name.value.as_str())
+        } else {
+          computed = true;
+          has_dynamic_slots = true;
+          None
+        } && is_simple_identifier(value)
+        {
+          ast.expression_identifier(SPAN, value).into()
+        } else {
+          slot_name.into()
+        }
       } else {
         ast.property_key_static_identifier(SPAN, "default")
       },
@@ -174,7 +178,9 @@ pub fn build_slots<'a>(
     let slot_element_ptr = slot_element as *mut oxc_allocator::Box<JSXElement>;
     let mut slot_directives = Directives::new(unsafe { &mut *slot_element_ptr }, context.options);
     if if is_template(slot_element) {
-      slot_dir = slot_directives.v_slot.as_ref();
+      slot_dir = slot_directives
+        .v_slot
+        .map(|node| resolve_directive(node, ast));
       slot_dir.is_none()
     } else {
       true
@@ -184,9 +190,9 @@ pub fn build_slots<'a>(
       continue;
     }
 
-    if let Some(on_component_slot) = on_component_slot {
+    if let Some(on_component_slot_span) = on_component_slot_span {
       // already has on-component slot - this is incorrect usage.
-      context.options.on_error.as_ref()(ErrorCodes::VSlotMixedSlotUsage, on_component_slot.span);
+      context.options.on_error.as_ref()(ErrorCodes::VSlotMixedSlotUsage, on_component_slot_span);
       break;
     }
 
@@ -194,23 +200,22 @@ pub fn build_slots<'a>(
     // check if name is dynamic.
     let mut static_slot_name = None;
     let slot_dir = slot_dir.unwrap();
-    let slot_name = if let JSXAttributeName::NamespacedName(name) = &slot_dir.name {
-      if name.name.name.split("$").count() > 2 {
-        has_dynamic_slots = true;
-        ast.expression_identifier(
-          name.span,
-          ast.str(&name.name.name[1..name.name.name.len() - 1].replace("_", ".")),
-        )
+    let slot_name = if let Some(mut slot_name) = slot_dir.arg {
+      if let Expression::StringLiteral(name) = &slot_name {
+        static_slot_name = Some(name.value.as_str());
+        if is_simple_identifier(name.value.as_str()) {
+          slot_name = ast.expression_identifier(SPAN, name.value);
+        };
       } else {
-        static_slot_name = Some(name.name.name.as_str());
-        ast.expression_identifier(name.span, name.name.name)
+        has_dynamic_slots = true;
       }
+      slot_name
     } else {
       static_slot_name = Some("default");
       ast.expression_identifier(SPAN, "default")
     };
-    let slot_props = if let Some(JSXAttributeValue::ExpressionContainer(value)) = &slot_dir.value {
-      let span = value.expression.span();
+    let slot_props = if let Some(expression) = &slot_dir.exp {
+      let span = expression.span();
       Some(ast.plain_formal_parameter(
         SPAN,
         ast.binding_pattern_binding_identifier(span, span.source_text(context.source_text)),
@@ -399,7 +404,7 @@ pub fn build_slots<'a>(
     }
   }
 
-  if let Some(on_component_slot) = on_component_slot {
+  if on_component_slot_span.is_some() {
     if let Some(ObjectPropertyKind::ObjectProperty(prop)) = slots_properties.first_mut() {
       prop.value = ast.expression_call(
         SPAN,
@@ -422,19 +427,16 @@ pub fn build_slots<'a>(
               ast.alloc_formal_parameters(
                 SPAN,
                 FormalParameterKind::ArrowFormalParameters,
-                if let Some(JSXAttributeValue::ExpressionContainer(value)) =
-                  &on_component_slot.value
-                {
-                  ast.vec1({
-                    let span = value.expression.span();
-                    ast.plain_formal_parameter(
+                if let Some(span) = on_component_slot_value_span {
+                  {
+                    ast.vec1(ast.plain_formal_parameter(
                       SPAN,
                       ast.binding_pattern_binding_identifier(
                         span,
                         span.source_text(context.source_text),
                       ),
-                    )
-                  })
+                    ))
+                  }
                 } else {
                   ast.vec()
                 },

@@ -85,7 +85,7 @@ pub fn resolve_static_key<'a>(
       JSXAttributeValue::StringLiteral(_) => true,
       _ => false,
     } {
-      Some(jsx_attribute_value_to_expression(value, ast))
+      jsx_attribute_value_to_expression(value, ast)
     } else {
       None
     }

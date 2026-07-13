@@ -57,7 +57,7 @@ pub unsafe fn transform_v_for<'a>(
     && let Some(value) = &mut key_prop.value
   {
     seen.insert(key_prop.span.start);
-    Some(jsx_attribute_value_to_expression(value, context.ast))
+    jsx_attribute_value_to_expression(value, context.ast)
   } else {
     None
   };

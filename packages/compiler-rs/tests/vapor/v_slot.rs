@@ -1160,3 +1160,75 @@ fn slot_v_else_missing_adjacent_v_if_should_report_compiler_error() {
   );
   assert_eq!(*error.borrow(), Some(ErrorCodes::VElseNoAdjacentIf));
 }
+
+#[test]
+fn array_args() {
+  let code = transform(
+    "<Comp v-slot={[foo, bar]}>
+      {foo}
+    </Com>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n1 = _createComponent(Comp, null, { $: [{
+  		name: bar,
+  		fn: (foo) => {
+  			const _n0 = _createNodes(() => foo);
+  			return _n0;
+  		}
+  	}] }, true);
+  	return _n1;
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_template() {
+  let code = transform(
+    "<Comp>
+      <template v-slot={[foo, bar]}>
+        {foo}
+      </template>
+    </Com>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { $: [{
+  		name: bar,
+  		fn: (foo) => {
+  			const _n0 = _createNodes(() => foo);
+  			return _n0;
+  		}
+  	}] }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_arg() {
+  let code = transform(
+    "<Comp v-slot:foo={[foo, bar]}>
+      {foo}
+    </Comp>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
+  (() => {
+  	const _n1 = _createComponent(Comp, null, { foo: _extend((foo) => {
+  		const _n0 = _createNodes(() => foo);
+  		return _n0;
+  	}, { _: 8 }) }, true);
+  	return _n1;
+  })();
+  "#);
+}
