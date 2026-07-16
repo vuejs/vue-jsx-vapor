@@ -39,7 +39,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: '24'
+          node-version: '22'
           cache: pnpm
       - name: Install
         uses: dtolnay/rust-toolchain@stable
@@ -95,7 +95,7 @@ jobs:
           - host: ubuntu-latest
             target: wasm32-wasip1-threads
             build: pnpm build --target wasm32-wasip1-threads
-    name: stable - ${{ matrix.settings.target }} - node@20
+    name: stable - ${{ matrix.settings.target }} - node@22
     runs-on: ${{ matrix.settings.host }}
 
     defaults:
@@ -109,7 +109,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: '24'
+          node-version: '22'
           cache: pnpm
       - name: Install
         uses: dtolnay/rust-toolchain@stable
@@ -152,7 +152,7 @@ jobs:
         uses: actions/setup-node@v5
         if: matrix.settings.target == 'i686-pc-windows-msvc'
         with:
-          node-version: '24'
+          node-version: '22'
           cache: pnpm
           architecture: x86
       - name: Build
@@ -242,7 +242,6 @@ jobs:
             architecture: arm64
         node:
           - '22'
-          - '24'
     runs-on: ${{ matrix.settings.host }}
     defaults:
       run:
@@ -288,7 +287,6 @@ jobs:
           - armv7-unknown-linux-gnueabihf
         node:
           - '22'
-          - '24'
     runs-on: ${{ contains(matrix.target, 'aarch64') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     defaults:
       run:
@@ -364,7 +362,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: '24'
+          node-version: '22'
           cache: pnpm
       - name: Install dependencies
         run: pnpm install
@@ -399,7 +397,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: '24'
+          node-version: '22'
           cache: pnpm
       - name: Install dependencies
         run: pnpm install
