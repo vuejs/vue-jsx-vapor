@@ -178,3 +178,30 @@ fn transition_work_with_dynamic_keyed_children() {
   })();
   "#);
 }
+
+#[test]
+fn does_not_inject_persisted_when_v_if_owns_a_v_show_child() {
+  let code = transform(
+    "<Transition>
+      <h1 v-if={show} v-show={true} />
+    </Transition>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { applyVShow as _applyVShow, createIf as _createIf, extend as _extend, template as _template } from "vue";
+  const _t0 = _template("<h1>");
+  (() => {
+  	const _n3 = _createComponent(Transition, null, _extend(() => {
+  		const _n0 = _createIf(() => show, () => {
+  			const _n2 = _t0();
+  			_applyVShow(_n2, () => true);
+  			return _n2;
+  		}, null, 129);
+  		return _n0;
+  	}, { _: 8 }), true);
+  	return _n3;
+  })();
+  "#);
+}
