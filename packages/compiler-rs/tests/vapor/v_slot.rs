@@ -36,7 +36,6 @@ fn on_component_default_slot() {
   })();
   "#);
 
-  assert!(!code.contains("_withVaporCtx((scope) =>"));
   assert!(code.contains("scope.foo + bar"));
 }
 
@@ -59,7 +58,6 @@ fn on_component_named_slot() {
   })();
   "#);
 
-  assert!(!code.contains("named: _withVaporCtx((_slotProps0) =>"));
   assert!(code.contains("{ foo: _slotProps0.foo }"));
 }
 
@@ -117,7 +115,6 @@ fn on_component_dynamically_named_slot() {
   })();
   "#);
 
-  assert!(!code.contains("fn: _withVaporCtx((_slotProps0) =>"));
   assert!(code.contains("_slotProps0.foo + bar"));
 }
 
@@ -576,7 +573,7 @@ fn static_root_sibling_keeps_slot_content_stable() {
   		const _n1 = _createIf(() => show, () => {
   			const _n3 = _t1();
   			return _n3;
-  		}, null, 161);
+  		}, null, 33);
   		return [_n0, _n1];
   	}, true);
   	return _n4;
@@ -870,7 +867,6 @@ fn slot_with_component_is_stable() {
     None,
   )
   .code;
-  assert!(!code.contains("withVaporCtx"));
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -894,7 +890,6 @@ fn slot_with_slot_outlet_is_non_stable() {
     None,
   )
   .code;
-  assert!(!code.contains("withVaporCtx"));
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createSlot as _createSlot, extend as _extend } from "vue";
@@ -920,7 +915,6 @@ fn dynamic_slot_source_with_slot_outlet_keeps_dynamic_slot_function() {
   )
   .code;
   assert!(code.contains("_createForSlots"));
-  assert!(!code.contains("fn: _withVaporCtx(() =>"));
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createForSlots as _createForSlots, createSlot as _createSlot } from "vue";
@@ -950,7 +944,6 @@ fn slot_with_component_inside_v_if_is_non_stable() {
     None,
   )
   .code;
-  assert!(!code.contains("withVaporCtx"));
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, extend as _extend, setInsertionState as _setInsertionState, template as _template } from "vue";
@@ -983,7 +976,6 @@ fn slot_with_component_inside_v_for_is_non_stable() {
     None,
   )
   .code;
-  assert!(!code.contains("withVaporCtx"));
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, extend as _extend, setInsertionState as _setInsertionState, template as _template } from "vue";
@@ -1018,7 +1010,6 @@ fn slot_with_nested_v_if_containing_component_is_non_stable() {
     None,
   )
   .code;
-  assert!(!code.contains("withVaporCtx"));
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, extend as _extend, setInsertionState as _setInsertionState, template as _template } from "vue";
@@ -1142,7 +1133,6 @@ fn slot_with_custom_element_is_stable() {
     None,
   )
   .code;
-  assert!(!code.contains("withVaporCtx"));
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createPlainElement as _createPlainElement } from "vue";
@@ -1152,6 +1142,39 @@ fn slot_with_custom_element_is_stable() {
   		return _n0;
   	}, true);
   	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_with_dynamic_root_and_stable_sibling_is_stable() {
+  let code = transform(
+    r#"<Comp>
+      <template v-slot:default>
+        <span v-for={item in items}>{ item }</span>
+        <i>tail</i>
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<span> ");
+  const _t1 = _template("<i>tail", 2);
+  (() => {
+  	const _n5 = _createComponent(Comp, null, () => {
+  		const _n0 = _createFor(() => items, (_for_item0) => {
+  			const _n2 = _t0();
+  			const _x2 = _txt(_n2);
+  			_setNodes(_x2, () => _for_item0.value);
+  			return _n2;
+  		}, void 0, 8);
+  		const _n3 = _t1();
+  		return [_n0, _n3];
+  	}, true);
+  	return _n5;
   })();
   "#);
 }
@@ -1169,7 +1192,6 @@ fn slot_with_custom_element_inside_v_if_is_non_stable() {
     None,
   )
   .code;
-  assert!(!code.contains("withVaporCtx"));
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, createPlainElement as _createPlainElement, extend as _extend, setInsertionState as _setInsertionState, template as _template } from "vue";

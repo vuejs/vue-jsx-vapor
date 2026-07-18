@@ -441,8 +441,10 @@ fn gen_slot_block_with_props<'a>(
   );
 
   let ast = &context.ast;
-  mark_slot_root_operations(&mut oper);
-  let none_stable_slot_root = emit_non_stable_flag && !has_stable_slot_root(&mut oper, context);
+  let has_stable_root = has_stable_slot_root(&mut oper, context);
+  if !has_stable_root {
+    mark_slot_root_operations(&mut oper);
+  }
   let mut block_fn = context.with_id(
     || {
       gen_block(
@@ -462,7 +464,7 @@ fn gen_slot_block_with_props<'a>(
     id_map,
   );
   // Dynamic slot sources keep rawSlots.$, so runtime stays conservative.
-  if none_stable_slot_root {
+  if emit_non_stable_flag && !has_stable_root {
     block_fn = ast.expression_call(
       SPAN,
       ast.expression_identifier(SPAN, ast.str(context.options.helper("_extend"))),
