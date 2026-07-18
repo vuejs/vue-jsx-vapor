@@ -499,6 +499,8 @@ fn gen_slot_block_with_props<'a>(
   block_fn
 }
 
+// A slot can skip fallback/boundary tracking when at least one root is stable.
+// Components count as valid even if their own render result is a comment.
 fn has_stable_slot_root<'a>(block: &mut BlockIRNode<'a>, context: &CodegenContext<'a>) -> bool {
   let mut has_valid_root = false;
   let block_ptr = block as *mut BlockIRNode;
@@ -516,16 +518,13 @@ fn has_stable_slot_root<'a>(block: &mut BlockIRNode<'a>, context: &CodegenContex
     match operation.as_mut() {
       OperationNode::CreateComponent(_) => {
         has_valid_root = true;
-        continue;
       }
       OperationNode::Key(operation) => {
         if has_stable_slot_root(&mut operation.block, context) {
           has_valid_root = true;
-          continue;
         }
-        return false;
       }
-      _ => return false,
+      _ => {}
     }
   }
   has_valid_root

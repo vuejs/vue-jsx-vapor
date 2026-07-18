@@ -563,6 +563,122 @@ fn does_not_mark_non_root_v_if_slot_content_as_slot_root() {
 }
 
 #[test]
+fn static_root_sibling_keeps_slot_content_stable() {
+  let code = transform("<Comp><span/><div v-if={show}/></Comp>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("<span></span>", 2);
+  const _t1 = _template("<div>", 2);
+  (() => {
+  	const _n4 = _createComponent(Comp, null, () => {
+  		const _n0 = _t0();
+  		const _n1 = _createIf(() => show, () => {
+  			const _n3 = _t1();
+  			return _n3;
+  		}, null, 161);
+  		return [_n0, _n1];
+  	}, true);
+  	return _n4;
+  })();
+  "#);
+}
+
+#[test]
+fn static_component_root_sibling_keeps_slot_content_stable() {
+  let code = transform("<Comp><Foo/><Component is={view}/></Comp>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, () => {
+  		const _n0 = _createComponent(Foo);
+  		const _n1 = _createComponent(Component, { is: () => view });
+  		return [_n0, _n1];
+  	}, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn all_dynamic_root_slot_content_is_non_stable() {
+  let code = transform(
+    "<Comp><div v-for={item in list}/><p v-if={ok}/></Comp>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, createIf as _createIf, extend as _extend, template as _template } from "vue";
+  const _t0 = _template("<div>");
+  const _t1 = _template("<p>", 2);
+  (() => {
+  	const _n6 = _createComponent(Comp, null, _extend(() => {
+  		const _n0 = _createFor(() => list, (_for_item0) => {
+  			const _n2 = _t0();
+  			return _n2;
+  		}, void 0, 40);
+  		const _n3 = _createIf(() => ok, () => {
+  			const _n5 = _t1();
+  			return _n5;
+  		}, null, 161);
+  		return [_n0, _n3];
+  	}, { _: 8 }), true);
+  	return _n6;
+  })();
+  "#);
+}
+
+#[test]
+fn root_v_for_with_root_v_if_slot_content_is_non_stable() {
+  let code = transform(
+    "<Comp><div v-for={item in list}/><p v-if={ok}/></Comp>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, createIf as _createIf, extend as _extend, template as _template } from "vue";
+  const _t0 = _template("<div>");
+  const _t1 = _template("<p>", 2);
+  (() => {
+  	const _n6 = _createComponent(Comp, null, _extend(() => {
+  		const _n0 = _createFor(() => list, (_for_item0) => {
+  			const _n2 = _t0();
+  			return _n2;
+  		}, void 0, 40);
+  		const _n3 = _createIf(() => ok, () => {
+  			const _n5 = _t1();
+  			return _n5;
+  		}, null, 161);
+  		return [_n0, _n3];
+  	}, { _: 8 }), true);
+  	return _n6;
+  })();
+  "#);
+}
+
+#[test]
+fn comment_with_dynamic_root_slot_content_is_non_stable() {
+  let code = transform("<Comp>{/* foo */}<div v-if={show}/></Comp>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, extend as _extend, template as _template } from "vue";
+  const _t0 = _template("<div>", 2);
+  (() => {
+  	const _n3 = _createComponent(Comp, null, _extend(() => {
+  		const _n0 = _createIf(() => show, () => {
+  			const _n2 = _t0();
+  			return _n2;
+  		}, null, 161);
+  		return _n0;
+  	}, { _: 8 }), true);
+  	return _n3;
+  })();
+  "#);
+}
+
+#[test]
 fn marks_root_slot_outlet_fallbck_as_slot_root() {
   let code = transform("<Comp><slot><span v-if={show}/></slot></Comp>", None).code;
   assert_snapshot!(code, @r#"
@@ -719,7 +835,7 @@ fn default_slot_with_v_for_directive() {
 }
 
 #[test]
-fn slot_with_only_static_elements_should_not_need_with_vapor_ctx() {
+fn slot_with_only_static_elements_is_stable() {
   let code = transform(
     r#"<Comp>
       <template v-slot:default>
@@ -744,7 +860,7 @@ fn slot_with_only_static_elements_should_not_need_with_vapor_ctx() {
 }
 
 #[test]
-fn slot_with_component_should_not_need_with_vapor_ctx() {
+fn slot_with_component_is_stable() {
   let code = transform(
     r#"<Comp>
       <template v-slot:default>
@@ -768,7 +884,7 @@ fn slot_with_component_should_not_need_with_vapor_ctx() {
 }
 
 #[test]
-fn slot_with_slot_outlet_should_not_need_with_vapor_ctx() {
+fn slot_with_slot_outlet_is_non_stable() {
   let code = transform(
     r#"<Comp>
       <template v-slot:default>
@@ -793,7 +909,7 @@ fn slot_with_slot_outlet_should_not_need_with_vapor_ctx() {
 }
 
 #[test]
-fn dynamic_slot_source_with_slot_outlet_should_not_need_with_vapor_ctx() {
+fn dynamic_slot_source_with_slot_outlet_keeps_dynamic_slot_function() {
   let code = transform(
     r#"<Comp>
       <template v-for={(_, name) in slots} v-slot:$name$>
@@ -822,7 +938,7 @@ fn dynamic_slot_source_with_slot_outlet_should_not_need_with_vapor_ctx() {
 }
 
 #[test]
-fn slot_with_component_inside_v_if_should_not_need_with_vapor_ctx() {
+fn slot_with_component_inside_v_if_is_non_stable() {
   let code = transform(
     r#"<Comp>
       <template v-slot:default>
@@ -855,7 +971,7 @@ fn slot_with_component_inside_v_if_should_not_need_with_vapor_ctx() {
 }
 
 #[test]
-fn slot_with_component_inside_v_for_should_not_need_with_vapor_ctx() {
+fn slot_with_component_inside_v_for_is_non_stable() {
   let code = transform(
     r#"<Comp>
       <template v-slot:default>
@@ -888,7 +1004,7 @@ fn slot_with_component_inside_v_for_should_not_need_with_vapor_ctx() {
 }
 
 #[test]
-fn slot_with_nested_v_if_containing_component_should_not_need_with_vapor_ctx() {
+fn slot_with_nested_v_if_containing_component_is_non_stable() {
   let code = transform(
     r#"<Comp>
       <template v-slot:default>
@@ -929,7 +1045,7 @@ fn slot_with_nested_v_if_containing_component_should_not_need_with_vapor_ctx() {
 }
 
 #[test]
-fn slot_with_only_text_interpolation_should_not_need_with_vapor_ctx() {
+fn slot_with_only_text_interpolation_is_stable() {
   let code = transform(
     r#"<Comp>
       <template v-slot:default>
@@ -953,7 +1069,7 @@ fn slot_with_only_text_interpolation_should_not_need_with_vapor_ctx() {
 }
 
 #[test]
-fn slot_with_v_if_but_no_component_should_not_need_with_vapor_ctx() {
+fn slot_with_v_if_but_no_component_is_non_stable() {
   let code = transform(
     r#"<Comp>
       <template v-slot:default>
@@ -986,7 +1102,7 @@ fn slot_with_v_if_but_no_component_should_not_need_with_vapor_ctx() {
 }
 
 #[test]
-fn slot_with_v_for_but_no_component_should_not_need_with_vapor_ctx() {
+fn slot_with_v_for_but_no_component_is_none_stable() {
   let code = transform(
     r#"<Comp>
       <template v-slot:default>
@@ -1016,7 +1132,7 @@ fn slot_with_v_for_but_no_component_should_not_need_with_vapor_ctx() {
 }
 
 #[test]
-fn slot_with_custom_element_should_not_need_with_vapor_ctx() {
+fn slot_with_custom_element_is_stable() {
   let code = transform(
     r#"<Comp>
       <template v-slot:default>
@@ -1041,7 +1157,7 @@ fn slot_with_custom_element_should_not_need_with_vapor_ctx() {
 }
 
 #[test]
-fn slot_with_custom_element_inside_v_if_should_not_need_with_vapor_ctx() {
+fn slot_with_custom_element_inside_v_if_is_non_stable() {
   let code = transform(
     r#"<Comp>
       <template v-slot:default>
