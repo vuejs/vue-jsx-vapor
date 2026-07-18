@@ -333,7 +333,7 @@ fn template_v_for_with_multiple_children() {
 #[test]
 fn template_v_for_with_slotlet() {
   let code = transform(
-    r#"<template v-for={item in items}><slot/></template>"#,
+    r#"<template v-for={item in items} key={item.id}><slot/></template>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -344,7 +344,7 @@ fn template_v_for_with_slotlet() {
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
   	const _slots = _useSlots();
-  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, null, [_renderSlot(_slots, "default")], 64))), 256);
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, { key: item.id }, [_renderSlot(_slots, "default")], 64))), 128);
   })();
   "#)
 }

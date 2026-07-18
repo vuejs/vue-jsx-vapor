@@ -78,7 +78,7 @@ fn v_if_on_slot() {
   import { createCommentVNode as _createCommentVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
   	const _slots = _useSlots();
-  	return "ok" ? _renderSlot(_slots, "default") : _createCommentVNode("", true);
+  	return "ok" ? _renderSlot(_slots, "default", {}, undefined, undefined, 0) : _createCommentVNode("", true);
   })();
   "#);
 }

@@ -318,7 +318,7 @@ fn condition_expression_with_slot_outlet() {
   (() => {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
   	const _slots = _useSlots();
-  	return _openBlock(), _createElementBlock(_Fragment, null, [foo ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_renderSlot(_slots, "default")], 64)) : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [_cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div")).cacheIndex = 0, _setBlockTracking(1), _cache[0])], 64))], 64);
+  	return _openBlock(), _createElementBlock(_Fragment, null, [foo ? _renderSlot(_slots, "default", {}, undefined, undefined, 0) : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [_cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div")).cacheIndex = 0, _setBlockTracking(1), _cache[0])], 64))], 64);
   })();
   "#);
 }

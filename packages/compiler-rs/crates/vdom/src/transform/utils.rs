@@ -5,7 +5,7 @@ use oxc_ast::{
 };
 use oxc_span::SPAN;
 
-use crate::{ast::VNodeCall, transform::TransformContext};
+use crate::{ast::NodeTypes, transform::TransformContext};
 
 fn get_unnormalized_props<'a>(
   props: &mut Expression<'a>,
@@ -25,11 +25,30 @@ fn get_unnormalized_props<'a>(
 }
 
 pub fn inject_prop<'a>(
-  node: &mut VNodeCall<'a>,
+  node: &mut NodeTypes<'a>,
   prop: ObjectProperty<'a>,
   context: &TransformContext<'a>,
-) {
+) -> Option<ObjectProperty<'a>> {
   let ast = &context.ast;
+  let NodeTypes::VNodeCall(node) = node else {
+    if let NodeTypes::CacheExpression(expression) = node
+      && let Expression::CallExpression(expression) = expression
+      && expression.callee.is_specific_id("_renderSlot")
+    {
+      for i in [2, 3, 4] {
+        if expression.arguments.get(i).is_none() {
+          expression.arguments.push(if i == 2 {
+            ast.expression_object(SPAN, ast.vec()).into()
+          } else {
+            ast.expression_identifier(SPAN, "undefined").into()
+          })
+        }
+      }
+      expression.arguments.push(prop.value.into());
+      return None;
+    }
+    return Some(prop);
+  };
   let mut props_with_injection = None;
   // 1. mergeProps(...)
   // 2. toHandlers(...)
@@ -176,8 +195,9 @@ pub fn inject_prop<'a>(
       .arguments
       .insert(0, props_with_injection.unwrap().into());
   } else {
-    node.props = props_with_injection
+    node.props = props_with_injection;
   }
+  None
 }
 
 pub fn is_dynamic_slots_component(tag_name: &str) -> bool {

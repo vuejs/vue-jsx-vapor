@@ -549,7 +549,7 @@ fn slot_tag_with_v_if() {
   (() => {
   	const _slots = _useSlots();
   	return _openBlock(), _createBlock(Comp, null, {
-  		default: _withCtx(() => [ok ? _renderSlot(_slots, "default") : _createCommentVNode("", true)]),
+  		default: _withCtx(() => [ok ? _renderSlot(_slots, "default", {}, undefined, undefined, 0) : _createCommentVNode("", true)]),
   		_: 3
   	});
   })();

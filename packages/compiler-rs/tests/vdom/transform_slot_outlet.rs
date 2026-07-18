@@ -276,3 +276,22 @@ fn error_on_unexpected_cunstom_directive_on_slot() {
     Some(ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet)
   );
 }
+
+#[test]
+fn v_if_on_slot_with_v_bind() {
+  let code = transform(
+    r#"<slot v-if={ok} {...items}></slot>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createCommentVNode as _createCommentVNode, guardReactiveProps as _guardReactiveProps, normalizeProps as _normalizeProps, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  (() => {
+  	const _slots = _useSlots();
+  	return ok ? _renderSlot(_slots, "default", _normalizeProps(_guardReactiveProps(items)), undefined, undefined, 0) : _createCommentVNode("", true);
+  })();
+  "#);
+}

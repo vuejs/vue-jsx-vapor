@@ -234,38 +234,44 @@ fn transform_branch<'a>(
       false,
       false,
     );
-    match codegen_map.remove(&span) {
-      Some(NodeTypes::VNodeCall(mut vnode_call)) => {
-        vnode_call.is_block = true;
-        inject_prop(&mut vnode_call, key_property, context);
-        cache_static_children(None, &mut ast.vec1(branch), context, codegen_map);
-        *exp = context.gen_vnode_call(vnode_call, codegen_map);
+    if let Some(mut codegen) = codegen_map.remove(&span) {
+      let key_property = inject_prop(&mut codegen, key_property, context);
+      match codegen {
+        NodeTypes::VNodeCall(mut vnode_call) => {
+          vnode_call.is_block = true;
+          cache_static_children(None, &mut ast.vec1(branch), context, codegen_map);
+          *exp = context.gen_vnode_call(vnode_call, codegen_map);
+        }
+        NodeTypes::CacheExpression(cache_exp) => {
+          *exp = if let Some(key_property) = key_property {
+            context.gen_vnode_call(
+              VNodeCall {
+                tag: context.options.helper("_Fragment"),
+                props: Some(ast.expression_object(
+                  SPAN,
+                  ast.vec1(ObjectPropertyKind::ObjectProperty(ast.alloc(key_property))),
+                )),
+                children: Some(Either3::C(
+                  ast.expression_array(SPAN, ast.vec1(cache_exp.into())),
+                )),
+                patch_flag: Some(PatchFlags::StableFragment as i32),
+                directives: None,
+                dynamic_props: None,
+                is_block: true,
+                disable_tracking: false,
+                is_component: true,
+                v_for: None,
+                v_if: None,
+                loc: SPAN,
+              },
+              codegen_map,
+            )
+          } else {
+            cache_exp
+          };
+        }
+        _ => {}
       }
-      Some(NodeTypes::CacheExpression(cache_exp)) => {
-        *exp = context.gen_vnode_call(
-          VNodeCall {
-            tag: context.options.helper("_Fragment"),
-            props: Some(ast.expression_object(
-              SPAN,
-              ast.vec1(ObjectPropertyKind::ObjectProperty(ast.alloc(key_property))),
-            )),
-            children: Some(Either3::C(
-              ast.expression_array(SPAN, ast.vec1(cache_exp.into())),
-            )),
-            patch_flag: Some(PatchFlags::StableFragment as i32),
-            directives: None,
-            dynamic_props: None,
-            is_block: true,
-            disable_tracking: false,
-            is_component: true,
-            v_for: None,
-            v_if: None,
-            loc: SPAN,
-          },
-          codegen_map,
-        );
-      }
-      _ => {}
     }
   }
 }
