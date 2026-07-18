@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::mem;
+use std::mem::{self};
 use std::rc::Rc;
 
 use common::patch_flag::VaporSlotFlags;
@@ -102,9 +102,9 @@ pub fn gen_block_content<'a>(
             unsafe { &mut *context_block }
               .effect
               .drain(0..effect_end - effect_index)
-              .collect::<Vec<_>>(),
+              .collect::<_>(),
             context,
-            unsafe { &mut *context_block },
+            context_block,
           ) {
             statements.push(statement);
           };
@@ -133,7 +133,7 @@ pub fn gen_block_content<'a>(
   if let Some(statement) = gen_effects(
     mem::take(&mut unsafe { &mut *context_block }.effect),
     context,
-    unsafe { &mut *context_block },
+    context_block,
   ) {
     statements.push(statement);
   }
@@ -166,27 +166,23 @@ pub fn gen_block_content<'a>(
   statements
 }
 
-pub fn gen_effects<'a>(
+fn gen_effects<'a>(
   effects: Vec<IREffect<'a>>,
   context: &'a CodegenContext<'a>,
-  context_block: &'a mut BlockIRNode<'a>,
+  context_block: *mut BlockIRNode<'a>,
 ) -> Option<Statement<'a>> {
   let ast = &context.ast;
   let mut statements = ast.vec();
   let mut operations_count = 0;
 
-  let effects_is_empty = effects.is_empty();
   for effect in effects {
     operations_count += effect.operations.len();
-    let _context_block = context_block as *mut BlockIRNode;
     gen_operations(&mut statements, effect.operations, context, unsafe {
-      &mut *_context_block
+      &mut *context_block
     });
   }
 
-  if effects_is_empty {
-    None
-  } else {
+  if operations_count > 0 {
     Some(
       ast.statement_expression(
         SPAN,
@@ -216,6 +212,8 @@ pub fn gen_effects<'a>(
         ),
       ),
     )
+  } else {
+    None
   }
 }
 

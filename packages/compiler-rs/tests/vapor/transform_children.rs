@@ -381,32 +381,40 @@ fn does_not_flush_later_v_for_effects_before_child_component() {
   let code = transform(
     "<div v-for={row in rows} key={row.id}>
       <span v-text={selected === row.id ? 'danger' : ''}></span>
-      <Child />
-      <span>{ useId() }</span>
+      <Child ref={foo} />
+      <span v-text={useId()}></span>
+      <Child ref={foo} />
     </div>",
     None,
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { child as _child, createFor as _createFor, createSelector as _createSelector, next as _next, setInsertionState as _setInsertionState, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
-  const _t0 = _template("<div><span> </span><!><span> ");
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { child as _child, createFor as _createFor, createSelector as _createSelector, createTemplateRefSetter as _createTemplateRefSetter, next as _next, renderEffect as _renderEffect, setInsertionState as _setInsertionState, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
+  const _t0 = _template("<div><span> </span><!><span> </span>");
   (() => {
+  	const _setTemplateRef = _createTemplateRefSetter();
   	const _selector0 = _createSelector(() => selected);
   	const _n0 = _createFor(() => rows, (_for_item0) => {
-  		const _n6 = _t0();
-  		const _n2 = _child(_n6);
-  		const _n5 = _next(_n2, 1);
-  		const _n4 = _next(_n5, 2);
+  		const _n7 = _t0();
+  		const _n2 = _child(_n7);
+  		const _n6 = _next(_n2, 1);
+  		const _n4 = _next(_n6, 2);
   		const _x2 = _txt(_n2);
-  		_setInsertionState(_n6, _n5, 1);
+  		_setInsertionState(_n7, _n6, 1);
   		const _n3 = _createComponent(Child);
   		const _x4 = _txt(_n4);
-  		_setNodes(_x4, () => useId());
+  		_renderEffect(() => {
+  			_setTemplateRef(_n3, foo, true);
+  			_setText(_x4, _toDisplayString(useId()));
+  		});
+  		_setInsertionState(_n7, null, 3);
+  		const _n5 = _createComponent(Child);
+  		_renderEffect(() => _setTemplateRef(_n5, foo, true));
   		_selector0(_for_item0.value.id, () => {
   			_setText(_x2, _toDisplayString(selected === _for_item0.value.id ? "danger" : ""));
   		});
-  		return _n6;
+  		return _n7;
   	}, (row) => row.id, 8);
   	_n0.onReset(_selector0.reset);
   	return _n0;

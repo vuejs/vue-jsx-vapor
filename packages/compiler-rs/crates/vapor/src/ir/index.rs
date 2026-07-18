@@ -325,7 +325,7 @@ impl<'a> Default for IRDynamicInfo<'a> {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct IREffect<'a> {
   pub operations: Vec<OperationNode<'a>>,
 }
