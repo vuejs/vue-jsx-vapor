@@ -174,35 +174,10 @@ fn process_interpolation<'a>(
   parent_node: &'a mut JSXChild<'a>,
   seen: &mut HashSet<u32>,
 ) {
-  let children = match parent_node {
-    JSXChild::Element(e) => &mut e.children,
-    JSXChild::Fragment(e) => &mut e.children,
-    _ => return,
-  };
-  if children.is_empty() {
+  let Some(mut nodes) = collect_adjacent_text(context_node, parent_node as *mut _, context) else {
     return;
-  }
-  let children = children as *mut oxc_allocator::Vec<JSXChild>;
-  let index = *context.index.borrow() as usize;
-  let nodes: &mut Vec<_> = &mut (unsafe { &mut *children })[index..].iter_mut().collect();
-  if !RootNode::is_root(context_node) {
-    nodes[0] = context_node
-  }
-  let idx = nodes.iter().position(|n| !is_text_like(n));
-  if let Some(idx) = idx {
-    nodes.truncate(idx)
   };
-
-  // merge leading text
-  if index > 0
-    && let Some(prev) = (unsafe { &mut *children }).get_mut(index - 1)
-    && let JSXChild::Text(_) = prev
-  {
-    nodes.insert(0, prev);
-  };
-
-  let nodes = nodes as *mut Vec<&mut JSXChild>;
-  let values = process_text_like_expressions(unsafe { &mut *nodes }, context, seen);
+  let values = process_text_like_expressions(&mut nodes, context, seen);
   if values.is_empty() {
     return;
   }
@@ -244,6 +219,49 @@ fn process_interpolation<'a>(
       None,
     );
   };
+}
+
+fn collect_adjacent_text<'a>(
+  context_node: &'a mut JSXChild<'a>,
+  parent_node: *mut JSXChild<'a>,
+  context: &TransformContext<'a>,
+) -> Option<Vec<&'a mut JSXChild<'a>>> {
+  let children = match unsafe { &mut *parent_node } {
+    JSXChild::Element(e) => &mut e.children,
+    JSXChild::Fragment(e) => &mut e.children,
+    _ => return None,
+  };
+  let children_len = children.len();
+  if children_len == 0 {
+    return None;
+  }
+  let mut nodes = vec![];
+  let mut index = *context.index.borrow() as usize;
+  let current_index = index;
+  let mut current_node = Some(context_node);
+  // Include leading text that belongs to the same text run.
+  if index > 0
+    && let Some(JSXChild::Text(_)) = children.get(index - 1)
+  {
+    index = index - 1;
+  };
+
+  let children_ptr = children as *mut oxc_allocator::Vec<JSXChild>;
+  while index < children_len {
+    let child = if current_index == index
+      && let Some(current_node) = current_node.take()
+    {
+      current_node
+    } else {
+      &mut (unsafe { &mut *children_ptr })[index]
+    };
+    index += 1;
+    if !is_text_like(&child) {
+      break;
+    }
+    nodes.push(child);
+  }
+  if nodes.is_empty() { None } else { Some(nodes) }
 }
 
 fn mark_non_template(node: &JSXChild, seen: &mut HashSet<u32>) {
@@ -292,7 +310,7 @@ fn process_text_container<'a>(
 }
 
 fn process_text_like_expressions<'a>(
-  nodes: &'a mut Vec<&mut JSXChild<'a>>,
+  nodes: &mut Vec<&mut JSXChild<'a>>,
   context: &'a TransformContext<'a>,
   seen: &mut HashSet<u32>,
 ) -> Vec<Expression<'a>> {
