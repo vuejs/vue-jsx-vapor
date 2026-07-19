@@ -1,3 +1,29 @@
+## [3.2.19](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.18...v3.2.19) (2026-07-19)
+
+
+### Bug Fixes
+
+* **compiler-core:** avoid leaking slot branch keys ([c2fd5b6](https://github.com/vuejs/vue-jsx-vapor/commit/c2fd5b65772b82ed6cf153649b854bf9e9500add))
+* **compiler-vapor:** avoid non-stable slots for stable root siblings ([9cc0c27](https://github.com/vuejs/vue-jsx-vapor/commit/9cc0c27a596988fb0b623297edb4ca6f2fe3a773))
+* **compiler-vapor:** avoid slot-root tracking for slot outlets ([9d1b992](https://github.com/vuejs/vue-jsx-vapor/commit/9d1b9923b4c66cc58fd2481c1b92ce727340f703))
+* **compiler-vapor:** keep stable slot roots on fast path ([b65134b](https://github.com/vuejs/vue-jsx-vapor/commit/b65134bda5d9dec9da4dcfc0b9a7ce5b97581b00))
+* **compiler-vapor:** track forwarded slot fallback validity ([4055cd0](https://github.com/vuejs/vue-jsx-vapor/commit/4055cd0051d3c29c86a8646c409cebc1e9fd0e37))
+* **compiler/vapor:** only mark flag for root-block ([8f1b9a4](https://github.com/vuejs/vue-jsx-vapor/commit/8f1b9a4a12da31554a9844207cb551647ab69948))
+* **macros/volar:** correct modifiers name for defineModel ([7228e48](https://github.com/vuejs/vue-jsx-vapor/commit/7228e4871fd9e51c8adafc2c506840e80c94ffb6))
+* **vapor:** handle v-if and v-show on transition roots ([a2b0b0a](https://github.com/vuejs/vue-jsx-vapor/commit/a2b0b0a0365c0153a2fad3e6ca14f83fb0a9083d))
+
+
+### Features
+
+* support array arguments for directive ([23ab3f6](https://github.com/vuejs/vue-jsx-vapor/commit/23ab3f600f52f5205b20f76ff83a4f9a2fc583a5))
+
+
+### Performance Improvements
+
+* **compiler/vapor:** avoid redundant text run slicing ([6138fa7](https://github.com/vuejs/vue-jsx-vapor/commit/6138fa788e73fe4d7f994dfd970e5aa5f2a9c482))
+
+
+
 ## [3.2.18](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.16...v3.2.18) (2026-07-05)
 
 
