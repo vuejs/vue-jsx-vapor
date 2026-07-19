@@ -149,6 +149,7 @@ pub fn gen_insertion_state<'a>(
   context: &CodegenContext<'a>,
 ) -> Statement<'a> {
   let ast = &context.ast;
+  let mut is_prepend = false;
   ast.statement_expression(
     SPAN,
     ast.expression_call(
@@ -162,7 +163,8 @@ pub fn gen_insertion_state<'a>(
             ast.str(&format!("_n{}", parent)),
           ))),
           if let Some(anchor) = anchor {
-            if anchor == -1 {
+            is_prepend = anchor == -1;
+            if is_prepend {
               // -1 indicates prepend
               Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
                 SPAN,
@@ -181,14 +183,20 @@ pub fn gen_insertion_state<'a>(
           } else {
             None
           },
-          logical_index.map(|logical_index| {
-            Argument::NumericLiteral(ast.alloc_numeric_literal(
-              SPAN,
-              logical_index as f64,
-              None,
-              NumberBase::Decimal,
-            ))
-          }),
+          logical_index
+            .map(|logical_index| {
+              if !is_prepend || logical_index != 0 {
+                Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+                  SPAN,
+                  logical_index as f64,
+                  None,
+                  NumberBase::Decimal,
+                )))
+              } else {
+                None
+              }
+            })
+            .flatten(),
         ]
         .into_iter()
         .flatten(),

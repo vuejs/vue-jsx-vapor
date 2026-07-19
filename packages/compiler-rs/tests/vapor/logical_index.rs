@@ -97,7 +97,7 @@ fn nth_child_keeps_logical_index_when_it_differs_from_element_index() {
   	const _n5 = _t1();
   	const _n6 = _nthChild(_n5, 2, 3);
   	const _n4 = _child(_next(_n6, 4));
-  	_setInsertionState(_n5, 0, 0);
+  	_setInsertionState(_n5, 0);
   	const _n0 = _createComponent(Comp);
   	_setInsertionState(_n5, _n6, 3);
   	const _n1 = _createIf(() => true, () => {
@@ -133,7 +133,7 @@ fn inline_placeholder_keeps_logical_index_when_it_differs_from_element_index() {
   (() => {
   	const _n2 = _t0();
   	const _n1 = _child(_nthChild(_n2, 2, 3));
-  	_setInsertionState(_n2, 0, 0);
+  	_setInsertionState(_n2, 0);
   	const _n0 = _createComponent(Comp);
   	const _x1 = _txt(_n1);
   	_setNodes(_x1, () => ({ msg }));
@@ -161,7 +161,7 @@ fn child_with_logical_index_when_prepend_exists_and_insert_anchor_needed() {
   (() => {
   	const _n2 = _t0();
   	const _n3 = _next(_child(_n2), 2);
-  	_setInsertionState(_n2, 0, 0);
+  	_setInsertionState(_n2, 0);
   	const _n0 = _createComponent(Comp1);
   	_setInsertionState(_n2, _n3, 2);
   	const _n1 = _createComponent(Comp2);
@@ -190,7 +190,7 @@ fn multiple_prepends_affect_logical_index() {
   (() => {
   	const _n3 = _t0();
   	const _n4 = _next(_child(_n3), 3);
-  	_setInsertionState(_n3, 0, 0);
+  	_setInsertionState(_n3, 0);
   	const _n0 = _createComponent(Comp1);
   	_setInsertionState(_n3, 0, 1);
   	const _n1 = _createComponent(Comp2);
@@ -217,7 +217,7 @@ fn set_insertion_state_scenarios_single_component_prepend() {
   const _t0 = _template("<div><span>A", 1);
   (() => {
   	const _n1 = _t0();
-  	_setInsertionState(_n1, 0, 0);
+  	_setInsertionState(_n1, 0);
   	const _n0 = _createComponent(Comp);
   	return _n1;
   })();
@@ -241,7 +241,7 @@ fn set_insertion_state_scenarios_multiple_consecutive_prepend() {
   const _t0 = _template("<div><span>A", 1);
   (() => {
   	const _n2 = _t0();
-  	_setInsertionState(_n2, 0, 0);
+  	_setInsertionState(_n2, 0);
   	const _n0 = _createComponent(Comp1);
   	_setInsertionState(_n2, 0, 1);
   	const _n1 = _createComponent(Comp2);
@@ -391,7 +391,7 @@ fn set_insertion_state_scenarios_mixed_scenarios_prepend_and_append() {
   const _t0 = _template("<div><span>A</span>", 1);
   (() => {
   	const _n2 = _t0();
-  	_setInsertionState(_n2, 0, 0);
+  	_setInsertionState(_n2, 0);
   	const _n0 = _createComponent(Comp1);
   	_setInsertionState(_n2, null, 2);
   	const _n1 = _createComponent(Comp2);
@@ -420,7 +420,7 @@ fn set_insertion_state_scenarios_mixed_scenarios_prepend_and_insert_and_append()
   (() => {
   	const _n3 = _t0();
   	const _n4 = _next(_child(_n3), 2);
-  	_setInsertionState(_n3, 0, 0);
+  	_setInsertionState(_n3, 0);
   	const _n0 = _createComponent(Comp1);
   	_setInsertionState(_n3, _n4, 2);
   	const _n1 = _createComponent(Comp2);
@@ -447,7 +447,7 @@ fn set_insertion_state_scenarios_v_if_prepend() {
   const _t1 = _template("<div><span>A", 1);
   (() => {
   	const _n3 = _t1();
-  	_setInsertionState(_n3, 0, 0);
+  	_setInsertionState(_n3, 0);
   	const _n0 = _createIf(() => show, () => {
   		const _n2 = _t0();
   		return _n2;
@@ -527,7 +527,7 @@ fn set_insertion_state_scenarios_v_for_prepend() {
   const _t1 = _template("<div><span>A", 1);
   (() => {
   	const _n3 = _t1();
-  	_setInsertionState(_n3, 0, 0);
+  	_setInsertionState(_n3, 0);
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n2 = _t0();
   		return _n2;
@@ -579,7 +579,7 @@ fn set_insertion_state_scenarios_key_prepend() {
   const _t1 = _template("<div><span>A", 1);
   (() => {
   	const _n3 = _t1();
-  	_setInsertionState(_n3, 0, 0);
+  	_setInsertionState(_n3, 0);
   	const _n0 = _createKeyedFragment(() => i, () => {
   		const _n2 = _t0();
   		return _n2;
@@ -658,7 +658,7 @@ fn set_insertion_state_scenarios_slot_prepend() {
   const _t0 = _template("<div><span>A", 1);
   (() => {
   	const _n1 = _t0();
-  	_setInsertionState(_n1, 0, 0);
+  	_setInsertionState(_n1, 0);
   	const _n0 = _createSlot();
   	return _n1;
   })();
@@ -776,7 +776,7 @@ fn set_insertion_state_scenarios_v_if_and_v_else_prepend() {
   const _t2 = _template("<div><span>A", 1);
   (() => {
   	const _n5 = _t2();
-  	_setInsertionState(_n5, 0, 0);
+  	_setInsertionState(_n5, 0);
   	const _n0 = _createIf(() => show, () => {
   		const _n2 = _t0();
   		return _n2;
@@ -875,7 +875,7 @@ fn set_insertion_state_scenarios_component_followed_by_v_if_v_else() {
   const _t2 = _template("<div><span>A", 1);
   (() => {
   	const _n6 = _t2();
-  	_setInsertionState(_n6, 0, 0);
+  	_setInsertionState(_n6, 0);
   	const _n0 = _createComponent(Comp);
   	_setInsertionState(_n6, 0, 1);
   	const _n1 = _createIf(() => show, () => {
