@@ -166,7 +166,7 @@ fn root_v_if_fallbck() {
   		const _n1 = _createIf(() => ok, () => {
   			const _n3 = _t0();
   			return _n3;
-  		}, null, 161);
+  		}, null, 33);
   		return _n1;
   	});
   	return _n0;
@@ -193,9 +193,9 @@ fn nested_root_v_for_fallbck() {
   				const _x5 = _txt(_n5);
   				_setNodes(_x5, () => _for_item0.value);
   				return _n5;
-  			}, void 0, 40);
+  			}, void 0, 8);
   			return _n3;
-  		}, null, 129);
+  		});
   		return _n1;
   	});
   	return _n0;

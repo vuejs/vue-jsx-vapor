@@ -2,7 +2,6 @@ use std::cell::RefCell;
 use std::mem::{self};
 use std::rc::Rc;
 
-use common::patch_flag::VaporSlotFlags;
 use napi::Either;
 use oxc_ast::NONE;
 use oxc_ast::ast::{
@@ -13,9 +12,7 @@ use oxc_span::SPAN;
 use crate::generate::CodegenContext;
 use crate::generate::operation::gen_operations;
 use crate::generate::template::gen_self;
-use crate::ir::index::{
-  BlockIRNode, ForIRNode, IRDynamicInfo, IREffect, IfIRNode, OperationNode, SlotOutletIRNode,
-};
+use crate::ir::index::{BlockIRNode, ForIRNode, IRDynamicInfo, IREffect, IfIRNode, OperationNode};
 
 pub fn gen_block<'a>(
   oper: BlockIRNode<'a>,
@@ -230,7 +227,6 @@ pub fn mark_slot_root_operations<'a>(block: &mut BlockIRNode<'a>) {
     match operation.as_mut() {
       OperationNode::If(operation) => mark_slot_root_if(operation),
       OperationNode::For(operation) => mark_slot_root_for(operation),
-      OperationNode::SlotOutlet(operation) => mark_slot_root_slot_outlet(operation),
       _ => {}
     }
   }
@@ -256,13 +252,6 @@ fn mark_slot_root_for(operation: &mut ForIRNode) {
     operation.slot_root = true;
   }
   mark_slot_root_operations(&mut operation.render);
-}
-
-fn mark_slot_root_slot_outlet(operation: &mut SlotOutletIRNode) {
-  operation.flags |= VaporSlotFlags::SlotRoot as i32;
-  if let Some(fallback) = operation.fallback.as_mut() {
-    mark_slot_root_operations(fallback);
-  }
 }
 
 pub fn find_returned_dynamic<'a>(

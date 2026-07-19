@@ -3,7 +3,7 @@ use oxc_ast::ast::{Expression, Statement, VariableDeclarationKind};
 use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
-use crate::generate::block::{gen_block, mark_slot_root_operations};
+use crate::generate::block::gen_block;
 use crate::generate::component::gen_raw_props;
 use crate::generate::expression::gen_expression;
 use crate::ir::index::{BlockIRNode, SlotOutletIRNode};
@@ -84,8 +84,7 @@ pub fn gen_slot_outlet<'a>(
                   } else {
                     None
                   },
-                  if let Some(mut fallback) = fallback {
-                    mark_slot_root_operations(&mut fallback);
+                  if let Some(fallback) = fallback {
                     Some(gen_block(fallback, context, context_block, ast.vec()).into())
                   } else if flags > 0 {
                     Some(ast.expression_null_literal(SPAN).into())

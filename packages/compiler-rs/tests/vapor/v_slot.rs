@@ -688,9 +688,9 @@ fn marks_root_slot_outlet_fallbck_as_slot_root() {
   			const _n1 = _createIf(() => show, () => {
   				const _n3 = _t0();
   				return _n3;
-  			}, null, 161);
+  			}, null, 33);
   			return _n1;
-  		}, 4);
+  		});
   		return _n0;
   	}, { _: 8 }), true);
   	return _n4;
@@ -706,7 +706,7 @@ fn slot_tag_only() {
   import { createSlot as _createSlot, extend as _extend } from "vue";
   (() => {
   	const _n1 = _createComponent(Comp, null, _extend(() => {
-  		const _n0 = _createSlot("default", null, null, 4);
+  		const _n0 = _createSlot();
   		return _n0;
   	}, { _: 8 }), true);
   	return _n1;
@@ -723,7 +723,7 @@ fn slot_tag_with_v_if() {
   (() => {
   	const _n3 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createIf(() => ok, () => {
-  			const _n2 = _createSlot("default", null, null, 4);
+  			const _n2 = _createSlot("default");
   			return _n2;
   		}, null, 129);
   		return _n0;
@@ -742,7 +742,7 @@ fn slot_tag_with_v_for() {
   (() => {
   	const _n3 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createFor(() => b, (_for_item0) => {
-  			const _n2 = _createSlot("default", null, null, 4);
+  			const _n2 = _createSlot("default");
   			return _n2;
   		}, void 0, 48);
   		return _n0;
@@ -760,7 +760,7 @@ fn slot_tag_with_template() {
   import { createSlot as _createSlot, extend as _extend } from "vue";
   (() => {
   	const _n2 = _createComponent(Comp, null, _extend(() => {
-  		const _n0 = _createSlot("default", null, null, 4);
+  		const _n0 = _createSlot();
   		return _n0;
   	}, { _: 8 }), true);
   	return _n2;
@@ -777,7 +777,7 @@ fn slot_tag_with_nested_component() {
   (() => {
   	const _n2 = _createComponent(Comp, null, () => {
   		const _n1 = _createComponent(Comp, null, _extend(() => {
-  			const _n0 = _createSlot("default", null, null, 4);
+  			const _n0 = _createSlot();
   			return _n0;
   		}, { _: 8 }));
   		return _n1;
@@ -895,7 +895,7 @@ fn slot_with_slot_outlet_is_non_stable() {
   import { createSlot as _createSlot, extend as _extend } from "vue";
   (() => {
   	const _n2 = _createComponent(Comp, null, _extend(() => {
-  		const _n0 = _createSlot("default", null, null, 4);
+  		const _n0 = _createSlot();
   		return _n0;
   	}, { _: 8 }), true);
   	return _n2;
@@ -922,7 +922,7 @@ fn dynamic_slot_source_with_slot_outlet_keeps_dynamic_slot_function() {
   	const _n2 = _createComponent(Comp, null, { $: [_createForSlots(slots, (_, name) => ({
   		name,
   		fn: () => {
-  			const _n0 = _createSlot(() => name, null, null, 4);
+  			const _n0 = _createSlot(() => name);
   			return _n0;
   		}
   	}))] }, true);
