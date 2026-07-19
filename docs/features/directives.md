@@ -119,8 +119,8 @@ Variables can be used as directive argument by passing it as the second element 
 import { ref } from 'vue'
 
 const Comp = () => {
-  const model = defineModel<string>('model')
-  const models = defineModel<string[]>('models')
+  const model = defineModel<string, 'm1' | 'm2'>('model')
+  const models = defineModel<string>('models')
   return <div />
 }
 
@@ -129,7 +129,7 @@ export default () => {
   const name = ref('model')
   return (
     <Comp
-      v-model={[foo.value, name.value]}
+      v-model={[foo.value, name.value, ['m1', 'm2']]}
       v-model:model={foo.value}
       //       ^|
     />

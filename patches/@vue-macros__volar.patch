@@ -1,7 +1,7 @@
-diff --git a/dist/jsx-directive-BhBU9QBv.js b/dist/jsx-directive-BhBU9QBv.js
-index 92111393988d1144f4ac772d7a9930acf3e10da9..2eeeb2f26259c9b26417235428019dea3dff5cc8 100644
---- a/dist/jsx-directive-BhBU9QBv.js
-+++ b/dist/jsx-directive-BhBU9QBv.js
+diff --git a/dist/jsx-directive-w2gUTWdx.js b/dist/jsx-directive-w2gUTWdx.js
+index 637b42ba829bb5f90d4de93cc8ed1d562694b49f..0f94008f8487917273b3efc38ed784746ceb3f67 100644
+--- a/dist/jsx-directive-w2gUTWdx.js
++++ b/dist/jsx-directive-w2gUTWdx.js
 @@ -1,6 +1,4 @@
 -import { addCode } from "./common-BTTMZY21.js";
  import { allCodeFeatures, createPlugin } from "ts-macro";
@@ -13,8 +13,8 @@ index 92111393988d1144f4ac772d7a9930acf3e10da9..2eeeb2f26259c9b26417235428019dea
  		const prefixModel = `${prefix}model`;
  		if (name.startsWith(prefixModel)) {
  			const dir = getDirectiveArgs(prop, options);
--			if (dir.valueCode) props += `${dir.isDynamic ? "[" : `'`}${dir.argument || "modelValue"}${dir.isDynamic ? "]" : `'`}: ${dir.valueCode[0]},`;
-+			if (dir.valueCode) props += `${dir.isDynamic ? "[" : `'`}${dir.argument || dir.argumentCode?.[0] || "modelValue"}${dir.isDynamic ? "]" : `'`}: ${dir.valueCode[0]},`;
+-			if (dir.valueCode) props += `${dir.isDynamic ? "[" : `'`}${dir.argument || dir.argumentCode?.[0] || "modelValue"}${dir.isDynamic ? "]" : `'`}: ${dir.valueCode[0]},`;
++			if (dir.valueCode && !dir.isDynamic) props += `'${dir.argument || dir.argumentCode?.[0].slice(1, -1) || 'modelValue'}': ${dir.valueCode[0]},`
  			continue;
  		} else if (name.includes("_")) name = name.split("_")[0];
  		else if (prefix && name.startsWith(prefix)) continue;
@@ -29,25 +29,7 @@ index 92111393988d1144f4ac772d7a9930acf3e10da9..2eeeb2f26259c9b26417235428019dea
  function getRefValue(expression, options) {
  	const { ts, ast } = options;
  	if (ts.isIdentifier(expression)) return expression.getText(ast);
-@@ -403,7 +405,7 @@ function transform(nodes, ctxMap, options) {
- 				[modify, start + name.length + argument.length + (isDynamic ? 2 : 0) + 2 + (index ? modifiers.slice(0, index).join("").length + index : 0)],
- 				modify ? `${modify.includes("-") ? `'` : ""}: true, ` : `'`
- 			]), "} satisfies ", isDynamic ? "Record<string, boolean>" : modifierProps, "}");
--			emitsResult.push(`${isDynamic ? "[`" : `'`}onUpdate:${isDynamic ? "${" : ""}${argument || modelValue}${isDynamic ? "}`]" : `'`}: () => {}, `);
-+			emitsResult.push(`${isDynamic ? "[`" : `'`}onUpdate:${isDynamic ? "${" : ""}${argument || argumentCode?.[0] || modelValue}${isDynamic ? "}`]" : `'`}: () => {}, `);
- 		}
- 	}
- 	if (firstNamespacedNode) {
-@@ -540,7 +542,7 @@ function transformVSlot(nodeMap, ctxMap, options) {
- 				const node$1 = isSlotTemplate && ts.isJsxElement(child) ? child.children : child;
- 				return isSlotTemplate && ts.isJsxSelfClosingElement(child) ? "" : [ast.text.slice(node$1.pos, node$1.end), node$1.pos];
- 			}), "</>,");
--			if (vForAttribute) result.push("})),");
-+			if (vForAttribute) result.push("})) as any,");
- 			if (vIfAttribute && vIfAttributeName) {
- 				if ([`${prefix}if`, `${prefix}else-if`].includes(vIfAttributeName)) {
- 					const nextIndex = index + (attributes[index + 1]?.[0] ? 1 : 2);
-@@ -736,11 +738,10 @@ function getTagName(node, options) {
+@@ -737,11 +739,10 @@ function getTagName(node, options) {
  //#region src/jsx-directive.ts
  const plugin = createPlugin(({ ts, vueCompilerOptions }, options = vueCompilerOptions?.vueMacros?.jsxDirective === true ? {} : vueCompilerOptions?.vueMacros?.jsxDirective ?? {}) => {
  	if (!options) return [];
@@ -62,12 +44,12 @@ index 92111393988d1144f4ac772d7a9930acf3e10da9..2eeeb2f26259c9b26417235428019dea
  				codes,
  				ast,
 diff --git a/dist/jsx-directive.js b/dist/jsx-directive.js
-index e5626b7e24c1c565aa0811e6e9d2dadcba6b7f10..2fe889a0c7a154b961a46a9065796faa7aaffe14 100644
+index accace0c32b6a1cf5ceb297c8fbf07f22f438a23..5023f21444592741c43a4950f08fe959a452da4c 100644
 --- a/dist/jsx-directive.js
 +++ b/dist/jsx-directive.js
 @@ -1,4 +1,3 @@
 -import "./common-BTTMZY21.js";
- import { jsx_directive_default, plugin } from "./jsx-directive-BhBU9QBv.js";
+ import { jsx_directive_default, plugin } from "./jsx-directive-w2gUTWdx.js";
  
  export { jsx_directive_default as default, plugin as "module.exports" };
 \ No newline at end of file
