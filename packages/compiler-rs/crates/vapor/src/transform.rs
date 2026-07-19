@@ -149,7 +149,9 @@ impl<'a> TransformContext<'a> {
 
   pub fn transform(self) -> Expression<'a> {
     let ir = RootIRNode::default();
-    *self.block.borrow_mut() = BlockIRNode::new();
+    let mut block = BlockIRNode::new();
+    block.root = true;
+    *self.block.borrow_mut() = block;
     *self.ir.borrow_mut() = ir;
     self.transform_node(None, None);
     CodegenContext::new(self).generate()

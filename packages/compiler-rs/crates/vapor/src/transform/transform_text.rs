@@ -365,12 +365,13 @@ pub fn process_conditional_expression<'a>(
   let is_const_test = is_constant_node(test);
   let test = test.take_in(context.allocator);
   let force_multi_root = should_force_multi_root(parent_node);
+  let allow_no_scope = context_block.root;
   Box::new(move || {
     let block = exit_block();
 
     let mut operation = IfIRNode {
       id,
-      block_shape: encode_if_block_shape(&block, force_multi_root, None),
+      block_shape: encode_if_block_shape(&block, force_multi_root, None, allow_no_scope),
       positive: block,
       index: context.next_if_index(),
       once: *context.in_v_once.borrow() || is_const_test,
@@ -407,6 +408,7 @@ fn set_negative<'a>(
 ) {
   let node = node.without_parentheses_mut().get_inner_expression_mut();
   let force_multi_root = should_force_multi_root(parent_node);
+  let allow_no_scope = context_block.root;
   if let Expression::ConditionalExpression(node) = node {
     let node = node as *mut oxc_allocator::Box<ConditionalExpression>;
     let _context_block = context_block as *mut BlockIRNode;
@@ -464,11 +466,13 @@ fn set_negative<'a>(
   if let Some(negative) = operation.negative.as_mut()
     && let Either::B(negative) = negative.as_mut()
   {
-    negative.block_shape = encode_if_block_shape(&negative.positive, force_multi_root, None)
+    negative.block_shape =
+      encode_if_block_shape(&negative.positive, force_multi_root, None, allow_no_scope)
   }
   operation.block_shape = encode_if_block_shape(
     &operation.positive,
     force_multi_root,
     operation.negative.as_ref(),
+    allow_no_scope,
   )
 }

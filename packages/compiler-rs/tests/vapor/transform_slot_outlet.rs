@@ -166,7 +166,7 @@ fn root_v_if_fallbck() {
   		const _n1 = _createIf(() => ok, () => {
   			const _n3 = _t0();
   			return _n3;
-  		}, null, 33);
+  		});
   		return _n1;
   	});
   	return _n0;

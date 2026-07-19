@@ -71,7 +71,7 @@ fn work_with_v_if() {
   		const _n0 = _createIf(() => show, () => {
   			const _n2 = _t0();
   			return _n2;
-  		}, null, 161);
+  		}, null, 129);
   		return _n0;
   	}, { _: 8 }), true);
   	return _n3;
@@ -107,7 +107,7 @@ fn work_with_v_if_v_else() {
   		}, () => {
   			const _n7 = _t2();
   			return _n7;
-  		}, 741), 421);
+  		}, 645), 389);
   		return _n0;
   	}, { _: 8 }), true);
   	return _n9;
@@ -145,7 +145,7 @@ fn work_with_condition_expression() {
   		}, () => {
   			const _n6 = _t2();
   			return _n6;
-  		}, 673), 421);
+  		}, 641), 389);
   		return _n0;
   	}, { _: 8 }), true);
   	return _n7;

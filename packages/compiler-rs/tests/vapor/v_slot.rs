@@ -528,7 +528,7 @@ fn marks_root_v_if_slot_content_as_slot_root() {
   		const _n0 = _createIf(() => show, () => {
   			const _n2 = _t0();
   			return _n2;
-  		}, null, 161);
+  		}, null, 129);
   		return _n0;
   	}, { _: 8 }), true);
   	return _n3;
@@ -551,7 +551,7 @@ fn does_not_mark_non_root_v_if_slot_content_as_slot_root() {
   		const _n0 = _createIf(() => show, () => {
   			const _n2 = _t0();
   			return _n2;
-  		}, null, 33);
+  		});
   		return _n3;
   	}, true);
   	return _n4;
@@ -573,7 +573,7 @@ fn static_root_sibling_keeps_slot_content_stable() {
   		const _n1 = _createIf(() => show, () => {
   			const _n3 = _t1();
   			return _n3;
-  		}, null, 33);
+  		});
   		return [_n0, _n1];
   	}, true);
   	return _n4;
@@ -618,7 +618,7 @@ fn all_dynamic_root_slot_content_is_non_stable() {
   		const _n3 = _createIf(() => ok, () => {
   			const _n5 = _t1();
   			return _n5;
-  		}, null, 161);
+  		}, null, 129);
   		return [_n0, _n3];
   	}, { _: 8 }), true);
   	return _n6;
@@ -647,7 +647,7 @@ fn root_v_for_with_root_v_if_slot_content_is_non_stable() {
   		const _n3 = _createIf(() => ok, () => {
   			const _n5 = _t1();
   			return _n5;
-  		}, null, 161);
+  		}, null, 129);
   		return [_n0, _n3];
   	}, { _: 8 }), true);
   	return _n6;
@@ -667,7 +667,7 @@ fn comment_with_dynamic_root_slot_content_is_non_stable() {
   		const _n0 = _createIf(() => show, () => {
   			const _n2 = _t0();
   			return _n2;
-  		}, null, 161);
+  		}, null, 129);
   		return _n0;
   	}, { _: 8 }), true);
   	return _n3;
@@ -688,7 +688,7 @@ fn marks_root_slot_outlet_fallbck_as_slot_root() {
   			const _n1 = _createIf(() => show, () => {
   				const _n3 = _t0();
   				return _n3;
-  			}, null, 33);
+  			});
   			return _n1;
   		});
   		return _n0;
@@ -1084,7 +1084,7 @@ fn slot_with_v_if_but_no_component_is_non_stable() {
   		}, () => {
   			const _n4 = _t1();
   			return _n4;
-  		}, 485);
+  		}, 389);
   		return _n0;
   	}, { _: 8 }), true);
   	return _n7;

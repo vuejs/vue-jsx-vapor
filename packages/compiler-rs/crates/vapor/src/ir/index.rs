@@ -18,6 +18,7 @@ pub struct BlockIRNode<'a> {
   pub returns: Vec<i32>,
   pub slots: Vec<IRSlots<'a>>,
   pub props: Option<Expression<'a>>,
+  pub root: bool,
 }
 impl<'a> BlockIRNode<'a> {
   pub fn new() -> Self {
@@ -29,6 +30,7 @@ impl<'a> BlockIRNode<'a> {
       returns: Vec::new(),
       slots: Vec::new(),
       props: None,
+      root: false,
     }
   }
 }
