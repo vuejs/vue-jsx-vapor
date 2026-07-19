@@ -99,6 +99,12 @@ function getMacro(
     )
   }
 }
+ 
+const getModifierPropName = (name: string): string => {
+  return `${
+    name === 'modelValue' || name === 'model-value' ? 'model' : name
+  }Modifiers${name === 'model' ? '$' : ''}`
+}
 
 export function getRootMap(options: TransformOptions): RootMap {
   const { ts, ast, codes } = options
@@ -193,7 +199,7 @@ export function getRootMap(options: TransformOptions): RootMap {
             )
           }
 
-          const id = toValidAssetId(modelName, `__model`)
+          const id = toValidAssetId(modelName, `_model`)
           const typeString = `import('vue').UnwrapRef<typeof ${id}>`
           const defineModel = (rootMap.get(root)!.defineModel ??= [])
           defineModel.push(
@@ -202,7 +208,7 @@ export function getRootMap(options: TransformOptions): RootMap {
           )
           if (expression.typeArguments?.[1]) {
             defineModel.push(
-              `${modelName}Modifiers?: Partial<Record<${getText(expression.typeArguments[1], ast, ts)}, boolean>>`,
+              `${getModifierPropName(modelName)}?: Partial<Record<${getText(expression.typeArguments[1], ast, ts)}, boolean>>`,
             )
           }
           codes.replaceRange(
