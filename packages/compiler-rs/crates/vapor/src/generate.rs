@@ -42,6 +42,7 @@ pub struct CodegenContext<'a> {
   pub ir: RootIRNode<'a>,
   pub block: RefCell<BlockIRNode<'a>>,
   pub scope_level: RefCell<i32>,
+  pub in_slot_block: RefCell<bool>,
   pub ast: &'a AstBuilder<'a>,
 }
 
@@ -57,6 +58,7 @@ impl<'a> CodegenContext<'a> {
       identifiers: RefCell::new(HashMap::new()),
       block: RefCell::new(block),
       scope_level: RefCell::new(0),
+      in_slot_block: RefCell::new(false),
       ir,
       ast: context.ast,
     }
@@ -87,6 +89,12 @@ impl<'a> CodegenContext<'a> {
     }
 
     ret
+  }
+
+  pub fn enter_slot_block(&self) -> impl FnOnce() {
+    let parent = *self.in_slot_block.borrow();
+    *self.in_slot_block.borrow_mut() = true;
+    move || *self.in_slot_block.borrow_mut() = parent
   }
 
   pub fn enter_block(

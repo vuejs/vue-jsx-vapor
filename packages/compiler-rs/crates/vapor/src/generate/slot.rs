@@ -445,6 +445,7 @@ fn gen_slot_block_with_props<'a>(
   if !has_stable_root {
     mark_slot_root_operations(&mut oper);
   }
+  let exit_slot_block = context.enter_slot_block();
   let mut block_fn = context.with_id(
     || {
       gen_block(
@@ -494,6 +495,7 @@ fn gen_slot_block_with_props<'a>(
       false,
     )
   }
+  exit_slot_block();
   if let Some(exit_scope) = exit_scope {
     exit_scope();
   };

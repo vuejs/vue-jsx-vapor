@@ -676,7 +676,7 @@ fn comment_with_dynamic_root_slot_content_is_non_stable() {
 }
 
 #[test]
-fn marks_root_slot_outlet_fallbck_as_slot_root() {
+fn forwarded_root_slot_outlet_fallback_tracks_root_validity() {
   let code = transform("<Comp><slot><span v-if={show}/></slot></Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
@@ -688,7 +688,7 @@ fn marks_root_slot_outlet_fallbck_as_slot_root() {
   			const _n1 = _createIf(() => show, () => {
   				const _n3 = _t0();
   				return _n3;
-  			});
+  			}, null, 129);
   			return _n1;
   		});
   		return _n0;
