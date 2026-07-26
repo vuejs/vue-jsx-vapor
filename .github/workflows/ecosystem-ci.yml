@@ -20,8 +20,17 @@ permissions:
 
 jobs:
   ecosystem-ci:
+    name: ecosystem-ci (${{ matrix.suite }})
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - antdv-next
+          - naive-ui
+          - vant
+          - vuetify
     steps:
       - uses: actions/checkout@v4
 
@@ -40,7 +49,7 @@ jobs:
       - name: Build vue-jsx-vapor
         run: pnpm run build
 
-      - name: Run all suites
-        run: pnpm test:eco
+      - name: Run ${{ matrix.suite }} suite
+        run: pnpm test:eco ${{ matrix.suite }}
         env:
           TZ: Asia/Shanghai
