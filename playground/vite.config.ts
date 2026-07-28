@@ -16,7 +16,6 @@ export default defineConfig({
       },
       compiler: {
         runtimeModuleName: 'vue-jsx-vapor',
-        isCustomElement: (tag) => tag.includes('-'),
       },
     }),
     VueJsxVapor({
@@ -26,7 +25,6 @@ export default defineConfig({
       },
       compiler: {
         runtimeModuleName: 'vue-jsx-vapor',
-        isCustomElement: (tag) => tag.includes('-'),
       },
     }),
     DefineRender({

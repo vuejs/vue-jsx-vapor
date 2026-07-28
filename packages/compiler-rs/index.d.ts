@@ -39,9 +39,6 @@ export interface Hmr {
   defineComponentName: Array<string>
 }
 export interface CompilerOptions {
-  /** * Separate option for end users to extend the native elements list
-   */
-  isCustomElement?: (arg: string) => boolean
   onError?: (arg: object) => void
   /** * Generate source map?
    * @default false

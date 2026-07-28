@@ -23,11 +23,6 @@ mod transform;
 #[cfg_attr(feature = "napi", napi(object))]
 #[derive(Default)]
 pub struct CompilerOptions {
-  /**
-   * Separate option for end users to extend the native elements list
-   */
-  #[cfg_attr(feature = "napi", napi(ts_type = "(arg: string) => boolean"))]
-  pub is_custom_element: Option<Function<'static, &'static str, bool>>,
   pub on_error: Option<Function<'static, Object<'static>, ()>>,
   /**
    * Generate source map?
