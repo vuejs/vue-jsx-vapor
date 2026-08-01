@@ -18,3 +18,18 @@ export const Comp2 = ({ foo }: any) => {
   })
   return <div />
 }
+
+export const Comp3 = () => {
+  defineExpose()
+  return <div />
+}
+
+export const Comp4 = () => {
+  defineExpose<{ foo: number }>({ foo: 1 })
+  return <div />
+}
+
+export const Comp5 = () => {
+  defineExpose<{ foo?: number }>()
+  return <div />
+}

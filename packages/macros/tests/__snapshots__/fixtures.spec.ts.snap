@@ -149,6 +149,21 @@ export const Comp2 = ({ foo, ...__props }: any) => {
   })
   return <div />
 }
+
+export const Comp3 = () => {
+  ;(__getCurrentInstance().exposed = {})
+  return <div />
+}
+
+export const Comp4 = () => {
+  ;(__getCurrentInstance().exposed = { foo: 1 })
+  return <div />
+}
+
+export const Comp5 = () => {
+  ;(__getCurrentInstance().exposed = {})
+  return <div />
+}
 "
 `;
 
