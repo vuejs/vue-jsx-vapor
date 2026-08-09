@@ -75,3 +75,11 @@ export default defineVaporComponent(() => {
     </>
   )
 })
+
+defineStyle(`
+  #app {
+    background: url(https://vuejs.org/images/logo.png);
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+`)
