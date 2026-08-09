@@ -1,3 +1,18 @@
+## [3.2.20](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.19...v3.2.20) (2026-08-09)
+
+
+### Bug Fixes
+
+* **macros/define-style:** prevent convert url to comment ([1d1be58](https://github.com/vuejs/vue-jsx-vapor/commit/1d1be5875745c90b538d8810442ee6e8f5b1296e)), closes [#61](https://github.com/vuejs/vue-jsx-vapor/issues/61)
+* **macros:** resolve compile error in `defineExpose` ([#62](https://github.com/vuejs/vue-jsx-vapor/issues/62)) ([05b2a47](https://github.com/vuejs/vue-jsx-vapor/commit/05b2a474fc38b5d23c065a6b3ae117c29e0d3786))
+
+
+### Features
+
+* **types:** support infer ref and v-slots type ([80e15a9](https://github.com/vuejs/vue-jsx-vapor/commit/80e15a9c3e5f2ea560f869beeea735395ed673fc))
+
+
+
 ## [3.2.19](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.18...v3.2.19) (2026-07-19)
 
 
