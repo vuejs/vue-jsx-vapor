@@ -1,5 +1,5 @@
 diff --git a/dist/jsx-directive-w2gUTWdx.js b/dist/jsx-directive-w2gUTWdx.js
-index 637b42ba829bb5f90d4de93cc8ed1d562694b49f..0f94008f8487917273b3efc38ed784746ceb3f67 100644
+index 637b42ba829bb5f90d4de93cc8ed1d562694b49f..6ecccf518d3d5fd532c31212d6cc4bbc55181a85 100644
 --- a/dist/jsx-directive-w2gUTWdx.js
 +++ b/dist/jsx-directive-w2gUTWdx.js
 @@ -1,6 +1,4 @@
@@ -29,6 +29,15 @@ index 637b42ba829bb5f90d4de93cc8ed1d562694b49f..0f94008f8487917273b3efc38ed78474
  function getRefValue(expression, options) {
  	const { ts, ast } = options;
  	if (ts.isIdentifier(expression)) return expression.getText(ast);
+@@ -550,7 +552,7 @@ function transformVSlot(nodeMap, ctxMap, options) {
+ 				} else if (`${prefix}else` === vIfAttributeName) result.push("},");
+ 			}
+ 		});
+-		const slotType = `} satisfies typeof ${ctxMap.get(node)}.slots}`;
++		const slotType = `} satisfies typeof ${ctxMap.get(node)}.slots as Record<string, any>}`;
+ 		if (attributeMap.has(null)) result.push("default: () => <>");
+ 		else result.push(slotType);
+ 		if (vSlotAttribute) codes.replaceRange(vSlotAttribute.getStart(ast), vSlotAttribute.end, ...result);
 @@ -737,11 +739,10 @@ function getTagName(node, options) {
  //#region src/jsx-directive.ts
  const plugin = createPlugin(({ ts, vueCompilerOptions }, options = vueCompilerOptions?.vueMacros?.jsxDirective === true ? {} : vueCompilerOptions?.vueMacros?.jsxDirective ?? {}) => {

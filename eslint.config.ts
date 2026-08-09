@@ -22,6 +22,8 @@ export default [
       '@eslint-community/eslint-comments/no-unlimited-disable',
       'vue/no-mutating-props',
       'vue/no-dupe-keys',
+      '@typescript-eslint/no-namespace',
+      'unused-imports/no-unused-vars',
     )
     .append([
       {
@@ -32,7 +34,6 @@ export default [
           'no-mutable-exports': 'off',
           'no-duplicate-imports': 'off',
           'import/first': 'off',
-          'unused-imports/no-unused-vars': 'off',
         },
       },
     ])),

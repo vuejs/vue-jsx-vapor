@@ -52,7 +52,7 @@ overrides:
 
 patchedDependencies:
   '@vue-macros/volar':
-    hash: 6ca9aac764781d42cb930c1f62df7446f01fc5a40603f75f7a0c07223fb088c1
+    hash: 79e6492c51b3afca57b92023dd1aae9ddd57140efa1cf2cdf74d420e1d42c396
     path: patches/@vue-macros__volar.patch
 
 importers:
@@ -257,9 +257,6 @@ importers:
 
   packages/runtime:
     dependencies:
-      csstype:
-        specifier: ^3.2.3
-        version: 3.2.3
       vue:
         specifier: 'catalog:'
         version: 3.6.0-rc.1(typescript@6.0.3)
@@ -311,7 +308,7 @@ importers:
         version: 3.21.4
       '@vue-macros/volar':
         specifier: 'catalog:'
-        version: 3.1.4(patch_hash=6ca9aac764781d42cb930c1f62df7446f01fc5a40603f75f7a0c07223fb088c1)(typescript@6.0.3)(vue@3.6.0-rc.1(typescript@6.0.3))
+        version: 3.1.4(patch_hash=79e6492c51b3afca57b92023dd1aae9ddd57140efa1cf2cdf74d420e1d42c396)(typescript@6.0.3)(vue@3.6.0-rc.1(typescript@6.0.3))
       vue:
         specifier: 'catalog:'
         version: 3.6.0-rc.1(typescript@6.0.3)
@@ -8150,7 +8147,7 @@ snapshots:
     transitivePeerDependencies:
       - vue
 
-  '@vue-macros/volar@3.1.4(patch_hash=6ca9aac764781d42cb930c1f62df7446f01fc5a40603f75f7a0c07223fb088c1)(typescript@6.0.3)(vue@3.6.0-rc.1(typescript@6.0.3))':
+  '@vue-macros/volar@3.1.4(patch_hash=79e6492c51b3afca57b92023dd1aae9ddd57140efa1cf2cdf74d420e1d42c396)(typescript@6.0.3)(vue@3.6.0-rc.1(typescript@6.0.3))':
     dependencies:
       '@vue-macros/boolean-prop': 3.1.4(vue@3.6.0-rc.1(typescript@6.0.3))
       '@vue-macros/common': 3.1.4(vue@3.6.0-rc.1(typescript@6.0.3))

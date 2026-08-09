@@ -1,10 +1,6 @@
 import * as Vue from 'vue'
-import {
-  createComponent,
-  createProxyComponent,
-  normalizeNode,
-  type NodeChild,
-} from './vapor'
+import { createComponent, createProxyComponent, normalizeNode } from './vapor'
+import type { NodeChild } from './types'
 import type {
   Block,
   Component,

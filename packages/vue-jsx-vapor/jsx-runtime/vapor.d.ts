@@ -1,26 +1,10 @@
-import { Fragment, type Block, type ReservedProps, type VNode } from 'vue'
-import type { NativeElements, NodeChild } from 'vue-jsx-vapor'
+import { Fragment } from 'vue'
+import type { JSX, RenderResult } from 'vue-jsx-vapor'
 
-declare function jsx(type: any, props: any, key: any): Block
 declare global {
-  namespace JSX {
-    type Element = Block | VNode | Element[]
-    interface ElementClass {
-      $props: {}
-    }
-    interface ElementAttributesProperty {
-      $props: {}
-    }
-    interface ElementChildrenAttribute {
-      'v-slots': {}
-    }
-    interface IntrinsicElements extends NativeElements {
-      [name: string]: any
-    }
-    interface IntrinsicAttributes extends ReservedProps {
-      class?: unknown
-      style?: unknown
-    }
-  }
+  export type { JSX } from 'vue-jsx-vapor'
 }
-export { Fragment, jsx, jsx as jsxDEV, jsx as jsxs }
+
+declare function jsx(type: any, props: any, key: any): RenderResult
+
+export { Fragment, jsx, jsx as jsxDEV, jsx as jsxs, type JSX }
