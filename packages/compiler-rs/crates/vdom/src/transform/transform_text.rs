@@ -258,6 +258,8 @@ fn transform_branch<'a>(
                 directives: None,
                 dynamic_props: None,
                 is_block: true,
+                is_block_required: false,
+                needs_patch: false,
                 disable_tracking: false,
                 is_component: true,
                 v_for: None,

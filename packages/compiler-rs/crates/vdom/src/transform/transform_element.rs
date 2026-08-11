@@ -121,6 +121,8 @@ pub unsafe fn transform_element<'a>(
   let mut vnode_children = None;
   let mut patch_flag = props_build_result.patch_flag;
   let dynamic_prop_names = props_build_result.dynamic_prop_names;
+  let needs_patch = props_build_result.needs_patch;
+  let is_block_required = props_build_result.is_block_required;
   let vnode_directives = props_build_result.directives;
   if props_build_result.should_use_block {
     should_use_block = true;
@@ -226,6 +228,9 @@ pub unsafe fn transform_element<'a>(
       dynamic_props: vnode_dynamic_props,
       directives: vnode_directives,
       is_block: should_use_block,
+      is_block_required,
+      needs_patch: needs_patch
+        && (patch_flag == 0 || patch_flag == PatchFlags::NeedHydration as i32),
       disable_tracking: false,
       is_component,
       v_for: None,
@@ -254,6 +259,8 @@ pub struct PropsResult<'a> {
   pub dynamic_prop_names: IndexSet<Cow<'a, str>>,
   pub should_use_block: bool,
   pub name_prop: Option<JSXAttribute<'a>>,
+  pub needs_patch: bool,
+  pub is_block_required: bool,
 }
 
 pub fn build_props<'a>(
@@ -275,6 +282,8 @@ pub fn build_props<'a>(
       dynamic_prop_names: IndexSet::new(),
       should_use_block: false,
       name_prop,
+      is_block_required: false,
+      needs_patch: false,
     };
   }
 
@@ -283,6 +292,7 @@ pub fn build_props<'a>(
   let mut runtime_directives = vec![];
   let has_children = !node.children.is_empty();
   let mut should_use_block = false;
+  let mut is_block_required = false;
 
   // patchFlag analysis
   let mut patch_flag = 0;
@@ -338,6 +348,10 @@ pub fn build_props<'a>(
         has_vnode_hook = true
       }
 
+      if name == "ref" {
+        *unsafe { &mut *has_ref_ptr } = true;
+      }
+
       if is_event_handler
         && let Expression::CallExpression(call_expr) = value
         && let Some(arg) = call_expr.arguments.first()
@@ -360,9 +374,7 @@ pub fn build_props<'a>(
         return;
       }
 
-      if name == "ref" {
-        *unsafe { &mut *has_ref_ptr } = true;
-      } else if name == "class" {
+      if name == "class" {
         has_class_binding = true;
         if is_component {
           dynamic_prop_names.insert(name);
@@ -372,7 +384,7 @@ pub fn build_props<'a>(
         if is_component {
           dynamic_prop_names.insert(name);
         }
-      } else if name != "key" {
+      } else if name != "ref" && name != "key" {
         dynamic_prop_names.insert(name.clone());
       }
     } else {
@@ -480,8 +492,9 @@ pub fn build_props<'a>(
           "on" => {
             // inline before-update hooks need to force block so that it is invoked
             // before children
-            if has_children && *name == "onVue:beforeUpdate" {
+            if has_children && *name == "onVnodeBeforeUpdate" {
               should_use_block = true;
+              is_block_required = true;
             }
             transform_v_on(directives, prop, node, context)
           }
@@ -523,6 +536,7 @@ pub fn build_props<'a>(
               // to ensure before-update gets called before children update
               if has_children {
                 should_use_block = true;
+                is_block_required = true;
               }
             }
             None
@@ -597,10 +611,9 @@ pub fn build_props<'a>(
       patch_flag |= PatchFlags::NeedHydration as i32;
     }
   }
-  if !should_use_block
-    && (patch_flag == 0 || patch_flag == PatchFlags::NeedHydration as i32)
-    && (has_ref || has_vnode_hook || !runtime_directives.is_empty())
-  {
+  let needs_patch = (patch_flag == 0 || patch_flag == PatchFlags::NeedHydration as i32)
+    && (has_ref || has_vnode_hook || !runtime_directives.is_empty());
+  if !should_use_block && needs_patch {
     patch_flag |= PatchFlags::NeedPatch as i32;
   }
 
@@ -710,6 +723,8 @@ pub fn build_props<'a>(
     dynamic_prop_names,
     should_use_block,
     name_prop,
+    needs_patch,
+    is_block_required,
   }
 }
 

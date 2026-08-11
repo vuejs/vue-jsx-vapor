@@ -23,6 +23,10 @@ pub struct VNodeCall<'a> {
   pub dynamic_props: Option<Expression<'a>>,
   pub directives: Option<ArrayExpression<'a>>,
   pub is_block: bool,
+  /** Whether a later transform must preserve this vnode as a block. */
+  pub is_block_required: bool,
+  /** Whether this vnode must be patched if a later transform makes it non-block. */
+  pub needs_patch: bool,
   pub disable_tracking: bool,
   pub is_component: bool,
   pub v_for: Option<Vec<&'a str>>,

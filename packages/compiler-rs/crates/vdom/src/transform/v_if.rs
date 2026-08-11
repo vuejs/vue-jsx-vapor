@@ -92,6 +92,8 @@ pub unsafe fn transform_v_if<'a>(
         dynamic_props: None,
         directives: None,
         is_block: true,
+        is_block_required: false,
+        needs_patch: false,
         disable_tracking: false,
         is_component: true,
         v_for: None,

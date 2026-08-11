@@ -131,6 +131,8 @@ pub unsafe fn transform_v_for<'a>(
         dynamic_props: None,
         directives: None,
         is_block: true,
+        is_block_required: false,
+        needs_patch: false,
         disable_tracking: !is_stable_fragment,
         is_component: true,
         v_for: Some(identifiers),
@@ -163,7 +165,11 @@ pub unsafe fn transform_v_for<'a>(
         }
       }
       if let NodeTypes::VNodeCall(child_block) = codegen {
-        child_block.is_block = !is_stable_fragment;
+        child_block.is_block = !is_stable_fragment || child_block.is_block_required;
+        if !child_block.is_block && child_block.needs_patch {
+          child_block.patch_flag =
+            Some(child_block.patch_flag.unwrap_or(0) | PatchFlags::NeedPatch as i32);
+        }
       }
     }
     if let JSXChild::Fragment(node) = unsafe { &mut *context_node } {
