@@ -170,7 +170,14 @@ jobs:
         if: matrix.settings.target == 'wasm32-wasip1-threads'
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: './packages/compiler-rs/*.wasm'
+          path: |
+            ./packages/compiler-rs/compiler-rs.wasm32-wasi.wasm
+            ./packages/compiler-rs/compiler-rs.wasi.cjs
+            ./packages/compiler-rs/compiler-rs.wasi.d.cts
+            ./packages/compiler-rs/compiler-rs.wasi-browser.js
+            ./packages/compiler-rs/wasi-worker.mjs
+            ./packages/compiler-rs/wasi-worker-browser.mjs
+            ./packages/compiler-rs/index.js
           if-no-files-found: error
   build-freebsd:
     runs-on: ubuntu-latest
