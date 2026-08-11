@@ -39,7 +39,7 @@
       "aarch64-unknown-linux-musl",
       "aarch64-pc-windows-msvc",
       "armv7-linux-androideabi",
-      "wasm32-wasi-preview1-threads"
+      "wasm32-wasip1-threads"
     ]
   },
   "publishConfig": {
@@ -60,11 +60,11 @@
     "flamegraph": "CARGO_PROFILE_RELEASE_STRIP=false CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --bench bench_vdom --no-default-features"
   },
   "devDependencies": {
-    "@emnapi/core": "1.10.0",
-    "@emnapi/runtime": "1.10.0",
-    "@napi-rs/cli": "3.6.2",
-    "@napi-rs/wasm-runtime": "1.1.4",
+    "@emnapi/core": "^2.0.0-alpha.3",
+    "@emnapi/runtime": "^2.0.0-alpha.3",
+    "@napi-rs/cli": "^3.8.5",
+    "@napi-rs/wasm-runtime": "^1.2.2",
     "@taplo/cli": "^0.7.0",
-    "emnapi": "1.10.0"
+    "emnapi": "^2.0.0-alpha.3"
   }
 }
