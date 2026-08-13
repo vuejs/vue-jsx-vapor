@@ -259,6 +259,17 @@ pub fn is_simple_identifier(s: &str) -> bool {
   true
 }
 
+static DELEGATED_EVENTS: phf::Set<&'static str> = phf_set! {
+  "beforeinput", "click", "dblclick", "contextmenu", "focusin", "focusout", "input",
+  "keydown", "keyup", "mousedown", "mousemove", "mouseout", "mouseover", "mouseup",
+  "pointerdown", "pointermove", "pointerout", "pointerover", "pointerup",
+  "touchend", "touchmove", "touchstart",
+};
+
+pub fn is_delegated_event(event: &str) -> bool {
+  DELEGATED_EVENTS.contains(event)
+}
+
 pub fn is_event_option_modifier(modifier: &str) -> bool {
   matches!(modifier, "passive" | "once" | "capture")
 }

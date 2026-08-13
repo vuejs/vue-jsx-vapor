@@ -136,3 +136,9 @@ pub fn create_compiler_error<'a>(env: &'a Env, code: ErrorCodes, loc: Span) -> R
   error.set("loc", (loc.start, loc.end))?;
   Ok(error)
 }
+
+pub fn create_compiler_warning<'a>(env: &'a Env, message: &str, loc: Span) -> Result<Object<'a>> {
+  let mut warning = env.create_error(Error::from_reason(message))?;
+  warning.set("loc", (loc.start, loc.end))?;
+  Ok(warning)
+}

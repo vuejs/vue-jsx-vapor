@@ -40,6 +40,7 @@ export interface Hmr {
 }
 export interface CompilerOptions {
   onError?: (arg: object) => void
+  onWarn?: (arg: object) => void
   /** * Generate source map?
    * @default false
    */

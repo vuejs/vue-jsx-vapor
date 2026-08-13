@@ -216,6 +216,9 @@ impl<'a> CodegenContext<'a> {
       None,
     ));
 
+    if !self.options.delegates.borrow().is_empty() {
+      self.options.helper("_delegateEvents");
+    }
     if !&self.options.templates.borrow().is_empty() {
       self.options.helper("_template");
     }
