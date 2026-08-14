@@ -26,14 +26,25 @@ use crate::ir::index::OperationNode;
 pub fn gen_operations<'a>(
   statements: &mut oxc_allocator::Vec<'a, Statement<'a>>,
   opers: Vec<OperationNode<'a>>,
+  mut post_opers: Option<&mut Vec<OperationNode<'a>>>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) {
   let _context_block = context_block as *mut BlockIRNode;
   for operation in opers {
-    gen_operation_with_insertion_state(statements, operation, context, unsafe {
-      &mut *_context_block
-    });
+    if let Some(post_opers) = post_opers.as_deref_mut()
+      && matches!(
+        &operation,
+        OperationNode::Directive(operation)
+          if operation.builtin && operation.name == "model"
+      )
+    {
+      post_opers.push(operation);
+    } else {
+      gen_operation_with_insertion_state(statements, operation, context, unsafe {
+        &mut *_context_block
+      });
+    }
   }
 }
 

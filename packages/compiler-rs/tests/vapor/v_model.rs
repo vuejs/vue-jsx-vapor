@@ -138,8 +138,8 @@ fn should_support_input_dynamic_type() {
   const _t0 = _template("<input>", 1);
   (() => {
   	const _n0 = _t0();
-  	_applyDynamicModel(_n0, () => model, (_value) => model = _value);
   	_renderEffect(() => _setProp(_n0, "type", foo));
+  	_applyDynamicModel(_n0, () => model, (_value) => model = _value);
   	return _n0;
   })();
   "#);
@@ -153,8 +153,8 @@ fn should_support_dynamic_props() {
   const _t0 = _template("<input>", 1);
   (() => {
   	const _n0 = _t0();
-  	_applyDynamicModel(_n0, () => model, (_value) => model = _value);
   	_renderEffect(() => _setDynamicProps(_n0, [obj]));
+  	_applyDynamicModel(_n0, () => model, (_value) => model = _value);
   	return _n0;
   })();
   "#);

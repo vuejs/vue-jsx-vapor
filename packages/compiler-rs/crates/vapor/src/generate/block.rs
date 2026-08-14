@@ -58,6 +58,11 @@ pub fn gen_block_content<'a>(
 
   let mut operation_index = 0;
   let mut effect_index = 0;
+  // Built-in v-model needs to run after initial DOM props are applied. This is
+  // especially important for inputs with a dynamic type, since the runtime
+  // selects the text, checkbox, or radio implementation from the DOM property.
+  let model_operations = Rc::new(RefCell::new(Vec::new()));
+  let deferred_model_operations = Rc::clone(&model_operations);
   let flush_before_dynamic = Rc::new(RefCell::new(Box::new(
     move |dynamic: &mut IRDynamicInfo<'a>,
           statements: &mut oxc_allocator::Vec<'a, Statement<'a>>| {
@@ -88,6 +93,7 @@ pub fn gen_block_content<'a>(
               .operation
               .drain(0..operation_end - operation_index)
               .collect::<Vec<_>>(),
+            Some(&mut deferred_model_operations.borrow_mut()),
             context,
             unsafe { &mut *context_block },
           );
@@ -124,6 +130,7 @@ pub fn gen_block_content<'a>(
   gen_operations(
     &mut statements,
     mem::take(&mut unsafe { &mut *context_block }.operation),
+    Some(&mut model_operations.borrow_mut()),
     context,
     unsafe { &mut *context_block },
   );
@@ -137,6 +144,13 @@ pub fn gen_block_content<'a>(
   if let Some(gen_extra_frag) = gen_effects_extra_frag {
     gen_extra_frag(&mut statements, unsafe { &mut *context_block })
   }
+  gen_operations(
+    &mut statements,
+    mem::take(&mut model_operations.borrow_mut()),
+    None,
+    context,
+    unsafe { &mut *context_block },
+  );
 
   let mut return_nodes = unsafe { &mut *context_block }.returns.iter().map(|n| {
     ast
@@ -174,7 +188,7 @@ fn gen_effects<'a>(
 
   for effect in effects {
     operations_count += effect.operations.len();
-    gen_operations(&mut statements, effect.operations, context, unsafe {
+    gen_operations(&mut statements, effect.operations, None, context, unsafe {
       &mut *context_block
     });
   }

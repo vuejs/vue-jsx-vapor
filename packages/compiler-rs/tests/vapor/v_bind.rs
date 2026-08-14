@@ -238,11 +238,11 @@ fn starts_with_underline() {
   const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
-  	_applyTextModel(_n0, () => model, (_value) => model = _value);
   	_renderEffect(() => {
   		_setDOMProp(_n0, "_id", id);
   		_setDOMProp(_n0, "__id", id);
   	});
+  	_applyTextModel(_n0, () => model, (_value) => model = _value);
   	return _n0;
   })();
   "#);
