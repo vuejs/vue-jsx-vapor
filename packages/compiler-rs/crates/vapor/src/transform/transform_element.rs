@@ -493,6 +493,7 @@ pub fn build_props<'a>(
             }
             dynamic_args.push(Either3::B(IRProp {
               key: prop.key,
+              to_display_string: prop.to_display_string,
               modifier: prop.modifier,
               runtime_camelize: prop.runtime_camelize,
               handler: prop.handler,
@@ -615,6 +616,7 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
   for result in results {
     let prop = IRProp {
       key: result.key,
+      to_display_string: result.to_display_string,
       modifier: result.modifier,
       runtime_camelize: result.runtime_camelize,
       handler: result.handler,

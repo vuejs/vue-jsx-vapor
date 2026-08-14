@@ -141,7 +141,6 @@ pub struct SetTextIRNode<'a> {
   pub element: i32,
   pub values: Vec<Expression<'a>>,
   pub generated: bool,
-  pub is_component: bool,
 }
 
 #[derive(Debug)]
@@ -170,7 +169,6 @@ pub struct SetHtmlIRNode<'a> {
   pub set_html: bool,
   pub element: i32,
   pub value: Expression<'a>,
-  pub is_component: bool,
 }
 
 #[derive(Debug)]

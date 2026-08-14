@@ -163,6 +163,7 @@ pub fn transform_v_on<'a>(
     return Some(DirectiveTransformResult {
       key: Expression::StringLiteral(arg),
       value: exp,
+      to_display_string: false,
       handler: true,
       handler_modifiers: Some(modifiers),
       model: false,

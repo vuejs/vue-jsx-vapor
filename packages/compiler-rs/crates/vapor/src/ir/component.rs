@@ -11,6 +11,7 @@ use crate::ir::index::{BlockIRNode, IRFor};
 #[derive(Debug)]
 pub struct IRProp<'a> {
   pub key: Expression<'a>,
+  pub to_display_string: bool,
   pub modifier: Option<&'a str>,
   pub runtime_camelize: bool,
   pub handler: bool,

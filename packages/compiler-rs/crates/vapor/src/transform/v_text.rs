@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use common::{
-  check::is_void_tag,
+  check::{is_constant_node, is_void_tag},
   directive::Directives,
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
@@ -17,7 +17,7 @@ use crate::{
 pub fn transform_v_text<'a>(
   directives: &Directives,
   dir: &'a mut JSXAttribute<'a>,
-  node: &JSXElement<'a>,
+  node: &mut JSXElement<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
@@ -32,7 +32,7 @@ pub fn transform_v_text<'a>(
 
   if node.children.iter().any(|c| !is_empty_text(c)) {
     context.options.on_error.as_ref()(ErrorCodes::VTextWithChildren, node.span);
-    return None;
+    node.children.clear();
   };
 
   let tag_name = node
@@ -46,27 +46,36 @@ pub fn transform_v_text<'a>(
     return None;
   }
 
+  if directives.is_component && !directives.is_custom_element {
+    return Some(DirectiveTransformResult {
+      key: context
+        .ast
+        .expression_string_literal(dir.span, context.ast.str("textContent"), None),
+      to_display_string: !(is_constant_node(&exp) || exp.is_function()),
+      value: exp,
+      modifier: None,
+      runtime_camelize: false,
+      handler: false,
+      handler_modifiers: None,
+      model: false,
+      model_modifiers: None,
+    });
+  }
+
   let literal = get_text_like_value(&exp);
-  if let Some(literal) = literal {
+  if let Some(literal) = literal.filter(|_| !is_raw_text_container(tag_name)) {
     *context.children_template.borrow_mut() = vec![escape_html(literal)];
   } else {
     *context.children_template.borrow_mut() = vec![Cow::Borrowed(" ")];
     let parent = context.reference(&mut context_block.dynamic);
-    let is_component = if directives.is_custom_element {
-      false
-    } else {
-      directives.is_component
-    };
-    if !is_component {
-      context.register_operation(
-        context_block,
-        OperationNode::GetTextChild(GetTextChildIRNode {
-          get_text_child: true,
-          parent,
-        }),
-        None,
-      );
-    }
+    context.register_operation(
+      context_block,
+      OperationNode::GetTextChild(GetTextChildIRNode {
+        get_text_child: true,
+        parent,
+      }),
+      None,
+    );
     let element = context.reference(&mut context_block.dynamic);
     context.register_effect(
       context_block,
@@ -75,11 +84,17 @@ pub fn transform_v_text<'a>(
         values: vec![exp],
         element,
         generated: true,
-        is_component,
       }),
       None,
       None,
     );
   }
   None
+}
+
+fn is_raw_text_container(tag: &str) -> bool {
+  matches!(
+    tag,
+    "iframe" | "noembed" | "noframes" | "noscript" | "script" | "style" | "xmp"
+  )
 }

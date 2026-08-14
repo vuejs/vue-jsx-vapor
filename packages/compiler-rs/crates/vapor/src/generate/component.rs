@@ -412,6 +412,7 @@ fn gen_prop<'a>(
   let ast = &context.ast;
   let model = prop.model;
   let handler = prop.handler;
+  let to_display_string = prop.to_display_string;
   let Modifiers {
     keys,
     non_keys,
@@ -444,7 +445,16 @@ fn gen_prop<'a>(
       context, values, &keys, &non_keys, true, /* wrap handlers passed to components */
     )
   } else {
-    let values = gen_prop_value(values, context);
+    let mut values = gen_prop_value(values, context);
+    if to_display_string {
+      values = ast.expression_call(
+        SPAN,
+        ast.expression_identifier(SPAN, ast.str(context.options.helper("_toDisplayString"))),
+        NONE,
+        ast.vec1(values.into()),
+        false,
+      );
+    }
     if is_static {
       if direct_static_literal {
         values

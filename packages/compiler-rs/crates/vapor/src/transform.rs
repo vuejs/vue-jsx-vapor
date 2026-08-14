@@ -44,6 +44,7 @@ use common::check::{is_constant_node, is_math_ml_tag, is_native_tag, is_svg_tag,
 pub struct DirectiveTransformResult<'a> {
   pub key: Expression<'a>,
   pub value: Expression<'a>,
+  pub to_display_string: bool,
   pub modifier: Option<&'a str>,
   pub runtime_camelize: bool,
   pub handler: bool,
@@ -57,6 +58,7 @@ impl<'a> DirectiveTransformResult<'a> {
     DirectiveTransformResult {
       key,
       value,
+      to_display_string: false,
       modifier: None,
       runtime_camelize: false,
       handler: false,

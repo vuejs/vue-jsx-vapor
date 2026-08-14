@@ -23,10 +23,8 @@ fn work_with_component() {
   let code = transform("<Comp v-html={code.value} />", None).code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { renderEffect as _renderEffect, setBlockHtml as _setBlockHtml } from "vue";
   (() => {
-  	const _n0 = _createComponent(Comp, null, null, true);
-  	_renderEffect(() => _setBlockHtml(_n0, code.value));
+  	const _n0 = _createComponent(Comp, { innerHTML: () => code.value }, null, true);
   	return _n0;
   })();
   "#);
@@ -35,16 +33,19 @@ fn work_with_component() {
 #[test]
 fn should_raise_error_and_ignore_children_when_v_html_is_present() {
   let error = RefCell::new(None);
-  transform(
-    "<div v-html={test.value}>hello</div>",
+  let code = transform(
+    "<Comp v-html={test.value}>hello</Comp>",
     Some(TransformOptions {
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
       ..Default::default()
     }),
-  );
+  )
+  .code;
   assert_eq!(*error.borrow(), Some(ErrorCodes::VHtmlWithChildren));
+  assert!(code.contains("innerHTML"));
+  assert!(!code.contains("hello"));
 }
 
 #[test]

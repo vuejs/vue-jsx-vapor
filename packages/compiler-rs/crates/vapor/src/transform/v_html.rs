@@ -12,7 +12,7 @@ use crate::{
 pub fn transform_v_html<'a>(
   directives: &Directives,
   dir: &'a mut JSXAttribute<'a>,
-  node: &JSXElement<'a>,
+  node: &mut JSXElement<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
@@ -27,7 +27,16 @@ pub fn transform_v_html<'a>(
 
   if node.children.iter().any(|c| !is_empty_text(c)) {
     context.options.on_error.as_ref()(ErrorCodes::VHtmlWithChildren, node.span);
-    return None;
+    node.children.clear();
+  }
+
+  if directives.is_component && !directives.is_custom_element {
+    return Some(DirectiveTransformResult::new(
+      context
+        .ast
+        .expression_string_literal(dir.span, context.ast.str("innerHTML"), None),
+      exp,
+    ));
   }
 
   let element = context.reference(&mut context_block.dynamic);
@@ -38,11 +47,6 @@ pub fn transform_v_html<'a>(
       set_html: true,
       element,
       value: exp,
-      is_component: if directives.is_custom_element {
-        false
-      } else {
-        directives.is_component
-      },
     }),
     None,
     None,

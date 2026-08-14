@@ -91,6 +91,7 @@ pub fn transform_v_bind<'a>(
   Some(DirectiveTransformResult {
     key: Expression::StringLiteral(arg),
     value,
+    to_display_string: false,
     runtime_camelize: false,
     modifier,
     handler: false,
