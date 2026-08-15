@@ -260,6 +260,23 @@ fn component_props_merging_event_handlers() {
 }
 
 #[test]
+fn component_props_merging_event_handlers_with_modifiers() {
+  let code = transform(
+    "<Foo onKeydown_enter_prevent={a} onKeydown_esc_prevent={b} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
+  (() => {
+  	const _n0 = _createComponent(Foo, { onKeydown: () => [_withKeys(_withModifiers(a, ["prevent"]), ["enter"]), _withKeys(_withModifiers(b, ["prevent"]), ["esc"])] }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn component_props_merging_style() {
   let code = transform(
     "<Foo style=\"color: green\" style={{ color: 'red' }} />",
