@@ -438,7 +438,7 @@ fn static_props_mixed_quoting_with_boolean_attribute() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"has whitespace\"inert data-targets=\"foo>bar\">", 3);
+  const _t0 = _template("<div title=\"has whitespace\" inert data-targets=\"foo>bar\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -447,7 +447,7 @@ fn static_props_mixed_quoting_with_boolean_attribute() {
 }
 
 #[test]
-fn static_props_space_omitted_after_quoted_attribute() {
+fn static_props_space_kept_after_quoted_attribute() {
   let code = transform(
     r#"<div title="has whitespace" alt='"contains quotes"' data-targets="foo>bar" />"#,
     None,
@@ -455,7 +455,7 @@ fn static_props_space_omitted_after_quoted_attribute() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"has whitespace\"alt=\"&quot;contains quotes&quot;\"data-targets=\"foo>bar\">", 3);
+  const _t0 = _template("<div title=\"has whitespace\" alt=\"&quot;contains quotes&quot;\" data-targets=\"foo>bar\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;

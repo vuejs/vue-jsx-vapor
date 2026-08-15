@@ -32,6 +32,27 @@ fn binding_value() {
 }
 
 #[test]
+fn object_literal_binding_value() {
+	let code = transform("<div v-example={{ value: msg, other: 1 }}></div>", None).code;
+	assert!(code.contains("() => ({"));
+	assert!(code.contains("value: msg"));
+	assert!(code.contains("other: 1"));
+	assert_snapshot!(code, @r#"
+	import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+	const _t0 = _template("<div>", 1);
+	(() => {
+		const _directive_example = _resolveDirective("example");
+		const _n0 = _t0();
+		_withVaporDirectives(_n0, [[_directive_example, () => ({
+			value: msg,
+			other: 1
+		})]]);
+		return _n0;
+	})();
+	"#);
+}
+
+#[test]
 fn static_parameters() {
   let code = transform("<div v-example:foo={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
