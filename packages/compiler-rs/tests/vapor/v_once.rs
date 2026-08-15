@@ -90,6 +90,25 @@ fn on_slot_outlet() {
 }
 
 #[test]
+fn root_slot_outlet_in_slot_content_should_not_be_marked_as_slot_root() {
+  let code = transform(r#"<Comp><slot v-once /></Comp>"#, None).code;
+
+  assert!(code.contains("_createSlot(\"default\", null, null, 2)"));
+
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createSlot as _createSlot, extend as _extend } from "vue";
+  (() => {
+  	const _n1 = _createComponent(Comp, null, _extend(() => {
+  		const _n0 = _createSlot("default", null, null, 2);
+  		return _n0;
+  	}, { _: 8 }), true);
+  	return _n1;
+  })();
+  "#);
+}
+
+#[test]
 fn inside_v_once() {
   let code = transform("<div v-once><div v-once/></div>", None).code;
   assert_snapshot!(code, @r#"

@@ -13,6 +13,7 @@ use crate::generate::CodegenContext;
 use crate::generate::operation::gen_operations;
 use crate::generate::template::gen_self;
 use crate::ir::index::{BlockIRNode, ForIRNode, IRDynamicInfo, IREffect, IfIRNode, OperationNode};
+use common::patch_flag::VaporSlotFlags;
 
 pub fn gen_block<'a>(
   oper: BlockIRNode<'a>,
@@ -226,7 +227,11 @@ fn gen_effects<'a>(
   }
 }
 
-pub fn mark_slot_root_operations<'a>(block: &mut BlockIRNode<'a>) {
+pub fn mark_slot_root_operations<'a>(block: &mut BlockIRNode<'a>, context: &CodegenContext<'a>) {
+  if has_stable_slot_root(block, context) {
+    return;
+  }
+
   let block_ptr = block as *mut _;
   for returned in block.returns.iter() {
     let Some(child) = find_returned_dynamic(unsafe { &mut *block_ptr }, *returned) else {
@@ -237,33 +242,38 @@ pub fn mark_slot_root_operations<'a>(block: &mut BlockIRNode<'a>) {
     };
 
     match operation.as_mut() {
-      OperationNode::If(operation) => mark_slot_root_if(operation),
-      OperationNode::For(operation) => mark_slot_root_for(operation),
+      OperationNode::If(operation) => mark_slot_root_if(operation, context),
+      OperationNode::For(operation) => mark_slot_root_for(operation, context),
+      OperationNode::SlotOutlet(operation)
+        if operation.flags & VaporSlotFlags::Once as i32 == 0 =>
+      {
+        operation.flags |= VaporSlotFlags::SlotRoot as i32;
+      }
       _ => {}
     }
   }
 }
 
-fn mark_slot_root_if(operation: &mut IfIRNode) {
+fn mark_slot_root_if<'a>(operation: &mut IfIRNode<'a>, context: &CodegenContext<'a>) {
   if !operation.once {
     operation.slot_root = true;
   }
-  mark_slot_root_operations(&mut operation.positive);
+  mark_slot_root_operations(&mut operation.positive, context);
 
   let Some(negative) = operation.negative.as_mut() else {
     return;
   };
   match negative.as_mut() {
-    Either::A(negative) => mark_slot_root_operations(negative),
-    Either::B(negative) => mark_slot_root_if(negative),
+    Either::A(negative) => mark_slot_root_operations(negative, context),
+    Either::B(negative) => mark_slot_root_if(negative, context),
   }
 }
 
-fn mark_slot_root_for(operation: &mut ForIRNode) {
+fn mark_slot_root_for<'a>(operation: &mut ForIRNode<'a>, context: &CodegenContext<'a>) {
   if !operation.once {
     operation.slot_root = true;
   }
-  mark_slot_root_operations(&mut operation.render);
+  mark_slot_root_operations(&mut operation.render, context);
 }
 
 pub fn find_returned_dynamic<'a>(
@@ -275,4 +285,51 @@ pub fn find_returned_dynamic<'a>(
     .children
     .iter_mut()
     .find(|child| child.id.is_some_and(|i| i == id))
+}
+
+// A slot can skip fallback/boundary tracking when at least one root is stable.
+// Components count as valid even if their own render result is a comment.
+pub fn has_stable_slot_root<'a>(block: &mut BlockIRNode<'a>, context: &CodegenContext<'a>) -> bool {
+  let mut has_valid_root = false;
+  let block_ptr = block as *mut BlockIRNode;
+  for id in block.returns.iter() {
+    let Some(child) = find_returned_dynamic(unsafe { &mut *block_ptr }, *id) else {
+      continue;
+    };
+    let Some(operation) = child.operation.as_mut() else {
+      if is_stable_template_slot_root(child.template, context) {
+        has_valid_root = true
+      }
+      continue;
+    };
+
+    match operation.as_mut() {
+      OperationNode::CreateComponent(_) => {
+        has_valid_root = true;
+        continue;
+      }
+      OperationNode::Key(operation) => {
+        if has_stable_slot_root(&mut operation.block, context) {
+          has_valid_root = true;
+          continue;
+        }
+      }
+      _ => {}
+    }
+  }
+  has_valid_root
+}
+
+fn is_stable_template_slot_root(template: Option<i32>, context: &CodegenContext) -> bool {
+  let Some(template) = template else {
+    return false;
+  };
+  context
+    .options
+    .templates
+    .borrow()
+    .get(template as usize)
+    .is_some_and(|entry| {
+      !entry.content.is_empty()
+    })
 }

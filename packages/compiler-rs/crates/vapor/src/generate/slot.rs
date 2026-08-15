@@ -12,12 +12,12 @@ use oxc_span::{GetSpan, SPAN};
 use crate::{
   generate::{
     CodegenContext,
-    block::{find_returned_dynamic, gen_block, mark_slot_root_operations},
+    block::{gen_block, has_stable_slot_root, mark_slot_root_operations},
     expression::gen_expression,
   },
   ir::{
     component::{IRSlotDynamicBasic, IRSlotDynamicConditional, IRSlots},
-    index::{BlockIRNode, IRFor, OperationNode},
+    index::{BlockIRNode, IRFor},
   },
 };
 
@@ -443,7 +443,7 @@ fn gen_slot_block_with_props<'a>(
   let ast = &context.ast;
   let has_stable_root = has_stable_slot_root(&mut oper, context);
   if !has_stable_root {
-    mark_slot_root_operations(&mut oper);
+    mark_slot_root_operations(&mut oper, context);
   }
   let exit_slot_block = context.enter_slot_block();
   let mut block_fn = context.with_id(
@@ -501,47 +501,4 @@ fn gen_slot_block_with_props<'a>(
   };
 
   block_fn
-}
-
-// A slot can skip fallback/boundary tracking when at least one root is stable.
-// Components count as valid even if their own render result is a comment.
-fn has_stable_slot_root<'a>(block: &mut BlockIRNode<'a>, context: &CodegenContext<'a>) -> bool {
-  let mut has_valid_root = false;
-  let block_ptr = block as *mut BlockIRNode;
-  for id in block.returns.iter() {
-    let Some(child) = find_returned_dynamic(unsafe { &mut *block_ptr }, *id) else {
-      continue;
-    };
-    let Some(operation) = child.operation.as_mut() else {
-      if is_stable_template_slot_root(child.template, context) {
-        has_valid_root = true
-      }
-      continue;
-    };
-
-    match operation.as_mut() {
-      OperationNode::CreateComponent(_) => {
-        has_valid_root = true;
-      }
-      OperationNode::Key(operation) => {
-        if has_stable_slot_root(&mut operation.block, context) {
-          has_valid_root = true;
-        }
-      }
-      _ => {}
-    }
-  }
-  has_valid_root
-}
-
-fn is_stable_template_slot_root(template: Option<i32>, context: &CodegenContext) -> bool {
-  let Some(template) = template else {
-    return false;
-  };
-  context
-    .options
-    .templates
-    .borrow()
-    .get(template as usize)
-    .is_some_and(|i| !i.content.is_empty())
 }

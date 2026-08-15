@@ -690,7 +690,7 @@ fn forwarded_root_slot_outlet_fallback_tracks_root_validity() {
   				return _n3;
   			}, null, 129);
   			return _n1;
-  		});
+  		}, 4);
   		return _n0;
   	}, { _: 8 }), true);
   	return _n4;
@@ -706,12 +706,71 @@ fn slot_tag_only() {
   import { createSlot as _createSlot, extend as _extend } from "vue";
   (() => {
   	const _n1 = _createComponent(Comp, null, _extend(() => {
-  		const _n0 = _createSlot();
+  		const _n0 = _createSlot("default", null, null, 4);
   		return _n0;
   	}, { _: 8 }), true);
   	return _n1;
   })();
   "#);
+}
+
+#[test]
+fn root_slot_outlet_with_stable_sibling_does_not_notify_parent() {
+  let code = transform(r#"<Comp><slot/><span/></Comp>"#, None).code;
+
+  assert!(!code.contains("null, null, 4"));
+  assert!(!code.contains("{ _: 8 }"));
+
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createSlot as _createSlot, template as _template } from "vue";
+  const _t0 = _template("<span>", 2);
+  (() => {
+  	const _n2 = _createComponent(Comp, null, () => {
+  		const _n0 = _createSlot();
+  		const _n1 = _t0();
+  		return [_n0, _n1];
+  	}, true);
+  	return _n2;
+  })();
+  "#)
+}
+
+#[test]
+fn root_slot_outlet_with_stable_sibling_in_branch_keeps_branch_slot_root_only() {
+  for source in [
+    r#"<Comp><template v-if={ok}><slot/><span/></template></Comp>"#,
+    r#"<Comp><template v-for={item in items}><slot/><span/></template></Comp>"#,
+  ] {
+    let code = transform(source, None).code;
+
+    assert!(!code.contains("_createSlot(\"default\", null, null, 4)"));
+  }
+}
+
+#[test]
+fn root_slot_outlet_with_stable_sibling_in_forwarded_fallback_does_not_notify_parent() {
+  let code = transform(r#"<Comp><slot><slot/><span/></slot></Comp>"#, None).code;
+
+  assert!(code.contains("_createSlot()") || code.contains("_createSlot(\"default\")"));
+  assert!(!code.contains("_createSlot(\"default\", null, null, 4)"));
+
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createSlot as _createSlot, extend as _extend, template as _template } from "vue";
+  const _t0 = _template("<span>", 2);
+  (() => {
+  	const _n3 = _createComponent(Comp, null, _extend(() => {
+  		const _n0 = _createSlot("default", null, () => {
+  			const _n1 = _createSlot();
+  			const _n2 = _t0();
+  			return [_n1, _n2];
+  		}, 4);
+  		return _n0;
+  	}, { _: 8 }), true);
+  	return _n3;
+  })();
+  "#)
 }
 
 #[test]
@@ -723,7 +782,7 @@ fn slot_tag_with_v_if() {
   (() => {
   	const _n3 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createIf(() => ok, () => {
-  			const _n2 = _createSlot("default");
+  			const _n2 = _createSlot("default", null, null, 4);
   			return _n2;
   		}, null, 129);
   		return _n0;
@@ -742,7 +801,7 @@ fn slot_tag_with_v_for() {
   (() => {
   	const _n3 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createFor(() => b, (_for_item0) => {
-  			const _n2 = _createSlot("default");
+  			const _n2 = _createSlot("default", null, null, 4);
   			return _n2;
   		}, void 0, 48);
   		return _n0;
@@ -760,7 +819,7 @@ fn slot_tag_with_template() {
   import { createSlot as _createSlot, extend as _extend } from "vue";
   (() => {
   	const _n2 = _createComponent(Comp, null, _extend(() => {
-  		const _n0 = _createSlot();
+  		const _n0 = _createSlot("default", null, null, 4);
   		return _n0;
   	}, { _: 8 }), true);
   	return _n2;
@@ -777,7 +836,7 @@ fn slot_tag_with_nested_component() {
   (() => {
   	const _n2 = _createComponent(Comp, null, () => {
   		const _n1 = _createComponent(Comp, null, _extend(() => {
-  			const _n0 = _createSlot();
+  			const _n0 = _createSlot("default", null, null, 4);
   			return _n0;
   		}, { _: 8 }));
   		return _n1;
@@ -895,7 +954,7 @@ fn slot_with_slot_outlet_is_non_stable() {
   import { createSlot as _createSlot, extend as _extend } from "vue";
   (() => {
   	const _n2 = _createComponent(Comp, null, _extend(() => {
-  		const _n0 = _createSlot();
+  		const _n0 = _createSlot("default", null, null, 4);
   		return _n0;
   	}, { _: 8 }), true);
   	return _n2;
@@ -922,7 +981,7 @@ fn dynamic_slot_source_with_slot_outlet_keeps_dynamic_slot_function() {
   	const _n2 = _createComponent(Comp, null, { $: [_createForSlots(slots, (_, name) => ({
   		name,
   		fn: () => {
-  			const _n0 = _createSlot(() => name);
+  			const _n0 = _createSlot(() => name, null, null, 4);
   			return _n0;
   		}
   	}))] }, true);
