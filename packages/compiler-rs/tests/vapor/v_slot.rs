@@ -547,7 +547,7 @@ fn does_not_mark_non_root_v_if_slot_content_as_slot_root() {
   (() => {
   	const _n4 = _createComponent(Comp, null, () => {
   		const _n3 = _t1();
-  		_setInsertionState(_n3, null, 0);
+  		_setInsertionState(_n3);
   		const _n0 = _createIf(() => show, () => {
   			const _n2 = _t0();
   			return _n2;
@@ -952,7 +952,7 @@ fn slot_with_component_inside_v_if_is_non_stable() {
   	const _n5 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createIf(() => show, () => {
   			const _n3 = _t0();
-  			_setInsertionState(_n3, null, 0);
+  			_setInsertionState(_n3);
   			const _n2 = _createComponent(ChildComp);
   			return _n3;
   		}, null, 129);
@@ -984,7 +984,7 @@ fn slot_with_component_inside_v_for_is_non_stable() {
   	const _n5 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createFor(() => items, (_for_item0) => {
   			const _n3 = _t0();
-  			_setInsertionState(_n3, null, 0);
+  			_setInsertionState(_n3);
   			const _n2 = _createComponent(ChildComp);
   			return _n3;
   		}, void 0, 40);
@@ -1019,10 +1019,10 @@ fn slot_with_nested_v_if_containing_component_is_non_stable() {
   	const _n8 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createIf(() => a, () => {
   			const _n6 = _t1();
-  			_setInsertionState(_n6, null, 0);
+  			_setInsertionState(_n6);
   			const _n2 = _createIf(() => b, () => {
   				const _n5 = _t0();
-  				_setInsertionState(_n5, null, 0);
+  				_setInsertionState(_n5);
   				const _n4 = _createComponent(ChildComp);
   				return _n5;
   			});
@@ -1200,7 +1200,7 @@ fn slot_with_custom_element_inside_v_if_is_non_stable() {
   	const _n5 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createIf(() => show, () => {
   			const _n3 = _t0();
-  			_setInsertionState(_n3, null, 0);
+  			_setInsertionState(_n3);
   			const _n2 = _createPlainElement("my-element");
   			return _n3;
   		}, null, 129);

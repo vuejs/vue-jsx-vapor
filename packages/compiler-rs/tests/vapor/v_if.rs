@@ -506,12 +506,12 @@ fn v_if_v_if_or_v_elses() {
   const _t3 = _template("<div>", 1);
   (() => {
   	const _n8 = _t3();
-  	_setInsertionState(_n8, null, 0);
+  	_setInsertionState(_n8);
   	const _n0 = _createIf(() => foo, () => {
   		const _n2 = _t0();
   		return _n2;
   	}, null, 33);
-  	_setInsertionState(_n8, null, 1);
+  	_setInsertionState(_n8, 1);
   	const _n3 = _createIf(() => bar, () => {
   		const _n5 = _t1();
   		return _n5;

@@ -319,7 +319,7 @@ fn nested_v_for() {
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n5 = _t1();
-  		_setInsertionState(_n5, null, 0);
+  		_setInsertionState(_n5);
   		const _n2 = _createFor(() => _for_item0.value, (_for_item1) => {
   			const _n4 = _t0();
   			const _x4 = _txt(_n4);
@@ -485,7 +485,7 @@ fn fast_remove_flag() {
   const _t1 = _template("<div>", 1);
   (() => {
   	const _n3 = _t1();
-  	_setInsertionState(_n3, null, 0);
+  	_setInsertionState(_n3);
   	const _n0 = _createFor(() => i, (_for_item0) => {
   		const _n2 = _t0();
   		const _x2 = _txt(_n2);

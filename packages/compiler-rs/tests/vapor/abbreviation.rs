@@ -211,7 +211,7 @@ fn same_name_boundary_does_not_cross_component_templates() {
   (() => {
   	const _n3 = _t1();
   	const _n2 = _child(_n3);
-  	_setInsertionState(_n2, null, 0);
+  	_setInsertionState(_n2);
   	const _n1 = _createComponent(Comp, null, () => {
   		const _n0 = _t0();
   		return _n0;

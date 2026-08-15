@@ -67,7 +67,7 @@ pub fn gen_block_content<'a>(
     move |dynamic: &mut IRDynamicInfo<'a>,
           statements: &mut oxc_allocator::Vec<'a, Statement<'a>>| {
       if let Some(operation) = &mut dynamic.operation
-        && let Some((operation_end, effect_end)) = match operation.as_ref() {
+        && let Some((Some(operation_end), Some(effect_end))) = match operation.as_ref() {
           OperationNode::If(operation) => Some((operation.operation_index, operation.effect_index)),
           OperationNode::For(operation) => {
             Some((operation.operation_index, operation.effect_index))
@@ -83,8 +83,6 @@ pub fn gen_block_content<'a>(
           }
           _ => None,
         }
-        && let Some(operation_end) = operation_end
-        && let Some(effect_end) = effect_end
       {
         if operation_index < operation_end {
           gen_operations(

@@ -21,7 +21,7 @@ fn basic() {
   (() => {
   	const _n2 = _t0();
   	const _n0 = _child(_n2);
-  	const _n1 = _next(_n0, 1);
+  	const _n1 = _next(_n0);
   	_setNodes(_n0, msg);
   	_setClass(_n1, clz);
   	return _n2;
@@ -67,7 +67,7 @@ fn on_component() {
   const _t0 = _template("<div>", 1);
   (() => {
   	const _n1 = _t0();
-  	_setInsertionState(_n1, null, 0);
+  	_setInsertionState(_n1);
   	const _n0 = _createComponent(Comp, { id: () => foo }, null, null, true);
   	return _n1;
   })();
@@ -82,7 +82,7 @@ fn on_slot_outlet() {
   const _t0 = _template("<div>", 1);
   (() => {
   	const _n1 = _t0();
-  	_setInsertionState(_n1, null, 0);
+  	_setInsertionState(_n1);
   	const _n0 = _createSlot("default", null, null, 2);
   	return _n1;
   })();
@@ -153,7 +153,7 @@ fn with_conditional_expression() {
   const _t2 = _template("<div>", 1);
   (() => {
   	const _n5 = _t2();
-  	_setInsertionState(_n5, null, 0);
+  	_setInsertionState(_n5);
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
   		const _x2 = _txt(_n2);
@@ -203,9 +203,9 @@ fn execution_order() {
   (() => {
   	const _n4 = _t0();
   	const _n0 = _child(_n4);
-  	const _n1 = _next(_n0, 1);
+  	const _n1 = _next(_n0);
   	const _n2 = _nthChild(_n4, 3);
-  	const _n3 = _next(_n2, 4);
+  	const _n3 = _next(_n2);
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, foo);
   	_setNodes(_n1, () => bar);

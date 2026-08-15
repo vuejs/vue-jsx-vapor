@@ -60,9 +60,8 @@ pub unsafe fn transform_key<'a>(
         value: value.take_in(context.allocator),
         block,
         anchor: None,
-        logical_index: None,
+        append_index: None,
         parent: None,
-        append: false,
         operation_index: Some(*context.operation_index.borrow()),
         effect_index: Some(*context.effect_index.borrow()),
       })))

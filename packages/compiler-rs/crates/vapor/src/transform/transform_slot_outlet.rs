@@ -99,8 +99,7 @@ pub unsafe fn transform_slot_outlet<'a>(
       flags,
       parent: None,
       anchor: None,
-      logical_index: None,
-      append: false,
+      append_index: None,
       operation_index: Some(*context.operation_index.borrow()),
       effect_index: Some(*context.effect_index.borrow()),
     })));

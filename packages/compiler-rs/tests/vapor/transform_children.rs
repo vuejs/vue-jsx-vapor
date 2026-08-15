@@ -66,8 +66,8 @@ fn children_sibling_references() {
   (() => {
   	const _n3 = _t0();
   	const _n0 = _child(_n3);
-  	const _n1 = _next(_n0, 1);
-  	const _n2 = _next(_n1, 2);
+  	const _n1 = _next(_n0);
+  	const _n2 = _next(_n1);
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, () => first);
   	_setNodes(_n1, "123 ", () => second, " 456 ", () => foo);
@@ -97,10 +97,10 @@ fn efficient_traversal() {
   const _t0 = _template("<div><div>x</div><div><span> </div><div><span> </div><div><span> ", 1);
   (() => {
   	const _n3 = _t0();
-  	let _p0 = _next(_child(_n3), 1);
+  	let _p0 = _next(_child(_n3));
   	const _n0 = _child(_p0);
-  	const _n1 = _child(_p0 = _next(_p0, 2));
-  	const _n2 = _child(_p0 = _next(_p0, 3));
+  	const _n1 = _child(_p0 = _next(_p0));
+  	const _n2 = _child(_p0 = _next(_p0));
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, () => ({ msg }));
   	const _x1 = _txt(_n1);
@@ -111,10 +111,10 @@ fn efficient_traversal() {
   })();
   "#);
 
-  assert!(code.contains("let _p0 = _next(_child(_n3), 1)"));
+  assert!(code.contains("let _p0 = _next(_child(_n3))"));
   assert!(code.contains("const _n0 = _child(_p0)"));
-  assert!(code.contains("const _n1 = _child(_p0 = _next(_p0, 2))"));
-  assert!(code.contains("const _n2 = _child(_p0 = _next(_p0, 3))"));
+  assert!(code.contains("const _n1 = _child(_p0 = _next(_p0))"));
+  assert!(code.contains("const _n2 = _child(_p0 = _next(_p0))"));
   assert!(!code.contains("const _p1 = "));
   assert!(!code.contains("let _p1 = "));
 }
@@ -159,7 +159,7 @@ fn inline_placeholder_when_branching_access_paths_share_one_parent_access() {
 
   assert!(code.contains("let _p0 = _child(_child("));
   assert!(code.contains("const _n0 = _child(_p0);"));
-  assert!(code.contains("const _n1 = _child(_p0 = _next(_p0, 1));"));
+  assert!(code.contains("const _n1 = _child(_p0 = _next(_p0));"));
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { child as _child, next as _next, template as _template, txt as _txt } from "vue";
@@ -168,7 +168,7 @@ fn inline_placeholder_when_branching_access_paths_share_one_parent_access() {
   	const _n2 = _t0();
   	let _p0 = _child(_child(_n2));
   	const _n0 = _child(_p0);
-  	const _n1 = _child(_p0 = _next(_p0, 1));
+  	const _n1 = _child(_p0 = _next(_p0));
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, () => ({ first }));
   	const _x1 = _txt(_n1);
@@ -261,8 +261,8 @@ fn keep_nested_operation_parent_as_node_variable_before_sibling_lookup() {
   .code;
 
   assert!(code.contains("const _n1 = _child("));
-  assert!(code.contains("const _n2 = _child(_next(_n1, 1));"));
-  assert!(code.contains("_setInsertionState(_n1, null, 0);"));
+  assert!(code.contains("const _n2 = _child(_next(_n1));"));
+  assert!(code.contains("_setInsertionState(_n1);"));
   assert!(!code.contains("_p0 = _next"));
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
@@ -271,8 +271,8 @@ fn keep_nested_operation_parent_as_node_variable_before_sibling_lookup() {
   (() => {
   	const _n3 = _t0();
   	const _n1 = _child(_n3);
-  	const _n2 = _child(_next(_n1, 1));
-  	_setInsertionState(_n1, null, 0);
+  	const _n2 = _child(_next(_n1));
+  	_setInsertionState(_n1);
   	const _n0 = _createComponent(Comp);
   	const _x2 = _txt(_n2);
   	_setNodes(_x2, () => ({ msg }));
@@ -299,8 +299,8 @@ fn anchor_insertion_in_middle() {
   const _t1 = _template("<div><div></div><!><div>", 1);
   (() => {
   	const _n4 = _t1();
-  	const _n3 = _next(_child(_n4), 1);
-  	_setInsertionState(_n4, _n3, 1);
+  	const _n3 = _next(_child(_n4));
+  	_setInsertionState(_n4, _n3);
   	const _n0 = _createIf(() => 1, () => {
   		const _n2 = _t0();
   		return _n2;
@@ -369,7 +369,7 @@ fn flushes_parent_props_before_creating_child_component() {
   (() => {
   	const _n1 = _t0();
   	_renderEffect(() => _setProp(_n1, "id", useId()));
-  	_setInsertionState(_n1, null, 0);
+  	_setInsertionState(_n1);
   	const _n0 = _createComponent(Child);
   	return _n1;
   })();
@@ -398,17 +398,17 @@ fn does_not_flush_later_v_for_effects_before_child_component() {
   	const _n0 = _createFor(() => rows, (_for_item0) => {
   		const _n7 = _t0();
   		const _n2 = _child(_n7);
-  		const _n6 = _next(_n2, 1);
-  		const _n4 = _next(_n6, 2);
+  		const _n6 = _next(_n2);
+  		const _n4 = _next(_n6);
   		const _x2 = _txt(_n2);
-  		_setInsertionState(_n7, _n6, 1);
+  		_setInsertionState(_n7, _n6);
   		const _n3 = _createComponent(Child);
   		const _x4 = _txt(_n4);
   		_renderEffect(() => {
   			_setTemplateRef(_n3, foo, true);
   			_setText(_x4, _toDisplayString(useId()));
   		});
-  		_setInsertionState(_n7, null, 3);
+  		_setInsertionState(_n7, 3);
   		const _n5 = _createComponent(Child);
   		_renderEffect(() => _setTemplateRef(_n5, foo, true));
   		_selector0(_for_item0.value.id, () => {

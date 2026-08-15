@@ -60,8 +60,7 @@ pub struct IfIRNode<'a> {
 
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
-  pub logical_index: Option<i32>,
-  pub append: bool,
+  pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -75,8 +74,7 @@ pub struct KeyIRNode<'a> {
 
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
-  pub logical_index: Option<i32>,
-  pub append: bool,
+  pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -106,8 +104,7 @@ pub struct ForIRNode<'a> {
   pub only_child: bool,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
-  pub logical_index: Option<i32>,
-  pub append: bool,
+  pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -189,7 +186,6 @@ pub struct CreateNodesIRNode<'a> {
 
 #[derive(Debug)]
 pub struct InsertNodeIRNode {
-  pub insert_node: bool,
   pub elements: Vec<i32>,
   pub parent: i32,
   pub anchor: Option<i32>,
@@ -221,8 +217,7 @@ pub struct CreateComponentIRNode<'a> {
 
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
-  pub logical_index: Option<i32>,
-  pub append: bool,
+  pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -238,8 +233,7 @@ pub struct SlotOutletIRNode<'a> {
 
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
-  pub logical_index: Option<i32>,
-  pub append: bool,
+  pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -298,9 +292,6 @@ pub struct IRDynamicInfo<'a> {
   pub id: Option<i32>,
   pub flags: i32,
   pub anchor: Option<i32>,
-  // logical index of this node among siblings (including dynamic nodes)
-  // used during hydration to locate the correct DOM node
-  pub logical_index: Option<i32>,
   pub children: Vec<IRDynamicInfo<'a>>,
   pub template: Option<i32>,
   pub has_dynamic_child: bool,
@@ -316,7 +307,6 @@ impl<'a> IRDynamicInfo<'a> {
       operation: None,
       id: None,
       anchor: None,
-      logical_index: None,
     }
   }
 }

@@ -1,6 +1,6 @@
 mod abbreviation;
 mod custom_directive;
-mod logical_index;
+mod placeholder_alignment;
 mod transform_children;
 mod transform_element;
 mod transform_key;

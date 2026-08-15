@@ -212,7 +212,7 @@ fn does_not_mark_non_root_fallback_v_if_as_slot_root() {
   const _t1 = _template("<div>", 1);
   (() => {
   	const _n3 = _t1();
-  	_setInsertionState(_n3, null, 0);
+  	_setInsertionState(_n3);
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
   		return _n2;
