@@ -71,6 +71,7 @@ pub struct KeyIRNode<'a> {
   pub id: i32,
   pub value: Expression<'a>,
   pub block: BlockIRNode<'a>,
+  pub slot_root: bool,
 
   pub parent: Option<i32>,
   pub anchor: Option<i32>,

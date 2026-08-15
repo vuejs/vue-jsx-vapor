@@ -59,6 +59,7 @@ pub unsafe fn transform_key<'a>(
         id,
         value: value.take_in(context.allocator),
         block,
+        slot_root: false,
         anchor: None,
         append_index: None,
         parent: None,

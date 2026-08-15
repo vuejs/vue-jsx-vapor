@@ -244,6 +244,10 @@ pub fn mark_slot_root_operations<'a>(block: &mut BlockIRNode<'a>, context: &Code
     match operation.as_mut() {
       OperationNode::If(operation) => mark_slot_root_if(operation, context),
       OperationNode::For(operation) => mark_slot_root_for(operation, context),
+      OperationNode::Key(operation) => {
+        operation.slot_root = true;
+        mark_slot_root_operations(&mut operation.block, context);
+      }
       OperationNode::SlotOutlet(operation)
         if operation.flags & VaporSlotFlags::Once as i32 == 0 =>
       {

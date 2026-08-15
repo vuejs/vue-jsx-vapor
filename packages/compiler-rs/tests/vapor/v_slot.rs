@@ -774,6 +774,55 @@ fn root_slot_outlet_with_stable_sibling_in_forwarded_fallback_does_not_notify_pa
 }
 
 #[test]
+fn root_slot_outlet_with_dynamic_key_tracks_keyed_fragment_and_outlet() {
+  let code = transform(r#"<Comp><slot key={key} /></Comp>"#, None).code;
+
+  assert!(code.contains("_createSlot(\"default\", null, null, 4)"));
+  assert!(code.contains("_createKeyedFragment(() => key"));
+
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createKeyedFragment as _createKeyedFragment, createSlot as _createSlot, extend as _extend } from "vue";
+  (() => {
+  	const _n3 = _createComponent(Comp, null, _extend(() => {
+  		const _n0 = _createKeyedFragment(() => key, () => {
+  			const _n2 = _createSlot("default", null, null, 4);
+  			return _n2;
+  		}, true);
+  		return _n0;
+  	}, { _: 8 }), true);
+  	return _n3;
+  })();
+  "#);
+}
+
+#[test]
+fn keyed_slot_block_with_stable_sibling_does_not_track_slot_boundary() {
+  let code = transform(r#"<Comp><template key={key}><slot /><span /></template></Comp>"#, None).code;
+
+  assert!(code.contains("_createKeyedFragment(() => key"));
+  assert!(!code.contains("_createSlot(\"default\", null, null, 4)"));
+
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createKeyedFragment as _createKeyedFragment, createSlot as _createSlot, template as _template } from "vue";
+  const _t0 = _template("<span>", 2);
+  const _t1 = _template("<template>");
+  (() => {
+  	const _n4 = _createComponent(Comp, null, () => {
+  		const _n0 = _createKeyedFragment(() => key, () => {
+  			const _n2 = _createSlot();
+  			const _n3 = _t0();
+  			return [_n2, _n3];
+  		});
+  		return _n0;
+  	}, true);
+  	return _n4;
+  })();
+  "#);
+}
+
+#[test]
 fn slot_tag_with_v_if() {
   let code = transform(r#"<Comp><slot v-if={ok} /></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
