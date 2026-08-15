@@ -1,3 +1,24 @@
+## [3.2.21](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.20...v3.2.21) (2026-08-15)
+
+
+### Bug Fixes
+
+* **compiler-vapor:** keep the space after a quoted attribute value ([522c764](https://github.com/vuejs/vue-jsx-vapor/commit/522c764b0bd2e56f8ea150bef140bbef0d01a6af))
+* **compiler-vapor:** preserve modifiers on merged event handlers ([560e8a6](https://github.com/vuejs/vue-jsx-vapor/commit/560e8a651467779fe65842ed8aa85779ede3e29c))
+* **compiler/vapor:** align component v-text and v-html with vdom ([7c8798d](https://github.com/vuejs/vue-jsx-vapor/commit/7c8798d1e0df397defdc2fb00c69ba5259252689))
+* **compiler/vapor:** generate v-model after prop effects ([355043c](https://github.com/vuejs/vue-jsx-vapor/commit/355043ca4d302ba6caad010ed94d70319efa5762))
+* **compiler/vapor:** handle keyed slot roots ([def0a19](https://github.com/vuejs/vue-jsx-vapor/commit/def0a19e0dc08e8a9bdb00b8346ec39d0c5f43ab))
+* **compiler/vapor:** mark forwarded root slot outlets ([b4855e8](https://github.com/vuejs/vue-jsx-vapor/commit/b4855e891928de935b1e8c0c46d8ed32ca358471))
+* **compiler/vapor:** resolve fallback across multiple slot roots ([f5ef704](https://github.com/vuejs/vue-jsx-vapor/commit/f5ef704fa84598843cefca5d61ff3e4d19c108b0))
+* **compiler/vdom:** preserve vnode lifecycle in stable v-for ([9395483](https://github.com/vuejs/vue-jsx-vapor/commit/9395483daf275ccece3c833cf961ff122107c557))
+
+
+### Features
+
+* **compiler-vapor:** make event delegation opt-in ([817e137](https://github.com/vuejs/vue-jsx-vapor/commit/817e137c2847c7e4cca7d283637660f176060453))
+
+
+
 ## [3.2.20](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.19...v3.2.20) (2026-08-09)
 
 
