@@ -87,7 +87,7 @@ pub fn gen_slot_outlet<'a>(
                   if let Some(mut fallback) = fallback {
                     if *context.in_slot_block.borrow() {
                       // Forwarded fallback validity affects the owning slot's exposed branch;
-                      mark_slot_root_operations(&mut fallback, context);
+                      mark_slot_root_operations(&mut fallback, context, false);
                     }
                     Some(gen_block(fallback, context, context_block, ast.vec()).into())
                   } else if flags > 0 {

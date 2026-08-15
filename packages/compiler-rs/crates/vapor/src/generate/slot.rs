@@ -443,7 +443,7 @@ fn gen_slot_block_with_props<'a>(
   let ast = &context.ast;
   let has_stable_root = has_stable_slot_root(&mut oper, context);
   if !has_stable_root {
-    mark_slot_root_operations(&mut oper, context);
+    mark_slot_root_operations(&mut oper, context, false);
   }
   let exit_slot_block = context.enter_slot_block();
   let mut block_fn = context.with_id(
