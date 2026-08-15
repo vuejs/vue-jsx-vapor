@@ -179,7 +179,7 @@ fn gen_children<'a>(
       continue;
     }
 
-    let element_index = index as i32 + offset;
+    let element_index = index + offset;
 
     let inline_placeholder = id.is_none()
       && child.template.is_none()
@@ -420,8 +420,7 @@ fn can_inline_placehoder(dynamic: &IRDynamicInfo) -> bool {
 // Kept in lockstep with genChildren's traversal rules.
 fn has_adjacent_following_access_child(children: &[IRDynamicInfo], offset: i32) -> bool {
   let mut future_offset = offset;
-  for i in 0..children.len() {
-    let child = &children[i];
+  for (i, child) in children.iter().enumerate() {
     if child.flags & DynamicFlag::NonTemplate as i32 > 0 {
       future_offset -= 1;
     }

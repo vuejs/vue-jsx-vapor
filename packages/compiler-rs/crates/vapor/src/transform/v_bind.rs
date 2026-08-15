@@ -52,11 +52,11 @@ pub fn transform_v_bind<'a>(
           }
         } else {
           get_text_like_value(expression)
-            .map(|value| ast.expression_string_literal(SPAN, ast.str(&value.as_ref()), None))
+            .map(|value| ast.expression_string_literal(SPAN, ast.str(value.as_ref()), None))
         }
       }
       JSXAttributeValue::StringLiteral(value) => {
-        Some(ast.expression_string_literal(SPAN, ast.str(&value.value.as_ref()), None))
+        Some(ast.expression_string_literal(SPAN, ast.str(value.value.as_ref()), None))
       }
       _ => None,
     } {

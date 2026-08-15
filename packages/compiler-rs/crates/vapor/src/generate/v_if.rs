@@ -111,15 +111,11 @@ pub fn gen_if<'a>(
         } else {
           None
         },
-        if let Some(flags) = flags {
-          Some(
-            ast
-              .expression_numeric_literal(SPAN, flags as f64, None, NumberBase::Decimal)
-              .into(),
-          )
-        } else {
-          None
-        },
+        flags.map(|flags| {
+          ast
+            .expression_numeric_literal(SPAN, flags as f64, None, NumberBase::Decimal)
+            .into()
+        }),
       ]
       .into_iter()
       .flatten(),
@@ -165,5 +161,5 @@ fn gen_if_flags(block_shape: i32, once: bool, slot_root: bool, index: Option<i32
     return None;
   }
 
-  return Some(flags);
+  Some(flags)
 }

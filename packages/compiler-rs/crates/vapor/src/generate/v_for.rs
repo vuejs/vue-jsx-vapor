@@ -461,7 +461,7 @@ fn is_single_node_block(block: &BlockIRNode) -> bool {
 
 fn is_fragment_block(block: &BlockIRNode) -> bool {
   let child = get_single_returned_child(block);
-  let Some(operation) = child.map(|child| child.operation.as_deref()).flatten() else {
+  let Some(operation) = child.and_then(|child| child.operation.as_deref()) else {
     return false;
   };
   matches!(
@@ -481,12 +481,11 @@ fn get_single_returned_child<'a>(block: &'a BlockIRNode) -> Option<&'a IRDynamic
     return None;
   }
   let id = block.returns[0];
-  for child in block.dynamic.children.iter() {
-    if child.id.is_some_and(|i| i == id) {
-      return Some(child);
-    }
-  }
-  None
+  block
+    .dynamic
+    .children
+    .iter()
+    .find(|&child| child.id.is_some_and(|i| i == id))
 }
 
 fn match_patterns<'a>(

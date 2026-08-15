@@ -243,7 +243,7 @@ fn collect_adjacent_text<'a>(
   if index > 0
     && let Some(JSXChild::Text(_)) = children.get(index - 1)
   {
-    index = index - 1;
+    index -= 1;
   };
 
   let children_ptr = children as *mut oxc_allocator::Vec<JSXChild>;
@@ -256,7 +256,7 @@ fn collect_adjacent_text<'a>(
       &mut (unsafe { &mut *children_ptr })[index]
     };
     index += 1;
-    if !is_text_like(&child) {
+    if !is_text_like(child) {
       break;
     }
     nodes.push(child);
@@ -470,7 +470,7 @@ fn set_negative<'a>(
   operation.block_shape = encode_if_block_shape(
     &operation.positive,
     force_multi_root,
-    operation.negative.as_ref(),
+    operation.negative.as_deref(),
     allow_no_scope,
   )
 }

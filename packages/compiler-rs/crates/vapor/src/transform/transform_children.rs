@@ -121,7 +121,7 @@ pub unsafe fn transform_children<'a>(
         context.register_template(
           context_block,
           Some(tag),
-          is_text_child || context.can_use_static_template(&context_block, tag),
+          is_text_child || context.can_use_static_template(context_block, tag),
         );
         context.reference(&mut context_block.dynamic);
         if flags & DynamicFlag::NonTemplate as i32 == 0 || flags & DynamicFlag::Insert as i32 != 0 {
@@ -193,7 +193,7 @@ fn process_dynamic_children<'a>(
         child.flags =
           (child.flags - DynamicFlag::NonTemplate as i32) | DynamicFlag::Referenced as i32;
         child.anchor = Some(context.increase_id());
-        anchor = child.anchor.clone();
+        anchor = child.anchor;
       }
       if child.template.is_some()
         && let Some(id) = child.id

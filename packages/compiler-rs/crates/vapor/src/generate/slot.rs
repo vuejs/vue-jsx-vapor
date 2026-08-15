@@ -181,13 +181,11 @@ fn gen_dynamic_slot<'a>(
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Expression<'a> {
-  let frag = if slot._loop.is_none() {
+  if slot._loop.is_none() {
     gen_basic_dynamic_slot(slot, context, context_block)
   } else {
     gen_loop_slot(slot, context, context_block)
-  };
-
-  frag
+  }
 }
 
 fn gen_basic_dynamic_slot<'a>(

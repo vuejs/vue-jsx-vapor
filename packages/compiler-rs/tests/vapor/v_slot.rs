@@ -730,7 +730,11 @@ fn slot_root_shares_fallback_with_dynamic_sibling() {
 
 #[test]
 fn v_once_slot_root_shares_fallback_without_slot_root_flag() {
-  let code = transform(r#"<Comp><slot v-once name="a"/><slot name="b"/></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><slot v-once name="a"/><slot name="b"/></Comp>"#,
+    None,
+  )
+  .code;
 
   assert!(code.contains("null, null, 18"));
   assert!(code.contains("null, null, 20"));
@@ -832,7 +836,11 @@ fn root_slot_outlet_with_dynamic_key_tracks_keyed_fragment_and_outlet() {
 
 #[test]
 fn keyed_slot_block_with_stable_sibling_does_not_track_slot_boundary() {
-  let code = transform(r#"<Comp><template key={key}><slot /><span /></template></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><template key={key}><slot /><span /></template></Comp>"#,
+    None,
+  )
+  .code;
 
   assert!(code.contains("_createKeyedFragment(() => key"));
   assert!(!code.contains("_createSlot(\"default\", null, null, 4)"));

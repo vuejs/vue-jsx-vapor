@@ -64,7 +64,7 @@ pub fn transform_v_on<'a>(
       s.push_str("vnode");
       let mut chars = name.chars();
       if let Some(c) = chars.next() {
-        s.push_str(&c.to_ascii_uppercase().to_string());
+        s.push(c.to_ascii_uppercase());
       }
       s.push_str(chars.as_str());
       ast.str(&s)
@@ -76,8 +76,7 @@ pub fn transform_v_on<'a>(
 
   let exp = value
     .as_mut()
-    .map(|value| jsx_attribute_value_to_expression(value, ast))
-    .flatten()
+    .and_then(|value| jsx_attribute_value_to_expression(value, ast))
     .unwrap_or(ast.expression_arrow_function(
       SPAN,
       false,

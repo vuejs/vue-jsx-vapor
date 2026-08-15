@@ -265,7 +265,7 @@ pub fn get_child_template_close_tags<'a>(
   context: &TransformContext<'a>,
 ) -> (HashSet<&'a str>, bool) {
   let inherited_tags = context.template_close_tags.borrow().clone();
-  let inherited_blocks = context.template_close_blocks.borrow().clone();
+  let inherited_blocks = *context.template_close_blocks.borrow();
   let Some(parent_node) = parent_node else {
     return (inherited_tags, inherited_blocks);
   };
@@ -278,7 +278,7 @@ pub fn get_child_template_close_tags<'a>(
   (tags, inherited_blocks || is_inline_tag(tag))
 }
 
-pub fn is_in_same_template_as_parent<'a>(tag: &'a str, parent_tag_name: &str) -> bool {
+pub fn is_in_same_template_as_parent(tag: &str, parent_tag_name: &str) -> bool {
   if parent_tag_name.is_empty() || matches!(parent_tag_name, "template") {
     return false;
   }
@@ -297,7 +297,7 @@ fn can_omit_end_tag<'a>(
   }
 
   let template_close_tags = context.template_close_tags.borrow();
-  let template_close_blocks = context.template_close_blocks.borrow().clone();
+  let template_close_blocks = *context.template_close_blocks.borrow();
   if (!template_close_tags.is_empty()
     && (template_close_tags.contains(tag) || is_always_close_tag(tag) || is_formatting_tag(tag)))
     || (template_close_blocks && is_block_tag(tag))

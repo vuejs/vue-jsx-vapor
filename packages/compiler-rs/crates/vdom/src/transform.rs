@@ -256,7 +256,7 @@ impl<'a> TransformContext<'a> {
 
       let mut identifiers = vec![];
       let mut add_identifiers = |id: &str| {
-        let name = id.as_ref() as *const str;
+        let name = id as *const str;
         identifiers.push(unsafe { &*name });
         options
           .identifiers

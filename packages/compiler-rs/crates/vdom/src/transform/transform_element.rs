@@ -361,7 +361,7 @@ pub fn build_props<'a>(
         value = arg.to_expression();
       }
 
-      if !(has_jsx && !value.is_function())
+      if (!has_jsx || value.is_function())
         && (matches!(value, Expression::LogicalExpression(value) if value.span() == SPAN)
           || (get_constant_type(
             Either::B(value),

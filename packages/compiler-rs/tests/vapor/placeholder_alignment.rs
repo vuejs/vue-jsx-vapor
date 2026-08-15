@@ -650,7 +650,8 @@ fn set_insertion_state_scenarios_v_if_with_v_else_should_share_same_placeholder_
 }
 
 #[test]
-fn set_insertion_state_scenarios_v_if_with_v_else_if_and_v_else_should_share_same_placeholder_alignment() {
+fn set_insertion_state_scenarios_v_if_with_v_else_if_and_v_else_should_share_same_placeholder_alignment()
+ {
   let code = transform(
     "<div>
       <span>A</span>

@@ -49,8 +49,7 @@ pub unsafe fn transform_v_if<'a>(
   let dir_exp = dir
     .value
     .as_mut()
-    .map(|value| jsx_attribute_value_to_expression(value, context.ast))
-    .flatten();
+    .and_then(|value| jsx_attribute_value_to_expression(value, context.ast));
   if dir_name != "v-else" && dir_exp.is_none() {
     context.options.on_error.as_ref()(ErrorCodes::VIfNoExpression, dir.span);
     return None;
@@ -177,7 +176,7 @@ pub unsafe fn transform_v_if<'a>(
     last_if_node.block_shape = encode_if_block_shape(
       &last_if_node.positive,
       force_multi_root,
-      last_if_node.negative.as_ref(),
+      last_if_node.negative.as_deref(),
       allow_no_scope,
     )
   }))
@@ -186,7 +185,7 @@ pub unsafe fn transform_v_if<'a>(
 pub fn encode_if_block_shape(
   positive: &BlockIRNode,
   force_multi_root: bool,
-  negative: Option<&Box<Either<BlockIRNode, IfIRNode>>>,
+  negative: Option<&Either<BlockIRNode, IfIRNode>>,
   allow_no_scope: bool,
 ) -> i32 {
   // Pack the true/false branch shapes into one integer so runtime `createIf()`
@@ -201,7 +200,7 @@ pub fn encode_if_block_shape(
     flags |= VaporIfFlags::TrueNoScope as i32;
   }
   if allow_no_scope
-    && negative.is_some_and(|negative| match negative.as_ref() {
+    && negative.is_some_and(|negative| match negative {
       Either::A(negative) => can_skip_if_branch_scope(negative),
       Either::B(_) => false,
     })
@@ -225,9 +224,9 @@ pub fn should_force_multi_root(parent: &JSXChild) -> bool {
   }
 }
 
-fn get_negative_block_shape(negative: Option<&Box<Either<BlockIRNode, IfIRNode>>>) -> i32 {
+fn get_negative_block_shape(negative: Option<&Either<BlockIRNode, IfIRNode>>) -> i32 {
   if let Some(negative) = negative {
-    match negative.as_ref() {
+    match negative {
       Either::A(block) => get_block_shape(block),
       Either::B(_) => VaporBlockShape::SingleRoot as i32,
     }
@@ -245,23 +244,23 @@ fn can_skip_if_branch_scope(block: &BlockIRNode) -> bool {
     return false;
   }
 
-  return block.returns.iter().all(|id| {
-    let Some(returned) = find_returned_dynamic(&block, *id) else {
+  block.returns.iter().all(|id| {
+    let Some(returned) = find_returned_dynamic(block, *id) else {
       return false;
     };
     returned.template.is_some()
       && returned.operation.is_none()
       && !returned.has_dynamic_child
       && (returned.flags & (DynamicFlag::Insert as i32 | DynamicFlag::NonTemplate as i32) == 0)
-  });
+  })
 }
 
 fn find_returned_dynamic<'a>(block: &'a BlockIRNode, id: i32) -> Option<&'a IRDynamicInfo<'a>> {
-  return block
+  block
     .dynamic
     .children
     .iter()
-    .find(|child| child.id.is_some_and(|i| i == id));
+    .find(|child| child.id.is_some_and(|i| i == id))
 }
 
 fn get_block_shape(block: &BlockIRNode) -> i32 {

@@ -392,13 +392,7 @@ fn is_referenced(node: &IdentifierReference, parent: AstKind) -> bool {
     // no: class { NODE = value; }
     // yes: class { [NODE] = value; }
     // yes: class { key = NODE; }
-    AstKind::PropertyDefinition(parent) => {
-      if parent.key.span().eq(&node.span) {
-        parent.computed
-      } else {
-        true
-      }
-    }
+    AstKind::PropertyDefinition(parent) if parent.key.span().eq(&node.span) => parent.computed,
     AstKind::AccessorProperty(parent) => parent.key.span() != node.span,
 
     // no: class NODE {}
@@ -483,13 +477,7 @@ fn is_referenced(node: &IdentifierReference, parent: AstKind) -> bool {
 
     // yes: { [NODE]: value }
     // no: { NODE: value }
-    AstKind::TSPropertySignature(parent) => {
-      if parent.key.span().eq(&node.span) {
-        parent.computed
-      } else {
-        true
-      }
-    }
+    AstKind::TSPropertySignature(parent) if parent.key.span().eq(&node.span) => parent.computed,
     _ => true,
   }
 }
@@ -522,7 +510,7 @@ pub fn is_slots_expression(exp: &Expression) -> Option<bool> {
     }
     Expression::LogicalExpression(exp) => {
       if let Some(result) = is_slots_expression(&exp.right)
-        && result == false
+        && !result
       {
         // prevent render false text (e.g., `createVNode(Comp, null, false)`)
         Some(true)
@@ -532,11 +520,11 @@ pub fn is_slots_expression(exp: &Expression) -> Option<bool> {
     }
     Expression::ConditionalExpression(exp) => {
       if let Some(result) = is_slots_expression(&exp.consequent)
-        && result == false
+        && !result
       {
         Some(true)
       } else if let Some(result) = is_slots_expression(&exp.alternate)
-        && result == false
+        && !result
       {
         Some(true)
       } else {

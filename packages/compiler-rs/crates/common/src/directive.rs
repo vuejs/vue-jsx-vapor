@@ -68,7 +68,7 @@ pub fn resolve_directive<'a>(
       if !arr.elements.is_empty()
         && arr
           .elements
-          .get(0)
+          .first()
           .is_some_and(|element| !matches!(element, ArrayExpressionElement::ArrayExpression(_)))
         && let Some(element) = arr.elements.remove(0).as_expression_mut()
         && !is_namespace
