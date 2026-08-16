@@ -260,6 +260,23 @@ fn component_props_merging_event_handlers() {
 }
 
 #[test]
+fn component_props_merging_event_handlers_with_modifiers() {
+  let code = transform(
+    "<Foo onKeydown_enter_prevent={a} onKeydown_esc_prevent={b} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
+  (() => {
+  	const _n0 = _createComponent(Foo, { onKeydown: () => [_withKeys(_withModifiers(a, ["prevent"]), ["enter"]), _withKeys(_withModifiers(b, ["prevent"]), ["esc"])] }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn component_props_merging_style() {
   let code = transform(
     "<Foo style=\"color: green\" style={{ color: 'red' }} />",
@@ -438,7 +455,7 @@ fn static_props_mixed_quoting_with_boolean_attribute() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"has whitespace\"inert data-targets=\"foo>bar\">", 3);
+  const _t0 = _template("<div title=\"has whitespace\" inert data-targets=\"foo>bar\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -447,7 +464,7 @@ fn static_props_mixed_quoting_with_boolean_attribute() {
 }
 
 #[test]
-fn static_props_space_omitted_after_quoted_attribute() {
+fn static_props_space_kept_after_quoted_attribute() {
   let code = transform(
     r#"<div title="has whitespace" alt='"contains quotes"' data-targets="foo>bar" />"#,
     None,
@@ -455,7 +472,7 @@ fn static_props_space_omitted_after_quoted_attribute() {
   .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
-  const _t0 = _template("<div title=\"has whitespace\"alt=\"&quot;contains quotes&quot;\"data-targets=\"foo>bar\">", 3);
+  const _t0 = _template("<div title=\"has whitespace\" alt=\"&quot;contains quotes&quot;\" data-targets=\"foo>bar\">", 3);
   (() => {
   	const _n0 = _t0();
   	return _n0;
@@ -613,9 +630,9 @@ fn invalid_html_nesting() {
   (() => {
   	const _n1 = _t1();
   	const _n0 = _t0();
+  	insert(_n0, _n1);
   	const _n3 = _t2();
   	const _n2 = _t2();
-  	insert(_n0, _n1);
   	insert(_n2, _n3);
   	return [_n1, _n3];
   })();
@@ -641,10 +658,10 @@ fn invalid_table_nesting_with_dynamic_child() {
   (() => {
   	const _n2 = _t1();
   	const _n1 = _t0();
+  	insert(_n1, _n2);
   	const _n0 = _child(_n1);
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, () => msg);
-  	insert(_n1, _n2);
   	return _n2;
   })();
   "#);
@@ -654,14 +671,11 @@ fn invalid_table_nesting_with_dynamic_child() {
 fn zcustom_element() {
   let code = transform(r#"<my-custom-element>{foo}</my-custom-element>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
   import { createPlainElement as _createPlainElement } from "vue";
   (() => {
-  	const _n1 = _createPlainElement("my-custom-element", null, () => {
-  		const _n0 = _createNodes(() => foo);
-  		return _n0;
-  	}, true);
-  	return _n1;
+  	const _n0 = _createPlainElement("my-custom-element", null, { $: [() => _normalizeVaporSlots(foo)] }, true);
+  	return _n0;
   })();
   "#)
 }

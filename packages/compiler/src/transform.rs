@@ -83,12 +83,10 @@ impl<'a> Transform<'a> {
       let node = (&mut *node_ptr).take_in(&options.allocator);
       let expression = if vdom {
         use vdom::transform::TransformContext;
-        let transform_context: *const TransformContext = &TransformContext::new(options, &*ast_ptr);
-        (&*transform_context).transform(node)
+        TransformContext::new(node, options, &*ast_ptr).transform()
       } else {
         use vapor::transform::TransformContext;
-        let transform_context: *const TransformContext = &TransformContext::new(options, &*ast_ptr);
-        (&*transform_context).transform(node)
+        TransformContext::new(node, options, &*ast_ptr).transform()
       };
       RootJsx {
         node_ptr,
@@ -121,6 +119,25 @@ impl<'a> Transform<'a> {
     }
 
     let mut statements = vec![];
+    let delegates = self.options.delegates.take();
+    if !delegates.is_empty() {
+      statements.push(ast.statement_expression(
+        SPAN,
+        ast.expression_call(
+          SPAN,
+          ast.expression_identifier(SPAN, ast.str("_delegateEvents")),
+          NONE,
+          oxc_allocator::Vec::from_iter_in(
+            delegates.iter().map(|delegate| {
+              Argument::StringLiteral(ast.alloc(ast.string_literal(SPAN, ast.str(delegate), None)))
+            }),
+            ast.allocator,
+          ),
+          false,
+        ),
+      ));
+    }
+
     let mut helpers = self.options.helpers.take();
     if !helpers.is_empty() {
       if helpers.contains("defineVaporSSRComponent") {
@@ -141,17 +158,23 @@ impl<'a> Transform<'a> {
         });
       };
 
-      let vdom_helpers = vec!["createVNodeCache", "normalizeVNode", "normalizeSlot"]
-        .into_iter()
-        .filter(|helper| {
-          if helpers.contains(*helper) {
-            helpers.remove(*helper);
-            true
-          } else {
-            false
-          }
-        })
-        .collect::<Vec<_>>();
+      let vdom_helpers = vec![
+        "createVNodeCache",
+        "normalizeVNode",
+        "normalizeSlot",
+        "normalizeSlots",
+        "normalizeClass",
+      ]
+      .into_iter()
+      .filter(|helper| {
+        if helpers.contains(*helper) {
+          helpers.remove(*helper);
+          true
+        } else {
+          false
+        }
+      })
+      .collect::<Vec<_>>();
       if !vdom_helpers.is_empty() {
         statements.push(Statement::ImportDeclaration(ast.alloc_import_declaration(
           SPAN,
@@ -184,6 +207,7 @@ impl<'a> Transform<'a> {
         "setNodes",
         "createNodes",
         "createComponent",
+        "normalizeVaporSlots",
         "defineVaporSSRComponent",
       ]
       .into_iter()

@@ -154,7 +154,8 @@ fn prevent_hoisted_expression_with_this() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createElementBlock as _createElementBlock, normalizeClass as _normalizeClass, openBlock as _openBlock } from "vue";
+  import { normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", { class: _normalizeClass(this.foo) }, null, 2);
   "#);
 }
@@ -180,7 +181,7 @@ fn prevent_cache_expression_with_this() {
 #[test]
 fn jsx_in_expression_container() {
   let code = transform(
-    r#"<><div foo={<div />} /></>"#,
+    r#"<><Comp foo={<div />} bar={() => <div />} /></>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -188,9 +189,11 @@ fn jsx_in_expression_container() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  const _hoisted_1 = { foo: (_openBlock(), _createElementBlock("div")) };
-  _openBlock(), _createElementBlock(_Fragment, null, [(_openBlock(), _createElementBlock("div", _hoisted_1))], 64);
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createElementBlock(_Fragment, null, [(_openBlock(), _createBlock(Comp, {
+  	foo: (_openBlock(), _createElementBlock("div")),
+  	bar: () => (_openBlock(), _createElementBlock("div"))
+  }, null, 8, ["foo"]))], 64);
   "#);
 }
 

@@ -319,7 +319,7 @@ fn nested_v_for() {
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
   		const _n5 = _t1();
-  		_setInsertionState(_n5, null, 0);
+  		_setInsertionState(_n5);
   		const _n2 = _createFor(() => _for_item0.value, (_for_item1) => {
   			const _n4 = _t0();
   			const _x4 = _txt(_n4);
@@ -485,7 +485,7 @@ fn fast_remove_flag() {
   const _t1 = _template("<div>", 1);
   (() => {
   	const _n3 = _t1();
-  	_setInsertionState(_n3, null, 0);
+  	_setInsertionState(_n3);
   	const _n0 = _createFor(() => i, (_for_item0) => {
   		const _n2 = _t0();
   		const _x2 = _txt(_n2);
@@ -501,15 +501,12 @@ fn fast_remove_flag() {
 fn on_component() {
   let code = transform("<Comp v-for={item in list}>{item}</Comp>", None).code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
-  		const _n3 = _createComponent(Comp, null, () => {
-  			const _n2 = _createNodes(() => _for_item0.value);
-  			return _n2;
-  		});
-  		return _n3;
+  		const _n2 = _createComponent(Comp, null, { $: [() => _normalizeVaporSlots(_for_item0.value)] });
+  		return _n2;
   	}, void 0, 2);
   	return _n0;
   })();
@@ -570,15 +567,12 @@ fn on_template_with_single_component_child() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
-  		const _n3 = _createComponent(Comp, null, () => {
-  			const _n2 = _createNodes(() => _for_item0.value);
-  			return _n2;
-  		});
-  		return _n3;
+  		const _n2 = _createComponent(Comp, null, { $: [() => _normalizeVaporSlots(_for_item0.value)] });
+  		return _n2;
   	}, void 0, 2);
   	return _n0;
   })();
@@ -607,7 +601,7 @@ fn v_for_on_template_with_element_and_component_v_if_branches() {
   		}, () => {
   			const _n6 = _createComponent(Comp);
   			return _n6;
-  		}, 298);
+  		}, 266);
   		return _n2;
   	}, void 0, 16);
   	return _n0;

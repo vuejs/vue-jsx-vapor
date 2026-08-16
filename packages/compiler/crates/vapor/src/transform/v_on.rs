@@ -1,14 +1,16 @@
 use std::borrow::Cow;
 
 use common::{
-  check::is_keyboard_event,
+  check::{is_delegated_event, is_keyboard_event},
   directive::{Directives, Modifiers, resolve_modifiers},
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
 };
 use oxc_ast::{
   NONE,
-  ast::{Expression, FormalParameterKind, JSXAttribute, JSXAttributeName},
+  ast::{
+    Expression, FormalParameterKind, JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXElement,
+  },
 };
 use oxc_span::SPAN;
 
@@ -20,6 +22,7 @@ use crate::{
 pub fn transform_v_on<'a>(
   directives: &Directives,
   dir: &'a mut JSXAttribute<'a>,
+  node: &JSXElement<'a>,
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
@@ -35,10 +38,22 @@ pub fn transform_v_on<'a>(
   let replaced = format!("{}{}", name[2..3].to_lowercase(), &name[3..]);
   let splited = replaced.split("_").collect::<Vec<_>>();
   let name_string = splited[0];
-  let modifiers = splited[1..].to_vec();
+  let has_modifier = splited.len() > 1;
+  let mut delegate_modifier = false;
+  let modifiers = splited[1..]
+    .iter()
+    .filter_map(|modifier| {
+      if *modifier == "delegate" {
+        delegate_modifier = true;
+        None
+      } else {
+        Some(*modifier)
+      }
+    })
+    .collect::<Vec<_>>();
 
   let value = &mut dir.value;
-  if value.is_none() && modifiers.is_empty() {
+  if value.is_none() && !has_modifier {
     context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, dir.span);
   }
 
@@ -49,7 +64,7 @@ pub fn transform_v_on<'a>(
       s.push_str("vnode");
       let mut chars = name.chars();
       if let Some(c) = chars.next() {
-        s.push_str(&c.to_ascii_uppercase().to_string());
+        s.push(c.to_ascii_uppercase());
       }
       s.push_str(chars.as_str());
       ast.str(&s)
@@ -61,7 +76,7 @@ pub fn transform_v_on<'a>(
 
   let exp = value
     .as_mut()
-    .map(|value| jsx_attribute_value_to_expression(value, ast))
+    .and_then(|value| jsx_attribute_value_to_expression(value, ast))
     .unwrap_or(ast.expression_arrow_function(
       SPAN,
       false,
@@ -83,6 +98,13 @@ pub fn transform_v_on<'a>(
     options: event_option_modifiers,
   } = resolve_modifiers(&arg.value, modifiers);
 
+  if delegate_modifier && is_component {
+    context.options.on_warn.as_ref()(
+      ".delegate modifier is only supported on native DOM elements. The modifier will be ignored.",
+      name_loc,
+    );
+  }
+
   let is_static_click = arg.value == "click";
 
   // normalize click.right and click.middle since they don't actually fire
@@ -101,6 +123,25 @@ pub fn transform_v_on<'a>(
   if !key_modifiers.is_empty() && !is_keyboard_event(&arg.value) {
     key_modifiers.clear();
   }
+
+  // Only delegate if:
+  // - no dynamic event name
+  // - no event option modifiers (passive, capture, once)
+  // - no handlers for the same static event on this element that use .stop
+  let delegate = if !delegate_modifier || is_component {
+    false
+  } else if !is_delegated_event(&arg.value) {
+    context.options.on_warn.as_ref()(
+      &format!(
+        ".delegate modifier is not supported on the \"{}\" event. The listener will be attached directly.",
+        arg.value
+      ),
+      name_loc,
+    );
+    false
+  } else {
+    event_option_modifiers.is_empty() && !has_stop_handler_for_static_event(node, &arg.value)
+  };
 
   let modifiers = Modifiers {
     keys: key_modifiers
@@ -121,6 +162,7 @@ pub fn transform_v_on<'a>(
     return Some(DirectiveTransformResult {
       key: Expression::StringLiteral(arg),
       value: exp,
+      to_display_string: false,
       handler: true,
       handler_modifiers: Some(modifiers),
       model: false,
@@ -138,10 +180,28 @@ pub fn transform_v_on<'a>(
       element,
       value: exp,
       modifiers,
+      delegate,
       effect: false,
       key: Expression::StringLiteral(arg),
     }),
     None,
   );
   None
+}
+
+fn has_stop_handler_for_static_event(node: &JSXElement, event_name: &str) -> bool {
+  node.opening_element.attributes.iter().any(|prop| {
+    let JSXAttributeItem::Attribute(prop) = prop else {
+      return false;
+    };
+    let name = prop.name.get_identifier().name.as_str();
+    if !name.starts_with("on") || !name.split('_').any(|modifier| modifier == "stop") {
+      return false;
+    }
+    name.starts_with(&format!(
+      "on{}{}",
+      event_name[..1].to_uppercase(),
+      &event_name[1..]
+    ))
+  })
 }

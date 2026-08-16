@@ -12,7 +12,10 @@ fn text() {
     }),
   )
   .code;
-  assert_snapshot!(code, @r#"("foo");"#);
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createVNode as _createVNode } from "vue";
+  _createVNode(_Fragment, null, "foo");
+  "#);
 }
 
 #[test]
@@ -315,7 +318,7 @@ fn condition_expression_with_slot_outlet() {
   (() => {
   	const _cache = _createVNodeCache("631d214bc2c8427c");
   	const _slots = _useSlots();
-  	return _openBlock(), _createElementBlock(_Fragment, null, [foo ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_renderSlot(_slots, "default")], 64)) : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [_cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div")).cacheIndex = 0, _setBlockTracking(1), _cache[0])], 64))], 64);
+  	return _openBlock(), _createElementBlock(_Fragment, null, [foo ? _renderSlot(_slots, "default", {}, undefined, undefined, 0) : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [_cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div")).cacheIndex = 0, _setBlockTracking(1), _cache[0])], 64))], 64);
   })();
   "#);
 }
@@ -333,7 +336,9 @@ fn condition_expression_with_assign_target() {
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  _openBlock(), _createElementBlock(_Fragment, null, [(foo = (_openBlock(), _createElementBlock("div"))) ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_normalizeVNode(() => foo)], 64)) : _normalizeVNode(() => null)], 64);
+  _openBlock(), _createElementBlock(_Fragment, null, [(foo = ((foo) => {
+  	return _openBlock(), _createElementBlock("div");
+  })(foo)) ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_normalizeVNode(() => foo)], 64)) : _normalizeVNode(() => null)], 64);
   "#);
 }
 
@@ -350,6 +355,8 @@ fn logical_expression_with_assign_target() {
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  _openBlock(), _createElementBlock(_Fragment, null, [_normalizeVNode(() => (foo = (_openBlock(), _createElementBlock("div"))) || foo)], 64);
+  _openBlock(), _createElementBlock(_Fragment, null, [_normalizeVNode(() => (foo = ((foo) => {
+  	return _openBlock(), _createElementBlock("div");
+  })(foo)) || foo)], 64);
   "#);
 }

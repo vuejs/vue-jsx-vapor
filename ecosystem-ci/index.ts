@@ -14,18 +14,14 @@ cli
   })
   .option('--tag <tag>', 'vue-jsx-vapor tag to use')
   .option('--commit <commit>', 'vue-jsx-vapor commit sha to use')
-  .option(
-    '--release <version>',
-    'use a specific release from npm or pkg.pr.new (e.g. "3.2.0" or "@abc1234")',
-  )
   .action(async (suites: string[], options: RunOptions) => {
     fs.mkdirSync(workspace, { recursive: true })
 
     const suitesToRun = getSuitesToRun(suites)
     const runOptions = {
+      ...options,
       root,
       workspace,
-      release: options.release,
     }
 
     for (const suite of suitesToRun) {

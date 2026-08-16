@@ -1,21 +1,18 @@
 import * as Vue from 'vue'
-import {
-  createComponent,
-  createProxyComponent,
-  normalizeNode,
-  type NodeChild,
-} from './vapor'
+import { createComponent, createProxyComponent, normalizeNode } from './vapor'
+import type { NodeChild } from './types'
 import type {
   Block,
   Component,
   EmitsOptions,
   Fragment,
   FunctionalVaporComponent,
-  NodeRef,
+  Ref,
   Suspense,
   SuspenseProps,
   TeleportProps,
   VaporComponent,
+  VaporComponentInstance,
   VaporTeleport,
 } from 'vue'
 
@@ -25,6 +22,10 @@ type HTMLElementEventHandler = {
   ) => any
 }
 
+type NodeRef =
+  | string
+  | Ref
+  | ((ref: Element | VaporComponentInstance, refs: Record<string, any>) => void)
 type ReservedProps = { key?: () => PropertyKey; ref?: NodeRef }
 type RawProps = Record<string, any> & ReservedProps
 

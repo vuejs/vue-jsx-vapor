@@ -18,7 +18,11 @@ pub fn gen_key<'a>(
 ) -> Statement<'a> {
   let ast = &context.ast;
   let KeyIRNode {
-    id, value, block, ..
+    id,
+    value,
+    block,
+    slot_root,
+    ..
   } = oper;
 
   let expr = ast.expression_arrow_function(
@@ -43,6 +47,11 @@ pub fn gen_key<'a>(
   let _context_block = context_block as *mut BlockIRNode;
   let block_fn = gen_block(block, context, unsafe { &mut *_context_block }, ast.vec());
 
+  let mut args = ast.vec_from_array([expr.into(), block_fn.into()]);
+  if slot_root {
+    args.push(ast.expression_boolean_literal(SPAN, true).into());
+  }
+
   let expression = ast.expression_call(
     SPAN,
     ast.expression_identifier(
@@ -50,7 +59,7 @@ pub fn gen_key<'a>(
       ast.str(context.options.helper("_createKeyedFragment")),
     ),
     NONE,
-    ast.vec_from_array([expr.into(), block_fn.into()]),
+    args,
     false,
   );
 

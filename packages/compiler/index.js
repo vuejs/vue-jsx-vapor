@@ -37,7 +37,7 @@ const isMuslFromFilesystem = () => {
 
 const isMuslFromReport = () => {
   let report = null
-  if (typeof process.report?.getReport === 'function') {
+  if (process.report && typeof process.report.getReport === 'function') {
     process.report.excludeNetwork = true
     report = process.report.getReport()
   }
@@ -81,8 +81,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-android-arm64')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-android-arm64/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -97,8 +97,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-android-arm-eabi')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-android-arm-eabi/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -109,7 +109,7 @@ function requireNative() {
     }
   } else if (process.platform === 'win32') {
     if (process.arch === 'x64') {
-      if (process.config?.variables?.shlib_suffix === 'dll.a' || process.config?.variables?.node_target_type === 'shared_library') {
+      if ((process.config && process.config.variables && process.config.variables.shlib_suffix === 'dll.a') || (process.config && process.config.variables && process.config.variables.node_target_type === 'shared_library')) {
         try {
         return require('./compiler.win32-x64-gnu.node')
       } catch (e) {
@@ -118,8 +118,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-win32-x64-gnu')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-win32-x64-gnu/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -134,8 +134,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-win32-x64-msvc')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-win32-x64-msvc/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -151,8 +151,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-win32-ia32-msvc')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-win32-ia32-msvc/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -167,8 +167,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-win32-arm64-msvc')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-win32-arm64-msvc/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -186,8 +186,8 @@ function requireNative() {
     try {
       const binding = require('@vue-jsx-vapor/compiler-darwin-universal')
       const bindingPackageVersion = require('@vue-jsx-vapor/compiler-darwin-universal/package.json').version
-      if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-        throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+      if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+        throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
       }
       return binding
     } catch (e) {
@@ -202,8 +202,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-darwin-x64')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-darwin-x64/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -218,8 +218,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-darwin-arm64')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-darwin-arm64/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -238,8 +238,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-freebsd-x64')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-freebsd-x64/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -254,8 +254,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-freebsd-arm64')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-freebsd-arm64/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -275,8 +275,8 @@ function requireNative() {
         try {
           const binding = require('@vue-jsx-vapor/compiler-linux-x64-musl')
           const bindingPackageVersion = require('@vue-jsx-vapor/compiler-linux-x64-musl/package.json').version
-          if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -291,8 +291,8 @@ function requireNative() {
         try {
           const binding = require('@vue-jsx-vapor/compiler-linux-x64-gnu')
           const bindingPackageVersion = require('@vue-jsx-vapor/compiler-linux-x64-gnu/package.json').version
-          if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -309,8 +309,8 @@ function requireNative() {
         try {
           const binding = require('@vue-jsx-vapor/compiler-linux-arm64-musl')
           const bindingPackageVersion = require('@vue-jsx-vapor/compiler-linux-arm64-musl/package.json').version
-          if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -325,8 +325,8 @@ function requireNative() {
         try {
           const binding = require('@vue-jsx-vapor/compiler-linux-arm64-gnu')
           const bindingPackageVersion = require('@vue-jsx-vapor/compiler-linux-arm64-gnu/package.json').version
-          if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -343,8 +343,8 @@ function requireNative() {
         try {
           const binding = require('@vue-jsx-vapor/compiler-linux-arm-musleabihf')
           const bindingPackageVersion = require('@vue-jsx-vapor/compiler-linux-arm-musleabihf/package.json').version
-          if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -359,8 +359,8 @@ function requireNative() {
         try {
           const binding = require('@vue-jsx-vapor/compiler-linux-arm-gnueabihf')
           const bindingPackageVersion = require('@vue-jsx-vapor/compiler-linux-arm-gnueabihf/package.json').version
-          if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -377,8 +377,8 @@ function requireNative() {
         try {
           const binding = require('@vue-jsx-vapor/compiler-linux-loong64-musl')
           const bindingPackageVersion = require('@vue-jsx-vapor/compiler-linux-loong64-musl/package.json').version
-          if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -393,8 +393,8 @@ function requireNative() {
         try {
           const binding = require('@vue-jsx-vapor/compiler-linux-loong64-gnu')
           const bindingPackageVersion = require('@vue-jsx-vapor/compiler-linux-loong64-gnu/package.json').version
-          if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -411,8 +411,8 @@ function requireNative() {
         try {
           const binding = require('@vue-jsx-vapor/compiler-linux-riscv64-musl')
           const bindingPackageVersion = require('@vue-jsx-vapor/compiler-linux-riscv64-musl/package.json').version
-          if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -427,8 +427,8 @@ function requireNative() {
         try {
           const binding = require('@vue-jsx-vapor/compiler-linux-riscv64-gnu')
           const bindingPackageVersion = require('@vue-jsx-vapor/compiler-linux-riscv64-gnu/package.json').version
-          if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+            throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
           return binding
         } catch (e) {
@@ -444,8 +444,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-linux-ppc64-gnu')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-linux-ppc64-gnu/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -460,8 +460,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-linux-s390x-gnu')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-linux-s390x-gnu/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -480,8 +480,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-openharmony-arm64')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-openharmony-arm64/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -496,8 +496,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-openharmony-x64')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-openharmony-x64/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -512,8 +512,8 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx-vapor/compiler-openharmony-arm')
         const bindingPackageVersion = require('@vue-jsx-vapor/compiler-openharmony-arm/package.json').version
-        if (bindingPackageVersion !== '3.2.17' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.2.17 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (bindingPackageVersion !== '3.2.21' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          throw new Error(`Native binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
         return binding
       } catch (e) {
@@ -553,28 +553,115 @@ if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
         }
         loadErrors.push(err)
       }
+      if (isPackage) {
+        try {
+          require.resolve(specifier + '/package.json')
+        } catch (packageError) {
+          if (packageError && packageError.code === 'MODULE_NOT_FOUND') {
+            return resolveError
+          }
+          // An exports restriction proves the package exists even when its
+          // package.json is not public. Preserve the root resolution failure.
+          throw resolveError
+        }
+        // The package exists but its main/export target is broken.
+        throw resolveError
+      }
+      return resolveError
+    }
+    if (localArtifacts) {
+      let artifactError = null
+      for (let i = 0; i < localArtifacts.length; i++) {
+        try {
+          require.resolve(localArtifacts[i])
+          return null
+        } catch (resolveError) {
+          if (!resolveError || resolveError.code !== 'MODULE_NOT_FOUND') {
+            throw resolveError
+          }
+          artifactError = resolveError
+        }
+      }
+      return artifactError
+    }
+    return null
+  }
+  if (!wasiBindingLoaded && (!__napiWasiFlavorRequested || __napiWasiFlavor === "wasm32-wasi")) {
+    let candidateError = null
+    let candidateFailed = false
+    try {
+      candidateError = __napiWasiResolveCandidate('./compiler-rs.wasi.cjs', false, ["./compiler-rs.wasm32-wasi.debug.wasm","./compiler-rs.wasm32-wasi.wasm"])
+      candidateFailed = candidateError !== null
+      if (!candidateFailed) {
+        wasiBinding = require('./compiler-rs.wasi.cjs')
+        nativeBinding = wasiBinding
+        wasiBindingLoaded = true
+      }
+    } catch (err) {
+      candidateError = err
+      candidateFailed = true
+    }
+    if (candidateFailed) {
+      wasiBindingErrors.push(candidateError)
+      loadErrors.push(candidateError)
     }
   }
-  if (process.env.NAPI_RS_FORCE_WASI === 'error' && !wasiBinding) {
-    const error = new Error('WASI binding not found and NAPI_RS_FORCE_WASI is set to error')
-    error.cause = wasiBindingError
+  if (!wasiBindingLoaded && (!__napiWasiFlavorRequested || __napiWasiFlavor === "wasm32-wasi")) {
+    let candidateError = null
+    let candidateFailed = false
+    try {
+      candidateError = __napiWasiResolveCandidate('@vue-jsx-vapor/compiler-rs-wasm32-wasi', true, undefined)
+      candidateFailed = candidateError !== null
+      if (!candidateFailed) {
+        if (process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
+          const bindingPackageVersion = require('@vue-jsx-vapor/compiler-rs-wasm32-wasi/package.json').version
+          if (bindingPackageVersion !== '3.2.21') {
+            throw new Error(`WASI binding package version mismatch, expected 3.2.21 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          }
+        }
+        wasiBinding = require('@vue-jsx-vapor/compiler-rs-wasm32-wasi')
+        nativeBinding = wasiBinding
+        wasiBindingLoaded = true
+      }
+    } catch (err) {
+      candidateError = err
+      candidateFailed = true
+    }
+    if (candidateFailed) {
+      wasiBindingErrors.push(candidateError)
+      loadErrors.push(candidateError)
+    }
+  }
+  if (
+    !wasiBindingLoaded &&
+    forceWasi &&
+    !forceWasiError &&
+    !__napiWasiFlavorRequested
+  ) {
+    nativeBinding = requireNative()
+  }
+  if ((forceWasiError || __napiWasiFlavorRequested) && !wasiBindingLoaded) {
+    const error = new Error(
+      __napiWasiFlavorRequested
+        ? 'WASI binding for flavor "' + __napiWasiFlavor + '" not found'
+        : 'WASI binding not found and NAPI_RS_FORCE_WASI is set to error',
+    )
+    error.cause = createLoadErrorChain(wasiBindingErrors)
     throw error
   }
 }
 
 if (!nativeBinding) {
   if (loadErrors.length > 0) {
-    throw new Error(
+    const error = new Error(
       `Cannot find native binding. ` +
         `npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). ` +
         'Please try `npm i` again after removing both package-lock.json and node_modules directory.',
-      {
-        cause: loadErrors.reduce((err, cur) => {
-          cur.cause = err
-          return cur
-        }),
-      },
     )
+    // assign instead of the `new Error(message, { cause })` options form,
+    // which Node < 16.9 silently ignores
+    error.cause = createLoadErrorChain(loadErrors)
+    throw error
   }
   throw new Error(`Failed to load native binding`)
 }

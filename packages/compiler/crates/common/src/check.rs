@@ -259,6 +259,17 @@ pub fn is_simple_identifier(s: &str) -> bool {
   true
 }
 
+static DELEGATED_EVENTS: phf::Set<&'static str> = phf_set! {
+  "beforeinput", "click", "dblclick", "contextmenu", "focusin", "focusout", "input",
+  "keydown", "keyup", "mousedown", "mousemove", "mouseout", "mouseover", "mouseup",
+  "pointerdown", "pointermove", "pointerout", "pointerover", "pointerup",
+  "touchend", "touchmove", "touchstart",
+};
+
+pub fn is_delegated_event(event: &str) -> bool {
+  DELEGATED_EVENTS.contains(event)
+}
+
 pub fn is_event_option_modifier(modifier: &str) -> bool {
   matches!(modifier, "passive" | "once" | "capture")
 }
@@ -381,13 +392,7 @@ fn is_referenced(node: &IdentifierReference, parent: AstKind) -> bool {
     // no: class { NODE = value; }
     // yes: class { [NODE] = value; }
     // yes: class { key = NODE; }
-    AstKind::PropertyDefinition(parent) => {
-      if parent.key.span().eq(&node.span) {
-        parent.computed
-      } else {
-        true
-      }
-    }
+    AstKind::PropertyDefinition(parent) if parent.key.span().eq(&node.span) => parent.computed,
     AstKind::AccessorProperty(parent) => parent.key.span() != node.span,
 
     // no: class NODE {}
@@ -472,13 +477,7 @@ fn is_referenced(node: &IdentifierReference, parent: AstKind) -> bool {
 
     // yes: { [NODE]: value }
     // no: { NODE: value }
-    AstKind::TSPropertySignature(parent) => {
-      if parent.key.span().eq(&node.span) {
-        parent.computed
-      } else {
-        true
-      }
-    }
+    AstKind::TSPropertySignature(parent) if parent.key.span().eq(&node.span) => parent.computed,
     _ => true,
   }
 }
@@ -495,8 +494,43 @@ pub fn is_referenced_identifier<'a>(id: &IdentifierReference, parent: Option<Ast
 }
 
 pub fn is_slots_component(name: &str) -> bool {
-  name.starts_with("slots.")
-    || name.starts_with("$slots.")
-    || name.starts_with("this.$slots.")
-    || name.starts_with("this.slots.")
+  name.starts_with("slots.") || name.starts_with("$slots.") || name.starts_with("this.$slots.")
+}
+
+pub fn is_slots_expression(exp: &Expression) -> Option<bool> {
+  match exp.get_inner_expression() {
+    Expression::ObjectExpression(_)
+    | Expression::FunctionExpression(_)
+    | Expression::ArrowFunctionExpression(_) => Some(false),
+    Expression::Identifier(_) => Some(true),
+    Expression::StaticMemberExpression(exp)
+      if matches!(exp.object, Expression::ThisExpression(_)) && exp.property.name == "$slots" =>
+    {
+      Some(true)
+    }
+    Expression::LogicalExpression(exp) => {
+      if let Some(result) = is_slots_expression(&exp.right)
+        && !result
+      {
+        // prevent render false text (e.g., `createVNode(Comp, null, false)`)
+        Some(true)
+      } else {
+        None
+      }
+    }
+    Expression::ConditionalExpression(exp) => {
+      if let Some(result) = is_slots_expression(&exp.consequent)
+        && !result
+      {
+        Some(true)
+      } else if let Some(result) = is_slots_expression(&exp.alternate)
+        && !result
+      {
+        Some(true)
+      } else {
+        None
+      }
+    }
+    _ => None,
+  }
 }

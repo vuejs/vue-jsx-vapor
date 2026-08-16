@@ -93,3 +93,25 @@ fn transition_work_with_dynamic_keyed_children() {
   });
   "#);
 }
+
+#[test]
+fn does_not_inject_persisted_when_v_if_owns_a_v_show_child() {
+  let code = transform(
+    "<Transition>
+      <h1 v-if={show} v-show={true} />
+    </Transition>",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock, vShow as _vShow, withCtx as _withCtx, withDirectives as _withDirectives } from "vue";
+  const _hoisted_1 = { key: 0 };
+  _openBlock(), _createBlock(Transition, null, {
+  	default: _withCtx(() => [show ? _withDirectives((_openBlock(), _createElementBlock("h1", _hoisted_1, null, 512)), [[_vShow, true]]) : _createCommentVNode("", true)]),
+  	_: 1
+  });
+  "#);
+}

@@ -1,7 +1,7 @@
 {
   "name": "@vue-jsx-vapor/runtime",
   "type": "module",
-  "version": "3.2.17",
+  "version": "3.2.21",
   "description": "Vue JSX Vapor Runtime",
   "license": "MIT",
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
@@ -35,7 +35,6 @@
     "test": "vitest"
   },
   "peerDependencies": {
-    "csstype": "^3.2.3",
     "vue": "catalog:"
   }
 }

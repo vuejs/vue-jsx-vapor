@@ -5,15 +5,17 @@
 1. 使用 `defineVaporComponent` 替代 `defineComponent` 来定义 Vapor 组件。`defineVaporComponent` 的 setup 函数现在可以直接返回 JSX 表达式，无需再返回一个函数。
 2. 连字符的 prop 名称和组件名称不会被转换成驼峰命名。
 3. `v-model` 不支持数组表达式，请改用 `v-model:$name$_trim={foo}`。
-    ```tsx
-      <>
-        {/* ❌ Not supported */}
-        <input v-model={[foo, ['trim']]} />
-        
-        {/* ✅ Use this instead */}
-        <input v-model:$name$_trim={foo} />
-      </>
-    ```
+
+   ```tsx
+   <>
+     {/* ❌ Not supported */}
+     <input v-model={[foo, ['trim']]} />
+
+     {/* ✅ Use this instead */}
+     <input v-model:$name$_trim={foo} />
+   </>
+   ```
+
 4. 不支持 `v-models` 指令。
 5. 解构 props：
 
@@ -48,40 +50,42 @@ export default () => {
 
 2. ✅ 将 `macros` 选项设置为 `true`，然后使用 `defineVaporComponent` 宏进行包装。
 
-  - 配置
+- 配置
 
-    ```ts {7}
-    // vite.config.ts
-    import vueJsxVapor from 'vue-jsx-vapor/vite'
+  ```ts {7}
+  // vite.config.ts
+  import vueJsxVapor from 'vue-jsx-vapor/vite'
 
-    export default defineConfig({
-      plugins: [
-        vueJsxVapor({
-          macros: true,
-        }),
-      ]
-    })
+  export default defineConfig({
+    plugins: [
+      vueJsxVapor({
+        macros: true,
+      }),
+    ],
+  })
+  ```
 
-    ```
+- 用法
 
-  - 用法
+  ```tsx
+  import { defineVaporComponent, ref } from 'vue'
 
-    ```tsx
-    import { defineVaporComponent, ref } from 'vue'
-
-    const Comp = defineVaporComponent(({ foo }) => {
-      return <>{foo}</>
-    })
-    // 将被转换为：
-    const Comp = defineVaporComponent((_props) => {
+  const Comp = defineVaporComponent(({ foo }) => {
+    return <>{foo}</>
+  })
+  // 将被转换为：
+  const Comp = defineVaporComponent(
+    (_props) => {
       return <>{_props.foo}</>
-    }, { props: ['foo'] })
+    },
+    { props: ['foo'] },
+  )
 
-    export default () => {
-      const foo = ref('foo')
-      return <Comp foo={foo.value} />
-    }
-    ```
+  export default () => {
+    const foo = ref('foo')
+    return <Comp foo={foo.value} />
+  }
+  ```
 
 ## 从 `react` 迁移
 
@@ -96,7 +100,7 @@ console.log([foo, setFoo(1), setFoo])
 
 // 转换后
 const foo = ref(0)
-console.log([foo.value, foo.value = 1, val => foo.value = val])
+console.log([foo.value, (foo.value = 1), (val) => (foo.value = val)])
 ```
 
 ### useEffect
@@ -203,7 +207,7 @@ const Comp = ({ count }) => {
 const Comp = ({ count, ref }) => {
   useImperativeHandle(ref, () => {
     return {
-      count: count * 2
+      count: count * 2,
     }
   }, [count])
   return <div>{count}</div>
@@ -211,11 +215,13 @@ const Comp = ({ count, ref }) => {
 
 // 转换后
 const Comp = ({ count }) => {
-  defineExpose(computed(() => {
-    return {
-      count: count * 2
-    }
-  }))
+  defineExpose(
+    computed(() => {
+      return {
+        count: count * 2,
+      }
+    }),
+  )
   return <div>{count}</div>
 }
 ```

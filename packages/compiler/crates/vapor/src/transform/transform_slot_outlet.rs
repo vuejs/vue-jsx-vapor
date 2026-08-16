@@ -57,7 +57,7 @@ pub unsafe fn transform_slot_outlet<'a>(
     if let Some(name_prop) = props_result.name_prop
       && let Some(value) = &mut name_prop.value
     {
-      slot_name = Some(jsx_attribute_value_to_expression(value, context.ast))
+      slot_name = jsx_attribute_value_to_expression(value, context.ast)
     }
 
     if let Some(runtime_directive) =
@@ -99,8 +99,7 @@ pub unsafe fn transform_slot_outlet<'a>(
       flags,
       parent: None,
       anchor: None,
-      logical_index: None,
-      append: false,
+      append_index: None,
       operation_index: Some(*context.operation_index.borrow()),
       effect_index: Some(*context.effect_index.borrow()),
     })));

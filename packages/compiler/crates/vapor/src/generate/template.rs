@@ -116,6 +116,36 @@ fn gen_children<'a>(
     }
 
     if child.flags & DynamicFlag::Insert as i32 != 0 && child.template.is_some() {
+      // template node due to invalid nesting; anchored inserts locate their
+      // `<!>` placeholder first so INSERT_NODE can insert before it
+      if let Some(anchor) = child.anchor {
+        let element_index = index + offset;
+        let variable = format!("_n{}", anchor);
+        statements.insert(
+          statement_index,
+          VariableDeclaration(ast.alloc_variable_declaration(
+            SPAN,
+            VariableDeclarationKind::Const,
+            ast.vec1(ast.variable_declarator(
+              SPAN,
+              VariableDeclarationKind::Const,
+              ast.binding_pattern_binding_identifier(SPAN, ast.str(&variable)),
+              NONE,
+              Some(gen_access_path(
+                context,
+                from.clone_in(ast.allocator),
+                element_index,
+                &prev,
+              )),
+              false,
+            )),
+            false,
+          )),
+        );
+        statement_index += 1;
+        block_statement_count += 1;
+        prev = Some((variable, element_index, false));
+      }
       gen_self(
         statements,
         child,
@@ -149,22 +179,14 @@ fn gen_children<'a>(
       continue;
     }
 
-    let element_index = index as i32 + offset;
-    let logical_index = child.logical_index;
+    let element_index = index + offset;
 
     let inline_placeholder = id.is_none()
       && child.template.is_none()
       && child.operation.is_none()
       && child.flags & (DynamicFlag::Insert as i32 | DynamicFlag::NonTemplate as i32) == 0
       && can_inline_placehoder(&child);
-    let access_path = gen_access_path(
-      context,
-      from.clone_in(ast.allocator),
-      &child,
-      element_index,
-      logical_index,
-      &prev,
-    );
+    let access_path = gen_access_path(context, from.clone_in(ast.allocator), element_index, &prev);
 
     if inline_placeholder {
       if let Some(prev) = &mut prev
@@ -314,9 +336,7 @@ fn gen_children<'a>(
 fn gen_access_path<'a>(
   context: &CodegenContext<'a>,
   from: Expression<'a>,
-  child: &IRDynamicInfo<'a>,
   element_index: i32,
-  logical_index: Option<i32>,
   prev: &Option<(String, i32, bool)>,
 ) -> Expression<'a> {
   let ast = context.ast;
@@ -326,26 +346,21 @@ fn gen_access_path<'a>(
         SPAN,
         ast.expression_identifier(SPAN, ast.str(context.options.helper("_next"))),
         NONE,
-        ast.vec_from_iter(
-          [
-            Some(ast.expression_identifier(SPAN, ast.str(&prev.0)).into()),
-            logical_index.map(|logical_index| {
-              ast
-                .expression_numeric_literal(SPAN, logical_index as f64, None, NumberBase::Decimal)
-                .into()
-            }),
-          ]
-          .into_iter()
-          .flatten(),
-        ),
+        ast.vec1(ast.expression_identifier(SPAN, ast.str(&prev.0)).into()),
         false,
       )
     } else {
-      gen_nth_child(
-        context,
-        from.clone_in(ast.allocator),
-        element_index,
-        logical_index,
+      ast.expression_call(
+        SPAN,
+        ast.expression_identifier(SPAN, ast.str(context.options.helper("_nthChild"))),
+        NONE,
+        ast.vec_from_array([
+          from.clone_in(ast.allocator).into(),
+          ast
+            .expression_numeric_literal(SPAN, element_index as f64, None, NumberBase::Decimal)
+            .into(),
+        ]),
+        false,
       )
     };
   }
@@ -355,28 +370,12 @@ fn gen_access_path<'a>(
       SPAN,
       ast.expression_identifier(SPAN, ast.str(context.options.helper("_child"))),
       NONE,
-      ast.vec_from_iter(
-        [
-          Some(from.clone_in(ast.allocator).into()),
-          child.logical_index.and_then(|logical_index| {
-            if logical_index != 0 {
-              Some(
-                ast
-                  .expression_numeric_literal(SPAN, logical_index as f64, None, NumberBase::Decimal)
-                  .into(),
-              )
-            } else {
-              None
-            }
-          }),
-        ]
-        .into_iter()
-        .flatten(),
-      ),
+      ast.vec1(from.clone_in(ast.allocator).into()),
       false,
     );
   }
 
+  // adjacent to the first child: chain off it instead of an indexed lookup
   if element_index == 1 {
     let first_child = ast.expression_call(
       SPAN,
@@ -390,22 +389,22 @@ fn gen_access_path<'a>(
       SPAN,
       ast.expression_identifier(SPAN, ast.str(context.options.helper("_next"))),
       NONE,
-      ast.vec_from_iter(
-        [
-          Some(first_child.into()),
-          logical_index.map(|logical_index| {
-            ast
-              .expression_numeric_literal(SPAN, logical_index as f64, None, NumberBase::Decimal)
-              .into()
-          }),
-        ]
-        .into_iter()
-        .flatten(),
-      ),
+      ast.vec1(first_child.into()),
       false,
     )
   } else {
-    gen_nth_child(context, from, element_index, logical_index)
+    ast.expression_call(
+      SPAN,
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_nthChild"))),
+      NONE,
+      ast.vec_from_array([
+        from.clone_in(ast.allocator).into(),
+        ast
+          .expression_numeric_literal(SPAN, element_index as f64, None, NumberBase::Decimal)
+          .into(),
+      ]),
+      false,
+    )
   }
 }
 
@@ -418,20 +417,21 @@ fn can_inline_placehoder(dynamic: &IRDynamicInfo) -> bool {
 
 // A following access can reuse the current placeholder cursor only when it is
 // the next DOM sibling. Gapped siblings need _nthChild(parent, index) instead.
+// Kept in lockstep with genChildren's traversal rules.
 fn has_adjacent_following_access_child(children: &[IRDynamicInfo], offset: i32) -> bool {
   let mut future_offset = offset;
-  let mut i = 0;
-  while i < children.len() {
-    let child = &children[i];
+  for (i, child) in children.iter().enumerate() {
     if child.flags & DynamicFlag::NonTemplate as i32 > 0 {
       future_offset -= 1;
     }
-    if !(child.flags & DynamicFlag::Insert as i32 > 0 && child.template.is_some())
-      && (child.flags & DynamicFlag::Referenced as i32 > 0 || child.has_dynamic_child)
-    {
+    // appends produce no access and occupy no element slot; anchored inserts
+    // locate their `<!>` placeholder and always carry REFERENCED
+    if child.flags & DynamicFlag::Insert as i32 > 0 && child.anchor.is_none() {
+      continue;
+    }
+    if child.flags & DynamicFlag::Referenced as i32 > 0 || child.has_dynamic_child {
       return i as i32 + future_offset - offset == 0;
     }
-    i += 1;
   }
 
   false
@@ -450,7 +450,13 @@ fn count_parent_access_usages(dynamic: &IRDynamicInfo) -> i32 {
       offset -= 1;
     }
 
-    if child.flags & DynamicFlag::Insert as i32 > 0 && child.template.is_some() {
+    if child.flags & DynamicFlag::Insert as i32 > 0
+      && child.template.is_some()
+      && child.anchor.is_none()
+    {
+      // trailing template-inserts append without locating anything; anchored
+      // ones fall through to the generic path, which resolves their id to
+      // `child.anchor` exactly like genChildren does
       continue;
     }
 
@@ -505,46 +511,4 @@ fn count_parent_access_usages(dynamic: &IRDynamicInfo) -> i32 {
     prev = Some((element_index, id.is_none()));
   }
   usages
-}
-
-fn gen_nth_child<'a>(
-  context: &CodegenContext<'a>,
-  from: Expression<'a>,
-  element_index: i32,
-  logical_index: Option<i32>,
-) -> Expression<'a> {
-  let ast = context.ast;
-  ast.expression_call(
-    SPAN,
-    ast.expression_identifier(SPAN, ast.str(context.options.helper("_nthChild"))),
-    NONE,
-    ast.vec_from_iter(
-      [
-        Some(from.into()),
-        Some(
-          ast
-            .expression_numeric_literal(SPAN, element_index as f64, None, NumberBase::Decimal)
-            .into(),
-        ),
-        // nthChild defaults the logical index to the element index at runtime, so
-        // the third argument is only needed when hydration uses a different index.
-        if let Some(logical_index) = logical_index {
-          if logical_index == element_index {
-            None
-          } else {
-            Some(
-              ast
-                .expression_numeric_literal(SPAN, logical_index as f64, None, NumberBase::Decimal)
-                .into(),
-            )
-          }
-        } else {
-          None
-        },
-      ]
-      .into_iter()
-      .flatten(),
-    ),
-    false,
-  )
 }

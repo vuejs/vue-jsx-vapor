@@ -42,11 +42,12 @@ pub struct CodegenContext<'a> {
   pub ir: RootIRNode<'a>,
   pub block: RefCell<BlockIRNode<'a>>,
   pub scope_level: RefCell<i32>,
+  pub in_slot_block: RefCell<bool>,
   pub ast: &'a AstBuilder<'a>,
 }
 
 impl<'a> CodegenContext<'a> {
-  pub fn new(context: &'a TransformContext<'a>) -> CodegenContext<'a> {
+  pub fn new(context: TransformContext<'a>) -> CodegenContext<'a> {
     let ir = context.ir.take();
     let block = context.block.take();
     *context.options.in_v_for.borrow_mut() = *context.in_v_for.borrow();
@@ -57,6 +58,7 @@ impl<'a> CodegenContext<'a> {
       identifiers: RefCell::new(HashMap::new()),
       block: RefCell::new(block),
       scope_level: RefCell::new(0),
+      in_slot_block: RefCell::new(false),
       ir,
       ast: context.ast,
     }
@@ -89,6 +91,12 @@ impl<'a> CodegenContext<'a> {
     ret
   }
 
+  pub fn enter_slot_block(&self) -> impl FnOnce() {
+    let parent = *self.in_slot_block.borrow();
+    *self.in_slot_block.borrow_mut() = true;
+    move || *self.in_slot_block.borrow_mut() = parent
+  }
+
   pub fn enter_block(
     &self,
     block: BlockIRNode<'a>,
@@ -107,7 +115,7 @@ impl<'a> CodegenContext<'a> {
   }
 
   // IR -> JS codegen
-  pub fn generate(self: &'a CodegenContext<'a>) -> Expression<'a> {
+  pub fn generate(self: CodegenContext<'a>) -> Expression<'a> {
     let ast = &self.ast;
     let mut statements = ast.vec();
 
@@ -203,11 +211,14 @@ impl<'a> CodegenContext<'a> {
     let context_block = &mut *self.block.borrow_mut() as *mut BlockIRNode;
     statements.extend(gen_block_content(
       None,
-      self,
+      unsafe { &*(&self as *const _) },
       unsafe { &mut *context_block },
       None,
     ));
 
+    if !self.options.delegates.borrow().is_empty() {
+      self.options.helper("_delegateEvents");
+    }
     if !&self.options.templates.borrow().is_empty() {
       self.options.helper("_template");
     }

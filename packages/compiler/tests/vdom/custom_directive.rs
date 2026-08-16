@@ -230,3 +230,84 @@ fn should_not_resolve_directive() {
   };
   "#);
 }
+
+#[test]
+fn array_args() {
+  let code = transform(
+    "<div v-example={[foo, bar, ['modify1', 'modify2']]} />",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
+  		_directive_example,
+  		foo,
+  		bar,
+  		{
+  			modify1: true,
+  			modify2: true
+  		}
+  	]]);
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_modifiers() {
+  let code = transform(
+    "<div v-example_m1={[foo, ['modify1', 'modify2']]} />",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
+  		_directive_example,
+  		foo,
+  		void 0,
+  		{
+  			modify1: true,
+  			modify2: true
+  		}
+  	]]);
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_arg() {
+  let code = transform(
+    "<div v-example:foo={[foo, bar, ['modify1', 'modify2']]} />",
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
+  		_directive_example,
+  		foo,
+  		"foo",
+  		{
+  			modify1: true,
+  			modify2: true
+  		}
+  	]]);
+  })();
+  "#);
+}

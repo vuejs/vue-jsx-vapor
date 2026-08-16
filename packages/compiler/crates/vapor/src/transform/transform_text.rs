@@ -174,35 +174,10 @@ fn process_interpolation<'a>(
   parent_node: &'a mut JSXChild<'a>,
   seen: &mut HashSet<u32>,
 ) {
-  let children = match parent_node {
-    JSXChild::Element(e) => &mut e.children,
-    JSXChild::Fragment(e) => &mut e.children,
-    _ => return,
-  };
-  if children.is_empty() {
+  let Some(mut nodes) = collect_adjacent_text(context_node, parent_node as *mut _, context) else {
     return;
-  }
-  let children = children as *mut oxc_allocator::Vec<JSXChild>;
-  let index = *context.index.borrow() as usize;
-  let nodes: &mut Vec<_> = &mut (unsafe { &mut *children })[index..].iter_mut().collect();
-  if !RootNode::is_root(context_node) {
-    nodes[0] = context_node
-  }
-  let idx = nodes.iter().position(|n| !is_text_like(n));
-  if let Some(idx) = idx {
-    nodes.truncate(idx)
   };
-
-  // merge leading text
-  if index > 0
-    && let Some(prev) = (unsafe { &mut *children }).get_mut(index - 1)
-    && let JSXChild::Text(_) = prev
-  {
-    nodes.insert(0, prev);
-  };
-
-  let nodes = nodes as *mut Vec<&mut JSXChild>;
-  let values = process_text_like_expressions(unsafe { &mut *nodes }, context, seen);
+  let values = process_text_like_expressions(&mut nodes, context, seen);
   if values.is_empty() {
     return;
   }
@@ -244,6 +219,49 @@ fn process_interpolation<'a>(
       None,
     );
   };
+}
+
+fn collect_adjacent_text<'a>(
+  context_node: &'a mut JSXChild<'a>,
+  parent_node: *mut JSXChild<'a>,
+  context: &TransformContext<'a>,
+) -> Option<Vec<&'a mut JSXChild<'a>>> {
+  let children = match unsafe { &mut *parent_node } {
+    JSXChild::Element(e) => &mut e.children,
+    JSXChild::Fragment(e) => &mut e.children,
+    _ => return None,
+  };
+  let children_len = children.len();
+  if children_len == 0 {
+    return None;
+  }
+  let mut nodes = vec![];
+  let mut index = *context.index.borrow() as usize;
+  let current_index = index;
+  let mut current_node = Some(context_node);
+  // Include leading text that belongs to the same text run.
+  if index > 0
+    && let Some(JSXChild::Text(_)) = children.get(index - 1)
+  {
+    index -= 1;
+  };
+
+  let children_ptr = children as *mut oxc_allocator::Vec<JSXChild>;
+  while index < children_len {
+    let child = if current_index == index
+      && let Some(current_node) = current_node.take()
+    {
+      current_node
+    } else {
+      &mut (unsafe { &mut *children_ptr })[index]
+    };
+    index += 1;
+    if !is_text_like(child) {
+      break;
+    }
+    nodes.push(child);
+  }
+  if nodes.is_empty() { None } else { Some(nodes) }
 }
 
 fn mark_non_template(node: &JSXChild, seen: &mut HashSet<u32>) {
@@ -292,7 +310,7 @@ fn process_text_container<'a>(
 }
 
 fn process_text_like_expressions<'a>(
-  nodes: &'a mut Vec<&mut JSXChild<'a>>,
+  nodes: &mut Vec<&mut JSXChild<'a>>,
   context: &'a TransformContext<'a>,
   seen: &mut HashSet<u32>,
 ) -> Vec<Expression<'a>> {
@@ -347,12 +365,13 @@ pub fn process_conditional_expression<'a>(
   let is_const_test = is_constant_node(test);
   let test = test.take_in(context.allocator);
   let force_multi_root = should_force_multi_root(parent_node);
+  let allow_no_scope = context_block.root;
   Box::new(move || {
     let block = exit_block();
 
     let mut operation = IfIRNode {
       id,
-      block_shape: encode_if_block_shape(&block, force_multi_root, None),
+      block_shape: encode_if_block_shape(&block, force_multi_root, None, allow_no_scope),
       positive: block,
       index: context.next_if_index(),
       once: *context.in_v_once.borrow() || is_const_test,
@@ -360,8 +379,7 @@ pub fn process_conditional_expression<'a>(
       negative: None,
       parent: None,
       anchor: None,
-      logical_index: None,
-      append: false,
+      append_index: None,
       operation_index: Some(*context.operation_index.borrow()),
       effect_index: Some(*context.effect_index.borrow()),
       slot_root: false,
@@ -389,6 +407,7 @@ fn set_negative<'a>(
 ) {
   let node = node.without_parentheses_mut().get_inner_expression_mut();
   let force_multi_root = should_force_multi_root(parent_node);
+  let allow_no_scope = context_block.root;
   if let Expression::ConditionalExpression(node) = node {
     let node = node as *mut oxc_allocator::Box<ConditionalExpression>;
     let _context_block = context_block as *mut BlockIRNode;
@@ -414,9 +433,8 @@ fn set_negative<'a>(
       index: context.next_if_index(),
       negative: None,
       anchor: None,
-      logical_index: None,
+      append_index: None,
       parent: None,
-      append: false,
       operation_index: None,
       effect_index: None,
       slot_root: false,
@@ -446,11 +464,13 @@ fn set_negative<'a>(
   if let Some(negative) = operation.negative.as_mut()
     && let Either::B(negative) = negative.as_mut()
   {
-    negative.block_shape = encode_if_block_shape(&negative.positive, force_multi_root, None)
+    negative.block_shape =
+      encode_if_block_shape(&negative.positive, force_multi_root, None, allow_no_scope)
   }
   operation.block_shape = encode_if_block_shape(
     &operation.positive,
     force_multi_root,
-    operation.negative.as_ref(),
+    operation.negative.as_deref(),
+    allow_no_scope,
   )
 }

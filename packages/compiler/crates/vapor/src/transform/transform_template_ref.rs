@@ -25,7 +25,7 @@ pub unsafe fn transform_template_ref<'a>(
   };
   context.ir.borrow_mut().has_template_ref = true;
 
-  let value = jsx_attribute_value_to_expression(value, context.ast);
+  let value = jsx_attribute_value_to_expression(value, context.ast)?;
   Some(Box::new(move || {
     let id = context.reference(&mut context_block.dynamic);
 

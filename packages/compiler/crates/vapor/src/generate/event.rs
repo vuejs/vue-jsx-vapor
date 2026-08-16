@@ -23,10 +23,16 @@ pub fn gen_set_event<'a>(
       keys,
       non_keys,
     },
+    delegate,
     effect,
     ..
   } = oper;
 
+  let key_content = if let Expression::StringLiteral(key) = &key {
+    key.value.as_str()
+  } else {
+    ""
+  };
   let name = gen_expression(key, context, None, false);
   let event_options = if options.is_empty() && !effect {
     None
@@ -60,6 +66,11 @@ pub fn gen_set_event<'a>(
   };
   let handler = gen_event_handler(context, vec![value], &keys, &non_keys, false);
 
+  if delegate {
+    // key is static
+    context.options.delegates.borrow_mut().insert(key_content);
+  }
+
   let mut arguments = ast.vec();
   arguments.push(
     ast
@@ -78,11 +89,13 @@ pub fn gen_set_event<'a>(
       SPAN,
       ast.expression_identifier(
         SPAN,
-        ast.str(
-          context
-            .options
-            .helper(if effect { "_onBinding" } else { "_on" }),
-        ),
+        ast.str(context.options.helper(if effect {
+          "_onBinding"
+        } else if delegate {
+          "_delegate"
+        } else {
+          "_on"
+        })),
       ),
       NONE,
       arguments,

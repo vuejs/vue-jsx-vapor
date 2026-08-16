@@ -1,6 +1,4 @@
-use common::{
-  check::is_slots_component, directive::Directives, error::ErrorCodes, text::is_empty_text,
-};
+use common::{directive::Directives, error::ErrorCodes, text::is_empty_text};
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
@@ -19,6 +17,7 @@ use crate::{
 /// # SAFETY
 pub unsafe fn transform_slot_outlet<'a>(
   directives: &mut Directives<'a>,
+  is_slots: bool,
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
 ) {
@@ -32,7 +31,6 @@ pub unsafe fn transform_slot_outlet<'a>(
 
   let ast = context.ast;
   let node_span = node.span;
-  let is_slots = is_slots_component(directives.tag_name);
   let (slot_name, slot_props) = process_slot_outlet(
     directives,
     unsafe { &mut *(node.as_mut() as *mut _) },

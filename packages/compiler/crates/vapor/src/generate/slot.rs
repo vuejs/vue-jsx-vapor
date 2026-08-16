@@ -2,16 +2,17 @@ use std::borrow::Cow;
 
 use indexmap::IndexMap;
 use napi::bindgen_prelude::{Either, Either4};
+use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
-  ast::{Expression, FormalParameterKind, PropertyKind, Str},
+  ast::{Expression, FormalParameterKind, ObjectPropertyKind, PropertyKind, Str},
 };
 use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   generate::{
     CodegenContext,
-    block::{gen_block, mark_slot_root_operations},
+    block::{gen_block, has_stable_slot_root, mark_slot_root_operations},
     expression::gen_expression,
   },
   ir::{
@@ -20,7 +21,7 @@ use crate::{
   },
 };
 
-use common::check::is_simple_identifier;
+use common::{check::is_simple_identifier, patch_flag::VaporSlotFlags};
 
 pub fn gen_raw_slots<'a>(
   mut slots: Vec<IRSlots<'a>>,
@@ -40,6 +41,7 @@ pub fn gen_raw_slots<'a>(
         default_slot,
         context,
         context_block,
+        true,
       ));
     }
     // single static slot
@@ -83,13 +85,23 @@ fn gen_static_slots<'a>(
       SPAN,
       PropertyKind::Init,
       ast.property_key_static_identifier(SPAN, ast.str(name)),
-      gen_slot_block_with_props(oper, context, unsafe { &mut *context_block }),
+      gen_slot_block_with_props(oper, context, unsafe { &mut *context_block }, true),
       false,
       false,
       false,
     ))
   }
-  if let Some(dynamic_slots) = dynamic_slots {
+  if let Some(mut dynamic_slots) = dynamic_slots {
+    if dynamic_slots.len() == 1
+      && let Some(Either4::D(slot)) = dynamic_slots.get_mut(0)
+      && let Expression::ObjectExpression(slots) = &mut slot.slots
+      && slots.properties.len() == 1
+      && let Some(ObjectPropertyKind::ObjectProperty(prop)) = slots.properties.get_mut(0)
+      && prop.key.is_specific_id("default")
+      && prop.value.is_function()
+    {
+      return gen_expression(prop.value.take_in(ast.allocator), context, None, false);
+    }
     properties.push(ast.object_property_kind_object_property(
       SPAN,
       PropertyKind::Init,
@@ -120,7 +132,45 @@ fn gen_dynamic_slots<'a>(
       Either4::C(slot) => {
         gen_conditional_slot(slot, context, unsafe { &mut *context_block }, true).into()
       }
-      Either4::D(slot) => gen_expression(slot.slots, context, None, false).into(),
+      Either4::D(slot) => {
+        let expression = gen_expression(slot.slots, context, None, false);
+        if slot.dynamic {
+          ast
+            .expression_arrow_function(
+              SPAN,
+              true,
+              false,
+              NONE,
+              ast.formal_parameters(
+                SPAN,
+                FormalParameterKind::ArrowFormalParameters,
+                ast.vec(),
+                NONE,
+              ),
+              NONE,
+              ast.function_body(
+                SPAN,
+                ast.vec(),
+                ast.vec1(ast.statement_expression(
+                  SPAN,
+                  ast.expression_call(
+                    SPAN,
+                    ast.expression_identifier(
+                      SPAN,
+                      ast.str(context.options.helper("_normalizeVaporSlots")),
+                    ),
+                    NONE,
+                    ast.vec1(expression.into()),
+                    false,
+                  ),
+                )),
+              ),
+            )
+            .into()
+        } else {
+          expression.into()
+        }
+      }
     })
   }
   ast.expression_array(SPAN, elements)
@@ -131,13 +181,11 @@ fn gen_dynamic_slot<'a>(
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Expression<'a> {
-  let frag = if slot._loop.is_none() {
+  if slot._loop.is_none() {
     gen_basic_dynamic_slot(slot, context, context_block)
   } else {
     gen_loop_slot(slot, context, context_block)
-  };
-
-  frag
+  }
 }
 
 fn gen_basic_dynamic_slot<'a>(
@@ -162,7 +210,7 @@ fn gen_basic_dynamic_slot<'a>(
         SPAN,
         PropertyKind::Init,
         ast.property_key_static_identifier(SPAN, ast.str("fn")),
-        gen_slot_block_with_props(slot._fn, context, context_block),
+        gen_slot_block_with_props(slot._fn, context, context_block, false),
         false,
         false,
         false,
@@ -224,7 +272,7 @@ fn gen_loop_slot<'a>(
         SPAN,
         PropertyKind::Init,
         ast.property_key_static_identifier(SPAN, ast.str("fn")),
-        gen_slot_block_with_props(_fn, context, context_block),
+        gen_slot_block_with_props(_fn, context, context_block, false),
         false,
         false,
         false,
@@ -359,6 +407,7 @@ fn gen_slot_block_with_props<'a>(
   mut oper: BlockIRNode<'a>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
+  emit_non_stable_flag: bool,
 ) -> Expression<'a> {
   let mut props_name = Cow::Borrowed("");
   let mut props_loc = SPAN;
@@ -390,9 +439,12 @@ fn gen_slot_block_with_props<'a>(
   );
 
   let ast = &context.ast;
-
-  mark_slot_root_operations(&mut oper);
-  let block_fn = context.with_id(
+  let has_stable_root = has_stable_slot_root(&mut oper, context);
+  if !has_stable_root {
+    mark_slot_root_operations(&mut oper, context, false);
+  }
+  let exit_slot_block = context.enter_slot_block();
+  let mut block_fn = context.with_id(
     || {
       gen_block(
         oper,
@@ -410,6 +462,38 @@ fn gen_slot_block_with_props<'a>(
     },
     id_map,
   );
+  // Dynamic slot sources keep rawSlots.$, so runtime stays conservative.
+  if emit_non_stable_flag && !has_stable_root {
+    block_fn = ast.expression_call(
+      SPAN,
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_extend"))),
+      NONE,
+      ast.vec_from_array([
+        block_fn.into(),
+        ast
+          .expression_object(
+            SPAN,
+            ast.vec1(ast.object_property_kind_object_property(
+              SPAN,
+              PropertyKind::Init,
+              ast.property_key_static_identifier(SPAN, "_"),
+              ast.expression_numeric_literal(
+                SPAN,
+                VaporSlotFlags::NonStable as i32 as f64,
+                None,
+                oxc_ast::ast::NumberBase::Decimal,
+              ),
+              false,
+              false,
+              false,
+            )),
+          )
+          .into(),
+      ]),
+      false,
+    )
+  }
+  exit_slot_block();
   if let Some(exit_scope) = exit_scope {
     exit_scope();
   };

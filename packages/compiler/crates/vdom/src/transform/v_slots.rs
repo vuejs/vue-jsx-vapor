@@ -10,10 +10,13 @@ use oxc_ast::{
 use oxc_semantic::ScopeFlags;
 use oxc_span::{GetSpan, SPAN, Span};
 
-use crate::{ast::NodeTypes, transform::TransformContext};
+use crate::{
+  ast::NodeTypes,
+  transform::{TransformContext, utils::is_dynamic_slots_component},
+};
 use common::{
-  directive::Directives, error::ErrorCodes, options::SlotScope, patch_flag::PatchFlags,
-  text::is_empty_text,
+  check::is_slots_expression, directive::Directives, error::ErrorCodes, options::SlotScope,
+  patch_flag::PatchFlags, text::is_empty_text,
 };
 
 /// # SAFETY
@@ -30,7 +33,7 @@ pub unsafe fn transform_v_slots<'a>(
   let node_span = node.span;
   let node_ptr = node as *mut oxc_allocator::Box<JSXElement>;
   let is_component = directives.is_component;
-  if is_component {
+  if is_component && directives.v_slots.is_none() {
     let mut first_child_index = None;
     for (i, child) in unsafe { &mut *node_ptr }.children.iter().enumerate() {
       if !is_empty_text(child) {
@@ -47,19 +50,34 @@ pub unsafe fn transform_v_slots<'a>(
         .get_mut(first_child_index)
       && let JSXChild::ExpressionContainer(exp) = child
       && let Some(exp) = exp.expression.as_expression_mut()
-      && (matches!(exp, Expression::ObjectExpression(_)) || exp.is_function())
+      && let Some(maybe_slots) = is_slots_expression(exp)
     {
-      let ast = &context.ast;
-      unsafe { &mut *node_ptr }
-        .opening_element
-        .attributes
-        .push(ast.jsx_attribute_item_attribute(
+      unsafe { &mut *node_ptr }.opening_element.attributes.push(
+        ast.jsx_attribute_item_attribute(
           SPAN,
           ast.jsx_attribute_name_identifier(SPAN, "v-slots"),
           Some(
-            ast.jsx_attribute_value_expression_container(SPAN, exp.take_in(ast.allocator).into()),
+            ast.jsx_attribute_value_expression_container(
+              SPAN,
+              if maybe_slots {
+                ast.expression_call(
+                  SPAN,
+                  ast.expression_identifier(
+                    SPAN,
+                    ast.str(context.options.helper("_normalizeSlots")),
+                  ),
+                  NONE,
+                  ast.vec1(exp.take_in(ast.allocator).into()),
+                  false,
+                )
+              } else {
+                exp.take_in(ast.allocator)
+              }
+              .into(),
+            ),
           ),
-        ));
+        ),
+      );
       if let JSXAttributeItem::Attribute(attribute) =
         node.opening_element.attributes.last_mut().unwrap()
       {
@@ -102,7 +120,7 @@ pub unsafe fn transform_v_slots<'a>(
         && context.options.optimize
       {
         let semantic = context.options.semantic.as_ptr();
-        if !directives.tag_name.ends_with("Provider")
+        if !is_dynamic_slots_component(directives.tag_name)
           && !obj.properties.iter().any(|p| match p {
             ObjectPropertyKind::ObjectProperty(p) => p.computed || !p.value.is_function(),
             _ => true,
@@ -235,14 +253,14 @@ fn proccess_default_children<'a>(
 ) {
   let ast = context.ast;
   let node = unsafe { &*node_ptr };
+  let semantic_ptr = context.options.semantic.as_ptr();
   if node.children.iter().any(|c| !is_empty_text(c)) {
     let (scope_id, node_id) = {
-      let semantic = &context.options.semantic.borrow();
-      let node = semantic.nodes().get_node(node.node_id());
+      let node = unsafe { &*semantic_ptr }.nodes().get_node(node.node_id());
       (node.scope_id(), node.id())
     };
-    let semantic = &mut context.options.semantic.borrow_mut();
-    let scope_id = semantic.scoping_mut().add_scope(
+
+    let scope_id = unsafe { &mut *semantic_ptr }.scoping_mut().add_scope(
       Some(scope_id),
       node_id,
       ScopeFlags::Arrow | ScopeFlags::Function,
@@ -301,8 +319,8 @@ fn proccess_default_children<'a>(
         *expression = ast.expression_object(
           SPAN,
           ast.vec_from_array([
-            ast.object_property_kind_spread_property(SPAN, expression.take_in(ast.allocator)),
             default_slot,
+            ast.object_property_kind_spread_property(SPAN, expression.take_in(ast.allocator)),
           ]),
         );
       }

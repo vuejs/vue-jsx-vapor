@@ -333,7 +333,7 @@ fn template_v_for_with_multiple_children() {
 #[test]
 fn template_v_for_with_slotlet() {
   let code = transform(
-    r#"<template v-for={item in items}><slot/></template>"#,
+    r#"<template v-for={item in items} key={item.id}><slot/></template>"#,
     Some(TransformOptions {
       interop: true,
       ..Default::default()
@@ -344,7 +344,7 @@ fn template_v_for_with_slotlet() {
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
   	const _slots = _useSlots();
-  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, null, [_renderSlot(_slots, "default")], 64))), 256);
+  	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, { key: item.id }, [_renderSlot(_slots, "default")], 64))), 128);
   })();
   "#)
 }
@@ -504,6 +504,124 @@ fn template_v_for_key_with_key_on_div() {
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(keys, (key) => (_openBlock(), _createElementBlock("div", { key }, "test"))), 128);
+  "#)
+}
+
+#[test]
+fn stable_v_for_lifecycle_clears_static_ref_arrays_on_branch_removal() {
+  let code = transform(
+    r#"<template v-if={show}><div v-for={i in 3} key={i} ref={items} /></template>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
+  _openBlock(), _createElementBlock(_Fragment, null, show ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [(_openBlock(), _createElementBlock(_Fragment, null, _renderList(3, (i) => _createElementVNode("div", {
+  	key: i,
+  	ref_for: true,
+  	ref: items
+  }, null, 512)), 64))], 64)) : _createCommentVNode("", true));
+  "#)
+}
+
+#[test]
+fn stable_v_for_lifecycle_alls_setup_const_function_refs_with_null_on_branch_removal() {
+  let code = transform(
+    r#"<template v-if={show}><div v-for={i in 1} ref={setRef} /></template>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
+  _openBlock(), _createElementBlock(_Fragment, null, show ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [(_openBlock(), _createElementBlock(_Fragment, null, _renderList(1, (i) => _createElementVNode("div", {
+  	ref_for: true,
+  	ref: setRef
+  }, null, 512)), 64))], 64)) : _createCommentVNode("", true));
+  "#)
+}
+
+#[test]
+fn stable_v_for_lifecycle_calls_directive_unmounted_hooks_on_branch_removal() {
+  let code = transform(
+    r#"<template v-if={show}><div v-for={i in 1} v-dir /></template>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_dir = _resolveDirective("dir");
+  	return _openBlock(), _createElementBlock(_Fragment, null, show ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [(_openBlock(), _createElementBlock(_Fragment, null, _renderList(1, (i) => _withDirectives(_createElementVNode("div", null, null, 512), [[_directive_dir]])), 64))], 64)) : _createCommentVNode("", true));
+  })();
+  "#)
+}
+
+#[test]
+fn stable_v_for_lifecycle_calls_vnode_unmounted_hooks_on_branch_removal() {
+  let code = transform(
+    r#"<template v-if={show}><div v-for={i in 1} onVnodeUnmounted={onVnodeUnmounted} /></template>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _openBlock(), _createElementBlock(_Fragment, null, show ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [(_openBlock(), _createElementBlock(_Fragment, null, _renderList(1, (i) => _createElementVNode("div", { onVnodeUnmounted: _cache[0] || (_cache[0] = (...args) => onVnodeUnmounted(...args)) }, null, 512)), 64))], 64)) : _createCommentVNode("", true));
+  })();
+  "#)
+}
+
+#[test]
+fn stable_v_for_lifecycle_runs_directive_before_update_before_child_updates() {
+  let code = transform(
+    r#"<div v-for={i in 1} v-dir>{ value }</div>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_dir = _resolveDirective("dir");
+  	return _openBlock(), _createElementBlock(_Fragment, null, _renderList(1, (i) => _withDirectives((_openBlock(), _createElementBlock("div", null, [_normalizeVNode(() => value)])), [[_directive_dir]])), 64);
+  })();
+  "#)
+}
+
+#[test]
+fn stable_v_for_lifecycle_runs_vnode_before_update_before_nested_child_updates() {
+  let code = transform(
+    r#"<div v-for={i in 1} onVnodeBeforeUpdate={onVnodeBeforeUpdate}><span>{ value }</span></div>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _openBlock(), _createElementBlock(_Fragment, null, _renderList(1, (i) => (_openBlock(), _createElementBlock("div", { onVnodeBeforeUpdate: _cache[0] || (_cache[0] = (...args) => onVnodeBeforeUpdate(...args)) }, [_createElementVNode("span", null, [_normalizeVNode(() => value)])]))), 64);
+  })();
   "#)
 }
 

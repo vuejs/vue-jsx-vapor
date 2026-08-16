@@ -5,7 +5,7 @@ next: false
 ---
 
 # Scoped Slots
-  
+
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
@@ -36,6 +36,7 @@ const apps = {
 There are cases where it could be useful if a slot's content can make use of data from both the parent scope and the child scope. We have two ways to achieve that:
 
 1. We can pass attributes to the `<slots.default />` just like passing props to a component
+
 ```jsx
 const Comp = (props, { slots }) => {
   return <slots.default foo="from child" />
@@ -51,22 +52,25 @@ const Comp = () => {
 ```
 
 ## Using Scoped Slots
+
 We are going to show how to receive props using slots, we have four ways:
 
 1. Using a function expression in `<Comp>`:
+
 ```jsx
-export default () => (
-  <Comp>{(slotProps) => <div>{slotProps.foo}</div>}</Comp>
-)
+export default () => <Comp>{(slotProps) => <div>{slotProps.foo}</div>}</Comp>
 ```
 
 2. Using an object expression in `<Comp>` for multiple slots:
+
 ```jsx
 export default () => (
-  <Comp>{{ 
-    default: (slotProps) => <div>{slotProps.foo}</div>,
-    title: (slotProps) => <div>{slotProps.bar}</div>
-  }}</Comp>
+  <Comp>
+    {{
+      default: (slotProps) => <div>{slotProps.foo}</div>,
+      title: (slotProps) => <div>{slotProps.bar}</div>,
+    }}
+  </Comp>
 )
 ```
 
@@ -75,6 +79,7 @@ Note that slot expressions are treated as dynamic slots. If you want better perf
 :::
 
 3. Using the `v-slot` directive in `<Comp>` for multiple slots just like Vue template:
+
 ```jsx
 export default () => (
   <Comp v-slot={{ foo }}>
@@ -84,6 +89,7 @@ export default () => (
 ```
 
 4. We can also use the `v-slot` directive in `<Comp>` just like Vue template:
+
 ```jsx
 export default () => (
   <Comp>

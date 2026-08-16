@@ -7,25 +7,24 @@ import {
   type ComponentTypeEmits,
   type EmitFn,
   type EmitsOptions,
+  type EmitsToProps,
   type ExtractDefaultPropTypes,
   type ExtractPropTypes,
   type ShallowRef,
-  type StaticSlots,
   type TypeEmitsToOptions,
   type VaporComponent,
   type VaporComponentInstance,
-  type VaporComponentInstanceConstructor,
   type VaporComponentOptions,
   type VaporPublicProps,
   type VaporRenderResult,
-  type VNode,
 } from 'vue'
 import * as Vue from 'vue'
 import type {
+  EmitFnToProps,
   IsKeyValues,
+  NodeChild,
   Prettify,
-  SlotsToProps,
-  ToResolvedProps,
+  SetupContextToProps,
 } from './types'
 
 // component
@@ -113,23 +112,6 @@ export function createProxyComponent(
 }
 
 // block
-
-type NodeChildAtom<T> =
-  | VNode
-  | Block
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | void
-  | T
-
-export type NodeArrayChildren<T> = Array<
-  NodeArrayChildren<T> | NodeChildAtom<T>
->
-
-export type NodeChild<T = undefined> = NodeChildAtom<T> | NodeArrayChildren<T>
 
 export function normalizeNode(node: NodeChild): Block {
   if (node == null || typeof node === 'boolean') {
@@ -270,7 +252,30 @@ export function createNodes(...values: any[]) {
   return resolveValues(values)
 }
 
+export function normalizeVaporSlots(slots: any) {
+  if (typeof slots === 'function') {
+    return { name: 'default', fn: slots }
+  } else if (
+    Object.prototype.toString.call(slots) === '[object Object]' &&
+    !isBlock(slots)
+  ) {
+    return Object.entries(slots).map(([name, fn]) => ({ name, fn }))
+  } else {
+    return {
+      name: 'default',
+      fn: () => createNodes(slots),
+    }
+  }
+}
+
 // defineVaporComponent
+
+type VaporComponentInstanceConstructor<T extends VaporComponentInstance> = {
+  __isFragment?: never
+  __isTeleport?: never
+  __isSuspense?: never
+  new (...args: any[]): T
+}
 
 export type DefineVaporComponent<
   RuntimePropsOptions = {},
@@ -282,23 +287,22 @@ export type DefineVaporComponent<
     : { [key in RuntimePropsKeys]?: any },
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
-  Slots extends StaticSlots = StaticSlots,
+  Slots extends Record<string, any> = Record<string, any>,
   Exposed extends Record<string, any> = Record<string, any>,
   TypeBlock extends Block = Block,
   TypeRefs extends Record<string, unknown> = {},
   MakeDefaultsOptional extends boolean = true,
   PublicProps = VaporPublicProps,
-  ResolvedProps = ToResolvedProps<InferredProps, Emits>,
+  ResolvedProps = Readonly<InferredProps> & EmitsToProps<Emits>,
   Defaults = ExtractDefaultPropTypes<RuntimePropsOptions>,
 > = VaporComponentInstanceConstructor<
   VaporComponentInstance<
-    (MakeDefaultsOptional extends true
+    MakeDefaultsOptional extends true
       ? keyof Defaults extends never
         ? Prettify<ResolvedProps> & PublicProps
         : Partial<Defaults> &
             Omit<Prettify<ResolvedProps> & PublicProps, keyof Defaults>
-      : Prettify<ResolvedProps> & PublicProps) &
-      SlotsToProps<Slots, NodeChild>,
+      : Prettify<ResolvedProps> & PublicProps,
     Emits,
     Slots,
     Exposed,
@@ -317,15 +321,15 @@ export type DefineVaporComponent<
 export type DefineVaporSetupFnComponent<
   Props extends Record<string, any> = {},
   Emits extends EmitsOptions = {},
-  Slots extends StaticSlots = StaticSlots,
+  Slots extends Record<string, any> = Record<string, any>,
   Exposed extends Record<string, any> = Record<string, any>,
   TypeBlock extends Block = Block,
-  ResolvedProps extends Record<string, any> = ToResolvedProps<
-    Props & VaporPublicProps,
-    Emits
-  >,
+  ResolvedProps extends Record<string, any> = Readonly<
+    Props & VaporPublicProps
+  > &
+    SetupContextToProps<Emits, Slots, Exposed>,
 > = new () => VaporComponentInstance<
-  ResolvedProps & SlotsToProps<Slots, NodeChild>,
+  ResolvedProps,
   Emits,
   Slots,
   Exposed,
@@ -338,15 +342,16 @@ export function defineVaporComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
-  Slots extends StaticSlots = StaticSlots,
+  Slots extends Record<string, any> = Record<string, any>,
   Exposed extends Record<string, any> = Record<string, any>,
   TypeBlock extends Block = Block,
+  Emit = EmitFn<Emits>,
 >(
   setup: (
     this: void,
     props: Props,
     ctx: {
-      emit: EmitFn<Emits>
+      emit: Emit
       slots: Slots
       attrs: Record<string, any>
       expose: (exposed?: Exposed) => void
@@ -360,20 +365,27 @@ export function defineVaporComponent<
     Exposed
   > &
     ThisType<void>,
-): DefineVaporSetupFnComponent<Props, Emits, Slots, Exposed, TypeBlock>
+): DefineVaporSetupFnComponent<
+  Props & ([keyof Emits] extends [never] ? EmitFnToProps<Emit> : {}),
+  Emits,
+  Slots,
+  Exposed,
+  TypeBlock
+>
 export function defineVaporComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
-  Slots extends StaticSlots = StaticSlots,
+  Slots extends Record<string, any> = Record<string, any>,
   Exposed extends Record<string, any> = Record<string, any>,
   TypeBlock extends Block = Block,
+  Emit = EmitFn<Emits>,
 >(
   this: void,
   setup: (
     props: Props,
     ctx: {
-      emit: EmitFn<Emits>
+      emit: Emit
       slots: Slots
       attrs: Record<string, any>
       expose: (exposed?: Exposed) => void
@@ -387,7 +399,13 @@ export function defineVaporComponent<
     Exposed
   > &
     ThisType<void>,
-): DefineVaporSetupFnComponent<Props, Emits, Slots, Exposed, TypeBlock>
+): DefineVaporSetupFnComponent<
+  Props & ([keyof Emits] extends [never] ? EmitFnToProps<Emit> : {}),
+  Emits,
+  Slots,
+  Exposed,
+  TypeBlock
+>
 
 // overload 2: defineVaporComponent with options object, infer props from options
 export function defineVaporComponent<
@@ -400,7 +418,7 @@ export function defineVaporComponent<
   TypeEmits extends ComponentTypeEmits = {},
   RuntimeEmitsOptions extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
-  Slots extends StaticSlots = StaticSlots,
+  Slots extends Record<string, any> = Record<string, any>,
   Exposed extends Record<string, any> = Record<string, any>,
   // resolved types
   ResolvedEmits extends EmitsOptions = {} extends RuntimeEmitsOptions
@@ -451,7 +469,7 @@ export function defineVaporComponent<
   ResolvedEmits,
   RuntimeEmitsKeys,
   Slots,
-  Exposed extends Block ? Record<string, any> : Exposed,
+  Block extends Exposed ? Record<string, any> : Exposed,
   TypeBlock,
   TypeRefs,
   // MakeDefaultsOptional - if TypeProps is provided, set to false to use
@@ -495,16 +513,16 @@ export const VaporFor = defineVaporComponent(
           : T extends Iterable<infer T1>
             ? T1
             : Record<any, any>,
-    GetKeyDetault = (
+    GetKeyDefault = (
       ...args: string extends keyof Item
         ? [item: T[keyof T], key: keyof T, index: number]
         : [item: Item, index: number]
     ) => any,
-    GetKey extends GetKeyDetault | null | undefined = undefined,
+    GetKey extends GetKeyDefault | null | undefined = undefined,
   >(
     props: {
       in: T
-      getKey?: GetKey extends undefined ? GetKeyDetault : GetKey
+      getKey?: GetKey extends undefined ? GetKeyDefault : GetKey
     },
     {
       slots,

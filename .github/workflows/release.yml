@@ -39,7 +39,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: 22.22.1
+          node-version: '22'
           cache: pnpm
       - name: Install
         uses: dtolnay/rust-toolchain@stable
@@ -95,7 +95,7 @@ jobs:
           - host: ubuntu-latest
             target: wasm32-wasip1-threads
             build: pnpm build --target wasm32-wasip1-threads
-    name: stable - ${{ matrix.settings.target }} - node@20
+    name: stable - ${{ matrix.settings.target }} - node@22
     runs-on: ${{ matrix.settings.host }}
 
     defaults:
@@ -109,7 +109,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: 22.22.1
+          node-version: '22'
           cache: pnpm
       - name: Install
         uses: dtolnay/rust-toolchain@stable
@@ -152,7 +152,7 @@ jobs:
         uses: actions/setup-node@v5
         if: matrix.settings.target == 'i686-pc-windows-msvc'
         with:
-          node-version: 22.22.1
+          node-version: '22'
           cache: pnpm
           architecture: x86
       - name: Build
@@ -170,7 +170,14 @@ jobs:
         if: matrix.settings.target == 'wasm32-wasip1-threads'
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: './packages/compiler/*.wasm'
+          path: |
+            ./packages/compiler-rs/compiler-rs.wasm32-wasi.wasm
+            ./packages/compiler-rs/compiler-rs.wasi.cjs
+            ./packages/compiler-rs/compiler-rs.wasi.d.cts
+            ./packages/compiler-rs/compiler-rs.wasi-browser.js
+            ./packages/compiler-rs/wasi-worker.mjs
+            ./packages/compiler-rs/wasi-worker-browser.mjs
+            ./packages/compiler-rs/index.js
           if-no-files-found: error
   build-freebsd:
     runs-on: ubuntu-latest
@@ -241,8 +248,7 @@ jobs:
             target: aarch64-apple-darwin
             architecture: arm64
         node:
-          - '20'
-          - 22.22.1
+          - '22'
     runs-on: ${{ matrix.settings.host }}
     defaults:
       run:
@@ -287,8 +293,7 @@ jobs:
           - aarch64-unknown-linux-musl
           - armv7-unknown-linux-gnueabihf
         node:
-          - '20'
-          - 22.22.1
+          - '22'
     runs-on: ${{ contains(matrix.target, 'aarch64') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     defaults:
       run:
@@ -364,7 +369,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: 22.22.1
+          node-version: '22'
           cache: pnpm
       - name: Install dependencies
         run: pnpm install
@@ -399,7 +404,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: 22.22.1
+          node-version: '22'
           cache: pnpm
       - name: Install dependencies
         run: pnpm install

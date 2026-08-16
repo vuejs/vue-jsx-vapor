@@ -182,28 +182,28 @@ fn transform_template_slot<'a>(
         },
       }));
     } else if let Some(v_else_dir) = v_else_dir {
-      if let Some(last_slot) = slots.last_mut() {
-        if let Either4::C(v_if_slot) = last_slot {
-          let positive = IRSlotDynamicBasic {
-            slot_type: IRSlotType::DYNAMIC,
-            name,
-            _fn: block,
-            _loop: None,
-          };
-          let negative = if let Some(exp) = v_else_dir.exp {
-            Either::B(IRSlotDynamicConditional {
-              slot_type: IRSlotType::CONDITIONAL,
-              condition: exp,
-              positive,
-              negative: None,
-            })
-          } else {
-            Either::A(positive)
-          };
-          set_slot(v_if_slot, negative);
+      if let Some(last_slot) = slots.last_mut()
+        && let Either4::C(v_if_slot) = last_slot
+      {
+        let positive = IRSlotDynamicBasic {
+          slot_type: IRSlotType::DYNAMIC,
+          name,
+          _fn: block,
+          _loop: None,
+        };
+        let negative = if let Some(exp) = v_else_dir.exp {
+          Either::B(IRSlotDynamicConditional {
+            slot_type: IRSlotType::CONDITIONAL,
+            condition: exp,
+            positive,
+            negative: None,
+          })
         } else {
-          context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, v_else_dir.span)
-        }
+          Either::A(positive)
+        };
+        set_slot(v_if_slot, negative);
+      } else {
+        context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, v_else_dir.span)
       }
     } else if let Some(for_parse_result) = for_parse_result
       && for_parse_result.source.is_some()

@@ -23,7 +23,7 @@ type OnEnterExpression<'a> =
 type OnLeaveExpression<'a> = Box<dyn Fn(&Expression) + 'a>;
 type CreateRootJSX<'a> = Box<dyn Fn(*mut Expression<'a>, bool) -> RootJsx<'a> + 'a>;
 
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 pub struct Hmr {
   /**
    * The name of the function to be used for defining components.
@@ -53,8 +53,10 @@ pub struct TransformOptions<'a> {
   pub semantic: RefCell<Semantic<'a>>,
   pub templates: RefCell<Vec<Template>>,
   pub helpers: RefCell<BTreeSet<&'a str>>,
+  pub delegates: RefCell<BTreeSet<&'a str>>,
   pub hoists: RefCell<Vec<Expression<'a>>>,
   pub on_error: Box<dyn Fn(ErrorCodes, Span) + 'a>,
+  pub on_warn: Box<dyn Fn(&str, Span) + 'a>,
   pub create_root_jsx: RefCell<Option<CreateRootJSX<'a>>>,
   pub on_enter_expression: RefCell<Option<OnEnterExpression<'a>>>,
   pub on_leave_expression: RefCell<Option<OnLeaveExpression<'a>>>,
@@ -88,9 +90,11 @@ impl<'a> Default for TransformOptions<'a> {
       source_type: RefCell::new(SourceType::jsx()),
       templates: RefCell::new(vec![]),
       helpers: RefCell::new(BTreeSet::new()),
+      delegates: RefCell::new(BTreeSet::new()),
       hoists: RefCell::new(vec![]),
       source_map: false,
       on_error: Box::new(|_, _| {}),
+      on_warn: Box::new(|_, _| {}),
       interop: false,
       hmr: Either::A(false),
       ssr: false,

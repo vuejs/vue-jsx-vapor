@@ -109,7 +109,7 @@ export function transformDefineStyle(
   css = s
     .slice(expression.arguments[0].start!, expression.arguments[0].end!)
     .slice(1, -1)
-    .replaceAll(/\/\/(.*)(?=\n)/g, '/*$1*/')
+    .replaceAll(/^([ \t]*)\/\/([^\r\n]*)/gm, '$1/*$2 */')
   const module = isCssModules ? 'module.' : ''
   const importId = `${helperPrefix}/define-style/${index}?scopeId=${scopeId}&scoped=${scoped}&lang.${module}${lang}`
   importMap.set(importId, css)

@@ -1,5 +1,6 @@
 import {
   defineComponent as __defineComponent,
+  normalizeClass as _normalizeClass,
   cloneVNode,
   Comment,
   createBlock,
@@ -41,7 +42,8 @@ import {
   type VNode,
   type VNodeChild,
 } from 'vue'
-import type { IsKeyValues, SlotsToProps, ToResolvedProps } from './types'
+import type { RenderResult } from './jsx'
+import type { EmitFnToProps, IsKeyValues, SetupContextToProps } from './types'
 
 const cacheMap = new WeakMap()
 
@@ -110,9 +112,21 @@ export const normalizeSlot = (rawSlot: Function): Slot => {
   }) as Slot
 }
 
+export const normalizeSlots = (slots: any): Record<string, any> | Function => {
+  return typeof slots === 'function' ||
+    (Object.prototype.toString.call(slots) === '[object Object]' &&
+      !isVNode(slots))
+    ? slots
+    : {
+        default: withCtx(() => [normalizeVNode(() => slots)]),
+      }
+}
+
+export const normalizeClass = (value: unknown) => _normalizeClass(value) || null
+
 // defineComponent
 
-type RenderFunction = () => VNodeChild | {}
+type RenderFunction = () => RenderResult
 
 type ComponentPublicInstanceConstructor<
   T extends ComponentPublicInstance<
@@ -134,13 +148,6 @@ type ComponentPublicInstanceConstructor<
   new (...args: any[]): T
 }
 
-type ResolveProps<PropsOrPropOptions, E extends EmitsOptions> = Readonly<
-  PropsOrPropOptions extends ComponentPropsOptions
-    ? ExtractPropTypes<PropsOrPropOptions>
-    : PropsOrPropOptions
-> &
-  ({} extends E ? {} : EmitsToProps<E>)
-
 export type DefineComponent<
   PropsOrPropOptions = {},
   RawBindings = {},
@@ -152,7 +159,12 @@ export type DefineComponent<
   E extends EmitsOptions = {},
   EE extends string = string,
   PP = PublicProps,
-  Props = ResolveProps<PropsOrPropOptions, E>,
+  Props = Readonly<
+    PropsOrPropOptions extends ComponentPropsOptions
+      ? ExtractPropTypes<PropsOrPropOptions>
+      : PropsOrPropOptions
+  > &
+    EmitsToProps<E>,
   Defaults = ExtractDefaultPropTypes<PropsOrPropOptions>,
   S extends SlotsType = {},
   LC extends Record<string, Component> = {},
@@ -164,7 +176,7 @@ export type DefineComponent<
   TypeEl extends Element = any,
 > = ComponentPublicInstanceConstructor<
   CreateComponentPublicInstanceWithMixins<
-    Props & SlotsToProps<S>,
+    Props,
     RawBindings,
     D,
     C,
@@ -210,7 +222,7 @@ export type DefineSetupFnComponent<
   E extends EmitsOptions = {},
   S extends SlotsType = SlotsType,
   Exposed extends Record<string, any> = {},
-  Props = P & EmitsToProps<E> & SlotsToProps<S>,
+  Props = Readonly<P> & SetupContextToProps<E, S, Exposed>,
   PP = PublicProps,
 > = new (
   props: Props & PP,
@@ -240,19 +252,19 @@ export type DefineSetupFnComponent<
 
 // overload 1: direct setup function
 // (uses user defined props interface)
-// eslint-disable-next-line unused-imports/no-unused-vars
 declare function _defineComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
   Slots extends SlotsType | Record<string, any> = {},
   Exposed extends Record<string, any> = {},
+  Emit = EmitFn<Emits>,
 >(
   setup: (
     this: void,
     props: Props,
     ctx: {
-      emit: EmitFn<Emits>
+      emit: Emit
       slots: Slots
       attrs: Record<string, any>
       expose: (exposed?: Exposed) => void
@@ -264,7 +276,7 @@ declare function _defineComponent<
     slots?: Slots
   },
 ): DefineSetupFnComponent<
-  Props,
+  Props & ([keyof Emits] extends [never] ? EmitFnToProps<Emit> : {}),
   Emits,
   Slots extends SlotsType ? Slots : SlotsType<Slots>,
   Exposed
@@ -275,12 +287,13 @@ declare function _defineComponent<
   RuntimeEmitsKeys extends string = string,
   Slots extends SlotsType | Record<string, any> = {},
   Exposed extends Record<string, any> = {},
+  Emit = EmitFn<Emits>,
 >(
   setup: (
     this: void,
     props: Props,
     ctx: {
-      emit: EmitFn<Emits>
+      emit: Emit
       slots: Slots
       attrs: Record<string, any>
       expose: (exposed?: Exposed) => void
@@ -292,7 +305,7 @@ declare function _defineComponent<
     slots?: Slots
   },
 ): DefineSetupFnComponent<
-  Props,
+  Props & ([keyof Emits] extends [never] ? EmitFnToProps<Emit> : {}),
   Emits,
   Slots extends SlotsType ? Slots : SlotsType<Slots>,
   Exposed
@@ -356,7 +369,7 @@ declare function _defineComponent<
      */
     __typeEl?: TypeEl
   } & ComponentOptionsBase<
-    ToResolvedProps<InferredProps, ResolvedEmits>,
+    Readonly<InferredProps> & EmitsToProps<ResolvedEmits>,
     SetupBindings,
     Data,
     Computed,
@@ -376,7 +389,7 @@ declare function _defineComponent<
   > &
     ThisType<
       CreateComponentPublicInstanceWithMixins<
-        ToResolvedProps<InferredProps, ResolvedEmits>,
+        Readonly<InferredProps> & EmitsToProps<ResolvedEmits>,
         SetupBindings,
         Data,
         Computed,
@@ -405,7 +418,7 @@ declare function _defineComponent<
   ResolvedEmits,
   RuntimeEmitsKeys,
   PublicProps,
-  ToResolvedProps<InferredProps, ResolvedEmits>,
+  Readonly<InferredProps> & EmitsToProps<ResolvedEmits>,
   ExtractDefaultPropTypes<RuntimePropsOptions>,
   Slots,
   LocalComponents,

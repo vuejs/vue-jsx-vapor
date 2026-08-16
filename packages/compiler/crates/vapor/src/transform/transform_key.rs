@@ -59,10 +59,10 @@ pub unsafe fn transform_key<'a>(
         id,
         value: value.take_in(context.allocator),
         block,
+        slot_root: false,
         anchor: None,
-        logical_index: None,
+        append_index: None,
         parent: None,
-        append: false,
         operation_index: Some(*context.operation_index.borrow()),
         effect_index: Some(*context.effect_index.borrow()),
       })))
@@ -85,7 +85,7 @@ pub fn resolve_static_key<'a>(
       JSXAttributeValue::StringLiteral(_) => true,
       _ => false,
     } {
-      Some(jsx_attribute_value_to_expression(value, ast))
+      jsx_attribute_value_to_expression(value, ast)
     } else {
       None
     }

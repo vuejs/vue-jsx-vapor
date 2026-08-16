@@ -156,40 +156,6 @@ fn named_slot_outlet_with_props_and_fallback() {
 }
 
 #[test]
-fn slots_component() {
-  let code = transform(r#"<slots.foo foo={bar}><div /></slots.foo>"#, None).code;
-  assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { template as _template } from "vue";
-  const _t0 = _template("<div>", 2);
-  (() => {
-  	const _n1 = _createComponent(slots.foo, { foo: () => bar }, () => {
-  		const _n0 = _t0();
-  		return _n0;
-  	}, true);
-  	return _n1;
-  })();
-  "#);
-}
-
-#[test]
-fn dollor_slots_component() {
-  let code = transform(r#"<$slots.foo foo={bar}><div /></$slots.foo>"#, None).code;
-  assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { template as _template } from "vue";
-  const _t0 = _template("<div>", 2);
-  (() => {
-  	const _n1 = _createComponent($slots.foo, { foo: () => bar }, () => {
-  		const _n0 = _t0();
-  		return _n0;
-  	}, true);
-  	return _n1;
-  })();
-  "#);
-}
-
-#[test]
 fn root_v_if_fallbck() {
   let code = transform(r#"<slot><span v-if={ok}/></slot>"#, None).code;
   assert_snapshot!(code, @r#"
@@ -200,7 +166,7 @@ fn root_v_if_fallbck() {
   		const _n1 = _createIf(() => ok, () => {
   			const _n3 = _t0();
   			return _n3;
-  		}, null, 161);
+  		});
   		return _n1;
   	});
   	return _n0;
@@ -227,9 +193,9 @@ fn nested_root_v_for_fallbck() {
   				const _x5 = _txt(_n5);
   				_setNodes(_x5, () => _for_item0.value);
   				return _n5;
-  			}, void 0, 40);
+  			}, void 0, 8);
   			return _n3;
-  		}, null, 129);
+  		});
   		return _n1;
   	});
   	return _n0;
@@ -246,7 +212,7 @@ fn does_not_mark_non_root_fallback_v_if_as_slot_root() {
   const _t1 = _template("<div>", 1);
   (() => {
   	const _n3 = _t1();
-  	_setInsertionState(_n3, null, 0);
+  	_setInsertionState(_n3);
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _t0();
   		return _n2;

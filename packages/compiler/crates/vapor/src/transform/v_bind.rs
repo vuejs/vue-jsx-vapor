@@ -52,11 +52,11 @@ pub fn transform_v_bind<'a>(
           }
         } else {
           get_text_like_value(expression)
-            .map(|value| ast.expression_string_literal(SPAN, ast.str(&value.as_ref()), None))
+            .map(|value| ast.expression_string_literal(SPAN, ast.str(value.as_ref()), None))
         }
       }
       JSXAttributeValue::StringLiteral(value) => {
-        Some(ast.expression_string_literal(SPAN, ast.str(&value.value.as_ref()), None))
+        Some(ast.expression_string_literal(SPAN, ast.str(value.value.as_ref()), None))
       }
       _ => None,
     } {
@@ -65,7 +65,7 @@ pub fn transform_v_bind<'a>(
         value,
       ));
     } else {
-      jsx_attribute_value_to_expression(value, ast)
+      jsx_attribute_value_to_expression(value, ast)?
     }
   } else {
     let value =
@@ -91,6 +91,7 @@ pub fn transform_v_bind<'a>(
   Some(DirectiveTransformResult {
     key: Expression::StringLiteral(arg),
     value,
+    to_display_string: false,
     runtime_camelize: false,
     modifier,
     handler: false,

@@ -8,7 +8,7 @@ use common::{check::is_fragment_node, directive::Directives, text::is_empty_text
 pub unsafe fn transform_children<'a>(
   directives: &Directives,
   node: &mut JSXChild<'a>,
-  context: &'a TransformContext<'a>,
+  context: &TransformContext<'a>,
 ) {
   unsafe {
     let is_fragment_or_component = is_fragment_node(node) || directives.is_component;

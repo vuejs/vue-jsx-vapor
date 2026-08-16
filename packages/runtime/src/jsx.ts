@@ -27,20 +27,100 @@
 //                 Kanitkorn Sujautra <https://github.com/lukyth>
 //                 Sebastian Silbermann <https://github.com/eps1lon>
 
-import type * as CSS from 'csstype'
+import type {
+  EmitFnToProps,
+  ExtractExposed,
+  NodeRef,
+  SlotsToProps,
+} from './types'
+import type {
+  AriaAttributes,
+  ReservedProps,
+  StyleValue,
+  UnwrapRef,
+  VaporComponentInstance,
+  VNode,
+  VNodeRef,
+} from 'vue'
 
-export interface CSSProperties
-  extends CSS.Properties<string | number>,
-    CSS.PropertiesHyphen<string | number> {
-  /**
-   * The index signature was removed to enable closed typing for style
-   * using CSSType. You're able to use type assertion or module augmentation
-   * to add properties or an index signature of your own.
-   *
-   * For examples and more information, visit:
-   * https://github.com/frenic/csstype#what-should-i-do-when-i-get-type-errors
-   */
-  [v: `--${string}`]: string | number | undefined
+declare module 'vue' {
+  interface VaporComponentInstance {
+    // @ts-expect-error Compatible with vue3.5
+    block: never
+  }
+  interface RenderResultExtensions {
+    render: RenderResult
+  }
+}
+
+type NativeElement = Element
+
+export type RenderResult<T = VaporComponentInstance['block']> =
+  | T
+  | VNode
+  | RenderResult[]
+
+export namespace JSX {
+  export type Element = RenderResult
+  export interface ElementAttributesProperty {
+    $props: {}
+  }
+  export interface ElementChildrenAttribute {
+    'v-slots': {}
+  }
+  export interface IntrinsicElements extends NativeElements {
+    [name: string]: any
+  }
+  export interface IntrinsicAttributes extends Omit<ReservedProps, 'ref'> {
+    class?: ClassValue | undefined
+    style?: StyleValue | undefined
+  }
+  export type LibraryManagedAttributes<Component, Props> = Omit<Props, 'ref'> &
+    (Component extends abstract new (...args: any[]) => infer Instance
+      ? {
+          ref?: NodeRef<
+            ExtractExposed<
+              Props,
+              'exposed' extends keyof Instance
+                ? string extends keyof NonNullable<
+                    NonNullable<Instance['exposed']>
+                  >
+                  ? Instance
+                  : UnwrapRef<Instance['exposed']>
+                : Instance
+            >
+          >
+        } & ('v-slots' extends keyof Props
+          ? {}
+          : '$slots' extends keyof Instance
+            ? SlotsToProps<Instance['$slots'] & {}>
+            : 'slots' extends keyof Instance
+              ? SlotsToProps<Instance['slots'] & {}>
+              : {})
+      : Component extends (
+            props: Props,
+            ctx: {
+              slots: infer Slots
+              attrs: any
+              emit: infer Emit
+              expose: (
+                exposed: infer Exposed extends Record<string, any>,
+              ) => void
+            },
+          ) => any
+        ? {
+            ref?: 'ref' extends keyof Props
+              ? Props['ref']
+              : NodeRef<
+                  string extends keyof Exposed
+                    ? NativeElement | VaporComponentInstance
+                    : UnwrapRef<Exposed>
+                >
+          } & EmitFnToProps<Emit, keyof Props> &
+            ('v-slots' extends keyof Props ? {} : SlotsToProps<Slots & {}>)
+        : {
+            ref?: VNodeRef
+          })
 }
 
 type Booleanish = boolean | 'true' | 'false'
@@ -49,246 +129,26 @@ type Numberish = number | string
 interface HTMLWebViewElement extends HTMLElement {}
 interface StyleMedia {}
 
-// All the WAI-ARIA 1.1 attributes from https://www.w3.org/TR/wai-aria-1.1/
-export interface AriaAttributes {
-  /** Identifies the currently active element when DOM focus is on a composite widget, textbox, group, or application. */
-  'aria-activedescendant'?: string | undefined
-  /** Indicates whether assistive technologies will present all, or only parts of, the changed region based on the change notifications defined by the aria-relevant attribute. */
-  'aria-atomic'?: Booleanish | undefined
-  /**
-   * Indicates whether inputting text could trigger display of one or more predictions of the user's intended value for an input and specifies how predictions would be
-   * presented if they are made.
-   */
-  'aria-autocomplete'?: 'none' | 'inline' | 'list' | 'both' | undefined
-  /** Indicates an element is being modified and that assistive technologies MAY want to wait until the modifications are complete before exposing them to the user. */
-  'aria-busy'?: Booleanish | undefined
-  /**
-   * Indicates the current "checked" state of checkboxes, radio buttons, and other widgets.
-   * @see aria-pressed @see aria-selected.
-   */
-  'aria-checked'?: Booleanish | 'mixed' | undefined
-  /**
-   * Defines the total number of columns in a table, grid, or treegrid.
-   * @see aria-colindex.
-   */
-  'aria-colcount'?: Numberish | undefined
-  /**
-   * Defines an element's column index or position with respect to the total number of columns within a table, grid, or treegrid.
-   * @see aria-colcount @see aria-colspan.
-   */
-  'aria-colindex'?: Numberish | undefined
-  /**
-   * Defines the number of columns spanned by a cell or gridcell within a table, grid, or treegrid.
-   * @see aria-colindex @see aria-rowspan.
-   */
-  'aria-colspan'?: Numberish | undefined
-  /**
-   * Identifies the element (or elements) whose contents or presence are controlled by the current element.
-   * @see aria-owns.
-   */
-  'aria-controls'?: string | undefined
-  /** Indicates the element that represents the current item within a container or set of related elements. */
-  'aria-current'?:
-    | Booleanish
-    | 'page'
-    | 'step'
-    | 'location'
-    | 'date'
-    | 'time'
-    | undefined
-  /**
-   * Identifies the element (or elements) that describes the object.
-   * @see aria-labelledby
-   */
-  'aria-describedby'?: string | undefined
-  /**
-   * Identifies the element that provides a detailed, extended description for the object.
-   * @see aria-describedby.
-   */
-  'aria-details'?: string | undefined
-  /**
-   * Indicates that the element is perceivable but disabled, so it is not editable or otherwise operable.
-   * @see aria-hidden @see aria-readonly.
-   */
-  'aria-disabled'?: Booleanish | undefined
-  /**
-   * Indicates what functions can be performed when a dragged object is released on the drop target.
-   * @deprecated in ARIA 1.1
-   */
-  'aria-dropeffect'?:
-    | 'none'
-    | 'copy'
-    | 'execute'
-    | 'link'
-    | 'move'
-    | 'popup'
-    | undefined
-  /**
-   * Identifies the element that provides an error message for the object.
-   * @see aria-invalid @see aria-describedby.
-   */
-  'aria-errormessage'?: string | undefined
-  /** Indicates whether the element, or another grouping element it controls, is currently expanded or collapsed. */
-  'aria-expanded'?: Booleanish | undefined
-  /**
-   * Identifies the next element (or elements) in an alternate reading order of content which, at the user's discretion,
-   * allows assistive technology to override the general default of reading in document source order.
-   */
-  'aria-flowto'?: string | undefined
-  /**
-   * Indicates an element's "grabbed" state in a drag-and-drop operation.
-   * @deprecated in ARIA 1.1
-   */
-  'aria-grabbed'?: Booleanish | undefined
-  /** Indicates the availability and type of interactive popup element, such as menu or dialog, that can be triggered by an element. */
-  'aria-haspopup'?:
-    | Booleanish
-    | 'menu'
-    | 'listbox'
-    | 'tree'
-    | 'grid'
-    | 'dialog'
-    | undefined
-  /**
-   * Indicates whether the element is exposed to an accessibility API.
-   * @see aria-disabled.
-   */
-  'aria-hidden'?: Booleanish | undefined
-  /**
-   * Indicates the entered value does not conform to the format expected by the application.
-   * @see aria-errormessage.
-   */
-  'aria-invalid'?: Booleanish | 'grammar' | 'spelling' | undefined
-  /** Indicates keyboard shortcuts that an author has implemented to activate or give focus to an element. */
-  'aria-keyshortcuts'?: string | undefined
-  /**
-   * Defines a string value that labels the current element.
-   * @see aria-labelledby.
-   */
-  'aria-label'?: string | undefined
-  /**
-   * Identifies the element (or elements) that labels the current element.
-   * @see aria-describedby.
-   */
-  'aria-labelledby'?: string | undefined
-  /** Defines the hierarchical level of an element within a structure. */
-  'aria-level'?: Numberish | undefined
-  /** Indicates that an element will be updated, and describes the types of updates the user agents, assistive technologies, and user can expect from the live region. */
-  'aria-live'?: 'off' | 'assertive' | 'polite' | undefined
-  /** Indicates whether an element is modal when displayed. */
-  'aria-modal'?: Booleanish | undefined
-  /** Indicates whether a text box accepts multiple lines of input or only a single line. */
-  'aria-multiline'?: Booleanish | undefined
-  /** Indicates that the user may select more than one item from the current selectable descendants. */
-  'aria-multiselectable'?: Booleanish | undefined
-  /** Indicates whether the element's orientation is horizontal, vertical, or unknown/ambiguous. */
-  'aria-orientation'?: 'horizontal' | 'vertical' | undefined
-  /**
-   * Identifies an element (or elements) in order to define a visual, functional, or contextual parent/child relationship
-   * between DOM elements where the DOM hierarchy cannot be used to represent the relationship.
-   * @see aria-controls.
-   */
-  'aria-owns'?: string | undefined
-  /**
-   * Defines a short hint (a word or short phrase) intended to aid the user with data entry when the control has no value.
-   * A hint could be a sample value or a brief description of the expected format.
-   */
-  'aria-placeholder'?: string | undefined
-  /**
-   * Defines an element's number or position in the current set of listitems or treeitems. Not required if all elements in the set are present in the DOM.
-   * @see aria-setsize.
-   */
-  'aria-posinset'?: Numberish | undefined
-  /**
-   * Indicates the current "pressed" state of toggle buttons.
-   * @see aria-checked @see aria-selected.
-   */
-  'aria-pressed'?: Booleanish | 'mixed' | undefined
-  /**
-   * Indicates that the element is not editable, but is otherwise operable.
-   * @see aria-disabled.
-   */
-  'aria-readonly'?: Booleanish | undefined
-  /**
-   * Indicates what notifications the user agent will trigger when the accessibility tree within a live region is modified.
-   * @see aria-atomic.
-   */
-  'aria-relevant'?:
-    | 'additions'
-    | 'additions removals'
-    | 'additions text'
-    | 'all'
-    | 'removals'
-    | 'removals additions'
-    | 'removals text'
-    | 'text'
-    | 'text additions'
-    | 'text removals'
-    | undefined
-  /** Indicates that user input is required on the element before a form may be submitted. */
-  'aria-required'?: Booleanish | undefined
-  /** Defines a human-readable, author-localized description for the role of an element. */
-  'aria-roledescription'?: string | undefined
-  /**
-   * Defines the total number of rows in a table, grid, or treegrid.
-   * @see aria-rowindex.
-   */
-  'aria-rowcount'?: Numberish | undefined
-  /**
-   * Defines an element's row index or position with respect to the total number of rows within a table, grid, or treegrid.
-   * @see aria-rowcount @see aria-rowspan.
-   */
-  'aria-rowindex'?: Numberish | undefined
-  /**
-   * Defines the number of rows spanned by a cell or gridcell within a table, grid, or treegrid.
-   * @see aria-rowindex @see aria-colspan.
-   */
-  'aria-rowspan'?: Numberish | undefined
-  /**
-   * Indicates the current "selected" state of various widgets.
-   * @see aria-checked @see aria-pressed.
-   */
-  'aria-selected'?: Booleanish | undefined
-  /**
-   * Defines the number of items in the current set of listitems or treeitems. Not required if all elements in the set are present in the DOM.
-   * @see aria-posinset.
-   */
-  'aria-setsize'?: Numberish | undefined
-  /** Indicates if items in a table or grid are sorted in ascending or descending order. */
-  'aria-sort'?: 'none' | 'ascending' | 'descending' | 'other' | undefined
-  /** Defines the maximum allowed value for a range widget. */
-  'aria-valuemax'?: Numberish | undefined
-  /** Defines the minimum allowed value for a range widget. */
-  'aria-valuemin'?: Numberish | undefined
-  /**
-   * Defines the current value for a range widget.
-   * @see aria-valuetext.
-   */
-  'aria-valuenow'?: Numberish | undefined
-  /** Defines the human readable text alternative of aria-valuenow for a range widget. */
-  'aria-valuetext'?: string | undefined
-}
-
 /**
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/crossorigin MDN}
  */
 type CrossOrigin = 'anonymous' | 'use-credentials' | ''
 
-// Vue's style normalization supports nested arrays
-export type StyleValue =
+// Support for `class` attribute
+type ClassValue =
   | false
   | null
   | undefined
   | string
-  | CSSProperties
-  | Array<StyleValue>
+  | Record<string, any>
+  | Array<ClassValue>
 
 export interface HTMLAttributes<T = HTMLElement>
   extends AriaAttributes,
     EventHandlers<Events<T>> {
   innerHTML?: string | undefined
 
-  class?: any | undefined
+  class?: ClassValue | undefined
   style?: StyleValue | undefined
 
   // Standard HTML Attributes
@@ -307,7 +167,7 @@ export interface HTMLAttributes<T = HTMLElement>
   contextmenu?: string | undefined
   dir?: string | undefined
   draggable?: Booleanish | undefined
-  enterKeyHint?:
+  enterkeyhint?:
     | 'enter'
     | 'done'
     | 'go'
@@ -316,6 +176,10 @@ export interface HTMLAttributes<T = HTMLElement>
     | 'search'
     | 'send'
     | undefined
+  /**
+   * @deprecated Use `enterkeyhint` instead.
+   */
+  enterKeyHint?: HTMLAttributes['enterkeyhint']
   hidden?: Booleanish | '' | 'hidden' | 'until-found' | undefined
   id?: string | undefined
   inert?: Booleanish | undefined
@@ -379,6 +243,14 @@ export interface HTMLAttributes<T = HTMLElement>
    * @see https://html.spec.whatwg.org/multipage/custom-elements.html#attr-is
    */
   is?: string | undefined
+  /**
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/exportparts
+   */
+  exportparts?: string
+  /**
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/part
+   */
+  part?: string
 }
 
 type HTMLAttributeReferrerPolicy =
@@ -529,6 +401,7 @@ export interface ImgHTMLAttributes<T> extends HTMLAttributes<T> {
   alt?: string | undefined
   crossorigin?: CrossOrigin | undefined
   decoding?: 'async' | 'auto' | 'sync' | undefined
+  fetchPriority?: 'high' | 'low' | 'auto' | undefined
   height?: Numberish | undefined
   loading?: 'eager' | 'lazy' | undefined
   referrerpolicy?: HTMLAttributeReferrerPolicy | undefined
@@ -925,7 +798,7 @@ export interface SVGAttributes extends AriaAttributes, EventHandlers<Events> {
    * SVG Styling Attributes
    * @see https://www.w3.org/TR/SVG/styling.html#ElementSpecificStyling
    */
-  class?: any | undefined
+  class?: ClassValue | undefined
   style?: StyleValue | undefined
 
   color?: string | undefined
@@ -1376,6 +1249,7 @@ export interface IntrinsicElementAttributes {
   polyline: SVGAttributes
   radialGradient: SVGAttributes
   rect: SVGAttributes
+  set: SVGAttributes
   stop: SVGAttributes
   switch: SVGAttributes
   symbol: SVGAttributes
@@ -1511,7 +1385,9 @@ export type EventHandlers<E> = {
 
 export type NativeElements = {
   [K in keyof IntrinsicElementAttributes]: IntrinsicElementAttributes[K] &
-    import('vue').ReservedProps
+    Omit<ReservedProps, 'ref'> & {
+      ref?: NodeRef<IntrinsicElementAttributes[K]>
+    }
 }
 
 export interface BaseSyntheticEvent<E = object, C = unknown, T = unknown> {

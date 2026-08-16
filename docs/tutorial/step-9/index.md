@@ -5,7 +5,7 @@ next: false
 ---
 
 # Slots
-  
+
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
@@ -36,9 +36,7 @@ const apps = {
 In addition to passing data via props, the parent component can also pass JSX to the child via slots:
 
 ```jsx
-<Comp>
-  This is the default slot content!
-</Comp>
+<Comp>This is the default slot content!</Comp>
 ```
 
 We have three ways to use slots:
@@ -60,11 +58,12 @@ const Comp = (props, { slots }) => {
 ```
 
 > Named slot
+
 ```jsx
 const Comp = (props, { slots }) => {
   return [
     <slot>Fallback content</slot>,
-    <slot name="title">Title fallback content</slot>
+    <slot name="title">Title fallback content</slot>,
   ]
 }
 ```
@@ -74,9 +73,9 @@ const Comp = (props, { slots }) => {
 ```jsx
 const Comp = (props) => {
   const slots = defineSlots({
-    default: () => <>Fallback content</>
+    default: () => <>Fallback content</>,
   })
-  return <slots.default>Fallback content</slots.default>
+  return <slots.default />
 }
 ```
 

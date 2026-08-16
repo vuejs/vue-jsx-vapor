@@ -32,6 +32,27 @@ fn binding_value() {
 }
 
 #[test]
+fn object_literal_binding_value() {
+  let code = transform("<div v-example={{ value: msg, other: 1 }}></div>", None).code;
+  assert!(code.contains("() => ({"));
+  assert!(code.contains("value: msg"));
+  assert!(code.contains("other: 1"));
+  assert_snapshot!(code, @r#"
+	import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+	const _t0 = _template("<div>", 1);
+	(() => {
+		const _directive_example = _resolveDirective("example");
+		const _n0 = _t0();
+		_withVaporDirectives(_n0, [[_directive_example, () => ({
+			value: msg,
+			other: 1
+		})]]);
+		return _n0;
+	})();
+	"#);
+}
+
+#[test]
 fn static_parameters() {
   let code = transform("<div v-example:foo={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
@@ -142,15 +163,15 @@ fn component() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createIf as _createIf, resolveDirective as _resolveDirective, setInsertionState as _setInsertionState, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+  import { createIf as _createIf, extend as _extend, resolveDirective as _resolveDirective, setInsertionState as _setInsertionState, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const _t0 = _template("<div>");
   (() => {
   	const _directive_test = _resolveDirective("test");
   	const _directive_hello = _resolveDirective("hello");
-  	const _n0 = _createComponent(Comp, null, () => {
+  	const _n0 = _createComponent(Comp, null, _extend(() => {
   		const _n1 = _createIf(() => true, () => {
   			const _n4 = _t0();
-  			_setInsertionState(_n4, null, 0);
+  			_setInsertionState(_n4);
   			const _n3 = _createComponent(Bar);
   			_withVaporDirectives(_n3, [[
   				_directive_hello,
@@ -161,7 +182,7 @@ fn component() {
   			return _n4;
   		}, null, 17);
   		return _n1;
-  	}, true);
+  	}, { _: 8 }), true);
   	_withVaporDirectives(_n0, [[_directive_test]]);
   	return _n0;
   })();
@@ -203,5 +224,82 @@ fn should_not_resolve_directive() {
   		return _n0;
   	})();
   };
+  "#);
+}
+
+#[test]
+fn array_args() {
+  let code = transform(
+    "<div v-example={[foo, bar, ['modify1', 'modify2']]} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	const _n0 = _t0();
+  	_withVaporDirectives(_n0, [[
+  		_directive_example,
+  		() => foo,
+  		bar,
+  		{
+  			modify1: true,
+  			modify2: true
+  		}
+  	]]);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_modifiers() {
+  let code = transform("<div v-example={[foo, ['modify1', 'modify2']]} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	const _n0 = _t0();
+  	_withVaporDirectives(_n0, [[
+  		_directive_example,
+  		() => foo,
+  		void 0,
+  		{
+  			modify1: true,
+  			modify2: true
+  		}
+  	]]);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_arg() {
+  let code = transform(
+    "<div v-example:foo={[foo, bar, ['modify1', 'modify2']]} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	const _n0 = _t0();
+  	_withVaporDirectives(_n0, [[
+  		_directive_example,
+  		() => foo,
+  		"foo",
+  		{
+  			modify1: true,
+  			modify2: true
+  		}
+  	]]);
+  	return _n0;
+  })();
   "#);
 }

@@ -1,10 +1,13 @@
-use std::{borrow::Cow, collections::VecDeque, mem};
+use std::{borrow::Cow, mem};
 
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::ast::{JSXChild, JSXExpression};
 
 use crate::{
-  ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, InsertNodeIRNode, OperationNode},
+  ir::index::{
+    BlockIRNode, DynamicFlag, IRDynamicInfo, InsertNodeIRNode,
+    OperationNode::{self},
+  },
   transform::{
     TransformContext,
     transform_element::{get_child_template_close_tags, is_in_same_template_as_parent},
@@ -118,7 +121,7 @@ pub unsafe fn transform_children<'a>(
         context.register_template(
           context_block,
           Some(tag),
-          is_text_child || context.can_use_static_template(&context_block, tag),
+          is_text_child || context.can_use_static_template(context_block, tag),
         );
         context.reference(&mut context_block.dynamic);
         if flags & DynamicFlag::NonTemplate as i32 == 0 || flags & DynamicFlag::Insert as i32 != 0 {
@@ -160,130 +163,87 @@ fn process_dynamic_children<'a>(
   context: &TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) {
-  let mut prev_dynamics = VecDeque::new();
-  let mut static_count = 0;
   let children = &mut context_block.dynamic.children as *mut Vec<IRDynamicInfo>;
 
-  // Track logical index for each child.
-  // logicalIndex represents the position in SSR DOM, used during hydration
-  // to locate the correct DOM node. Each child (static element, component,
-  // v-if/v-else-if/v-else chain, v-for, slot) counts as one logical unit.
-  let mut logical_index = 0;
+  // The index of the last child that materializes in the parent template.
+  // Dynamic children before it are anchored by their own `<!>` placeholder;
+  // dynamic children after it are appends and need no placeholder.
+  let mut last_template_index = -1;
+  for (i, child) in unsafe { &mut *children }.iter_mut().enumerate().rev() {
+    let flags = child.flags;
+    if flags & DynamicFlag::NonTemplate as i32 == 0 {
+      last_template_index = i as i32;
+      break;
+    }
+  }
+
+  // Logical unit counter. Each template child (placeholders included) and
+  // each trailing dynamic block occupies one SSR logical unit; for template
+  // children the unit index equals the CSR element index by construction,
+  // which is what lets hydration reuse the CSR locators unchanged.
+  let mut unit_index = 0;
 
   for (index, child) in unsafe { &mut *children }.iter_mut().enumerate() {
-    let flags = child.flags;
-    let child_ptr = child as *mut IRDynamicInfo;
-    if flags & DynamicFlag::Insert as i32 != 0 {
-      child.logical_index = Some(logical_index);
-      prev_dynamics.push_back(child);
-      logical_index += 1;
-    }
-
-    if flags & DynamicFlag::NonTemplate as i32 == 0 {
-      unsafe { &mut *child_ptr }.logical_index = Some(logical_index);
-      if !prev_dynamics.is_empty() {
-        if static_count > 0 {
-          context.children_template.borrow_mut()[index - prev_dynamics.len()] =
-            Cow::Borrowed("<!>");
-          prev_dynamics[0].flags -= DynamicFlag::NonTemplate as i32;
-          let anchor = context.increase_id();
-          prev_dynamics[0].anchor = Some(anchor);
-          register_insertion(&mut prev_dynamics, context, context_block, anchor, false);
-        } else {
-          register_insertion(
-            &mut prev_dynamics,
-            context,
-            context_block,
-            -1, /* prepend */
-            false,
-          );
-        }
-        prev_dynamics.clear();
+    if child.flags & DynamicFlag::Insert as i32 != 0 {
+      let mut anchor = None;
+      if (index as i32) < last_template_index {
+        // anchored insert: own `<!>` placeholder in the parent template,
+        // located at runtime and passed as the insertion anchor
+        context.children_template.borrow_mut()[index] = Cow::Borrowed("<!>");
+        child.flags =
+          (child.flags - DynamicFlag::NonTemplate as i32) | DynamicFlag::Referenced as i32;
+        child.anchor = Some(context.increase_id());
+        anchor = child.anchor;
       }
-      static_count += 1;
-      logical_index += 1;
-    }
-  }
-
-  if !prev_dynamics.is_empty() {
-    let logical_index = prev_dynamics.get(0).unwrap().logical_index.unwrap();
-    register_insertion(
-      &mut prev_dynamics,
-      context,
-      context_block,
-      // the logical index of append child
-      logical_index,
-      true,
-    );
-  }
-}
-
-fn register_insertion<'a>(
-  dynamics: &mut VecDeque<&mut IRDynamicInfo>,
-  context: &TransformContext<'a>,
-  context_block: &mut BlockIRNode<'a>,
-  anchor: i32,
-  append: bool,
-) {
-  let ids = dynamics
-    .iter()
-    .filter_map(|child| child.id)
-    .collect::<Vec<i32>>();
-  for child in dynamics {
-    let logical_index = child.logical_index;
-    if child.template.is_some() {
-      let parent = context.reference(&mut context_block.dynamic);
-      // template node due to invalid nesting - generate actual insertion
-      context.register_operation(
-        context_block,
-        OperationNode::InsertNode(InsertNodeIRNode {
-          insert_node: true,
-          elements: ids.clone(),
-          parent,
-          anchor: if append { None } else { Some(anchor) },
-        }),
-        None,
-      );
-    } else if let Some(operation) = &mut child.operation {
-      // block types
-      match operation.as_mut() {
-        OperationNode::If(if_ir_node) => {
-          let parent = context.reference(&mut context_block.dynamic);
-          if_ir_node.parent = Some(parent);
-          if_ir_node.anchor = Some(anchor);
-          if_ir_node.logical_index = logical_index;
-          if_ir_node.append = append;
+      if child.template.is_some()
+        && let Some(id) = child.id
+      {
+        // template node due to invalid nesting - generate actual insertion,
+        // appended when no anchor was assigned
+        child.operation = Some(Box::new(OperationNode::InsertNode(InsertNodeIRNode {
+          elements: vec![id],
+          parent: context.reference(&mut context_block.dynamic),
+          anchor,
+        })));
+      } else if let Some(operation) = match child.operation.as_deref_mut() {
+        Some(OperationNode::If(operation)) => Some((
+          &mut operation.parent,
+          &mut operation.anchor,
+          &mut operation.append_index,
+        )),
+        Some(OperationNode::For(operation)) => Some((
+          &mut operation.parent,
+          &mut operation.anchor,
+          &mut operation.append_index,
+        )),
+        Some(OperationNode::Key(operation)) => Some((
+          &mut operation.parent,
+          &mut operation.anchor,
+          &mut operation.append_index,
+        )),
+        Some(OperationNode::CreateComponent(operation)) => Some((
+          &mut operation.parent,
+          &mut operation.anchor,
+          &mut operation.append_index,
+        )),
+        Some(OperationNode::SlotOutlet(operation)) => Some((
+          &mut operation.parent,
+          &mut operation.anchor,
+          &mut operation.append_index,
+        )),
+        _ => None,
+      } {
+        *operation.0 = Some(context.reference(&mut context_block.dynamic));
+        if let Some(anchor) = anchor {
+          *operation.1 = Some(anchor);
+        } else {
+          // append: the block's SSR output starts at logical unit `unitIndex`
+          *operation.2 = Some(unit_index);
         }
-        OperationNode::For(for_ir_node) => {
-          let parent = context.reference(&mut context_block.dynamic);
-          for_ir_node.parent = Some(parent);
-          for_ir_node.anchor = Some(anchor);
-          for_ir_node.logical_index = logical_index;
-          for_ir_node.append = append;
-        }
-        OperationNode::CreateComponent(create_component_ir_node) => {
-          let parent = context.reference(&mut context_block.dynamic);
-          create_component_ir_node.parent = Some(parent);
-          create_component_ir_node.anchor = Some(anchor);
-          create_component_ir_node.logical_index = logical_index;
-          create_component_ir_node.append = append;
-        }
-        OperationNode::SlotOutlet(slot_outlet_ir_node) => {
-          let parent = context.reference(&mut context_block.dynamic);
-          slot_outlet_ir_node.parent = Some(parent);
-          slot_outlet_ir_node.anchor = Some(anchor);
-          slot_outlet_ir_node.logical_index = logical_index;
-          slot_outlet_ir_node.append = append;
-        }
-        OperationNode::Key(key_ir_node) => {
-          let parent = context.reference(&mut context_block.dynamic);
-          key_ir_node.parent = Some(parent);
-          key_ir_node.anchor = Some(anchor);
-          key_ir_node.logical_index = logical_index;
-          key_ir_node.append = append;
-        }
-        _ => (),
-      };
+      }
+      unit_index += 1;
+    } else if child.flags & DynamicFlag::NonTemplate as i32 == 0 {
+      unit_index += 1;
     }
   }
 }

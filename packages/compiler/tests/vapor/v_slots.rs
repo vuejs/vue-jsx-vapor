@@ -14,10 +14,10 @@ fn basic() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
-  	const _n0 = _createComponent(Comp, null, { $: [{ default: ({ foo }) => (() => {
+  	const _n0 = _createComponent(Comp, null, ({ foo }) => (() => {
   		const _n0 = _createNodes(() => foo + bar);
   		return _n0;
-  	})() }] }, true);
+  	})(), true);
   	return _n0;
   })();
   "#);
@@ -37,10 +37,10 @@ fn function_expression_children() {
   import { template as _template } from "vue";
   const _t0 = _template("<div>", 3);
   (() => {
-  	const _n0 = _createComponent(Comp, null, { $: [{ default: () => (() => {
+  	const _n0 = _createComponent(Comp, null, () => (() => {
   		const _n0 = _t0();
   		return _n0;
-  	})() }] }, true);
+  	})(), true);
   	return _n0;
   })();
   "#);
@@ -60,10 +60,10 @@ fn object_expression_children() {
   import { template as _template } from "vue";
   const _t0 = _template("foo", 2);
   (() => {
-  	const _n0 = _createComponent(Comp, null, { $: [{ default: () => (() => {
+  	const _n0 = _createComponent(Comp, null, () => (() => {
   		const _n0 = _t0();
   		return _n0;
-  	})() }] }, true);
+  	})(), true);
   	return _n0;
   })();
   "#);
@@ -79,11 +79,11 @@ fn object_expression_children_with_computed_property() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
   const _t0 = _template("foo", 2);
   (() => {
-  	const _n0 = _createComponent(Comp, null, { $: [() => ({ [foo]: () => (() => {
+  	const _n0 = _createComponent(Comp, null, { $: [() => _normalizeVaporSlots({ [foo]: () => (() => {
   		const _n0 = _t0();
   		return _n0;
   	})() })] }, true);
@@ -109,22 +109,23 @@ fn v_slot_with_v_slots() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createNodes as _createNodes, createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
   (() => {
   	const _n2 = _createComponent(Comp, null, (_slotProps0) => {
-  		const _n0 = _createComponent(Comp, { bar: () => _slotProps0.bar }, { $: [{
+  		const _n0 = _createComponent(Comp, { bar: () => _slotProps0.bar }, { $: [() => _normalizeVaporSlots({
   			bar: _slotProps0.bar,
   			default: ({ foo }) => (() => {
   				const _n0 = _createNodes(() => foo + bar, () => (() => {
-  					const _n2 = _createComponent(Comp, null, (_slotProps0) => {
+  					const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   						const _n0 = _createNodes(() => bar, () => _slotProps0.baz);
   						return _n0;
-  					}, true);
+  					}, { _: 8 }), true);
   					return _n2;
   				})());
   				return _n0;
   			})()
-  		}] });
+  		})] });
   		const _n1 = _createNodes(() => _slotProps0.bar);
   		return [_n0, _n1];
   	}, true);
@@ -162,20 +163,50 @@ fn v_slots_with_children() {
 }
 
 #[test]
+fn this_expression_slots_children() {
+  let code = transform("<Comp>{this.$slots}</Comp>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, null, { $: [() => _normalizeVaporSlots(this.$slots)] }, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn v_slots_dynamic_with_children() {
   let code = transform("<Comp v-slots={slots}><div /></Comp>", None).code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
   const _t0 = _template("<div>", 2);
   (() => {
-  	const _n0 = _createComponent(Comp, null, { $: [{
+  	const _n0 = _createComponent(Comp, null, { $: [() => _normalizeVaporSlots({
   		...slots,
   		default: () => (() => {
   			const _n0 = _t0();
   			return _n0;
   		})()
-  	}] }, true);
+  	})] }, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_slots_dynamic_with_spread_children() {
+  let code = transform(
+    "<Comp>{{
+      ...slots,
+    }}</Comp>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, null, { $: [() => _normalizeVaporSlots({ ...slots })] }, true);
   	return _n0;
   })();
   "#);
@@ -194,6 +225,56 @@ fn should_raise_error_if_not_component() {
     }),
   );
   assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMisplaced));
+}
+
+#[test]
+fn identify_children() {
+  let code = transform("<Comp>{slots}</Comp>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, null, { $: [() => _normalizeVaporSlots(slots)] }, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn condition_expression_children() {
+  let code = transform(
+    "<Comp>{slots ? { default: () => <div /> } : undefined}</Comp>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
+  import { template as _template } from "vue";
+  const _t0 = _template("<div>", 3);
+  (() => {
+  	const _n0 = _createComponent(Comp, null, { $: [() => _normalizeVaporSlots(slots ? { default: () => (() => {
+  		const _n0 = _t0();
+  		return _n0;
+  	})() } : undefined)] }, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn logical_expression_children() {
+  let code = transform("<Comp>{slots || { default: () => <div /> }}</Comp>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
+  import { template as _template } from "vue";
+  const _t0 = _template("<div>", 3);
+  (() => {
+  	const _n0 = _createComponent(Comp, null, { $: [() => _normalizeVaporSlots(slots || { default: () => (() => {
+  		const _n0 = _t0();
+  		return _n0;
+  	})() })] }, true);
+  	return _n0;
+  })();
+  "#);
 }
 
 #[test]

@@ -33,7 +33,6 @@ export default {
 
 :::
 
-
 ::: details 作为单独的插件安装
 
 我们也发布了一个单独的插件，可以给 虚拟DOM 的项目使用。
@@ -49,9 +48,7 @@ pnpm add @vue-jsx-vapor/macros -D
 import jsxMacros from '@vue-jsx-vapor/macros/vite'
 
 export default {
-  plugins: [
-    jsxMacros()
-  ]
+  plugins: [jsxMacros()],
 }
 ```
 
@@ -71,8 +68,8 @@ VueJsxVapor({
      *
      * 可以通过把 alias 设为空数组来禁用 defineComponent 宏.
      */
-    alias: []
-  }
+    alias: [],
+  },
 })
 ```
 
@@ -112,9 +109,9 @@ import { defineComponent, useAttrs, withAsyncContext } from 'vue'
 defineComponent(
   async (props) => {
     let __temp, __restore
-    ;([__temp, __restore] = withAsyncContext(() => nextTick())),
+    ;(([__temp, __restore] = withAsyncContext(() => nextTick())),
       await __temp,
-      __restore()
+      __restore())
     const attrs = useAttrs()
     return () => (
       <div>
@@ -271,7 +268,6 @@ export default () => {
   compRef.value?.foo
   //             ^?
 
-
   return <Comp ref={compRef} foo={1 as const} />
 }
 ```
@@ -327,7 +323,11 @@ function Comp({ color = 'red' }) {
       }
     }
   `)
-  return <div color="red" class="foo bar">foo</div>
+  return (
+    <div color="red" class="foo bar">
+      foo
+    </div>
+  )
 }
 
 defineStyle(`

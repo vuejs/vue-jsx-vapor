@@ -20,7 +20,7 @@ use crate::{
 
 pub fn cache_static<'a>(
   root: &'a mut JSXChild<'a>,
-  context: &'a TransformContext<'a>,
+  context: &TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
 ) {
   let node = unsafe { &*(root as *mut JSXChild) };
@@ -35,9 +35,12 @@ pub fn cache_static<'a>(
 pub fn cache_static_children<'a>(
   node: Option<Either<&JSXChild<'a>, &mut VNodeCallChildren<'a>>>,
   children: &mut oxc_allocator::Vec<JSXChild<'a>>,
-  context: &'a TransformContext<'a>,
+  context: &TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
 ) {
+  if !context.options.optimize {
+    return;
+  }
   let codegen_map_ptr = codegen_map as *mut HashMap<Span, NodeTypes>;
   let child_len = children.len();
   let mut to_cache = vec![];
@@ -180,7 +183,7 @@ pub fn cache_static_children<'a>(
 
 pub fn get_constant_type<'a>(
   node: Either<&JSXChild<'a>, &Expression<'a>>,
-  context: &'a TransformContext<'a>,
+  context: &TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
 ) -> ConstantTypes {
   let codegen_map_ptr = codegen_map as *mut HashMap<Span, NodeTypes>;
@@ -340,6 +343,8 @@ pub fn get_constant_type<'a>(
         }
       } else if node.is_literal() {
         ConstantTypes::CanStringify
+      } else if node.is_function() {
+        ConstantTypes::CanSkipPatch
       } else {
         let mut has_ref = false;
         WalkIdentifiers::new(
@@ -361,7 +366,7 @@ pub fn get_constant_type<'a>(
 
 fn get_generated_props_constant_type<'a>(
   node: &JSXElement<'a>,
-  context: &'a TransformContext<'a>,
+  context: &TransformContext<'a>,
   codegen_map: &mut HashMap<Span, NodeTypes<'a>>,
 ) -> ConstantTypes {
   let mut return_type = ConstantTypes::CanStringify;

@@ -158,9 +158,7 @@ fn gen_set_class_name<'a>(
   context: &'a CodegenContext<'a>,
 ) -> Option<Statement<'a>> {
   let ast = context.ast;
-  let Some((prefix, suffix, entries)) = resolve_class_name(values, context) else {
-    return None;
-  };
+  let (prefix, suffix, entries) = resolve_class_name(values, context)?;
 
   let mut class_fragments: oxc_allocator::Vec<ArrayExpressionElement> = ast.vec();
   let entries_len = entries.len();
@@ -389,7 +387,7 @@ fn gen_class_flags<'a>(
   for (index, entry) in entries.into_iter().enumerate() {
     let bit = 1 << index;
     if let Some(value) = entry.value {
-      values.push(if value == true {
+      values.push(if value {
         ast.expression_numeric_literal(SPAN, bit as f64, None, NumberBase::Decimal)
       } else {
         ast.number_0()

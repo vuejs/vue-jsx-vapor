@@ -131,6 +131,8 @@ pub unsafe fn transform_v_for<'a>(
         dynamic_props: None,
         directives: None,
         is_block: true,
+        is_block_required: false,
+        needs_patch: false,
         disable_tracking: !is_stable_fragment,
         is_component: true,
         v_for: Some(identifiers),
@@ -155,16 +157,20 @@ pub unsafe fn transform_v_for<'a>(
     let mut key_exp = None;
     // Normal element v-for. Directly use the child's codegenNode
     // but mark it as a block.
-    if let NodeTypes::VNodeCall(child_block) =
-      unsafe { &mut *codegen_map }.get_mut(&node_span).unwrap()
-    {
+    if let Some(codegen) = unsafe { &mut *codegen_map }.get_mut(&node_span) {
       if let Some(key_property) = key_property {
         key_exp = Some(key_property.value.clone_in(context.allocator));
         if is_template {
-          inject_prop(child_block, key_property, context);
+          inject_prop(codegen, key_property, context);
         }
       }
-      child_block.is_block = !is_stable_fragment;
+      if let NodeTypes::VNodeCall(child_block) = codegen {
+        child_block.is_block = !is_stable_fragment || child_block.is_block_required;
+        if !child_block.is_block && child_block.needs_patch {
+          child_block.patch_flag =
+            Some(child_block.patch_flag.unwrap_or(0) | PatchFlags::NeedPatch as i32);
+        }
+      }
     }
     if let JSXChild::Fragment(node) = unsafe { &mut *context_node } {
       cache_static_children(

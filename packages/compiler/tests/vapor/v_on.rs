@@ -270,7 +270,7 @@ fn should_transform_click_middle() {
 }
 
 #[test]
-fn should_delegate_event() {
+fn should_use_direct_event_listener_by_default() {
   let code = transform("<div onClick={test}/>", None).code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template } from "vue";
@@ -284,8 +284,98 @@ fn should_delegate_event() {
 }
 
 #[test]
+fn should_delegate_event_with_delegate_modifier() {
+  let code = transform("<div onClick_delegate={test}/>", None).code;
+  assert!(code.contains("_delegateEvents(\"click\")"));
+  assert!(code.contains("delegateEvents as _delegateEvents"));
+  assert!(!code.contains("on as _on"));
+}
+
+#[test]
+fn should_delegate_empty_handler() {
+  let error = RefCell::new(None);
+  transform(
+    "<div onClick_delegate />",
+    Some(TransformOptions {
+      on_error: Box::new(|code, _| {
+        *error.borrow_mut() = Some(code);
+      }),
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(error.borrow().is_none());
+}
+
+#[test]
+fn should_delegate_multiple_handlers_of_same_name() {
+  let code = transform(
+    "<div onClick_delegate_foo={a} onClick_delegate_bar={b} />",
+    None,
+  )
+  .code;
+  assert!(code.contains("_delegateEvents(\"click\")"));
+  assert!(code.contains("delegate as _delegate"));
+  assert!(code.contains("_delegate(_n0, \"click\", a)"));
+  assert!(code.contains("_delegate(_n0, \"click\", b)"));
+}
+
+#[test]
+fn should_fallback_to_direct_listener_with_event_options() {
+  let code = transform("<div onClick_delegate_capture={test} />", None).code;
+  assert!(code.contains("_on(_n0, \"click\", test, { capture: true })"));
+  assert!(!code.contains("_delegateEvents"));
+}
+
+#[test]
+fn should_fallback_to_direct_listener_for_unsupported_event() {
+  let warning = RefCell::new(None);
+  let code = transform(
+    "<div onScroll_delegate={test} />",
+    Some(TransformOptions {
+      on_warn: Box::new(|message, _| {
+        *warning.borrow_mut() = Some(message.to_string());
+      }),
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_eq!(
+    warning.borrow().as_deref(),
+    Some(
+      ".delegate modifier is not supported on the \"scroll\" event. The listener will be attached directly."
+    )
+  );
+  assert!(code.contains("_on(_n0, \"scroll\", test)"));
+  assert!(!code.contains("_delegateEvents"));
+}
+
+#[test]
+fn should_ignore_delegate_modifier_on_component_event() {
+  let warning = RefCell::new(None);
+  let code = transform(
+    "<Comp onClick_delegate={test} />",
+    Some(TransformOptions {
+      on_warn: Box::new(|message, _| {
+        *warning.borrow_mut() = Some(message.to_string());
+      }),
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_eq!(
+    warning.borrow().as_deref(),
+    Some(
+      ".delegate modifier is only supported on native DOM elements. The modifier will be ignored."
+    )
+  );
+  assert!(code.contains("{ onClick: () => test }"));
+  assert!(!code.contains("_delegateEvents"));
+}
+
+#[test]
 fn should_not_delegate_stop_when_have_multiple_events_of_same_name() {
-  let code = transform("<div onClick={test} onClick_stop={test} />", None).code;
+  let code = transform("<div onClick_delegate={test} onClick_stop={test} />", None).code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
   const _t0 = _template("<div>", 1);
@@ -299,9 +389,16 @@ fn should_not_delegate_stop_when_have_multiple_events_of_same_name() {
 }
 
 #[test]
+fn should_not_delegate_when_delegate_handler_uses_stop() {
+  let code = transform("<div onClick_stop_delegate={test} />", None).code;
+  assert!(code.contains("_on(_n0, \"click\", _withModifiers(test, [\"stop\"]))"));
+  assert!(!code.contains("_delegateEvents"));
+}
+
+#[test]
 fn should_not_delegate_normalized_static_event_when_sibling_uses_stop() {
   let code = transform(
-    r#"<div onClick_right={test} onContextmenu_stop={test} />"#,
+    r#"<div onClick_right_delegate={test} onContextmenu_stop={test} />"#,
     None,
   )
   .code;

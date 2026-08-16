@@ -23,6 +23,22 @@ fn should_convert_v_text_to_text_content() {
 }
 
 #[test]
+fn should_convert_v_text_to_text_content_for_component() {
+  let code = transform(
+    r#"<><Comp v-text={<div />} /></>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createElementBlock(_Fragment, null, [(_openBlock(), _createBlock(Comp, { textContent: (_openBlock(), _createElementBlock("div")) }, null, 8, ["textContent"]))], 64);
+  "#);
+}
+
+#[test]
 fn should_raise_error_if_has_children() {
   let error = RefCell::new(None);
   transform(

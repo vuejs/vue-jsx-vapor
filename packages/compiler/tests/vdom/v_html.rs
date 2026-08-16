@@ -23,6 +23,22 @@ fn should_convert_v_html_to_inner_html() {
 }
 
 #[test]
+fn should_convert_v_html_to_inner_html_for_component() {
+  let code = transform(
+    r#"<><Comp v-html={<div />} /></>"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createElementBlock(_Fragment, null, [(_openBlock(), _createBlock(Comp, { innerHTML: (_openBlock(), _createElementBlock("div")) }, null, 8, ["innerHTML"]))], 64);
+  "#);
+}
+
+#[test]
 fn should_raise_error_if_has_children() {
   let error = RefCell::new(None);
   transform(

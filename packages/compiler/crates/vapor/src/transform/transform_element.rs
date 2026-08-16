@@ -183,9 +183,6 @@ pub fn transform_native_element<'a>(
       )
     }
     Either::B(props) => {
-      // tracks if previous attribute was quoted, allowing space omission
-      // e.g. `class="foo"id="bar"` is valid, `class=foo id=bar` needs space
-      let mut prev_was_quoted = false;
       for prop in props {
         let values = &prop.values;
         if let Expression::StringLiteral(key) = &prop.key
@@ -193,9 +190,7 @@ pub fn transform_native_element<'a>(
           && let Some(Expression::StringLiteral(first_value)) = values.first()
           && !DYNAMIC_KEYS.contains(&key.value.as_str())
         {
-          if !prev_was_quoted {
-            template += " "
-          }
+          template += " ";
           let value = first_value.value;
           template += &key.value;
 
@@ -203,16 +198,14 @@ pub fn transform_native_element<'a>(
             // The attribute value can remain unquoted if it doesn't contain ASCII whitespace
             // or any of " ' ` = < or >.
             // https://html.spec.whatwg.org/multipage/introduction.html#intro-early-example
-            prev_was_quoted = value.contains(|c: char| {
+            let needs_quotes = value.contains(|c: char| {
               c.is_whitespace() || matches!(c, '"' | '\'' | '`' | '=' | '<' | '>')
             });
-            template += &if prev_was_quoted {
+            template += &if needs_quotes {
               format!(r#"="{}""#, value.replace("\"", "&quot;"))
             } else {
               format!("={}", value)
             };
-          } else {
-            prev_was_quoted = false;
           }
         } else {
           let element = context.reference(&mut context_block.dynamic);
@@ -272,7 +265,7 @@ pub fn get_child_template_close_tags<'a>(
   context: &TransformContext<'a>,
 ) -> (HashSet<&'a str>, bool) {
   let inherited_tags = context.template_close_tags.borrow().clone();
-  let inherited_blocks = context.template_close_blocks.borrow().clone();
+  let inherited_blocks = *context.template_close_blocks.borrow();
   let Some(parent_node) = parent_node else {
     return (inherited_tags, inherited_blocks);
   };
@@ -285,7 +278,7 @@ pub fn get_child_template_close_tags<'a>(
   (tags, inherited_blocks || is_inline_tag(tag))
 }
 
-pub fn is_in_same_template_as_parent<'a>(tag: &'a str, parent_tag_name: &str) -> bool {
+pub fn is_in_same_template_as_parent(tag: &str, parent_tag_name: &str) -> bool {
   if parent_tag_name.is_empty() || matches!(parent_tag_name, "template") {
     return false;
   }
@@ -304,7 +297,7 @@ fn can_omit_end_tag<'a>(
   }
 
   let template_close_tags = context.template_close_tags.borrow();
-  let template_close_blocks = context.template_close_blocks.borrow().clone();
+  let template_close_blocks = *context.template_close_blocks.borrow();
   if (!template_close_tags.is_empty()
     && (template_close_tags.contains(tag) || is_always_close_tag(tag) || is_formatting_tag(tag)))
     || (template_close_blocks && is_block_tag(tag))
@@ -367,8 +360,7 @@ pub fn transform_component_element<'a>(
       is_custom_element,
       parent: None,
       anchor: None,
-      logical_index: None,
-      append: false,
+      append_index: None,
       operation_index: Some(*context.operation_index.borrow()),
       effect_index: Some(*context.effect_index.borrow()),
     },
@@ -441,8 +433,9 @@ pub fn build_props<'a>(
         let prop_name = prop.name.get_identifier().name;
         if prop_name.eq("v-on") {
           // v-on={obj}
-          if let Some(prop_value) = &mut prop.value {
-            let value = jsx_attribute_value_to_expression(prop_value, context.ast);
+          if let Some(prop_value) = &mut prop.value
+            && let Some(value) = jsx_attribute_value_to_expression(prop_value, context.ast)
+          {
             if is_component {
               if !results.is_empty() {
                 dynamic_args.push(Either3::A(dedupe_properties(results)));
@@ -492,6 +485,7 @@ pub fn build_props<'a>(
             }
             dynamic_args.push(Either3::B(IRProp {
               key: prop.key,
+              to_display_string: prop.to_display_string,
               modifier: prop.modifier,
               runtime_camelize: prop.runtime_camelize,
               handler: prop.handler,
@@ -551,7 +545,7 @@ pub fn transform_prop<'a>(
   let dir_name_raw = get_directive_name(name);
   match dir_name_raw {
     "bind" => return transform_v_bind(directives, prop, context),
-    "on" => return transform_v_on(directives, prop, context, context_block),
+    "on" => return transform_v_on(directives, prop, node, context, context_block),
     "model" => return transform_v_model(directives, prop, node, context, context_block),
     "show" => return transform_v_show(prop, context, context_block),
     "html" => return transform_v_html(directives, prop, node, context, context_block),
@@ -614,6 +608,7 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
   for result in results {
     let prop = IRProp {
       key: result.key,
+      to_display_string: result.to_display_string,
       modifier: result.modifier,
       runtime_camelize: result.runtime_camelize,
       handler: result.handler,
@@ -629,20 +624,24 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
       continue;
     };
     let name = &key.value;
-    if (name == "style" || name == "class" || prop.handler)
-      && let Some(existing) = deduped.iter_mut().find(|i| {
-        if let Expression::StringLiteral(key) = &i.key {
-          key.value == name
-        } else {
-          false
-        }
-      })
-      // prop names and event handler names can be the same but serve different purposes
-      // e.g. `:appear="true"` is a prop while `@appear="handler"` is an event handler
-      && existing.handler.eq(&prop.handler)
+    if let Some(existing) = deduped.iter_mut().find(|i| {
+      if let Expression::StringLiteral(key) = &i.key {
+        key.value == name
+      } else {
+        false
+      }
+    })
+    // prop names and event handler names can be the same but serve different purposes
+    // e.g. `:appear="true"` is a prop while `@appear="handler"` is an event handler
+    && existing.handler.eq(&prop.handler)
     {
-      for value in prop.values {
-        existing.values.push(value)
+      if prop.handler {
+        // keep modifiers associated with each handler; codegen merges matching keys
+        deduped.push(prop);
+      } else if name == "style" || name == "class" {
+        for value in prop.values {
+          existing.values.push(value)
+        }
       }
     } else {
       deduped.push(prop);

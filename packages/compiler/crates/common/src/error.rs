@@ -19,7 +19,6 @@ pub enum ErrorCodes {
   VSlotMisplaced = 40,
   VModelNoExpression = 41,
   VModelMalformedExpression = 42,
-  VModelOnScopeVariable = 43,
   KeepAliveInvalidChildren = 46,
   VHtmlNoExpression = 53,
   VHtmlWithChildren = 54,
@@ -74,10 +73,6 @@ pub static ERROR_MESSAGES: LazyLock<HashMap<ErrorCodes, &str>> = LazyLock::new(|
       "v-model value must be a valid JavaScript member expression.",
     ),
     (
-      ErrorCodes::VModelOnScopeVariable,
-      "v-model cannot be used on v-for or v-slot scope variables because they are not writable.",
-    ),
-    (
       ErrorCodes::VSlotMisplaced,
       "v-slot can only be used on components or <template> tags.",
     ),
@@ -121,6 +116,10 @@ pub static ERROR_MESSAGES: LazyLock<HashMap<ErrorCodes, &str>> = LazyLock::new(|
       ErrorCodes::VShowNoExpression,
       "v-show is missing expression.",
     ),
+    (
+      ErrorCodes::KeepAliveInvalidChildren,
+      "<KeepAlive> expects exactly one child component.",
+    ),
   ])
 });
 
@@ -136,4 +135,10 @@ pub fn create_compiler_error<'a>(env: &'a Env, code: ErrorCodes, loc: Span) -> R
   error.set("code", code as i32)?;
   error.set("loc", (loc.start, loc.end))?;
   Ok(error)
+}
+
+pub fn create_compiler_warning<'a>(env: &'a Env, message: &str, loc: Span) -> Result<Object<'a>> {
+  let mut warning = env.create_error(Error::from_reason(message))?;
+  warning.set("loc", (loc.start, loc.end))?;
+  Ok(warning)
 }

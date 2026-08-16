@@ -59,11 +59,8 @@ pub fn optimize_slots() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
-  import { createVNode as _createVNode, withCtx as _withCtx } from "vue";
-  _createVNode(Comp, null, {
-  	default: _withCtx(() => [_normalizeVNode(foo)]),
-  	_: 2
-  });
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createVNode as _createVNode } from "vue";
+  _createVNode(Comp, null, _normalizeSlots(foo));
   "#);
 }

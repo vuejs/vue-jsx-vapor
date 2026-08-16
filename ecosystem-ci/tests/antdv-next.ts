@@ -4,10 +4,9 @@ import type { RunOptions } from '../types.ts'
 export default async (options: RunOptions) => {
   await runInRepo({
     ...options,
-    repo: 'zhiyuanzmj/vuetify',
+    repo: 'zhiyuanzmj/antdv-next',
     branch: 'vue-jsx-compiler',
     install: 'pnpm install --no-frozen-lockfile',
-    env: { CI: 'false' },
-    test: 'pnpm --filter vuetify run test',
+    test: 'test',
   })
 }

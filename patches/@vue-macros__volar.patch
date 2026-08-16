@@ -1,15 +1,24 @@
-diff --git a/dist/jsx-directive-Cfx4Hdxx.js b/dist/jsx-directive-Cfx4Hdxx.js
-index 2303eee6f5de9dc780363acf500eb95bad3f0b47..15933b5843d9a42a022f2cef1986ba663671422d 100644
---- a/dist/jsx-directive-Cfx4Hdxx.js
-+++ b/dist/jsx-directive-Cfx4Hdxx.js
+diff --git a/dist/jsx-directive-w2gUTWdx.js b/dist/jsx-directive-w2gUTWdx.js
+index 637b42ba829bb5f90d4de93cc8ed1d562694b49f..6ecccf518d3d5fd532c31212d6cc4bbc55181a85 100644
+--- a/dist/jsx-directive-w2gUTWdx.js
++++ b/dist/jsx-directive-w2gUTWdx.js
 @@ -1,6 +1,4 @@
 -import { addCode } from "./common-BTTMZY21.js";
  import { allCodeFeatures, createPlugin } from "ts-macro";
 -import { createFilter } from "@vue-macros/common";
  import { isHTMLTag, isSVGTag } from "@vue/shared";
  
- //#region src/jsx-directive/context.ts
-@@ -122,6 +120,10 @@ function transformCtx(node, root, index, options) {
+ //#region src/jsx-directive/common.ts
+@@ -143,7 +141,7 @@ function transformCtx(node, root, index, options) {
+ 		const prefixModel = `${prefix}model`;
+ 		if (name.startsWith(prefixModel)) {
+ 			const dir = getDirectiveArgs(prop, options);
+-			if (dir.valueCode) props += `${dir.isDynamic ? "[" : `'`}${dir.argument || dir.argumentCode?.[0] || "modelValue"}${dir.isDynamic ? "]" : `'`}: ${dir.valueCode[0]},`;
++			if (dir.valueCode && !dir.isDynamic) props += `'${dir.argument || dir.argumentCode?.[0].slice(1, -1) || 'modelValue'}': ${dir.valueCode[0]},`
+ 			continue;
+ 		} else if (name.includes("_")) name = name.split("_")[0];
+ 		else if (prefix && name.startsWith(prefix)) continue;
+@@ -167,6 +165,10 @@ function transformCtx(node, root, index, options) {
  	else addCode(codes, result);
  	return ctxName;
  }
@@ -20,7 +29,16 @@ index 2303eee6f5de9dc780363acf500eb95bad3f0b47..15933b5843d9a42a022f2cef1986ba66
  function getRefValue(expression, options) {
  	const { ts, ast } = options;
  	if (ts.isIdentifier(expression)) return expression.getText(ast);
-@@ -688,11 +690,10 @@ function getTagName(node, options) {
+@@ -550,7 +552,7 @@ function transformVSlot(nodeMap, ctxMap, options) {
+ 				} else if (`${prefix}else` === vIfAttributeName) result.push("},");
+ 			}
+ 		});
+-		const slotType = `} satisfies typeof ${ctxMap.get(node)}.slots}`;
++		const slotType = `} satisfies typeof ${ctxMap.get(node)}.slots as Record<string, any>}`;
+ 		if (attributeMap.has(null)) result.push("default: () => <>");
+ 		else result.push(slotType);
+ 		if (vSlotAttribute) codes.replaceRange(vSlotAttribute.getStart(ast), vSlotAttribute.end, ...result);
+@@ -737,11 +739,10 @@ function getTagName(node, options) {
  //#region src/jsx-directive.ts
  const plugin = createPlugin(({ ts, vueCompilerOptions }, options = vueCompilerOptions?.vueMacros?.jsxDirective === true ? {} : vueCompilerOptions?.vueMacros?.jsxDirective ?? {}) => {
  	if (!options) return [];
@@ -35,12 +53,12 @@ index 2303eee6f5de9dc780363acf500eb95bad3f0b47..15933b5843d9a42a022f2cef1986ba66
  				codes,
  				ast,
 diff --git a/dist/jsx-directive.js b/dist/jsx-directive.js
-index c8a8d4c79afe1ceecc68eacab1938262d3cd658e..289718bd996af6b2fdaf783fe674c6d76bd09b3d 100644
+index accace0c32b6a1cf5ceb297c8fbf07f22f438a23..5023f21444592741c43a4950f08fe959a452da4c 100644
 --- a/dist/jsx-directive.js
 +++ b/dist/jsx-directive.js
 @@ -1,4 +1,3 @@
 -import "./common-BTTMZY21.js";
- import { jsx_directive_default, plugin } from "./jsx-directive-Cfx4Hdxx.js";
+ import { jsx_directive_default, plugin } from "./jsx-directive-w2gUTWdx.js";
  
  export { jsx_directive_default as default, plugin as "module.exports" };
 \ No newline at end of file

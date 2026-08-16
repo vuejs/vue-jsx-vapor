@@ -43,6 +43,7 @@ pub fn transform_v_model<'a>(
         ast.expression_string_literal(SPAN, ast.str("modelValue"), None)
       },
       value: dir.exp.unwrap(),
+      to_display_string: false,
       model: true,
       model_modifiers: Some(dir.modifiers),
       handler: false,

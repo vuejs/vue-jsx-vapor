@@ -1,14 +1,13 @@
-use common::check::is_simple_identifier;
 use common::directive::DirectiveNode;
 use oxc_allocator::CloneIn;
 use oxc_ast::NONE;
 use oxc_ast::ast::Expression;
 use oxc_ast::ast::FormalParameterKind;
-use oxc_ast::ast::PropertyKind;
 use oxc_ast::ast::Statement;
 use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
+use crate::generate::directive::gen_directive_modifiers;
 use crate::generate::expression::gen_expression;
 use crate::ir::index::DirectiveIRNode;
 
@@ -85,29 +84,7 @@ pub fn gen_v_model<'a>(
           Some(gen_model_handler(exp, context).into()),
           // modifiers
           if !modifiers.is_empty() {
-            Some(
-              ast
-                .expression_object(
-                  SPAN,
-                  ast.vec_from_iter(modifiers.into_iter().map(|modifier| {
-                    let modifier = if is_simple_identifier(&modifier) {
-                      &modifier
-                    } else {
-                      &format!("\"{}\"", modifier)
-                    };
-                    ast.object_property_kind_object_property(
-                      SPAN,
-                      PropertyKind::Init,
-                      ast.property_key_static_identifier(SPAN, ast.str(modifier)),
-                      ast.expression_boolean_literal(SPAN, true),
-                      false,
-                      false,
-                      false,
-                    )
-                  })),
-                )
-                .into(),
-            )
+            Some(Expression::ObjectExpression(gen_directive_modifiers(modifiers, ast)).into())
           } else {
             None
           },

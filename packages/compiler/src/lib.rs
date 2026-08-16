@@ -11,7 +11,7 @@ use oxc_span::{SourceType, Span};
 use std::path::{Path, PathBuf};
 
 use common::{
-  error::{ErrorCodes, create_compiler_error},
+  error::{ErrorCodes, create_compiler_error, create_compiler_warning},
   options::Hmr,
 };
 
@@ -23,12 +23,8 @@ mod transform;
 #[cfg_attr(feature = "napi", napi(object))]
 #[derive(Default)]
 pub struct CompilerOptions {
-  /**
-   * Separate option for end users to extend the native elements list
-   */
-  #[cfg_attr(feature = "napi", napi(ts_type = "(arg: string) => boolean"))]
-  pub is_custom_element: Option<Function<'static, &'static str, bool>>,
   pub on_error: Option<Function<'static, Object<'static>, ()>>,
+  pub on_warn: Option<Function<'static, Object<'static>, ()>>,
   /**
    * Generate source map?
    * @default false
@@ -105,6 +101,14 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
         }) as Box<dyn Fn(ErrorCodes, Span)>
       } else {
         Box::new(|_: ErrorCodes, _: Span| {}) as Box<dyn Fn(ErrorCodes, Span)>
+      },
+      on_warn: if let Some(on_warn) = options.on_warn {
+        Box::new(move |message: &str, span: Span| {
+          let warning = create_compiler_warning(&env, message, span).unwrap();
+          on_warn.call(warning).unwrap();
+        }) as Box<dyn Fn(&str, Span)>
+      } else {
+        Box::new(|_: &str, _: Span| {}) as Box<dyn Fn(&str, Span)>
       },
       ..Default::default()
     }),

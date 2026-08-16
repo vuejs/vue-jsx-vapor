@@ -18,6 +18,7 @@ pub struct BlockIRNode<'a> {
   pub returns: Vec<i32>,
   pub slots: Vec<IRSlots<'a>>,
   pub props: Option<Expression<'a>>,
+  pub root: bool,
 }
 impl<'a> BlockIRNode<'a> {
   pub fn new() -> Self {
@@ -29,6 +30,7 @@ impl<'a> BlockIRNode<'a> {
       returns: Vec::new(),
       slots: Vec::new(),
       props: None,
+      root: false,
     }
   }
 }
@@ -58,8 +60,7 @@ pub struct IfIRNode<'a> {
 
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
-  pub logical_index: Option<i32>,
-  pub append: bool,
+  pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -70,11 +71,11 @@ pub struct KeyIRNode<'a> {
   pub id: i32,
   pub value: Expression<'a>,
   pub block: BlockIRNode<'a>,
+  pub slot_root: bool,
 
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
-  pub logical_index: Option<i32>,
-  pub append: bool,
+  pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -104,8 +105,7 @@ pub struct ForIRNode<'a> {
   pub only_child: bool,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
-  pub logical_index: Option<i32>,
-  pub append: bool,
+  pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -139,7 +139,6 @@ pub struct SetTextIRNode<'a> {
   pub element: i32,
   pub values: Vec<Expression<'a>>,
   pub generated: bool,
-  pub is_component: bool,
 }
 
 #[derive(Debug)]
@@ -158,6 +157,7 @@ pub struct SetEventIRNode<'a> {
   pub key: Expression<'a>,
   pub value: Expression<'a>,
   pub modifiers: Modifiers<'a>,
+  pub delegate: bool,
   // Whether it's in effect
   pub effect: bool,
 }
@@ -167,7 +167,6 @@ pub struct SetHtmlIRNode<'a> {
   pub set_html: bool,
   pub element: i32,
   pub value: Expression<'a>,
-  pub is_component: bool,
 }
 
 #[derive(Debug)]
@@ -188,7 +187,6 @@ pub struct CreateNodesIRNode<'a> {
 
 #[derive(Debug)]
 pub struct InsertNodeIRNode {
-  pub insert_node: bool,
   pub elements: Vec<i32>,
   pub parent: i32,
   pub anchor: Option<i32>,
@@ -220,8 +218,7 @@ pub struct CreateComponentIRNode<'a> {
 
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
-  pub logical_index: Option<i32>,
-  pub append: bool,
+  pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -237,8 +234,7 @@ pub struct SlotOutletIRNode<'a> {
 
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
-  pub logical_index: Option<i32>,
-  pub append: bool,
+  pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
   pub effect_index: Option<usize>,
@@ -297,9 +293,6 @@ pub struct IRDynamicInfo<'a> {
   pub id: Option<i32>,
   pub flags: i32,
   pub anchor: Option<i32>,
-  // logical index of this node among siblings (including dynamic nodes)
-  // used during hydration to locate the correct DOM node
-  pub logical_index: Option<i32>,
   pub children: Vec<IRDynamicInfo<'a>>,
   pub template: Option<i32>,
   pub has_dynamic_child: bool,
@@ -315,7 +308,6 @@ impl<'a> IRDynamicInfo<'a> {
       operation: None,
       id: None,
       anchor: None,
-      logical_index: None,
     }
   }
 }
@@ -325,7 +317,7 @@ impl<'a> Default for IRDynamicInfo<'a> {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct IREffect<'a> {
   pub operations: Vec<OperationNode<'a>>,
 }

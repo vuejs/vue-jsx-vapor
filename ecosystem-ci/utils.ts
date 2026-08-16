@@ -4,11 +4,9 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { execa } from 'execa'
 
-import type { Overrides, RepoOptions, SuiteOptions } from './types.ts'
+import type { RepoOptions, SuiteOptions } from './types.ts'
 
 const isGitHubActions = !!process.env.GITHUB_ACTIONS
-
-export const VUE_JSX_VAPOR_PACKAGES = ['vue-jsx-vapor']
 
 export const root = path.dirname(fileURLToPath(import.meta.url))
 export const workspace = path.resolve(root, 'workspace')
@@ -112,45 +110,35 @@ export async function setupRepo(options: RepoOptions) {
 
 // ─── override helpers ─────────────────────────────────────────────────────────
 
-export function buildOverrides(release?: string): Overrides {
-  const overrides: Overrides = {}
-
-  for (const pkg of VUE_JSX_VAPOR_PACKAGES) {
-    if (release) {
-      overrides[pkg] = release.startsWith('@')
-        ? `https://pkg.pr.new/${pkg}${release}`
-        : release
-    } else {
-      const dirName =
-        pkg === 'vue-jsx-vapor'
-          ? 'vue-jsx-vapor'
-          : pkg.replace('@vue-jsx-vapor/', '')
-      const pkgPath = path.resolve(root, '..', 'packages', dirName)
-      if (fs.existsSync(pkgPath)) {
-        overrides[pkg] = `link:${pkgPath}`
-      }
-    }
-  }
-
-  return overrides
-}
-
-export function applyOverrides(dir: string, overrides: Overrides) {
+export function applyOverrides(dir: string) {
   const pkgPath = path.join(dir, 'package.json')
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+  pkg.packageManager = 'pnpm@11.0.8'
+  fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
 
-  pkg.pnpm ??= {}
-  pkg.pnpm.overrides = { ...pkg.pnpm.overrides, ...overrides }
-  pkg.packageManager = 'pnpm@11.0.4'
+  const overrides = {
+    'vue-jsx-vapor': `link:${path.resolve(root, '..', 'packages', 'vue-jsx-vapor')}`,
+  }
 
   const workspacePath = path.join(dir, 'pnpm-workspace.yaml')
-  const content = fs.existsSync(workspacePath)? fs.readFileSync(workspacePath, 'utf8'):''
+  let content = fs.existsSync(workspacePath)
+    ? fs.readFileSync(workspacePath, 'utf8')
+    : ''
   const suffix = content.includes('dangerouslyAllowAllBuilds')
     ? ''
     : '\ndangerouslyAllowAllBuilds: true\n'
+  const overrideContent = `overrides:\n  ${Object.entries(overrides)
+    .map(([key, value]) => `'${key}': ${value}`)
+    .join('\n  ')}`
+  if (content.includes(`overrides:\n  'vue-jsx-vapor'`)) {
+    return
+  } else if (content.includes('overrides:')) {
+    content = content.replace('overrides:', overrideContent)
+  } else {
+    content += overrideContent
+  }
+  content = content.replace(/minimumReleaseAge: \d*\n/, '')
   fs.writeFileSync(workspacePath, content + suffix)
-
-  fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
   console.log('Applied overrides:', overrides)
 }
 
@@ -180,10 +168,8 @@ export async function runInRepo(options: SuiteOptions) {
     skipGit = false,
     build,
     test,
-    release,
     env,
     install,
-    overrides: extraOverrides = {},
   } = options
 
   const dir = path.resolve(workspace, options.dir ?? repo.split('/').at(-1)!)
@@ -205,8 +191,7 @@ export async function runInRepo(options: SuiteOptions) {
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
 
   await $('git', ['clean', '-fdxq'], env)
-  const overrides = { ...buildOverrides(release), ...extraOverrides }
-  await applyOverrides(dir, overrides)
+  await applyOverrides(dir)
 
   if (install) {
     const [cmd, ...args] = install.split(' ')

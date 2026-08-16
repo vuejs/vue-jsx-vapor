@@ -16,8 +16,8 @@ resolver = "3"
 members = ["crates/*"]
 
 [workspace.dependencies]
-napi = { version = "3.8.6", features = ["napi9"] }
-napi-derive = "3.5.5"
+napi = { version = "3.12.1", features = ["napi9"] }
+napi-derive = "3.6.3"
 
 oxc_parser = "0.128.0"
 oxc_ast = "0.128.0"
@@ -63,7 +63,7 @@ name = "bench_vapor"
 harness = false
 
 [build-dependencies]
-napi-build = "2"
+napi-build = "2.4.1"
 
 [profile.release]
 lto = true

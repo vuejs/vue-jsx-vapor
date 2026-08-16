@@ -26,14 +26,25 @@ use crate::ir::index::OperationNode;
 pub fn gen_operations<'a>(
   statements: &mut oxc_allocator::Vec<'a, Statement<'a>>,
   opers: Vec<OperationNode<'a>>,
+  mut post_opers: Option<&mut Vec<OperationNode<'a>>>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) {
   let _context_block = context_block as *mut BlockIRNode;
   for operation in opers {
-    gen_operation_with_insertion_state(statements, operation, context, unsafe {
-      &mut *_context_block
-    });
+    if let Some(post_opers) = post_opers.as_deref_mut()
+      && matches!(
+        &operation,
+        OperationNode::Directive(operation)
+          if operation.builtin && operation.name == "model"
+      )
+    {
+      post_opers.push(operation);
+    } else {
+      gen_operation_with_insertion_state(statements, operation, context, unsafe {
+        &mut *_context_block
+      });
+    }
   }
 }
 
@@ -49,8 +60,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         statements.push(gen_insertion_state(
           parent,
           if_ir_node.anchor,
-          if_ir_node.logical_index,
-          if_ir_node.append,
+          if_ir_node.append_index,
           context,
         ))
       }
@@ -60,8 +70,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         statements.push(gen_insertion_state(
           parent,
           for_ir_node.anchor,
-          for_ir_node.logical_index,
-          for_ir_node.append,
+          for_ir_node.append_index,
           context,
         ))
       }
@@ -71,8 +80,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         statements.push(gen_insertion_state(
           parent,
           create_component_ir_node.anchor,
-          create_component_ir_node.logical_index,
-          create_component_ir_node.append,
+          create_component_ir_node.append_index,
           context,
         ))
       }
@@ -82,8 +90,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         statements.push(gen_insertion_state(
           parent,
           slot_outlet_ir_node.anchor,
-          slot_outlet_ir_node.logical_index,
-          slot_outlet_ir_node.append,
+          slot_outlet_ir_node.append_index,
           context,
         ))
       }
@@ -93,8 +100,7 @@ pub fn gen_operation_with_insertion_state<'a>(
         statements.push(gen_insertion_state(
           parent,
           key_ir_node.anchor,
-          key_ir_node.logical_index,
-          key_ir_node.append,
+          key_ir_node.append_index,
           context,
         ))
       }
@@ -144,8 +150,7 @@ pub fn gen_operation<'a>(
 pub fn gen_insertion_state<'a>(
   parent: i32,
   anchor: Option<i32>,
-  logical_index: Option<i32>,
-  append: bool,
+  append_index: Option<i32>,
   context: &CodegenContext<'a>,
 ) -> Statement<'a> {
   let ast = &context.ast;
@@ -161,34 +166,25 @@ pub fn gen_insertion_state<'a>(
             SPAN,
             ast.str(&format!("_n{}", parent)),
           ))),
+          // see setInsertionState() in runtime-vapor for the anchor/index
+          // contract; the append index is omitted when 0
           if let Some(anchor) = anchor {
-            if anchor == -1 {
-              // -1 indicates prepend
-              Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
-                SPAN,
-                0 as f64,
-                None,
-                NumberBase::Decimal,
-              ))) // runtime anchor value for prepend
-            } else if append {
-              Some(Argument::NullLiteral(ast.alloc_null_literal(SPAN)))
-            } else {
-              Some(Argument::Identifier(ast.alloc_identifier_reference(
-                SPAN,
-                ast.str(&format!("_n{anchor}")),
-              )))
-            }
+            Some(Argument::Identifier(ast.alloc_identifier_reference(
+              SPAN,
+              ast.str(&format!("_n{anchor}")),
+            )))
+          } else if let Some(append_index) = append_index
+            && append_index > 0
+          {
+            Some(Argument::NumericLiteral(ast.alloc_numeric_literal(
+              SPAN,
+              append_index as f64,
+              None,
+              NumberBase::Decimal,
+            )))
           } else {
             None
           },
-          logical_index.map(|logical_index| {
-            Argument::NumericLiteral(ast.alloc_numeric_literal(
-              SPAN,
-              logical_index as f64,
-              None,
-              NumberBase::Decimal,
-            ))
-          }),
         ]
         .into_iter()
         .flatten(),

@@ -92,6 +92,8 @@ pub unsafe fn transform_v_if<'a>(
         dynamic_props: None,
         directives: None,
         is_block: true,
+        is_block_required: false,
+        needs_patch: false,
         disable_tracking: false,
         is_component: true,
         v_for: None,
@@ -217,10 +219,12 @@ pub fn create_children_codegen_node<'a>(
     false,
   );
   let span = unsafe { &*branch.node }.span();
-  if let Some(NodeTypes::VNodeCall(vnode_call)) = codegen_map.get_mut(&span) {
-    // Change createVNode to createBlock.
-    vnode_call.is_block = true;
-    inject_prop(vnode_call, key_property, context);
+  if let Some(codegen) = codegen_map.get_mut(&span) {
+    if let NodeTypes::VNodeCall(vnode_call) = codegen {
+      // Change createVNode to createBlock.
+      vnode_call.is_block = true;
+    }
+    inject_prop(codegen, key_property, context);
   }
   let children = &mut ast.vec1(unsafe { &mut *branch.node }.take_in(context.allocator));
   cache_static_children(None, children, context, codegen_map);

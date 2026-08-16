@@ -11,6 +11,7 @@ pub fn transform_transition<'a>(node: &mut JSXElement<'a>, context: &'a Transfor
   if let Some(child) = get_first_child(&node.children)
     && let JSXChild::Element(child) = child
     && find_prop(child, vec!["v-show"]).is_some()
+    && find_prop(child, vec!["v-if"]).is_none()
   {
     node
       .opening_element
