@@ -23,7 +23,7 @@ type OnEnterExpression<'a> =
 type OnLeaveExpression<'a> = Box<dyn Fn(&Expression) + 'a>;
 type CreateRootJSX<'a> = Box<dyn Fn(*mut Expression<'a>, bool) -> RootJsx<'a> + 'a>;
 
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 pub struct Hmr {
   /**
    * The name of the function to be used for defining components.
