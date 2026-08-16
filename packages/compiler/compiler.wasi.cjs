@@ -1,4 +1,4 @@
-// napi-rs-artifact-metadata:{"version":2,"rootEntry":"index.js","exports":["ErrorCodes","transform"],"managedRootEntries":["browser.js","index.js","compiler-rs.wasm","compiler-rs.debug.wasm"]}
+// napi-rs-artifact-metadata:{"version":2,"rootEntry":"index.js","exports":["ErrorCodes","transform"],"managedRootEntries":["browser.js","index.js","compiler.wasm","compiler.debug.wasm"]}
 /* eslint-disable */
 /* prettier-ignore */
 
@@ -128,14 +128,14 @@ const __wasmDebugFilePath = __nodePath.join(__dirname, 'compiler.wasm32-wasi.deb
 if (__nodeFs.existsSync(__wasmDebugFilePath)) {
   __wasmFilePath = __wasmDebugFilePath
 } else if (!__nodeFs.existsSync(__wasmFilePath)) {
-  const __wasiPackageEntry = require.resolve('@vue-jsx-vapor/compiler-rs-wasm32-wasi')
+  const __wasiPackageEntry = require.resolve('@vue-jsx-vapor/compiler-wasm32-wasi')
   const __packagedWasmFilePath = __nodePath.join(
     __nodePath.dirname(__wasiPackageEntry),
-    'compiler-rs.wasm32-wasi.wasm',
+    'compiler.wasm32-wasi.wasm',
   )
   if (!__nodeFs.existsSync(__packagedWasmFilePath)) {
     throw new Error(
-      '@vue-jsx-vapor/compiler-rs-wasm32-wasi is installed but is missing compiler-rs.wasm32-wasi.wasm.',
+      '@vue-jsx-vapor/compiler-wasm32-wasi is installed but is missing compiler.wasm32-wasi.wasm.',
     )
   }
   __wasmFilePath = __packagedWasmFilePath

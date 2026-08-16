@@ -13,7 +13,7 @@ const __wasi = new __WASI({
   version: 'preview1',
 })
 
-const __wasmUrl = new URL('./compiler-rs.wasm32-wasi.wasm', import.meta.url).href
+const __wasmUrl = new URL('./compiler.wasm32-wasi.wasm', import.meta.url).href
 const __wasmResponse = await globalThis.fetch(__wasmUrl)
 if (!__wasmResponse.ok) {
   throw new Error(
