@@ -2,6 +2,7 @@ import { createPlugin, type PluginReturn } from 'ts-macro'
 import { createFilter } from 'unplugin-utils'
 import { resolveOptions, type Options } from './options'
 import { getGlobalTypes, getRootMap, transformJsxMacros } from './volar/index'
+import jsxElement from './volar/jsx-element'
 
 const REGEX_VUE_SFC: RegExp = /\.vue$/
 
@@ -35,4 +36,5 @@ const plugin: PluginReturn<Options | undefined> = createPlugin(
   },
 )
 export default plugin
+export { jsxElement }
 export { plugin as 'module.exports' }

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { transform as rsTransform } from '@vue-jsx-vapor/compiler-rs'
+import { transform as rsTransform } from '@vue-jsx-vapor/compiler'
 import { Bench } from 'tinybench'
 import { compileTemplate } from 'vue/compiler-sfc'
 import { compile, compileVapor } from '@vizejs/native'

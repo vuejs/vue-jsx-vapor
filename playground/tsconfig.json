@@ -4,11 +4,10 @@
     "jsx": "preserve",
     "jsxImportSource": "vue-jsx-vapor",
     "lib": ["ESNext", "DOM"],
-    "customConditions": ["jsx-vapor-dev"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "types": ["vite/client", "@vue-macros/define-render/macros-global.d.ts"],
+    "types": ["vite/client"],
     "strict": true,
     "strictNullChecks": true,
     "esModuleInterop": true
