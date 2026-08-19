@@ -64,3 +64,56 @@ pub fn optimize_slots() {
   _createVNode(Comp, null, _normalizeSlots(foo));
   "#);
 }
+
+#[test]
+pub fn merge_props() {
+  let code = transform(
+    "<Comp {...foo} onClick={() => {}} />",
+    Some(TransformOptions {
+      interop: true,
+      optimize: false,
+      merge_props: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNode as _createVNode } from "vue";
+  _createVNode(Comp, Object.assign({}, foo, { onClick: () => {} }));
+  "#);
+}
+
+#[test]
+pub fn merge_props_object() {
+  let code = transform(
+    "<Comp {...{ onClick: () => {} }} onClick={() => {}} />",
+    Some(TransformOptions {
+      interop: true,
+      optimize: false,
+      merge_props: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNode as _createVNode } from "vue";
+  _createVNode(Comp, Object.assign({ onClick: () => {} }, { onClick: () => {} }));
+  "#);
+}
+
+#[test]
+fn merge_props_with_v_if() {
+  let code = transform(
+    r#"<button {...foo} v-if={true}></button>"#,
+    Some(TransformOptions {
+      interop: true,
+      merge_props: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, guardReactiveProps as _guardReactiveProps, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
+  true ? (_openBlock(), _createElementBlock("button", Object.assign({ key: 0 }, foo), null, 16)) : _createCommentVNode("", true);
+  "#)
+}
