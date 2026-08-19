@@ -77,6 +77,7 @@ pub struct TransformOptions<'a> {
   pub key_index: RefCell<i32>,
   pub optimize: bool,
   pub runtime_module_name: Option<String>,
+  pub merge_props: bool,
   pub scope_identifiers_map: RefCell<HashMap<Span, (bool, Vec<&'a str>)>>,
 }
 
@@ -111,6 +112,7 @@ impl<'a> Default for TransformOptions<'a> {
       key_index: RefCell::new(0),
       optimize: true,
       runtime_module_name: None,
+      merge_props: true,
       scope_identifiers_map: RefCell::new(HashMap::new()),
     }
   }

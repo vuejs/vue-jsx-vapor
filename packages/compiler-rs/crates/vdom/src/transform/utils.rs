@@ -79,7 +79,14 @@ pub fn inject_prop<'a>(
           props_with_injection = Some(
             ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.str(context.options.helper("_mergeProps"))),
+              ast.expression_identifier(
+                SPAN,
+                ast.str(if context.options.merge_props {
+                  context.options.helper("_mergeProps")
+                } else {
+                  "Object.assign"
+                }),
+              ),
               NONE,
               ast.vec_from_array([
                 ast
@@ -155,7 +162,14 @@ pub fn inject_prop<'a>(
       props_with_injection = Some(
         ast.expression_call(
           SPAN,
-          ast.expression_identifier(SPAN, ast.str(context.options.helper("_mergeProps"))),
+          ast.expression_identifier(
+            SPAN,
+            ast.str(if context.options.merge_props {
+              context.options.helper("_mergeProps")
+            } else {
+              "Object.assign"
+            }),
+          ),
           NONE,
           ast.vec_from_array([
             ast

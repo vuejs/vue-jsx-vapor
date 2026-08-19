@@ -25,50 +25,44 @@ mod transform;
 pub struct CompilerOptions {
   pub on_error: Option<Function<'static, Object<'static>, ()>>,
   pub on_warn: Option<Function<'static, Object<'static>, ()>>,
-  /**
-   * Generate source map?
-   * @default false
-   */
+  /// Generate source map?
+  /// @default false
   pub source_map: Option<bool>,
-  /**
-   * Filename for source map generation.
-   * Also used for self-recursive reference in templates
-   * @default 'index.jsx'
-   */
+  /// Filename for source map generation.
+  /// Also used for self-recursive reference in templates
+  /// @default 'index.jsx'
   pub filename: Option<String>,
-  /**
-   * When enabled, JSX within `defineVaporComponent` is transformed to Vapor DOM,
-   * while all other JSX is transformed to Virtual DOM.
-   */
+  /// When enabled, JSX within `defineVaporComponent` is transformed to Vapor DOM,
+  /// while all other JSX is transformed to Virtual DOM.
   pub interop: Option<bool>,
-  /**
-   * Enabled HMR support.
-   * - `true`/`false`: a boolean to simply enable/disable HMR. When `true`, HMR
-   *   is enabled with default configuration.
-   * - `Hmr`: an object to enable HMR with custom configuration.
-   * @default false
-   */
+  /// Enabled HMR support.
+  /// - `true`/`false`: a boolean to simply enable/disable HMR. When `true`, HMR
+  ///   is enabled with default configuration.
+  /// - `Hmr`: an object to enable HMR with custom configuration.
+  /// @default false
   pub hmr: Option<Either<bool, Hmr>>,
-  /**
-   * Enabled SSR support.
-   * @default false
-   */
+  /// Enabled SSR support.
+  /// @default false
   pub ssr: Option<bool>,
-  /**
-   * Whether to enable compiler optimizations, including:
-   * - **Slots**: Detect if slots are stable for more efficient updates.
-   * - **Cache**: Cache event handler to avoid recreating closures on each render.
-   * - **Block**: Enable block tree optimizations.
-   *
-   * Note: this option is only used in interop mode.
-   * @default true
-   */
+  /// Whether to enable compiler optimizations, including:
+  /// - **Slots**: Detect if slots are stable for more efficient updates.
+  /// - **Cache**: Cache event handler to avoid recreating closures on each render.
+  /// - **Block**: Enable block tree optimizations.
+  ///
+  /// Note: this option is only used in interop mode.
+  /// @default true
   pub optimize: Option<bool>,
-  /**
-   * Customize where to import runtime helpers from vue-jsx-vapor.
-   * If not specified, defaults to the virtual module path (e.g., `/vue-jsx-vapor/vapor`).
-   */
+  /// Customize where to import runtime helpers from vue-jsx-vapor.
+  /// If not specified, defaults to the virtual module path (e.g., `/vue-jsx-vapor/vapor`).
   pub runtime_module_name: Option<String>,
+  /// Whether to merge props when using JSXSpreadAttribute.
+  /// - `true`: Use Vue's `mergeProps` behavior
+  ///   - Event listeners (`onXxx`) are merged into an array
+  ///   - `class` and `style` are normalized and merged
+  ///   - Other props are overridden by later values
+  /// - `false`: later props override earlier ones (like object spread)
+  /// @default true
+  pub merge_props: Option<bool>,
 }
 
 #[cfg(feature = "napi")]
@@ -94,6 +88,7 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       ssr,
       optimize: options.optimize.unwrap_or(true),
       runtime_module_name: options.runtime_module_name,
+      merge_props: options.merge_props.unwrap_or(true),
       on_error: if let Some(on_error) = options.on_error {
         Box::new(move |code: ErrorCodes, span: Span| {
           let compiler_error = create_compiler_error(&env, code, span).unwrap();

@@ -577,9 +577,17 @@ pub fn build_props<'a>(
       merge_args.push(ast.expression_object(node.span, dedupe_properties(properties, ast)));
     }
     if merge_args.len() > 1 {
+      let merge_props = if context.options.merge_props {
+        context.options.helper("_mergeProps")
+      } else {
+        if !matches!(merge_args[0], Expression::ObjectExpression(_)) {
+          merge_args.insert(0, ast.expression_object(SPAN, ast.vec()));
+        }
+        "Object.assign"
+      };
       Some(ast.expression_call(
         node.span,
-        ast.expression_identifier(SPAN, ast.str(context.options.helper("_mergeProps"))),
+        ast.expression_identifier(SPAN, ast.str(merge_props)),
         NONE,
         ast.vec_from_iter(merge_args.into_iter().map(|arg| arg.into())),
         false,
