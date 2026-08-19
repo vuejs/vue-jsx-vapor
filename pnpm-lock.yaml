@@ -259,6 +259,58 @@ importers:
         specifier: 'catalog:'
         version: 3.6.0-rc.3(typescript@6.0.3)
 
+  packages/vue-jsx:
+    dependencies:
+      '@vue-jsx-vapor/compiler':
+        specifier: workspace:*
+        version: link:../compiler
+      '@vue-jsx-vapor/macros':
+        specifier: workspace:*
+        version: link:../macros
+      '@vue-jsx-vapor/runtime':
+        specifier: workspace:*
+        version: link:../runtime
+      '@vue/shared':
+        specifier: 'catalog:'
+        version: 3.6.0-rc.3
+      esbuild:
+        specifier: '*'
+        version: 0.27.2
+      pathe:
+        specifier: ^2.0.3
+        version: 2.0.3
+      rollup:
+        specifier: ^3
+        version: 3.29.5
+      ts-macro:
+        specifier: ^0.3.7
+        version: 0.3.7
+      unplugin:
+        specifier: 'catalog:'
+        version: 3.0.0
+      unplugin-utils:
+        specifier: 'catalog:'
+        version: 0.3.1
+      vite:
+        specifier: '>=3'
+        version: 8.0.10(@types/node@25.6.0)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.39.0)(yaml@2.8.2)
+      webpack:
+        specifier: ^4 || ^5
+        version: 5.99.9(esbuild@0.27.2)
+    devDependencies:
+      '@nuxt/kit':
+        specifier: 'catalog:'
+        version: 3.21.4
+      '@nuxt/schema':
+        specifier: 'catalog:'
+        version: 3.21.4
+      '@vue-macros/volar':
+        specifier: 'catalog:'
+        version: 3.1.4(patch_hash=79e6492c51b3afca57b92023dd1aae9ddd57140efa1cf2cdf74d420e1d42c396)(typescript@6.0.3)(vue@3.6.0-rc.3(typescript@6.0.3))
+      vue:
+        specifier: 'catalog:'
+        version: 3.6.0-rc.3(typescript@6.0.3)
+
   packages/vue-jsx-vapor:
     dependencies:
       '@vue-jsx-vapor/compiler':
@@ -10102,6 +10154,17 @@ snapshots:
     optionalDependencies:
       esbuild: 0.25.8
 
+  terser-webpack-plugin@5.3.14(esbuild@0.27.2)(webpack@5.99.9(esbuild@0.27.2)):
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.25
+      jest-worker: 27.5.1
+      schema-utils: 4.3.2
+      serialize-javascript: 6.0.2
+      terser: 5.39.0
+      webpack: 5.99.9(esbuild@0.27.2)
+    optionalDependencies:
+      esbuild: 0.27.2
+
   terser@5.39.0:
     dependencies:
       '@jridgewell/source-map': 0.3.6
@@ -10651,6 +10714,37 @@ snapshots:
       schema-utils: 4.3.2
       tapable: 2.2.1
       terser-webpack-plugin: 5.3.14(esbuild@0.25.8)(webpack@5.99.9(esbuild@0.25.8))
+      watchpack: 2.4.2
+      webpack-sources: 3.2.3
+    transitivePeerDependencies:
+      - '@swc/core'
+      - esbuild
+      - uglify-js
+
+  webpack@5.99.9(esbuild@0.27.2):
+    dependencies:
+      '@types/eslint-scope': 3.7.7
+      '@types/estree': 1.0.6
+      '@types/json-schema': 7.0.15
+      '@webassemblyjs/ast': 1.14.1
+      '@webassemblyjs/wasm-edit': 1.14.1
+      '@webassemblyjs/wasm-parser': 1.14.1
+      acorn: 8.14.1
+      browserslist: 4.24.4
+      chrome-trace-event: 1.0.4
+      enhanced-resolve: 5.18.1
+      es-module-lexer: 1.6.0
+      eslint-scope: 5.1.1
+      events: 3.3.0
+      glob-to-regexp: 0.4.1
+      graceful-fs: 4.2.11
+      json-parse-even-better-errors: 2.3.1
+      loader-runner: 4.3.0
+      mime-types: 2.1.35
+      neo-async: 2.6.2
+      schema-utils: 4.3.2
+      tapable: 2.2.1
+      terser-webpack-plugin: 5.3.14(esbuild@0.27.2)(webpack@5.99.9(esbuild@0.27.2))
       watchpack: 2.4.2
       webpack-sources: 3.2.3
     transitivePeerDependencies:
