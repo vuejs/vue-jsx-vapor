@@ -155,7 +155,7 @@ impl<'a> RootNode {
       allocator,
     ))
   }
-  pub fn is_root(node: &JSXChild<'a>) -> bool {
+  pub fn is_root(node: &JSXChild) -> bool {
     let span = node.span();
     if span.end == 0 {
       let offset = span.start - span.end;
@@ -164,7 +164,7 @@ impl<'a> RootNode {
       false
     }
   }
-  pub fn is_fragment(node: &JSXChild<'a>) -> bool {
+  pub fn is_fragment(node: &JSXChild) -> bool {
     let span = node.span();
     if span.end == 0 {
       span.start - span.end == 2
@@ -172,8 +172,7 @@ impl<'a> RootNode {
       false
     }
   }
-  pub fn is_single_root(node: &JSXChild<'a>) -> bool {
-    let span = node.span();
+  pub fn is_single_root(span: Span) -> bool {
     if span.end == 0 {
       span.start - span.end == 3
     } else {

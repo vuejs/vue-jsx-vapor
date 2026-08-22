@@ -75,6 +75,7 @@ pub unsafe fn transform_v_for<'a>(
       context.allocator,
     )),
     true,
+    None,
   );
 
   // if v-for is the only child of a parent element, it can go the fast path

@@ -25,7 +25,6 @@ use crate::{
 };
 
 use common::{
-  ast::RootNode,
   check::{
     get_directive_name, is_always_close_tag, is_block_tag, is_built_in_directive,
     is_formatting_tag, is_inline_tag, is_template, is_void_tag,
@@ -113,7 +112,7 @@ pub unsafe fn transform_element<'a>(
     Rc::clone(&get_operation_index),
   );
 
-  let single_root = RootNode::is_single_root(parent_node);
+  let single_root = context.is_single_root(parent_node);
 
   Some(Box::new(move || {
     if is_component {
@@ -292,7 +291,7 @@ fn can_omit_end_tag<'a>(
 ) -> bool {
   // Root-level elements generate dedicated templates
   // so closing tags can be omitted
-  if RootNode::is_single_root(parent_node) {
+  if context.is_single_root(parent_node) {
     return true;
   }
 

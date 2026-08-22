@@ -16,6 +16,7 @@ pub unsafe fn transform_key<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
+  parent_node: &JSXChild<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
@@ -50,6 +51,7 @@ pub unsafe fn transform_key<'a>(
       context.allocator,
     )),
     false,
+    Some(parent_node),
   );
 
   Some(Box::new(move || {

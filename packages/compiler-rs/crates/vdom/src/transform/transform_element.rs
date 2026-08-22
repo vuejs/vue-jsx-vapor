@@ -94,7 +94,7 @@ pub unsafe fn transform_element<'a>(
   let is_component = directives.is_component;
   let parent_span = parent_node.span();
   let is_fragment = vnode_tag == "Fragment" || vnode_tag == "_Fragment";
-  let mut should_use_block = RootNode::is_single_root(parent_node)
+  let mut should_use_block = RootNode::is_single_root(parent_node.span())
     || RootNode::is_fragment(parent_node)
     || vnode_tag == "Teleport"
     || vnode_tag == "Suspense"
