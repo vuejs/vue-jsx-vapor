@@ -42,8 +42,12 @@ import {
   type VNode,
   type VNodeChild,
 } from 'vue'
-import type { RenderResult } from './jsx'
-import type { EmitFnToProps, IsKeyValues, SetupContextToProps } from './types'
+import type {
+  EmitFnToProps,
+  IsKeyValues,
+  RenderResult,
+  SetupContextToProps,
+} from './types'
 
 const cacheMap = new WeakMap()
 

@@ -9,6 +9,21 @@ import type {
   VNode,
 } from 'vue'
 
+declare module 'vue' {
+  interface VaporComponentInstance {
+    // @ts-expect-error Compatible with vue3.5
+    block: never
+  }
+  interface RenderResultExtensions {
+    render: RenderResult
+  }
+}
+
+export type RenderResult<T = VaporComponentInstance['block']> =
+  | T
+  | VNode
+  | RenderResult[]
+
 export type Prettify<T> = { [K in keyof T]: T[K] } & {}
 
 export type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N
@@ -50,11 +65,20 @@ export type NodeRef<T> =
   | Ref
   | string
 
+type ResolveSlots<Slots> = {
+  readonly [Key in keyof Slots]?: Slots[Key] extends (
+    ...args: infer Args
+  ) => VNode | VNode[]
+    ? (...args: Args) => NodeChild
+    : Slots[Key]
+}
 export type SlotsToProps<
   RawSlots extends SlotsType | Record<string, any> = Record<string, any>,
-  Slots = RawSlots extends SlotsType
-    ? SetupContext<EmitsOptions, RawSlots>['slots']
-    : RawSlots,
+  Slots = ResolveSlots<
+    RawSlots extends SlotsType
+      ? SetupContext<EmitsOptions, RawSlots>['slots']
+      : RawSlots
+  >,
 > = string extends keyof Slots
   ? {}
   : [keyof Slots] extends [never]
