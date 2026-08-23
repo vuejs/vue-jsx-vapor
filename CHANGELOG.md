@@ -1,3 +1,21 @@
+## [3.2.22](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.21...v3.2.22) (2026-08-23)
+
+
+### Bug Fixes
+
+* **compiler-vapor:** propagate component root through Transition ([ee86bb9](https://github.com/vuejs/vue-jsx-vapor/commit/ee86bb9a58475eba34a018b24244b76d004523e6))
+* **compiler/vdom:** prevent caching identity-valued events ([9a1e9d3](https://github.com/vuejs/vue-jsx-vapor/commit/9a1e9d3539f4f36eaa6648965888dea3c00e1c93))
+* **compiler:** remove reuseWorker for REPL running ([1de884c](https://github.com/vuejs/vue-jsx-vapor/commit/1de884cc0189db6b3a7183d4d82a66d813b3c81a))
+* **types:** normalize slot return types to NodeChild ([5607749](https://github.com/vuejs/vue-jsx-vapor/commit/5607749b864ddcefdd8c15717427f6a411dfeed6)), closes [#65](https://github.com/vuejs/vue-jsx-vapor/issues/65)
+* **vapor:** preserve dynamic v-for slot state ([e58ff8a](https://github.com/vuejs/vue-jsx-vapor/commit/e58ff8a4f2204ebbb6e568adf4e96a1d648deaad))
+
+
+### Features
+
+* **compiler/vdom:** add mergeProps option ([d3e587f](https://github.com/vuejs/vue-jsx-vapor/commit/d3e587fa2e5a3349380b43b5bea2311e272e94a1))
+
+
+
 ## [3.2.21](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.20...v3.2.21) (2026-08-15)
 
 
