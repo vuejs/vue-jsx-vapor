@@ -18,11 +18,11 @@
   "main": "index.js",
   "types": "index.d.ts",
   "files": [
-    "browser.js",
+    "browser-entry.js",
     "index.d.ts",
     "index.js"
   ],
-  "browser": "browser.js",
+  "browser": "browser-entry.js",
   "napi": {
     "binaryName": "compiler-rs",
     "targets": [
