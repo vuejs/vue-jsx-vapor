@@ -576,6 +576,7 @@ impl<'a> TransformContext<'a> {
           {
             exit_fns.push(on_exit);
           } else if directives.key.is_some()
+            && !(directives.tag_name == "template" && directives.v_slot.is_some())
             && !*(&*context).in_v_once.borrow()
             && let Some(on_exit) = transform_key(
               &mut *directives_ptr,

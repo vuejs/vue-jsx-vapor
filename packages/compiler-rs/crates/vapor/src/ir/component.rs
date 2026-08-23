@@ -54,6 +54,7 @@ pub struct IRSlotDynamicBasic<'a> {
   pub name: Expression<'a>,
   pub _fn: BlockIRNode<'a>,
   pub _loop: Option<IRFor<'a>>,
+  pub key_prop: Option<Expression<'a>>,
 }
 
 #[derive(Debug)]

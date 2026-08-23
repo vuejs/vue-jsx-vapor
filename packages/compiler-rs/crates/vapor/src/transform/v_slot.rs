@@ -16,6 +16,7 @@ use common::{
   check::{is_custom_element, is_jsx_component, is_template},
   directive::{DirectiveNode, Directives, find_prop, resolve_directive},
   error::ErrorCodes,
+  expression::jsx_attribute_value_to_expression,
   text::is_empty_text,
 };
 
@@ -144,6 +145,15 @@ fn transform_template_slot<'a>(
   } else {
     None
   };
+  let key_prop = if for_parse_result.is_some()
+    && let Some(key_prop) = directives.key.as_mut()
+    && let Some(value) = key_prop.value.as_mut()
+  {
+    context.seen.borrow_mut().insert(key_prop.span.start);
+    jsx_attribute_value_to_expression(value, context.ast)
+  } else {
+    None
+  };
   let v_if_dir = directives
     .v_if
     .as_mut()
@@ -179,6 +189,7 @@ fn transform_template_slot<'a>(
           name,
           _fn: block,
           _loop: None,
+          key_prop: None,
         },
       }));
     } else if let Some(v_else_dir) = v_else_dir {
@@ -190,6 +201,7 @@ fn transform_template_slot<'a>(
           name,
           _fn: block,
           _loop: None,
+          key_prop: None,
         };
         let negative = if let Some(exp) = v_else_dir.exp {
           Either::B(IRSlotDynamicConditional {
@@ -213,6 +225,7 @@ fn transform_template_slot<'a>(
         name,
         _fn: block,
         _loop: Some(for_parse_result),
+        key_prop,
       }))
     }
   })
@@ -267,6 +280,7 @@ fn register_slot<'a>(
       name: name.unwrap(),
       _fn: block,
       _loop: None,
+      key_prop: None,
     }));
   }
 }
