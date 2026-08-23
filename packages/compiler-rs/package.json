@@ -47,7 +47,7 @@
     "access": "public"
   },
   "scripts": {
-    "artifacts": "node ./scripts/patch-wasi-browser.mjs && napi artifacts",
+    "artifacts": "napi artifacts && node ./scripts/patch-wasi-browser.mjs",
     "build": "napi build --platform --release",
     "dev": "nodemon -w crates -e rs -x 'napi build --platform'",
     "format": "taplo format",
