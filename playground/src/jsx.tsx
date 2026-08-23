@@ -1,6 +1,7 @@
 import {
   defineComponent,
   defineVaporComponent,
+  ref,
   shallowRef,
   type Block,
   type EmitFn,
@@ -138,15 +139,15 @@ const Comp2: FunctionalComponent<
 const Comp3: FunctionalVaporComponent<
   { id: 1 },
   { change: (props: { id: 1 }) => void },
-  { default: (foo: { id?: 1 }) => any }
-  // { foo: Ref<string> } // waiting for vue3.6-rc.3
+  { default: (foo: { id?: 1 }) => any },
+  { foo: Ref<string> }
 > = (props, { emit, slots, expose }) => {
   emit('change', { id: 1 })
-  // expose({ foo: ref('1') })
+  expose({ foo: ref('1') })
   return [
     <div
       ref={(e) => {
-        expose<HTMLAttributes<HTMLDivElement>>(e!)
+        expectType<HTMLAttributes<HTMLDivElement>>(e!)
       }}
     >
       <slots.default />
