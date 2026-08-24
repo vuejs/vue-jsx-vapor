@@ -360,7 +360,13 @@ pub fn process_conditional_expression<'a>(
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
   let id = context.reference(dynamic);
   let block = context_block as *mut BlockIRNode;
-  let exit_block = context.create_block(context_node, unsafe { &mut *block }, consequent, false);
+  let exit_block = context.create_block(
+    context_node,
+    unsafe { &mut *block },
+    consequent,
+    false,
+    Some(parent_node),
+  );
 
   let is_const_test = is_constant_node(test);
   let test = test.take_in(context.allocator);
@@ -420,6 +426,7 @@ fn set_negative<'a>(
         .get_inner_expression_mut()
         .take_in(context.allocator),
       false,
+      Some(parent_node),
     );
     context.transform_node(Some(unsafe { &mut *_context_block }), Some(parent_node));
     let block = exit_block();
@@ -455,6 +462,7 @@ fn set_negative<'a>(
       unsafe { &mut *block },
       node.take_in(context.allocator),
       false,
+      Some(parent_node),
     );
     context.transform_node(Some(context_block), Some(parent_node));
     let block = exit_block();

@@ -13,7 +13,7 @@ fn basic() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { applyVShow as _applyVShow, template as _template } from "vue";
-  const _t0 = _template("<h1>foo");
+  const _t0 = _template("<h1>foo", 1);
   (() => {
   	const _n1 = _createComponent(VaporTransition, { persisted: true }, () => {
   		const _n0 = _t0();
@@ -23,6 +23,36 @@ fn basic() {
   	return _n1;
   })();
   "#);
+}
+
+// vuejs/core#15274
+#[test]
+fn propagates_component_root_to_transition_child_with_dynamic_class() {
+  let code = transform(
+    r#"<VaporTransition>
+      <div class={["box", data.value.internalClass]}>child</div>
+    </VaporTransition>"#,
+    None,
+  )
+  .code;
+
+  assert!(code.contains(r#"const _t0 = _template("<div>child", 1);"#));
+  assert!(code.contains(r#"_setClass(_n0, ["box", data.value.internalClass])"#));
+}
+
+#[test]
+fn does_not_propagate_component_root_through_nested_transition() {
+  let code = transform(
+    r#"<section>
+      <VaporTransition>
+        <div>child</div>
+      </VaporTransition>
+    </section>"#,
+    None,
+  )
+  .code;
+
+  assert!(!code.contains(r#"_template("<div>child", 1)"#));
 }
 
 #[test]
@@ -37,7 +67,7 @@ fn v_show_with_appear() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { applyVShow as _applyVShow, template as _template } from "vue";
-  const _t0 = _template("<h1>foo");
+  const _t0 = _template("<h1>foo", 1);
   (() => {
   	const _n1 = _createComponent(VaporTransition, {
   		appear: true,
@@ -65,7 +95,7 @@ fn work_with_v_if() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, extend as _extend, template as _template } from "vue";
-  const _t0 = _template("<h1>foo", 2);
+  const _t0 = _template("<h1>foo", 3);
   (() => {
   	const _n3 = _createComponent(VaporTransition, null, _extend(() => {
   		const _n0 = _createIf(() => show, () => {
@@ -84,8 +114,8 @@ fn work_with_v_if_v_else() {
   let code = transform(
     r#"<VaporTransition>
       <h1 v-if={condition == 1}>1</h1>
-      <h2 v-else-if={condition == 2}>2</h1>
-      <h3 v-else>3</h1>
+      <h2 v-else-if={condition == 2}>2</h2>
+      <h3 v-else>3</h3>
     </VaporTransition>"#,
     None,
   )
@@ -93,9 +123,9 @@ fn work_with_v_if_v_else() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, extend as _extend, template as _template } from "vue";
-  const _t0 = _template("<h1>1", 2);
-  const _t1 = _template("<h2>2", 2);
-  const _t2 = _template("<h3>3", 2);
+  const _t0 = _template("<h1>1", 3);
+  const _t1 = _template("<h2>2", 3);
+  const _t2 = _template("<h3>3", 3);
   (() => {
   	const _n9 = _createComponent(VaporTransition, null, _extend(() => {
   		const _n0 = _createIf(() => condition == 1, () => {
@@ -131,9 +161,9 @@ fn work_with_condition_expression() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, extend as _extend, template as _template } from "vue";
-  const _t0 = _template("<h1>1", 2);
-  const _t1 = _template("<h2>2", 2);
-  const _t2 = _template("<h3>3", 2);
+  const _t0 = _template("<h1>1", 3);
+  const _t1 = _template("<h2>2", 3);
+  const _t2 = _template("<h3>3", 3);
   (() => {
   	const _n7 = _createComponent(VaporTransition, null, _extend(() => {
   		const _n0 = _createIf(() => condition == 1, () => {
@@ -165,7 +195,7 @@ fn transition_work_with_dynamic_keyed_children() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
-  const _t0 = _template("<h1>foo", 2);
+  const _t0 = _template("<h1>foo", 3);
   (() => {
   	const _n3 = _createComponent(VaporTransition, null, () => {
   		const _n0 = _createKeyedFragment(() => foo, () => {

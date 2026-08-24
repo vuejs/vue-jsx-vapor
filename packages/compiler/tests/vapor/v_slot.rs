@@ -415,19 +415,105 @@ fn dynamic_slots_name_with_v_for() {
   )
   .code;
   assert_snapshot!(code, @r#"
+import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+import { createForSlots as _createForSlots } from "vue";
+(() => {
+	const _n2 = _createComponent(Comp, null, { $: [_createForSlots(() => list, (_for_item0) => (_slotProps1) => {
+		const _n0 = _createNodes(() => _slotProps1.bar);
+		return _n0;
+	}, (_for_raw_item0) => _for_raw_item0)] }, true);
+	return _n2;
+})();
+"#);
+}
+
+#[test]
+fn dynamic_slots_name_with_keyed_v_for() {
+  let code = transform(
+    r#"<Comp>
+      <template v-for={item in list} key={item.id} v-slot:$item_name$>
+        {item.label}
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+
+  assert!(code.contains("_createForSlots(() => list"), "{code}");
+  assert!(code.contains("_for_item0.value.label"), "{code}");
+  assert!(
+    code.contains("(_for_raw_item0) => _for_raw_item0.name"),
+    "{code}"
+  );
+  assert!(
+    code.contains("(_for_raw_item0) => _for_raw_item0.id"),
+    "{code}"
+  );
+
+  assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createForSlots as _createForSlots } from "vue";
   (() => {
-  	const _n2 = _createComponent(Comp, null, { $: [_createForSlots(list, (item) => ({
-  		name: item,
-  		fn: (_slotProps0) => {
-  			const _n0 = _createNodes(() => _slotProps0.bar);
-  			return _n0;
-  		}
-  	}))] }, true);
+  	const _n2 = _createComponent(Comp, null, { $: [_createForSlots(() => list, (_for_item0) => () => {
+  		const _n0 = _createNodes(() => _for_item0.value.label);
+  		return _n0;
+  	}, (_for_raw_item0) => _for_raw_item0.name, (_for_raw_item0) => _for_raw_item0.id)] }, true);
   	return _n2;
   })();
   "#);
+
+  let code = transform(
+    r#"<Comp>
+      <template v-for={item in list} key="stable" v-slot:$item$ />
+    </Comp>"#,
+    None,
+  )
+  .code;
+  assert!(code.contains("(_for_raw_item0) => \"stable\""), "{code}");
+}
+
+#[test]
+fn dynamic_slots_name_with_v_for_key_and_index_aliases() {
+  let code = transform(
+    r#"<Comp>
+      <template v-for={(item, key, index) in list} v-slot:$index$>
+        {item}{key}{index}
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+
+  assert!(
+    code.contains("(_for_item0, _for_key0, _for_index0) =>"),
+    "{code}"
+  );
+  assert!(code.contains("_for_item0.value"), "{code}");
+  assert!(code.contains("_for_key0.value"), "{code}");
+  assert!(code.contains("_for_index0.value"), "{code}");
+  assert!(
+    code.contains("(_for_raw_item0, _for_raw_key0, _for_raw_index0) => _for_raw_index0"),
+    "{code}"
+  );
+}
+
+#[test]
+fn dynamic_slots_name_with_destructured_v_for_value() {
+  let code = transform(
+    r#"<Comp>
+      <template v-for={({ name, label }) in list} v-slot:$name$>
+        {label}
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+
+  assert!(code.contains("_for_item0.value.label"), "{code}");
+  assert!(
+    code.contains("(_for_raw_item0) => _for_raw_item0.name"),
+    "{code}"
+  );
 }
 
 #[test]
@@ -966,19 +1052,16 @@ fn default_slot_with_v_for_directive() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createForSlots as _createForSlots } from "vue";
-  (() => {
-  	const _n2 = _createComponent(Comp, null, { $: [_createForSlots(list, (item) => ({
-  		name: "default",
-  		fn: () => {
-  			const _n0 = _createNodes(() => item);
-  			return _n0;
-  		}
-  	}))] }, true);
-  	return _n2;
-  })();
-  "#);
+import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+import { createForSlots as _createForSlots } from "vue";
+(() => {
+	const _n2 = _createComponent(Comp, null, { $: [_createForSlots(() => list, (_for_item0) => () => {
+		const _n0 = _createNodes(() => _for_item0.value);
+		return _n0;
+	}, (_for_raw_item0) => "default")] }, true);
+	return _n2;
+})();
+"#);
 }
 
 #[test]
@@ -1066,19 +1149,16 @@ fn dynamic_slot_source_with_slot_outlet_keeps_dynamic_slot_function() {
   .code;
   assert!(code.contains("_createForSlots"));
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
-  import { createForSlots as _createForSlots, createSlot as _createSlot } from "vue";
-  (() => {
-  	const _n2 = _createComponent(Comp, null, { $: [_createForSlots(slots, (_, name) => ({
-  		name,
-  		fn: () => {
-  			const _n0 = _createSlot(() => name, null, null, 36);
-  			return _n0;
-  		}
-  	}))] }, true);
-  	return _n2;
-  })();
-  "#);
+import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+import { createForSlots as _createForSlots, createSlot as _createSlot } from "vue";
+(() => {
+	const _n2 = _createComponent(Comp, null, { $: [_createForSlots(() => slots, (_for_item0, _for_key0) => () => {
+		const _n0 = _createSlot(() => _for_key0.value, null, null, 36);
+		return _n0;
+	}, (_for_raw_item0, _for_raw_key0) => _for_raw_key0)] }, true);
+	return _n2;
+})();
+"#);
 }
 
 #[test]

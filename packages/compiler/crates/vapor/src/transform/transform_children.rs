@@ -2,6 +2,7 @@ use std::{borrow::Cow, mem};
 
 use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::ast::{JSXChild, JSXExpression};
+use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   ir::index::{
@@ -53,6 +54,9 @@ pub unsafe fn transform_children<'a>(
   let grand_parent_dynamic = context
     .parent_dynamic
     .replace(mem::take(&mut context_block.dynamic));
+  let grandparent_node_span = context
+    .grandparent_node_span
+    .replace(parent_node.map_or(SPAN, |node| node.span()));
   let _context_block = context_block as *mut BlockIRNode;
   let mut i = 0;
   if let Some(last) = children.last()
@@ -150,6 +154,7 @@ pub unsafe fn transform_children<'a>(
     i += 1;
   }
   *context.children_template.borrow_mut() = parent_children_template;
+  *context.grandparent_node_span.borrow_mut() = grandparent_node_span;
   context_block.dynamic = context.parent_dynamic.replace(grand_parent_dynamic);
 
   if !is_fragment_or_component {

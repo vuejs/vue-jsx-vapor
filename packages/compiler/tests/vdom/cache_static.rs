@@ -576,12 +576,9 @@ fn should_not_cache_elements_with_cached_handlers() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", { onClick: _cache[0] || (_cache[0] = (...args) => foo(...args)) })])]);
-  })();
+  const _hoisted_1 = ["onClick"];
+  _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", { onClick: foo }, null, 8, _hoisted_1)])]);
   "#);
 }
 
@@ -596,15 +593,13 @@ fn should_not_cache_elements_with_cached_handlers_with_other_bindings() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
+  import { normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", {
-  		class: _normalizeClass({}),
-  		onClick: _cache[0] || (_cache[0] = (...args) => foo(...args))
-  	})])]);
-  })();
+  const _hoisted_1 = ["onClick"];
+  _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", null, [_createElementVNode("div", {
+  	class: _normalizeClass({}),
+  	onClick: foo
+  }, null, 8, _hoisted_1)])]);
   "#);
 }
 

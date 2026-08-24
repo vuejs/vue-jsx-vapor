@@ -256,14 +256,14 @@ pub struct Directives<'a> {
 }
 
 impl<'a> Directives<'a> {
-  pub fn new(element: &'a mut JSXElement<'a>, options: &TransformOptions<'a>) -> Directives<'a> {
+  pub fn new(node: &'a mut JSXElement<'a>, options: &TransformOptions<'a>) -> Directives<'a> {
     let mut directives = Directives {
-      tag_name: get_tag_name(element, options),
-      is_component: is_jsx_component(element),
-      is_custom_element: is_custom_element(element),
+      tag_name: get_tag_name(node, options),
+      is_component: is_jsx_component(node),
+      is_custom_element: is_custom_element(node),
       ..Default::default()
     };
-    for dir in element.opening_element.attributes.iter_mut() {
+    for dir in node.opening_element.attributes.iter_mut() {
       if let JSXAttributeItem::Attribute(dir) = dir {
         let dir_name = match &dir.name {
           JSXAttributeName::Identifier(name) => name.name,

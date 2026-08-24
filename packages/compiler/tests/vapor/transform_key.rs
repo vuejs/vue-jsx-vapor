@@ -6,7 +6,7 @@ fn key() {
   let code = transform("<div key={id} />", None).code;
   assert_snapshot!(code, @r#"
   import { createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
-  const _t0 = _template("<div>", 2);
+  const _t0 = _template("<div>", 3);
   (() => {
   	const _n0 = _createKeyedFragment(() => id, () => {
   		const _n2 = _t0();
@@ -36,7 +36,7 @@ fn key_with_v_if() {
   let code = transform("<div v-if={id} key={id} />", None).code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
-  const _t0 = _template("<div>", 2);
+  const _t0 = _template("<div>", 3);
   (() => {
   	const _n0 = _createIf(() => id, () => {
   		const _n2 = _createKeyedFragment(() => id, () => {

@@ -6,7 +6,7 @@ pub use common::options::TransformOptions;
 use oxc_allocator::{Allocator, TakeIn};
 use oxc_ast::ast::{Expression, JSXAttributeItem, JSXChild, JSXElement};
 use oxc_ast::{AstBuilder, NONE};
-use oxc_span::{GetSpan, SPAN};
+use oxc_span::{GetSpan, SPAN, Span};
 use std::borrow::Cow;
 use std::{cell::RefCell, collections::HashSet, mem, rc::Rc};
 pub mod transform_children;
@@ -113,6 +113,7 @@ pub struct TransformContext<'a> {
   pub node: RefCell<JSXChild<'a>>,
 
   pub parent_dynamic: RefCell<IRDynamicInfo<'a>>,
+  pub grandparent_node_span: RefCell<Span>,
 }
 
 impl<'a> TransformContext<'a> {
@@ -142,6 +143,7 @@ impl<'a> TransformContext<'a> {
       if_index: RefCell::new(0),
       node: RefCell::new(RootNode::from(ast, options, node, true, None)),
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
+      grandparent_node_span: RefCell::new(SPAN),
       ir: Rc::new(RefCell::new(RootIRNode::default())),
       block: RefCell::new(BlockIRNode::new()),
       ast,
@@ -364,7 +366,25 @@ impl<'a> TransformContext<'a> {
     }) as Box<dyn FnOnce() -> BlockIRNode<'a>>) as _
   }
 
-  pub fn wrap_fragment(&self, mut node: Expression<'a>) -> JSXChild<'a> {
+  pub fn is_single_root(&self, parent_node: &JSXChild) -> bool {
+    if let JSXChild::Element(parent_node) = parent_node
+      && parent_node
+        .opening_element
+        .name
+        .get_identifier_name()
+        .is_some_and(|name| matches!(name.as_str(), "VaporTransition"))
+    {
+      RootNode::is_single_root(*self.grandparent_node_span.borrow())
+    } else {
+      RootNode::is_single_root(parent_node.span())
+    }
+  }
+
+  pub fn wrap_fragment(
+    &self,
+    mut node: Expression<'a>,
+    parent_node: Option<&JSXChild<'a>>,
+  ) -> JSXChild<'a> {
     let ast = self.ast;
     if let Expression::JSXFragment(node) = node {
       JSXChild::Fragment(node)
@@ -414,8 +434,25 @@ impl<'a> TransformContext<'a> {
       }
       JSXChild::Element(node.take_in_box(self.allocator))
     } else {
+      let parent_span = if let Some(parent_node) = parent_node {
+        if let JSXChild::Element(parent_node) = &*parent_node
+          && parent_node
+            .opening_element
+            .name
+            .get_identifier_name()
+            .is_some_and(|name| matches!(name.as_str(), "VaporTransition"))
+        {
+          *self.grandparent_node_span.borrow()
+        } else if RootNode::is_root(parent_node) {
+          parent_node.span()
+        } else {
+          SPAN
+        }
+      } else {
+        SPAN
+      };
       ast.jsx_child_fragment(
-        SPAN,
+        parent_span,
         ast.jsx_opening_fragment(SPAN),
         ast.vec1(match node {
           Expression::JSXElement(node) => JSXChild::Element(node),
@@ -433,9 +470,10 @@ impl<'a> TransformContext<'a> {
     context_block: &'a mut BlockIRNode<'a>,
     node: Expression<'a>,
     is_v_for: bool,
+    parent_node: Option<&JSXChild<'a>>,
   ) -> Box<dyn FnOnce() -> BlockIRNode<'a> + 'a> {
     let block = BlockIRNode::new();
-    *context_node = self.wrap_fragment(node);
+    *context_node = self.wrap_fragment(node, parent_node);
     let _context_block = context_block as *mut BlockIRNode;
     let exit_block = self.enter_block(unsafe { &mut *_context_block }, block, is_v_for);
     self.reference(&mut context_block.dynamic);
@@ -538,8 +576,15 @@ impl<'a> TransformContext<'a> {
           {
             exit_fns.push(on_exit);
           } else if directives.key.is_some()
+            && !(directives.tag_name == "template" && directives.v_slot.is_some())
             && !*(&*context).in_v_once.borrow()
-            && let Some(on_exit) = transform_key(&mut *directives_ptr, node, &*context, &mut *block)
+            && let Some(on_exit) = transform_key(
+              &mut *directives_ptr,
+              node,
+              &*context,
+              &mut *block,
+              &*parent_node,
+            )
           {
             exit_fns.push(on_exit);
           };

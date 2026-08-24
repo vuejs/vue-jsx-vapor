@@ -3,7 +3,9 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const currentDir = dirname(fileURLToPath(import.meta.url))
-const targetFiles = [resolve(currentDir, '../compiler.wasi-browser.js')]
+const targetFiles = [
+  resolve(currentDir, '../npm/wasm32-wasi/compiler.wasi-browser.js'),
+]
 // Remove it to fix bugs for REPL.
 const targetLine =
   'reuseWorker: { size: __asyncWorkPoolSize + __workerPoolSize },'

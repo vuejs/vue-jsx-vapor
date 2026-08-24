@@ -2,14 +2,14 @@ use std::borrow::Cow;
 
 use common::{
   check::{is_keyboard_event, is_simple_identifier},
-  directive::{Directives, Modifiers, resolve_modifiers},
+  directive::{Modifiers, resolve_modifiers},
   error::ErrorCodes,
   text::capitalize,
 };
 use oxc_ast::{
   NONE,
   ast::{
-    Expression, FormalParameterKind, JSXAttribute, JSXAttributeName, JSXAttributeValue, JSXElement,
+    Expression, FormalParameterKind, JSXAttribute, JSXAttributeName, JSXAttributeValue,
     PropertyKind,
   },
 };
@@ -18,9 +18,7 @@ use oxc_span::SPAN;
 use crate::transform::{DirectiveTransformResult, TransformContext};
 
 pub fn transform_v_on<'a>(
-  directives: &Directives,
   dir: &'a mut JSXAttribute<'a>,
-  _: &JSXElement<'a>,
   context: &'a TransformContext<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let ast = &context.ast;
@@ -56,54 +54,10 @@ pub fn transform_v_on<'a>(
     let (exp, has_scope_ref, has_this, _has_jsx) =
       context.process_expression(value.expression.to_expression_mut());
     has_jsx = _has_jsx;
-    let is_component = directives.is_component;
-    let is_member_exp = exp.is_member_expression() || matches!(exp, Expression::Identifier(_));
     should_cache = context.options.optimize
-      && !(*context.options.in_v_once.borrow()
-      || has_scope_ref
-      || has_this
-      // #1541 bail if this is a member exp handler passed to a component -
-      // we need to use the original function to preserve arity,
-      // e.g. <transition> relies on checking cb.length to determine
-      // transition end handling. Inline function is ok since its arity
-      // is preserved even when cached.
-      || is_member_exp && is_component);
-    if should_cache && is_member_exp {
-      ast.expression_arrow_function(
-        SPAN,
-        true,
-        false,
-        NONE,
-        ast.formal_parameters(
-          SPAN,
-          FormalParameterKind::ArrowFormalParameters,
-          ast.vec(),
-          Some(ast.alloc_formal_parameter_rest(
-            SPAN,
-            ast.vec(),
-            ast.binding_rest_element(SPAN, ast.binding_pattern_binding_identifier(SPAN, "args")),
-            NONE,
-          )),
-        ),
-        NONE,
-        ast.function_body(
-          SPAN,
-          ast.vec(),
-          ast.vec1(ast.statement_expression(
-            SPAN,
-            ast.expression_call(
-              SPAN,
-              exp,
-              NONE,
-              ast.vec1(ast.argument_spread_element(SPAN, ast.expression_identifier(SPAN, "args"))),
-              false,
-            ),
-          )),
-        ),
-      )
-    } else {
-      exp
-    }
+      && !(exp.is_member_expression() || matches!(exp, Expression::Identifier(_)))
+      && !(*context.options.in_v_once.borrow() || has_scope_ref || has_this);
+    exp
   } else {
     ast.expression_arrow_function(
       SPAN,

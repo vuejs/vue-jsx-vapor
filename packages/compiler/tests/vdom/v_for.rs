@@ -576,12 +576,9 @@ fn stable_v_for_lifecycle_calls_vnode_unmounted_hooks_on_branch_removal() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock(_Fragment, null, show ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [(_openBlock(), _createElementBlock(_Fragment, null, _renderList(1, (i) => _createElementVNode("div", { onVnodeUnmounted: _cache[0] || (_cache[0] = (...args) => onVnodeUnmounted(...args)) }, null, 512)), 64))], 64)) : _createCommentVNode("", true));
-  })();
+  const _hoisted_1 = ["onVnodeUnmounted"];
+  _openBlock(), _createElementBlock(_Fragment, null, show ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [(_openBlock(), _createElementBlock(_Fragment, null, _renderList(1, (i) => _createElementVNode("div", { onVnodeUnmounted }, null, 8, _hoisted_1)), 64))], 64)) : _createCommentVNode("", true));
   "#)
 }
 
@@ -616,12 +613,10 @@ fn stable_v_for_lifecycle_runs_vnode_before_update_before_nested_child_updates()
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock(_Fragment, null, _renderList(1, (i) => (_openBlock(), _createElementBlock("div", { onVnodeBeforeUpdate: _cache[0] || (_cache[0] = (...args) => onVnodeBeforeUpdate(...args)) }, [_createElementVNode("span", null, [_normalizeVNode(() => value)])]))), 64);
-  })();
+  const _hoisted_1 = ["onVnodeBeforeUpdate"];
+  _openBlock(), _createElementBlock(_Fragment, null, _renderList(1, (i) => (_openBlock(), _createElementBlock("div", { onVnodeBeforeUpdate }, [_createElementVNode("span", null, [_normalizeVNode(() => value)])], 8, _hoisted_1))), 64);
   "#)
 }
 

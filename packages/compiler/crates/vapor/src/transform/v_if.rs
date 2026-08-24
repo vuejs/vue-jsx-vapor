@@ -1,7 +1,6 @@
 use napi::Either;
 use oxc_allocator::TakeIn;
 use oxc_ast::ast::{Expression, JSXChild, JSXElement};
-use oxc_span::GetSpan;
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, IfIRNode, OperationNode},
@@ -9,7 +8,6 @@ use crate::{
 };
 
 use common::{
-  ast::RootNode,
   check::{is_constant_node, is_template},
   directive::{Directives, find_prop},
   error::ErrorCodes,
@@ -73,12 +71,8 @@ pub unsafe fn transform_v_if<'a>(
         context.allocator,
       )),
       false,
+      Some(parent_node),
     );
-    if RootNode::is_root(parent_node)
-      && let JSXChild::Fragment(node) = unsafe { &mut *context_node }
-    {
-      node.span = parent_node.span();
-    }
     return Some(Box::new(move || {
       let block = exit_block();
 
@@ -143,6 +137,7 @@ pub unsafe fn transform_v_if<'a>(
       context.allocator,
     )),
     false,
+    Some(parent_node),
   );
 
   Some(Box::new(move || {

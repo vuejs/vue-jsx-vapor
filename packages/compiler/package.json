@@ -1,6 +1,6 @@
 {
   "name": "@vue-jsx-vapor/compiler",
-  "version": "3.2.21",
+  "version": "3.2.22",
   "description": "Template project for writing node package with napi-rs",
   "license": "MIT",
   "repository": {
@@ -18,11 +18,11 @@
   "main": "index.js",
   "types": "index.d.ts",
   "files": [
-    "browser.js",
+    "browser-entry.js",
     "index.d.ts",
     "index.js"
   ],
-  "browser": "browser.js",
+  "browser": "browser-entry.js",
   "napi": {
     "binaryName": "compiler",
     "targets": [
@@ -47,7 +47,7 @@
     "access": "public"
   },
   "scripts": {
-    "artifacts": "node ./scripts/patch-wasi-browser.mjs && napi artifacts",
+    "artifacts": "napi artifacts && node ./scripts/patch-wasi-browser.mjs",
     "build": "napi build --platform --release --esm",
     "dev": "nodemon -w crates -e rs -x 'napi build --platform'",
     "format": "taplo format",

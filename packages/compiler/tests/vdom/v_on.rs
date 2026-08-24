@@ -15,12 +15,9 @@ fn basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = (...args) => onClick(...args)) });
-  })();
+  const _hoisted_1 = ["onClick"];
+  _openBlock(), _createElementBlock("div", { onClick }, null, 8, _hoisted_1);
   "#)
 }
 
@@ -119,12 +116,9 @@ fn complex_memeber_expression() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = (...args) => a["b" + c](...args)) });
-  })();
+  const _hoisted_1 = ["onClick"];
+  _openBlock(), _createElementBlock("div", { onClick: a["b" + c] }, null, 8, _hoisted_1);
   "#)
 }
 
@@ -188,15 +182,12 @@ fn vue_prefixed_events() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", {
-  		onVnodeMounted: _cache[0] || (_cache[0] = (...args) => onMount(...args)),
-  		onVnodeBeforeUpdate: _cache[1] || (_cache[1] = (...args) => onBeforeUpdate(...args))
-  	}, null, 512);
-  })();
+  const _hoisted_1 = ["onVnodeMounted", "onVnodeBeforeUpdate"];
+  _openBlock(), _createElementBlock("div", {
+  	onVnodeMounted: onMount,
+  	onVnodeBeforeUpdate: onBeforeUpdate
+  }, null, 8, _hoisted_1);
   "#);
 }
 
@@ -231,12 +222,9 @@ fn member_expression_handler() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = (...args) => foo.bar(...args)) });
-  })();
+  const _hoisted_1 = ["onClick"];
+  _openBlock(), _createElementBlock("div", { onClick: foo.bar }, null, 8, _hoisted_1);
   "#);
 }
 
@@ -251,12 +239,9 @@ fn bail_on_component_member_expression_handler() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("comp", { onClick: _cache[0] || (_cache[0] = (...args) => foo(...args)) });
-  })();
+  const _hoisted_1 = ["onClick"];
+  _openBlock(), _createElementBlock("comp", { onClick: foo }, null, 8, _hoisted_1);
   "#);
 }
 
@@ -328,12 +313,9 @@ fn should_support_multiple_modifiers() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = _withModifiers((...args) => test(...args), ["stop", "prevent"])) });
-  })();
+  const _hoisted_1 = ["onClick"];
+  _openBlock(), _createElementBlock("div", { onClick: _withModifiers(test, ["stop", "prevent"]) }, null, 8, _hoisted_1);
   "#)
 }
 
@@ -348,15 +330,12 @@ fn should_support_multiple_events_and_modifiers_options() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", {
-  		onClick: _cache[0] || (_cache[0] = _withModifiers((...args) => test(...args), ["stop"])),
-  		onKeyup: _cache[1] || (_cache[1] = _withKeys((...args) => test(...args), ["enter"]))
-  	}, null, 32);
-  })();
+  const _hoisted_1 = ["onClick", "onKeyup"];
+  _openBlock(), _createElementBlock("div", {
+  	onClick: _withModifiers(test, ["stop"]),
+  	onKeyup: _withKeys(test, ["enter"])
+  }, null, 40, _hoisted_1);
   "#);
 }
 
@@ -371,12 +350,9 @@ fn should_support_multiple_modifiers_and_event_options() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onClickCaptureOnce: _cache[0] || (_cache[0] = _withModifiers((...args) => test(...args), ["stop"])) }, null, 32);
-  })();
+  const _hoisted_1 = ["onClickCaptureOnce"];
+  _openBlock(), _createElementBlock("div", { onClickCaptureOnce: _withModifiers(test, ["stop"]) }, null, 40, _hoisted_1);
   "#);
 }
 
@@ -391,12 +367,9 @@ fn should_wrap_keys_guard_for_keyboard_events_or_dynamic_events() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onKeydownCapture: _cache[0] || (_cache[0] = _withKeys(_withModifiers((...args) => test(...args), ["stop", "ctrl"]), ["a"])) }, null, 32);
-  })();
+  const _hoisted_1 = ["onKeydownCapture"];
+  _openBlock(), _createElementBlock("div", { onKeydownCapture: _withKeys(_withModifiers(test, ["stop", "ctrl"]), ["a"]) }, null, 40, _hoisted_1);
   "#);
 }
 
@@ -411,12 +384,9 @@ fn should_not_wrap_keys_guard_if_no_key_modifier_is_present() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onKeyup: _cache[0] || (_cache[0] = _withModifiers((...args) => test(...args), ["exact"])) }, null, 32);
-  })();
+  const _hoisted_1 = ["onKeyup"];
+  _openBlock(), _createElementBlock("div", { onKeyup: _withModifiers(test, ["exact"]) }, null, 40, _hoisted_1);
   "#);
 }
 
@@ -431,12 +401,9 @@ fn should_wrap_keys_guard_for_static_key_event_with_left_right_modifiers() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onKeyup: _cache[0] || (_cache[0] = _withKeys((...args) => test(...args), ["left"])) }, null, 32);
-  })();
+  const _hoisted_1 = ["onKeyup"];
+  _openBlock(), _createElementBlock("div", { onKeyup: _withKeys(test, ["left"]) }, null, 40, _hoisted_1);
   "#);
 }
 
@@ -451,12 +418,9 @@ fn should_not_wrap_normal_guard_if_there_is_only_keys_guard() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onKeyup: _cache[0] || (_cache[0] = _withKeys((...args) => test(...args), ["enter"])) }, null, 32);
-  })();
+  const _hoisted_1 = ["onKeyup"];
+  _openBlock(), _createElementBlock("div", { onKeyup: _withKeys(test, ["enter"]) }, null, 40, _hoisted_1);
   "#);
 }
 
@@ -471,12 +435,9 @@ fn should_transform_click_right() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onContextmenu: _cache[0] || (_cache[0] = _withModifiers((...args) => test(...args), ["right"])) }, null, 32);
-  })();
+  const _hoisted_1 = ["onContextmenu"];
+  _openBlock(), _createElementBlock("div", { onContextmenu: _withModifiers(test, ["right"]) }, null, 40, _hoisted_1);
   "#);
 }
 
@@ -491,12 +452,9 @@ fn should_transform_click_middle() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onMouseup: _cache[0] || (_cache[0] = _withModifiers((...args) => test(...args), ["middle"])) }, null, 32);
-  })();
+  const _hoisted_1 = ["onMouseup"];
+  _openBlock(), _createElementBlock("div", { onMouseup: _withModifiers(test, ["middle"]) }, null, 40, _hoisted_1);
   "#);
 }
 
@@ -511,12 +469,9 @@ fn cache_handler_with_modifiers() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onKeyupCapture: _cache[0] || (_cache[0] = _withKeys((...args) => foo(...args), ["enter"])) }, null, 32);
-  })();
+  const _hoisted_1 = ["onKeyupCapture"];
+  _openBlock(), _createElementBlock("div", { onKeyupCapture: _withKeys(foo, ["enter"]) }, null, 40, _hoisted_1);
   "#);
 }
 
@@ -531,11 +486,8 @@ fn should_not_have_props_patch_flag_for_constant_v_on_handlers_with_modifiers() 
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onKeydown: _cache[0] || (_cache[0] = _withKeys((...args) => foo(...args), ["up"])) }, null, 32);
-  })();
+  const _hoisted_1 = ["onKeydown"];
+  _openBlock(), _createElementBlock("div", { onKeydown: _withKeys(foo, ["up"]) }, null, 40, _hoisted_1);
   "#);
 }

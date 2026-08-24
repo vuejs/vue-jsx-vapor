@@ -31,6 +31,7 @@ import type {
   EmitFnToProps,
   ExtractExposed,
   NodeRef,
+  RenderResult,
   SlotsToProps,
 } from './types'
 import type {
@@ -39,26 +40,10 @@ import type {
   StyleValue,
   UnwrapRef,
   VaporComponentInstance,
-  VNode,
   VNodeRef,
 } from 'vue'
 
-declare module 'vue' {
-  interface VaporComponentInstance {
-    // @ts-expect-error Compatible with vue3.5
-    block: never
-  }
-  interface RenderResultExtensions {
-    render: RenderResult
-  }
-}
-
 type NativeElement = Element
-
-export type RenderResult<T = VaporComponentInstance['block']> =
-  | T
-  | VNode
-  | RenderResult[]
 
 export namespace JSX {
   export type Element = RenderResult

@@ -425,12 +425,9 @@ fn props_merging_event_handlers() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("div", { onClick: [_cache[0] || (_cache[0] = (...args) => a(...args)), _cache[1] || (_cache[1] = (...args) => b(...args))] });
-  })();
+  const _hoisted_1 = ["onClick"];
+  _openBlock(), _createElementBlock("div", { onClick: [a, b] }, null, 8, _hoisted_1);
   "#)
 }
 
@@ -687,12 +684,9 @@ mod patch_flag_analysis {
     )
     .code;
     assert_snapshot!(code, @r#"
-    import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-    (() => {
-    	const _cache = _createVNodeCache("631d214bc2c8427c");
-    	return _openBlock(), _createElementBlock("div", { onVnodeUpdated: _cache[0] || (_cache[0] = (...args) => foo(...args)) }, null, 512);
-    })();
+    const _hoisted_1 = ["onVnodeUpdated"];
+    _openBlock(), _createElementBlock("div", { onVnodeUpdated: foo }, null, 8, _hoisted_1);
     "#)
   }
 
@@ -707,12 +701,9 @@ mod patch_flag_analysis {
     )
     .code;
     assert_snapshot!(code, @r#"
-    import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-    (() => {
-    	const _cache = _createVNodeCache("631d214bc2c8427c");
-    	return _openBlock(), _createElementBlock("div", { onKeyup: _cache[0] || (_cache[0] = (...args) => foo(...args)) }, null, 32);
-    })();
+    const _hoisted_1 = ["onKeyup"];
+    _openBlock(), _createElementBlock("div", { onKeyup: foo }, null, 40, _hoisted_1);
     "#)
   }
 
@@ -744,12 +735,9 @@ mod patch_flag_analysis {
     )
     .code;
     assert_snapshot!(code, @r#"
-    import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-    (() => {
-    	const _cache = _createVNodeCache("631d214bc2c8427c");
-    	return _openBlock(), _createElementBlock("div", { onKeydown: _cache[0] || (_cache[0] = (...args) => foo(...args)) }, null, 32);
-    })();
+    const _hoisted_1 = ["onKeydown"];
+    _openBlock(), _createElementBlock("div", { onKeydown: foo }, null, 40, _hoisted_1);
     "#)
   }
 }
@@ -805,12 +793,9 @@ fn custom_element_with_v_on() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-  (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
-  	return _openBlock(), _createElementBlock("my-custom-element", { onFoo: _cache[0] || (_cache[0] = (...args) => foo(...args)) }, null, 32);
-  })();
+  const _hoisted_1 = ["onFoo"];
+  _openBlock(), _createElementBlock("my-custom-element", { onFoo: foo }, null, 40, _hoisted_1);
   "#)
 }
 

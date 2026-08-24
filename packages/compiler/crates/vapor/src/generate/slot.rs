@@ -226,124 +226,240 @@ fn gen_loop_slot<'a>(
 ) -> Expression<'a> {
   let ast = &context.ast;
   let IRSlotDynamicBasic {
-    name, _fn, _loop, ..
+    name,
+    _fn,
+    _loop,
+    key_prop,
+    ..
   } = slot;
   let IRFor {
-    value,
+    mut value,
     key,
     index,
     source,
   } = _loop.unwrap();
-  let raw_value = value.and_then(|value| {
-    if let Expression::Identifier(value) = value {
-      Some(value.name)
-    } else {
-      None
-    }
-  });
-  let raw_key = key.and_then(|key| {
+  let raw_key = key.as_ref().and_then(|key| {
     if let Expression::Identifier(key) = key {
-      Some(key.name)
+      Some(key.name.as_str())
     } else {
       None
     }
   });
-  let raw_index = index.and_then(|index| {
+  let raw_index = index.as_ref().and_then(|index| {
     if let Expression::Identifier(index) = index {
-      Some(index.name)
+      Some(index.name.as_str())
     } else {
       None
     }
   });
 
-  let slot_expr = ast.expression_object(
+  let source = ast.expression_arrow_function(
     SPAN,
-    ast.vec_from_array([
-      ast.object_property_kind_object_property(
-        SPAN,
-        PropertyKind::Init,
-        ast.property_key_static_identifier(SPAN, ast.str("name")),
-        gen_expression(name, context, None, false),
-        false,
-        false,
-        false,
+    true,
+    false,
+    NONE,
+    ast.formal_parameters(
+      SPAN,
+      FormalParameterKind::ArrowFormalParameters,
+      ast.vec(),
+      NONE,
+    ),
+    NONE,
+    ast.function_body(
+      SPAN,
+      ast.vec(),
+      ast.vec1(
+        ast.statement_expression(SPAN, gen_expression(source.unwrap(), context, None, false)),
       ),
-      ast.object_property_kind_object_property(
-        SPAN,
-        PropertyKind::Init,
-        ast.property_key_static_identifier(SPAN, ast.str("fn")),
-        gen_slot_block_with_props(_fn, context, context_block, false),
-        false,
-        false,
-        false,
-      ),
-    ]),
+    ),
   );
+
+  let (depth, exit_scope) = context.enter_scope();
+  let item_var = format!("_for_item{depth}");
+  let mut id_map = context.parse_value_destructure(
+    value.as_mut(),
+    ast
+      .member_expression_static(
+        SPAN,
+        ast.expression_identifier(SPAN, ast.str(&item_var)),
+        ast.identifier_name(SPAN, "value"),
+        false,
+      )
+      .into(),
+  );
+  // createForSlots reads this callback's arity to decide which refs to create.
+  let mut render_params = ast.vec1(ast.plain_formal_parameter(
+    SPAN,
+    ast.binding_pattern_binding_identifier(SPAN, ast.str(&item_var)),
+  ));
+  if let Some(raw_key) = raw_key {
+    let key_var = format!("_for_key{depth}");
+    id_map.insert(
+      raw_key,
+      ast
+        .member_expression_static(
+          SPAN,
+          ast.expression_identifier(SPAN, ast.str(&key_var)),
+          ast.identifier_name(SPAN, "value"),
+          false,
+        )
+        .into(),
+    );
+    render_params.push(ast.plain_formal_parameter(
+      SPAN,
+      ast.binding_pattern_binding_identifier(SPAN, ast.str(&key_var)),
+    ));
+  } else if raw_index.is_some() {
+    render_params
+      .push(ast.plain_formal_parameter(SPAN, ast.binding_pattern_binding_identifier(SPAN, "_")));
+  }
+  if let Some(raw_index) = raw_index {
+    let index_var = format!("_for_index{depth}");
+    id_map.insert(
+      raw_index,
+      ast
+        .member_expression_static(
+          SPAN,
+          ast.expression_identifier(SPAN, ast.str(&index_var)),
+          ast.identifier_name(SPAN, "value"),
+          false,
+        )
+        .into(),
+    );
+    render_params.push(ast.plain_formal_parameter(
+      SPAN,
+      ast.binding_pattern_binding_identifier(SPAN, ast.str(&index_var)),
+    ));
+  }
+  let render_slot = context.with_id(
+    || gen_slot_block_with_props(_fn, context, context_block, false),
+    id_map,
+  );
+  let render_slot = ast.expression_arrow_function(
+    SPAN,
+    true,
+    false,
+    NONE,
+    ast.formal_parameters(
+      SPAN,
+      FormalParameterKind::ArrowFormalParameters,
+      render_params,
+      NONE,
+    ),
+    NONE,
+    ast.function_body(
+      SPAN,
+      ast.vec(),
+      ast.vec1(ast.statement_expression(SPAN, render_slot)),
+    ),
+  );
+  exit_scope();
+
+  let raw_item_var = format!("_for_raw_item{depth}");
+  let raw_key_var = format!("_for_raw_key{depth}");
+  let raw_index_var = format!("_for_raw_index{depth}");
+  let build_raw_id_map = |value: Option<&mut Expression<'a>>| {
+    let mut id_map = context.parse_value_destructure(
+      value,
+      ast.expression_identifier(SPAN, ast.str(&raw_item_var)),
+    );
+    if let Some(raw_key) = raw_key {
+      id_map.insert(
+        raw_key,
+        ast.expression_identifier(SPAN, ast.str(&raw_key_var)),
+      );
+    }
+    if let Some(raw_index) = raw_index {
+      id_map.insert(
+        raw_index,
+        ast.expression_identifier(SPAN, ast.str(&raw_index_var)),
+      );
+    }
+    id_map
+  };
+  let raw_params = || {
+    let mut params = ast.vec1(ast.plain_formal_parameter(
+      SPAN,
+      ast.binding_pattern_binding_identifier(SPAN, ast.str(&raw_item_var)),
+    ));
+    if raw_key.is_some() {
+      params.push(ast.plain_formal_parameter(
+        SPAN,
+        ast.binding_pattern_binding_identifier(SPAN, ast.str(&raw_key_var)),
+      ));
+    } else if raw_index.is_some() {
+      params
+        .push(ast.plain_formal_parameter(SPAN, ast.binding_pattern_binding_identifier(SPAN, "_")));
+    }
+    if raw_index.is_some() {
+      params.push(ast.plain_formal_parameter(
+        SPAN,
+        ast.binding_pattern_binding_identifier(SPAN, ast.str(&raw_index_var)),
+      ));
+    }
+    params
+  };
+  let name = context.with_id(
+    || gen_expression(name, context, None, false),
+    build_raw_id_map(value.as_mut()),
+  );
+  let get_name = ast.expression_arrow_function(
+    SPAN,
+    true,
+    false,
+    NONE,
+    ast.formal_parameters(
+      SPAN,
+      FormalParameterKind::ArrowFormalParameters,
+      raw_params(),
+      NONE,
+    ),
+    NONE,
+    ast.function_body(
+      SPAN,
+      ast.vec(),
+      ast.vec1(ast.statement_expression(SPAN, name)),
+    ),
+  );
+  let get_key = key_prop.map(|key_prop| {
+    let key_prop = context.with_id(
+      || gen_expression(key_prop, context, None, false),
+      build_raw_id_map(value.as_mut()),
+    );
+    ast.expression_arrow_function(
+      SPAN,
+      true,
+      false,
+      NONE,
+      ast.formal_parameters(
+        SPAN,
+        FormalParameterKind::ArrowFormalParameters,
+        raw_params(),
+        NONE,
+      ),
+      NONE,
+      ast.function_body(
+        SPAN,
+        ast.vec(),
+        ast.vec1(ast.statement_expression(SPAN, key_prop)),
+      ),
+    )
+  });
 
   ast.expression_call(
     SPAN,
     ast.expression_identifier(SPAN, ast.str(context.options.helper("_createForSlots"))),
     NONE,
-    ast.vec_from_array([
-      gen_expression(source.unwrap(), context, None, false).into(),
-      ast
-        .expression_arrow_function(
-          SPAN,
-          true,
-          false,
-          NONE,
-          ast.formal_parameters(
-            SPAN,
-            FormalParameterKind::ArrowFormalParameters,
-            ast.vec_from_iter(
-              [
-                if let Some(raw_value) = raw_value {
-                  Some(ast.plain_formal_parameter(
-                    SPAN,
-                    ast.binding_pattern_binding_identifier(SPAN, ast.str(&raw_value)),
-                  ))
-                } else if raw_key.is_some() && raw_index.is_some() {
-                  Some(ast.plain_formal_parameter(
-                    SPAN,
-                    ast.binding_pattern_binding_identifier(SPAN, ast.str("_")),
-                  ))
-                } else {
-                  None
-                },
-                if let Some(raw_key) = raw_key {
-                  Some(ast.plain_formal_parameter(
-                    SPAN,
-                    ast.binding_pattern_binding_identifier(SPAN, ast.str(&raw_key)),
-                  ))
-                } else if raw_index.is_some() {
-                  Some(ast.plain_formal_parameter(
-                    SPAN,
-                    ast.binding_pattern_binding_identifier(SPAN, ast.str("__")),
-                  ))
-                } else {
-                  None
-                },
-                raw_index.map(|raw_index| {
-                  ast.plain_formal_parameter(
-                    SPAN,
-                    ast.binding_pattern_binding_identifier(SPAN, ast.str(&raw_index)),
-                  )
-                }),
-              ]
-              .into_iter()
-              .flatten(),
-            ),
-            NONE,
-          ),
-          NONE,
-          ast.function_body(
-            SPAN,
-            ast.vec(),
-            ast.vec1(ast.statement_expression(SPAN, slot_expr)),
-          ),
-        )
-        .into(),
-    ]),
+    ast.vec_from_iter(
+      [
+        Some(source.into()),
+        Some(render_slot.into()),
+        Some(get_name.into()),
+        get_key.map(|get_key| get_key.into()),
+      ]
+      .into_iter()
+      .flatten(),
+    ),
     false,
   )
 }
