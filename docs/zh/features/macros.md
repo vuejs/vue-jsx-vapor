@@ -38,14 +38,14 @@ export default {
 我们也发布了一个单独的插件，可以给 虚拟DOM 的项目使用。
 
 ```bash
-pnpm add @vue-jsx-vapor/macros -D
+pnpm add @vue-jsx/macros -D
 ```
 
 配置:
 
 ```ts
 // vite.config.ts
-import jsxMacros from '@vue-jsx-vapor/macros/vite'
+import jsxMacros from '@vue-jsx/macros/vite'
 
 export default {
   plugins: [jsxMacros()],

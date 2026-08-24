@@ -3,7 +3,7 @@ import { createPlugin } from 'ts-macro'
 
 export default createPlugin(({ ts }) => {
   return {
-    name: '@vue-jsx-vapor/jsx-element',
+    name: '@vue-jsx/jsx-element',
     resolveVirtualCode({ ast, codes }) {
       let transformed = false
       ast.forEachChild(function walk(

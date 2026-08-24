@@ -1,4 +1,4 @@
-import jsxMacros from '@vue-jsx-vapor/macros/volar'
+import jsxMacros from '@vue-jsx/macros/volar'
 import jsxDirective from '@vue-macros/volar/jsx-directive'
 import jsxRef from '@vue-macros/volar/jsx-ref'
 import { createPlugin, type PluginReturn } from 'ts-macro'

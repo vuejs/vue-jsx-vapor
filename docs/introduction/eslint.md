@@ -5,14 +5,14 @@ An ESLint plugin for `vue-jsx-vapor` that provides automatic code formatting for
 ## Installation
 
 ```sh
-pnpm add @vue-jsx-vapor/eslint
+pnpm add @vue-jsx/eslint
 ```
 
 ## Configuration
 
 ```ts 
 // eslint.config.ts
-import vueJsxVapor from '@vue-jsx-vapor/eslint'
+import vueJsxVapor from '@vue-jsx/eslint'
 
 export default [
   vueJsxVapor()
@@ -26,7 +26,7 @@ export default [
 Formats styles within the `defineStyle` macro using Prettier.
 
 ```ts twoslash
-import vueJsxVapor from '@vue-jsx-vapor/eslint'
+import vueJsxVapor from '@vue-jsx/eslint'
 
 export default [
   vueJsxVapor({
@@ -42,7 +42,7 @@ export default [
 A modified version of [@stylistic/jsx/jsx-sort-props](https://eslint.style/rules/jsx/jsx-sort-props) with support for custom `reservedFirst` and `reservedLast` options.
 
 ```ts twoslash
-import vueJsxVapor from '@vue-jsx-vapor/eslint'
+import vueJsxVapor from '@vue-jsx/eslint'
 
 export default [
   vueJsxVapor({

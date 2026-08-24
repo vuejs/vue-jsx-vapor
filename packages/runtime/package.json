@@ -1,5 +1,5 @@
 {
-  "name": "@vue-jsx-vapor/runtime",
+  "name": "@vue-jsx/runtime",
   "type": "module",
   "version": "3.2.22",
   "description": "Vue JSX Vapor Runtime",

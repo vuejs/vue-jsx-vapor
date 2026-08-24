@@ -16,7 +16,7 @@ const plugin: PluginReturn<Options | undefined> = createPlugin(
     )
 
     return {
-      name: '@vue-jsx-vapor/macros',
+      name: '@vue-jsx/macros',
       resolveVirtualCode(virtualCode) {
         const { filePath, codes } = virtualCode
         if (!filter(filePath)) return

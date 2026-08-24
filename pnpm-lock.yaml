@@ -126,7 +126,7 @@ importers:
 
   docs:
     dependencies:
-      '@vue-jsx-vapor/eslint':
+      '@vue-jsx/eslint':
         specifier: workspace:*
         version: link:../packages/eslint
       '@vue/theme':
@@ -261,15 +261,15 @@ importers:
 
   packages/vue-jsx:
     dependencies:
-      '@vue-jsx-vapor/macros':
-        specifier: workspace:*
-        version: link:../macros
-      '@vue-jsx-vapor/runtime':
-        specifier: workspace:*
-        version: link:../runtime
       '@vue-jsx/compiler':
         specifier: workspace:*
         version: link:../compiler
+      '@vue-jsx/macros':
+        specifier: workspace:*
+        version: link:../macros
+      '@vue-jsx/runtime':
+        specifier: workspace:*
+        version: link:../runtime
       '@vue/shared':
         specifier: 'catalog:'
         version: 3.6.0-rc.5
@@ -313,15 +313,15 @@ importers:
 
   packages/vue-jsx-vapor:
     dependencies:
-      '@vue-jsx-vapor/macros':
-        specifier: workspace:*
-        version: link:../macros
-      '@vue-jsx-vapor/runtime':
-        specifier: workspace:*
-        version: link:../runtime
       '@vue-jsx/compiler':
         specifier: workspace:*
         version: link:../compiler
+      '@vue-jsx/macros':
+        specifier: workspace:*
+        version: link:../macros
+      '@vue-jsx/runtime':
+        specifier: workspace:*
+        version: link:../runtime
       '@vue/shared':
         specifier: 'catalog:'
         version: 3.6.0-rc.5

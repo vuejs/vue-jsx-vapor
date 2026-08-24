@@ -8,7 +8,7 @@
     "preview": "vitepress preview"
   },
   "dependencies": {
-    "@vue-jsx-vapor/eslint": "workspace:*",
+    "@vue-jsx/eslint": "workspace:*",
     "@vue/theme": "^2.4.0",
     "chart.js": "latest",
     "chartjs-plugin-datalabels": "latest",
