@@ -129,6 +129,9 @@ importers:
       '@vue-jsx/eslint':
         specifier: workspace:*
         version: link:../packages/eslint
+      '@vue-jsx/macros':
+        specifier: workspace:*
+        version: link:../packages/macros
       '@vue/theme':
         specifier: ^2.4.0
         version: 2.4.0(@algolia/client-search@5.48.0)(search-insights@2.17.3)(vitepress@2.0.0-alpha.16(@types/node@25.6.0)(change-case@5.4.4)(jiti@2.6.1)(lightningcss@1.32.0)(postcss@8.5.20)(terser@5.39.0)(typescript@6.0.3)(yaml@2.8.2))(vue@3.6.0-rc.5(typescript@6.0.3))

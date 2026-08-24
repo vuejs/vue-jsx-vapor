@@ -1,8 +1,8 @@
 {
   "name": "@vue-jsx/runtime",
   "type": "module",
-  "version": "3.2.22",
-  "description": "Vue JSX Vapor Runtime",
+  "version": "3.3.0-beta.0",
+  "description": "Vue JSX Runtime",
   "license": "MIT",
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
   "repository": {
