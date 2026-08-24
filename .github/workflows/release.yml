@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - main
+      - minor
     tags-ignore:
       - '**'
     paths-ignore:
@@ -424,13 +425,19 @@ jobs:
       - name: Publish
         run: |
           npm config set provenance true
-          if git log -1 --pretty=%B | grep "v\?[0-9]\+\.[0-9]\+\.[0-9]\+$";
+          if git log -1 --pretty=%B | grep -E "v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$";
           then
-            npm publish --access public
+            if [ "$GITHUB_REF_NAME" = "minor" ]; then
+              NPM_TAG=beta
+            else
+              NPM_TAG=latest
+            fi
+            export npm_config_tag="$NPM_TAG"
+            npm publish --access public --tag "$NPM_TAG"
             cd ../../
             pnpm install --no-frozen-lockfile
             pnpm run --filter="./packages/*" --filter="!compiler" --parallel build
-            pnpm publish --filter="./packages/*" --filter="!compiler" --access public --no-git-checks
+            pnpm publish --filter="./packages/*" --filter="!compiler" --access public --no-git-checks --tag "$NPM_TAG"
           else
             echo "Not a release, skipping publish"
           fi
