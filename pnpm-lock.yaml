@@ -108,7 +108,7 @@ importers:
       '@vue-jsx-vapor/babel':
         specifier: 2.6.8
         version: 2.6.8
-      '@vue-jsx-vapor/compiler':
+      '@vue-jsx/compiler':
         specifier: workspace:*
         version: link:../packages/compiler
       '@vue/babel-plugin-jsx':
@@ -261,15 +261,15 @@ importers:
 
   packages/vue-jsx:
     dependencies:
-      '@vue-jsx-vapor/compiler':
-        specifier: workspace:*
-        version: link:../compiler
       '@vue-jsx-vapor/macros':
         specifier: workspace:*
         version: link:../macros
       '@vue-jsx-vapor/runtime':
         specifier: workspace:*
         version: link:../runtime
+      '@vue-jsx/compiler':
+        specifier: workspace:*
+        version: link:../compiler
       '@vue/shared':
         specifier: 'catalog:'
         version: 3.6.0-rc.5
@@ -313,15 +313,15 @@ importers:
 
   packages/vue-jsx-vapor:
     dependencies:
-      '@vue-jsx-vapor/compiler':
-        specifier: workspace:*
-        version: link:../compiler
       '@vue-jsx-vapor/macros':
         specifier: workspace:*
         version: link:../macros
       '@vue-jsx-vapor/runtime':
         specifier: workspace:*
         version: link:../runtime
+      '@vue-jsx/compiler':
+        specifier: workspace:*
+        version: link:../compiler
       '@vue/shared':
         specifier: 'catalog:'
         version: 3.6.0-rc.5

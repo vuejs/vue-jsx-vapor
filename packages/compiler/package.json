@@ -1,7 +1,7 @@
 {
-  "name": "@vue-jsx-vapor/compiler",
+  "name": "@vue-jsx/compiler",
   "version": "3.2.22",
-  "description": "Template project for writing node package with napi-rs",
+  "description": "Vue JSX Compiler",
   "license": "MIT",
   "repository": {
     "url": "git+https://github.com/vuejs/vue-jsx-vapor.git",

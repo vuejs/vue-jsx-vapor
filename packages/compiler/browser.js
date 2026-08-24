@@ -1,1 +1,1 @@
-export * from '@vue-jsx-vapor/compiler-wasm32-wasi'
+export * from '@vue-jsx/compiler-wasm32-wasi'

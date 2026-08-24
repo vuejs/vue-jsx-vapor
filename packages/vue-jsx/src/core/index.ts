@@ -1,4 +1,4 @@
-import { transform, type CompilerOptions } from '@vue-jsx-vapor/compiler'
+import { transform, type CompilerOptions } from '@vue-jsx/compiler'
 
 export type { CompilerOptions }
 
