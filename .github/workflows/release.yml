@@ -221,10 +221,10 @@ jobs:
             whoami
             env
             freebsd-version
-            pnpm install
-            pnpm build
+            pnpm install --filter @vue-jsx/compiler...
+            pnpm --filter @vue-jsx/compiler build
             rm -rf node_modules
-            rm -rf target
+            rm -rf packages/compiler/target
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
