@@ -41,31 +41,37 @@ export interface Hmr {
 export interface CompilerOptions {
   onError?: (arg: object) => void
   onWarn?: (arg: object) => void
-  /** * Generate source map?
+  /**
+   * Generate source map?
    * @default false
    */
   sourceMap?: boolean
-  /** * Filename for source map generation.
+  /**
+   * Filename for source map generation.
    * Also used for self-recursive reference in templates
    * @default 'index.jsx'
    */
   filename?: string
-  /** * When enabled, JSX within `defineVaporComponent` is transformed to Vapor DOM,
+  /**
+   * When enabled, JSX within `defineVaporComponent` is transformed to Vapor DOM,
    * while all other JSX is transformed to Virtual DOM.
    */
   interop?: boolean
-  /** * Enabled HMR support.
+  /**
+   * Enabled HMR support.
    * - `true`/`false`: a boolean to simply enable/disable HMR. When `true`, HMR
    *   is enabled with default configuration.
    * - `Hmr`: an object to enable HMR with custom configuration.
    * @default false
    */
   hmr?: boolean | Hmr
-  /** * Enabled SSR support.
+  /**
+   * Enabled SSR support.
    * @default false
    */
   ssr?: boolean
-  /** * Whether to enable compiler optimizations, including:
+  /**
+   * Whether to enable compiler optimizations, including:
    * - **Slots**: Detect if slots are stable for more efficient updates.
    * - **Cache**: Cache event handler to avoid recreating closures on each render.
    * - **Block**: Enable block tree optimizations.
@@ -74,10 +80,21 @@ export interface CompilerOptions {
    * @default true
    */
   optimize?: boolean
-  /** * Customize where to import runtime helpers from vue-jsx-vapor.
+  /**
+   * Customize where to import runtime helpers from vue-jsx-vapor.
    * If not specified, defaults to the virtual module path (e.g., `/vue-jsx-vapor/vapor`).
    */
   runtimeModuleName?: string
+  /**
+   * Whether to merge props when using JSXSpreadAttribute.
+   * - `true`: Use Vue's `mergeProps` behavior
+   *   - Event listeners (`onXxx`) are merged into an array
+   *   - `class` and `style` are normalized and merged
+   *   - Other props are overridden by later values
+   * - `false`: later props override earlier ones (like object spread)
+   * @default true
+   */
+  mergeProps?: boolean
 }
 
 export declare function transform(source: string, options?: CompilerOptions | undefined | null): TransformReturn

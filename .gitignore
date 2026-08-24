@@ -157,7 +157,7 @@ dist
 
 *.node
 *.wasm
-packages/compiler-rs/browser.js
+packages/compiler/browser.js
 
 ### Node Patch ###
 # Serverless Webpack directories

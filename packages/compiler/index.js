@@ -95,8 +95,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@vue-jsx-vapor/compiler-rs-android-arm-eabi')
-        const bindingPackageVersion = require('@vue-jsx-vapor/compiler-rs-android-arm-eabi/package.json').version
+        const binding = require('@vue-jsx-vapor/compiler-android-arm-eabi')
+        const bindingPackageVersion = require('@vue-jsx-vapor/compiler-android-arm-eabi/package.json').version
         if (bindingPackageVersion !== '3.2.22' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 3.2.22 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
