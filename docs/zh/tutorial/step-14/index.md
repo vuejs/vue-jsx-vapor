@@ -24,7 +24,7 @@ const apps = {
 
 <jsx-repl :files :apps prev="/zh/tutorial/step-13/" next="/zh/tutorial/step-done/">
 
-除了 JSX 之外，`vue-jsx-vapor` 还提供了 `h` 函数，可用于手动创建 Vapor 节点。这种写法通常被称为 HyperScript，适合在你想要更细粒度地控制节点创建时使用。
+除了 JSX 之外，`vue-jsx/vapor` 还提供了 `h` 函数，可用于手动创建 Vapor 节点。这种写法通常被称为 HyperScript，适合在你想要更细粒度地控制节点创建时使用。
 
 ## 基本用法
 
@@ -37,7 +37,7 @@ h(type, props?, children?)
 例如，下面的代码会创建一个简单的 `div`：
 
 ```tsx
-import { h } from 'vue-jsx'
+import { h } from 'vue-jsx/vapor'
 export default () => h('div', null, 'hello')
 ```
 

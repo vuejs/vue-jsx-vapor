@@ -38,6 +38,7 @@
     "./bun": "./dist/bun.js",
     "./unplugin": "./dist/unplugin.js",
     "./jsx-runtime": "./jsx-runtime/index.js",
+    "./vapor": "./dist/vapor.js",
     "./volar": "./dist/volar.js",
     "./*": "./*"
   },

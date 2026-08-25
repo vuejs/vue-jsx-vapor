@@ -24,7 +24,7 @@ const apps = {
 
 <jsx-repl :files :apps prev="/tutorial/step-13/" next="/tutorial/step-done/">
 
-Besides JSX, `vue-jsx-vapor` also provides an `h` function for manually creating Vapor nodes. This style is commonly called HyperScript, and it is useful when you want finer-grained control over node creation.
+Besides JSX, `vue-jsx/vapor` also provides an `h` function for manually creating Vapor nodes. This style is commonly called HyperScript, and it is useful when you want finer-grained control over node creation.
 
 ## Basic Usage
 
@@ -37,7 +37,7 @@ h(type, props?, children?)
 For example, the following code creates a simple `div`:
 
 ```tsx
-import { h } from 'vue-jsx'
+import { h } from 'vue-jsx/vapor'
 export default () => h('div', null, 'hello')
 ```
 

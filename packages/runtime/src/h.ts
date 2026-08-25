@@ -37,7 +37,7 @@ type RawSlots = Record<string, RawSlot>
 // manually written render functions.
 
 // element / custom element / resolve component
-export function h<K extends string>(
+export function vaporH<K extends string>(
   type: K,
   props?:
     | (RawProps &
@@ -49,28 +49,28 @@ export function h<K extends string>(
 ): Block
 
 // fragment
-export function h(
+export function vaporH(
   type: typeof Fragment,
   props?: ReservedProps | null,
   children?: RawChildren,
 ): Block
 
 // teleport (target prop is required)
-export function h(
+export function vaporH(
   type: typeof VaporTeleport,
   props: RawProps & TeleportProps,
   children: RawChildren | RawSlots,
 ): Block
 
 // suspense
-export function h(
+export function vaporH(
   type: typeof Suspense,
   props?: (RawProps & SuspenseProps) | null,
   children?: RawChildren | RawSlots,
 ): Block
 
 // functional component
-export function h<
+export function vaporH<
   P,
   E extends EmitsOptions = {},
   S extends Record<string, any> = RawSlots,
@@ -81,14 +81,14 @@ export function h<
 ): Block
 
 // catch all types
-export function h(
+export function vaporH(
   type: Component | VaporComponent,
   props?: RawProps,
   children?: RawChildren | RawSlots,
 ): Block
 
 /*@__NO_SIDE_EFFECTS__*/
-export function h(type: any, props?: any, children?: any): any {
+export function vaporH(type: any, props?: any, children?: any): any {
   const { props: resolvedProps, key, ref } = resolveProps(props)
   const render = () => {
     const comp = createComponent(
