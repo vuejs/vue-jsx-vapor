@@ -5,7 +5,7 @@ next: false
 ---
 
 # Expose
-  
+
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
@@ -36,13 +36,14 @@ const apps = {
 If you want to access a child component's state from the parent component, there are two ways to expose it:
 
 1. Use the expose function provided in the second context parameter of the functional component.
+
 ```jsx
 import { computed } from 'vue'
 
 const Comp = (props, { expose }) => {
   const double = computed(() => props.count * 2)
   expose({
-    double
+    double,
   })
   return []
 }
@@ -56,13 +57,14 @@ import { computed } from 'vue'
 const Comp = (props) => {
   const double = computed(() => props.count * 2)
   defineExpose({
-    double
+    double,
   })
   return []
 }
 ```
 
 ## Access exposed state
+
 We can use the `ref` prop to get the exposed state and use it later:
 
 ```jsx
@@ -84,12 +86,12 @@ We can also use the `useRef` api from `vue-jsx-vapor` to receive exposed state. 
 
 ```tsx twoslash
 import { computed } from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 
 const Comp = (props: { count: number }) => {
   const double = computed(() => props.count * 2)
   defineExpose({
-    double
+    double,
   })
   return []
 }
@@ -104,6 +106,7 @@ export default () => {
   )
 }
 ```
+
 :::
 
 Now try it yourself - set ref prop for `<Comp>`.

@@ -1,5 +1,5 @@
 import { Fragment, ref } from 'vue'
-import { h } from 'vue-jsx-vapor'
+import { h } from 'vue-jsx'
 
 export default () => {
   const count = ref(1)

@@ -267,7 +267,7 @@ export default () => (
 Functions identically to `defineExpose` in Vue SFCs.
 
 ```tsx twoslash
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 
 const Comp = <T,>({ foo = undefined as T }) => {
   defineExpose({
@@ -289,7 +289,7 @@ export default () => {
 
 ```tsx
 import { currentInstance } from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 import { useExpose } from '/vue-macros/jsx-macros/use-expose'
 
 const Comp = ({ foo }) => {

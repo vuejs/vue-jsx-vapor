@@ -19,7 +19,7 @@ import {
   type ExtractExposed,
   type HTMLAttributes,
   type SetupContextToProps,
-} from 'vue-jsx-vapor'
+} from 'vue-jsx'
 
 declare function expectType<T>(value: T): void
 

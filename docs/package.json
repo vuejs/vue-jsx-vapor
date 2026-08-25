@@ -15,7 +15,7 @@
     "chartjs-plugin-datalabels": "latest",
     "jsx-repl": "0.0.16",
     "vue": "catalog:",
-    "vue-jsx-vapor": "workspace:*"
+    "vue-jsx": "workspace:*"
   },
   "devDependencies": {
     "@shikijs/vitepress-twoslash": "^4.0.2",

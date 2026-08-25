@@ -14,7 +14,7 @@ export function getCurrentInstance():
  *
  * @example
  * ```tsx
- * import { useProps } from 'vue-jsx-vapor'
+ * import { useProps } from 'vue-jsx'
  *
  * defineComponent(({ foo = '' })=>{
  *   const props = useProps() // { foo: '' }
@@ -33,7 +33,7 @@ export function useProps() {
  *
  * @example
  * ```tsx
- * import { useFullProps } from 'vue-jsx-vapor'
+ * import { useFullProps } from 'vue-jsx'
  *
  * defineComponent((props) => {
  *   const fullProps = useFullProps() // = useAttrs() + useProps()

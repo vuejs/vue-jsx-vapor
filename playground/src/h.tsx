@@ -1,5 +1,5 @@
 import { computed, defineVaporComponent, Fragment, ref, shallowRef } from 'vue'
-import { h } from 'vue-jsx-vapor'
+import { h } from 'vue-jsx'
 
 const Comp = defineVaporComponent(
   (props: { type: 'input' | 'select' }, { attrs }: any) => {

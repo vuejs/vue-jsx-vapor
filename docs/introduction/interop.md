@@ -28,13 +28,8 @@ createApp(App).use(vaporInteropPlugin).mount('#app')
 ```
 
 ```tsx [App.tsx] twoslash
-import {
-  computed,
-  defineComponent,
-  defineVaporComponent,
-  ref,
-} from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+import { computed, defineComponent, defineVaporComponent, ref } from 'vue'
+import { useRef } from 'vue-jsx'
 
 const Comp = defineVaporComponent(({ count = 0 }) => {
   defineExpose({
@@ -85,13 +80,8 @@ createVaporApp(App).use(vaporInteropPlugin).mount('#app')
 ```
 
 ```tsx [App.tsx] twoslash
-import {
-  computed,
-  defineComponent,
-  defineVaporComponent,
-  ref,
-} from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+import { computed, defineComponent, defineVaporComponent, ref } from 'vue'
+import { useRef } from 'vue-jsx'
 
 const Comp = defineVaporComponent(({ count = 0 }) => {
   defineExpose({
@@ -105,7 +95,7 @@ export default defineComponent(() => {
   const compRef = useRef()
   return () => (
     <>
-      <input v-model={count.value}/>
+      <input v-model={count.value} />
       <Comp count={count.value} ref={compRef}></Comp>
       {compRef.value?.double}
     </>

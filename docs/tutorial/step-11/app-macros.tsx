@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 
 const Comp = (props: { count: number }) => {
   const double = computed(() => props.count * 2)

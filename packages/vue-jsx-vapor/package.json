@@ -37,8 +37,7 @@
     "./rolldown": "./dist/rolldown.js",
     "./bun": "./dist/bun.js",
     "./unplugin": "./dist/unplugin.js",
-    "./jsx-runtime": "./jsx-runtime/vapor.js",
-    "./vdom/jsx-runtime": "./jsx-runtime/vdom.js",
+    "./jsx-runtime": "./jsx-runtime/index.js",
     "./volar": "./dist/volar.js",
     "./*": "./*"
   },

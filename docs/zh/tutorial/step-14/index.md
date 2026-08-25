@@ -37,7 +37,7 @@ h(type, props?, children?)
 例如，下面的代码会创建一个简单的 `div`：
 
 ```tsx
-import { h } from 'vue-jsx-vapor'
+import { h } from 'vue-jsx'
 export default () => h('div', null, 'hello')
 ```
 

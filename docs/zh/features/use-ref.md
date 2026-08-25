@@ -6,7 +6,7 @@
 
 ```tsx twoslash
 import { defineVaporComponent } from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 // 或者
 // import { shallowRef as useRef } from 'vue'
 

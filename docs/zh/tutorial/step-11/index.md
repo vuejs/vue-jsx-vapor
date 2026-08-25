@@ -5,7 +5,7 @@ next: false
 ---
 
 # Expose
-  
+
 <script setup>
 import appCode from '~/tutorial/step-11/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-11/app-solved.tsx?raw'
@@ -36,13 +36,14 @@ const apps = {
 如果你想从父组件访问子组件的状态，有两种方式可以暴露它：
 
 1. 使用函数式组件第二个上下文参数中提供的 expose 函数。
+
 ```jsx
 import { computed } from 'vue'
 
 const Comp = (props, { expose }) => {
   const double = computed(() => props.count * 2)
   expose({
-    double
+    double,
   })
   return []
 }
@@ -56,13 +57,14 @@ import { computed } from 'vue'
 const Comp = (props) => {
   const double = computed(() => props.count * 2)
   defineExpose({
-    double
+    double,
   })
   return []
 }
 ```
 
 ## 访问暴露的状态
+
 我们可以使用 `ref` prop 来获取暴露的状态并在之后使用它：
 
 ```jsx
@@ -84,12 +86,12 @@ export default () => {
 
 ```tsx twoslash
 import { computed } from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 
 const Comp = (props: { count: number }) => {
   const double = computed(() => props.count * 2)
   defineExpose({
-    double
+    double,
   })
   return []
 }
@@ -104,6 +106,7 @@ export default () => {
   )
 }
 ```
+
 :::
 
 现在试试看 - 为 `<Comp>` 设置 ref prop。

@@ -1,5 +1,5 @@
 import { ref, watch } from 'vue'
-import { defineComponent, For } from 'vue-jsx-vapor'
+import { defineComponent, For } from 'vue-jsx'
 
 export default defineComponent(() => {
   const count = ref(1)

@@ -147,9 +147,9 @@ importers:
       vue:
         specifier: 'catalog:'
         version: 3.6.0-rc.5(typescript@6.0.3)
-      vue-jsx-vapor:
+      vue-jsx:
         specifier: workspace:*
-        version: link:../packages/vue-jsx-vapor
+        version: link:../packages/vue-jsx
     devDependencies:
       '@shikijs/vitepress-twoslash':
         specifier: ^4.0.2
