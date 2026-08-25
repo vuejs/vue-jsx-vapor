@@ -1,7 +1,7 @@
 {
   "name": "vue-jsx",
   "type": "module",
-  "version": "3.3.0-beta.0",
+  "version": "3.3.0-beta.1",
   "description": "High-performance Vue JSX Compiler powered by Oxc",
   "license": "MIT",
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",

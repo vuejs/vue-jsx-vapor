@@ -1,3 +1,13 @@
+# [3.3.0-beta.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.22...v3.3.0-beta.1) (2026-08-25)
+
+
+### Features
+
+* add vue-jsx package ([2b0cc1f](https://github.com/vuejs/vue-jsx-vapor/commit/2b0cc1ff18d2efb4e59a423d44e6abf677787d10))
+* expose vue-jsx/vapor ([89322ee](https://github.com/vuejs/vue-jsx-vapor/commit/89322ee4ad91f03b24b0893e9032bf35cdf78ef0))
+
+
+
 ## [3.2.22](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.21...v3.2.22) (2026-08-23)
 
 
