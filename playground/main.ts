@@ -15,9 +15,7 @@ mod.then(({ default: mod }) => {
     }
   } else {
     const app = createVaporApp(mod)
-    if (mod.name === 'interop') {
-      app.use(vaporInteropPlugin)
-    }
+    app.use(vaporInteropPlugin)
     app.mount('#app')
     // @ts-expect-error
     globalThis.unmount = () => {
