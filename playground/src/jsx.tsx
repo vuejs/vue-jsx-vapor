@@ -132,7 +132,7 @@ expectType<unknown>(_comp2Ref.value?.foo)
 const Comp2: FunctionalComponent<
   { id: 1 },
   {},
-  { default: (props: { id: 1 }) => any }
+  { default: (props: { id: 1 }) => [] }
 > = () => <div></div>
 ;<Comp2 id={1}>{(props) => props.id}</Comp2>
 
@@ -156,7 +156,7 @@ const Comp3: FunctionalVaporComponent<
 }
 ;<Comp3
   ref={(e) => {
-    expectType<VaporComponentInstance | Element | null>(e)
+    expectType<{ foo: string } | null>(e)
   }}
   id={1}
   onChange={(props) => props.id}
@@ -228,9 +228,11 @@ const Comp6 = defineVaporComponent((props: { foo: 1 }) => (
   <div></div>
 </Comp6>
 
-const _Comp6 = _defineVaporComponent<{ foo: 1 }, { foo: [1] }>((props) => (
-  <div>{props.foo}</div>
-))
+const _Comp6 = _defineVaporComponent(
+  (props: { foo: 1 }, _: { emit: EmitFn<{ foo: [1] }> }) => (
+    <div>{props.foo}</div>
+  ),
+)
 ;<_Comp6 foo={1} onFoo={(e) => expectType<1>(e)}>
   <div></div>
 </_Comp6>
@@ -241,7 +243,7 @@ const Comp7 = defineVaporComponent({
     {
       slots,
     }: {
-      slots: { default: (scope: { foo: 1 }) => any }
+      slots: { default: (scope: { foo: 1 }) => [] }
     },
   ) => {
     return (<slots.default foo={props.foo}>{props.foo}</slots.default>) as Block

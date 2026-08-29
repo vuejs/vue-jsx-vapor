@@ -20,34 +20,25 @@ import {
   type ComponentOptions,
   type ComponentOptionsBase,
   type ComponentOptionsMixin,
-  type ComponentPropsOptions,
   type ComponentProvideOptions,
-  type ComponentPublicInstance,
   type ComponentTypeEmits,
   type ComputedOptions,
   type CreateComponentPublicInstanceWithMixins,
+  type DefineComponent,
   type Directive,
   type EmitFn,
   type EmitsOptions,
   type EmitsToProps,
   type ExtractDefaultPropTypes,
   type ExtractPropTypes,
-  type GlobalComponents,
-  type GlobalDirectives,
   type MethodOptions,
   type PublicProps,
   type Slot,
   type SlotsType,
-  type TypeEmitsToOptions,
   type VNode,
   type VNodeChild,
 } from 'vue'
-import type {
-  EmitFnToProps,
-  IsKeyValues,
-  RenderResult,
-  SetupContextToProps,
-} from './types'
+import type { EmitFnToEmits, RenderResult, SetupContextToProps } from './types'
 
 const cacheMap = new WeakMap()
 
@@ -132,95 +123,6 @@ export const normalizeClass = (value: unknown) => _normalizeClass(value) || null
 
 type RenderFunction = () => RenderResult
 
-type ComponentPublicInstanceConstructor<
-  T extends ComponentPublicInstance<
-    Props,
-    RawBindings,
-    D,
-    C,
-    M
-  > = ComponentPublicInstance<any>,
-  Props = any,
-  RawBindings = any,
-  D = any,
-  C extends ComputedOptions = ComputedOptions,
-  M extends MethodOptions = MethodOptions,
-> = {
-  __isFragment?: never
-  __isTeleport?: never
-  __isSuspense?: never
-  new (...args: any[]): T
-}
-
-export type DefineComponent<
-  PropsOrPropOptions = {},
-  RawBindings = {},
-  D = {},
-  C extends ComputedOptions = ComputedOptions,
-  M extends MethodOptions = MethodOptions,
-  Mixin extends ComponentOptionsMixin = ComponentOptionsMixin,
-  Extends extends ComponentOptionsMixin = ComponentOptionsMixin,
-  E extends EmitsOptions = {},
-  EE extends string = string,
-  PP = PublicProps,
-  Props = Readonly<
-    PropsOrPropOptions extends ComponentPropsOptions
-      ? ExtractPropTypes<PropsOrPropOptions>
-      : PropsOrPropOptions
-  > &
-    EmitsToProps<E>,
-  Defaults = ExtractDefaultPropTypes<PropsOrPropOptions>,
-  S extends SlotsType = {},
-  LC extends Record<string, Component> = {},
-  Directives extends Record<string, Directive> = {},
-  Exposed extends string = string,
-  Provide extends ComponentProvideOptions = ComponentProvideOptions,
-  MakeDefaultsOptional extends boolean = true,
-  TypeRefs extends Record<string, unknown> = {},
-  TypeEl extends Element = any,
-> = ComponentPublicInstanceConstructor<
-  CreateComponentPublicInstanceWithMixins<
-    Props,
-    RawBindings,
-    D,
-    C,
-    M,
-    Mixin,
-    Extends,
-    E,
-    PP,
-    Defaults,
-    MakeDefaultsOptional,
-    {},
-    S,
-    LC & GlobalComponents,
-    Directives & GlobalDirectives,
-    Exposed,
-    TypeRefs,
-    TypeEl
-  >
-> &
-  ComponentOptionsBase<
-    Props,
-    RawBindings,
-    D,
-    C,
-    M,
-    Mixin,
-    Extends,
-    E,
-    EE,
-    Defaults,
-    {},
-    string,
-    S,
-    LC & GlobalComponents,
-    Directives & GlobalDirectives,
-    Exposed,
-    Provide
-  > &
-  PP
-
 export type DefineSetupFnComponent<
   P extends Record<string, any>,
   E extends EmitsOptions = {},
@@ -280,8 +182,8 @@ declare function _defineComponent<
     slots?: Slots
   },
 ): DefineSetupFnComponent<
-  Props & ([keyof Emits] extends [never] ? EmitFnToProps<Emit> : {}),
-  Emits,
+  Props,
+  [keyof Emits] extends [never] ? EmitFnToEmits<Emit> : Emits,
   Slots extends SlotsType ? Slots : SlotsType<Slots>,
   Exposed
 >
@@ -309,8 +211,8 @@ declare function _defineComponent<
     slots?: Slots
   },
 ): DefineSetupFnComponent<
-  Props & ([keyof Emits] extends [never] ? EmitFnToProps<Emit> : {}),
-  Emits,
+  Props,
+  [keyof Emits] extends [never] ? EmitFnToEmits<Emit> : Emits,
   Slots extends SlotsType ? Slots : SlotsType<Slots>,
   Exposed
 >
@@ -342,38 +244,23 @@ declare function _defineComponent<
   Provide extends ComponentProvideOptions = ComponentProvideOptions,
   // resolved types
   ResolvedEmits extends EmitsOptions = {} extends RuntimeEmitsOptions
-    ? TypeEmitsToOptions<TypeEmits>
+    ? EmitFnToEmits<EmitFn<TypeEmits>>
     : RuntimeEmitsOptions,
-  InferredProps = IsKeyValues<TypeProps> extends true
-    ? TypeProps
-    : string extends RuntimePropsKeys
-      ? ComponentObjectPropsOptions extends RuntimePropsOptions
-        ? {}
-        : ExtractPropTypes<RuntimePropsOptions>
-      : { [key in RuntimePropsKeys]?: any },
-  TypeRefs extends Record<string, unknown> = {},
-  TypeEl extends Element = any,
+  InferredProps = Readonly<
+    unknown extends TypeProps
+      ? string extends RuntimePropsKeys
+        ? ComponentObjectPropsOptions extends RuntimePropsOptions
+          ? {}
+          : ExtractPropTypes<RuntimePropsOptions>
+        : { [key in RuntimePropsKeys]?: any }
+      : TypeProps
+  > &
+    EmitsToProps<ResolvedEmits>,
 >(
   options: {
     props?: (RuntimePropsOptions & ThisType<void>) | RuntimePropsKeys[]
-    /**
-     * @private
-     */
-    __typeProps?: TypeProps
-    /**
-     * @private
-     */
-    __typeEmits?: TypeEmits
-    /**
-     * @private
-     */
-    __typeRefs?: TypeRefs
-    /**
-     * @private
-     */
-    __typeEl?: TypeEl
   } & ComponentOptionsBase<
-    Readonly<InferredProps> & EmitsToProps<ResolvedEmits>,
+    InferredProps,
     SetupBindings,
     Data,
     Computed,
@@ -393,7 +280,7 @@ declare function _defineComponent<
   > &
     ThisType<
       CreateComponentPublicInstanceWithMixins<
-        Readonly<InferredProps> & EmitsToProps<ResolvedEmits>,
+        InferredProps,
         SetupBindings,
         Data,
         Computed,
@@ -422,7 +309,7 @@ declare function _defineComponent<
   ResolvedEmits,
   RuntimeEmitsKeys,
   PublicProps,
-  Readonly<InferredProps> & EmitsToProps<ResolvedEmits>,
+  InferredProps & EmitsToProps<ResolvedEmits>,
   ExtractDefaultPropTypes<RuntimePropsOptions>,
   Slots,
   LocalComponents,
@@ -431,9 +318,7 @@ declare function _defineComponent<
   Provide,
   // MakeDefaultsOptional - if TypeProps is provided, set to false to use
   // user props types verbatim
-  unknown extends TypeProps ? true : false,
-  TypeRefs,
-  TypeEl
+  unknown extends TypeProps ? true : false
 >
 
 export const defineComponent = __defineComponent as typeof _defineComponent
