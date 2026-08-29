@@ -13,8 +13,12 @@ fn text() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createVNode as _createVNode } from "vue";
-  _createVNode(_Fragment, null, "foo");
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _openBlock(), _createElementBlock(_Fragment, null, [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))], 64);
+  })();
   "#);
 }
 

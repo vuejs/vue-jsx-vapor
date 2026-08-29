@@ -129,8 +129,12 @@ fn object_expression_children_with_computed_property() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { Fragment as _Fragment, createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
-  _openBlock(), _createBlock(Comp, null, { [foo]: () => _createVNode(_Fragment, null, "foo") }, 1024);
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(Comp, null, { [foo]: () => (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _openBlock(), _createElementBlock(_Fragment, null, [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))], 64);
+  })() }, 1024);
   "#);
 }
 

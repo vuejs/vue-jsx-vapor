@@ -1,4 +1,4 @@
-use common::ast::{RootNode, get_first_child};
+use common::ast::RootNode;
 use common::directive::Directives;
 pub use common::options::TransformOptions;
 use common::walk::WalkIdentifiers;
@@ -127,31 +127,6 @@ impl<'a> TransformContext<'a> {
 
   pub fn transform(self) -> Expression<'a> {
     let root_node = self.root_node.as_ptr();
-    if let JSXChild::Fragment(root_node) = unsafe { &*root_node }
-      && let Some(node) = root_node.children.first()
-      && let JSXChild::Fragment(frag) = node
-      && let Some(child) = get_first_child(&frag.children)
-      && let JSXChild::Text(child) = child
-    {
-      let ast = self.ast;
-      return ast.expression_call(
-        SPAN,
-        ast.expression_identifier(SPAN, ast.str(self.options.helper("_createVNode"))),
-        NONE,
-        ast.vec_from_array([
-          ast
-            .expression_identifier(SPAN, ast.str(self.options.helper("_Fragment")))
-            .into(),
-          ast.expression_null_literal(SPAN).into(),
-          self
-            .ast
-            .expression_string_literal(child.span, child.value, child.raw)
-            .into(),
-        ]),
-        false,
-      );
-    }
-
     unsafe {
       self.transform_node(root_node, None);
     }
