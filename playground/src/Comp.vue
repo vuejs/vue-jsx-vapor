@@ -1,5 +1,7 @@
 <script setup vapor lang="tsx">
-const Comp = () => <legend>Component</legend>
+import { defineVaporComponent } from 'vue'
+
+const Comp = defineVaporComponent(() => <legend>Component</legend>)
 </script>
 
 <template>

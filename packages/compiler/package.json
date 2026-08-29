@@ -1,5 +1,6 @@
 {
   "name": "@vue-jsx/compiler",
+  "type": "module",
   "version": "3.3.0-beta.1",
   "description": "Vue JSX Compiler",
   "license": "MIT",
