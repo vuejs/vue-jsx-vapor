@@ -15,7 +15,9 @@ mod.then(({ default: mod }) => {
     }
   } else {
     const app = createVaporApp(mod)
-    app.use(vaporInteropPlugin)
+    if (typeof mod !== 'function') {
+      app.use(vaporInteropPlugin)
+    }
     app.mount('#app')
     // @ts-expect-error
     globalThis.unmount = () => {

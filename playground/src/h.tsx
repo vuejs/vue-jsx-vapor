@@ -1,8 +1,29 @@
-import { computed, defineVaporComponent, Fragment, ref, shallowRef } from 'vue'
+import {
+  computed,
+  defineVaporComponent,
+  Fragment,
+  ref,
+  shallowRef,
+  type EmitFn,
+  type VaporComponentInstance,
+} from 'vue'
 import { h } from 'vue-jsx/vapor'
 
-const Comp = defineVaporComponent(
-  (props: { type: 'input' | 'select' }, { attrs }: any) => {
+function expectType<T>(_value: T): void {}
+
+const Comp = defineVaporComponent({
+  setup: (
+    props: { type: 'input' | 'select' | (string & {}) },
+    {
+      attrs,
+      expose,
+    }: {
+      attrs: any
+      slots: { default: (props: { id: 1 }) => [] }
+      expose: (exposed: { foo: 1 }) => void
+    },
+  ) => {
+    expose({ foo: 1 })
     const compRef = shallowRef()
     return h(Fragment, null, [
       // 1. JSX
@@ -29,27 +50,90 @@ const Comp = defineVaporComponent(
       ),
     ])
   },
-  {
-    props: {
-      type: { type: String, default: 'input' },
+  props: {
+    type: { type: String, default: 'input' },
+  },
+  components: {
+    ElInput: (props: { type: string }) => (
+      <div>
+        input: <slot type={props.type} />
+      </div>
+    ),
+    ElSelect: () => <div>select</div>,
+  },
+})
+
+const CompFn = defineVaporComponent(
+  (
+    props: { foo: 1 },
+    {
+      slots,
+    }: {
+      emit: EmitFn<{ foo: [1] }>
+      slots: { default: (props: { foo: 1 }) => [] }
+      expose: (exposed: { foo: 1 }) => void
     },
-    components: {
-      ElInput: (props: { type: string }) => (
-        <div>
-          input: <slot type={props.type} />
-        </div>
-      ),
-      ElSelect: () => <div>select</div>,
-    },
+  ) => {
+    return <div>Comp Fn{slots.default?.(props)}</div>
   },
 )
 
-export default () => {
+const FnComp = (
+  props: { foo: 1 },
+  {
+    slots,
+  }: {
+    emit: EmitFn<{ foo: [1] }>
+    expose: (exposed: { foo: 1 }) => void
+    slots: { default: (props: { foo: 1 }) => [] }
+  },
+) => {
+  return slots.default?.(props)
+}
+
+export default defineVaporComponent(() => {
   const type = ref('input')
   return (
     <>
       <input v-model={type.value} />
-      <Comp type={type.value}></Comp>
+      <Comp ref={(e) => e} type="input"></Comp>
+      {h(
+        Comp,
+        {
+          type: () => type.value,
+          // @ts-expect-error should error
+          type1: () => type.value,
+          ref: (e) => expectType<VaporComponentInstance | null>(e),
+        },
+        {
+          default: (props) => [expectType<1>(props.id)],
+        },
+      )}
+      {h(
+        CompFn,
+        {
+          foo: 1,
+          ref: (exposed) => expectType<1 | undefined>(exposed?.foo),
+        },
+        {
+          default: (props) => () => [() => expectType<1>(props.foo)],
+        },
+      )}
+      {h(
+        FnComp,
+        {
+          foo: 1,
+          onFoo: (e) => {
+            expectType<1>(e)
+          },
+          ref: (exposed) => expectType<1 | undefined>(exposed?.foo),
+        },
+        { default: (props) => [expectType<1>(props.foo)] },
+      )}
+      {h('input', {
+        ref: (element) => expectType<HTMLInputElement | null>(element),
+        onClick: (event) => expectType<MouseEvent>(event),
+      })}
     </>
   )
-}
+})

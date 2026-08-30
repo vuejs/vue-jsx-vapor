@@ -1,17 +1,18 @@
 import * as Vue from 'vue'
 import { createComponent, createProxyComponent, normalizeNode } from './vapor'
-import type { NodeChild } from './types'
+import type {
+  EmitFnToProps,
+  ExposedToProps,
+  NodeChild,
+  NodeRef,
+  SlotsToProps,
+} from './types'
 import type {
   Block,
-  Component,
-  EmitsOptions,
   Fragment,
-  FunctionalVaporComponent,
-  Ref,
   Suspense,
   SuspenseProps,
   TeleportProps,
-  VaporComponent,
   VaporComponentInstance,
   VaporTeleport,
 } from 'vue'
@@ -22,79 +23,119 @@ type HTMLElementEventHandler = {
   ) => any
 }
 
-type NodeRef =
-  | string
-  | Ref
-  | ((ref: Element | VaporComponentInstance, refs: Record<string, any>) => void)
-type ReservedProps = { key?: () => PropertyKey; ref?: NodeRef }
+type ReservedProps = { key?: () => PropertyKey }
 type RawProps = Record<string, any> & ReservedProps
 
-type RawSlot = (...args: any[]) => NodeChild<() => NodeChild>
-type RawChildren = NodeChild<() => NodeChild> | RawSlot
+type RawNodeChild = NodeChild<Block | (() => RawNodeChild)>
+type RawSlot = (...args: any[]) => RawNodeChild
+type RawChildren = RawNodeChild | RawSlot
 type RawSlots = Record<string, RawSlot>
 
-// The following is a series of overloads for providing props validation of
-// manually written render functions.
+type VaporHType =
+  | string
+  | typeof Fragment
+  | typeof Suspense
+  | typeof VaporTeleport
+  | ((...args: any[]) => any)
+  | (new (...args: any[]) => VaporComponentInstance)
 
-// element / custom element / resolve component
-export function vaporH<K extends string>(
-  type: K,
-  props?:
-    | (RawProps &
-        (K extends keyof HTMLElementTagNameMap ? HTMLElementEventHandler : {}))
-    | null,
-  children?: K extends keyof HTMLElementTagNameMap
-    ? RawChildren
-    : RawChildren | RawSlots,
-): Block
+type ResolveProps<T> =
+  T extends Record<string, any>
+    ? {
+        [K in keyof T]: T[K] | (() => T[K])
+      }
+    : T
 
-// fragment
-export function vaporH(
-  type: typeof Fragment,
-  props?: ReservedProps | null,
-  children?: RawChildren,
-): Block
+type ResolveSlots<T> = T extends (...args: infer Args) => any
+  ? (...args: Args) => RawNodeChild
+  : T extends Record<string, any>
+    ? {
+        [K in keyof T]?: ResolveSlots<T[K]>
+      }
+    : RawNodeChild
 
-// teleport (target prop is required)
-export function vaporH(
-  type: typeof VaporTeleport,
-  props: RawProps & TeleportProps,
-  children: RawChildren | RawSlots,
-): Block
-
-// suspense
-export function vaporH(
-  type: typeof Suspense,
-  props?: (RawProps & SuspenseProps) | null,
-  children?: RawChildren | RawSlots,
-): Block
-
-// functional component
-export function vaporH<
-  P,
-  E extends EmitsOptions = {},
-  S extends Record<string, any> = RawSlots,
->(
-  type: FunctionalVaporComponent<P, E, S>,
-  props?: (RawProps & P) | ({} extends P ? null : never),
-  children?: RawChildren | S,
-): Block
-
-// catch all types
-export function vaporH(
-  type: Component | VaporComponent,
-  props?: RawProps,
-  children?: RawChildren | RawSlots,
-): Block
+type VaporHArgs<T extends VaporHType> = T extends string
+  ? [
+      props?:
+        | (RawProps & {
+            ref?: NodeRef<
+              T extends keyof HTMLElementTagNameMap
+                ? HTMLElementTagNameMap[T]
+                : Element | VaporComponentInstance
+            >
+          } & (T extends keyof HTMLElementTagNameMap
+              ? HTMLElementEventHandler
+              : {}))
+        | null,
+      children?: T extends keyof HTMLElementTagNameMap
+        ? RawChildren
+        : RawChildren | RawSlots,
+    ]
+  : T extends typeof Fragment
+    ? [props?: ReservedProps | null, children?: RawChildren]
+    : T extends typeof Suspense
+      ? [
+          props?: (RawProps & SuspenseProps) | null,
+          children?: RawChildren | RawSlots,
+        ]
+      : T extends typeof VaporTeleport
+        ? [props: RawProps & TeleportProps, children: RawChildren | RawSlots]
+        : T extends new (...args: any[]) => infer Instance
+          ? Instance extends VaporComponentInstance
+            ? [
+                props?:
+                  | (ResolveProps<Omit<Instance['props'], 'ref'>> &
+                      ExposedToProps<
+                        string extends keyof NonNullable<Instance['exposed']>
+                          ? VaporComponentInstance
+                          : NonNullable<Instance['exposed']>
+                      >)
+                  | null,
+                children?: SlotsToProps<
+                  Instance['slots']
+                > extends infer SlotsProps
+                  ? 'v-slots' extends keyof SlotsProps
+                    ? ResolveSlots<SlotsProps['v-slots']>
+                    : RawChildren | RawSlots
+                  : RawChildren | RawSlots,
+              ]
+            : []
+          : T extends (
+                props: infer Props,
+                ctx: {
+                  slots: infer Slots extends Record<string, any>
+                  expose: (
+                    exposed: infer Exposed extends Record<string, any>,
+                  ) => void
+                  attrs: any
+                  emit: infer Emit
+                },
+              ) => any
+            ? [
+                props?:
+                  | (ResolveProps<Props> &
+                      EmitFnToProps<Emit> &
+                      ExposedToProps<Exposed>)
+                  | null,
+                children?: SlotsToProps<Slots> extends infer SlotsProps
+                  ? 'v-slots' extends keyof SlotsProps
+                    ? ResolveSlots<SlotsProps['v-slots']>
+                    : RawChildren | RawSlots
+                  : RawChildren | RawSlots,
+              ]
+            : never
 
 /*@__NO_SIDE_EFFECTS__*/
-export function vaporH(type: any, props?: any, children?: any): any {
+export function vaporH<T extends VaporHType>(
+  type: T,
+  ...[props, children]: VaporHArgs<T>
+): any {
   const { props: resolvedProps, key, ref } = resolveProps(props)
   const render = () => {
     const comp = createComponent(
-      type,
+      type as any,
       resolvedProps,
-      children
+      (children
         ? typeof children === 'object' && !Array.isArray(children)
           ? new Proxy(children, {
               get: (target, key, receiver) =>
@@ -106,26 +147,26 @@ export function vaporH(type: any, props?: any, children?: any): any {
           : {
               default:
                 typeof children === 'function'
-                  ? createProxyComponent(children, normalizeNode)
-                  : () => normalizeNode(children),
+                  ? createProxyComponent(children as any, normalizeNode)
+                  : () => normalizeNode(children as any),
             }
-        : undefined,
+        : undefined) as any,
     )
     if (ref) {
       const setRef = Vue.createTemplateRefSetter()
-      Vue.renderEffect(() => setRef(comp as any, ref!))
+      Vue.renderEffect(() => setRef(comp as any, ref as any))
     }
     return comp
   }
   return key ? Vue.createKeyedFragment(key, render) : render()
 }
 
-type ResolvedProps = {
-  props: Record<string, any>
-} & ReservedProps
 const EVENT_REGEX = /^on[A-Z]/
-function resolveProps(props?: Record<string, any>): ResolvedProps {
-  const resolvedProps: ResolvedProps = { props: {} }
+function resolveProps(props?: Record<string, any>) {
+  const resolvedProps: {
+    props: Record<string, any>
+    ref?: NodeRef<VaporComponentInstance>
+  } & ReservedProps = { props: {} }
   if (props) {
     // eslint-disable-next-line no-restricted-syntax
     for (const p in props) {
