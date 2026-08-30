@@ -6,14 +6,7 @@ use insta::assert_snapshot;
 
 #[test]
 fn simple_expression() {
-  let code = transform(
-    r#"<input v-model={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
@@ -26,14 +19,7 @@ fn simple_expression() {
 
 #[test]
 fn simple_expression_for_input_text() {
-  let code = transform(
-    r#"<input type="text" v-model={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input type="text" v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
@@ -49,14 +35,7 @@ fn simple_expression_for_input_text() {
 
 #[test]
 fn simple_expression_for_input_radio() {
-  let code = transform(
-    r#"<input type="radio" v-model={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input type="radio" v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelRadio as _vModelRadio, withDirectives as _withDirectives } from "vue";
@@ -72,14 +51,7 @@ fn simple_expression_for_input_radio() {
 
 #[test]
 fn simple_expression_for_input_checkbox() {
-  let code = transform(
-    r#"<input type="checkbox" v-model={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input type="checkbox" v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelCheckbox as _vModelCheckbox, withDirectives as _withDirectives } from "vue";
@@ -95,14 +67,7 @@ fn simple_expression_for_input_checkbox() {
 
 #[test]
 fn simple_expression_for_input_dynamic_type() {
-  let code = transform(
-    r#"<input type={foo} v-model={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input type={foo} v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelDynamic as _vModelDynamic, withDirectives as _withDirectives } from "vue";
@@ -119,14 +84,7 @@ fn simple_expression_for_input_dynamic_type() {
 
 #[test]
 fn input_with_dynamic_v_bind() {
-  let code = transform(
-    r#"<input {...obj} v-model={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input {...obj} v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, vModelDynamic as _vModelDynamic, withDirectives as _withDirectives } from "vue";
@@ -139,14 +97,7 @@ fn input_with_dynamic_v_bind() {
 
 #[test]
 fn simple_expression_for_select() {
-  let code = transform(
-    r#"<select v-model={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<select v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelSelect as _vModelSelect, withDirectives as _withDirectives } from "vue";
@@ -159,14 +110,7 @@ fn simple_expression_for_select() {
 
 #[test]
 fn simple_expression_for_textarea() {
-  let code = transform(
-    r#"<textarea v-model={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<textarea v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
@@ -179,14 +123,7 @@ fn simple_expression_for_textarea() {
 
 #[test]
 fn compound_expression() {
-  let code = transform(
-    r#"<input v-model={model[index]} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input v-model={model[index]} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
@@ -199,14 +136,7 @@ fn compound_expression() {
 
 #[test]
 fn component_with_argument() {
-  let code = transform(
-    r#"<Comp v-model:foo-value_foo={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp v-model:foo-value_foo={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
@@ -223,14 +153,7 @@ fn component_with_argument() {
 
 #[test]
 fn component_with_dynamic_argument() {
-  let code = transform(
-    r#"<Comp v-model:$value$={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp v-model:$value$={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
@@ -246,14 +169,7 @@ fn component_with_dynamic_argument() {
 
 #[test]
 fn should_not_cache_update_handler_if_it_refers_v_for_scope_variables() {
-  let code = transform(
-    r#"<input v-for={i in list} v-model={foo[i]} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input v-for={i in list} v-model={foo[i]} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": ($event) => foo[i] = $event }, null, 512)), [[_vModelText, foo[i]]])), 256);
@@ -262,14 +178,7 @@ fn should_not_cache_update_handler_if_it_refers_v_for_scope_variables() {
 
 #[test]
 fn should_not_cache_update_handler_if_it_inside_v_once() {
-  let code = transform(
-    r#"<div v-once><input v-model={foo} /></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-once><input v-model={foo} /></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementVNode as _createElementVNode, setBlockTracking as _setBlockTracking, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
@@ -284,10 +193,7 @@ fn should_not_cache_update_handler_if_it_inside_v_once() {
 fn should_mark_update_handler_dynamic_if_it_refers_slot_scope_variables() {
   let code = transform(
     r#"<Comp v-slot={{ foo }}><input v-model={foo.bar}/></Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -301,14 +207,7 @@ fn should_mark_update_handler_dynamic_if_it_refers_slot_scope_variables() {
 
 #[test]
 fn should_generate_model_modifiers_for_component_v_model() {
-  let code = transform(
-    r#"<Comp v-model_trim_bar-baz={foo} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp v-model_trim_bar-baz={foo} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
@@ -330,10 +229,7 @@ fn should_generate_model_modifiers_for_component_v_model() {
 fn should_generate_model_modifiers_for_component_v_model_with_arguments() {
   let code = transform(
     r#"<Comp v-model:foo_trim={foo} v-model:bar_number={bar} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -355,14 +251,7 @@ fn should_generate_model_modifiers_for_component_v_model_with_arguments() {
 
 #[test]
 fn should_generate_model_modifiers_dollar_for_component_v_model_model_with_arguments() {
-  let code = transform(
-    r#"<Comp v-model:model_trim={foo} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp v-model:model_trim={foo} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
@@ -379,14 +268,7 @@ fn should_generate_model_modifiers_dollar_for_component_v_model_model_with_argum
 
 #[test]
 fn modifiers_number() {
-  let code = transform(
-    r#"<input v-model_number={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input v-model_number={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
@@ -404,14 +286,7 @@ fn modifiers_number() {
 
 #[test]
 fn modifiers_trim() {
-  let code = transform(
-    r#"<input v-model_trim={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input v-model_trim={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
@@ -429,14 +304,7 @@ fn modifiers_trim() {
 
 #[test]
 fn modifiers_lazy() {
-  let code = transform(
-    r#"<input v-model_lazy={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input v-model_lazy={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
@@ -459,10 +327,7 @@ fn v_model_with_event() {
       <Comp v-model={model} onUpdate:modelValue={foo} />
       <Comp onUpdate:modelValue={foo} v-model={model} />
     </>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -487,7 +352,6 @@ fn should_raise_error_if_plain_elements_with_argument() {
   transform(
     r#"<input v-model:value={model} />"#,
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -503,7 +367,6 @@ fn should_raise_error_if_invalid_element() {
   transform(
     r#"<span v-model={model} />"#,
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -519,7 +382,6 @@ fn should_raise_error_if_used_file_input_element() {
   transform(
     r#"<input type="file" v-model={test}/>"#,
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -535,7 +397,6 @@ fn should_error_on_dynamic_value_binding_alongside_v_model() {
   transform(
     r#"<input v-model={test} value={test}/>"#,
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -547,14 +408,7 @@ fn should_error_on_dynamic_value_binding_alongside_v_model() {
 
 #[test]
 fn should_not_error_on_static_value_binding_alongside_v_model() {
-  let code = transform(
-    r#"<input v-model={test} value="test"/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input v-model={test} value="test"/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
@@ -570,14 +424,7 @@ fn should_not_error_on_static_value_binding_alongside_v_model() {
 
 #[test]
 fn should_allow_usage_on_custom_element() {
-  let code = transform(
-    r#"<my-input v-model={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<my-input v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
@@ -598,7 +445,6 @@ fn should_error_if_mal_formed_expression() {
   transform(
     r#"<input v-model={a + b} />"#,
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -612,10 +458,7 @@ fn should_error_if_mal_formed_expression() {
 fn array_args() {
   let code = transform(
     "<Comp v-model={[foo, bar, ['modify1', 'modify2']]} />",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -637,14 +480,7 @@ fn array_args() {
 
 #[test]
 fn array_args_with_modifiers() {
-  let code = transform(
-    "<Comp v-model={[foo, ['modify1', 'modify2']]} />",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<Comp v-model={[foo, ['modify1', 'modify2']]} />", None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
@@ -666,10 +502,7 @@ fn array_args_with_modifiers() {
 fn array_args_with_arg() {
   let code = transform(
     "<Comp v-model:foo_m1={[foo, bar, ['modify1', 'modify2']]} />",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"

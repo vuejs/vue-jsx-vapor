@@ -1,4 +1,4 @@
-use compiler::transform;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
@@ -12,7 +12,10 @@ fn child_nth_child_next_with_placeholder_alignment() {
       <div v-if="true" />
     </div>
     "#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -45,7 +48,10 @@ fn child_with_placeholder_alignment_when_prepend_exists_and_insert_anchor_needed
       <Comp2 />
       <span />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -76,7 +82,10 @@ fn multiple_prepends_affect_placeholder_alignment() {
       <Comp3 />
       <span />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -107,7 +116,10 @@ fn set_insertion_state_scenarios_single_component_prepend() {
       <Comp />
       <span>A</span>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -133,7 +145,10 @@ fn set_insertion_state_scenarios_multiple_consecutive_prepend() {
       <Comp2 />
       <span>A</span>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -162,7 +177,10 @@ fn set_insertion_state_scenarios_single_component_insert_in_middle() {
       <Comp />
       <p>B</p>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -189,7 +207,10 @@ fn set_insertion_state_scenarios_multiple_consecutive_insert_in_middle() {
       <Comp2 />
       <p>B</p>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -217,7 +238,10 @@ fn set_insertion_state_scenarios_single_component_append() {
       <span>A</span>
       <Comp />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -242,7 +266,10 @@ fn set_insertion_state_scenarios_multiple_consecutive_append() {
       <Comp1 />
       <Comp2 />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -267,7 +294,10 @@ fn set_insertion_state_scenarios_only_component_append_with_placeholder_alignmen
     "<div>
       <Comp />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -292,7 +322,10 @@ fn set_insertion_state_scenarios_mixed_scenarios_prepend_and_append() {
       <span>A</span>
       <Comp2 />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -322,7 +355,10 @@ fn set_insertion_state_scenarios_mixed_scenarios_prepend_and_insert_and_append()
       <p>B</p>
       <Comp3 />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -352,7 +388,10 @@ fn set_insertion_state_scenarios_v_if_prepend() {
       <div v-if={show} />
       <span>A</span>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -381,7 +420,10 @@ fn set_insertion_state_scenarios_v_if_insert() {
       <div v-if={show} />
       <p>B</p>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -409,7 +451,10 @@ fn set_insertion_state_scenarios_v_if_append() {
       <span>A</span>
       <div v-if={show} />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -436,7 +481,10 @@ fn set_insertion_state_scenarios_v_for_prepend() {
       <div v-for={i in list} key={i} />
       <span>A</span>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -464,7 +512,10 @@ fn set_insertion_state_scenarios_v_for_append() {
       <span>A</span>
       <div v-for={i in list} key={i} />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -491,7 +542,10 @@ fn set_insertion_state_scenarios_key_prepend() {
       <div key={i} />
       <span>A</span>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -519,7 +573,10 @@ fn set_insertion_state_scenarios_key_append() {
       <span>A</span>
       <div key={i} />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -547,7 +604,10 @@ fn set_insertion_state_scenarios_key_in_middle() {
       <div key={id} />
       <span>B</span>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -575,7 +635,10 @@ fn set_insertion_state_scenarios_slot_prepend() {
       <slot />
       <span>A</span>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -599,7 +662,10 @@ fn set_insertion_state_scenarios_slot_append() {
       <span>A</span>
       <slot />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -624,7 +690,10 @@ fn set_insertion_state_scenarios_v_if_with_v_else_should_share_same_placeholder_
       <div v-else>else</div>
       <p>B</p>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -660,7 +729,10 @@ fn set_insertion_state_scenarios_v_if_with_v_else_if_and_v_else_should_share_sam
       <div v-else>else</div>
       <p>B</p>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -697,7 +769,10 @@ fn set_insertion_state_scenarios_v_if_and_v_else_prepend() {
       <div v-else>else</div>
       <span>A</span>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -730,7 +805,10 @@ fn set_insertion_state_scenarios_v_if_and_v_else_append() {
       <div v-if={show}>if</div>
       <div v-else>else</div>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -763,7 +841,10 @@ fn set_insertion_state_scenarios_v_if_and_v_else_followed_by_component() {
       <div v-else>else</div>
       <Comp />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -799,7 +880,10 @@ fn set_insertion_state_scenarios_component_followed_by_v_if_v_else() {
       <div v-else>else</div>
       <span>A</span>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -837,7 +921,10 @@ fn set_insertion_state_scenarios_component_and_v_if_v_else_and_component() {
       <div v-else>else</div>
       <Comp2 />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 

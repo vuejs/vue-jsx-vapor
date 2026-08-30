@@ -1,4 +1,4 @@
-use compiler::transform;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
@@ -9,7 +9,10 @@ fn static_template() {
       <input />
       <span />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -24,7 +27,14 @@ fn static_template() {
 
 #[test]
 fn interpolation() {
-  let code = transform("<>{ 1 }{ 2 }{a +b +       c }</>", None).code;
+  let code = transform(
+    "<>{ 1 }{ 2 }{a +b +       c }</>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -36,7 +46,14 @@ fn interpolation() {
 
 #[test]
 fn on_consecutive_text() {
-  let code = transform("<>{ \"hello world\" }</>", None).code;
+  let code = transform(
+    "<>{ \"hello world\" }</>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -48,7 +65,14 @@ fn on_consecutive_text() {
 
 #[test]
 fn consecutive_text() {
-  let code = transform("<>{ msg }  <div/></>", None).code;
+  let code = transform(
+    "<>{ msg }  <div/></>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
@@ -63,7 +87,14 @@ fn consecutive_text() {
 
 #[test]
 fn escapes_raw_static_text() {
-  let code = transform("<div>&nbsp;</div>", None).code;
+  let code = transform(
+    "<div>&nbsp;</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
 
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
@@ -81,7 +112,10 @@ fn escapes_raw_static_text_when_generating_the_template_string() {
     "<code>
       &nbsp;&lt;script&gt;&nbsp;
     </code>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -96,7 +130,14 @@ fn escapes_raw_static_text_when_generating_the_template_string() {
 
 #[test]
 fn should_not_escape_quotes_in_root_level_text_nodes() {
-  let code = transform(r#"<>Howdy y'all</>"#, None).code;
+  let code = transform(
+    r#"<>Howdy y'all</>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("Howdy y'all", 2);
@@ -109,7 +150,14 @@ fn should_not_escape_quotes_in_root_level_text_nodes() {
 
 #[test]
 fn should_not_escape_double_quotes_in_root_level_text_nodes() {
-  let code = transform(r#"<>Say "hello"</>"#, None).code;
+  let code = transform(
+    r#"<>Say "hello"</>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("Say \"hello\"", 2);
@@ -123,7 +171,14 @@ fn should_not_escape_double_quotes_in_root_level_text_nodes() {
 #[test]
 fn should_not_escape_quotes_in_template_v_if_text() {
   // Text inside <template> tag also goes through createNode()
-  let code = transform(r#"<template v-if="ok">Howdy y'all</template>"#, None).code;
+  let code = transform(
+    r#"<template v-if="ok">Howdy y'all</template>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
   const _t0 = _template("Howdy y'all", 2);
@@ -140,7 +195,14 @@ fn should_not_escape_quotes_in_template_v_if_text() {
 #[test]
 fn should_not_escape_quotes_in_component_slot_text() {
   // Text inside component (slot content) also goes through createNode()
-  let code = transform("<Comp>Howdy y'all</Comp>", None).code;
+  let code = transform(
+    "<Comp>Howdy y'all</Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
@@ -157,7 +219,14 @@ fn should_not_escape_quotes_in_component_slot_text() {
 
 #[test]
 fn text_like() {
-  let code = transform("<div>{ (2) }{`foo${1}`}{1}{1n}</div>", None).code;
+  let code = transform(
+    "<div>{ (2) }{`foo${1}`}{1}{1n}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<div>2foo111", 1);
@@ -172,7 +241,10 @@ fn text_like() {
 fn conditional_expression() {
   let code = transform(
     "<>{ok? (<span>{msg}</span>) : fail ? (<div>fail</div>)  : null }</>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -200,7 +272,14 @@ fn conditional_expression() {
 
 #[test]
 fn multiple_conditional() {
-  let code = transform("<>{ok? ok : fail} {foo ? foo : <span />}</>", None).code;
+  let code = transform(
+    "<>{ok? ok : fail} {foo ? foo : <span />}</>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template } from "vue";
@@ -233,7 +312,14 @@ fn multiple_conditional() {
 
 #[test]
 fn logical_expression() {
-  let code = transform("<>{ok && (<div>{msg}</div>)}</>", None).code;
+  let code = transform(
+    "<>{ok && (<div>{msg}</div>)}</>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template, txt as _txt } from "vue";
@@ -252,7 +338,14 @@ fn logical_expression() {
 
 #[test]
 fn logical_expression_or() {
-  let code = transform(r#"<div>{foo || <div>{foo}</div>}</div>"#, None).code;
+  let code = transform(
+    r#"<div>{foo || <div>{foo}</div>}</div>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template, txt as _txt } from "vue";
@@ -273,7 +366,14 @@ fn logical_expression_or() {
 
 #[test]
 fn logical_expression_coalesce() {
-  let code = transform(r#"<div>{foo ?? <div>{foo}</div>}</div>"#, None).code;
+  let code = transform(
+    r#"<div>{foo ?? <div>{foo}</div>}</div>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { template as _template, txt as _txt } from "vue";
@@ -302,7 +402,10 @@ fn expression_map() {
         return [<span>({index}) lt 1</span>, <br />]
       }
     })}</>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -343,7 +446,10 @@ fn expression_with_comment() {
       {/**/}
       <a></a>
     </div>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -361,7 +467,14 @@ fn expression_with_comment() {
 
 #[test]
 fn slot_interpolation() {
-  let code = transform(r#"<Comp>{Hello}</Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp>{Hello}</Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -373,7 +486,14 @@ fn slot_interpolation() {
 
 #[test]
 fn slot_literal_interpolation() {
-  let code = transform(r#"<Comp>{ "Hello" }</Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp>{ "Hello" }</Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { extend as _extend } from "vue";
@@ -389,7 +509,14 @@ fn slot_literal_interpolation() {
 
 #[test]
 fn fragment_with_interpolation() {
-  let code = transform(r#"<>Message: { "Hello" }!</>"#, None).code;
+  let code = transform(
+    r#"<>Message: { "Hello" }!</>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -406,7 +533,10 @@ fn fragment_with_empty_interpolation() {
       Parent
       {/* ... */}
     </>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"

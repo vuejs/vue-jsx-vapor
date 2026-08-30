@@ -1,9 +1,16 @@
-use compiler::transform;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
 fn static_ref() {
-  let code = transform("<div ref=\"foo\" />", None).code;
+  let code = transform(
+    "<div ref=\"foo\" />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createTemplateRefSetter as _createTemplateRefSetter, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -18,7 +25,14 @@ fn static_ref() {
 
 #[test]
 fn dynamic_ref() {
-  let code = transform("<div ref={foo} />", None).code;
+  let code = transform(
+    "<div ref={foo} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -41,7 +55,10 @@ fn function_ref() {
         console.log(foo.value, baz)
       }} />
   </Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -66,7 +83,14 @@ fn function_ref() {
 
 #[test]
 fn ref_v_if() {
-  let code = transform("<div ref={foo} v-if={true} />", None).code;
+  let code = transform(
+    "<div ref={foo} v-if={true} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -84,7 +108,14 @@ fn ref_v_if() {
 
 #[test]
 fn ref_v_for() {
-  let code = transform("<div ref={foo} v-for={item in [1,2,3]} />", None).code;
+  let code = transform(
+    "<div ref={foo} v-for={item in [1,2,3]} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createFor as _createFor, createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
   const _t0 = _template("<div>");

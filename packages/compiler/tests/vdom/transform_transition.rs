@@ -1,4 +1,4 @@
-use compiler::{TransformOptions, transform};
+use compiler::transform;
 use insta::assert_snapshot;
 
 #[test]
@@ -7,10 +7,7 @@ fn basic() {
     r#"<Transition>
       <h1 v-show={show}>foo</h1>
     </Transition>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -28,10 +25,7 @@ fn v_show_with_appear() {
     r#"<Transition appear onAppear={() => {}}>
       <h1 v-show={show}>foo</h1>
     </Transition>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -57,10 +51,7 @@ fn work_with_v_if() {
     r#"<Transition>
       <h1 v-if={show}>foo</h1>
     </Transition>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -79,10 +70,7 @@ fn transition_work_with_dynamic_keyed_children() {
     "<Transition>
       <h1 key={foo}>foo</h1>
     </Transition>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -100,10 +88,7 @@ fn does_not_inject_persisted_when_v_if_owns_a_v_show_child() {
     "<Transition>
       <h1 v-if={show} v-show={true} />
     </Transition>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"

@@ -1,4 +1,4 @@
-use compiler::transform;
+use compiler::{TransformOptions, transform};
 use criterion::{Criterion, criterion_group, criterion_main};
 
 fn bench_vapor(b: &mut Criterion) {
@@ -33,7 +33,17 @@ fn bench_vapor(b: &mut Criterion) {
       .repeat(12)
   );
 
-  b.bench_function("vapor", |b| b.iter(|| transform(&source, None)));
+  b.bench_function("vapor", |b| {
+    b.iter(|| {
+      transform(
+        &source,
+        Some(TransformOptions {
+          vapor: true,
+          ..Default::default()
+        }),
+      )
+    })
+  });
 }
 
 criterion_group!(benches, bench_vapor);

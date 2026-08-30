@@ -1,9 +1,16 @@
-use compiler::transform;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
 fn basic() {
-  let code = transform("<div v-example></div>", None).code;
+  let code = transform(
+    "<div v-example></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const _t0 = _template("<div>", 1);
@@ -18,7 +25,14 @@ fn basic() {
 
 #[test]
 fn binding_value() {
-  let code = transform("<div v-example={msg}></div>", None).code;
+  let code = transform(
+    "<div v-example={msg}></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const _t0 = _template("<div>", 1);
@@ -33,7 +47,14 @@ fn binding_value() {
 
 #[test]
 fn object_literal_binding_value() {
-  let code = transform("<div v-example={{ value: msg, other: 1 }}></div>", None).code;
+  let code = transform(
+    "<div v-example={{ value: msg, other: 1 }}></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert!(code.contains("() => ({"));
   assert!(code.contains("value: msg"));
   assert!(code.contains("other: 1"));
@@ -54,7 +75,14 @@ fn object_literal_binding_value() {
 
 #[test]
 fn static_parameters() {
-  let code = transform("<div v-example:foo={msg}></div>", None).code;
+  let code = transform(
+    "<div v-example:foo={msg}></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const _t0 = _template("<div>", 1);
@@ -73,7 +101,14 @@ fn static_parameters() {
 
 #[test]
 fn modifiers() {
-  let code = transform("<div v-example_bar={msg}></div>", None).code;
+  let code = transform(
+    "<div v-example_bar={msg}></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const _t0 = _template("<div>", 1);
@@ -93,7 +128,14 @@ fn modifiers() {
 
 #[test]
 fn modifiers_with_binding() {
-  let code = transform("<div v-example_foo-bar></div>", None).code;
+  let code = transform(
+    "<div v-example_foo-bar></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const _t0 = _template("<div>", 1);
@@ -113,7 +155,14 @@ fn modifiers_with_binding() {
 
 #[test]
 fn static_argument_and_modifiers() {
-  let code = transform("<div v-example:foo_bar={msg}></div>", None).code;
+  let code = transform(
+    "<div v-example:foo_bar={msg}></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const _t0 = _template("<div>", 1);
@@ -133,7 +182,14 @@ fn static_argument_and_modifiers() {
 
 #[test]
 fn dynamic_argument() {
-  let code = transform("<div v-example:$foo$={msg}></div>", None).code;
+  let code = transform(
+    "<div v-example:$foo$={msg}></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const _t0 = _template("<div>", 1);
@@ -158,7 +214,10 @@ fn component() {
         <Bar v-hello_world />
       </div>
     </Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -191,7 +250,14 @@ fn component() {
 
 #[test]
 fn is_not_directive() {
-  let code = transform("<div vExample={msg}></div>", None).code;
+  let code = transform(
+    "<div vExample={msg}></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -210,7 +276,10 @@ fn should_not_resolve_directive() {
       const vExample = () => {}
       return <div v-example></div>
     }",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -231,7 +300,10 @@ fn should_not_resolve_directive() {
 fn array_args() {
   let code = transform(
     "<div v-example={[foo, bar, ['modify1', 'modify2']]} />",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -256,7 +328,14 @@ fn array_args() {
 
 #[test]
 fn array_args_with_modifiers() {
-  let code = transform("<div v-example={[foo, ['modify1', 'modify2']]} />", None).code;
+  let code = transform(
+    "<div v-example={[foo, ['modify1', 'modify2']]} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const _t0 = _template("<div>", 1);
@@ -281,7 +360,10 @@ fn array_args_with_modifiers() {
 fn array_args_with_arg() {
   let code = transform(
     "<div v-example:foo={[foo, bar, ['modify1', 'modify2']]} />",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"

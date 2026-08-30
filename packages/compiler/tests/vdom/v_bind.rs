@@ -1,17 +1,9 @@
-use common::options::TransformOptions;
 use compiler::transform;
 use insta::assert_snapshot;
 
 #[test]
 fn basic() {
-  let code = transform(
-    r#"<div id={id}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div id={id}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["id"];
@@ -21,14 +13,7 @@ fn basic() {
 
 #[test]
 fn no_expression() {
-  let code = transform(
-    r#"<div id />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div id />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { id: true };
@@ -40,25 +25,14 @@ fn no_expression() {
 fn empty_expression() {
   let code = transform("<div foo={}></div>", None).code;
   assert_snapshot!(code, @r#"
-  import { template as _template } from "vue";
-  const _t0 = _template("<div>", 3);
-  (() => {
-  	const _n0 = _t0();
-  	return _n0;
-  })();
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createElementBlock("div");
   "#);
 }
 
 #[test]
 fn shoud_not_error_if_empty_expression() {
-  let code = transform(
-    r#"<div arg="" />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div arg="" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { arg: "" };
@@ -68,14 +42,7 @@ fn shoud_not_error_if_empty_expression() {
 
 #[test]
 fn camel_modifier() {
-  let code = transform(
-    r#"<div foo-bar_camel={id} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div foo-bar_camel={id} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["fooBar"];
@@ -85,14 +52,7 @@ fn camel_modifier() {
 
 #[test]
 fn prop_modifier() {
-  let code = transform(
-    r#"<div foo-bar_prop={id} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div foo-bar_prop={id} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = [".foo-bar"];
@@ -102,14 +62,7 @@ fn prop_modifier() {
 
 #[test]
 fn attr_modifier() {
-  let code = transform(
-    r#"<div foo-bar_attr={id} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div foo-bar_attr={id} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["^foo-bar"];
@@ -121,10 +74,7 @@ fn attr_modifier() {
 fn starts_with_underline() {
   let code = transform(
     r#"<div _id_prop={id} __id_prop="" v-model:$_value_value$={model} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -145,14 +95,7 @@ fn starts_with_underline() {
 
 #[test]
 fn prevent_hoisted_expression_with_this() {
-  let code = transform(
-    r#"<div class={this.foo} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div class={this.foo} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
@@ -164,10 +107,7 @@ fn prevent_hoisted_expression_with_this() {
 fn prevent_cache_expression_with_this() {
   let code = transform(
     r#"<div onMousedown={this.onMousedown}>{this.foo}</div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -180,14 +120,7 @@ fn prevent_cache_expression_with_this() {
 
 #[test]
 fn jsx_in_expression_container() {
-  let code = transform(
-    r#"<><Comp foo={<div />} bar={() => <div />} /></>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<><Comp foo={<div />} bar={() => <div />} /></>"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock(_Fragment, null, [(_openBlock(), _createBlock(Comp, {
@@ -201,10 +134,7 @@ fn jsx_in_expression_container() {
 fn namespace_prop() {
   let code = transform(
     r#"<div xmlns:xlink="http://www.w3.org/1999/xlink" foo:bar={foo} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -219,14 +149,7 @@ fn namespace_prop() {
 
 #[test]
 fn deduped_props() {
-  let code = transform(
-    r#"<div foo="foo" foo={foo} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div foo="foo" foo={foo} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["foo"];

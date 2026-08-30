@@ -6,6 +6,7 @@ pub fn runtime_module_name() {
   let code = transform(
     "<div>{foo}</div>",
     Some(TransformOptions {
+      vapor: true,
       runtime_module_name: Some(String::from("vue-jsx-vapor")),
       ..Default::default()
     }),
@@ -29,6 +30,7 @@ pub fn filename() {
   let code = transform(
     "<div>{foo}</div>",
     Some(TransformOptions {
+      vapor: true,
       filename: "routes/index.tsx?tsr-split=component",
       ..Default::default()
     }),
@@ -52,7 +54,7 @@ pub fn optimize_slots() {
   let code = transform(
     "<Comp>{foo}</Comp>",
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       optimize: false,
       ..Default::default()
     }),
@@ -70,7 +72,7 @@ pub fn merge_props() {
   let code = transform(
     "<Comp {...foo} onClick={() => {}} />",
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       optimize: false,
       merge_props: false,
       ..Default::default()
@@ -88,7 +90,7 @@ pub fn merge_props_object() {
   let code = transform(
     "<Comp {...{ onClick: () => {} }} onClick={() => {}} />",
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       optimize: false,
       merge_props: false,
       ..Default::default()
@@ -106,7 +108,7 @@ fn merge_props_with_v_if() {
   let code = transform(
     r#"<button {...foo} v-if={true}></button>"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       merge_props: false,
       ..Default::default()
     }),

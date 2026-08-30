@@ -38,7 +38,7 @@ fn bench_vdom(b: &mut Criterion) {
       transform(
         &source,
         Some(TransformOptions {
-          interop: true,
+          vapor: false,
           ..Default::default()
         }),
       )

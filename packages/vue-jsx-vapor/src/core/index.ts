@@ -12,13 +12,13 @@ export function transformVueJsxVapor(
   ssr = false,
 ) {
   const params = new URLSearchParams(id)
-  const vapor = params.get('vapor')
+  const vapor = params.has('vapor')
   return transform(code, {
     filename: id,
     sourceMap: needSourceMap,
-    interop: vapor ? false : options?.interop,
     hmr: needHMR,
     ssr,
     ...options?.compiler,
+    vapor: vapor || options?.compiler?.vapor || !options?.interop,
   })
 }

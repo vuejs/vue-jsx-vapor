@@ -2,10 +2,9 @@ use std::cell::RefCell;
 
 use common::{
   error::ErrorCodes,
-  options::TransformOptions,
   patch_flag::{VaporBlockShape, VaporIfFlags},
 };
-use compiler::transform;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 const SINGLE_ROOT_NO_SCOPE: i32 =
@@ -13,7 +12,14 @@ const SINGLE_ROOT_NO_SCOPE: i32 =
 
 #[test]
 fn basic() {
-  let code = transform("<div v-if={ok}>{msg}</div>", None).code;
+  let code = transform(
+    "<div v-if={ok}>{msg}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template, txt as _txt } from "vue";
@@ -32,7 +38,14 @@ fn basic() {
 
 #[test]
 fn omits_default_single_root_flags_when_branch_needs_scope() {
-  let code = transform("<div v-if={ok}>{msg}</div>", None).code;
+  let code = transform(
+    "<div v-if={ok}>{msg}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template, txt as _txt } from "vue";
@@ -51,7 +64,14 @@ fn omits_default_single_root_flags_when_branch_needs_scope() {
 
 #[test]
 fn marks_pure_static_single_root_branch_as_no_scope() {
-  let code = transform("<div v-if={ok}>static</div>", None).code;
+  let code = transform(
+    "<div v-if={ok}>static</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
   const _t0 = _template("<div>static", 3);
@@ -70,7 +90,10 @@ fn marks_pure_static_single_root_branch_as_no_scope() {
 fn marks_pure_static_multi_root_branch_as_no_scope() {
   let code = transform(
     "<template v-if={ok}><div>one</div><p>two</p></template>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -105,7 +128,14 @@ fn does_not_mark_scoped_branches_as_no_scope() {
   ];
 
   for source in cases {
-    let code = transform(source, None).code;
+    let code = transform(
+      source,
+      Some(TransformOptions {
+        vapor: true,
+        ..Default::default()
+      }),
+    )
+    .code;
     assert!(
       !code.contains(&format!(", null, {SINGLE_ROOT_NO_SCOPE})")),
       "{source}"
@@ -122,7 +152,14 @@ fn does_not_mark_scoped_branches_as_no_scope() {
 
 #[test]
 fn packs_once_flag() {
-  let code = transform("<div v-if={ok} v-once />", None).code;
+  let code = transform(
+    "<div v-if={ok} v-once />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
   const _t0 = _template("<div>", 3);
@@ -138,7 +175,14 @@ fn packs_once_flag() {
 
 #[test]
 fn packs_branch_index() {
-  let code = transform("<><div v-if={foo}>foo</div><div v-else>bar</div></>", None).code;
+  let code = transform(
+    "<><div v-if={foo}>foo</div><div v-else>bar</div></>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
   const _t0 = _template("<div>foo", 2);
@@ -160,7 +204,10 @@ fn packs_branch_index() {
 fn template() {
   let code = transform(
     "<template v-if={ok}><div/>hello<p v-text={msg}></p></template>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -190,7 +237,10 @@ fn template() {
 fn v_if_and_extra_at_root() {
   let code = transform(
     r#"<><div v-if={foo}>foo</div><div v-else-if={bar}>bar</div><div>baz</div></>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -218,7 +268,10 @@ fn template_v_if_with_v_for() {
     r#"<template v-if={arr.length > 0} v-for={(item, index) in arr} key={index}>
       <div>item: { item }</div>
     </template>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -242,7 +295,14 @@ fn template_v_if_with_v_for() {
 
 #[test]
 fn template_v_if_with_text() {
-  let code = transform(r#"<template v-if={foo}>hello</template>"#, None).code;
+  let code = transform(
+    r#"<template v-if={foo}>hello</template>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
   const _t0 = _template("hello", 2);
@@ -258,7 +318,14 @@ fn template_v_if_with_text() {
 
 #[test]
 fn template_v_if_with_single_element() {
-  let code = transform(r#"<template v-if={foo}><div>hi</div></template>"#, None).code;
+  let code = transform(
+    r#"<template v-if={foo}><div>hi</div></template>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
   const _t0 = _template("<div>hi", 2);
@@ -276,7 +343,10 @@ fn template_v_if_with_single_element() {
 fn template_v_if_with_multiple_element() {
   let code = transform(
     r#"<template v-if={foo}><div>hi</div><div>ho</div></template>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -298,7 +368,10 @@ fn template_v_if_with_multiple_element() {
 fn template_v_if_with_v_for_inside() {
   let code = transform(
     r#"<template v-if={foo}><div v-for={i in list}/></template>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -323,7 +396,10 @@ fn template_v_if_with_key() {
     r#"<template v-if={arr.length > 0} key={index}>
       <div>item: { item }</div>
     </template>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -350,7 +426,10 @@ fn template_v_if_with_key() {
 fn dedupe_same_template() {
   let code = transform(
     "<><div v-if={ok}>hello</div><div v-if={ok}>hello</div></>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -372,7 +451,14 @@ fn dedupe_same_template() {
 
 #[test]
 fn component() {
-  let code = transform("<Comp v-if={foo} />", None).code;
+  let code = transform(
+    "<Comp v-if={foo} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf } from "vue";
@@ -388,7 +474,14 @@ fn component() {
 
 #[test]
 fn template_v_if_with_single_slot_child() {
-  let code = transform(r#"<template v-if={ok}><slot/></template>"#, None).code;
+  let code = transform(
+    r#"<template v-if={ok}><slot/></template>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, createSlot as _createSlot } from "vue";
   (() => {
@@ -403,7 +496,14 @@ fn template_v_if_with_single_slot_child() {
 
 #[test]
 fn v_if_on_slot() {
-  let code = transform(r#"<slot v-if="ok"></slot>"#, None).code;
+  let code = transform(
+    r#"<slot v-if="ok"></slot>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, createSlot as _createSlot } from "vue";
   (() => {
@@ -418,7 +518,14 @@ fn v_if_on_slot() {
 
 #[test]
 fn v_if_v_else() {
-  let code = transform("<><div v-if={ok}/><p v-else/></>", None).code;
+  let code = transform(
+    "<><div v-if={ok}/><p v-else/></>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
@@ -438,7 +545,14 @@ fn v_if_v_else() {
 
 #[test]
 fn v_if_v_if_else() {
-  let code = transform("<><div v-if={ok}/><p v-else-if={orNot}/></>", None).code;
+  let code = transform(
+    "<><div v-if={ok}/><p v-else-if={orNot}/></>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
@@ -460,7 +574,10 @@ fn v_if_v_if_else() {
 fn v_if_v_else_if_v_else() {
   let code = transform(
     "<><div v-if={ok}/><p v-else-if={orNot}/><p v-else-if={false}/><template v-else>fine</template></>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -495,7 +612,10 @@ fn v_if_v_if_or_v_elses() {
       <span v-if={bar}>bar</span>
       <span v-else>baz</span>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -535,7 +655,10 @@ fn comment_between_branches() {
       <template v-else>fine{/* fine */}</template>
       <div v-text=\"text\" />
     </>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -565,7 +688,10 @@ fn comment_between_branches() {
 fn v_on_with_v_if() {
   let code = transform(
     "<button v-on={{ click: clickEvent }} v-if={true}>w/ v-if</button>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -590,7 +716,10 @@ fn v_if_in_template_v_for_forces_multi_root_shape() {
         <span>{item.text}</span>
       </span>
     </template>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -617,7 +746,10 @@ fn v_if_in_template_v_for_forces_multi_root_shape() {
 fn template_v_if_with_normal_v_else() {
   let code = transform(
     r#"<><template v-if={foo}><div>hi</div><div>ho</div></template><div v-else/></>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -645,6 +777,7 @@ fn error_on_v_else_missing_adjacent_v_if() {
   transform(
     "<div v-else/>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -660,6 +793,7 @@ fn error_on_v_else_if_missing_adjacent_v_if_or_v_else_if() {
   transform(
     "<div v-else-if={foo}/>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -675,6 +809,7 @@ fn error_on_v_if_no_expression() {
   transform(
     "<div v-if/>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),

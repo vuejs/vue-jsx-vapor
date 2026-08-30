@@ -1,14 +1,17 @@
 use std::cell::RefCell;
 
-use common::{error::ErrorCodes, options::TransformOptions};
-use compiler::transform;
+use common::error::ErrorCodes;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
 fn basic() {
   let code = transform(
     "<div v-for={item in items} key={item.id} onClick={() => remove(item)}>{item}</div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -37,7 +40,10 @@ fn key_only_binding_pattern() {
     >
       { row.id + row.id }
     </tr>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -64,7 +70,10 @@ fn key_only_binding_pattern2() {
       key={row.id}
       class={row.id === state.selected ? 'danger' : ''}
     ></tr>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -93,7 +102,10 @@ fn selector_pattern1() {
       key={row.id}
       v-text={selected === row.id ? 'danger' : ''}
     ></tr>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -123,7 +135,10 @@ fn selector_pattern2() {
       key={row.id}
       class={selected === row.id ? 'danger' : ''}
     ></tr>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -153,7 +168,10 @@ fn selector_pattern3() {
       key={row.id}
       class={row.label === row.id ? 'danger' : ''}
     ></tr>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -178,7 +196,10 @@ fn selector_pattern4() {
       key={row.id}
       class={{ danger: row.id === selected }}
     ></tr>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -207,7 +228,10 @@ fn should_not_selector_pattern() {
       key={row.id}
       class={{ danger: row.id === selected ? danger : null }}
     ></tr>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -233,7 +257,10 @@ fn multiple_selector_patterns_on_one_v_for() {
         class={selected === row.id ? 'a' : ''}
         title={active === row.id ? 'b' : ''}
       ></tr>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -263,7 +290,10 @@ fn multiple_selector_patterns_on_one_v_for() {
 fn multi_effect() {
   let code = transform(
     "<div v-for={(item, index) in items} item={item} index={index} />",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -287,7 +317,10 @@ fn multi_effect() {
 fn multi_class_name_helper_with_repeated_v_for_value() {
   let code = transform(
     r#"<div v-for={todo in todos} key={todo.id} class={{ completed: todo.completed, editing: todo === editedTodo }} />"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -308,7 +341,10 @@ fn multi_class_name_helper_with_repeated_v_for_value() {
 fn nested_v_for() {
   let code = transform(
     "<div v-for={i in list}><span v-for={j in i}>{ j+i }</span></div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -337,7 +373,10 @@ fn nested_v_for() {
 fn object_value_key_and_index() {
   let code = transform(
     "<span v-for={(value, key, index) in items} key={id}>{ id }{ value }{ index }</span>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -360,7 +399,10 @@ fn object_value_key_and_index() {
 fn object_de_structured_value() {
   let code = transform(
     "<span v-for={({ id, value }) in items} key={id}>{ id }{ value }</span>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -383,7 +425,10 @@ fn object_de_structured_value() {
 fn object_de_structured_value_with_rest() {
   let code = transform(
     "<div v-for={(  { id, ...other }, index) in list} key={id}>{ id + other + index }</div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -406,7 +451,10 @@ fn object_de_structured_value_with_rest() {
 fn array_de_structured_value() {
   let code = transform(
     "<div v-for={([id, other], index) in list} key={id}>{ id + other + index }</div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -427,7 +475,7 @@ fn array_de_structured_value() {
 
 #[test]
 fn array_de_structured_value_with_rest() {
-  let code = transform("<div v-for={([id, [foo], {bar}, ...other], index) in list} key={id}>{ id + other + index + foo + bar }</div>", None).code;
+  let code = transform("<div v-for={([id, [foo], {bar}, ...other], index) in list} key={id}>{ id + other + index + foo + bar }</div>", Some(TransformOptions { vapor: true, ..Default::default() })).code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
@@ -450,7 +498,10 @@ fn aliases_with_complex_expressions() {
     "<div v-for={({ foo, baz: [qux] }) in list}>
       { foo + baz + qux }
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -475,7 +526,10 @@ fn fast_remove_flag() {
     "<div>
       <span v-for={j in i}>{ j+i }</span>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -499,7 +553,14 @@ fn fast_remove_flag() {
 
 #[test]
 fn on_component() {
-  let code = transform("<Comp v-for={item in list}>{item}</Comp>", None).code;
+  let code = transform(
+    "<Comp v-for={item in list}>{item}</Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor } from "vue";
@@ -517,7 +578,10 @@ fn on_component() {
 fn v_for_on_slot_outlet_marks_fragment_block() {
   let code = transform(
     "<slot v-for={item in list} name={item.name} key={item.id} />",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -536,7 +600,10 @@ fn v_for_on_slot_outlet_marks_fragment_block() {
 fn v_for_single_node_flag_is_not_set_for_fragment_item_blocks() {
   let code = transform(
     "<template v-for={item in list}><div>{ item }</div><span>{ item }</span></template>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -563,7 +630,10 @@ fn v_for_single_node_flag_is_not_set_for_fragment_item_blocks() {
 fn on_template_with_single_component_child() {
   let code = transform(
     "<template v-for={item in list}><Comp>{item}</Comp></template>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -586,7 +656,10 @@ fn v_for_on_template_with_element_and_component_v_if_branches() {
       <div v-if={item.id===1}>hi</div>
       <Comp v-else></Comp>
     </template>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -613,7 +686,10 @@ fn v_for_on_template_with_element_and_component_v_if_branches() {
 fn v_for_on_template_with_nested_v_for_child_marks_fragment_block() {
   let code = transform(
     "<template v-for={row in rows}><div v-for={item in row}>{ item }</div></template>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -639,7 +715,10 @@ fn v_for_on_template_with_nested_v_for_child_marks_fragment_block() {
 fn v_for_on_template_with_keyed_child_marks_fragment_block() {
   let code = transform(
     "<template v-for={item in items}><div key={item.id}>{ item.text }</div></template>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -679,7 +758,10 @@ fn identifiers() {
       }
     })() }
   </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -715,7 +797,7 @@ fn expression_object() {
   let code = transform(
     "<div v-for={(item, index) in Array.from({ length: count.value }).map((_, id) => ({ id }))} id={index}>
       {item}
-    </div>", None).code;
+    </div>", Some(TransformOptions { vapor: true, ..Default::default() })).code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, renderEffect as _renderEffect, setProp as _setProp, template as _template, txt as _txt } from "vue";
@@ -737,7 +819,10 @@ fn expression_object() {
 fn template_v_for_with_slotlet() {
   let code = transform(
     r#"<template v-for={item in items}><slot/></template>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -754,7 +839,14 @@ fn template_v_for_with_slotlet() {
 
 #[test]
 fn v_for_on_slotlet() {
-  let code = transform(r#"<slot v-for={item in items}></slot>"#, None).code;
+  let code = transform(
+    r#"<slot v-for={item in items}></slot>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createFor as _createFor, createSlot as _createSlot } from "vue";
   (() => {
@@ -773,6 +865,7 @@ fn should_raise_error_if_has_no_expression() {
   transform(
     "<div v-for />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -788,6 +881,7 @@ fn should_raise_error_if_malformed_expression() {
   transform(
     "<div v-for={foo} />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),

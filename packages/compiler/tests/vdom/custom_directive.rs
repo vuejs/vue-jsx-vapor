@@ -1,16 +1,9 @@
-use compiler::{TransformOptions, transform};
+use compiler::transform;
 use insta::assert_snapshot;
 
 #[test]
 fn basic() {
-  let code = transform(
-    "<div v-example>foo</div>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<div v-example>foo</div>", None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
@@ -24,14 +17,7 @@ fn basic() {
 
 #[test]
 fn binding_value() {
-  let code = transform(
-    "<div v-example={msg}></div>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<div v-example={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
@@ -43,14 +29,7 @@ fn binding_value() {
 
 #[test]
 fn static_parameters() {
-  let code = transform(
-    "<div v-example:foo={msg}></div>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<div v-example:foo={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
@@ -66,14 +45,7 @@ fn static_parameters() {
 
 #[test]
 fn modifiers() {
-  let code = transform(
-    "<div v-example_bar={msg}></div>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<div v-example_bar={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
@@ -90,14 +62,7 @@ fn modifiers() {
 
 #[test]
 fn modifiers_with_binding() {
-  let code = transform(
-    "<div v-example_foo-bar></div>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<div v-example_foo-bar></div>", None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
@@ -114,14 +79,7 @@ fn modifiers_with_binding() {
 
 #[test]
 fn static_argument_and_modifiers() {
-  let code = transform(
-    "<div v-example:foo_bar={msg}></div>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<div v-example:foo_bar={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
@@ -138,14 +96,7 @@ fn static_argument_and_modifiers() {
 
 #[test]
 fn dynamic_argument() {
-  let code = transform(
-    "<div v-example:$foo$={msg}></div>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<div v-example:$foo$={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
@@ -167,10 +118,7 @@ fn component() {
         <Bar v-hello_world />
       </div>
     </Comp>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -194,14 +142,7 @@ fn component() {
 
 #[test]
 fn is_not_directive() {
-  let code = transform(
-    "<div vExample={msg}></div>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<div vExample={msg}></div>", None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["vExample"];
@@ -216,10 +157,7 @@ fn should_not_resolve_directive() {
       const vExample = () => {}
       return <div v-example></div>
     }",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -235,10 +173,7 @@ fn should_not_resolve_directive() {
 fn array_args() {
   let code = transform(
     "<div v-example={[foo, bar, ['modify1', 'modify2']]} />",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -260,14 +195,7 @@ fn array_args() {
 
 #[test]
 fn array_args_with_modifiers() {
-  let code = transform(
-    "<div v-example_m1={[foo, ['modify1', 'modify2']]} />",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<div v-example_m1={[foo, ['modify1', 'modify2']]} />", None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
@@ -289,10 +217,7 @@ fn array_args_with_modifiers() {
 fn array_args_with_arg() {
   let code = transform(
     "<div v-example:foo={[foo, bar, ['modify1', 'modify2']]} />",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"

@@ -81,11 +81,11 @@ bench.add('react + babel', () => {
 })
 
 bench.add('vue-jsx-vapor + oxc', () => {
-  rsTransform(source)
+  rsTransform(source, { vapor: true })
 })
 
 bench.add('vue-jsx + oxc', () => {
-  rsTransform(source, { interop: true })
+  rsTransform(source)
 })
 
 bench.add('react + oxc', () => {

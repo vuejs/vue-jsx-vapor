@@ -1,12 +1,19 @@
 use std::cell::RefCell;
 
-use common::{error::ErrorCodes, options::TransformOptions};
-use compiler::transform;
+use common::error::ErrorCodes;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
 fn basic() {
-  let code = transform("<input v-model={model} />", None).code;
+  let code = transform(
+    "<input v-model={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const _t0 = _template("<input>", 1);
@@ -20,7 +27,14 @@ fn basic() {
 
 #[test]
 fn modifiers_number() {
-  let code = transform("<input v-model_number={model} />", None).code;
+  let code = transform(
+    "<input v-model_number={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const _t0 = _template("<input>", 1);
@@ -34,7 +48,14 @@ fn modifiers_number() {
 
 #[test]
 fn modifiers_trim() {
-  let code = transform("<input v-model_trim={model} />", None).code;
+  let code = transform(
+    "<input v-model_trim={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const _t0 = _template("<input>", 1);
@@ -48,7 +69,14 @@ fn modifiers_trim() {
 
 #[test]
 fn modifiers_lazy() {
-  let code = transform("<input v-model_lazy={model} />", None).code;
+  let code = transform(
+    "<input v-model_lazy={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const _t0 = _template("<input>", 1);
@@ -62,7 +90,14 @@ fn modifiers_lazy() {
 
 #[test]
 fn should_support_input_text() {
-  let code = transform("<input type=\"text\" v-model={model} />", None).code;
+  let code = transform(
+    "<input type=\"text\" v-model={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const _t0 = _template("<input type=text>", 1);
@@ -76,7 +111,14 @@ fn should_support_input_text() {
 
 #[test]
 fn should_support_input_radio() {
-  let code = transform("<input type=\"radio\" v-model={model} />", None).code;
+  let code = transform(
+    "<input type=\"radio\" v-model={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applyRadioModel as _applyRadioModel, template as _template } from "vue";
   const _t0 = _template("<input type=radio>", 1);
@@ -90,7 +132,14 @@ fn should_support_input_radio() {
 
 #[test]
 fn should_support_input_checkbox() {
-  let code = transform("<input type=\"checkbox\" v-model={model} />", None).code;
+  let code = transform(
+    "<input type=\"checkbox\" v-model={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applyCheckboxModel as _applyCheckboxModel, template as _template } from "vue";
   const _t0 = _template("<input type=checkbox>", 1);
@@ -104,7 +153,14 @@ fn should_support_input_checkbox() {
 
 #[test]
 fn should_support_select() {
-  let code = transform("<select v-model={model} />", None).code;
+  let code = transform(
+    "<select v-model={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applySelectModel as _applySelectModel, template as _template } from "vue";
   const _t0 = _template("<select>", 1);
@@ -118,7 +174,14 @@ fn should_support_select() {
 
 #[test]
 fn should_support_textarea() {
-  let code = transform("<textarea v-model={model} />", None).code;
+  let code = transform(
+    "<textarea v-model={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const _t0 = _template("<textarea>", 1);
@@ -132,7 +195,14 @@ fn should_support_textarea() {
 
 #[test]
 fn should_support_input_dynamic_type() {
-  let code = transform("<input type={foo} v-model={model} />", None).code;
+  let code = transform(
+    "<input type={foo} v-model={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applyDynamicModel as _applyDynamicModel, renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
   const _t0 = _template("<input>", 1);
@@ -147,7 +217,14 @@ fn should_support_input_dynamic_type() {
 
 #[test]
 fn should_support_dynamic_props() {
-  let code = transform("<input {...obj} v-model={model} />", None).code;
+  let code = transform(
+    "<input {...obj} v-model={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applyDynamicModel as _applyDynamicModel, renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
   const _t0 = _template("<input>", 1);
@@ -162,7 +239,14 @@ fn should_support_dynamic_props() {
 
 #[test]
 fn non_identifier_modifiers_should_be_quoted() {
-  let code = transform("<input v-model_foo-bar={model} />", None).code;
+  let code = transform(
+    "<input v-model_foo-bar={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const _t0 = _template("<input>", 1);
@@ -176,7 +260,14 @@ fn non_identifier_modifiers_should_be_quoted() {
 
 #[test]
 fn should_support_member_expression() {
-  let code = transform("<input v-model={setupRef.child} />", None).code;
+  let code = transform(
+    "<input v-model={setupRef.child} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const _t0 = _template("<input>", 1);
@@ -190,7 +281,7 @@ fn should_support_member_expression() {
 
 #[test]
 fn should_support_member_expression_with_inline() {
-  let code = transform("<><input v-model={setupRef.child} /><input v-model={setupLet.child} /><input v-model={setupMaybeRef.child} /></>", None).code;
+  let code = transform("<><input v-model={setupRef.child} /><input v-model={setupLet.child} /><input v-model={setupMaybeRef.child} /></>", Some(TransformOptions { vapor: true, ..Default::default() })).code;
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template } from "vue";
   const _t0 = _template("<input>");
@@ -216,6 +307,7 @@ fn errors_invalid_element() {
   transform(
     "<span v-model={model} />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -231,6 +323,7 @@ fn errors_plain_elements_with_argument() {
   transform(
     "<input v-model:value={model} />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -246,6 +339,7 @@ fn errors_allow_usage_on_custom_element() {
   transform(
     "<my-input v-model={model} />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -261,6 +355,7 @@ fn errors_if_used_file_input_element() {
   transform(
     "<input type=\"file\" v-model={test} />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -276,6 +371,7 @@ fn errors_on_dynamic_value_binding_alongside_v_model() {
   transform(
     "<input v-model={test} value={test} />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -291,6 +387,7 @@ fn errors_should_not_error_on_static_value_binding_alongside_v_model() {
   transform(
     "<input v-model={test} value=\"test\" />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -306,6 +403,7 @@ fn errors_empty_expression() {
   transform(
     "<span v-model=\"\" />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -321,6 +419,7 @@ fn errors_mal_formed_expression() {
   transform(
     "<span v-model={a + b} />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -332,7 +431,14 @@ fn errors_mal_formed_expression() {
 
 #[test]
 fn component() {
-  let code = transform("<Comp v-model={foo} />", None).code;
+  let code = transform(
+    "<Comp v-model={foo} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -347,7 +453,14 @@ fn component() {
 
 #[test]
 fn component_with_arguments() {
-  let code = transform("<Comp v-model:bar={foo} />", None).code;
+  let code = transform(
+    "<Comp v-model:bar={foo} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -362,7 +475,14 @@ fn component_with_arguments() {
 
 #[test]
 fn component_with_dynamic_arguments() {
-  let code = transform("<Comp v-model:$arg$={foo} />", None).code;
+  let code = transform(
+    "<Comp v-model:$arg$={foo} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -377,7 +497,14 @@ fn component_with_dynamic_arguments() {
 
 #[test]
 fn component_with_dynamic_arguments_with_v_for() {
-  let code = transform("<Comp v-for={{arg} in list} v-model:$arg$={foo} />", None).code;
+  let code = transform(
+    "<Comp v-for={{arg} in list} v-model:$arg$={foo} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor } from "vue";
@@ -396,7 +523,14 @@ fn component_with_dynamic_arguments_with_v_for() {
 
 #[test]
 fn component_should_generate_model_value_modifiers() {
-  let code = transform("<Comp v-model_trim_bar-baz={foo} />", None).code;
+  let code = transform(
+    "<Comp v-model_trim_bar-baz={foo} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -417,7 +551,10 @@ fn component_should_generate_model_value_modifiers() {
 fn component_with_arguments_should_generate_model_modifiers() {
   let code = transform(
     "<Comp v-model:foo_trim={foo} v-model:foo-bar_number={bar} />",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -440,7 +577,10 @@ fn component_with_arguments_should_generate_model_modifiers() {
 fn component_with_dynamic_arguments_should_generate_model_modifiers() {
   let code = transform(
     "<Comp v-model:$foo$_trim={foo} v-model:$bar_value$_number={bar} />",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -464,7 +604,10 @@ fn component_with_dynamic_arguments_should_generate_model_modifiers() {
 fn component_v_model_should_merge_with_explicit() {
   let code = transform(
     "<Comp v-model={counter} onUpdate:modelValue={onUpdate} />",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -481,7 +624,14 @@ fn component_v_model_should_merge_with_explicit() {
 
 #[test]
 fn v_model_after_dynamic_bind_keeps_model_getters() {
-  let code = transform("<Comp {...obj} v-model_trim={foo} />", None).code;
+  let code = transform(
+    "<Comp {...obj} v-model_trim={foo} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -499,7 +649,10 @@ fn v_model_after_dynamic_bind_keeps_model_getters() {
 fn array_args() {
   let code = transform(
     "<Comp v-model={[foo, bar, ['modify1', 'modify2']]} />",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -520,7 +673,14 @@ fn array_args() {
 
 #[test]
 fn array_args_with_modifiers() {
-  let code = transform("<Comp v-model={[foo, ['modify1', 'modify2']]} />", None).code;
+  let code = transform(
+    "<Comp v-model={[foo, ['modify1', 'modify2']]} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -541,7 +701,10 @@ fn array_args_with_modifiers() {
 fn array_args_with_arg() {
   let code = transform(
     "<Comp v-model:foo={[foo, bar, ['modify1', 'modify2']]} />",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"

@@ -84,7 +84,6 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
               hmr,
               sourceMap,
               ssr,
-              interop: !options.vapor,
               ...options,
             },
           )

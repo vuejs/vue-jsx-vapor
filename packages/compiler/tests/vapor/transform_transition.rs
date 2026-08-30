@@ -1,4 +1,4 @@
-use compiler::transform;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
@@ -7,7 +7,10 @@ fn basic() {
     r#"<VaporTransition>
       <h1 v-show={show}>foo</h1>
     </VaporTransition>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -32,7 +35,10 @@ fn propagates_component_root_to_transition_child_with_dynamic_class() {
     r#"<VaporTransition>
       <div class={["box", data.value.internalClass]}>child</div>
     </VaporTransition>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -48,7 +54,10 @@ fn does_not_propagate_component_root_through_nested_transition() {
         <div>child</div>
       </VaporTransition>
     </section>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -61,7 +70,10 @@ fn v_show_with_appear() {
     r#"<VaporTransition appear onAppear={() => {}}>
       <h1 v-show={show}>foo</h1>
     </VaporTransition>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -89,7 +101,10 @@ fn work_with_v_if() {
     r#"<VaporTransition>
       <h1 v-if={show}>foo</h1>
     </VaporTransition>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -117,7 +132,10 @@ fn work_with_v_if_v_else() {
       <h2 v-else-if={condition == 2}>2</h2>
       <h3 v-else>3</h3>
     </VaporTransition>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -155,7 +173,10 @@ fn work_with_condition_expression() {
           ? <h2>2</h1>
           : <h3>3</h1> }
     </VaporTransition>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -189,7 +210,10 @@ fn transition_work_with_dynamic_keyed_children() {
     "<VaporTransition>
       <h1 key={foo}>foo</h1>
     </VaporTransition>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -215,7 +239,10 @@ fn does_not_inject_persisted_when_v_if_owns_a_v_show_child() {
     "<Transition>
       <h1 v-if={show} v-show={true} />
     </Transition>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"

@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
-use common::{error::ErrorCodes, options::TransformOptions};
-use compiler::transform;
+use common::error::ErrorCodes;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
@@ -11,7 +11,10 @@ fn basic() {
       { msg }
       <span class={clz} />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -31,7 +34,14 @@ fn basic() {
 
 #[test]
 fn as_root_node() {
-  let code = transform("<div id={foo} v-once />", None).code;
+  let code = transform(
+    "<div id={foo} v-once />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { setProp as _setProp, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -45,7 +55,14 @@ fn as_root_node() {
 
 #[test]
 fn on_nested_plain_element() {
-  let code = transform("<div><div id={foo} v-once /></div>", None).code;
+  let code = transform(
+    "<div><div id={foo} v-once /></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { child as _child, setProp as _setProp, template as _template } from "vue";
   const _t0 = _template("<div><div>", 1);
@@ -60,7 +77,14 @@ fn on_nested_plain_element() {
 
 #[test]
 fn on_component() {
-  let code = transform("<div><Comp id={foo} v-once /></div>", None).code;
+  let code = transform(
+    "<div><Comp id={foo} v-once /></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { setInsertionState as _setInsertionState, template as _template } from "vue";
@@ -76,7 +100,14 @@ fn on_component() {
 
 #[test]
 fn on_slot_outlet() {
-  let code = transform(r#"<div><slot v-once /></div>"#, None).code;
+  let code = transform(
+    r#"<div><slot v-once /></div>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -91,7 +122,14 @@ fn on_slot_outlet() {
 
 #[test]
 fn root_slot_outlet_in_slot_content_should_not_be_marked_as_slot_root() {
-  let code = transform(r#"<Comp><slot v-once /></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><slot v-once /></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
 
   assert!(code.contains("_createSlot(\"default\", null, null, 34)"));
 
@@ -110,7 +148,14 @@ fn root_slot_outlet_in_slot_content_should_not_be_marked_as_slot_root() {
 
 #[test]
 fn inside_v_once() {
-  let code = transform("<div v-once><div v-once/></div>", None).code;
+  let code = transform(
+    "<div v-once><div v-once/></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<div><div>", 3);
@@ -123,7 +168,14 @@ fn inside_v_once() {
 
 #[test]
 fn with_v_if() {
-  let code = transform("<div v-if={expr} v-once />", None).code;
+  let code = transform(
+    "<div v-if={expr} v-once />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
   const _t0 = _template("<div>", 3);
@@ -139,7 +191,14 @@ fn with_v_if() {
 
 #[test]
 fn with_v_if_else() {
-  let code = transform("<><div v-if={expr} v-once /><p v-else/></>", None).code;
+  let code = transform(
+    "<><div v-if={expr} v-once /><p v-else/></>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
@@ -161,7 +220,10 @@ fn with_v_if_else() {
 fn with_conditional_expression() {
   let code = transform(
     "<div v-once>{ok? <span>{msg}</span> : <div>fail</div> }</div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -189,7 +251,14 @@ fn with_conditional_expression() {
 
 #[test]
 fn with_v_for() {
-  let code = transform("<div v-for={i in list} v-once />", None).code;
+  let code = transform(
+    "<div v-for={i in list} v-once />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createFor as _createFor, template as _template } from "vue";
   const _t0 = _template("<div>");
@@ -212,7 +281,10 @@ fn execution_order() {
       { baz }
       <div foo={true}>{foo}</div>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -243,6 +315,7 @@ fn should_raise_error_if_has_no_expression() {
   transform(
     "<div v-show />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),

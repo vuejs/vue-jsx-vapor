@@ -1,4 +1,4 @@
-use compiler::transform;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
@@ -7,7 +7,10 @@ fn basic() {
     "<div>
       {foo} {bar}
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -25,7 +28,14 @@ fn basic() {
 
 #[test]
 fn comments() {
-  let code = transform("<>{/*foo*/}<div>{/*bar*/}</div></>", None).code;
+  let code = transform(
+    "<>{/*foo*/}<div>{/*bar*/}</div></>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<div>", 2);
@@ -38,7 +48,14 @@ fn comments() {
 
 #[test]
 fn fragment() {
-  let code = transform("<>{foo}</>", None).code;
+  let code = transform(
+    "<>{foo}</>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -56,7 +73,10 @@ fn children_sibling_references() {
       123 { second } 456 {foo}
       <p>{ forth }</p>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -88,7 +108,10 @@ fn efficient_traversal() {
       <div><span>{{ msg }}</span></div>
       <div><span>{{ msg }}</span></div>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -127,7 +150,10 @@ fn efficient_find() {
       <div>x</div>
       <div>{ msg }</div>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -153,7 +179,10 @@ fn inline_placeholder_when_branching_access_paths_share_one_parent_access() {
         <section><span>{{ second }}</span></section>
       </div>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -186,7 +215,10 @@ fn reuse_cursor_assignment_for_non_adjacent_following_access_path() {
       <i></i>
       <div><span>{{ second }}</span></div>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -221,7 +253,10 @@ fn materialize_placeholder_when_inline_would_duplicate_parent_access() {
         <div><span>{{ second }}</span></div>
       </section>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -256,7 +291,10 @@ fn keep_nested_operation_parent_as_node_variable_before_sibling_lookup() {
       <section><Comp /></section>
       <section><span>{{ msg }}</span></section>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -289,7 +327,10 @@ fn anchor_insertion_in_middle() {
       <div v-if={1}></div>
       <div></div>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   // ensure the insertion anchor is generated before the insertion statement
@@ -316,7 +357,10 @@ fn jsx_component_in_jsx_expression_container() {
     "<div>
       {<Comp />}
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -342,7 +386,10 @@ fn flushes_previous_effects_before_creating_child_component() {
       <div>parent: { useId() }</div>
       <Child />
     </>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -361,7 +408,14 @@ fn flushes_previous_effects_before_creating_child_component() {
 
 #[test]
 fn flushes_parent_props_before_creating_child_component() {
-  let code = transform("<div id={useId()}><Child /></div>", None).code;
+  let code = transform(
+    "<div id={useId()}><Child /></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { renderEffect as _renderEffect, setInsertionState as _setInsertionState, setProp as _setProp, template as _template } from "vue";
@@ -385,7 +439,10 @@ fn does_not_flush_later_v_for_effects_before_child_component() {
       <span v-text={useId()}></span>
       <Child ref={foo} />
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"

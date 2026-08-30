@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
-use common::{error::ErrorCodes, options::TransformOptions};
-use compiler::transform;
+use common::error::ErrorCodes;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
@@ -9,7 +9,10 @@ fn default_slot_outlet() {
   let code = transform(
     r#"<slot>
     </slot>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -23,7 +26,14 @@ fn default_slot_outlet() {
 
 #[test]
 fn statically_named_slot_outlet() {
-  let code = transform(r#"<slot name="foo" />"#, None).code;
+  let code = transform(
+    r#"<slot name="foo" />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot } from "vue";
   (() => {
@@ -35,7 +45,14 @@ fn statically_named_slot_outlet() {
 
 #[test]
 fn dynamically_named_slot_outlet() {
-  let code = transform(r#"<slot name={foo} />"#, None).code;
+  let code = transform(
+    r#"<slot name={foo} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot } from "vue";
   (() => {
@@ -47,7 +64,14 @@ fn dynamically_named_slot_outlet() {
 
 #[test]
 fn default_slot_outlet_with_props() {
-  let code = transform(r#"<slot foo="bar" baz={qux} foo-bar={foo-bar} />"#, None).code;
+  let code = transform(
+    r#"<slot foo="bar" baz={qux} foo-bar={foo-bar} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot } from "vue";
   (() => {
@@ -63,7 +87,14 @@ fn default_slot_outlet_with_props() {
 
 #[test]
 fn statically_named_slot_outlet_with_props() {
-  let code = transform(r#"<slot name="foo" foo="bar" baz={qux} />"#, None).code;
+  let code = transform(
+    r#"<slot name="foo" foo="bar" baz={qux} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot } from "vue";
   (() => {
@@ -78,7 +109,14 @@ fn statically_named_slot_outlet_with_props() {
 
 #[test]
 fn dynamically_named_slot_outlet_with_props() {
-  let code = transform(r#"<slot name={foo} foo="bar" baz={qux} />"#, None).code;
+  let code = transform(
+    r#"<slot name={foo} foo="bar" baz={qux} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot } from "vue";
   (() => {
@@ -93,7 +131,14 @@ fn dynamically_named_slot_outlet_with_props() {
 
 #[test]
 fn default_slot_outlet_with_fallback() {
-  let code = transform(r#"<slot><div /></slot>"#, None).code;
+  let code = transform(
+    r#"<slot><div /></slot>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
@@ -109,7 +154,14 @@ fn default_slot_outlet_with_fallback() {
 
 #[test]
 fn named_slot_outlet_with_fallback() {
-  let code = transform(r#"<slot name="foo"><div /></slot>"#, None).code;
+  let code = transform(
+    r#"<slot name="foo"><div /></slot>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
@@ -125,7 +177,14 @@ fn named_slot_outlet_with_fallback() {
 
 #[test]
 fn default_slot_outlet_with_props_and_fallback() {
-  let code = transform(r#"<slot foo={bar}><div /></slot>"#, None).code;
+  let code = transform(
+    r#"<slot foo={bar}><div /></slot>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
@@ -141,7 +200,14 @@ fn default_slot_outlet_with_props_and_fallback() {
 
 #[test]
 fn named_slot_outlet_with_props_and_fallback() {
-  let code = transform(r#"<slot name="foo" foo={bar}><div /></slot>"#, None).code;
+  let code = transform(
+    r#"<slot name="foo" foo={bar}><div /></slot>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createSlot as _createSlot, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
@@ -157,7 +223,14 @@ fn named_slot_outlet_with_props_and_fallback() {
 
 #[test]
 fn root_v_if_fallbck() {
-  let code = transform(r#"<slot><span v-if={ok}/></slot>"#, None).code;
+  let code = transform(
+    r#"<slot><span v-if={ok}/></slot>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, createSlot as _createSlot, template as _template } from "vue";
   const _t0 = _template("<span>", 2);
@@ -178,7 +251,10 @@ fn root_v_if_fallbck() {
 fn nested_root_v_for_fallbck() {
   let code = transform(
     r#"<slot><template v-if={ok}><span v-for={item in items}>{ item }</span></template></slot>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -205,7 +281,14 @@ fn nested_root_v_for_fallbck() {
 
 #[test]
 fn does_not_mark_non_root_fallback_v_if_as_slot_root() {
-  let code = transform(r#"<div><span v-if={ok}/></div>"#, None).code;
+  let code = transform(
+    r#"<div><span v-if={ok}/></div>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<span>", 2);
@@ -225,10 +308,10 @@ fn does_not_mark_non_root_fallback_v_if_as_slot_root() {
 #[test]
 fn error_on_unexpected_cunstom_directive_on_slot() {
   let error = RefCell::new(None);
-  transform(
+  compiler::transform(
     r#"<slot v-foo />"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),

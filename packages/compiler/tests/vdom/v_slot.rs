@@ -6,14 +6,7 @@ use insta::assert_snapshot;
 
 #[test]
 fn implicit_default_slot() {
-  let code = transform(
-    r#"<Comp><div/></Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp><div/></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
@@ -29,14 +22,7 @@ fn implicit_default_slot() {
 
 #[test]
 fn on_component_default_slot() {
-  let code = transform(
-    r#"<Comp v-slot={{ foo }}>{ foo }{ bar }</Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp v-slot={{ foo }}>{ foo }{ bar }</Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
@@ -54,10 +40,7 @@ fn on_component_named_slot() {
       <Comp v-slot:named={{ foo }}>{ foo }{ bar }</Comp>
       <Comp v-slot={{ bar }}>{foo}</Comp>
     </>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -84,10 +67,7 @@ fn template_named_slots() {
         { foo }{ bar }
       </template>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -110,10 +90,7 @@ fn on_component_dynamically_named_slot() {
         <Comp v-slot={baz}>{bar}</Comp>
       </template>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -139,10 +116,7 @@ fn named_slots_with_implicit_default_slot() {
     r#"<Comp>
       <template v-slot:one>foo</template>bar<span/>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -170,10 +144,7 @@ fn dynamically_named_slots() {
         { foo }{ bar }
       </template>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -199,10 +170,7 @@ fn nested_slots_scoping() {
       </template>
       <Comp>{foo}</Comp>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -234,10 +202,7 @@ fn should_force_dynamic_when_inside_v_for() {
     r#"<div v-for={i in list}>
       <Comp v-slot={bar}>foo</Comp>
     </div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -259,10 +224,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars1() {
     r#"<div v-for={i in list}>
       <Comp>{i}</Comp>
     </div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -279,10 +241,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars2() {
     r#"<Comp v-slot={foo}>
       <Comp v-slot={bar}>{bar}</Comp>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -308,10 +267,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars3() {
         <Comp v-slot={bar}>{foo}</Comp>
       </Comp>
     }"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -336,10 +292,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars4() {
     r#"<div v-for={i in list}>
       <Comp v-slot={bar}><button onClick={fn(i)} /></Comp>
     </div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -358,10 +311,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars5() {
     r#"<div v-for={i in list}>
       <Comp i={i}>foo</Comp>
     </div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -383,10 +333,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars6() {
     r#"<div v-for={i in list}>
       <Comp v-slot:$i_value$><button onClick={fn()} /></Comp>
     </div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -408,10 +355,7 @@ fn named_slot_with_v_if() {
     r#"<Comp>
       <template v-slot:one v-if={ok}>hello</template>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -434,10 +378,7 @@ fn named_slot_with_v_if2() {
     r#"<Comp>
       <template v-slot:one v-if={ok}>{props}</template>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -459,10 +400,7 @@ fn named_slot_with_v_if_v_else_if_v_else() {
       <template v-slot:two={props} v-else-if={orNot}>bar</template>
       <template v-slot:one v-else>baz</template>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -496,10 +434,7 @@ fn named_slot_with_v_for() {
       </Comp>
       <Comp>{name}</Comp>
     </>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -514,14 +449,7 @@ fn named_slot_with_v_for() {
 
 #[test]
 fn slot_tag_only() {
-  let code = transform(
-    r#"<Comp><slot /></Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp><slot /></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
   (() => {
@@ -536,14 +464,7 @@ fn slot_tag_only() {
 
 #[test]
 fn slot_tag_with_v_if() {
-  let code = transform(
-    r#"<Comp><slot v-if={ok} /></Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp><slot v-if={ok} /></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, createCommentVNode as _createCommentVNode, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
   (() => {
@@ -558,14 +479,7 @@ fn slot_tag_with_v_if() {
 
 #[test]
 fn slot_tag_with_v_for() {
-  let code = transform(
-    r#"<Comp><slot v-for={a in b} /></Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp><slot v-for={a in b} /></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
   (() => {
@@ -580,14 +494,7 @@ fn slot_tag_with_v_for() {
 
 #[test]
 fn slot_tag_with_template() {
-  let code = transform(
-    r#"<Comp><template><slot /></template></Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp><template><slot /></template></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
   (() => {
@@ -602,14 +509,7 @@ fn slot_tag_with_template() {
 
 #[test]
 fn slot_tag_with_nested_component() {
-  let code = transform(
-    r#"<Comp><Comp><slot/></Comp></Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp><Comp><slot/></Comp></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots, withCtx as _withCtx } from "vue";
   (() => {
@@ -631,7 +531,6 @@ fn error_on_extraneous_children_with_named_default_slot() {
   transform(
     "<Comp><template v-slot:default>foo</template>bar</Comp>",
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -650,7 +549,6 @@ fn error_on_duplicated_slot_names() {
   transform(
     "<Comp><template v-slot:foo></template><template v-slot:foo></template></Comp>",
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -666,7 +564,6 @@ fn error_on_invalid_mixed_slot_usage() {
   transform(
     "<Comp v-slot={foo}><template v-slot:foo></template></Comp>",
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -682,7 +579,6 @@ fn error_on_v_slot_usage_on_plain_elements() {
   transform(
     "<div v-slot/>",
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -699,10 +595,7 @@ fn named_default_slot_with_implicit_whitespace_content() {
       <template v-slot:header> Header </template>
       <template v-slot:default> Default </template>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -726,10 +619,7 @@ fn implicit_default_slot_with_whitespace() {
       <template v-slot:header> Header </template>
       <p/>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -753,10 +643,7 @@ fn implicit_default_slot_with_non_breaking_space() {
       &nbsp;
       <template v-slot:header> Header </template>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -780,10 +667,7 @@ fn named_slot_with_v_if_v_else() {
       <template v-slot:one v-if={ok}>foo</template>
       <template v-slot:two v-else>baz</template>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -814,10 +698,7 @@ fn named_slot_with_v_if_v_else_and_comments() {
       {/* end */}
       <template v-slot:two v-else>baz</template>
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -844,10 +725,7 @@ fn should_mark_stable_slot_in_funciton_without_params() {
     r#"<Comp>
       {() => (<Comp>{foo}</Comp>)}
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -866,10 +744,7 @@ fn should_not_mark_stable_slot_in_funciton_with_params() {
     r#"<Comp>
       {(slotProps) => (<Comp>{foo}</Comp>)}
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -886,10 +761,7 @@ fn should_not_mark_stable_slot_in_funciton_with_params() {
 fn provider_component_should_use_dynamic_slots() {
   let code = transform(
     r#"<ContextProvider>{slots.default?.()}</ContextProvider>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -906,10 +778,7 @@ fn provider_component_should_use_dynamic_slots() {
 fn isolator_component_should_use_dynamic_slots() {
   let code = transform(
     r#"<ContextIsolator>{slots.default?.()}</ContextIsolator>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -924,14 +793,7 @@ fn isolator_component_should_use_dynamic_slots() {
 
 #[test]
 fn for_component_should_be_dynamic() {
-  let code = transform(
-    r#"<div><For><div /></For></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><For><div /></For></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock } from "vue";
@@ -951,10 +813,7 @@ fn array_args() {
     "<Comp v-slot={[foo, bar]}>
       {foo}
     </Com>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -975,10 +834,7 @@ fn array_args_with_template() {
         {foo}
       </template>
     </Com>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -997,10 +853,7 @@ fn array_args_with_arg() {
     "<Comp v-slot:foo={[foo, bar]}>
       {foo}
     </Comp>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"

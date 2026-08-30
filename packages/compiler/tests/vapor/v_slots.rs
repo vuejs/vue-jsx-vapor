@@ -1,14 +1,17 @@
 use std::cell::RefCell;
 
-use common::{error::ErrorCodes, options::TransformOptions};
-use compiler::transform;
+use common::error::ErrorCodes;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
 fn basic() {
   let code = transform(
     "<Comp v-slots={{ default: ({ foo })=> <>{ foo + bar }</> }}></Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -29,7 +32,10 @@ fn function_expression_children() {
     r#"<Comp>
       {() => <div />}
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -52,7 +58,10 @@ fn object_expression_children() {
     r#"<Comp>
       {{ default: () => <>foo</> }}
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -75,7 +84,10 @@ fn object_expression_children_with_computed_property() {
     r#"<Comp>
       {{ [foo]: () => <>foo</> }}
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -105,7 +117,10 @@ fn v_slot_with_v_slots() {
       }}>
       </Comp>{bar}
     </Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -138,7 +153,10 @@ fn v_slot_with_v_slots() {
 fn v_slots_with_children() {
   let code = transform(
     "<Comp v-slots={{ foo: () => <div /> }}><div /></Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -164,7 +182,14 @@ fn v_slots_with_children() {
 
 #[test]
 fn this_expression_slots_children() {
-  let code = transform("<Comp>{this.$slots}</Comp>", None).code;
+  let code = transform(
+    "<Comp>{this.$slots}</Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -176,7 +201,14 @@ fn this_expression_slots_children() {
 
 #[test]
 fn v_slots_dynamic_with_children() {
-  let code = transform("<Comp v-slots={slots}><div /></Comp>", None).code;
+  let code = transform(
+    "<Comp v-slots={slots}><div /></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
@@ -200,7 +232,10 @@ fn v_slots_dynamic_with_spread_children() {
     "<Comp>{{
       ...slots,
     }}</Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -218,6 +253,7 @@ fn should_raise_error_if_not_component() {
   transform(
     "<div v-slots={obj}></div>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -229,7 +265,14 @@ fn should_raise_error_if_not_component() {
 
 #[test]
 fn identify_children() {
-  let code = transform("<Comp>{slots}</Comp>", None).code;
+  let code = transform(
+    "<Comp>{slots}</Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -243,7 +286,10 @@ fn identify_children() {
 fn condition_expression_children() {
   let code = transform(
     "<Comp>{slots ? { default: () => <div /> } : undefined}</Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -262,7 +308,14 @@ fn condition_expression_children() {
 
 #[test]
 fn logical_expression_children() {
-  let code = transform("<Comp>{slots || { default: () => <div /> }}</Comp>", None).code;
+  let code = transform(
+    "<Comp>{slots || { default: () => <div /> }}</Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
@@ -283,6 +336,7 @@ fn should_raise_error_if_has_no_expression() {
   transform(
     "<Comp v-slots></Comp>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),

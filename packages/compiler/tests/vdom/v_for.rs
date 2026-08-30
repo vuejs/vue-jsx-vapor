@@ -1,17 +1,9 @@
-use common::options::TransformOptions;
 use compiler::transform;
 use insta::assert_snapshot;
 
 #[test]
 fn number_expression() {
-  let code = transform(
-    r#"<span v-for={index in 5}>{index}</span>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<span v-for={index in 5}>{index}</span>"#, None).code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
@@ -21,14 +13,7 @@ fn number_expression() {
 
 #[test]
 fn value() {
-  let code = transform(
-    r#"<span v-for={(item) in items} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<span v-for={(item) in items} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("span"))), 256);
@@ -37,14 +22,7 @@ fn value() {
 
 #[test]
 fn object_de_structured_value() {
-  let code = transform(
-    r#"<span v-for={({ id, value }) in items} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<span v-for={({ id, value }) in items} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, ({ id, value }) => (_openBlock(), _createElementBlock("span"))), 256);
@@ -53,14 +31,7 @@ fn object_de_structured_value() {
 
 #[test]
 fn array_de_structured_value() {
-  let code = transform(
-    r#"<span v-for={([ id, value ]) in items} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<span v-for={([ id, value ]) in items} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, ([ id, value ]) => (_openBlock(), _createElementBlock("span"))), 256);
@@ -69,14 +40,7 @@ fn array_de_structured_value() {
 
 #[test]
 fn value_and_key() {
-  let code = transform(
-    r#"<span v-for={(item, key) in items} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<span v-for={(item, key) in items} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item, key) => (_openBlock(), _createElementBlock("span"))), 256);
@@ -85,14 +49,7 @@ fn value_and_key() {
 
 #[test]
 fn value_and_key_and_index() {
-  let code = transform(
-    r#"<span v-for={(item, key, index) in items} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<span v-for={(item, key, index) in items} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item, key, index) => (_openBlock(), _createElementBlock("span"))), 256);
@@ -101,14 +58,7 @@ fn value_and_key_and_index() {
 
 #[test]
 fn unbracketed_value() {
-  let code = transform(
-    r#"<span v-for={item in items} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<span v-for={item in items} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("span"))), 256);
@@ -117,14 +67,7 @@ fn unbracketed_value() {
 
 #[test]
 fn source_containing_string_expression_with_spaces() {
-  let code = transform(
-    r#"<span v-for={item in state ['my items']} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<span v-for={item in state ['my items']} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(state["my items"], (item) => (_openBlock(), _createElementBlock("span"))), 256);
@@ -133,14 +76,7 @@ fn source_containing_string_expression_with_spaces() {
 
 #[test]
 fn missing_expression() {
-  let code = transform(
-    r#"<span v-for={item in items} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<span v-for={item in items} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("span"))), 256);
@@ -149,14 +85,7 @@ fn missing_expression() {
 
 #[test]
 fn v_for_source_with_complex_expression() {
-  let code = transform(
-    r#"<span v-for={i in list.concat([foo])} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<span v-for={i in list.concat([foo])} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list.concat([foo]), (i) => (_openBlock(), _createElementBlock("span"))), 256);
@@ -167,10 +96,7 @@ fn v_for_source_with_complex_expression() {
 fn should_not_prefix_v_for_aliases() {
   let code = transform(
     r#"<span v-for={(i, j, k) in list}>{ i + j + k }{ l }</span>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -186,10 +112,7 @@ fn nested_v_for() {
     r#"<div v-for={i in list}>
       <div v-for={i in list}>{ i + j }</div>{ i }
     </div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -205,10 +128,7 @@ fn v_for_aliases_with_complex_expressions() {
     r#"<div v-for={({ foo:foo = bar, baz: [qux = quux] }) in list}>
       { foo + bar + baz + qux + quux }
     </div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -222,10 +142,7 @@ fn v_for_aliases_with_complex_expressions() {
 fn element_v_for_key_expression_prefixing() {
   let code = transform(
     r#"<div v-for={item in items} key={itemKey(item)}>test</div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -238,10 +155,7 @@ fn element_v_for_key_expression_prefixing() {
 fn element_v_for_key_expression_prefixing_on_simple_expression() {
   let code = transform(
     r#"<div v-for={item in items} key={itemKey}>test</div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -254,10 +168,7 @@ fn element_v_for_key_expression_prefixing_on_simple_expression() {
 fn template_v_for_key_expression_prefixing() {
   let code = transform(
     r#"<template v-for={item in items} key={itemKey(item)}>test</template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -274,10 +185,7 @@ fn template_v_for_key_expression_prefixing() {
 fn template_v_for_key_expression_prefixing_on_simple_expression() {
   let code = transform(
     r#"<template v-for={item in items} key={itemKey}>test</template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -294,10 +202,7 @@ fn template_v_for_key_expression_prefixing_on_simple_expression() {
 fn template_v_for_key_no_prefixing_on_attribute_key() {
   let code = transform(
     r#"<template v-for={item in items} key="key">test</template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -314,10 +219,7 @@ fn template_v_for_key_no_prefixing_on_attribute_key() {
 fn template_v_for_with_multiple_children() {
   let code = transform(
     r#"<template v-for={item in items}>hello<span/></template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -334,10 +236,7 @@ fn template_v_for_with_multiple_children() {
 fn template_v_for_with_slotlet() {
   let code = transform(
     r#"<template v-for={item in items} key={item.id}><slot/></template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -353,10 +252,7 @@ fn template_v_for_with_slotlet() {
 fn template_v_for_with_slot() {
   let code = transform(
     r#"<template v-for={item in items}><slot /></template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -372,10 +268,7 @@ fn template_v_for_with_slot() {
 fn template_v_for_key_injection_with_single_child() {
   let code = transform(
     r#"<template v-for={item in items} key={item.id}><span id={item.id} /></template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -387,14 +280,7 @@ fn template_v_for_key_injection_with_single_child() {
 
 #[test]
 fn v_for_on_slotlet() {
-  let code = transform(
-    r#"<slot v-for={item in items}></slot>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<slot v-for={item in items}></slot>"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
@@ -406,14 +292,7 @@ fn v_for_on_slotlet() {
 
 #[test]
 fn keyed_v_for() {
-  let code = transform(
-    r#"<span v-for={(item) in items} key={item} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<span v-for={(item) in items} key={item} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("span", { key: item }))), 128);
@@ -424,10 +303,7 @@ fn keyed_v_for() {
 fn keyed_template_v_for() {
   let code = transform(
     r#"<template v-for={item in items} key={item}>hello<span/></template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -442,14 +318,7 @@ fn keyed_template_v_for() {
 
 #[test]
 fn v_if_with_v_for() {
-  let code = transform(
-    r#"<div v-if={ok} v-for={i in list} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-if={ok} v-for={i in list} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   ok ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(list, (i) => (_openBlock(), _createElementBlock("div"))), 256)) : _createCommentVNode("", true);
@@ -458,14 +327,7 @@ fn v_if_with_v_for() {
 
 #[test]
 fn v_if_with_v_for_on_template() {
-  let code = transform(
-    r#"<template v-if={ok} v-for={i in list} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<template v-if={ok} v-for={i in list} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(), _createElementBlock(_Fragment, null, ok ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(list, (i) => (_openBlock(), _createElementBlock(_Fragment))), 256)) : _createCommentVNode("", true));
@@ -474,14 +336,7 @@ fn v_if_with_v_for_on_template() {
 
 #[test]
 fn v_for_on_element_with_custom_directive() {
-  let code = transform(
-    r#"<div v-for={i in list} v-foo/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-for={i in list} v-foo/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
@@ -493,14 +348,7 @@ fn v_for_on_element_with_custom_directive() {
 
 #[test]
 fn template_v_for_key_with_key_on_div() {
-  let code = transform(
-    r#"<div v-for={key in keys} key={key}>test</div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-for={key in keys} key={key}>test</div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(keys, (key) => (_openBlock(), _createElementBlock("div", { key }, "test"))), 128);
@@ -511,10 +359,7 @@ fn template_v_for_key_with_key_on_div() {
 fn stable_v_for_lifecycle_clears_static_ref_arrays_on_branch_removal() {
   let code = transform(
     r#"<template v-if={show}><div v-for={i in 3} key={i} ref={items} /></template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -531,10 +376,7 @@ fn stable_v_for_lifecycle_clears_static_ref_arrays_on_branch_removal() {
 fn stable_v_for_lifecycle_alls_setup_const_function_refs_with_null_on_branch_removal() {
   let code = transform(
     r#"<template v-if={show}><div v-for={i in 1} ref={setRef} /></template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -550,10 +392,7 @@ fn stable_v_for_lifecycle_alls_setup_const_function_refs_with_null_on_branch_rem
 fn stable_v_for_lifecycle_calls_directive_unmounted_hooks_on_branch_removal() {
   let code = transform(
     r#"<template v-if={show}><div v-for={i in 1} v-dir /></template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -569,10 +408,7 @@ fn stable_v_for_lifecycle_calls_directive_unmounted_hooks_on_branch_removal() {
 fn stable_v_for_lifecycle_calls_vnode_unmounted_hooks_on_branch_removal() {
   let code = transform(
     r#"<template v-if={show}><div v-for={i in 1} onVnodeUnmounted={onVnodeUnmounted} /></template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -584,14 +420,7 @@ fn stable_v_for_lifecycle_calls_vnode_unmounted_hooks_on_branch_removal() {
 
 #[test]
 fn stable_v_for_lifecycle_runs_directive_before_update_before_child_updates() {
-  let code = transform(
-    r#"<div v-for={i in 1} v-dir>{ value }</div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-for={i in 1} v-dir>{ value }</div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
@@ -606,10 +435,7 @@ fn stable_v_for_lifecycle_runs_directive_before_update_before_child_updates() {
 fn stable_v_for_lifecycle_runs_vnode_before_update_before_nested_child_updates() {
   let code = transform(
     r#"<div v-for={i in 1} onVnodeBeforeUpdate={onVnodeBeforeUpdate}><span>{ value }</span></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -631,7 +457,6 @@ mod error {
     transform(
       r#"<span v-for />"#,
       Some(TransformOptions {
-        interop: true,
         on_error: Box::new(|e, _| {
           *error.borrow_mut() = Some(e);
         }),
@@ -648,7 +473,6 @@ mod error {
     transform(
       r#"<span v-for="" />"#,
       Some(TransformOptions {
-        interop: true,
         on_error: Box::new(|e, _| {
           *error.borrow_mut() = Some(e);
         }),
@@ -665,7 +489,6 @@ mod error {
     transform(
       r#"<span v-for={items} />"#,
       Some(TransformOptions {
-        interop: true,
         on_error: Box::new(|e, _| {
           *error.borrow_mut() = Some(e);
         }),

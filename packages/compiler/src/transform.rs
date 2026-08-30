@@ -53,7 +53,7 @@ impl<'a> Transform<'a> {
         &*node,
         Expression::JSXElement(_) | Expression::JSXFragment(_)
       ) {
-        if !options.ssr && options.interop && *options.in_vapor.borrow() < 1 {
+        if !options.ssr && !options.vapor && *options.in_vapor.borrow() < 1 {
           return Some((node, true));
         }
         return Some((node, options.ssr));
@@ -69,7 +69,7 @@ impl<'a> Transform<'a> {
       {
         *options.in_vapor.borrow_mut() -= 1;
       } else if let Expression::ArrowFunctionExpression(node) = node
-        && options.interop
+        && !options.vapor
         && let Some(map) = options
           .scope_identifiers_map
           .borrow_mut()
@@ -405,7 +405,7 @@ impl<'a> VisitMut<'a> for Transform<'a> {
     flags: oxc_semantic::ScopeFlags,
   ) {
     walk_function(self, node, flags);
-    if self.options.interop
+    if !self.options.vapor
       && let Some(map) = self
         .options
         .scope_identifiers_map
@@ -417,7 +417,7 @@ impl<'a> VisitMut<'a> for Transform<'a> {
   }
   fn visit_for_statement(&mut self, node: &mut oxc_ast::ast::ForStatement<'a>) {
     walk_for_statement(self, node);
-    if self.options.interop
+    if !self.options.vapor
       && let Some(map) = self
         .options
         .scope_identifiers_map
@@ -429,7 +429,7 @@ impl<'a> VisitMut<'a> for Transform<'a> {
   }
   fn visit_for_in_statement(&mut self, node: &mut oxc_ast::ast::ForInStatement<'a>) {
     walk_for_in_statement(self, node);
-    if self.options.interop
+    if !self.options.vapor
       && let Some(map) = self
         .options
         .scope_identifiers_map
@@ -441,7 +441,7 @@ impl<'a> VisitMut<'a> for Transform<'a> {
   }
   fn visit_for_of_statement(&mut self, node: &mut oxc_ast::ast::ForOfStatement<'a>) {
     walk_for_of_statement(self, node);
-    if self.options.interop
+    if !self.options.vapor
       && let Some(map) = self
         .options
         .scope_identifiers_map
@@ -453,7 +453,7 @@ impl<'a> VisitMut<'a> for Transform<'a> {
   }
   fn visit_statement(&mut self, node: &mut Statement<'a>) {
     walk_statement(self, node);
-    if self.options.interop
+    if !self.options.vapor
       && let Some(map) = self
         .options
         .scope_identifiers_map

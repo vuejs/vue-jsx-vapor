@@ -1,4 +1,3 @@
-use common::options::TransformOptions;
 use compiler::transform;
 use insta::assert_snapshot;
 
@@ -6,14 +5,7 @@ use insta::assert_snapshot;
 fn should_not_cache_root_node() {
   // if the whole tree is static, the root still needs to be a block
   // so that it's patched in optimized mode to skip children
-  let code = transform(
-    r#"<div/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div");
@@ -26,10 +18,7 @@ fn cache_root_node_children() {
   // so we only cache each child individually
   let code = transform(
     r#"<><span class="inline">hello</span><span class="inline">hello</span></>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -44,14 +33,7 @@ fn cache_root_node_children() {
 
 #[test]
 fn cache_single_children_array() {
-  let code = transform(
-    r#"<div><span id="inline">hello</span></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><span id="inline">hello</span></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -66,10 +48,7 @@ fn cache_single_children_array() {
 fn cache_nested_children_array() {
   let code = transform(
     r#"<div><p><span/><span/></p><p><span/><span/></p></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -84,14 +63,7 @@ fn cache_nested_children_array() {
 
 #[test]
 fn cache_nested_static_tree_with_comments() {
-  let code = transform(
-    r#"<div><div>{/*comment*/}</div></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><div>{/*comment*/}</div></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -104,14 +76,7 @@ fn cache_nested_static_tree_with_comments() {
 
 #[test]
 fn cache_siblings_including_text_with_common_non_hoistable_parent() {
-  let code = transform(
-    r#"<div><span/>foo<div/></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><span/>foo<div/></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -128,14 +93,7 @@ fn cache_siblings_including_text_with_common_non_hoistable_parent() {
 
 #[test]
 fn cache_inside_default_slot() {
-  let code = transform(
-    r#"<Foo>{x}<span/></Foo>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Foo>{x}<span/></Foo>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
@@ -151,14 +109,7 @@ fn cache_inside_default_slot() {
 
 #[test]
 fn cache_default_slot_as_whole() {
-  let code = transform(
-    r#"<Foo><span/><span/></Foo>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Foo><span/><span/></Foo>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
@@ -176,10 +127,7 @@ fn cache_default_slot_as_whole() {
 fn cache_inside_named_slot() {
   let code = transform(
     r#"<Foo><template v-slot:foo>{x}<span/></template></Foo>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -199,10 +147,7 @@ fn cache_inside_named_slot() {
 fn cache_named_slot_as_a_whole() {
   let code = transform(
     r#"<Foo><template v-slot:foo><span/><span/></template></Foo>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -222,10 +167,7 @@ fn cache_named_slot_as_a_whole() {
 fn cache_dynamically_named_slot_as_a_whole() {
   let code = transform(
     r#"<Foo><template v-slot:$foo$><span/><span/></template></Foo>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -243,14 +185,7 @@ fn cache_dynamically_named_slot_as_a_whole() {
 
 #[test]
 fn cache_should_not_cache_components() {
-  let code = transform(
-    r#"<div><Comp/></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><Comp/></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", null, [_createVNode(Comp)]);
@@ -259,14 +194,7 @@ fn cache_should_not_cache_components() {
 
 #[test]
 fn cache_should_not_cache_element_with_dynamic_props_but_hoist_the_props_list() {
-  let code = transform(
-    r#"<div><div id={foo} /></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><div id={foo} /></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["id"];
@@ -276,14 +204,7 @@ fn cache_should_not_cache_element_with_dynamic_props_but_hoist_the_props_list() 
 
 #[test]
 fn cache_element_with_static_key() {
-  let code = transform(
-    r#"<div><div key="foo" /></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><div key="foo" /></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -296,14 +217,7 @@ fn cache_element_with_static_key() {
 
 #[test]
 fn should_not_cache_element_with_dynamic_key() {
-  let code = transform(
-    r#"<div><div key={foo} /></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><div key={foo} /></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createElementBlock("div", { key: foo }))]);
@@ -312,14 +226,7 @@ fn should_not_cache_element_with_dynamic_key() {
 
 #[test]
 fn should_not_cache_element_with_dynamic_ref() {
-  let code = transform(
-    r#"<div><div ref={foo} /></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><div ref={foo} /></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", null, [_createElementVNode("div", { ref: foo }, null, 512)]);
@@ -328,14 +235,7 @@ fn should_not_cache_element_with_dynamic_ref() {
 
 #[test]
 fn hoist_static_props_for_elements_with_directives() {
-  let code = transform(
-    r#"<div><div id="foo" v-foo /></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><div id="foo" v-foo /></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = { id: "foo" };
@@ -348,14 +248,7 @@ fn hoist_static_props_for_elements_with_directives() {
 
 #[test]
 fn hoist_static_props_for_elements_with_dynamic_text_children() {
-  let code = transform(
-    r#"<div><div id="foo">{hello}</div></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><div id="foo">{hello}</div></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -366,14 +259,7 @@ fn hoist_static_props_for_elements_with_dynamic_text_children() {
 
 #[test]
 fn hoist_static_props_for_elements_with_unhoistable_children() {
-  let code = transform(
-    r#"<div><div id="foo"><Comp/></div></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><div id="foo"><Comp/></div></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { id: "foo" };
@@ -383,14 +269,7 @@ fn hoist_static_props_for_elements_with_unhoistable_children() {
 
 #[test]
 fn should_cache_v_if_props_or_children_if_static() {
-  let code = transform(
-    r#"<div><div v-if="ok" id="foo"><span/></div></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><div v-if="ok" id="foo"><span/></div></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -409,10 +288,7 @@ fn should_cache_v_if_props_or_children_if_static() {
 fn should_hoist_v_for_children_if_static() {
   let code = transform(
     r#"<div><div v-for={i in list} id="foo"><span/></div></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -431,10 +307,7 @@ fn should_hoist_props_for_root_with_single_element_excluding_comments() {
   // deeply nested div to trigger stringification condition
   let code = transform(
     r#"<>{/*comment*/}<div id="a"><div id="b"><div id="c"><div id="d"><div id="e">hello</div></div></div></div></div></>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -450,14 +323,7 @@ fn should_hoist_props_for_root_with_single_element_excluding_comments() {
 #[test]
 fn cache_nested_static_tree_with_static_interpolation() {
   // deeply nested div to trigger stringification condition
-  let code = transform(
-    r#"<div><span>foo { 1 } { true }</span></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><span>foo { 1 } { true }</span></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -475,14 +341,7 @@ fn cache_nested_static_tree_with_static_interpolation() {
 
 #[test]
 fn cache_nested_static_tree_with_static_prop_value() {
-  let code = transform(
-    r#"<div><span foo={0}>{1}</span></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><span foo={0}>{1}</span></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -497,10 +356,7 @@ fn cache_nested_static_tree_with_static_prop_value() {
 fn cache_class_with_static_object_value() {
   let code = transform(
     r#"<div><span class={{ foo: true }}>{bar}</span></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -515,10 +371,7 @@ fn cache_class_with_static_object_value() {
 fn should_not_cache_expressions_that_refer_scope_variables() {
   let code = transform(
     r#"<div><p v-for={o in list}><span>{o}</span></p></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -532,10 +385,7 @@ fn should_not_cache_expressions_that_refer_scope_variables() {
 fn should_not_cache_expressions_that_refer_scope_variables_2() {
   let code = transform(
     r#"<div><p v-for={o in list}><span>{o + 'foo'}</span></p></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -547,14 +397,7 @@ fn should_not_cache_expressions_that_refer_scope_variables_2() {
 
 #[test]
 fn should_not_cache_expressions_that_refer_scope_variables_v_slot() {
-  let code = transform(
-    r#"<Comp v-slot={{ foo }}>{foo}</Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp v-slot={{ foo }}>{foo}</Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
@@ -567,14 +410,7 @@ fn should_not_cache_expressions_that_refer_scope_variables_v_slot() {
 
 #[test]
 fn should_not_cache_elements_with_cached_handlers() {
-  let code = transform(
-    r#"<div><div><div onClick={foo}/></div></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><div><div onClick={foo}/></div></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick"];
@@ -586,10 +422,7 @@ fn should_not_cache_elements_with_cached_handlers() {
 fn should_not_cache_elements_with_cached_handlers_with_other_bindings() {
   let code = transform(
     r#"<div><div><div class={{}} onClick={foo}/></div></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -607,10 +440,7 @@ fn should_not_cache_elements_with_cached_handlers_with_other_bindings() {
 fn should_cache_keyed_template_v_for_with_plain_element_child() {
   let code = transform(
     r#"<div><template v-for={item in items} key={item}><span/></template></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -627,10 +457,7 @@ fn should_cache_keyed_template_v_for_with_plain_element_child() {
 fn should_not_cache_svg_with_directives() {
   let code = transform(
     r#"<div><svg v-foo><path d="M2,3H5.5L12"/></svg></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -648,10 +475,7 @@ fn should_not_cache_svg_with_directives() {
 fn clone_hoisted_array_children_in_v_for_hmr_mode() {
   let code = transform(
     r#"<div><div v-for={i in 1}><span class="hi"></span></div></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"

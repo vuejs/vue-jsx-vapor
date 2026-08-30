@@ -1,12 +1,19 @@
 use std::cell::RefCell;
 
-use common::{error::ErrorCodes, options::TransformOptions};
-use compiler::transform;
+use common::error::ErrorCodes;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
 fn implicit_default_slot() {
-  let code = transform("<Comp><div/></Comp>", None).code;
+  let code = transform(
+    "<Comp><div/></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
@@ -23,7 +30,14 @@ fn implicit_default_slot() {
 
 #[test]
 fn on_component_default_slot() {
-  let code = transform("<Comp v-slot={scope}>{ scope.foo + bar }</Comp>", None).code;
+  let code = transform(
+    "<Comp v-slot={scope}>{ scope.foo + bar }</Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { extend as _extend } from "vue";
@@ -43,7 +57,10 @@ fn on_component_default_slot() {
 fn on_component_named_slot() {
   let code = transform(
     "<Comp v-slot:named={({ foo })}>{{ foo }}{{ foo: foo }}</Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -72,7 +89,10 @@ fn on_component_named_slot_multiple() {
         <Comp v-slot:left>foo</Comp>
       </template>
     </Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -100,7 +120,14 @@ fn on_component_named_slot_multiple() {
 
 #[test]
 fn on_component_dynamically_named_slot() {
-  let code = transform("<Comp v-slot:$named$={{ foo }}>{ foo + bar }</Comp>", None).code;
+  let code = transform(
+    "<Comp v-slot:$named$={{ foo }}>{ foo + bar }</Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -125,7 +152,10 @@ fn nested_component_should_not_inherit_parent_slots() {
       <template v-slot:header></template>
       <Bar />
     </Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -150,7 +180,10 @@ fn nested_component_should_not_inherit_parent_slots() {
 fn slot_prop_alias_uses_original_key() {
   let code = transform(
     r#"<Comp><template v-slot:default={{ msg: msg1 }}>{ msg1 }</template></Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -170,7 +203,10 @@ fn slot_prop_alias_uses_original_key() {
 fn slot_prop_nested_destructuring() {
   let code = transform(
     r#"<Comp><template v-slot:default={{ foo: { bar: baz } }}>{ baz }</template></Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -190,7 +226,10 @@ fn slot_prop_nested_destructuring() {
 fn slot_prop_computed_key_destructuring() {
   let code = transform(
     r#"<Comp><template v-slot:default={{ [key.value]: val }}>{{ val }}</template></Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -210,7 +249,10 @@ fn slot_prop_computed_key_destructuring() {
 fn slot_prop_rest_destructuring() {
   let code = transform(
     r#"<Comp><template v-slot:default={{ foo, ...rest }}>{ rest.bar }</template></Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -230,7 +272,10 @@ fn slot_prop_rest_destructuring() {
 fn slot_prop_array_rest_destructuring() {
   let code = transform(
     r#"<Comp><template v-slot:default={{ arr: [first, ...rest] }}>{ rest[0] }</template></Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -250,7 +295,10 @@ fn slot_prop_array_rest_destructuring() {
 fn slot_prop_rest_with_computed_keys_preserved() {
   let code = transform(
     r#"<Comp><template v-slot:default={{ foo, [key]: val, ...rest }}>{ foo + rest.other }</template></Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -270,7 +318,10 @@ fn slot_prop_rest_with_computed_keys_preserved() {
 fn slot_prop_assignment() {
   let code = transform(
     r#"<Comp v-slot={{ foo, bar }}>{foo++}{bar.value=1}</Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -292,7 +343,10 @@ fn named_slots_with_implicit_default_slot() {
     "<Comp>
       <template v-slot:one>foo</template>bar<span/>
     </Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -325,7 +379,10 @@ fn named_slots_with_comment() {
       {/* foo */}
       <template v-slot:one>foo</template>foo<span/>
     </Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -361,7 +418,10 @@ fn nested_slots_scoping() {
         { foo + bar + baz }
       </template>
     </Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -387,7 +447,10 @@ fn dynamic_slots_name() {
     "<Comp>
       <template v-slot:$name$>{foo}</template>
     </Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -411,7 +474,10 @@ fn dynamic_slots_name_with_v_for() {
     "<Comp>
       <template v-for={item in list} v-slot:$item$={{ bar }}>{ bar }</template>
     </Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -435,7 +501,10 @@ fn dynamic_slots_name_with_keyed_v_for() {
         {item.label}
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -466,7 +535,10 @@ fn dynamic_slots_name_with_keyed_v_for() {
     r#"<Comp>
       <template v-for={item in list} key="stable" v-slot:$item$ />
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert!(code.contains("(_for_raw_item0) => \"stable\""), "{code}");
@@ -480,7 +552,10 @@ fn dynamic_slots_name_with_v_for_key_and_index_aliases() {
         {item}{key}{index}
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -505,7 +580,10 @@ fn dynamic_slots_name_with_destructured_v_for_value() {
         {label}
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -525,7 +603,10 @@ fn dynamic_slots_name_with_v_if_and_v_else_if() {
       <template v-else-if={otherCondition} v-slot:condition>other condition</template>
       <template v-else v-slot:condition>else condition</template>
     </Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -572,7 +653,10 @@ fn quote_slot_name() {
     "<Comp>
       <template v-slot:nav-bar-title-before></template>
     </Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -589,7 +673,14 @@ fn quote_slot_name() {
 
 #[test]
 fn nested_component_slot() {
-  let code = transform("<A><B/></A>", None).code;
+  let code = transform(
+    "<A><B/></A>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -604,7 +695,14 @@ fn nested_component_slot() {
 
 #[test]
 fn marks_root_v_if_slot_content_as_slot_root() {
-  let code = transform("<Comp><span v-if={show}/></Comp>", None).code;
+  let code = transform(
+    "<Comp><span v-if={show}/></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, extend as _extend, template as _template } from "vue";
@@ -624,7 +722,14 @@ fn marks_root_v_if_slot_content_as_slot_root() {
 
 #[test]
 fn does_not_mark_non_root_v_if_slot_content_as_slot_root() {
-  let code = transform("<Comp><div><span v-if={show}/></div></Comp>", None).code;
+  let code = transform(
+    "<Comp><div><span v-if={show}/></div></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
@@ -647,7 +752,14 @@ fn does_not_mark_non_root_v_if_slot_content_as_slot_root() {
 
 #[test]
 fn static_root_sibling_keeps_slot_content_stable() {
-  let code = transform("<Comp><span/><div v-if={show}/></Comp>", None).code;
+  let code = transform(
+    "<Comp><span/><div v-if={show}/></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, template as _template } from "vue";
@@ -669,7 +781,14 @@ fn static_root_sibling_keeps_slot_content_stable() {
 
 #[test]
 fn static_component_root_sibling_keeps_slot_content_stable() {
-  let code = transform("<Comp><Foo/><Component is={view}/></Comp>", None).code;
+  let code = transform(
+    "<Comp><Foo/><Component is={view}/></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -687,7 +806,10 @@ fn static_component_root_sibling_keeps_slot_content_stable() {
 fn all_dynamic_root_slot_content_is_non_stable() {
   let code = transform(
     "<Comp><div v-for={item in list}/><p v-if={ok}/></Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -716,7 +838,10 @@ fn all_dynamic_root_slot_content_is_non_stable() {
 fn root_v_for_with_root_v_if_slot_content_is_non_stable() {
   let code = transform(
     "<Comp><div v-for={item in list}/><p v-if={ok}/></Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -743,7 +868,14 @@ fn root_v_for_with_root_v_if_slot_content_is_non_stable() {
 
 #[test]
 fn comment_with_dynamic_root_slot_content_is_non_stable() {
-  let code = transform("<Comp>{/* foo */}<div v-if={show}/></Comp>", None).code;
+  let code = transform(
+    "<Comp>{/* foo */}<div v-if={show}/></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, extend as _extend, template as _template } from "vue";
@@ -763,7 +895,14 @@ fn comment_with_dynamic_root_slot_content_is_non_stable() {
 
 #[test]
 fn forwarded_root_slot_outlet_fallback_tracks_root_validity() {
-  let code = transform("<Comp><slot><span v-if={show}/></slot></Comp>", None).code;
+  let code = transform(
+    "<Comp><slot><span v-if={show}/></slot></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, createSlot as _createSlot, extend as _extend, template as _template } from "vue";
@@ -786,7 +925,14 @@ fn forwarded_root_slot_outlet_fallback_tracks_root_validity() {
 
 #[test]
 fn slot_tag_only() {
-  let code = transform(r#"<Comp><slot /></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><slot /></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createSlot as _createSlot, extend as _extend } from "vue";
@@ -802,14 +948,28 @@ fn slot_tag_only() {
 
 #[test]
 fn multiple_dynamic_slot_roots_share_fallback_decision() {
-  let code = transform(r#"<Comp><slot name="a"/><slot name="b"/></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><slot name="a"/><slot name="b"/></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
 
   assert_eq!(code.matches("null, null, 20").count(), 2);
 }
 
 #[test]
 fn slot_root_shares_fallback_with_dynamic_sibling() {
-  let code = transform(r#"<Comp><slot/><span v-if={ok}/></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><slot/><span v-if={ok}/></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
 
   assert!(code.contains("null, null, 20"));
 }
@@ -818,7 +978,10 @@ fn slot_root_shares_fallback_with_dynamic_sibling() {
 fn v_once_slot_root_shares_fallback_without_slot_root_flag() {
   let code = transform(
     r#"<Comp><slot v-once name="a"/><slot name="b"/></Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -829,7 +992,14 @@ fn v_once_slot_root_shares_fallback_without_slot_root_flag() {
 
 #[test]
 fn v_once_unique_slot_root_inherits_fallback_without_slot_root_flag() {
-  let code = transform(r#"<Comp><slot v-once /></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><slot v-once /></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
 
   assert!(code.contains("null, null, 34"));
   assert!(!code.contains("null, null, 6"));
@@ -837,7 +1007,14 @@ fn v_once_unique_slot_root_inherits_fallback_without_slot_root_flag() {
 
 #[test]
 fn root_slot_outlet_with_stable_sibling_does_not_notify_parent() {
-  let code = transform(r#"<Comp><slot/><span/></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><slot/><span/></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
 
   assert!(!code.contains("null, null, 4"));
   assert!(!code.contains("null, null, 36"));
@@ -864,7 +1041,14 @@ fn root_slot_outlet_with_stable_sibling_in_branch_keeps_branch_slot_root_only() 
     r#"<Comp><template v-if={ok}><slot/><span/></template></Comp>"#,
     r#"<Comp><template v-for={item in items}><slot/><span/></template></Comp>"#,
   ] {
-    let code = transform(source, None).code;
+    let code = transform(
+      source,
+      Some(TransformOptions {
+        vapor: true,
+        ..Default::default()
+      }),
+    )
+    .code;
 
     assert!(!code.contains("_createSlot(\"default\", null, null, 4)"));
     assert!(!code.contains("_createSlot(\"default\", null, null, 36)"));
@@ -873,7 +1057,14 @@ fn root_slot_outlet_with_stable_sibling_in_branch_keeps_branch_slot_root_only() 
 
 #[test]
 fn root_slot_outlet_with_stable_sibling_in_forwarded_fallback_does_not_notify_parent() {
-  let code = transform(r#"<Comp><slot><slot/><span/></slot></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><slot><slot/><span/></slot></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
 
   assert!(code.contains("_createSlot()") || code.contains("_createSlot(\"default\")"));
   assert!(!code.contains("_createSlot(\"default\", null, null, 4)"));
@@ -899,7 +1090,14 @@ fn root_slot_outlet_with_stable_sibling_in_forwarded_fallback_does_not_notify_pa
 
 #[test]
 fn root_slot_outlet_with_dynamic_key_tracks_keyed_fragment_and_outlet() {
-  let code = transform(r#"<Comp><slot key={key} /></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><slot key={key} /></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
 
   assert!(code.contains("_createSlot(\"default\", null, null, 36)"));
   assert!(code.contains("_createKeyedFragment(() => key"));
@@ -924,7 +1122,10 @@ fn root_slot_outlet_with_dynamic_key_tracks_keyed_fragment_and_outlet() {
 fn keyed_slot_block_with_stable_sibling_does_not_track_slot_boundary() {
   let code = transform(
     r#"<Comp><template key={key}><slot /><span /></template></Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
 
@@ -952,7 +1153,14 @@ fn keyed_slot_block_with_stable_sibling_does_not_track_slot_boundary() {
 
 #[test]
 fn slot_tag_with_v_if() {
-  let code = transform(r#"<Comp><slot v-if={ok} /></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><slot v-if={ok} /></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, createSlot as _createSlot, extend as _extend } from "vue";
@@ -971,7 +1179,14 @@ fn slot_tag_with_v_if() {
 
 #[test]
 fn slot_tag_with_v_for() {
-  let code = transform(r#"<Comp><slot v-for={a in b} /></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><slot v-for={a in b} /></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor, createSlot as _createSlot, extend as _extend } from "vue";
@@ -990,7 +1205,14 @@ fn slot_tag_with_v_for() {
 
 #[test]
 fn slot_tag_with_template() {
-  let code = transform(r#"<Comp><template v-slot><slot /></template></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><template v-slot><slot /></template></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createSlot as _createSlot, extend as _extend } from "vue";
@@ -1006,7 +1228,14 @@ fn slot_tag_with_template() {
 
 #[test]
 fn slot_tag_with_nested_component() {
-  let code = transform(r#"<Comp><Comp><slot/></Comp></Comp>"#, None).code;
+  let code = transform(
+    r#"<Comp><Comp><slot/></Comp></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createSlot as _createSlot, extend as _extend } from "vue";
@@ -1027,7 +1256,10 @@ fn slot_tag_with_nested_component() {
 fn default_slot_with_v_if_directive() {
   let code = transform(
     r#"<Comp><template v-slot v-if={show}></template></Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1048,7 +1280,10 @@ fn default_slot_with_v_if_directive() {
 fn default_slot_with_v_for_directive() {
   let code = transform(
     r#"<Comp><template v-slot v-for={item in list}>{item}</template></Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1072,7 +1307,10 @@ fn slot_with_only_static_elements_is_stable() {
         <div>static content</div>
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1097,7 +1335,10 @@ fn slot_with_component_is_stable() {
         <ChildComp />
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1120,7 +1361,10 @@ fn slot_with_slot_outlet_is_non_stable() {
         <slot />
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1144,7 +1388,10 @@ fn dynamic_slot_source_with_slot_outlet_keeps_dynamic_slot_function() {
         <slot name={name} />
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert!(code.contains("_createForSlots"));
@@ -1171,7 +1418,10 @@ fn slot_with_component_inside_v_if_is_non_stable() {
         </div>
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1203,7 +1453,10 @@ fn slot_with_component_inside_v_for_is_non_stable() {
         </div>
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1237,7 +1490,10 @@ fn slot_with_nested_v_if_containing_component_is_non_stable() {
         </div>
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1273,7 +1529,10 @@ fn slot_with_only_text_interpolation_is_stable() {
         {message}
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1298,7 +1557,10 @@ fn slot_with_v_if_but_no_component_is_non_stable() {
         <span v-else>fallback</span>
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1330,7 +1592,10 @@ fn slot_with_v_for_but_no_component_is_none_stable() {
         <div v-for={item in items}>{item}</div>
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1360,7 +1625,10 @@ fn slot_with_custom_element_is_stable() {
         <my-element></my-element>
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1385,7 +1653,10 @@ fn slot_with_dynamic_root_and_stable_sibling_is_stable() {
         <i>tail</i>
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1419,7 +1690,10 @@ fn slot_with_custom_element_inside_v_if_is_non_stable() {
         </div>
       </template>
     </Comp>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1449,6 +1723,7 @@ fn error_on_extraneous_children_with_named_default_slot() {
       <template v-slot:default>foo</template>bar
     </Comp>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -1470,6 +1745,7 @@ fn error_on_duplicated_slot_names() {
       <template v-slot:foo></template>
     </Comp>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -1487,6 +1763,7 @@ fn error_on_invalid_mixed_slot_usage() {
       <template v-slot:foo></template>
     </Comp>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -1502,6 +1779,7 @@ fn error_on_v_slot_usage_on_plain_elements() {
   transform(
     "<div v-slot/>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -1520,6 +1798,7 @@ fn slot_v_else_missing_adjacent_v_if_should_report_compiler_error() {
       <Comp><template v-slot:foo v-else-if={ok}>foo</template></Comp>
     </>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -1535,7 +1814,10 @@ fn array_args() {
     "<Comp v-slot={[foo, bar]}>
       {foo}
     </Com>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1561,7 +1843,10 @@ fn array_args_with_template() {
         {foo}
       </template>
     </Com>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -1585,7 +1870,10 @@ fn array_args_with_arg() {
     "<Comp v-slot:foo={[foo, bar]}>
       {foo}
     </Comp>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"

@@ -9,10 +9,7 @@ fn default_slot_outlet() {
   let code = transform(
     r#"<slot>
     </slot>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -26,14 +23,7 @@ fn default_slot_outlet() {
 
 #[test]
 fn statically_named_slot_outlet() {
-  let code = transform(
-    r#"<slot name="foo">foo</slot>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<slot name="foo">foo</slot>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
@@ -47,14 +37,7 @@ fn statically_named_slot_outlet() {
 
 #[test]
 fn dynamically_named_slot_outlet() {
-  let code = transform(
-    r#"<slot name={foo} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<slot name={foo} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
@@ -66,14 +49,7 @@ fn dynamically_named_slot_outlet() {
 
 #[test]
 fn default_slot_outlet_with_props() {
-  let code = transform(
-    r#"<slot foo="bar" baz={qux} foo-bar={foo-bar} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<slot foo="bar" baz={qux} foo-bar={foo-bar} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
@@ -89,14 +65,7 @@ fn default_slot_outlet_with_props() {
 
 #[test]
 fn statically_named_slot_outlet_with_props() {
-  let code = transform(
-    r#"<slot name="foo" foo="bar" baz={qux} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<slot name="foo" foo="bar" baz={qux} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
@@ -111,14 +80,7 @@ fn statically_named_slot_outlet_with_props() {
 
 #[test]
 fn dynamically_named_slot_outlet_with_props() {
-  let code = transform(
-    r#"<slot name={foo} foo="bar" baz={qux} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<slot name={foo} foo="bar" baz={qux} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
@@ -133,14 +95,7 @@ fn dynamically_named_slot_outlet_with_props() {
 
 #[test]
 fn default_slot_outlet_with_fallback() {
-  let code = transform(
-    r#"<slot><div /></slot>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<slot><div /></slot>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
@@ -154,14 +109,7 @@ fn default_slot_outlet_with_fallback() {
 
 #[test]
 fn named_slot_outlet_with_fallback() {
-  let code = transform(
-    r#"<slot name="foo"><div /></slot>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<slot name="foo"><div /></slot>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
@@ -175,14 +123,7 @@ fn named_slot_outlet_with_fallback() {
 
 #[test]
 fn default_slot_outlet_with_props_and_fallback() {
-  let code = transform(
-    r#"<slot foo={bar}><div /></slot>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<slot foo={bar}><div /></slot>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
@@ -196,14 +137,7 @@ fn default_slot_outlet_with_props_and_fallback() {
 
 #[test]
 fn named_slot_outlet_with_props_and_fallback() {
-  let code = transform(
-    r#"<slot name="foo" foo={bar}><div /></slot>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<slot name="foo" foo={bar}><div /></slot>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
@@ -217,14 +151,7 @@ fn named_slot_outlet_with_props_and_fallback() {
 
 #[test]
 fn slots_component() {
-  let code = transform(
-    r#"<slots.foo foo={bar}><div /></slots.foo>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<slots.foo foo={bar}><div /></slots.foo>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementVNode as _createElementVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
@@ -240,10 +167,7 @@ fn slots_component() {
 fn dollor_slots_component() {
   let code = transform(
     r#"<this.$slots.foo foo={bar}><div /></this.$slots.foo>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -263,7 +187,6 @@ fn error_on_unexpected_cunstom_directive_on_slot() {
   transform(
     r#"<slot v-foo />"#,
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -279,14 +202,7 @@ fn error_on_unexpected_cunstom_directive_on_slot() {
 
 #[test]
 fn v_if_on_slot_with_v_bind() {
-  let code = transform(
-    r#"<slot v-if={ok} {...items}></slot>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<slot v-if={ok} {...items}></slot>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, guardReactiveProps as _guardReactiveProps, normalizeProps as _normalizeProps, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {

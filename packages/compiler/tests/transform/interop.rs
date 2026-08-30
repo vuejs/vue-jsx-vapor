@@ -14,7 +14,7 @@ fn basic() {
       return <div />
     })",
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )

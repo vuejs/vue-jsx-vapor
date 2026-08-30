@@ -1,17 +1,9 @@
-use common::options::TransformOptions;
 use compiler::transform;
 use insta::assert_snapshot;
 
 #[test]
 fn on_root_element() {
-  let code = transform(
-    r#"<div v-memo={[x]}></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-memo={[x]}></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
@@ -24,14 +16,7 @@ fn on_root_element() {
 
 #[test]
 fn on_normal_element() {
-  let code = transform(
-    r#"<div v-memo={[x]}></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-memo={[x]}></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
@@ -44,14 +29,7 @@ fn on_normal_element() {
 
 #[test]
 fn on_normal_element_with_dynamic_key() {
-  let code = transform(
-    r#"<div v-memo={[updateKey]} key={updateKey}></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-memo={[updateKey]} key={updateKey}></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
@@ -71,10 +49,7 @@ fn on_normal_element_with_dynamic_key_nested_in_v_for() {
         key={get(item, updateKey)}
       >{ item }</div>
     </div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -89,14 +64,7 @@ fn on_normal_element_with_dynamic_key_nested_in_v_for() {
 
 #[test]
 fn on_component() {
-  let code = transform(
-    r#"<Comp v-memo={[x]}></Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp v-memo={[x]}></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
@@ -114,10 +82,7 @@ fn on_v_if() {
       <div v-if={ok} v-memo={[x]}><span>foo</span>bar</div>
       <Comp v-else v-memo={[x]}></Comp>
     </>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -136,10 +101,7 @@ fn on_v_for() {
     r#"<div v-for={{ x, y } in list} key={x} v-memo={[x, y === z]}>
       <span>foobar</span>
     </div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -164,10 +126,7 @@ fn on_v_for_with_compound_key_expression() {
     r#"<div v-for={{ x, y } in list} key={get(x)} v-memo={[x, y === z]}>
       <span>foobar</span>
     </div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -192,10 +151,7 @@ fn on_template_v_for() {
     r#"<template v-for={{ x, y } in list} key={x} v-memo={[x, y === z]}>
       <span>foobar</span>
     </template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -220,10 +176,7 @@ fn on_template_v_for_with_compound_key_expression() {
     r#"<template v-for={{ x, y } in list} key={get(x)} v-memo={[x, y === z]}>
       <span>foobar</span>
     </template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"

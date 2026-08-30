@@ -1,12 +1,19 @@
 use std::cell::RefCell;
 
-use common::{error::ErrorCodes, options::TransformOptions};
-use compiler::transform;
+use common::error::ErrorCodes;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
 fn basic() {
-  let code = transform("<div v-show={foo} />", None).code;
+  let code = transform(
+    "<div v-show={foo} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { applyVShow as _applyVShow, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -24,6 +31,7 @@ fn should_raise_error_if_has_no_expression() {
   transform(
     "<div v-show />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),

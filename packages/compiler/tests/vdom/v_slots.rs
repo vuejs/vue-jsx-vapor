@@ -8,10 +8,7 @@ use insta::assert_snapshot;
 fn v_slots_basic() {
   let code = transform(
     r#"<Comp v-slots={{ default: ({foo}) => <>{<input v-model={bar} onClick={() => foo} />}</> }}></Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -37,10 +34,7 @@ fn function_expression_children() {
     r#"<Comp>
       {({ foo }) => <div onClick={() => foo} />}
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -60,10 +54,7 @@ fn object_expression_children() {
     r#"<Comp>
       {{ default: ({ foo }) => <input v-model={bar} onClick={() => foo} /> }}
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -92,10 +83,7 @@ fn object_expression_multiple_children() {
         other: () => <div>{foo}</div>
       }}
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -122,10 +110,7 @@ fn object_expression_children_with_computed_property() {
     r#"<Comp>
       {{ [foo]: () => <>foo</> }}
     </Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -153,10 +138,7 @@ fn v_slot_with_v_slots() {
       },
     }}
     </VAutocomplete>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -174,14 +156,7 @@ fn v_slot_with_v_slots() {
 
 #[test]
 fn for_component_should_be_dynamic() {
-  let code = transform(
-    r#"<For>{() => <div />}</For>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<For>{() => <div />}</For>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(For, null, {
@@ -193,14 +168,7 @@ fn for_component_should_be_dynamic() {
 
 #[test]
 fn v_slots_with_children() {
-  let code = transform(
-    "<Comp v-slots={{ foo: () => 'foo' }}><div /></Comp>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<Comp v-slots={{ foo: () => 'foo' }}><div /></Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -217,14 +185,7 @@ fn v_slots_with_children() {
 
 #[test]
 fn v_slots_dynamic_with_children() {
-  let code = transform(
-    "<Comp v-slots={slots}><div /></Comp>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<Comp v-slots={slots}><div /></Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -240,14 +201,7 @@ fn v_slots_dynamic_with_children() {
 
 #[test]
 fn v_slots_dynamic_with_identify_children() {
-  let code = transform(
-    "<Comp v-slots={slots}>{defaultSlot}</Comp>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<Comp v-slots={slots}>{defaultSlot}</Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
@@ -260,14 +214,7 @@ fn v_slots_dynamic_with_identify_children() {
 
 #[test]
 fn identify_children() {
-  let code = transform(
-    "<Comp>{slots}</Comp>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<Comp>{slots}</Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
@@ -277,14 +224,7 @@ fn identify_children() {
 
 #[test]
 fn this_expression_slots_children() {
-  let code = transform(
-    "<Comp>{this.$slots}</Comp>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<Comp>{this.$slots}</Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
@@ -296,10 +236,7 @@ fn this_expression_slots_children() {
 fn condition_expression_children() {
   let code = transform(
     "<Comp>{slots ? { default: () => <div /> } : undefined}</Comp>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -311,14 +248,7 @@ fn condition_expression_children() {
 
 #[test]
 fn logical_expression_children() {
-  let code = transform(
-    "<Comp>{slots || { default: () => <div /> }}</Comp>",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform("<Comp>{slots || { default: () => <div /> }}</Comp>", None).code;
   assert_snapshot!(code, @r#"
   import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
@@ -335,10 +265,7 @@ fn identify_slots_in_nested_component_should_be_dynamic() {
         <ContextProvider>{child}</ContextProvider>
       </Comp>
     }"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -360,7 +287,6 @@ fn should_raise_error_if_not_component() {
   transform(
     "<div v-slots={obj}></div>",
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -376,7 +302,6 @@ fn should_raise_error_if_has_no_expression() {
   transform(
     "<Comp v-slots></Comp>",
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),

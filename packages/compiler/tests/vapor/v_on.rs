@@ -1,12 +1,19 @@
 use std::cell::RefCell;
 
-use common::{error::ErrorCodes, options::TransformOptions};
-use compiler::transform;
+use common::error::ErrorCodes;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
 fn basic() {
-  let code = transform("<div onClick={handleClick}></div>", None).code;
+  let code = transform(
+    "<div onClick={handleClick}></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -45,7 +52,10 @@ fn event_modifier() {
       <input onKeyup_middle_self={submit} />
       <input onKeyup_self_enter={handleEvent} />
     </>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -133,6 +143,7 @@ fn should_error_if_no_expression_and_no_modifier() {
   transform(
     "<div onClick />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -148,6 +159,7 @@ fn should_not_error_if_no_expression_but_has_modifier() {
   let code = transform(
     "<div onClick_prevent />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -169,7 +181,14 @@ fn should_not_error_if_no_expression_but_has_modifier() {
 
 #[test]
 fn should_support_multiple_modifiers_and_event_options() {
-  let code = transform("<div onClick_stop_prevent_capture_once={test} />", None).code;
+  let code = transform(
+    "<div onClick_stop_prevent_capture_once={test} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
   const _t0 = _template("<div>", 1);
@@ -186,7 +205,14 @@ fn should_support_multiple_modifiers_and_event_options() {
 
 #[test]
 fn should_support_multiple_events_and_modifiers_options() {
-  let code = transform("<div onClick_stop={test} onKeyup_enter={test} />", None).code;
+  let code = transform(
+    "<div onClick_stop={test} onKeyup_enter={test} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
   const _t0 = _template("<div>", 1);
@@ -201,7 +227,14 @@ fn should_support_multiple_events_and_modifiers_options() {
 
 #[test]
 fn should_wrap_keys_guard_for_keyboard_events_or_dynamic_events() {
-  let code = transform("<div onKeydown_stop_capture_ctrl_a={test}/>", None).code;
+  let code = transform(
+    "<div onKeydown_stop_capture_ctrl_a={test}/>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
   const _t0 = _template("<div>", 1);
@@ -215,7 +248,14 @@ fn should_wrap_keys_guard_for_keyboard_events_or_dynamic_events() {
 
 #[test]
 fn should_not_wrap_keys_guard_if_no_key_modifier_is_present() {
-  let code = transform("<div onKeyup_exact={test}/>", None).code;
+  let code = transform(
+    "<div onKeyup_exact={test}/>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
   const _t0 = _template("<div>", 1);
@@ -229,7 +269,14 @@ fn should_not_wrap_keys_guard_if_no_key_modifier_is_present() {
 
 #[test]
 fn should_wrap_keys_guard_for_static_key_event_with_left_or_right_modifiers() {
-  let code = transform("<div onKeyup_left={test}/>", None).code;
+  let code = transform(
+    "<div onKeyup_left={test}/>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template, withKeys as _withKeys } from "vue";
   const _t0 = _template("<div>", 1);
@@ -243,7 +290,14 @@ fn should_wrap_keys_guard_for_static_key_event_with_left_or_right_modifiers() {
 
 #[test]
 fn should_transform_click_right() {
-  let code = transform("<div onClick_right={test}/>", None).code;
+  let code = transform(
+    "<div onClick_right={test}/>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
   const _t0 = _template("<div>", 1);
@@ -257,7 +311,14 @@ fn should_transform_click_right() {
 
 #[test]
 fn should_transform_click_middle() {
-  let code = transform("<div onClick_middle={test}/>", None).code;
+  let code = transform(
+    "<div onClick_middle={test}/>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
   const _t0 = _template("<div>", 1);
@@ -271,7 +332,14 @@ fn should_transform_click_middle() {
 
 #[test]
 fn should_use_direct_event_listener_by_default() {
-  let code = transform("<div onClick={test}/>", None).code;
+  let code = transform(
+    "<div onClick={test}/>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -285,7 +353,14 @@ fn should_use_direct_event_listener_by_default() {
 
 #[test]
 fn should_delegate_event_with_delegate_modifier() {
-  let code = transform("<div onClick_delegate={test}/>", None).code;
+  let code = transform(
+    "<div onClick_delegate={test}/>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert!(code.contains("_delegateEvents(\"click\")"));
   assert!(code.contains("delegateEvents as _delegateEvents"));
   assert!(!code.contains("on as _on"));
@@ -297,6 +372,7 @@ fn should_delegate_empty_handler() {
   transform(
     "<div onClick_delegate />",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|code, _| {
         *error.borrow_mut() = Some(code);
       }),
@@ -311,7 +387,10 @@ fn should_delegate_empty_handler() {
 fn should_delegate_multiple_handlers_of_same_name() {
   let code = transform(
     "<div onClick_delegate_foo={a} onClick_delegate_bar={b} />",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert!(code.contains("_delegateEvents(\"click\")"));
@@ -322,7 +401,14 @@ fn should_delegate_multiple_handlers_of_same_name() {
 
 #[test]
 fn should_fallback_to_direct_listener_with_event_options() {
-  let code = transform("<div onClick_delegate_capture={test} />", None).code;
+  let code = transform(
+    "<div onClick_delegate_capture={test} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert!(code.contains("_on(_n0, \"click\", test, { capture: true })"));
   assert!(!code.contains("_delegateEvents"));
 }
@@ -333,6 +419,7 @@ fn should_fallback_to_direct_listener_for_unsupported_event() {
   let code = transform(
     "<div onScroll_delegate={test} />",
     Some(TransformOptions {
+      vapor: true,
       on_warn: Box::new(|message, _| {
         *warning.borrow_mut() = Some(message.to_string());
       }),
@@ -356,6 +443,7 @@ fn should_ignore_delegate_modifier_on_component_event() {
   let code = transform(
     "<Comp onClick_delegate={test} />",
     Some(TransformOptions {
+      vapor: true,
       on_warn: Box::new(|message, _| {
         *warning.borrow_mut() = Some(message.to_string());
       }),
@@ -375,7 +463,14 @@ fn should_ignore_delegate_modifier_on_component_event() {
 
 #[test]
 fn should_not_delegate_stop_when_have_multiple_events_of_same_name() {
-  let code = transform("<div onClick_delegate={test} onClick_stop={test} />", None).code;
+  let code = transform(
+    "<div onClick_delegate={test} onClick_stop={test} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
   const _t0 = _template("<div>", 1);
@@ -390,7 +485,14 @@ fn should_not_delegate_stop_when_have_multiple_events_of_same_name() {
 
 #[test]
 fn should_not_delegate_when_delegate_handler_uses_stop() {
-  let code = transform("<div onClick_stop_delegate={test} />", None).code;
+  let code = transform(
+    "<div onClick_stop_delegate={test} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert!(code.contains("_on(_n0, \"click\", _withModifiers(test, [\"stop\"]))"));
   assert!(!code.contains("_delegateEvents"));
 }
@@ -399,7 +501,10 @@ fn should_not_delegate_when_delegate_handler_uses_stop() {
 fn should_not_delegate_normalized_static_event_when_sibling_uses_stop() {
   let code = transform(
     r#"<div onClick_right_delegate={test} onContextmenu_stop={test} />"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -416,7 +521,14 @@ fn should_not_delegate_normalized_static_event_when_sibling_uses_stop() {
 
 #[test]
 fn namespace_event_with_component() {
-  let code = transform("<Comp onUpdate:modelValue={() => {}} />", None).code;
+  let code = transform(
+    "<Comp onUpdate:modelValue={() => {}} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -428,7 +540,14 @@ fn namespace_event_with_component() {
 
 #[test]
 fn expression_with_type() {
-  let code = transform("<div onClick={handleClick as any} />", None).code;
+  let code = transform(
+    "<div onClick={handleClick as any} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -444,7 +563,10 @@ fn expression_with_type() {
 fn should_prioritize_right_over_middle_for_click_event_normalization() {
   let code = transform(
     "<><div onClick_middle_right={test}/><div onClick_right_middle={test}/></>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"

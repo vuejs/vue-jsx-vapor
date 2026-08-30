@@ -53,10 +53,10 @@ export interface CompilerOptions {
    */
   filename?: string
   /**
-   * When enabled, JSX within `defineVaporComponent` is transformed to Vapor DOM,
-   * while all other JSX is transformed to Virtual DOM.
+   * Transform JSX to Vapor DOM.
+   * @default false
    */
-  interop?: boolean
+  vapor?: boolean
   /**
    * Enabled HMR support.
    * - `true`/`false`: a boolean to simply enable/disable HMR. When `true`, HMR
@@ -76,7 +76,7 @@ export interface CompilerOptions {
    * - **Cache**: Cache event handler to avoid recreating closures on each render.
    * - **Block**: Enable block tree optimizations.
    *
-   * Note: this option is only used in interop mode.
+   * Note: this option is only used in Virtual DOM mode.
    * @default true
    */
   optimize?: boolean

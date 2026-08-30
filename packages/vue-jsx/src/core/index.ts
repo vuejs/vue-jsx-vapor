@@ -8,10 +8,10 @@ export function transformVueJsx(
   options?: CompilerOptions,
 ) {
   const params = new URLSearchParams(id)
-  const vapor = params.get('vapor')
+  const vapor = params.has('vapor')
   return transform(code, {
     filename: id,
-    interop: vapor ? false : options?.interop,
     ...options,
+    vapor: vapor || options?.vapor,
   })
 }

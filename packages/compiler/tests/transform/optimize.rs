@@ -8,7 +8,7 @@ fn should_optimize_in_functional_compoennt() {
       return <Comp>{foo}</Comp>
     }",
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -32,7 +32,7 @@ fn should_not_optimize_in_functional_compoennt_with_params() {
       return <Comp>{foo}</Comp>
     }",
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -58,7 +58,7 @@ fn should_optimize_in_define_compoennt() {
       }
     })",
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -82,7 +82,7 @@ fn should_optimize_in_functional_define_compoennt() {
       return () => <div onClick={() => foo} />
     })",
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -117,7 +117,7 @@ fn should_optimize_in_nested_define_compoennt() {
       return () => <div onClick={() => foo} />
     })",
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -170,7 +170,7 @@ fn should_optimize_in_custom_define_compoennt() {
       return () => <div onClick={() => foo} />
     })",
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -210,7 +210,7 @@ fn should_cache_in_root_arrow_function_without_params() {
   let code = transform(
     r#"() => <div onClick={() => item} />"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -230,7 +230,7 @@ fn should_not_cache_in_root_arrow_function_with_params() {
   let code = transform(
     r#"(item) => <div onClick={() => item} />"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -249,7 +249,7 @@ fn should_not_cache_in_root_function_with_params() {
       return <div onClick={() => item} />
     }"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -271,7 +271,7 @@ fn should_not_cache_in_for_statement() {
       stmts.push(<div onClick={() => i} onBlur={() => foo} />)
     }"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -300,7 +300,7 @@ fn should_not_cache_in_for_in_statement() {
     <Comp>{foo}</Comp>
     "#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -332,7 +332,7 @@ fn should_not_cache_in_for_of_statement() {
       stmts.push(<div onClick={() => i} onBlur={() => foo} />)
     }"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -368,7 +368,7 @@ fn should_not_optimize_multiple_statments() {
     )
     "#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -404,7 +404,7 @@ fn should_not_optimize_in_nested_scopes() {
       })
     }"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       filename: "index.tsx",
       ..Default::default()
     }),
@@ -437,7 +437,7 @@ fn should_optimize_in_define_component_with_setup() {
       },
     })"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       filename: "index.tsx",
       ..Default::default()
     }),
@@ -472,7 +472,7 @@ fn should_not_optimize_in_define_component_with_setup() {
       },
     })"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       filename: "index.tsx",
       ..Default::default()
     }),
@@ -497,7 +497,7 @@ fn disable_optimize() {
       <div />
     </div>"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       optimize: false,
       ..Default::default()
     }),
@@ -520,7 +520,7 @@ fn if_statement_return_jsx() {
       return <span />
     }"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -545,7 +545,7 @@ fn conditional_expression_return_jsx() {
       return props.foo ? (<div>{props.foo}</div>) : props.bar ? <div /> : <slot />
     }"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )
@@ -579,7 +579,7 @@ fn switch_return_jsx() {
       }
     }"#,
     Some(TransformOptions {
-      interop: true,
+      vapor: false,
       ..Default::default()
     }),
   )

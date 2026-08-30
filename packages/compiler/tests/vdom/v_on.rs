@@ -6,14 +6,7 @@ use insta::assert_snapshot;
 
 #[test]
 fn basic() {
-  let code = transform(
-    r#"<div onClick={onClick}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onClick={onClick}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick"];
@@ -23,14 +16,7 @@ fn basic() {
 
 #[test]
 fn call_expression() {
-  let code = transform(
-    r#"<div onClick={foo($event)}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onClick={foo($event)}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
@@ -43,14 +29,7 @@ fn call_expression() {
 
 #[test]
 fn arrow_function_expression() {
-  let code = transform(
-    r#"<div onClick={$event => foo($event)}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onClick={$event => foo($event)}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
@@ -63,14 +42,7 @@ fn arrow_function_expression() {
 
 #[test]
 fn async_arrow_function_expression() {
-  let code = transform(
-    r#"<div onClick={async $event => foo($event)}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onClick={async $event => foo($event)}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
@@ -87,10 +59,7 @@ fn function_expression() {
     r#"<div onClick={function($event) {
       foo($event)
     }}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -107,14 +76,7 @@ fn function_expression() {
 
 #[test]
 fn complex_memeber_expression() {
-  let code = transform(
-    r#"<div onClick={a['b' + c]}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onClick={a['b' + c]}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick"];
@@ -128,7 +90,6 @@ fn should_error_if_no_expression_and_no_modifier() {
   transform(
     r#"<input onClick />"#,
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -140,14 +101,7 @@ fn should_error_if_no_expression_and_no_modifier() {
 
 #[test]
 fn should_not_error_if_no_expression_but_has_modifier() {
-  let code = transform(
-    r#"<input onClick_prevent />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input onClick_prevent />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
@@ -160,14 +114,7 @@ fn should_not_error_if_no_expression_but_has_modifier() {
 
 #[test]
 fn do_not_case_conversion_for_kebab_case_events() {
-  let code = transform(
-    r#"<input onFoo-bar="onMount />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<input onFoo-bar="onMount />"#, None).code;
   assert_snapshot!(code, @"");
 }
 
@@ -175,10 +122,7 @@ fn do_not_case_conversion_for_kebab_case_events() {
 fn vue_prefixed_events() {
   let code = transform(
     r#"<div onVue:mounted={onMount} onVue:beforeUpdate={onBeforeUpdate} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -193,14 +137,7 @@ fn vue_prefixed_events() {
 
 #[test]
 fn empty_handler() {
-  let code = transform(
-    r#"<div onClick_prevent />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onClick_prevent />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
@@ -213,14 +150,7 @@ fn empty_handler() {
 
 #[test]
 fn member_expression_handler() {
-  let code = transform(
-    r#"<div onClick={foo.bar} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onClick={foo.bar} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick"];
@@ -230,14 +160,7 @@ fn member_expression_handler() {
 
 #[test]
 fn bail_on_component_member_expression_handler() {
-  let code = transform(
-    r#"<comp onClick={foo} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<comp onClick={foo} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick"];
@@ -247,14 +170,7 @@ fn bail_on_component_member_expression_handler() {
 
 #[test]
 fn should_not_be_cached_inside_v_once() {
-  let code = transform(
-    r#"<div v-once><div onClick={foo}/></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-once><div onClick={foo}/></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementVNode as _createElementVNode, setBlockTracking as _setBlockTracking } from "vue";
@@ -269,10 +185,7 @@ fn should_not_be_cached_inside_v_once() {
 fn unicode_identifier_from_v_for_should_not_be_cached() {
   let code = transform(
     r#"<div v-for={项 in items} key={value}><div onClick={foo(项)}/></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -286,10 +199,7 @@ fn unicode_identifier_from_v_for_should_not_be_cached() {
 fn identifier_from_v_slot_should_not_be_cached() {
   let code = transform(
     r#"<Comp v-slot={{ item }}><div onClick={foo(item)}/></Comp>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -304,14 +214,7 @@ fn identifier_from_v_slot_should_not_be_cached() {
 
 #[test]
 fn should_support_multiple_modifiers() {
-  let code = transform(
-    r#"<div onClick_stop_prevent={test}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onClick_stop_prevent={test}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
   const _hoisted_1 = ["onClick"];
@@ -321,14 +224,7 @@ fn should_support_multiple_modifiers() {
 
 #[test]
 fn should_support_multiple_events_and_modifiers_options() {
-  let code = transform(
-    r#"<div onClick_stop={test} onKeyup_enter={test} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onClick_stop={test} onKeyup_enter={test} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
   const _hoisted_1 = ["onClick", "onKeyup"];
@@ -341,14 +237,7 @@ fn should_support_multiple_events_and_modifiers_options() {
 
 #[test]
 fn should_support_multiple_modifiers_and_event_options() {
-  let code = transform(
-    r#"<div onClick_stop_capture_once={test}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onClick_stop_capture_once={test}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
   const _hoisted_1 = ["onClickCaptureOnce"];
@@ -358,14 +247,7 @@ fn should_support_multiple_modifiers_and_event_options() {
 
 #[test]
 fn should_wrap_keys_guard_for_keyboard_events_or_dynamic_events() {
-  let code = transform(
-    r#"<div onKeydown_stop_capture_ctrl_a={test}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onKeydown_stop_capture_ctrl_a={test}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
   const _hoisted_1 = ["onKeydownCapture"];
@@ -375,14 +257,7 @@ fn should_wrap_keys_guard_for_keyboard_events_or_dynamic_events() {
 
 #[test]
 fn should_not_wrap_keys_guard_if_no_key_modifier_is_present() {
-  let code = transform(
-    r#"<div onKeyup_exact={test}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onKeyup_exact={test}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
   const _hoisted_1 = ["onKeyup"];
@@ -392,14 +267,7 @@ fn should_not_wrap_keys_guard_if_no_key_modifier_is_present() {
 
 #[test]
 fn should_wrap_keys_guard_for_static_key_event_with_left_right_modifiers() {
-  let code = transform(
-    r#"<div onKeyup_left={test}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onKeyup_left={test}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys } from "vue";
   const _hoisted_1 = ["onKeyup"];
@@ -409,14 +277,7 @@ fn should_wrap_keys_guard_for_static_key_event_with_left_right_modifiers() {
 
 #[test]
 fn should_not_wrap_normal_guard_if_there_is_only_keys_guard() {
-  let code = transform(
-    r#"<div onKeyup_enter={test}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onKeyup_enter={test}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys } from "vue";
   const _hoisted_1 = ["onKeyup"];
@@ -426,14 +287,7 @@ fn should_not_wrap_normal_guard_if_there_is_only_keys_guard() {
 
 #[test]
 fn should_transform_click_right() {
-  let code = transform(
-    r#"<div onClick_right={test}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onClick_right={test}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
   const _hoisted_1 = ["onContextmenu"];
@@ -443,14 +297,7 @@ fn should_transform_click_right() {
 
 #[test]
 fn should_transform_click_middle() {
-  let code = transform(
-    r#"<div onClick_middle={test}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onClick_middle={test}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
   const _hoisted_1 = ["onMouseup"];
@@ -460,14 +307,7 @@ fn should_transform_click_middle() {
 
 #[test]
 fn cache_handler_with_modifiers() {
-  let code = transform(
-    r#"<div onKeyup_enter_capture={foo} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onKeyup_enter_capture={foo} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys } from "vue";
   const _hoisted_1 = ["onKeyupCapture"];
@@ -477,14 +317,7 @@ fn cache_handler_with_modifiers() {
 
 #[test]
 fn should_not_have_props_patch_flag_for_constant_v_on_handlers_with_modifiers() {
-  let code = transform(
-    r#"<div onKeydown_up={foo} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onKeydown_up={foo} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys } from "vue";
   const _hoisted_1 = ["onKeydown"];

@@ -6,14 +6,7 @@ use insta::assert_snapshot;
 
 #[test]
 fn simple_expression() {
-  let code = transform(
-    r#"<div v-show={foo} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-show={foo} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vShow as _vShow, withDirectives as _withDirectives } from "vue";
   _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[_vShow, foo]]);
@@ -26,7 +19,6 @@ fn should_raise_errror_if_has_no_expression() {
   transform(
     r#"<div v-show />"#,
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),

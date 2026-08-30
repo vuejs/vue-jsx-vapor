@@ -1,9 +1,16 @@
-use compiler::transform;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
 fn key() {
-  let code = transform("<div key={id} />", None).code;
+  let code = transform(
+    "<div key={id} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
   const _t0 = _template("<div>", 3);
@@ -19,7 +26,14 @@ fn key() {
 
 #[test]
 fn key_with_v_once() {
-  let code = transform(r#"<div v-once key={id} />"#, None).code;
+  let code = transform(
+    r#"<div v-once key={id} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<div>", 3);
@@ -33,7 +47,14 @@ fn key_with_v_once() {
 
 #[test]
 fn key_with_v_if() {
-  let code = transform("<div v-if={id} key={id} />", None).code;
+  let code = transform(
+    "<div v-if={id} key={id} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
   const _t0 = _template("<div>", 3);
@@ -58,7 +79,10 @@ fn key_with_anchor_insertion_in_middle() {
       <div key={foo}></div>
       <div></div>
     </div>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -80,7 +104,14 @@ fn key_with_anchor_insertion_in_middle() {
 
 #[test]
 fn key_in_component() {
-  let code = transform("<Comp><div key={key} /></Comp>", None).code;
+  let code = transform(
+    "<Comp><div key={key} /></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
@@ -105,7 +136,10 @@ fn static_key() {
       <div key={1} />
       <Comp key={1} />
     </>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -129,7 +163,10 @@ fn boolean_static_expression_key() {
       <div key={true} />
       <Comp key={true} />
     </>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -153,7 +190,10 @@ fn null_static_expression_key() {
       <div key={null} />
       <Comp key={null} />
     </>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -177,7 +217,10 @@ fn v_once_with_static_key() {
       <div v-once key="foo" />
       <Comp v-once key="foo" />
     </>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -201,7 +244,10 @@ fn key_without_value() {
       <div key />
       <Comp key />
     </>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"

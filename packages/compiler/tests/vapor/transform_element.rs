@@ -1,9 +1,16 @@
-use compiler::transform;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
 fn member_expression_component() {
-  let code = transform("<Foo.Example/>", None).code;
+  let code = transform(
+    "<Foo.Example/>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -15,7 +22,14 @@ fn member_expression_component() {
 
 #[test]
 fn component_generate_single_root_component() {
-  let code = transform("<Comp/>", None).code;
+  let code = transform(
+    "<Comp/>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -27,7 +41,14 @@ fn component_generate_single_root_component() {
 
 #[test]
 fn emit_single_default_slot_as_raw_slot_function() {
-  let code = transform("<Card><div/></Card>", None).code;
+  let code = transform(
+    "<Card><div/></Card>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
@@ -44,7 +65,14 @@ fn emit_single_default_slot_as_raw_slot_function() {
 
 #[test]
 fn component_generate_multi_root_component() {
-  let code = transform("<><Comp/>123</>", None).code;
+  let code = transform(
+    "<><Comp/>123</>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { template as _template } from "vue";
@@ -59,7 +87,14 @@ fn component_generate_multi_root_component() {
 
 #[test]
 fn component_fragment_should_not_mark_as_single_root() {
-  let code = transform("<><Comp/></>", None).code;
+  let code = transform(
+    "<><Comp/></>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -71,7 +106,14 @@ fn component_fragment_should_not_mark_as_single_root() {
 
 #[test]
 fn component_v_for_should_not_mark_as_single_root() {
-  let code = transform("<Comp v-for={item in items} key={item}/>", None).code;
+  let code = transform(
+    "<Comp v-for={item in items} key={item}/>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createFor as _createFor } from "vue";
@@ -87,7 +129,14 @@ fn component_v_for_should_not_mark_as_single_root() {
 
 #[test]
 fn component_static_props() {
-  let code = transform("<Foo id=\"foo\" class=\"bar\" />", None).code;
+  let code = transform(
+    "<Foo id=\"foo\" class=\"bar\" />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -102,7 +151,14 @@ fn component_static_props() {
 
 #[test]
 fn component_static_literal_bind_props() {
-  let code = transform("<Foo literal={'bar'} />", None).code;
+  let code = transform(
+    "<Foo literal={'bar'} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -126,7 +182,10 @@ fn component_constant_bind_props_are_direct_raw_prop_values() {
       items={[1, "two", false, null, undefined]}
       options={{ placement: "bottom", offset: 8, nested: { enabled: true } }}
     />"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -173,7 +232,10 @@ fn component_constant_bind_props_are_direct_raw_prop_values() {
 fn component_dynamic_non_literal_prop_values_stay_as_getter_sources() {
   let code = transform(
     r#"<Foo foo={bar} obj={{ a: bar }} handler={onClick} formatter={v => v.toFixed(2)} fn={() => bar} onClick={foo} />"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -201,13 +263,27 @@ fn component_dynamic_non_literal_prop_values_stay_as_getter_sources() {
 
 #[test]
 fn component_dynamic_props() {
-  let code = transform("{...obj}", None).code;
+  let code = transform(
+    "{...obj}",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#""#);
 }
 
 #[test]
 fn component_dynamic_props_after_static_prop() {
-  let code = transform("<Foo id=\"foo\" {...obj} />", None).code;
+  let code = transform(
+    "<Foo id=\"foo\" {...obj} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -222,7 +298,14 @@ fn component_dynamic_props_after_static_prop() {
 
 #[test]
 fn component_dynamic_props_before_static_prop() {
-  let code = transform("<Foo {...obj} id=\"foo\" />", None).code;
+  let code = transform(
+    "<Foo {...obj} id=\"foo\" />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -234,7 +317,14 @@ fn component_dynamic_props_before_static_prop() {
 
 #[test]
 fn component_dynamic_props_between_static_prop() {
-  let code = transform("<Foo id=\"foo\" {...obj} class=\"bar\" />", None).code;
+  let code = transform(
+    "<Foo id=\"foo\" {...obj} class=\"bar\" />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -249,7 +339,14 @@ fn component_dynamic_props_between_static_prop() {
 
 #[test]
 fn component_props_merging_event_handlers() {
-  let code = transform("<Foo onClick_foo={a} onClick_bar={e => b(e)} />", None).code;
+  let code = transform(
+    "<Foo onClick_foo={a} onClick_bar={e => b(e)} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -263,7 +360,10 @@ fn component_props_merging_event_handlers() {
 fn component_props_merging_event_handlers_with_modifiers() {
   let code = transform(
     "<Foo onKeydown_enter_prevent={a} onKeydown_esc_prevent={b} />",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -280,7 +380,10 @@ fn component_props_merging_event_handlers_with_modifiers() {
 fn component_props_merging_style() {
   let code = transform(
     "<Foo style=\"color: green\" style={{ color: 'red' }} />",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -294,7 +397,14 @@ fn component_props_merging_style() {
 
 #[test]
 fn component_props_merging_class() {
-  let code = transform("<Foo class=\"foo\" class={{ bar: isBar }} />", None).code;
+  let code = transform(
+    "<Foo class=\"foo\" class={{ bar: isBar }} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -306,7 +416,14 @@ fn component_props_merging_class() {
 
 #[test]
 fn component_v_on() {
-  let code = transform("<Foo v-on={obj} />", None).code;
+  let code = transform(
+    "<Foo v-on={obj} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { toHandlers as _toHandlers } from "vue";
@@ -319,7 +436,14 @@ fn component_v_on() {
 
 #[test]
 fn component_event_with_once_modifier() {
-  let code = transform("<Foo onFoo_once={bar} />", None).code;
+  let code = transform(
+    "<Foo onFoo_once={bar} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -331,7 +455,14 @@ fn component_event_with_once_modifier() {
 
 #[test]
 fn component_event_with_multiple_modifier_and_event_options() {
-  let code = transform("<Foo onFoo_enter_stop_prevent_capture_once={bar} />", None).code;
+  let code = transform(
+    "<Foo onFoo_enter_stop_prevent_capture_once={bar} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { withModifiers as _withModifiers } from "vue";
@@ -344,7 +475,14 @@ fn component_event_with_multiple_modifier_and_event_options() {
 
 #[test]
 fn static_props_unquoted_when_value_has_no_special_chars() {
-  let code = transform("<div id=\"foo\" class=\"bar\" />", None).code;
+  let code = transform(
+    "<div id=\"foo\" class=\"bar\" />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<div id=foo class=bar>", 3);
@@ -357,7 +495,14 @@ fn static_props_unquoted_when_value_has_no_special_chars() {
 
 #[test]
 fn static_props_quoted_when_value_contains_whitespace() {
-  let code = transform(r#"<div title="has whitespace" />"#, None).code;
+  let code = transform(
+    r#"<div title="has whitespace" />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<div title=\"has whitespace\">", 3);
@@ -370,7 +515,14 @@ fn static_props_quoted_when_value_contains_whitespace() {
 
 #[test]
 fn static_props_quoted_when_value_contains_right_angle_bracket() {
-  let code = transform(r#"<div data-expr="a>b" />"#, None).code;
+  let code = transform(
+    r#"<div data-expr="a>b" />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<div data-expr=\"a>b\">", 3);
@@ -383,7 +535,14 @@ fn static_props_quoted_when_value_contains_right_angle_bracket() {
 
 #[test]
 fn static_props_quoted_when_value_contains_left_angle_bracket() {
-  let code = transform(r#"<div data-expr="a<b" />"#, None).code;
+  let code = transform(
+    r#"<div data-expr="a<b" />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<div data-expr=\"a<b\">", 3);
@@ -396,7 +555,14 @@ fn static_props_quoted_when_value_contains_left_angle_bracket() {
 
 #[test]
 fn static_props_quoted_when_value_contains_equal_bracket() {
-  let code = transform(r#"<div data-expr="a=b" />"#, None).code;
+  let code = transform(
+    r#"<div data-expr="a=b" />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<div data-expr=\"a=b\">", 3);
@@ -409,7 +575,14 @@ fn static_props_quoted_when_value_contains_equal_bracket() {
 
 #[test]
 fn static_props_quoted_when_value_contains_single_quote() {
-  let code = transform(r#"<div title="it's" />"#, None).code;
+  let code = transform(
+    r#"<div title="it's" />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<div title=\"it's\">", 3);
@@ -422,7 +595,14 @@ fn static_props_quoted_when_value_contains_single_quote() {
 
 #[test]
 fn static_props_quoted_when_value_contains_backtick() {
-  let code = transform(r#"<div title="foo`bar" />"#, None).code;
+  let code = transform(
+    r#"<div title="foo`bar" />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<div title=\"foo`bar\">", 3);
@@ -435,7 +615,14 @@ fn static_props_quoted_when_value_contains_backtick() {
 
 #[test]
 fn static_props_escapes_double_quotes_in_value() {
-  let code = transform(r#"<div title='say "hello"' />"#, None).code;
+  let code = transform(
+    r#"<div title='say "hello"' />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<div title=\"say &quot;hello&quot;\">", 3);
@@ -450,7 +637,10 @@ fn static_props_escapes_double_quotes_in_value() {
 fn static_props_mixed_quoting_with_boolean_attribute() {
   let code = transform(
     r#"<div title="has whitespace" inert data-targets="foo>bar" />"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -467,7 +657,10 @@ fn static_props_mixed_quoting_with_boolean_attribute() {
 fn static_props_space_kept_after_quoted_attribute() {
   let code = transform(
     r#"<div title="has whitespace" alt='"contains quotes"' data-targets="foo>bar" />"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -482,7 +675,14 @@ fn static_props_space_kept_after_quoted_attribute() {
 
 #[test]
 fn props_children() {
-  let code = transform("<div id=\"foo\"><span/></div>", None).code;
+  let code = transform(
+    "<div id=\"foo\"><span/></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<div id=foo><span>", 3);
@@ -495,7 +695,14 @@ fn props_children() {
 
 #[test]
 fn dynamic_props() {
-  let code = transform("<div {...obj} />", None).code;
+  let code = transform(
+    "<div {...obj} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -509,7 +716,14 @@ fn dynamic_props() {
 
 #[test]
 fn dynamic_props_after_static_prop() {
-  let code = transform("<div id=\"foo\" {...obj} />", None).code;
+  let code = transform(
+    "<div id=\"foo\" {...obj} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -523,7 +737,14 @@ fn dynamic_props_after_static_prop() {
 
 #[test]
 fn dynamic_props_before_static_prop() {
-  let code = transform("<div {...obj} id=\"foo\" />", None).code;
+  let code = transform(
+    "<div {...obj} id=\"foo\" />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -537,7 +758,14 @@ fn dynamic_props_before_static_prop() {
 
 #[test]
 fn dynamic_props_between_static_prop() {
-  let code = transform("<div id=\"foo\" {...obj} class=\"bar\" />", None).code;
+  let code = transform(
+    "<div id=\"foo\" {...obj} class=\"bar\" />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -555,7 +783,14 @@ fn dynamic_props_between_static_prop() {
 
 #[test]
 fn props_merging_event_handlers() {
-  let code = transform("<div onClick_foo={a} onClick_bar={b} />", None).code;
+  let code = transform(
+    "<div onClick_foo={a} onClick_bar={b} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { on as _on, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -572,7 +807,10 @@ fn props_merging_event_handlers() {
 fn props_merging_style() {
   let code = transform(
     "<div style=\"color: green\" style={{ color: 'red' }} />",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -588,7 +826,14 @@ fn props_merging_style() {
 
 #[test]
 fn props_merging_class() {
-  let code = transform("<div class=\"foo\" class={{ bar: isBar }} />", None).code;
+  let code = transform(
+    "<div class=\"foo\" class={{ bar: isBar }} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setClassName as _setClassName, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -602,7 +847,14 @@ fn props_merging_class() {
 
 #[test]
 fn v_on() {
-  let code = transform("<div v-on={obj} />", None).code;
+  let code = transform(
+    "<div v-on={obj} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setDynamicEvents as _setDynamicEvents, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -619,7 +871,10 @@ fn invalid_html_nesting() {
   let code = transform(
     "<><p><div>123</div></p>
     <form><form/></form></>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -647,7 +902,10 @@ fn invalid_table_nesting_with_dynamic_child() {
         <td>{msg}</td>
       </tr>
     </table>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -669,7 +927,14 @@ fn invalid_table_nesting_with_dynamic_child() {
 
 #[test]
 fn zcustom_element() {
-  let code = transform(r#"<my-custom-element>{foo}</my-custom-element>"#, None).code;
+  let code = transform(
+    r#"<my-custom-element>{foo}</my-custom-element>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
   import { createPlainElement as _createPlainElement } from "vue";
@@ -684,7 +949,10 @@ fn zcustom_element() {
 fn custom_element_with_v_model() {
   let code = transform(
     r#"<my-custom-element v-model={foo}></my-custom-element>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -703,7 +971,10 @@ fn custom_element_with_v_model() {
 fn custom_element_with_v_on() {
   let code = transform(
     r#"<my-custom-element onFoo={foo}></my-custom-element>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -719,7 +990,10 @@ fn custom_element_with_v_on() {
 fn custom_element_with_v_html() {
   let code = transform(
     r#"<my-custom-element v-html={foo}></my-custom-element>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -736,7 +1010,10 @@ fn custom_element_with_v_html() {
 fn custom_element_with_v_text() {
   let code = transform(
     r#"<my-custom-element v-text={foo}></my-custom-element>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -752,7 +1029,14 @@ fn custom_element_with_v_text() {
 
 #[test]
 fn svg() {
-  let code = transform(r#"<svg><circle r="40"></circle></svg>"#, None).code;
+  let code = transform(
+    r#"<svg><circle r="40"></circle></svg>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<svg><circle r=40>", 3, 1);
@@ -765,7 +1049,14 @@ fn svg() {
 
 #[test]
 fn math_ml() {
-  let code = transform(r#"<math><mrow><mi>x</mi></mrow></math>"#, None).code;
+  let code = transform(
+    r#"<math><mrow><mi>x</mi></mrow></math>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("<math><mrow><mi>x", 3, 2);
@@ -778,7 +1069,14 @@ fn math_ml() {
 
 #[test]
 fn fragment_in_fragment() {
-  let code = transform(r#"<>foo<>bar</>baz</>"#, None).code;
+  let code = transform(
+    r#"<>foo<>bar</>baz</>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { template as _template } from "vue";
   const _t0 = _template("foo", 2);
@@ -806,7 +1104,10 @@ fn is_component() {
       <$foo />
       <foo.bar />
     </>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -834,7 +1135,10 @@ fn is_not_component() {
       <foo />
       <foo:bar />
     </>"#,
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -856,7 +1160,14 @@ fn is_not_component() {
 
 #[test]
 fn component_vue_vnode_hooks() {
-  let code = transform(r#"<Foo onVue:mounted={handleMounted} />"#, None).code;
+  let code = transform(
+    r#"<Foo onVue:mounted={handleMounted} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -868,7 +1179,14 @@ fn component_vue_vnode_hooks() {
 
 #[test]
 fn component_keeps_is_props() {
-  let code = transform(r#"<><Comp is={'Parent'} /><Comp is="Parent" /></>"#, None).code;
+  let code = transform(
+    r#"<><Comp is={'Parent'} /><Comp is="Parent" /></>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -881,7 +1199,14 @@ fn component_keeps_is_props() {
 
 #[test]
 fn v_on_obj_before_static_event_keeps_handler_getters() {
-  let code = transform(r#"<Foo v-on={obj} onFoo={bar} />"#, None).code;
+  let code = transform(
+    r#"<Foo v-on={obj} onFoo={bar} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { toHandlers as _toHandlers } from "vue";

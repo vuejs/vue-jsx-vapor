@@ -1,12 +1,19 @@
 use std::cell::RefCell;
 
-use common::{error::ErrorCodes, options::TransformOptions};
-use compiler::transform;
+use common::error::ErrorCodes;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
 fn should_convert_v_html_to_inner_html() {
-  let code = transform("<div v-html={code.value}></div>", None).code;
+  let code = transform(
+    "<div v-html={code.value}></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setHtml as _setHtml, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
@@ -20,7 +27,14 @@ fn should_convert_v_html_to_inner_html() {
 
 #[test]
 fn work_with_component() {
-  let code = transform("<Comp v-html={code.value} />", None).code;
+  let code = transform(
+    "<Comp v-html={code.value} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -36,6 +50,7 @@ fn should_raise_error_and_ignore_children_when_v_html_is_present() {
   let code = transform(
     "<Comp v-html={test.value}>hello</Comp>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -54,6 +69,7 @@ fn should_raise_error_if_has_no_expression() {
   transform(
     "<div v-html></div>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),

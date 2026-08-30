@@ -1,17 +1,9 @@
-use common::options::TransformOptions;
 use compiler::transform;
 use insta::assert_snapshot;
 
 #[test]
 fn resolve_component() {
-  let code = transform(
-    r#"<foo-bar />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<foo-bar />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("foo-bar");
@@ -25,10 +17,7 @@ fn should_not_resolve_component() {
       const fooBar = () => []
       return <foo-bar/>
     }",
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -42,14 +31,7 @@ fn should_not_resolve_component() {
 
 #[test]
 fn resolve_namespaced_component_from_setup_bindings() {
-  let code = transform(
-    r#"<Foo.Example/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Foo.Example/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Foo.Example);
@@ -58,14 +40,7 @@ fn resolve_namespaced_component_from_setup_bindings() {
 
 #[test]
 fn resolve_namespaced_component_from_setup_bindings_inline_const() {
-  let code = transform(
-    r#"<Foo.Example/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Foo.Example/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Foo.Example);
@@ -74,14 +49,7 @@ fn resolve_namespaced_component_from_setup_bindings_inline_const() {
 
 #[test]
 fn static_props() {
-  let code = transform(
-    r#"<div id="foo" class="bar" />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div id="foo" class="bar" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = {
@@ -94,14 +62,7 @@ fn static_props() {
 
 #[test]
 fn props_children() {
-  let code = transform(
-    r#"<div id="foo"><span/></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div id="foo"><span/></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -115,14 +76,7 @@ fn props_children() {
 
 #[test]
 fn zero_placeholder_for_children_with_no_props() {
-  let code = transform(
-    r#"<div><span/></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><span/></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -135,14 +89,7 @@ fn zero_placeholder_for_children_with_no_props() {
 
 #[test]
 fn v_bind_obj() {
-  let code = transform(
-    r#"<div {...obj} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div {...obj} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, guardReactiveProps as _guardReactiveProps, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", _normalizeProps(_guardReactiveProps(obj)), null, 16);
@@ -151,14 +98,7 @@ fn v_bind_obj() {
 
 #[test]
 fn v_bind_obj_after_static_prop() {
-  let code = transform(
-    r#"<div id="foo" {...obj} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div id="foo" {...obj} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, obj), null, 16);
@@ -167,14 +107,7 @@ fn v_bind_obj_after_static_prop() {
 
 #[test]
 fn v_bind_obj_before_static_prop() {
-  let code = transform(
-    r#"<div {...obj} id="foo" />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div {...obj} id="foo" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", _mergeProps(obj, { id: "foo" }), null, 16);
@@ -183,14 +116,7 @@ fn v_bind_obj_before_static_prop() {
 
 #[test]
 fn v_bind_obj_between_static_prop() {
-  let code = transform(
-    r#"<div id="foo" {...obj} class="bar" />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div id="foo" {...obj} class="bar" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, obj, { class: "bar" }), null, 16);
@@ -199,14 +125,7 @@ fn v_bind_obj_between_static_prop() {
 
 #[test]
 fn v_on_obj() {
-  let code = transform(
-    r#"<div id="foo" v-on={obj} class="bar" />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div id="foo" v-on={obj} class="bar" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, toHandlers as _toHandlers } from "vue";
   _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, _toHandlers(obj, true), { class: "bar" }), null, 16);
@@ -215,14 +134,7 @@ fn v_on_obj() {
 
 #[test]
 fn v_on_obj_on_component() {
-  let code = transform(
-    r#"<Foo id="foo" v-on={obj} class="bar" />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Foo id="foo" v-on={obj} class="bar" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, mergeProps as _mergeProps, openBlock as _openBlock, toHandlers as _toHandlers } from "vue";
   _openBlock(), _createBlock(Foo, _mergeProps({ id: "foo" }, _toHandlers(obj), { class: "bar" }), null, 16);
@@ -231,14 +143,7 @@ fn v_on_obj_on_component() {
 
 #[test]
 fn v_on_obj_and_v_bind_obj() {
-  let code = transform(
-    r#"<div id="foo" v-on={handlers} {...obj} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div id="foo" v-on={handlers} {...obj} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, toHandlers as _toHandlers } from "vue";
   _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, _toHandlers(handlers, true), obj), null, 16);
@@ -247,14 +152,7 @@ fn v_on_obj_and_v_bind_obj() {
 
 #[test]
 fn should_handle_plain_template_as_normal_element() {
-  let code = transform(
-    r#"<template id="foo" />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<template id="foo" />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { id: "foo" };
@@ -264,14 +162,7 @@ fn should_handle_plain_template_as_normal_element() {
 
 #[test]
 fn should_handle_teleport_with_normal_children() {
-  let code = transform(
-    r#"<Teleport target="\#foo"><span /></Teleport>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Teleport target="\#foo"><span /></Teleport>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -289,10 +180,7 @@ fn should_handle_suspense() {
       <template v-slot:default>foo</template>
       <template v-slot:fallback>fallback</template>
     </Suspense>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -317,10 +205,7 @@ fn should_handle_keep_alive() {
         <span />
       </keepAlive>
     </div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -339,10 +224,7 @@ fn should_handle_base_transition() {
     r#"<BaseTransition>
         <span />
       </BaseTransition>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -360,14 +242,7 @@ fn should_handle_base_transition() {
 
 #[test]
 fn directive_transforms() {
-  let code = transform(
-    r#"<div v-foo:bar={hello} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-foo:bar={hello} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
@@ -383,14 +258,7 @@ fn directive_transforms() {
 
 #[test]
 fn runtime_directives() {
-  let code = transform(
-    r#"<div v-foo v-bar="x" v-baz:$arg$_mod_mad={y} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-foo v-bar="x" v-baz:$arg$_mod_mad={y} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
@@ -416,14 +284,7 @@ fn runtime_directives() {
 
 #[test]
 fn props_merging_event_handlers() {
-  let code = transform(
-    r#"<div onClick_foo={a} onClick_bar={b} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div onClick_foo={a} onClick_bar={b} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick"];
@@ -435,10 +296,7 @@ fn props_merging_event_handlers() {
 fn props_merging_style() {
   let code = transform(
     r#"<div style="color: green" style={{ color: 'red' }} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -450,14 +308,7 @@ fn props_merging_style() {
 
 #[test]
 fn props_merging_class() {
-  let code = transform(
-    r#"<div class="foo" class={{ bar: isBar }} />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div class="foo" class={{ bar: isBar }} />"#, None).code;
   assert_snapshot!(code, @r#"
   import { normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
@@ -466,19 +317,12 @@ fn props_merging_class() {
 }
 
 mod patch_flag_analysis {
-  use compiler::{TransformOptions, transform};
+  use compiler::transform;
   use insta::assert_snapshot;
 
   #[test]
   fn text() {
-    let code = transform(
-      r#"<div>foo</div>"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<div>foo</div>"#, None).code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     _openBlock(), _createElementBlock("div", null, "foo");
@@ -487,14 +331,7 @@ mod patch_flag_analysis {
 
   #[test]
   fn class() {
-    let code = transform(
-      r#"<div class={foo} />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<div class={foo} />"#, None).code;
     assert_snapshot!(code, @r#"
     import { normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
@@ -504,14 +341,7 @@ mod patch_flag_analysis {
 
   #[test]
   fn style() {
-    let code = transform(
-      r#"<div style={foo} />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<div style={foo} />"#, None).code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, normalizeStyle as _normalizeStyle, openBlock as _openBlock } from "vue";
     _openBlock(), _createElementBlock("div", { style: _normalizeStyle(foo) }, null, 4);
@@ -520,14 +350,7 @@ mod patch_flag_analysis {
 
   #[test]
   fn props() {
-    let code = transform(
-      r#"<div id="foo" foo={bar} baz={qux} />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<div id="foo" foo={bar} baz={qux} />"#, None).code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     const _hoisted_1 = ["foo", "baz"];
@@ -543,10 +366,7 @@ mod patch_flag_analysis {
   fn class_style_props() {
     let code = transform(
       r#"<div id="foo" class={cls} style={styl} foo={bar} baz={qux} />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
+      None,
     )
     .code;
     assert_snapshot!(code, @r#"
@@ -566,14 +386,7 @@ mod patch_flag_analysis {
   #[test]
   fn props_on_component() {
     // should treat `class` and `style` as PROPS
-    let code = transform(
-      r#"<Foo id={foo} class={cls} style={styl} />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<Foo id={foo} class={cls} style={styl} />"#, None).code;
     assert_snapshot!(code, @r#"
     import { normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
     import { createBlock as _createBlock, normalizeStyle as _normalizeStyle, openBlock as _openBlock } from "vue";
@@ -591,14 +404,7 @@ mod patch_flag_analysis {
 
   #[test]
   fn full_props_v_bind() {
-    let code = transform(
-      r#"<div {...foo} />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<div {...foo} />"#, None).code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, guardReactiveProps as _guardReactiveProps, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
     _openBlock(), _createElementBlock("div", _normalizeProps(_guardReactiveProps(foo)), null, 16);
@@ -607,14 +413,7 @@ mod patch_flag_analysis {
 
   #[test]
   fn full_props_with_others() {
-    let code = transform(
-      r#"<div id="foo" {...foo} class={cls} />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<div id="foo" {...foo} class={cls} />"#, None).code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
     _openBlock(), _createElementBlock("div", _mergeProps({ id: "foo" }, foo, { class: cls }), null, 16);
@@ -623,14 +422,7 @@ mod patch_flag_analysis {
 
   #[test]
   fn need_patch_static_ref() {
-    let code = transform(
-      r#"<div ref="foo" />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<div ref="foo" />"#, None).code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     const _hoisted_1 = { ref: "foo" };
@@ -640,14 +432,7 @@ mod patch_flag_analysis {
 
   #[test]
   fn need_patch_dynamic_ref() {
-    let code = transform(
-      r#"<div ref={foo} />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<div ref={foo} />"#, None).code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     _openBlock(), _createElementBlock("div", { ref: foo }, null, 512);
@@ -656,14 +441,7 @@ mod patch_flag_analysis {
 
   #[test]
   fn need_patch_custom_directives() {
-    let code = transform(
-      r#"<div v-foo />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<div v-foo />"#, None).code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
     (() => {
@@ -675,14 +453,7 @@ mod patch_flag_analysis {
 
   #[test]
   fn need_patch_vnode_hooks() {
-    let code = transform(
-      r#"<div onVue:updated={foo} />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<div onVue:updated={foo} />"#, None).code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     const _hoisted_1 = ["onVnodeUpdated"];
@@ -692,14 +463,7 @@ mod patch_flag_analysis {
 
   #[test]
   fn need_hydration_for_v_on() {
-    let code = transform(
-      r#"<div onKeyup={foo} />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<div onKeyup={foo} />"#, None).code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     const _hoisted_1 = ["onKeyup"];
@@ -709,14 +473,7 @@ mod patch_flag_analysis {
 
   #[test]
   fn need_hydration_for_v_bind_prop() {
-    let code = transform(
-      r#"<div id_prop={id} />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<div id_prop={id} />"#, None).code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     const _hoisted_1 = [".id"];
@@ -726,14 +483,7 @@ mod patch_flag_analysis {
 
   #[test]
   fn should_not_have_props_patchflag_for_constant_v_on_handlers() {
-    let code = transform(
-      r#"<div onKeydown={foo} />"#,
-      Some(TransformOptions {
-        interop: true,
-        ..Default::default()
-      }),
-    )
-    .code;
+    let code = transform(r#"<div onKeydown={foo} />"#, None).code;
     assert_snapshot!(code, @r#"
     import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
     const _hoisted_1 = ["onKeydown"];
@@ -744,14 +494,7 @@ mod patch_flag_analysis {
 
 #[test]
 fn custom_element() {
-  let code = transform(
-    r#"<my-custom-element>foo</my-custom-element>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<my-custom-element>foo</my-custom-element>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("my-custom-element", null, "foo");
@@ -762,10 +505,7 @@ fn custom_element() {
 fn custom_element_with_v_model() {
   let code = transform(
     r#"<my-custom-element v-model={foo}></my-custom-element>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -786,10 +526,7 @@ fn custom_element_with_v_model() {
 fn custom_element_with_v_on() {
   let code = transform(
     r#"<my-custom-element onFoo={foo}></my-custom-element>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -803,10 +540,7 @@ fn custom_element_with_v_on() {
 fn custom_element_with_v_html() {
   let code = transform(
     r#"<my-custom-element v-html={foo}></my-custom-element>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -820,10 +554,7 @@ fn custom_element_with_v_html() {
 fn custom_element_with_v_text() {
   let code = transform(
     r#"<my-custom-element v-text={foo}></my-custom-element>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -835,14 +566,7 @@ fn custom_element_with_v_text() {
 
 #[test]
 fn svg_should_be_forced_into_blocks() {
-  let code = transform(
-    r#"<div><svg/></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><svg/></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -855,14 +579,7 @@ fn svg_should_be_forced_into_blocks() {
 
 #[test]
 fn math_should_be_forced_into_blocks() {
-  let code = transform(
-    r#"<div><math/></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><math/></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -875,14 +592,7 @@ fn math_should_be_forced_into_blocks() {
 
 #[test]
 fn force_block_for_runtime_custom_directive_with_children() {
-  let code = transform(
-    r#"<div v-foo>hello</div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-foo>hello</div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
@@ -896,14 +606,7 @@ fn force_block_for_runtime_custom_directive_with_children() {
 
 #[test]
 fn element_with_dynamic_prop_should_be_forced_into_blocks() {
-  let code = transform(
-    r#"<div><div key={foo} /></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><div key={foo} /></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createElementBlock("div", { key: foo }))]);
@@ -912,14 +615,7 @@ fn element_with_dynamic_prop_should_be_forced_into_blocks() {
 
 #[test]
 fn ref_for_marker_on_static_ref() {
-  let code = transform(
-    r#"<div v-for={i in l} ref="x"/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-for={i in l} ref="x"/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   const _hoisted_1 = {
@@ -932,14 +628,7 @@ fn ref_for_marker_on_static_ref() {
 
 #[test]
 fn ref_for_marker_on_dynamic_ref() {
-  let code = transform(
-    r#"<div v-for={i in l} ref={x}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-for={i in l} ref={x}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", {
@@ -951,14 +640,7 @@ fn ref_for_marker_on_dynamic_ref() {
 
 #[test]
 fn ref_for_marker_on_v_bind() {
-  let code = transform(
-    r#"<div v-for={i in l} {...x}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-for={i in l} {...x}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(l, (i) => (_openBlock(), _createElementBlock("div", _mergeProps({ ref_for: true }, x), null, 16))), 256);
@@ -969,10 +651,7 @@ fn ref_for_marker_on_v_bind() {
 fn keep_alive() {
   let code = transform(
     r#"<div><KeepAlive include={foo}>foo</KeepAlive></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -987,14 +666,7 @@ fn keep_alive() {
 
 #[test]
 fn fragment_in_fragment() {
-  let code = transform(
-    r#"<>foo<>bar</>baz</>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<>foo<>bar</>baz</>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
@@ -1011,14 +683,7 @@ fn fragment_in_fragment() {
 
 #[test]
 fn plain_element_with_event() {
-  let code = transform(
-    r#" <button onClick={() => []}>Click me</button>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#" <button onClick={() => []}>Click me</button>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
@@ -1031,14 +696,7 @@ fn plain_element_with_event() {
 
 #[test]
 fn non_block_fragment_should_not_stable() {
-  let code = transform(
-    r#"<div><><DynamicComponent.value /></></div>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div><><DynamicComponent.value /></></div>"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", null, [_createVNode(_Fragment, null, [_createVNode(DynamicComponent.value)])]);
@@ -1063,10 +721,7 @@ fn reassign_variable_as_component_should_work() {
       )
     }
     "#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"

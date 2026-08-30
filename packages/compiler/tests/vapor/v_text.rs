@@ -1,12 +1,19 @@
 use std::cell::RefCell;
 
-use common::{error::ErrorCodes, options::TransformOptions};
-use compiler::transform;
+use common::error::ErrorCodes;
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
 fn should_convert_v_text_to_set_text() {
-  let code = transform("<div v-text={str.value}></div>", None).code;
+  let code = transform(
+    "<div v-text={str.value}></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { renderEffect as _renderEffect, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
   const _t0 = _template("<div> ", 1);
@@ -21,7 +28,14 @@ fn should_convert_v_text_to_set_text() {
 
 #[test]
 fn work_with_component() {
-  let code = transform(r#"<Comp v-text={foo} />"#, None).code;
+  let code = transform(
+    r#"<Comp v-text={foo} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { toDisplayString as _toDisplayString } from "vue";
@@ -34,7 +48,14 @@ fn work_with_component() {
 
 #[test]
 fn should_preserve_constant_component_values() {
-  let code = transform(r#"<><Comp v-text={1} /><Comp v-text={() => 1} /></>"#, None).code;
+  let code = transform(
+    r#"<><Comp v-text={1} /><Comp v-text={() => 1} /></>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code.replace('\t', "  "), @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
@@ -47,7 +68,14 @@ fn should_preserve_constant_component_values() {
 
 #[test]
 fn should_set_literal_text_at_runtime_for_raw_text_elements() {
-  let code = transform(r#"<script v-text={'&<'} />"#, None).code;
+  let code = transform(
+    r#"<script v-text={'&<'} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert_snapshot!(code.replace('\t', "  "), @r#"
   import { setText as _setText, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<script> ", 1);
@@ -66,6 +94,7 @@ fn should_raise_error_and_ignore_children_when_v_text_is_present() {
   let code = transform(
     "<Comp v-text={test}>hello</Comp>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -84,6 +113,7 @@ fn should_raise_error_if_has_no_expression() {
   transform(
     "<div v-text></div>",
     Some(TransformOptions {
+      vapor: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),

@@ -6,14 +6,7 @@ use insta::assert_snapshot;
 
 #[test]
 fn basic_v_if() {
-  let code = transform(
-    r#"<div v-if={ok}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-if={ok}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
@@ -23,14 +16,7 @@ fn basic_v_if() {
 
 #[test]
 fn template_v_if() {
-  let code = transform(
-    r#"<template v-if={ok}><div/>hello<p/></template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<template v-if={ok}><div/>hello<p/></template>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
@@ -47,14 +33,7 @@ fn template_v_if() {
 
 #[test]
 fn template_v_if_with_single_slot_child() {
-  let code = transform(
-    r#"<template v-if={ok}><slot/></template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<template v-if={ok}><slot/></template>"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
@@ -66,14 +45,7 @@ fn template_v_if_with_single_slot_child() {
 
 #[test]
 fn v_if_on_slot() {
-  let code = transform(
-    r#"<slot v-if="ok"></slot>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<slot v-if="ok"></slot>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   (() => {
@@ -85,14 +57,7 @@ fn v_if_on_slot() {
 
 #[test]
 fn component_v_if() {
-  let code = transform(
-    r#"<Component v-if={ok}></Component>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Component v-if={ok}></Component>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createBlock as _createBlock, createCommentVNode as _createCommentVNode, openBlock as _openBlock } from "vue";
   ok ? (_openBlock(), _createBlock(Component, { key: 0 })) : _createCommentVNode("", true);
@@ -101,14 +66,7 @@ fn component_v_if() {
 
 #[test]
 fn v_if_v_else() {
-  let code = transform(
-    r#"<><div v-if={ok}/><p v-else/></>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<><div v-if={ok}/><p v-else/></>"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
@@ -119,14 +77,7 @@ fn v_if_v_else() {
 
 #[test]
 fn v_if_v_else_if() {
-  let code = transform(
-    r#"<><div v-if={ok}/><p v-else-if={orNot}/></>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<><div v-if={ok}/><p v-else-if={orNot}/></>"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
@@ -139,10 +90,7 @@ fn v_if_v_else_if() {
 fn v_if_v_else_if_v_else() {
   let code = transform(
     r#"<><div v-if={ok}/><p v-else-if={orNot}/><template v-else>fine</template></>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -167,10 +115,7 @@ fn comment_between_branches() {
       <!--bar-->
       <template v-else>fine</template>
     </>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @"");
@@ -182,7 +127,6 @@ fn error_on_v_else_missing_adjacent_v_if() {
   transform(
     r#"<div v-else/>"#,
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -198,7 +142,6 @@ fn error_on_v_else_if_missing_adjacent_v_if_or_v_else_if() {
   transform(
     r#"<div v-else-if={foo}/>"#,
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -214,7 +157,6 @@ fn error_on_adjacent_v_else() {
   transform(
     r#"<><div v-if={false}/><div v-else/><div v-else/></>"#,
     Some(TransformOptions {
-      interop: true,
       on_error: Box::new(|e, _| {
         *error.borrow_mut() = Some(e);
       }),
@@ -228,10 +170,7 @@ fn error_on_adjacent_v_else() {
 fn user_key() {
   let code = transform(
     r#"<><div v-if={ok} key={a + 1} /><div v-else key={a + 1} /></>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -242,14 +181,7 @@ fn user_key() {
 
 #[test]
 fn multiple_v_if_that_are_sibling_nodes_should_have_different_keys() {
-  let code = transform(
-    r#"<><div v-if={ok}/><p v-if={orNot}/></>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<><div v-if={ok}/><p v-if={orNot}/></>"#, None).code;
   assert_snapshot!(code, @r#"
   import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
@@ -262,10 +194,7 @@ fn multiple_v_if_that_are_sibling_nodes_should_have_different_keys() {
 fn increasing_key_v_if_v_else_if_v_else() {
   let code = transform(
     r#"<><div v-if={ok}/><p v-else/><div v-if={another}/><p v-else-if={orNot}/><p v-else/></>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -281,14 +210,7 @@ fn increasing_key_v_if_v_else_if_v_else() {
 
 #[test]
 fn key_injection_only_v_bind() {
-  let code = transform(
-    r#"<div v-if={ok} {...obj}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-if={ok} {...obj}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, guardReactiveProps as _guardReactiveProps, mergeProps as _mergeProps, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
   ok ? (_openBlock(), _createElementBlock("div", _mergeProps({ key: 0 }, obj), null, 16)) : _createCommentVNode("", true);
@@ -297,14 +219,7 @@ fn key_injection_only_v_bind() {
 
 #[test]
 fn key_injection_before_v_bind() {
-  let code = transform(
-    r#"<div v-if={ok} id="foo" {...obj}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-if={ok} id="foo" {...obj}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
   ok ? (_openBlock(), _createElementBlock("div", _mergeProps({
@@ -316,14 +231,7 @@ fn key_injection_before_v_bind() {
 
 #[test]
 fn key_injection_after_v_bind() {
-  let code = transform(
-    r#"<div v-if={ok} {...obj} id="foo"/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-if={ok} {...obj} id="foo"/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
   ok ? (_openBlock(), _createElementBlock("div", _mergeProps({ key: 0 }, obj, { id: "foo" }), null, 16)) : _createCommentVNode("", true);
@@ -332,14 +240,7 @@ fn key_injection_after_v_bind() {
 
 #[test]
 fn key_injection_custom_directive() {
-  let code = transform(
-    r#"<div v-if={ok} v-foo />"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-if={ok} v-foo />"#, None).code;
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = { key: 0 };
@@ -352,14 +253,7 @@ fn key_injection_custom_directive() {
 
 #[test]
 fn avoid_duplicate_keys() {
-  let code = transform(
-    r#"<div v-if={ok} key="custom_key" {...obj}/>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<div v-if={ok} key="custom_key" {...obj}/>"#, None).code;
   assert_snapshot!(code, @r#"
   import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock } from "vue";
   ok ? (_openBlock(), _createElementBlock("div", _mergeProps({ key: "custom_key" }, obj), null, 16)) : _createCommentVNode("", true);
@@ -370,10 +264,7 @@ fn avoid_duplicate_keys() {
 fn with_spaces_between_branches() {
   let code = transform(
     r#"<><div v-if={ok}/> <div v-else-if={no}/> <div v-else/></>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -406,10 +297,7 @@ fn with_comments() {
       {/*comment4*/}
       <p/>
     </template>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"
@@ -428,10 +316,7 @@ fn with_comments() {
 fn v_on_with_v_if() {
   let code = transform(
     r#"<button v-on={{ click: clickEvent }} v-if={true}>w/ v-if</button>"#,
-    Some(TransformOptions {
-      interop: true,
-      ..Default::default()
-    }),
+    None,
   )
   .code;
   assert_snapshot!(code, @r#"

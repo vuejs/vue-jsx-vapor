@@ -32,9 +32,9 @@ pub struct CompilerOptions {
   /// Also used for self-recursive reference in templates
   /// @default 'index.jsx'
   pub filename: Option<String>,
-  /// When enabled, JSX within `defineVaporComponent` is transformed to Vapor DOM,
-  /// while all other JSX is transformed to Virtual DOM.
-  pub interop: Option<bool>,
+  /// Transform JSX to Vapor DOM.
+  /// @default false
+  pub vapor: Option<bool>,
   /// Enabled HMR support.
   /// - `true`/`false`: a boolean to simply enable/disable HMR. When `true`, HMR
   ///   is enabled with default configuration.
@@ -49,7 +49,7 @@ pub struct CompilerOptions {
   /// - **Cache**: Cache event handler to avoid recreating closures on each render.
   /// - **Block**: Enable block tree optimizations.
   ///
-  /// Note: this option is only used in interop mode.
+  /// Note: this option is only used in Virtual DOM mode.
   /// @default true
   pub optimize: Option<bool>,
   /// Customize where to import runtime helpers from vue-jsx-vapor.
@@ -83,7 +83,7 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
     Some(TransformOptions {
       filename,
       source_map: options.source_map.unwrap_or(false),
-      interop: options.interop.unwrap_or(false),
+      vapor: options.vapor.unwrap_or(false),
       hmr: options.hmr.unwrap_or(Either::A(false)),
       ssr,
       optimize: options.optimize.unwrap_or(true),

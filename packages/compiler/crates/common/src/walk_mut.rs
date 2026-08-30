@@ -224,7 +224,7 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
     flags: oxc_semantic::ScopeFlags,
   ) {
     walk_function(self, node, flags);
-    if self.options.interop
+    if !self.options.vapor
       && let Some(map) = self
         .options
         .scope_identifiers_map
@@ -236,7 +236,7 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
   }
   fn visit_for_statement(&mut self, node: &mut oxc_ast::ast::ForStatement<'a>) {
     walk_for_statement(self, node);
-    if self.options.interop
+    if !self.options.vapor
       && let Some(map) = self
         .options
         .scope_identifiers_map
@@ -248,7 +248,7 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
   }
   fn visit_for_in_statement(&mut self, node: &mut oxc_ast::ast::ForInStatement<'a>) {
     walk_for_in_statement(self, node);
-    if self.options.interop
+    if !self.options.vapor
       && let Some(map) = self
         .options
         .scope_identifiers_map
@@ -260,7 +260,7 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
   }
   fn visit_for_of_statement(&mut self, node: &mut oxc_ast::ast::ForOfStatement<'a>) {
     walk_for_of_statement(self, node);
-    if self.options.interop
+    if !self.options.vapor
       && let Some(map) = self
         .options
         .scope_identifiers_map
@@ -272,7 +272,7 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
   }
   fn visit_statement(&mut self, node: &mut Statement<'a>) {
     walk_statement(self, node);
-    if self.options.interop
+    if !self.options.vapor
       && let Some(map) = self
         .options
         .scope_identifiers_map
