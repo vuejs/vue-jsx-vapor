@@ -2,7 +2,7 @@
 import { VTSwitch } from '@vue/theme'
 import { watch, type PropType } from 'vue'
 // @ts-ignore
-import interopHtmlCode from '../../../tutorial/template/index-interop.html?raw'
+import vaporHtmlCode from '../../../tutorial/template/index-vapor.html?raw'
 // @ts-ignore
 import htmlCode from '../../../tutorial/template/index.html?raw'
 
@@ -27,15 +27,15 @@ const props = defineProps({
 })
 
 const solved = defineModel<boolean>('solved', { required: true })
-const interop = defineModel<boolean>('interop', { required: true })
+const vapor = defineModel<boolean>('vapor', { required: true })
 const macros = defineModel<boolean>('macros', { required: true })
 
 watch(
-  () => [interop.value, macros.value, solved.value],
-  ([interop, macros]) => {
+  () => [vapor.value, macros.value, solved.value],
+  ([vapor, macros]) => {
     props.files['vite.config.ts'] = props.files['vite.config.ts'].replace(
-      /(?<=interop: )(true|false)/,
-      interop.toString(),
+      /(?<=vapor: )(true|false)/,
+      vapor.toString(),
     )
     props.files['vite.config.ts'] = props.files['vite.config.ts'].replace(
       /(?<=macros: )(true|false)/,
@@ -44,19 +44,12 @@ watch(
 
     props.files['ts-macro.config.ts'] = props.files[
       'ts-macro.config.ts'
-    ].replace(/(?<=interop: )(true|false)/, interop.toString())
+    ].replace(/(?<=vapor: )(true|false)/, vapor.toString())
     props.files['ts-macro.config.ts'] = props.files[
       'ts-macro.config.ts'
     ].replace(/(?<=macros: )(true|false)/, macros.toString())
 
-    props.files['src/index.html'] = interop ? interopHtmlCode : htmlCode
-
-    const tsConfig = JSON.parse(props.files['tsconfig.json'])
-    tsConfig.compilerOptions.jsxImportSource = interop ? 'vue' : 'vue-jsx-vapor'
-    if (interop) {
-      tsConfig.compilerOptions.types.push('vue/jsx')
-    }
-    props.files['tsconfig.json'] = JSON.stringify(tsConfig, null, 2)
+    props.files['src/index.html'] = vapor ? vaporHtmlCode : htmlCode
   },
   { immediate: true, deep: true },
 )
@@ -67,16 +60,16 @@ watch(
     <div class="repl-options-left">
       <template v-if="!!apps.interop">
         <VTSwitch
-          aria-label="prefer interop option"
-          :class="{ 'prefer-interop': interop }"
-          :aria-checked="interop"
-          @click="interop = !interop"
+          aria-label="Enable Vapor mode"
+          :class="{ 'prefer-vapor': vapor }"
+          :aria-checked="vapor"
+          @click="vapor = !vapor"
         />
         <label
           style="cursor: pointer"
-          :style="{ opacity: interop === false ? '60%' : undefined }"
-          @click="interop = !interop"
-          >Interop</label
+          :style="{ opacity: vapor === false ? '60%' : undefined }"
+          @click="vapor = !vapor"
+          >Vapor</label
         >
       </template>
 
@@ -143,11 +136,11 @@ watch(
   font-weight: 600;
 }
 
-.prefer-interop .vt-switch-check,
+.prefer-vapor .vt-switch-check,
 .prefer-macros .vt-switch-check {
   transform: translateX(18px);
 }
-.prefer-interop.vt-switch,
+.prefer-vapor.vt-switch,
 .prefer-macros.vt-switch {
   background-color: var(--vp-c-brand);
 }

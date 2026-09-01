@@ -6,106 +6,58 @@ High-performance Vue JSX Compiler powered by Oxc.
 
 ## Features
 
-- ⚡️ High Performance: The same compiler principles as Vue.
-- 💨 Vapor Mode: The same compiler principles as Vue Vapor.
-- 🦀 Rust Compiler: Powered by Oxc, 35× faster (Virtual DOM) and 50× faster (Vapor) than Babel.
-- 🦾 Type Safe: Native type support for Typescript 7.0.
-- ✨ Unplugin: Provide `vite`, `rollup`, `rolldown` `webpack`, `rspack`, `rsbuild` , `esbuild`, `bun` and more plugins.
-- 📦 Custom Element: Support custom-element by default.
+- ⚡️ High Performance: Brings Vue compiler optimizations to JSX for efficient runtime code.
+- 💨 Vapor Mode: Compiles JSX directly to Vapor DOM for fine-grained reactive updates.
+- 🦀 Rust Compiler: Powered by Oxc, 30× faster for Virtual DOM and 50× faster for Vapor than Babel.
+- 🦾 Type Safe: Native TypeScript 7.0 support with automatic inference for JSX component props, refs, and children.
+- ✨ Unplugin: Integrates with Vite, Rollup, Rolldown, webpack, Rspack, Rsbuild, esbuild, Bun, and more.
+- 📦 Custom Element: Supports using and defining Custom Elements out of the box.
 
 ## Installation
 
 ```bash
-npm i vue-jsx
+pnpm add vue-jsx
 ```
 
-## Usage
-
-- [📜 Documentation](https://vuejsx.dev/)
-- [🛰️ Playground](https://repl.vuejsx.dev)
-
-<details>
-<summary>Vite</summary><br>
+## Vite
 
 ```ts
-// vite.config.ts
-import VueJsx from 'vue-jsx/vite'
+import { defineConfig } from 'vite'
+import vueJsx from 'vue-jsx/vite'
 
 export default defineConfig({
-  plugins: [VueJsx()],
+  plugins: [vueJsx()],
 })
 ```
 
-Example: [`playground/`](./playground/)
+Add the JSX runtime to TypeScript:
 
-<br></details>
-
-<details>
-<summary>Rollup</summary><br>
-
-```ts
-// rollup.config.js
-import VueJsx from 'vue-jsx/rollup'
-
-export default {
-  plugins: [VueJsx()],
+```json
+{
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "vue-jsx"
+  }
 }
 ```
 
-<br></details>
-
-<details>
-<summary>Webpack</summary><br>
+## Vapor Mode
 
 ```ts
-// webpack.config.js
-module.exports = {
-  /* ... */
-  plugins: [require('vue-jsx/webpack')()],
-}
-```
-
-<br></details>
-
-<details>
-<summary>Nuxt</summary><br>
-
-```ts
-// nuxt.config.js
-export default defineNuxtConfig({
-  modules: ['vue-jsx/nuxt'],
+vueJsx({
+  vapor: true,
 })
 ```
 
-> This module works for both Nuxt 2 and [Nuxt Vite](https://github.com/nuxt/vite)
+When `vapor` is omitted or `false`, regular `.tsx` and `.jsx` files compile to
+Vue Virtual DOM. You can still opt individual components or files into Vapor by
+using `defineVaporComponent`, `defineVaporCustomElement`, `.vapor.tsx`, or
+`.vapor.jsx`.
 
-<br></details>
+## Integrations
 
-<details>
-<summary>Vue CLI</summary><br>
+The package also exports plugins for Rollup, Rolldown, webpack, Rspack,
+Rsbuild, esbuild, Bun, Nuxt, and Astro.
 
-```ts
-// vue.config.js
-module.exports = {
-  configureWebpack: {
-    plugins: [require('vue-jsx/webpack')()],
-  },
-}
-```
-
-<br></details>
-
-<details>
-<summary>esbuild</summary><br>
-
-```ts
-// esbuild.config.js
-import { build } from 'esbuild'
-import VueJsx from 'vue-jsx/esbuild'
-
-build({
-  plugins: [VueJsx()],
-})
-```
-
-<br></details>
+- [Documentation](https://vuejsx.dev/)
+- [Playground](https://repl.vuejsx.dev/)

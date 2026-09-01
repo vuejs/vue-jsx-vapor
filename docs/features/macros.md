@@ -8,11 +8,11 @@ A collection of compile-time macros for JSX. These macros must be explicitly ena
 
 ```ts {7} [vite.config.ts]
 import { defineConfig } from 'vite'
-import vueJsxVapor from 'vue-jsx-vapor/vite'
+import vueJsx from 'vue-jsx/vite'
 
 export default defineConfig({
   plugins: [
-    vueJsxVapor({
+    vueJsx({
       macros: true,
     }),
   ],
@@ -20,11 +20,11 @@ export default defineConfig({
 ```
 
 ```ts {6} [ts-macro.config.ts]
-import vueJsxVapor from 'vue-jsx-vapor/volar'
+import vueJsx from 'vue-jsx/volar'
 
 export default {
   plugins: [
-    vueJsxVapor({
+    vueJsx({
       macros: true,
     }),
   ],
@@ -61,7 +61,7 @@ export default {
 ### Options
 
 ```ts
-VueJsxVapor({
+vueJsx({
   defineComponent: {
     /**
      * @default ['defineComponent','defineVaporComponent']

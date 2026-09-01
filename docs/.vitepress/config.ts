@@ -1,12 +1,12 @@
 import { transformerTwoslash } from '@shikijs/vitepress-twoslash'
 import { createTwoslasher } from '@ts-macro/twoslash'
 import { defineConfig } from 'vitepress'
-import vueJsxVapor from '../../packages/vue-jsx-vapor/src/volar'
+import vueJsx from '../../packages/vue-jsx/src/volar'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'Vue JSX Vapor',
-  description: 'Vue JSX Vapor',
+  title: 'Vue JSX',
+  description: 'High-performance Vue JSX compiler powered by Oxc',
   head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }]],
   locales: {
     root: {
@@ -28,7 +28,7 @@ export default defineConfig({
           },
           {
             text: 'Playground',
-            link: 'https://repl.zmjs.dev/vuejs/vue-jsx-vapor',
+            link: 'https://repl.vuejsx.dev/',
           },
         ],
         sidebar: {
@@ -41,7 +41,7 @@ export default defineConfig({
                   link: `/zh/introduction/getting-started`,
                 },
                 {
-                  text: '互操作性',
+                  text: 'Vapor 模式',
                   link: `/zh/introduction/interop`,
                 },
                 {
@@ -114,7 +114,7 @@ export default defineConfig({
         activeMatch: 'features',
       },
       { text: 'Tutorial', link: '/tutorial/step-1', activeMatch: 'tutorial' },
-      { text: 'Playground', link: 'https://repl.zmjs.dev/vuejs/vue-jsx-vapor' },
+      { text: 'Playground', link: 'https://repl.vuejsx.dev/' },
     ],
 
     sidebar: {
@@ -127,7 +127,7 @@ export default defineConfig({
               link: '/introduction/getting-started',
             },
             {
-              text: 'Interop',
+              text: 'Vapor Mode',
               link: '/introduction/interop',
             },
             {
@@ -199,11 +199,11 @@ export default defineConfig({
         twoslasher: createTwoslasher({
           compilerOptions: {
             jsx: 1,
-            jsxImportSource: 'vue-jsx-vapor',
+            jsxImportSource: 'vue-jsx',
             baseUrl: undefined,
           },
           tsmCompilerOptions: {
-            plugins: [vueJsxVapor({ macros: true })],
+            plugins: [vueJsx({ macros: true })],
           },
         }),
       }) as any,

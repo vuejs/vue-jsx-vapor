@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { Repl, serialize } from 'jsx-repl'
-import { ref, watch } from 'vue'
+import { ref, watch, type PropType } from 'vue'
 
 const props = defineProps({
   files: {
     type: Object,
     required: true,
   },
+  layout: {
+    type: String as PropType<'horizontal' | 'vertical'>,
+    default: 'horizontal',
+  },
+  editorOptions: { type: Object },
 })
 
 const src = ref(serialize(props.files))
@@ -20,7 +25,14 @@ watch(
 </script>
 
 <template>
-  <Repl v-model="src" auto-save slim preview-theme />
+  <Repl
+    v-model="src"
+    auto-save
+    slim
+    preview-theme
+    :layout
+    :editor-options="props.editorOptions"
+  />
 </template>
 
 <style>

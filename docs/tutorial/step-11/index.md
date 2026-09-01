@@ -82,7 +82,7 @@ export default () => {
 ```
 
 ::: tip
-We can also use the `useRef` api from `vue-jsx-vapor` to receive exposed state. It's a `shallowRef` alias that can automatically infer the component's exposed types.
+We can also use the `useRef` api from `vue-jsx` to receive exposed state. It's a `shallowRef` alias that can automatically infer the component's exposed types.
 
 ```tsx twoslash
 import { computed } from 'vue'

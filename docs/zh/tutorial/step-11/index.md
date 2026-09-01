@@ -82,7 +82,7 @@ export default () => {
 ```
 
 ::: tip
-我们也可以使用 `vue-jsx-vapor` 提供的 `useRef` API 来接收暴露的状态。它是 `shallowRef` 的别名，可以自动推断组件暴露的类型。
+我们也可以使用 `vue-jsx` 提供的 `useRef` API 来接收暴露的状态。它是 `shallowRef` 的别名，可以自动推断组件暴露的类型。
 
 ```tsx twoslash
 import { computed } from 'vue'

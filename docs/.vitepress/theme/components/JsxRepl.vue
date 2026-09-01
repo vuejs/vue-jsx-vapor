@@ -27,35 +27,36 @@ const props = defineProps({
 
 const solved = ref(false)
 const macros = useRouteQuery<boolean>('macros', false)
-const interop = useRouteQuery<boolean>('interop', false)
+const vapor = useRouteQuery<boolean>('vapor', false)
 watch(
-  () => [interop.value, macros.value, solved.value],
+  () => [vapor.value, macros.value, solved.value],
   () => {
     setApp()
   },
   { immediate: true },
 )
 function setApp() {
-  const isInterop = interop.value && !!props.apps.interop
+  const hasVdomVariant = !!props.apps.interop
+  const useVaporVariant = vapor.value || !hasVdomVariant
   const isMacros = macros.value && !!props.apps.macros
   Object.assign(
     props.files,
     props.apps[
-      isInterop
+      useVaporVariant
         ? solved.value
-          ? isMacros
-            ? 'interopMacrosSolved'
-            : 'interopSolved'
-          : isMacros
-            ? 'interopMacros'
-            : 'interop'
-        : solved.value
           ? isMacros
             ? 'macrosSolved'
             : 'solved'
           : isMacros
             ? 'macros'
             : 'app'
+        : solved.value
+          ? isMacros
+            ? 'interopMacrosSolved'
+            : 'interopSolved'
+          : isMacros
+            ? 'interopMacros'
+            : 'interop'
     ],
   )
 }
@@ -92,7 +93,7 @@ const Repl = defineAsyncComponent({
     <div class="repl-right">
       <ReplOptions
         v-if="apps.solved"
-        v-model:interop="interop"
+        v-model:vapor="vapor"
         v-model:solved="solved"
         v-model:macros="macros"
         :files

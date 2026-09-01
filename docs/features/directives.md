@@ -1,6 +1,6 @@
 # Directives
 
-Vue JSX Vapor provides full support for Vue's built-in directives within JSX syntax.
+Vue JSX provides full support for Vue's built-in directives within JSX syntax.
 
 |           Directive           |        Vue         |       Volar        |
 | :---------------------------: | :----------------: | :----------------: |

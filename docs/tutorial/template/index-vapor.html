@@ -1,9 +1,9 @@
 <html>
   <body>
     <script type="module">
-      import { createApp, vaporInteropPlugin } from 'vue'
+      import { createVaporApp } from 'vue'
       import App from './App.tsx'
-      createApp(App).use(vaporInteropPlugin).mount('#app')
+      createVaporApp(App).mount('#app')
     </script>
 
     <div id="app"></div>

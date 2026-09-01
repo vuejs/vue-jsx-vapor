@@ -1,227 +1,73 @@
 # 迁移指南
 
-## 从 `vue-jsx` 迁移
+## 从 `vue-jsx-vapor` 迁移
 
-1. 使用 `defineVaporComponent` 替代 `defineComponent` 来定义 Vapor 组件。`defineVaporComponent` 的 setup 函数现在可以直接返回 JSX 表达式，无需再返回一个函数。
-2. 连字符的 prop 名称和组件名称不会被转换成驼峰命名。
-3. `v-model` 不支持数组表达式，请改用 `v-model:$name$_trim={foo}`。
+3.3 版本把主包迁移到了 `vue-jsx`，并把编译器默认输出改成了 Virtual DOM。
 
-   ```tsx
-   <>
-     {/* ❌ Not supported */}
-     <input v-model={[foo, ['trim']]} />
+### 修改包名
 
-     {/* ✅ Use this instead */}
-     <input v-model:$name$_trim={foo} />
-   </>
-   ```
-
-4. 不支持 `v-models` 指令。
-5. 解构 props：
-
-> [!CAUTION]
-> ❌ 在函数式组件中解构 props 会导致响应性丢失。
-
-```tsx
-function Comp({ foo }) {
-  return <div>{foo}</div>
-}
-
-export default () => {
-  const foo = ref('foo')
-  return <Comp foo={foo.value} />
-}
+```diff
+- pnpm add vue-jsx-vapor
++ pnpm add vue-jsx
 ```
 
-#### 两种解决方案
+更新插件和类型 runtime 的导入：
 
-1. ✅ 将 ref 变量作为 prop 传递：
-
-```tsx
-function Comp({ foo }) {
-  return <div>{foo.value}</div>
-}
-
-export default () => {
-  const foo = ref('foo')
-  return <Comp foo={foo} />
-}
+```diff
+- import vueJsxVapor from 'vue-jsx-vapor/vite'
++ import vueJsx from 'vue-jsx/vite'
 ```
 
-2. ✅ 将 `macros` 选项设置为 `true`，然后使用 `defineVaporComponent` 宏进行包装。
-
-- 配置
-
-  ```ts {7}
-  // vite.config.ts
-  import vueJsxVapor from 'vue-jsx-vapor/vite'
-
-  export default defineConfig({
-    plugins: [
-      vueJsxVapor({
-        macros: true,
-      }),
-    ],
-  })
-  ```
-
-- 用法
-
-  ```tsx
-  import { defineVaporComponent, ref } from 'vue'
-
-  const Comp = defineVaporComponent(({ foo }) => {
-    return <>{foo}</>
-  })
-  // 将被转换为：
-  const Comp = defineVaporComponent(
-    (_props) => {
-      return <>{_props.foo}</>
-    },
-    { props: ['foo'] },
-  )
-
-  export default () => {
-    const foo = ref('foo')
-    return <Comp foo={foo.value} />
+```diff
+{
+  "compilerOptions": {
+-   "jsxImportSource": "vue-jsx-vapor"
++   "jsxImportSource": "vue-jsx"
   }
-  ```
-
-## 从 `react` 迁移
-
-建议使用 ESLint 插件 [eslint-plugin-react2vue](https://github.com/zhiyuanzmj/eslint-plugin-react2vue) 将 React Hooks API 转换为 Vue 组合式 API 和宏。
-
-### useState
-
-```ts
-// 转换前
-const [foo, setFoo] = useState(count)
-console.log([foo, setFoo(1), setFoo])
-
-// 转换后
-const foo = ref(0)
-console.log([foo.value, (foo.value = 1), (val) => (foo.value = val)])
+}
 ```
 
-### useEffect
+相关作用域包现在分别是 `@vue-jsx/compiler`、`@vue-jsx/runtime`、`@vue-jsx/macros` 和 `@vue-jsx/eslint`。
 
-使用 `watchEffect` 替代 `useEffect`。
+### 选择渲染模式
+
+旧包默认生成 Vapor，并通过 `interop: true` 适配混合模式或 Virtual DOM 项目。新包默认生成 Virtual DOM：
 
 ```ts
-// 转换前
-useEffect(() => {
-  console.log(foo)
-}, [foo])
+import vueJsx from 'vue-jsx/vite'
 
-// 转换后
-watchEffect(() => {
-  console.log(foo)
+export default {
+  plugins: [vueJsx()],
+}
+```
+
+如果原应用依赖旧版默认的 Vapor 输出，请添加 `vapor: true`：
+
+```ts
+vueJsx({
+  vapor: true,
 })
 ```
 
-### useMemo
+删除旧的 `interop` 选项。需要渐进式使用 Vapor 时，保持 `vapor: false`，并通过 `.vapor.tsx`、`.vapor.jsx`、`defineVaporComponent` 或 `defineVaporCustomElement` 开启。
 
-使用 `computed` 替代 `useMemo`。
+### 更新 Vapor runtime 导入
 
-```ts
-// 转换前
-const double = useMemo(() => foo * 2, [foo])
-console.log({ double }, [double])
-
-// 转换后
-const double = computed(() => foo * 2)
-console.log({ double: double.value }, [double.value])
-```
-
-### defineVaporComponent
-
-使用 `defineVaporComponent` 宏来支持解构 props。
-
-```tsx
-// 转换前
-const Comp = ({ count = 1 }) => {
-  return <div>{count}</div>
-}
-
-// 转换后
-const Comp = defineVaporComponent(({ count = 1 }) => {
-  return <div>{count}</div>
-})
-```
-
-### defineSlots
-
-使用 `defineSlots` 替代 `children` prop。
-
-```tsx
-// 转换前
-const Comp = ({ children }) => {
-  return children
-}
-
-// 转换后
-const Comp = ({ children }) => {
-  const slots = defineSlots()
-  return <slots.default />
-}
-```
-
-### useCallback
-
-移除 `useCallback`。
+`h`、`For` 和 `Transition` 等 Vapor 别名由 `vue-jsx/vapor` 提供：
 
 ```ts
-// 转换前
-const callback = useCallback(() => {
-  console.log(foo)
-}, [foo])
-
-// 转换后
-const callback = () => {
-  console.log(foo)
-}
+import { For, Transition, h } from 'vue-jsx/vapor'
 ```
 
-### forwardRef
+### 检查 Vue 版本
 
-移除 `forwardRef`。
+Virtual DOM 输出支持 Vue 3；Vapor 输出需要 Vue 3.6 或更高版本。
 
-```tsx
-// 转换前
-const Comp = forwardRef(({ count }, ref) => {
-  return <div>{count}</div>
-})
+## 从 Babel Vue JSX 迁移
 
-// 转换后
-const Comp = ({ count }) => {
-  return <div>{count}</div>
-}
-```
+1. 把 `@vitejs/plugin-vue-jsx`（或对应的 Babel 插件）替换为 `vue-jsx` 的构建工具集成。
+2. 把 `jsxImportSource` 设置为 `vue-jsx`。
+3. 先使用默认 Virtual DOM 模式，保持原有 Vue JSX 组件语义。
+4. 当项目已经升级到 Vue 3.6 并准备采用 Vapor 组件语义后，再单独开启 [Vapor 模式](./interop)。
 
-### useImperativeHandle
-
-使用 `defineExpose` 替代 `useImperativeHandle`。
-
-```tsx
-// 转换前
-const Comp = ({ count, ref }) => {
-  useImperativeHandle(ref, () => {
-    return {
-      count: count * 2,
-    }
-  }, [count])
-  return <div>{count}</div>
-}
-
-// 转换后
-const Comp = ({ count }) => {
-  defineExpose(
-    computed(() => {
-      return {
-        count: count * 2,
-      }
-    }),
-  )
-  return <div>{count}</div>
-}
-```
+Vue JSX 可以在 TSX 中直接使用 Vue 指令，具体语法请参考[指令](../features/directives)页面。
