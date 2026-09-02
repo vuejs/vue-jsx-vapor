@@ -179,6 +179,7 @@ export interface HTMLAttributes<T = HTMLElement>
   nonce?: string | undefined
   placeholder?: string | undefined
   spellcheck?: Booleanish | undefined
+  slot?: string | undefined
   tabindex?: Numberish | undefined
   title?: string | undefined
   translate?: 'yes' | 'no' | undefined
@@ -1375,10 +1376,16 @@ export type EventHandlers<E> = {
     : (payload: E[K]) => void
 }
 
+type IntrinsicElement<K> = K extends keyof HTMLElementTagNameMap
+  ? HTMLElementTagNameMap[K]
+  : K extends keyof SVGElementTagNameMap
+    ? SVGElementTagNameMap[K]
+    : Element
+
 export type NativeElements = {
   [K in keyof IntrinsicElementAttributes]: IntrinsicElementAttributes[K] &
     Omit<ReservedProps, 'ref'> & {
-      ref?: NodeRef<IntrinsicElementAttributes[K]>
+      ref?: NodeRef<IntrinsicElement<K>>
     }
 }
 

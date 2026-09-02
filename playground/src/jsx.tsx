@@ -17,11 +17,12 @@ import {
   defineComponent as _defineComponent,
   defineVaporComponent as _defineVaporComponent,
   type ExtractExposed,
-  type HTMLAttributes,
   type SetupContextToProps,
 } from 'vue-jsx'
 
 declare function expectType<T>(value: T): void
+
+;<div slot="name" />
 
 const Comp = defineComponent({
   setup: (
@@ -146,8 +147,8 @@ const Comp3: FunctionalVaporComponent<
   expose({ foo: ref('1') })
   return [
     <div
-      ref={(e) => {
-        expectType<HTMLAttributes<HTMLDivElement>>(e!)
+      ref={(element: HTMLDivElement | null) => {
+        expectType<HTMLDivElement | null>(element)
       }}
     >
       <slots.default />
