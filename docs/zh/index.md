@@ -4,7 +4,7 @@ layout: home
 hero:
   name: 'Vue JSX'
   text: '编译器驱动的高性能 JSX'
-  tagline: 同时支持 Virtual DOM 与 Vapor Mode
+  tagline: 支持 Virtual DOM 与 Vapor Mode
   actions:
     - theme: brand
       text: 快速上手
@@ -19,7 +19,7 @@ features:
     details: 将 Vue 编译器的优化能力带到 JSX，生成高效的运行时代码。
   - icon: 💨
     title: Vapor 模式
-    details: 将 JSX 直接编译为 Vapor DOM，实现细粒度响应式更新。
+    details: 将 JSX 编译为 Vapor Mode 代码，实现细粒度响应式更新。
   - icon: 🦀
     title: Rust 编译器
     details: 基于 Oxc，相比 Babel，Virtual DOM 编译速度提升 30 倍，Vapor 模式提升 50 倍。

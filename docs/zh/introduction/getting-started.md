@@ -1,6 +1,6 @@
 # 快速上手
 
-Vue JSX 是一个高性能的 Vue JSX 编译器，使用 Rust 编写并基于 Oxc 构建。它默认生成 Vue Virtual DOM 代码，也可以按需生成 Vapor DOM 代码。
+Vue JSX 是一个高性能的 Vue JSX 编译器，使用 Rust 编写并基于 Oxc 构建。它默认生成 Vue Virtual DOM 代码，也可以按需生成 Vapor Mode 代码。
 
 本指南假设你已经熟悉 Vue。
 

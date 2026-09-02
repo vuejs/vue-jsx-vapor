@@ -53,7 +53,7 @@ export interface CompilerOptions {
    */
   filename?: string
   /**
-   * Transform JSX to Vapor DOM.
+   * Transform JSX for Vapor Mode.
    * @default false
    */
   vapor?: boolean

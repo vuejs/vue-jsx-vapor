@@ -60,7 +60,7 @@ export namespace JSX {
     class?: ClassValue | undefined
     style?: StyleValue | undefined
   }
-  export type LibraryManagedAttributes<Component, Props> = Omit<Props, 'ref'> &
+  export type LibraryManagedAttributes<Component, Props> = Props &
     (Component extends abstract new (...args: any[]) => infer Instance
       ? {
           ref?: NodeRef<

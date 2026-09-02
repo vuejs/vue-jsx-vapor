@@ -1,8 +1,15 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onBeforeUnmount, onMounted, ref } from 'vue'
+import {
+  defineAsyncComponent,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+  watch,
+} from 'vue'
 import { getDefaultFiles } from '../../../tutorial/template'
 
-const appCode = `import { defineComponent, ref } from 'vue'
+const vdomAppCode = `import { defineComponent, ref } from 'vue'
 
 export default defineComponent(() => {
   const count = ref(0)
@@ -17,6 +24,23 @@ export default defineComponent(() => {
     </main>
   )
 })
+`
+
+const vaporAppCode = `import { ref } from 'vue'
+
+export default () => {
+  const count = ref(0)
+
+  return (
+    <main class="demo">
+      <span>Vue JSX Vapor</span>
+      <h1>Fine-grained rendering</h1>
+      <button onClick={() => count.value++}>
+        Count is {count.value}
+      </button>
+    </main>
+  )
+}
 `
 
 const styleCode = `* { box-sizing: border-box; }
@@ -43,13 +67,14 @@ const styleCode = `* { box-sizing: border-box; }
       cursor: pointer;
     }`
 
-const htmlCode = `<html>
+function createHtmlCode(vapor: boolean) {
+  return `<html>
   <body>
     <script type="module">
-      import { createApp } from 'vue'
+      import { ${vapor ? 'createVaporApp' : 'createApp'} } from 'vue'
       import App from './App.tsx'
-      createApp(App).mount('#app')
-    <\/script>
+      ${vapor ? 'createVaporApp' : 'createApp'}(App).mount('#app')
+    ${'</'}script>
 
     <div id="app"></div>
   </body>
@@ -59,13 +84,26 @@ const htmlCode = `<html>
   </style>
 </html>
 `
-
-const files = {
-  ...getDefaultFiles(),
-  'src/index.html': htmlCode,
-  'ts-macro.config.ts': undefined,
-  'src/App.tsx': appCode,
 }
+
+const defaultFiles = getDefaultFiles()
+const files = reactive({
+  ...defaultFiles,
+  'ts-macro.config.ts': undefined,
+  'src/index.html': createHtmlCode(false),
+  'src/App.tsx': vdomAppCode,
+})
+const vapor = ref(false)
+
+watch(vapor, (enabled) => {
+  localStorage.setItem('vapor', enabled.toString())
+  files['src/App.tsx'] = enabled ? vaporAppCode : vdomAppCode
+  files['src/index.html'] = createHtmlCode(enabled)
+  files['vite.config.ts'] = defaultFiles['vite.config.ts'].replace(
+    /(?<=vapor: )(true|false)/,
+    enabled.toString(),
+  )
+})
 
 const layout = ref<'horizontal' | 'vertical'>('horizontal')
 let mediaQuery: MediaQueryList | undefined
@@ -75,6 +113,7 @@ function updateLayout() {
 }
 
 onMounted(() => {
+  vapor.value = localStorage.getItem('vapor') === 'true'
   mediaQuery = globalThis.matchMedia('(max-width: 720px)')
   updateLayout()
   mediaQuery.addEventListener('change', updateLayout)
@@ -95,8 +134,27 @@ const Repl = defineAsyncComponent({
       <Repl
         :files
         :layout
-        :editor-options="{ monacoOptions: { lineNumbers: false } }"
-      />
+        :editor-options="{
+          monacoOptions: {
+            lineNumbers: false,
+            folding: false,
+          },
+        }"
+      >
+        <template #previewActions>
+          <button
+            type="button"
+            role="switch"
+            class="home-repl-mode"
+            :class="{ active: vapor }"
+            :aria-checked="vapor"
+            @click="vapor = !vapor"
+          >
+            <i class="home-repl-switch" aria-hidden="true"><i /></i>
+            Vapor
+          </button>
+        </template>
+      </Repl>
       <template #fallback>
         <div class="home-repl-loading">Loading editor...</div>
       </template>
@@ -107,12 +165,57 @@ const Repl = defineAsyncComponent({
 <style scoped>
 .home-repl {
   width: 100%;
-  height: 412px;
+  height: 420px;
   overflow: hidden;
   border: 1px solid var(--vp-c-divider);
   border-radius: 8px;
   background: var(--vp-c-bg-soft);
   box-shadow: var(--vp-shadow-4);
+}
+
+.home-repl-mode {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 4px 0;
+  background-color: transparent !important;
+  color: var(--vp-c-text-2);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.home-repl-mode.active {
+  color: #42b883;
+}
+
+.home-repl-switch {
+  display: flex;
+  width: 32px;
+  height: 18px;
+  align-items: center;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--vp-c-divider);
+  transition: background-color 0.2s;
+}
+
+.home-repl-switch i {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--vp-shadow-1);
+  transition: transform 0.2s;
+}
+
+.home-repl-mode.active .home-repl-switch {
+  background: #42b883;
+}
+
+.home-repl-mode.active .home-repl-switch i {
+  transform: translateX(14px);
 }
 
 .home-repl-loading {
@@ -171,6 +274,10 @@ const Repl = defineAsyncComponent({
 @media (min-width: 1100px) {
   :global(.VPHero.has-image .container) {
     max-width: 1344px;
+  }
+
+  :global(.VPHero.has-image .main) {
+    max-width: 540px !important;
   }
 
   :global(.VPHero.has-image .image) {

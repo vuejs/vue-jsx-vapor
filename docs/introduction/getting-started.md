@@ -2,7 +2,7 @@
 
 Vue JSX is a high-performance JSX compiler for Vue, written in Rust and powered
 by Oxc. It generates Vue Virtual DOM code by default and can optionally generate
-Vapor DOM code.
+code for Vapor Mode.
 
 This guide assumes familiarity with Vue and Vite.
 

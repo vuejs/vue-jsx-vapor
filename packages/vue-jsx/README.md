@@ -7,7 +7,7 @@ High-performance Vue JSX Compiler powered by Oxc.
 ## Features
 
 - ⚡️ High Performance: Brings Vue compiler optimizations to JSX for efficient runtime code.
-- 💨 Vapor Mode: Compiles JSX directly to Vapor DOM for fine-grained reactive updates.
+- 💨 Vapor Mode: Compiles JSX for Vapor Mode with fine-grained reactive updates.
 - 🦀 Rust Compiler: Powered by Oxc, 30× faster for Virtual DOM and 50× faster for Vapor than Babel.
 - 🦾 Type Safe: Native TypeScript 7.0 support with automatic inference for JSX component props, refs, and children.
 - ✨ Unplugin: Integrates with Vite, Rollup, Rolldown, webpack, Rspack, Rsbuild, esbuild, Bun, and more.

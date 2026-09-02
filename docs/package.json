@@ -13,7 +13,7 @@
     "@vue/theme": "^2.4.0",
     "chart.js": "latest",
     "chartjs-plugin-datalabels": "latest",
-    "jsx-repl": "0.0.16",
+    "jsx-repl": "0.0.18",
     "vue": "catalog:",
     "vue-jsx": "workspace:*"
   },

@@ -4,7 +4,7 @@ layout: home
 hero:
   name: 'Vue JSX'
   text: 'Compiler-powered, high-performance JSX'
-  tagline: One compiler for Virtual DOM and Vapor Mode
+  tagline: Supports Virtual DOM and Vapor Mode
   actions:
     - theme: brand
       text: Get Started
@@ -19,7 +19,7 @@ features:
     details: Brings Vue compiler optimizations to JSX for efficient runtime code.
   - icon: 💨
     title: Vapor Mode
-    details: Compiles JSX directly to Vapor DOM for fine-grained reactive updates.
+    details: Compiles JSX for Vapor Mode with fine-grained reactive updates.
   - icon: 🦀
     title: Rust Compiler
     details: Powered by Oxc, 30× faster for Virtual DOM and 50× faster for Vapor than Babel.

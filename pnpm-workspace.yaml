@@ -32,3 +32,6 @@ catalog:
 allowBuilds:
   esbuild: true
   vue-demi: true
+
+minimumReleaseAgeExclude:
+  - jsx-repl@0.0.18

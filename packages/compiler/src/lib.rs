@@ -32,7 +32,7 @@ pub struct CompilerOptions {
   /// Also used for self-recursive reference in templates
   /// @default 'index.jsx'
   pub filename: Option<String>,
-  /// Transform JSX to Vapor DOM.
+  /// Transform JSX for Vapor Mode.
   /// @default false
   pub vapor: Option<bool>,
   /// Enabled HMR support.

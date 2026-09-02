@@ -9,8 +9,8 @@ export interface Options extends CompilerOptions {
   /**
    * @default false
    * By default, only JSX elements inside `defineVaporComponent` / `defineVaporCustomElement`,
-   * or in files ending with `.vapor.jsx` / `.vapor.tsx` (e.g., `Comp.vapor.tsx`), will be compiled to Vapor DOM.
-   * Set this to `true` if you want all JSX elements to be compiled to Vapor DOM.
+   * or in files ending with `.vapor.jsx` / `.vapor.tsx` (e.g., `Comp.vapor.tsx`), will be compiled for Vapor Mode.
+   * Set this to `true` if you want all JSX elements to be compiled for Vapor Mode.
    */
   vapor?: boolean
   /** @default true */

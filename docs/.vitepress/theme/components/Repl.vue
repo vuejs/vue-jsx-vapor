@@ -32,7 +32,11 @@ watch(
     preview-theme
     :layout
     :editor-options="props.editorOptions"
-  />
+  >
+    <template #previewActions>
+      <slot name="previewActions" />
+    </template>
+  </Repl>
 </template>
 
 <style>

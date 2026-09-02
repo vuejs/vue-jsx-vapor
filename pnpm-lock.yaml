@@ -142,8 +142,8 @@ importers:
         specifier: latest
         version: 2.2.0(chart.js@4.5.1)
       jsx-repl:
-        specifier: 0.0.16
-        version: 0.0.16
+        specifier: 0.0.18
+        version: 0.0.18
       vue:
         specifier: 'catalog:'
         version: 3.6.0-rc.5(typescript@6.0.3)
@@ -4136,8 +4136,8 @@ packages:
   jsonc-parser@3.3.1:
     resolution: {integrity: sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==}
 
-  jsx-repl@0.0.16:
-    resolution: {integrity: sha512-A6MLK/Mx4u88xV5IhICTy4SjbDYydvGm7XxT0tGY+QI0GNx08QoWgmcy8EJxLvMiG3HigsP1LqRzAelCKulugg==}
+  jsx-repl@0.0.18:
+    resolution: {integrity: sha512-sI73UGuIqJzrYI0Eiyd+lUhGmu9nQJ9oGCdzRVfVEthIQsvBtf+MF8rIryPCPbQzZ2f5cKb2t5BNuCLQ48ARhQ==}
 
   katex@0.16.45:
     resolution: {integrity: sha512-pQpZbdBu7wCTmQUh7ufPmLr0pFoObnGUoL/yhtwJDgmmQpbkg/0HSVti25Fu4rmd1oCR6NGWe9vqTWuWv3GcNA==}
@@ -9128,7 +9128,7 @@ snapshots:
 
   jsonc-parser@3.3.1: {}
 
-  jsx-repl@0.0.16: {}
+  jsx-repl@0.0.18: {}
 
   katex@0.16.45:
     dependencies:
