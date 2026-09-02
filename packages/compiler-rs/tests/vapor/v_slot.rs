@@ -31,7 +31,7 @@ fn on_component_default_slot() {
   	const _n1 = _createComponent(Comp, null, _extend((scope) => {
   		const _n0 = _createNodes(() => scope.foo + bar);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n1;
   })();
   "#);
@@ -53,7 +53,7 @@ fn on_component_named_slot() {
   	const _n2 = _createComponent(Comp, null, { named: _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => ({ foo: _slotProps0.foo }), () => ({ foo: _slotProps0.foo }));
   		return _n0;
-  	}, { _: 8 }) }, true);
+  	}, { _: 1 }) }, true);
   	return _n2;
   })();
   "#);
@@ -135,7 +135,7 @@ fn nested_component_should_not_inherit_parent_slots() {
   	const _n2 = _createComponent(Comp, null, {
   		header: _extend(() => {
   			return [];
-  		}, { _: 8 }),
+  		}, { _: 1 }),
   		default: () => {
   			const _n1 = _createComponent(Bar);
   			return _n1;
@@ -160,7 +160,7 @@ fn slot_prop_alias_uses_original_key() {
   	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.msg);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n2;
   })();
   "#);
@@ -180,7 +180,7 @@ fn slot_prop_nested_destructuring() {
   	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.foo.bar);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n2;
   })();
   "#);
@@ -200,7 +200,7 @@ fn slot_prop_computed_key_destructuring() {
   	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => ({ val: _slotProps0[key.value] }));
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n2;
   })();
   "#);
@@ -220,7 +220,7 @@ fn slot_prop_rest_destructuring() {
   	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => _getRestElement(_slotProps0, ["foo"]).bar);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n2;
   })();
   "#);
@@ -240,7 +240,7 @@ fn slot_prop_array_rest_destructuring() {
   	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.arr.slice(1)[0]);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n2;
   })();
   "#);
@@ -260,7 +260,7 @@ fn slot_prop_rest_with_computed_keys_preserved() {
   	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.foo + _getRestElement(_slotProps0, ["foo", key]).other);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n2;
   })();
   "#);
@@ -280,7 +280,7 @@ fn slot_prop_assignment() {
   	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   		const _n0 = _createNodes(() => _slotProps0.foo++, () => _slotProps0.bar.value = 1);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n2;
   })();
   "#);
@@ -372,7 +372,7 @@ fn nested_slots_scoping() {
   		const _n1 = _createComponent(Inner, null, _extend((_slotProps1) => {
   			const _n0 = _createNodes(() => _slotProps0.foo + _slotProps1.bar + baz);
   			return _n0;
-  		}, { _: 8 }));
+  		}, { _: 1 }));
   		const _n2 = _createNodes(() => _slotProps0.foo + bar + baz);
   		return [_n1, _n2];
   	}, true);
@@ -581,7 +581,7 @@ fn quote_slot_name() {
   (() => {
   	const _n1 = _createComponent(Comp, null, { "nav-bar-title-before": _extend(() => {
   		return [];
-  	}, { _: 8 }) }, true);
+  	}, { _: 1 }) }, true);
   	return _n1;
   })();
   "#);
@@ -616,7 +616,7 @@ fn marks_root_v_if_slot_content_as_slot_root() {
   			return _n2;
   		}, null, 129);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n3;
   })();
   "#);
@@ -706,7 +706,7 @@ fn all_dynamic_root_slot_content_is_non_stable() {
   			return _n5;
   		}, null, 129);
   		return [_n0, _n3];
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n6;
   })();
   "#);
@@ -735,7 +735,7 @@ fn root_v_for_with_root_v_if_slot_content_is_non_stable() {
   			return _n5;
   		}, null, 129);
   		return [_n0, _n3];
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n6;
   })();
   "#);
@@ -755,7 +755,7 @@ fn comment_with_dynamic_root_slot_content_is_non_stable() {
   			return _n2;
   		}, null, 129);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n3;
   })();
   "#);
@@ -778,7 +778,7 @@ fn forwarded_root_slot_outlet_fallback_tracks_root_validity() {
   			return _n1;
   		}, 36);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n4;
   })();
   "#);
@@ -794,7 +794,7 @@ fn slot_tag_only() {
   	const _n1 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createSlot("default", null, null, 36);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n1;
   })();
   "#);
@@ -841,7 +841,7 @@ fn root_slot_outlet_with_stable_sibling_does_not_notify_parent() {
 
   assert!(!code.contains("null, null, 4"));
   assert!(!code.contains("null, null, 36"));
-  assert!(!code.contains("{ _: 8 }"));
+  assert!(!code.contains("{ _: 1 }"));
 
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
@@ -891,7 +891,7 @@ fn root_slot_outlet_with_stable_sibling_in_forwarded_fallback_does_not_notify_pa
   			return [_n1, _n2];
   		}, 36);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n3;
   })();
   "#)
@@ -914,7 +914,7 @@ fn root_slot_outlet_with_dynamic_key_tracks_keyed_fragment_and_outlet() {
   			return _n2;
   		}, true);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n3;
   })();
   "#);
@@ -963,7 +963,7 @@ fn slot_tag_with_v_if() {
   			return _n2;
   		}, null, 129);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n3;
   })();
   "#);
@@ -982,7 +982,7 @@ fn slot_tag_with_v_for() {
   			return _n2;
   		}, void 0, 48);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n3;
   })();
   "#);
@@ -998,7 +998,7 @@ fn slot_tag_with_template() {
   	const _n2 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createSlot("default", null, null, 36);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n2;
   })();
   "#);
@@ -1015,7 +1015,7 @@ fn slot_tag_with_nested_component() {
   		const _n1 = _createComponent(Comp, null, _extend(() => {
   			const _n0 = _createSlot("default", null, null, 36);
   			return _n0;
-  		}, { _: 8 }));
+  		}, { _: 1 }));
   		return _n1;
   	}, true);
   	return _n2;
@@ -1130,7 +1130,7 @@ fn slot_with_slot_outlet_is_non_stable() {
   	const _n2 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createSlot("default", null, null, 36);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n2;
   })();
   "#);
@@ -1187,7 +1187,7 @@ fn slot_with_component_inside_v_if_is_non_stable() {
   			return _n3;
   		}, null, 129);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n5;
   })();
   "#);
@@ -1219,7 +1219,7 @@ fn slot_with_component_inside_v_for_is_non_stable() {
   			return _n3;
   		}, void 0, 40);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n5;
   })();
   "#);
@@ -1259,7 +1259,7 @@ fn slot_with_nested_v_if_containing_component_is_non_stable() {
   			return _n6;
   		}, null, 129);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n8;
   })();
   "#);
@@ -1283,7 +1283,7 @@ fn slot_with_only_text_interpolation_is_stable() {
   	const _n2 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createNodes(() => message);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n2;
   })();
   "#);
@@ -1316,7 +1316,7 @@ fn slot_with_v_if_but_no_component_is_non_stable() {
   			return _n4;
   		}, 389);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n7;
   })();
   "#);
@@ -1346,7 +1346,7 @@ fn slot_with_v_for_but_no_component_is_none_stable() {
   			return _n2;
   		}, void 0, 40);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n4;
   })();
   "#);
@@ -1435,7 +1435,7 @@ fn slot_with_custom_element_inside_v_if_is_non_stable() {
   			return _n3;
   		}, null, 129);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n5;
   })();
   "#);
@@ -1595,7 +1595,7 @@ fn array_args_with_arg() {
   	const _n1 = _createComponent(Comp, null, { foo: _extend((foo) => {
   		const _n0 = _createNodes(() => foo);
   		return _n0;
-  	}, { _: 8 }) }, true);
+  	}, { _: 1 }) }, true);
   	return _n1;
   })();
   "#);

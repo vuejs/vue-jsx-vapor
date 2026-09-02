@@ -120,7 +120,7 @@ fn v_slot_with_v_slots() {
   					const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
   						const _n0 = _createNodes(() => bar, () => _slotProps0.baz);
   						return _n0;
-  					}, { _: 8 }), true);
+  					}, { _: 1 }), true);
   					return _n2;
   				})());
   				return _n0;
