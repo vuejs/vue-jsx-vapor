@@ -68,6 +68,10 @@ export default defineConfig({
                   link: '/zh/features/macros',
                 },
                 {
+                  text: '列表组件',
+                  link: '/zh/features/for',
+                },
+                {
                   text: 'Custom Element',
                   link: '/zh/features/custom-elements',
                 },
@@ -153,6 +157,10 @@ export default defineConfig({
             {
               text: 'Macros',
               link: '/features/macros',
+            },
+            {
+              text: 'List Components',
+              link: '/features/for',
             },
             {
               text: 'Custom Elements',

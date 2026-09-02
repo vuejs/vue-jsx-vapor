@@ -31,9 +31,9 @@ const apps  = {
 
 <jsx-repl :files :apps prev="/tutorial/step-5/" next="/tutorial/step-7">
 
-We can use `map(...)` to render a list if performance is not a concern.
+Vue JSX supports rendering lists with `map()`:
 
-```jsx
+```tsx
 <ul>
   {todos.map((todo) => {
     return <li key={todo.id}>{todo.text}</li>
@@ -41,22 +41,44 @@ We can use `map(...)` to render a list if performance is not a concern.
 </ul>
 ```
 
-## `v-for` directive
+This familiar approach is suitable for most small or simple lists. For frequently updated lists or performance-sensitive scenarios, use the list component provided for each rendering mode.
 
-We can also use the `v-for` directive to render a list that has the same performance as Vue template:
+## Virtual DOM
 
-```jsx
+Use `For` with Virtual DOM:
+
+```tsx
+import { For } from 'vue-jsx'
+
 <ul>
-  <li v-for={todo in todos} key={todo.id}>
-    {todo.text}
-  </li>
+  <For in={todos}>
+    {(todo) => <li key={todo.id}>{todo.text}</li>}
+  </For>
 </ul>
 ```
 
-Here, `todo` is a local variable representing the array element currently being iterated on. It's only accessible on or inside the v-for element, similar to a function scope.
+The slot receives the current item and index. Give the returned root node a stable `key`, just as you would when using `map()`.
 
-Notice how we are also giving each todo object a unique id, and binding it as the special key attribute for each `<li>`. The key allows Vue to accurately move each `<li>` to match the position of its corresponding object in the array.
+## Vapor Mode
 
-Currently, we have a simple to-do list that currently renders only one item. Try rendering all the to-do items so it works correctly!
+Use `VaporFor` in Vapor Mode:
+
+```tsx
+import { VaporFor } from 'vue-jsx'
+
+<ul>
+  <VaporFor in={todos}>
+    {(todo, index) => (
+      <li>
+        {todo.text} at {index.value}
+      </li>
+    )}
+  </VaporFor>
+</ul>
+```
+
+`VaporFor` manages each item as an independent block. Its index is a shallow ref, so read it with `index.value` in JavaScript. By default, the item itself is used as its key; use `getKey={(todo) => todo.id}` when the list may replace items with new objects.
+
+The current to-do list renders only its first item. Replace that temporary code with the appropriate list component and render every item.
 
 </jsx-repl>
