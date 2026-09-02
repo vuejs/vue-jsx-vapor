@@ -65,7 +65,7 @@ vueJsx({
 })
 ```
 
-TS Macro 扩展可以从 `vite.config.ts` 自动发现 `vue-jsx/volar`。也可以手动配置：
+TS Macro 扩展可以从 `vite.config.ts` 自动发现 Vue JSX 集成。也可以在项目根目录创建 `ts-macro.config.ts`，单独配置 `vue-jsx/volar` 插件：
 
 ```ts [ts-macro.config.ts]
 import vueJsx from 'vue-jsx/volar'
@@ -74,6 +74,8 @@ export default {
   plugins: [vueJsx({ macros: true })],
 }
 ```
+
+请让其中的 `macros` 选项与 `vite.config.ts` 保持一致，确保编辑器、命令行类型检查和编译器支持相同的语法。
 
 命令行类型检查可以使用：
 

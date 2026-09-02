@@ -60,8 +60,9 @@ vueJsx({
 })
 ```
 
-The TS Macro extension discovers `vue-jsx/volar` from `vite.config.ts`. For an
-explicit configuration:
+The TS Macro extension can discover the Vue JSX integration from
+`vite.config.ts` automatically. Alternatively, create `ts-macro.config.ts` in
+the project root to configure the `vue-jsx/volar` plugin explicitly:
 
 ```ts [ts-macro.config.ts]
 import vueJsx from 'vue-jsx/volar'
@@ -70,6 +71,9 @@ export default {
   plugins: [vueJsx({ macros: true })],
 }
 ```
+
+Keep its `macros` option consistent with `vite.config.ts` so the editor,
+command-line type checker, and compiler use the same syntax.
 
 For command-line type checking:
 

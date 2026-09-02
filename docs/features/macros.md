@@ -33,6 +33,11 @@ export default {
 
 :::
 
+The TS Macro extension can discover the integration from `vite.config.ts`
+automatically. The `ts-macro.config.ts` example is an alternative for defining
+the `vue-jsx/volar` plugin separately. Keep the options in both files
+consistent when using the explicit configuration.
+
 ::: details Install as a standalone plugin
 
 A standalone plugin is also available for use in Virtual DOM projects.

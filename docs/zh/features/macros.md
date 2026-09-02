@@ -33,6 +33,8 @@ export default {
 
 :::
 
+TS Macro 扩展可以从 `vite.config.ts` 自动发现集成。上面的 `ts-macro.config.ts` 是另一种配置方式，可用于单独定义 `vue-jsx/volar` 插件。使用显式配置时，请保持两个文件中的选项一致。
+
 ::: details 作为单独的插件安装
 
 我们也发布了一个单独的插件，可以给 虚拟DOM 的项目使用。
