@@ -29,10 +29,11 @@
     "build": "pnpm run --filter=\"./packages/*\" --parallel build",
     "bench": "pnpm run -C ./benchmark bench",
     "bench:vue": "pnpm run -C ./benchmark bench:vue",
-    "typecheck": "tsmc --noEmit",
-    "lint": "eslint .",
-    "play": "npm -C playground run dev",
-    "play:build": "npm -C playground run build",
+    "typecheck": "tsc --noEmit && tsc -p playground --noEmit && pnpm --filter @vue-jsx/macros typecheck",
+    "lint": "node ./packages/macros/node_modules/eslint/bin/eslint.js .",
+    "play": "pnpm -C playground dev",
+    "play:macros": "pnpm --filter @vue-jsx/macros play",
+    "play:build": "pnpm -C playground build && pnpm --filter @vue-jsx/macros play:build",
     "test": "vitest",
     "test:rs": "pnpm run --filter=\"compiler\" test",
     "test:eco": "pnpm run -C ./ecosystem-ci test",
@@ -44,18 +45,14 @@
     "docs:build": "pnpm run -C ./docs build"
   },
   "devDependencies": {
-    "@sxzz/eslint-config": "^8.0.0",
-    "@ts-macro/tsc": "catalog:",
     "@types/node": "^25.6.0",
-    "@typescript/native-preview": "7.0.0-dev.20260503.1",
     "bumpp": "^11.0.1",
     "conventional-changelog-cli": "^5.0.0",
-    "eslint": "^10.3.0",
-    "tsdown": "^0.22.0",
-    "typescript": "^6.0.3",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
     "unplugin-raw": "^0.7.0",
     "vite": "catalog:",
     "vitest": "catalog:",
-    "vue-jsx-vapor": "workspace:*"
+    "vue-jsx": "workspace:*"
   }
 }

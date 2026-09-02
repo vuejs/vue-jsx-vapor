@@ -1,17 +1,27 @@
 import { ref } from 'vue'
 
-const Comp = () => {
-  const model = defineModel<string>()
-  return <input v-model={model.value} />
+type ModelProps = {
+  modelValue: string
+  'onUpdate:modelValue'?: (value: string) => void
 }
+
+const Comp = (props: ModelProps) => (
+  <input
+    value={props.modelValue}
+    onInput={(event) =>
+      props['onUpdate:modelValue']?.(event.currentTarget.value)
+    }
+  />
+)
 
 export default () => {
   const model = ref('model')
-
   return (
     <>
-      <input v-model={model.value}></input>
-      <Comp v-model={model.value} />
+      <Comp
+        modelValue={model.value}
+        onUpdate:modelValue={(value) => (model.value = value)}
+      />
       {model.value}
     </>
   )

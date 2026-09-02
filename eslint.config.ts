@@ -1,5 +1,5 @@
-import { sxzz } from '@sxzz/eslint-config'
 import vueJsxVapor from './packages/eslint/src/index'
+import { sxzz } from './packages/macros/eslint-config'
 
 export default [
   {

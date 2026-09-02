@@ -50,7 +50,10 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "dev": "DEV=true tsdown"
+    "dev": "DEV=true tsdown",
+    "typecheck": "tsc --noEmit && tsmc -p playground --noEmit",
+    "play": "vite ./playground",
+    "play:build": "vite build ./playground"
   },
   "peerDependencies": {
     "@nuxt/kit": "^3",
@@ -93,8 +96,17 @@
     "@babel/types": "^7.29.0",
     "@nuxt/kit": "catalog:",
     "@nuxt/schema": "catalog:",
+    "@sxzz/eslint-config": "^8.0.0",
+    "@ts-macro/tsc": "catalog:",
     "@types/hash-sum": "catalog:",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "@vue-macros/volar": "catalog:",
     "ast-kit": "^2.2.0",
+    "eslint": "^10.3.0",
+    "typescript": "^6.0.3",
+    "vite": "catalog:",
+    "vite-node": "^6.0.0",
+    "vite-plugin-inspect": "^11.3.3",
     "vue": "catalog:"
   }
 }

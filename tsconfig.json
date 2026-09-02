@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "jsx": "preserve",
-    "jsxImportSource": "vue-jsx-vapor",
+    "jsxImportSource": "vue-jsx",
     "lib": ["esnext", "DOM"],
     "useDefineForClassFields": false,
     "module": "esnext",
@@ -16,5 +16,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["packages"]
+  "include": ["packages"],
+  "exclude": ["packages/macros"]
 }

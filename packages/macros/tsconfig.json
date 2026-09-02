@@ -8,11 +8,13 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "types": ["vite/client"],
+    "allowImportingTsExtensions": true,
     "strict": true,
     "strictNullChecks": true,
     "noEmit": true,
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["."]
+  "include": ["src", "tests/*.spec.ts"],
+  "exclude": ["playground", "tests/fixtures"]
 }

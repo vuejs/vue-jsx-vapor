@@ -5,7 +5,7 @@ export default () => {
 
   return (
     <>
-      <button onClick={() => count.value++}>current: {count.value}</button>
+      <input v-model_number={count.value} />
       <div v-once>{count.value}</div>
     </>
   )

@@ -18,8 +18,8 @@ export default defineComponent(() => {
       <button onClick={() => count.value--}>-</button>
       <button
         onClick={() => {
-          const first = list.value[0]
-          list.value[0] = list.value.at(-1)
+          const first = list.value[0]!
+          list.value[0] = list.value.at(-1)!
           list.value[list.value.length - 1] = first
         }}
       >

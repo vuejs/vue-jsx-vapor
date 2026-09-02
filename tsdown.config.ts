@@ -8,9 +8,6 @@ export const config = (options: UserConfig = {}) =>
     clean: true,
     fixedExtension: false,
     watch: !!process.env.DEV,
-    dts: {
-      tsgo: true,
-    },
     external: ['vue'],
     plugins: [Raw({ transform: true })],
     outputOptions: {
