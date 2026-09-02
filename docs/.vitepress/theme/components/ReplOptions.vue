@@ -15,12 +15,12 @@ const props = defineProps({
     type: Object as PropType<{
       app: object
       solved?: object
-      interop?: object
-      interopSolved?: object
+      vapor?: object
+      vaporSolved?: object
       macros?: object
       macrosSolved?: object
-      interopMacros?: object
-      interopMacrosSolved?: object
+      vaporMacros?: object
+      vaporMacrosSolved?: object
     }>,
     required: true,
   },
@@ -58,7 +58,7 @@ watch(
 <template>
   <div class="repl-options">
     <div class="repl-options-left">
-      <template v-if="!!apps.interop">
+      <template v-if="!!apps.vapor">
         <VTSwitch
           aria-label="Enable Vapor mode"
           :class="{ 'prefer-vapor': vapor }"

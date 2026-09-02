@@ -9,12 +9,12 @@ next: false
 <script setup>
 import appCode from '~/tutorial/step-11/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-11/app-solved.tsx?raw'
-import appInteropCode from '~/tutorial/step-11/app-interop.tsx?raw'
-import appInteropSolvedCode from '~/tutorial/step-11/app-interop-solved.tsx?raw'
+import appVaporCode from '~/tutorial/step-11/app-vapor.tsx?raw'
+import appVaporSolvedCode from '~/tutorial/step-11/app-vapor-solved.tsx?raw'
 import appMacrosCode from '~/tutorial/step-11/app-macros.tsx?raw'
 import appMacrosSolvedCode from '~/tutorial/step-11/app-macros-solved.tsx?raw'
-import appInteropMacrosCode from '~/tutorial/step-11/app-interop-macros.tsx?raw'
-import appInteropMacrosSolvedCode from '~/tutorial/step-11/app-interop-macros-solved.tsx?raw'
+import appVaporMacrosCode from '~/tutorial/step-11/app-vapor-macros.tsx?raw'
+import appVaporMacrosSolvedCode from '~/tutorial/step-11/app-vapor-macros-solved.tsx?raw'
 import { getDefaultFiles } from '~/tutorial/template'
 import { ref } from 'vue'
 
@@ -22,12 +22,12 @@ const files = ref(getDefaultFiles())
 const apps = {
   app: { 'src/App.tsx': appCode },
   solved: { 'src/App.tsx': appSolvedCode },
-  interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropSolvedCode },
+  vapor: { 'src/App.tsx': appVaporCode },
+  vaporSolved: { 'src/App.tsx': appVaporSolvedCode },
   macros: { 'src/App.tsx': appMacrosCode },
   macrosSolved: { 'src/App.tsx': appMacrosSolvedCode },
-  interopMacros: { 'src/App.tsx': appInteropMacrosCode },
-  interopMacrosSolved: { 'src/App.tsx': appInteropMacrosSolvedCode },
+  vaporMacros: { 'src/App.tsx': appVaporMacrosCode },
+  vaporMacrosSolved: { 'src/App.tsx': appVaporMacrosSolvedCode },
 }
 </script>
 

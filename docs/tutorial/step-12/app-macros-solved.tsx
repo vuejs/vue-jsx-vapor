@@ -1,18 +1,18 @@
-import { ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 
-const Comp = (props: { modelValue: string }) => {
+const Comp = defineComponent((props: { modelValue: string }) => {
   const model = defineModel<string>()
-  return (
+  return () => (
     <input v-model={model.value} />
   )
-}
+})
 
-export default () => {
+export default defineComponent(() => {
   const msg = ref('Hello')
-  return (
+  return () => (
     <>
       <Comp v-model={msg.value} />
       <p>{msg.value}</p>
     </>
   )
-}
+})

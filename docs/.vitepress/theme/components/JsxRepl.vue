@@ -12,12 +12,12 @@ const props = defineProps({
     type: Object as PropType<{
       app: object
       solved?: object
-      interop?: object
-      interopSolved?: object
+      vapor?: object
+      vaporSolved?: object
       macros?: object
       macrosSolved?: object
-      interopMacros?: object
-      interopMacrosSolved?: object
+      vaporMacros?: object
+      vaporMacrosSolved?: object
     }>,
     required: true,
   },
@@ -36,8 +36,7 @@ watch(
   { immediate: true },
 )
 function setApp() {
-  const hasVdomVariant = !!props.apps.interop
-  const useVaporVariant = vapor.value || !hasVdomVariant
+  const useVaporVariant = vapor.value && !!props.apps.vapor
   const isMacros = macros.value && !!props.apps.macros
   Object.assign(
     props.files,
@@ -45,18 +44,18 @@ function setApp() {
       useVaporVariant
         ? solved.value
           ? isMacros
+            ? 'vaporMacrosSolved'
+            : 'vaporSolved'
+          : isMacros
+            ? 'vaporMacros'
+            : 'vapor'
+        : solved.value
+          ? isMacros
             ? 'macrosSolved'
             : 'solved'
           : isMacros
             ? 'macros'
             : 'app'
-        : solved.value
-          ? isMacros
-            ? 'interopMacrosSolved'
-            : 'interopSolved'
-          : isMacros
-            ? 'interopMacros'
-            : 'interop'
     ],
   )
 }

@@ -1,17 +1,17 @@
-import { shallowRef } from 'vue'
+import { defineComponent, shallowRef } from 'vue'
 
-const Foo = () => <div>Foo</div>
-const Bar = () => <div>Bar</div>
+const Foo = defineComponent(() => () => <div>Foo</div>)
+const Bar = defineComponent(() => () => <div>Bar</div>)
 
-export default () => {
-  const DynamicComponent = shallowRef(Foo)
+export default defineComponent(() => {
+  const DynamicComponent = shallowRef<typeof Foo | typeof Bar>(Foo)
   const toggle = () => {
     DynamicComponent.value = DynamicComponent.value === Foo ? Bar : Foo
   }
-  return (
+  return () => (
     <>
       <button onClick={toggle}>Toggle</button>
       <DynamicComponent.value />
     </>
   )
-}
+})
