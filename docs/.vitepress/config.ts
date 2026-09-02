@@ -68,10 +68,6 @@ export default defineConfig({
                   link: '/zh/features/macros',
                 },
                 {
-                  text: 'useRef',
-                  link: '/zh/features/use-ref',
-                },
-                {
                   text: 'Custom Element',
                   link: '/zh/features/custom-elements',
                 },
@@ -157,10 +153,6 @@ export default defineConfig({
             {
               text: 'Macros',
               link: '/features/macros',
-            },
-            {
-              text: 'useRef',
-              link: '/features/use-ref',
             },
             {
               text: 'Custom Elements',
