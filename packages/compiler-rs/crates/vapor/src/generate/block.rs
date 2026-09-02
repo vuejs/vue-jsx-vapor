@@ -255,13 +255,9 @@ pub fn mark_slot_root_operations<'a>(
         mark_slot_root_operations(&mut operation.block, context, shared_fallback);
       }
       OperationNode::SlotOutlet(operation) => {
-        if operation.flags & VaporSlotFlags::Once as i32 == 0 {
-          operation.flags |= VaporSlotFlags::SlotRoot as i32;
-        }
+        operation.flags |= VaporSlotFlags::Forwarded as i32;
         if shared_fallback {
           operation.flags |= VaporSlotFlags::SharedFallback as i32;
-        } else {
-          operation.flags |= VaporSlotFlags::InheritFallback as i32;
         }
       }
       _ => {}
