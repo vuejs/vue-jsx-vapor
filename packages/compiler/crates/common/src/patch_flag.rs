@@ -246,13 +246,19 @@ pub enum VaporSlotFlags {
   NoSlotted = 1,
   Once = 1 << 1,
   SlotRoot = 1 << 2,
-  // Per-slot function metadata. The slot root can start invalid or become
-  // invalid, so fallback may be reachable and needs SlotFragment tracking.
-  NonStable = 1 << 3,
   // Multiple independently invalid roots share one enclosing fallback
   // decision instead of resolving that fallback from each root.
   SharedFallback = 1 << 4,
   // The outlet is the only forwarded root, so it may resolve an enclosing
   // fallback after its own local fallback is exhausted.
   InheritFallback = 1 << 5,
+}
+
+/**
+ * Per-slot-function metadata attached by the compiler as `fn._`.
+ */
+pub enum VaporSlotStability {
+  // The slot content root can start invalid or become invalid, so fallback
+  // may be reachable and needs SlotFragment tracking.
+  NonStable = 1,
 }

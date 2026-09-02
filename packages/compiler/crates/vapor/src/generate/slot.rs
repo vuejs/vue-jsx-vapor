@@ -21,7 +21,7 @@ use crate::{
   },
 };
 
-use common::{check::is_simple_identifier, patch_flag::VaporSlotFlags};
+use common::{check::is_simple_identifier, patch_flag::VaporSlotStability};
 
 pub fn gen_raw_slots<'a>(
   mut slots: Vec<IRSlots<'a>>,
@@ -595,7 +595,7 @@ fn gen_slot_block_with_props<'a>(
               ast.property_key_static_identifier(SPAN, "_"),
               ast.expression_numeric_literal(
                 SPAN,
-                VaporSlotFlags::NonStable as i32 as f64,
+                VaporSlotStability::NonStable as i32 as f64,
                 None,
                 oxc_ast::ast::NumberBase::Decimal,
               ),

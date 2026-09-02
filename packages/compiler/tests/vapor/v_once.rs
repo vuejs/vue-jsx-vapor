@@ -140,7 +140,7 @@ fn root_slot_outlet_in_slot_content_should_not_be_marked_as_slot_root() {
   	const _n1 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createSlot("default", null, null, 34);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n1;
   })();
   "#);

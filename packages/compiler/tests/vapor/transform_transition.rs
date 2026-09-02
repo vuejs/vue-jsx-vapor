@@ -118,7 +118,7 @@ fn work_with_v_if() {
   			return _n2;
   		}, null, 129);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n3;
   })();
   "#);
@@ -157,7 +157,7 @@ fn work_with_v_if_v_else() {
   			return _n7;
   		}, 645), 389);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n9;
   })();
   "#);
@@ -198,7 +198,7 @@ fn work_with_condition_expression() {
   			return _n6;
   		}, 641), 389);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n7;
   })();
   "#);
@@ -257,7 +257,7 @@ fn does_not_inject_persisted_when_v_if_owns_a_v_show_child() {
   			return _n2;
   		}, null, 129);
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n3;
   })();
   "#);

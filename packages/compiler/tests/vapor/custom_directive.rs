@@ -241,7 +241,7 @@ fn component() {
   			return _n4;
   		}, null, 17);
   		return _n1;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	_withVaporDirectives(_n0, [[_directive_test]]);
   	return _n0;
   })();

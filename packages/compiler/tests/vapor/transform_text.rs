@@ -501,7 +501,7 @@ fn slot_literal_interpolation() {
   	const _n1 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createNodes("Hello");
   		return _n0;
-  	}, { _: 8 }), true);
+  	}, { _: 1 }), true);
   	return _n1;
   })();
   "#)
