@@ -276,3 +276,26 @@ const _Comp7 = _defineVaporComponent({
 >
   {(scope) => <div>{scope.foo}</div>}
 </_Comp7>
+
+// Adt.tsx
+export interface A {
+  type: 'a'
+  left: string
+}
+
+export interface B {
+  type: 'b'
+  right: string
+}
+
+const Adt = (props: A | B) => {
+  if (props.type === 'a') {
+    return <p>{props.left}</p>
+  }
+
+  return <p>{props.right}</p>
+}
+
+export default () => {
+  return <Adt left="valueLeft" type="a" />
+}

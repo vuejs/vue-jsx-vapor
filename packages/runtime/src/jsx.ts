@@ -45,6 +45,10 @@ import type {
 
 type NativeElement = Element
 
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
+  ? Omit<T, K>
+  : never
+
 export namespace JSX {
   export type Element = RenderResult
   export interface ElementAttributesProperty {
@@ -60,7 +64,10 @@ export namespace JSX {
     class?: ClassValue | undefined
     style?: StyleValue | undefined
   }
-  export type LibraryManagedAttributes<Component, Props> = Omit<Props, 'ref'> &
+  export type LibraryManagedAttributes<Component, Props> = DistributiveOmit<
+    Props,
+    'ref'
+  > &
     (Component extends abstract new (...args: any[]) => infer Instance
       ? {
           ref?: NodeRef<
