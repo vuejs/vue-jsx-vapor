@@ -1,6 +1,8 @@
-import { transformerTwoslash } from '@shikijs/vitepress-twoslash'
-import { createTwoslasher } from '@ts-macro/twoslash'
 import { defineConfig } from 'vitepress'
+import {
+  createTwoslasher,
+  transformerTwoslash,
+} from '../../packages/macros/twoslash'
 import vueJsx from '../../packages/vue-jsx/src/volar'
 
 // https://vitepress.dev/reference/site-config
@@ -69,6 +71,10 @@ export default defineConfig({
                   text: 'useRef',
                   link: '/zh/features/use-ref',
                 },
+                {
+                  text: 'Custom Element',
+                  link: '/zh/features/custom-elements',
+                },
               ],
             },
           ],
@@ -95,9 +101,10 @@ export default defineConfig({
                 { text: '12. 双向绑定', link: '/zh/tutorial/step-12/' },
                 { text: '13. 动态组件', link: '/zh/tutorial/step-13/' },
                 { text: '14. HyperScript', link: '/zh/tutorial/step-14/' },
+                { text: '15. Custom Element', link: '/zh/tutorial/step-15/' },
               ],
             },
-            { text: '恭喜完成!', link: '/zh/tutorial/step-done/' },
+            { text: '恭喜完成!', link: '/zh/tutorial/done/' },
           ],
         },
       },
@@ -155,6 +162,10 @@ export default defineConfig({
               text: 'useRef',
               link: '/features/use-ref',
             },
+            {
+              text: 'Custom Elements',
+              link: '/features/custom-elements',
+            },
           ],
         },
       ],
@@ -181,6 +192,7 @@ export default defineConfig({
             { text: '12. Two-way Binding', link: '/tutorial/step-12/' },
             { text: '13. Dynamic Component', link: '/tutorial/step-13/' },
             { text: '14. HyperScript', link: '/tutorial/step-14/' },
+            { text: '15. Custom Elements', link: '/tutorial/step-15/' },
           ],
         },
         { text: 'You Did it!', link: '/tutorial/step-done/' },

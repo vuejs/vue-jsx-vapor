@@ -19,7 +19,6 @@
   },
   "devDependencies": {
     "@shikijs/vitepress-twoslash": "^4.0.2",
-    "@ts-macro/twoslash": "^0.0.5",
     "vitepress": "2.0.0-alpha.16"
   }
 }

@@ -17,7 +17,7 @@ const apps  = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/zh/tutorial/step-11/">
+<jsx-repl :files :apps prev="/zh/tutorial/step-15/">
 
 你已经完成了本教程！
 
