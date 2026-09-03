@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
 use common::error::ErrorCodes;
-use compiler::{transform, TransformOptions};
+use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
 #[test]
