@@ -42,12 +42,7 @@ import {
   type VNode,
   type VNodeChild,
 } from 'vue'
-import type {
-  EmitFnToProps,
-  IsKeyValues,
-  RenderResult,
-  SetupContextToProps,
-} from './types'
+import type { EmitFnToEmits, IsKeyValues, NodeChild, SetupContextToProps } from './types'
 
 const cacheMap = new WeakMap()
 
@@ -130,7 +125,7 @@ export const normalizeClass = (value: unknown) => _normalizeClass(value) || null
 
 // defineComponent
 
-type RenderFunction = () => RenderResult
+type RenderFunction = () => NodeChild
 
 type ComponentPublicInstanceConstructor<
   T extends ComponentPublicInstance<

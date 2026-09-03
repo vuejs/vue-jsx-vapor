@@ -104,13 +104,13 @@ const _Comp2 = _defineComponent(
       expose,
     }: {
       emit: EmitFn<{ foo: [T] }>
-      slots: { default?: (props: { foo: T }) => any }
+      slots: { default?: (props: { foo: T }) => JSX.Element }
       expose: (exposed: { foo: T }) => void
     },
   ) => {
     emit('foo', props.foo)
     expose({ foo: props.foo })
-    return () => slots.default?.({ foo: props.foo }) || []
+    return () => slots.default?.({ foo: props.foo })
   },
 )
 const _comp2Ref =
