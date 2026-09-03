@@ -23,6 +23,7 @@ export default defineConfig({
         nav: [
           { text: '首页', link: '/zh/' },
           { text: '特性', link: '/zh/features/directives' },
+          { text: '博客', link: '/zh/blog/', activeMatch: '/zh/blog/' },
           {
             text: '教程',
             link: '/zh/tutorial/step-1',
@@ -34,6 +35,25 @@ export default defineConfig({
           },
         ],
         sidebar: {
+          '/zh/blog/': [
+            {
+              text: 'Vue JSX 3.3',
+              items: [
+                {
+                  text: 'Virtual DOM 篇',
+                  link: '/zh/blog/vdom',
+                },
+                {
+                  text: 'Vapor 模式',
+                  link: '/zh/blog/vapor',
+                },
+                {
+                  text: '原生 TS7 支持',
+                  link: '/zh/blog/typescript-7',
+                },
+              ],
+            },
+          ],
           '/zh/': [
             {
               text: '介绍',
@@ -120,11 +140,31 @@ export default defineConfig({
         link: '/features/directives',
         activeMatch: 'features',
       },
+      { text: 'Blog', link: '/blog/', activeMatch: '/blog/' },
       { text: 'Tutorial', link: '/tutorial/step-1', activeMatch: 'tutorial' },
       { text: 'Playground', link: 'https://repl.vuejsx.dev/' },
     ],
 
     sidebar: {
+      '/blog/': [
+        {
+          text: 'Vue JSX 3.3',
+          items: [
+            {
+              text: 'Virtual DOM',
+              link: '/blog/vdom',
+            },
+            {
+              text: 'Vapor Mode',
+              link: '/blog/vapor',
+            },
+            {
+              text: 'Native TypeScript 7',
+              link: '/blog/typescript-7',
+            },
+          ],
+        },
+      ],
       '/': [
         {
           text: 'Introduction',

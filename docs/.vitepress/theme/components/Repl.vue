@@ -12,6 +12,10 @@ const props = defineProps({
     default: 'horizontal',
   },
   editorOptions: { type: Object },
+  autoSave: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const src = ref(serialize(props.files))
@@ -27,7 +31,7 @@ watch(
 <template>
   <Repl
     v-model="src"
-    auto-save
+    :auto-save="props.autoSave"
     slim
     preview-theme
     :layout

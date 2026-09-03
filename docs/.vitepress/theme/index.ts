@@ -2,6 +2,7 @@ import TwoslashFloatingVue from '@shikijs/vitepress-twoslash/client'
 import DefaultTheme from 'vitepress/theme'
 // https://vitepress.dev/guide/custom-theme
 import * as Vue from 'vue'
+import BlogRepl from './components/BlogRepl.vue'
 import HomeRepl from './components/HomeRepl.vue'
 import JsxRepl from './components/JsxRepl.vue'
 import type { Theme } from 'vitepress'
@@ -19,6 +20,7 @@ export default {
   enhanceApp({ app }) {
     app.use(TwoslashFloatingVue as any)
     app.use(Vue.vaporInteropPlugin as any)
+    app.component('BlogRepl', BlogRepl)
     app.component('JsxRepl', JsxRepl)
   },
 } satisfies Theme
