@@ -38,7 +38,7 @@ import {
   type VNode,
   type VNodeChild,
 } from 'vue'
-import type { EmitFnToEmits, RenderResult, SetupContextToProps } from './types'
+import type { EmitFnToEmits, NodeChild, SetupContextToProps } from './types'
 
 const cacheMap = new WeakMap()
 
@@ -121,7 +121,7 @@ export const normalizeClass = (value: unknown) => _normalizeClass(value) || null
 
 // defineComponent
 
-type RenderFunction = () => RenderResult
+type RenderFunction = () => NodeChild
 
 export type DefineSetupFnComponent<
   P extends Record<string, any>,
