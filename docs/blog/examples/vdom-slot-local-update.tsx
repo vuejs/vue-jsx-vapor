@@ -1,50 +1,25 @@
-import { ref } from 'vue'
-import { defineComponent } from 'vue-jsx'
-
-const Button = defineComponent(<T,>(
-  props: { offset: T },
-  {
-    slots,
-  }: {
-    slots: {
-      default?: (props: { offset: T }) => any
-    }
-  },
-) => {
-  return () => slots.default?.(props)
-}, { props: ['offset'] })
+import { ref, defineComponent } from 'vue'
 
 export default defineComponent(() => {
-  const count = ref(1)
-  const Output = () => <div class="output"><slot /></div>
-  let foo = 1
-  let bar = 1
-
+  const count = ref(0)
+  let dynamic = 0
+  let stable = 0
   return () => {
-    const offset = 2 as const
-
+    const offset = 1 // render-local: referencing it makes a slot dynamic
     return (
       <main class="demo">
-        <div class="count">count: {count.value}</div>
-        <Button offset={offset}>
-          {({ offset }) => (
-            <button onClick={() => count.value += offset}>
-              + {offset}
-            </button>
-          )}
-        </Button>
-        <Output>
-          {() => [
-            'should update: ',
-            bar,
-            ' + ',
-            offset,
-            ' = ',
-            (bar += offset),
-          ]}
-        </Output>
-        <Output>{() => ['should not update: ', foo++]}</Output>
+        <button onClick={() => count.value++}>rerender × {count.value}</button>
+        <Output label="dynamic">{() => (dynamic += offset)}</Output>
+        <Output label="stable">{() => (stable += 1)}</Output>
       </main>
     )
   }
 })
+
+function Output ({ label }: { label: string }) { 
+  return (
+    <div class="output">
+      {label}: <slot />
+    </div>
+  )
+}

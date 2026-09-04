@@ -1,7 +1,7 @@
-# 原生 TS7 支持：不依赖 Volar 推断 props、ref 与 children
+# 原生 TS7 支持：让 TypeScript 原生推断 props、ref 与 children
 
-Vue JSX 3.3 把普通组件的类型推断放回 TypeScript 自己的 JSX 类型系统里，而不是
-依赖编辑器插件补一层虚拟类型。配置 `jsxImportSource: "vue-jsx"` 后，TypeScript
+Vue JSX 3.3 把普通组件的类型推断放回 TypeScript 自己的 JSX 类型系统里。配置
+`jsxImportSource: "vue-jsx"` 后，TypeScript
 会读取 `vue-jsx/jsx-runtime` 导出的 JSX namespace，这个 namespace 会告诉 TS：
 Vue 组件在 JSX 调用点应该如何检查。
 
@@ -65,7 +65,7 @@ export namespace JSX {
     [name: string]: any
   }
 
-  export interface IntrinsicAttributes extends Omit<ReservedProps, 'ref'> {
+  export interface IntrinsicAttributes extends ReservedProps {
     class?: ClassValue | undefined
     style?: StyleValue | undefined
   }
@@ -83,57 +83,50 @@ export namespace JSX {
 下面是 runtime 类型里最关键的一段，只省略了无关的 DOM attributes：
 
 ```ts
-type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
-  ? Omit<T, K>
-  : never
-
-export type LibraryManagedAttributes<Component, Props> =
-  DistributiveOmit<Props, 'ref'> &
-    (Component extends abstract new (...args: any[]) => infer Instance
-      ? {
-          ref?: NodeRef<
-            ExtractExposed<
-              Props,
-              'exposed' extends keyof Instance
-                ? string extends keyof NonNullable<
-                    NonNullable<Instance['exposed']>
-                  >
-                  ? Instance
-                  : UnwrapRef<Instance['exposed']>
-                : Instance
-            >
-          >
-        } & ('v-slots' extends keyof Props
-          ? {}
-          : '$slots' extends keyof Instance
-            ? SlotsToProps<Instance['$slots'] & {}>
-            : 'slots' extends keyof Instance
-              ? SlotsToProps<Instance['slots'] & {}>
-              : {})
-      : Component extends (
-            props: Props,
-            ctx: {
-              slots: infer Slots
-              attrs: any
-              emit: infer Emit
-              expose: (
-                exposed: infer Exposed extends Record<string, any>,
-              ) => void
-            },
-          ) => any
-        ? {
-            ref?: 'ref' extends keyof Props
-              ? Props['ref']
-              : NodeRef<
-                  string extends keyof Exposed
-                    ? NativeElement | VaporComponentInstance
-                    : UnwrapRef<Exposed>
+export type LibraryManagedAttributes<Component, Props> = Props &
+  (Component extends abstract new (...args: any[]) => infer Instance
+    ? {
+        ref?: NodeRef<
+          ExtractExposed<
+            Props,
+            'exposed' extends keyof Instance
+              ? string extends keyof NonNullable<
+                  NonNullable<Instance['exposed']>
                 >
-          } & EmitFnToProps<Emit, keyof Props> &
-            ('v-slots' extends keyof Props ? {} : SlotsToProps<Slots & {}>)
-        : {
-            ref?: VNodeRef
-          })
+                ? Instance
+                : UnwrapRef<Instance['exposed']>
+              : Instance
+          >
+        >
+      } & ('v-slots' extends keyof Props
+        ? {}
+        : '$slots' extends keyof Instance
+          ? SlotsToProps<Instance['$slots'] & {}>
+          : 'slots' extends keyof Instance
+            ? SlotsToProps<Instance['slots'] & {}>
+            : {})
+    : Component extends (
+          props: Props,
+          ctx: {
+            slots: infer Slots
+            attrs: any
+            emit: infer Emit
+            expose: (exposed: infer Exposed extends Record<string, any>) => void
+          },
+        ) => any
+      ? {
+          ref?: 'ref' extends keyof Props
+            ? Props['ref']
+            : NodeRef<
+                string extends keyof Exposed
+                  ? NativeElement | VaporComponentInstance
+                  : UnwrapRef<Exposed>
+              >
+        } & EmitFnToProps<Emit, keyof Props> &
+          ('v-slots' extends keyof Props ? {} : SlotsToProps<Slots & {}>)
+      : {
+          ref?: VNodeRef
+        })
 ```
 
 这段类型分三条路。
@@ -147,9 +140,6 @@ export type LibraryManagedAttributes<Component, Props> =
 
 3. 不认识的组件回退到 Vue 常规的 `VNodeRef`。
 
-任何分支执行前，`DistributiveOmit<Props, 'ref'>` 都会先把原始 `ref` 删除。因为
-`ref` 在 Vue JSX 里不是普通 prop，它要根据组件真实暴露出来的类型重新生成。
-
 ## Props 和 Emits
 
 普通 props 最简单：删除 `ref` 后，原始 `Props` 仍然保留在 attribute 类型里。所以
@@ -159,16 +149,18 @@ literal props、generic props、union、required props 都仍然按正常 TypeSc
 emit 只需要给函数式组件补一层映射：
 
 ```ts
-export type EmitFnToProps<T, ExcludeKeys extends PropertyKey = ''> =
-  T extends (event: infer Event extends string, ...args: infer Args) => any
-    ? string extends Event
-      ? {}
-      : {
-          readonly [K in Event as `on${Capitalize<K>}` extends ExcludeKeys
-            ? never
-            : `on${Capitalize<K>}`]?: (...args: Args) => any
-        }
-    : {}
+export type EmitFnToProps<T, ExcludeKeys extends PropertyKey = ''> = T extends (
+  event: infer Event extends string,
+  ...args: infer Args
+) => any
+  ? string extends Event
+    ? {}
+    : {
+        readonly [K in Event as `on${Capitalize<K>}` extends ExcludeKeys
+          ? never
+          : `on${Capitalize<K>}`]?: (...args: Args) => any
+      }
+  : {}
 ```
 
 如果组件里能写 `emit('change', value)`，JSX 调用点就会得到一个 `onChange` prop，
@@ -191,7 +183,7 @@ const Counter = (
 />
 ```
 
-这里不需要 Volar 插件去虚拟生成 `onChange`。它是在 TypeScript 原生 JSX 检查过程中
+这里不需要任何编辑器插件去虚拟生成 `onChange`。它是在 TypeScript 原生 JSX 检查过程中
 由 `LibraryManagedAttributes` 推出来的。
 
 ## Ref 指向 Exposed
@@ -207,10 +199,12 @@ export type NodeRef<T> =
 
 declare const exposedType: unique symbol
 
-export type ExtractExposed<Props, Default = never> =
-  typeof exposedType extends keyof Props
-    ? Exclude<Props[typeof exposedType], undefined>
-    : Default
+export type ExtractExposed<
+  Props,
+  Default = never,
+> = typeof exposedType extends keyof Props
+  ? Exclude<Props[typeof exposedType], undefined>
+  : Default
 
 export type ExposedToProps<T extends Record<string, any>> =
   string extends keyof T
@@ -318,7 +312,6 @@ const Panel = defineComponent(
 ;<Panel title="Settings">
   {({ active }) => <div>{active ? 'open' : 'closed'}</div>}
 </Panel>
-
 ;<Panel
   title="Settings"
   v-slots={{
@@ -328,10 +321,10 @@ const Panel = defineComponent(
 />
 ```
 
-`active` 和 `close` 都来自组件自己的 slots 类型。调用者没有安装 Volar 插件，也没有写
-生成文件。
+`active` 和 `close` 都来自组件自己的 slots 类型。调用者不需要安装任何编辑器插件，
+也没有写生成文件。
 
-## 为什么不再需要 Volar
+## 为什么不再需要编辑器插件
 
 以前 JSX 类型经常依赖编辑器插件，是因为标准 TypeScript 在 JSX 调用点看不到足够多
 Vue 语义。插件需要创建虚拟文件或额外类型上下文，让 props、emits、slots、refs 看起来

@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import {
-  computed,
-  defineAsyncComponent,
-  reactive,
-  watch,
-} from 'vue'
+import { computed, defineAsyncComponent, reactive, watch } from 'vue'
 import { getDefaultFiles } from '../../../tutorial/template'
 
 const props = defineProps<{
@@ -71,6 +66,23 @@ const htmlCode = `<html>
       border-color: #a7d7c4;
       background: #eaf8f2;
       font-weight: 700;
+    }
+    html.dark body {
+      color: #e2e8f0;
+      background: #1e1e1e;
+    }
+    html.dark button {
+      color: #10151c;
+      background: #a7d7c4;
+    }
+    html.dark .count,
+    html.dark .output {
+      border-color: #2c3a47;
+      background: #1a222c;
+    }
+    html.dark .count {
+      border-color: #2f6b55;
+      background: #142b23;
     }
   </style>
 </html>

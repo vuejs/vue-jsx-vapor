@@ -111,14 +111,15 @@ forwarded。稳定 slot 能自己捕获依赖，父组件不需要因为存在 s
 
 ### 试试看：slot 级别的局部性
 
-下面这个 REPL 故意把 `foo++` 和 `bar += offset` 放进 slot 函数里。真实业务代码
-不应该依赖 render 里的副作用；这里这么写，是为了让“这个 slot 函数有没有被重新调用”
-变得一眼可见。
+下面 REPL 里的两个 slot 几乎一模一样，唯一的区别是：`dynamic` slot 读到了
+`offset`——一个声明在父组件 render 函数里的变量，而 `stable` slot 只碰
+setup 作用域里的状态。计数器只是探针——在 slot 里改状态不是编码建议，只是
+为了让“这个 slot 有没有被重新调用”一眼可见。
 
-点击 `+ 2`。父组件里的 `count` 每次都会变。第一个 `<Output>` slot 也会变，因为
-它的函数体捕获了 `offset`，而 `offset` 是父 render 里创建的局部变量。第二个
-`<Output>` slot 不会跟着变，因为它只捕获 setup 作用域里的 `foo`，编译器可以把它
-当成 stable slot，不因为父组件 rerender 就强制子组件更新。
+点击按钮让父组件 rerender。`dynamic` 的数字每次点击都会增长，因为 dynamic
+slot 在父组件每次 render 时都会被重新调用；`stable` 的数字永远不动，因为
+stable slot 根本不会重新调用——编译器证明了它不依赖 render-local 作用域，
+父组件 rerender 不会连累子组件更新。
 
 <BlogRepl :app="slotLocalUpdateCode" />
 
@@ -127,6 +128,16 @@ forwarded。稳定 slot 能自己捕获依赖，父组件不需要因为存在 s
 里的标识符，就标记为 dynamic，并在生成的组件 VNode 上带上动态 slot 元信息。如果
 没有触碰，则生成的 slots object 会携带 stable slot flag，让 Vue 的 optimized path
 跳过 slot diff 和不必要的子组件更新压力。
+
+> [!WARNING]
+> 不止 render-local 标识符。嵌在其他 slot 的作用域或 `map` 回调里的 slot 同样会被
+> 标记为 dynamic，因为 `scope`、`item` 这类参数每次调用都是新的：
+>
+> ```jsx
+> // 两个内层 slot 都是 dynamic
+> <Comp>{(scope) => <Output>{scope.foo}</Output>}</Comp>
+> <>{list.map((item) => <Output>{item}</Output>)}</>
+> ```
 
 这就是相对普通 Babel transform 的 runtime 收益：更少分配、更少归一化、更少
 props diff、更少 children 遍历，以及更少不必要的组件更新。

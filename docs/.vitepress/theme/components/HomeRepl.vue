@@ -65,6 +65,15 @@ const styleCode = `* { box-sizing: border-box; }
       font: inherit;
       font-weight: 600;
       cursor: pointer;
+    }
+    html.dark .demo {
+      color: #e2e8f0;
+      background: #1e1e1e;
+    }
+    html.dark .demo span { color: #42b883; }
+    html.dark .demo button {
+      color: #10151c;
+      background: #a7d7c4;
     }`
 
 function createHtmlCode(vapor: boolean) {

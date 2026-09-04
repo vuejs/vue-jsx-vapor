@@ -121,15 +121,17 @@ just because a slot object exists.
 
 ### Try It: Slot-Level Locality
 
-The REPL below intentionally uses `foo++` and `bar += offset` inside slot
-functions. That is not application code style advice; it is a small probe that
-makes slot invocation visible.
+The two slots in the REPL below look almost identical. The only difference is
+that the `dynamic` slot reads `offset`, a variable declared inside the parent's
+render function, while the `stable` slot only touches setup-local state. The
+counters are a probe — mutating state inside a slot is not a style
+recommendation; it just makes "was this slot invoked again?" visible.
 
-Click `+ 2`. The parent `count` changes every time. The first `<Output>` slot
-also changes because its body closes over `offset`, a value created inside the
-parent render. The second `<Output>` slot stays put because it only closes over
-setup-local `foo`, so the compiler can treat that slot as stable and avoid
-forcing the child update from the parent render.
+Click the button to rerender the parent. The `dynamic` counter grows on every
+click, because a dynamic slot is re-invoked on each parent render. The `stable`
+counter never moves, because a stable slot is not re-invoked at all: the
+compiler proves it does not depend on render-local scope, so a parent rerender
+does not force the child to update.
 
 <BlogRepl :app="slotLocalUpdateCode" />
 
@@ -139,6 +141,17 @@ slot children touch identifiers from the render-local scope, the slot is marked
 dynamic and the generated component VNode receives dynamic slot metadata. If
 they do not, the generated slots object carries the stable slot flag, allowing
 Vue's optimized path to skip the slot diff and child update pressure.
+
+> [!WARNING]
+> Render-local identifiers are not the only trigger. A slot nested inside
+> another slot's scope or inside a `map` callback is dynamic too, because
+> parameters like `scope` and `item` are fresh on every invocation:
+>
+> ```jsx
+> // both inner slots are dynamic
+> <Comp>{(scope) => <Output>{scope.foo}</Output>}</Comp>
+> <>{list.map((item) => <Output>{item}</Output>)}</>
+> ```
 
 That is the practical runtime win over a plain Babel transform: less allocation,
 less normalization, less prop diffing, fewer child visits, and fewer unnecessary
