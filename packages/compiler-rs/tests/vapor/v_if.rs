@@ -232,7 +232,7 @@ fn template_v_if_with_v_for() {
   			const _x4 = _txt(_n4);
   			_setNodes(_x4, "item: ", () => _for_item0.value);
   			return _n4;
-  		}, (item, index) => index, 8);
+  		}, (item, index) => index, 72);
   		return _n2;
   	});
   	return _n0;
@@ -607,7 +607,7 @@ fn v_if_in_template_v_for_forces_multi_root_shape() {
   			return _n5;
   		}, null, 10);
   		return _n2;
-  	}, void 0, 16);
+  	}, void 0, 80);
   	return _n0;
   })();
   "#);

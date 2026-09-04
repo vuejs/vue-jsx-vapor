@@ -553,7 +553,7 @@ fn v_for_single_node_flag_is_not_set_for_fragment_item_blocks() {
   		const _x3 = _txt(_n3);
   		_setNodes(_x3, () => _for_item0.value);
   		return [_n2, _n3];
-  	});
+  	}, void 0, 64);
   	return _n0;
   })();
   "#);
@@ -603,7 +603,7 @@ fn v_for_on_template_with_element_and_component_v_if_branches() {
   			return _n6;
   		}, 266);
   		return _n2;
-  	}, void 0, 16);
+  	}, void 0, 80);
   	return _n0;
   })();
   "#);
@@ -629,10 +629,21 @@ fn v_for_on_template_with_nested_v_for_child_marks_fragment_block() {
   			return _n4;
   		}, void 0, 8);
   		return _n2;
-  	}, void 0, 16);
+  	}, void 0, 80);
   	return _n0;
   })();
   "#);
+}
+
+#[test]
+fn v_for_on_template_under_transition_group_has_no_wrapped_rows() {
+  let code = transform(
+    "<TransitionGroup tag=\"ul\"><template v-for={item in items}><li>{item}</li><li>b</li></template></TransitionGroup>",
+    None,
+  )
+  .code;
+  assert!(!code.contains("void 0, 80"));
+  assert!(!code.contains("WRAPPED_ROWS"));
 }
 
 #[test]
