@@ -42,7 +42,7 @@ import {
   type VNode,
   type VNodeChild,
 } from 'vue'
-import type { EmitFnToEmits, IsKeyValues, NodeChild, SetupContextToProps } from './types'
+import type { EmitFnToProps, IsKeyValues, NodeChild, SetupContextToProps } from './types'
 
 const cacheMap = new WeakMap()
 
