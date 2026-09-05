@@ -99,7 +99,7 @@ function getMacro(
     )
   }
 }
- 
+
 const getModifierPropName = (name: string): string => {
   return `${
     name === 'modelValue' || name === 'model-value' ? 'model' : name

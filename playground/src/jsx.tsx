@@ -21,7 +21,6 @@ import {
 } from 'vue-jsx'
 
 declare function expectType<T>(value: T): void
-
 ;<div slot="name" />
 
 const Comp = defineComponent({

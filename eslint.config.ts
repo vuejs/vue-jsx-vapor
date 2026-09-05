@@ -1,9 +1,25 @@
+import { createRequire } from 'node:module'
+
 import vueJsxVapor from './packages/eslint/src/index'
 import { sxzz } from './packages/macros/eslint-config'
 
+// eslint-plugin-perfectionist@5.9 currently calls this TypeScript API, which
+// was removed in TypeScript 7. Keep the compatibility surface local to ESLint
+// until the plugin supports the new TypeScript API.
+const typescript = createRequire(import.meta.url)('typescript') as {
+  isExternalModuleNameRelative?: (name: string) => boolean
+}
+typescript.isExternalModuleNameRelative ??= (name) =>
+  name.startsWith('.') || name.startsWith('/') || /^[a-z]:[\\/]/i.test(name)
+
 export default [
   {
-    ignores: ['**/wasi-worker**', '**/compiler.wasi**', '**/tutorial/**/*.tsx'],
+    ignores: [
+      '**/wasi-worker**',
+      '**/compiler.wasi**',
+      '**/tutorial/**/*.tsx',
+      '**/docs/**',
+    ],
   },
   ...(await sxzz()
     .removeRules(

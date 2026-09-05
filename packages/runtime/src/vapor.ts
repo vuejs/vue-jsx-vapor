@@ -6,12 +6,12 @@ import {
   type ComponentObjectPropsOptions,
   type ComponentTypeEmits,
   type DefineVaporComponent,
+  type DefineVaporSetupFnComponent,
   type EmitFn,
   type EmitsOptions,
   type ExtractPropTypes,
   type ShallowRef,
   type VaporComponent,
-  type VaporComponentInstance,
   type VaporComponentOptions,
   type VaporPublicProps,
   type VaporRenderResult,
@@ -265,24 +265,6 @@ export function normalizeVaporSlots(slots: any) {
 
 type SlotsType = Record<string, VaporSlot>
 
-export type DefineVaporSetupFnComponent<
-  Props extends Record<string, any> = {},
-  Emits extends EmitsOptions = {},
-  Slots extends SlotsType = SlotsType,
-  Exposed extends Record<string, any> = Record<string, any>,
-  TypeBlock extends Block = Block,
-  ResolvedProps extends Record<string, any> = Readonly<
-    Props & VaporPublicProps
-  > &
-    SetupContextToProps<Emits, Slots, Exposed>,
-> = new () => VaporComponentInstance<
-  ResolvedProps,
-  Emits,
-  Slots,
-  Exposed,
-  TypeBlock
->
-
 // overload 1: direct setup function
 // (uses user defined props interface)
 export function defineVaporComponent<
@@ -317,7 +299,9 @@ export function defineVaporComponent<
   [keyof Emits] extends [never] ? EmitFnToEmits<Emit> : Emits,
   Slots,
   Exposed,
-  TypeBlock
+  TypeBlock,
+  Readonly<Props & VaporPublicProps> &
+    SetupContextToProps<Emits, Slots, Exposed>
 >
 export function defineVaporComponent<
   Props extends Record<string, any>,
