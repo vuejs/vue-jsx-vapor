@@ -10,10 +10,6 @@ This guide assumes familiarity with Vue and Vite.
 
 - Virtual DOM mode supports Vue 3.
 - Vapor mode requires Vue 3.6 or later.
-- The optional directives, ref, and macros type transforms use the
-  [TS Macro](https://marketplace.visualstudio.com/items?itemName=zhiyuanzmj.vscode-ts-macro)
-  VS Code extension. Use `@ts-macro/tsc` when these transforms must also run in
-  command-line type checking.
 
 ## Installation
 
@@ -80,41 +76,5 @@ Use an uppercase identifier or a member expression for Vue components. This
 keeps component resolution deterministic and avoids changing the meaning of an
 existing component when HTML adds a new native element in the future.
 
-## Optional Macros
-
-Macros are disabled by default:
-
-```ts [vite.config.ts]
-vueJsx({
-  macros: true,
-})
-```
-
-The TS Macro extension can discover the Vue JSX integration from
-`vite.config.ts` automatically. Alternatively, create `ts-macro.config.ts` in
-the project root to configure the `vue-jsx/volar` plugin explicitly:
-
-```ts [ts-macro.config.ts]
-import vueJsx from 'vue-jsx/volar'
-
-export default {
-  plugins: [vueJsx({ macros: true })],
-}
-```
-
-Keep its `macros` option consistent with `vite.config.ts` so the editor,
-command-line type checker, and compiler use the same syntax.
-
-For command-line type checking:
-
-```bash
-pnpm add -D @ts-macro/tsc
-```
-
-```json [package.json]
-{
-  "scripts": {
-    "typecheck": "tsmc --noEmit"
-  }
-}
-```
+See [Macros](../features/macros) and [Directives](../features/directives) for
+optional syntax transforms and their type support.

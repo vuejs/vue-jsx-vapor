@@ -8,16 +8,6 @@ Vue JSX 是一个高性能的 Vue JSX 编译器，使用 Rust 编写并基于 Ox
 
 - Virtual DOM 模式支持 Vue 3。
 - Vapor 模式需要 Vue 3.6 或更高版本。
-- 如果使用了 directives 或者 macros 语法, 建议安装 VSCode 扩展 [TS Macro](https://marketplace.visualstudio.com/items?itemName=zhiyuanzmj.vscode-ts-macro) 用于类型提示，然后再安装 `@ts-macro/tsc` 来替代 `tsc` 进行类型检查。
-  ```json
-  // package.json
-  {
-    "scripts": {
-      "typecheck": "tsmc --noEmit"
-      // ...
-    }
-  }
-  ```
 
 ## 安装
 
@@ -81,38 +71,4 @@ export function App() {
 
 使用大写标识符或成员表达式表示 Vue 组件。这样可以让组件解析行为保持确定，避免未来 HTML 新增原生标签时改变已有组件的含义。
 
-## 可选宏
-
-宏默认关闭，可以显式开启：
-
-```ts [vite.config.ts]
-vueJsx({
-  macros: true,
-})
-```
-
-TS Macro 扩展可以从 `vite.config.ts` 自动发现 Vue JSX 集成。也可以在项目根目录创建 `ts-macro.config.ts`，单独配置 `vue-jsx/volar` 插件：
-
-```ts [ts-macro.config.ts]
-import vueJsx from 'vue-jsx/volar'
-
-export default {
-  plugins: [vueJsx({ macros: true })],
-}
-```
-
-请让其中的 `macros` 选项与 `vite.config.ts` 保持一致，确保编辑器、命令行类型检查和编译器支持相同的语法。
-
-命令行类型检查可以使用：
-
-```bash
-pnpm add -D @ts-macro/tsc
-```
-
-```json [package.json]
-{
-  "scripts": {
-    "typecheck": "tsmc --noEmit"
-  }
-}
-```
+可选语法转换及其类型支持请阅读[宏](../features/macros)和[指令](../features/directives)章节。

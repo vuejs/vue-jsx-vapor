@@ -1,10 +1,9 @@
 # Macros
 
-A collection of compile-time macros for JSX. These macros must be explicitly enabled by setting the `macros` option to `true`.
+A collection of compile-time macros for JSX. Macros are disabled by default and
+must be explicitly enabled by setting the `macros` option to `true`.
 
 ## Setup
-
-::: code-group
 
 ```ts {7} [vite.config.ts]
 import { defineConfig } from 'vite'
@@ -19,24 +18,19 @@ export default defineConfig({
 })
 ```
 
-```ts {6} [ts-macro.config.ts]
+The `vue-jsx/volar` plugin is optional. Use it only when you need editor or
+type-checking support for macro syntax. In that case, enable the macro transform
+there as well and keep the option consistent with the Vite configuration:
+
+```ts [ts-macro.config.ts]
 import vueJsx from 'vue-jsx/volar'
 
 export default {
-  plugins: [
-    vueJsx({
-      macros: true,
-    }),
-  ],
+  plugins: [vueJsx({ macros: true })],
 }
 ```
 
-:::
-
-The TS Macro extension can discover the integration from `vite.config.ts`
-automatically. The `ts-macro.config.ts` example is an alternative for defining
-the `vue-jsx/volar` plugin separately. Keep the options in both files
-consistent when using the explicit configuration.
+See [Directives](./directives) for the general TS Macro setup.
 
 ::: details Install as a standalone plugin
 

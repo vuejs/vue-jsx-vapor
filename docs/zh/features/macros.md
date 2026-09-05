@@ -1,10 +1,8 @@
 # 宏
 
-为 JSX 设计的一系列宏。需要通过将 `macros` 设置为 `true` 来手动启用。
+为 JSX 设计的一系列宏。宏默认关闭，需要通过将 `macros` 设置为 `true` 来手动启用。
 
 ## 配置
-
-::: code-group
 
 ```ts {7} [vite.config.ts]
 import { defineConfig } from 'vite'
@@ -19,21 +17,17 @@ export default defineConfig({
 })
 ```
 
-```ts {6} [ts-macro.config.ts]
+`vue-jsx/volar` 插件是可选的。只有在需要宏语法的编辑器或类型检查支持时才需要启用它。这种情况下也要在其中开启宏转换，并确保选项与 Vite 配置保持一致：
+
+```ts [ts-macro.config.ts]
 import vueJsx from 'vue-jsx/volar'
 
 export default {
-  plugins: [
-    vueJsx({
-      macros: true,
-    }),
-  ],
+  plugins: [vueJsx({ macros: true })],
 }
 ```
 
-:::
-
-TS Macro 扩展可以从 `vite.config.ts` 自动发现集成。上面的 `ts-macro.config.ts` 是另一种配置方式，可用于单独定义 `vue-jsx/volar` 插件。使用显式配置时，请保持两个文件中的选项一致。
+TS Macro 的通用配置请参考[指令](./directives)章节。
 
 ::: details 作为单独的插件安装
 
