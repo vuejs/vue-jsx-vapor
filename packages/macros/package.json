@@ -87,7 +87,7 @@
   "dependencies": {
     "hash-sum": "catalog:",
     "magic-string": "^0.30.21",
-    "ts-macro": "catalog:",
+    "ts-macro": "^0.3.7",
     "unplugin": "catalog:",
     "unplugin-utils": "catalog:"
   },
@@ -98,7 +98,7 @@
     "@nuxt/schema": "catalog:",
     "@shikijs/vitepress-twoslash": "^4.0.2",
     "@sxzz/eslint-config": "^8.0.0",
-    "@ts-macro/tsc": "catalog:",
+    "@ts-macro/tsc": "^0.3.7",
     "@ts-macro/twoslash": "^0.0.5",
     "@types/hash-sum": "catalog:",
     "@vitejs/plugin-vue": "^6.0.6",

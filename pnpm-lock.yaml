@@ -12,9 +12,6 @@ catalogs:
     '@nuxt/schema':
       specifier: ^3.21.4
       version: 3.21.4
-    '@ts-macro/tsc':
-      specifier: ^0.3.7
-      version: 0.3.7
     '@types/hash-sum':
       specifier: ^1.0.2
       version: 1.0.2
@@ -43,9 +40,7 @@ catalogs:
       specifier: 3.6.0-rc.7
       version: 3.6.0-rc.7
 
-overrides:
-  estree-walker: 2.0.2
-  ts-macro: ^0.3.7
+packageExtensionsChecksum: sha256-jdAbGbew+2+gePgrHAZl9dXRaNgX1ZDV36j6omZgSBk=
 
 patchedDependencies:
   '@vue-macros/volar': 79e6492c51b3afca57b92023dd1aae9ddd57140efa1cf2cdf74d420e1d42c396
@@ -205,7 +200,7 @@ importers:
         version: 3.29.5
       ts-macro:
         specifier: ^0.3.7
-        version: 0.3.7
+        version: 0.3.7(typescript@6.0.3)
       unplugin:
         specifier: 'catalog:'
         version: 3.0.0
@@ -235,7 +230,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0(@types/eslint@9.6.1)(@typescript-eslint/eslint-plugin@8.59.1(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.3.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(@typescript-eslint/rule-tester@8.59.1(eslint@10.3.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(@typescript-eslint/typescript-estree@8.59.1(supports-color@8.1.1)(typescript@6.0.3))(@typescript-eslint/utils@8.59.1(eslint@10.3.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.3.0(jiti@2.6.1)(supports-color@8.1.1))(prettier@3.6.2)(supports-color@8.1.1)(typescript@6.0.3)
       '@ts-macro/tsc':
-        specifier: 'catalog:'
+        specifier: ^0.3.7
         version: 0.3.7(rollup@3.29.5)(typescript@6.0.3)
       '@ts-macro/twoslash':
         specifier: ^0.0.5
@@ -300,9 +295,6 @@ importers:
       rollup:
         specifier: ^3
         version: 3.29.5
-      ts-macro:
-        specifier: ^0.3.7
-        version: 0.3.7
       unplugin:
         specifier: 'catalog:'
         version: 3.0.0
@@ -352,9 +344,6 @@ importers:
       rollup:
         specifier: ^3
         version: 3.29.5
-      ts-macro:
-        specifier: ^0.3.7
-        version: 0.3.7
       unplugin:
         specifier: 'catalog:'
         version: 3.0.0
@@ -2426,6 +2415,8 @@ packages:
   '@ts-macro/tsc@0.3.7':
     resolution: {integrity: sha512-Rt2Ra5Z4+OtymCZ5sWNsBwlG6WpgC5Wm5MC6sFoOYxPFlIM4v4BqwHzCb1sX29QpbdCLiWQITZ89O9qTwZBwzQ==}
     hasBin: true
+    peerDependencies:
+      typescript: '*'
 
   '@ts-macro/twoslash@0.0.5':
     resolution: {integrity: sha512-D6mO8miZm+LKEprejzTQcAzxsNfWcJn6txJXEg9cetfKgy3Ijwe6YrJ9+TX8SRullqZk+WaPFs7NphZ4SrmItQ==}
@@ -3928,6 +3919,9 @@ packages:
   estree-walker@2.0.2:
     resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
 
+  estree-walker@3.0.3:
+    resolution: {integrity: sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==}
+
   esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
@@ -5112,6 +5106,8 @@ packages:
 
   ts-macro@0.3.7:
     resolution: {integrity: sha512-5BinbTKn5WXRslotv5/VWTn3catfK0thWoB4BZI5VNEdxMu6r9AUPFalut4wLEK3nGvxhywA9aAdZnJ+Fnug9A==}
+    peerDependencies:
+      typescript: '*'
 
   tsdown@0.22.14:
     resolution: {integrity: sha512-ule7Y+fsAN2iZbLDoo7C4KYljFJNJJ+fLshyn+9gozeTspVersWHxwdGB+Dm2hzA38s6muFnUTl0jK3vJm9ifQ==}
@@ -7286,7 +7282,7 @@ snapshots:
       '@volar/typescript': 2.4.23(typescript@6.0.3)
       jiti: 2.6.1
       rollup-utils: 0.0.5(rollup@3.29.5)
-      ts-macro: 0.3.7
+      ts-macro: 0.3.7(typescript@6.0.3)
       vscode-uri: 3.1.0
     transitivePeerDependencies:
       - rollup
@@ -7296,15 +7292,15 @@ snapshots:
     dependencies:
       '@ts-macro/language-plugin': 0.3.7(rollup@3.29.5)(typescript@6.0.3)
       '@volar/typescript': 2.4.23(typescript@6.0.3)
+      typescript: 6.0.3
     transitivePeerDependencies:
       - rollup
-      - typescript
 
   '@ts-macro/twoslash@0.0.5(rollup@3.29.5)(supports-color@8.1.1)(typescript@6.0.3)':
     dependencies:
       '@ts-macro/language-plugin': 0.3.7(rollup@3.29.5)(typescript@6.0.3)
       '@volar/language-core': 2.4.27
-      ts-macro: 0.3.7
+      ts-macro: 0.3.7(typescript@6.0.3)
       twoslash: 0.3.6(supports-color@8.1.1)(typescript@6.0.3)
       twoslash-protocol: 0.3.6
       typescript: 6.0.3
@@ -7631,7 +7627,7 @@ snapshots:
   '@vitest/mocker@4.1.5(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.39.0)(yaml@2.8.2))':
     dependencies:
       '@vitest/spy': 4.1.5
-      estree-walker: 2.0.2
+      estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
       vite: 8.0.10(@types/node@25.6.0)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.39.0)(yaml@2.8.2)
@@ -7823,7 +7819,7 @@ snapshots:
       '@vue/language-core': 3.0.8(typescript@6.0.3)
       '@vue/shared': 3.5.33
       muggle-string: 0.4.1
-      ts-macro: 0.3.7
+      ts-macro: 0.3.7(typescript@6.0.3)
     transitivePeerDependencies:
       - typescript
       - vue
@@ -7838,7 +7834,7 @@ snapshots:
       '@vue/language-core': 3.0.8(typescript@7.0.2)
       '@vue/shared': 3.5.33
       muggle-string: 0.4.1
-      ts-macro: 0.3.7
+      ts-macro: 0.3.7(typescript@7.0.2)
     transitivePeerDependencies:
       - typescript
       - vue
@@ -9082,6 +9078,10 @@ snapshots:
 
   estree-walker@2.0.2: {}
 
+  estree-walker@3.0.3:
+    dependencies:
+      '@types/estree': 1.0.8
+
   esutils@2.0.3: {}
 
   events@3.3.0: {}
@@ -10182,7 +10182,7 @@ snapshots:
       '@types/estree': 1.0.8
       estree-walker: 2.0.2
       path-browserify: 1.0.1
-      picomatch: 4.0.4
+      picomatch: 4.0.7
     optionalDependencies:
       rollup: 3.29.5
 
@@ -10454,9 +10454,15 @@ snapshots:
       picomatch: 4.0.7
       typescript: 6.0.3
 
-  ts-macro@0.3.7:
+  ts-macro@0.3.7(typescript@6.0.3):
     dependencies:
       muggle-string: 0.4.1
+      typescript: 6.0.3
+
+  ts-macro@0.3.7(typescript@7.0.2):
+    dependencies:
+      muggle-string: 0.4.1
+      typescript: 7.0.2
 
   tsdown@0.22.14(@volar/typescript@2.4.23(typescript@7.0.2))(typescript@7.0.2):
     dependencies:
@@ -10588,7 +10594,7 @@ snapshots:
   unctx@2.5.0:
     dependencies:
       acorn: 8.16.0
-      estree-walker: 2.0.2
+      estree-walker: 3.0.3
       magic-string: 0.30.21
       unplugin: 2.3.11
 

@@ -6,19 +6,18 @@ import {
   type ComponentObjectPropsOptions,
   type ComponentTypeEmits,
   type DefineVaporComponent,
-  type DefineVaporSetupFnComponent,
   type EmitFn,
   type EmitsOptions,
   type ExtractPropTypes,
   type ShallowRef,
   type VaporComponent,
   type VaporComponentOptions,
-  type VaporPublicProps,
+  type DefineVaporSetupFnComponent,
   type VaporRenderResult,
   type VaporSlot,
 } from 'vue'
 import * as Vue from 'vue'
-import type { EmitFnToEmits, NodeChild, SetupContextToProps } from './types'
+import type { EmitFnToEmits, NodeChild, ExposedToProps, SlotsToProps } from './types'
 
 // component
 
@@ -295,13 +294,11 @@ export function defineVaporComponent<
   > &
     ThisType<void>,
 ): DefineVaporSetupFnComponent<
-  Props,
+  Props & ExposedToProps<Exposed> & SlotsToProps<Slots>,
   [keyof Emits] extends [never] ? EmitFnToEmits<Emit> : Emits,
   Slots,
   Exposed,
-  TypeBlock,
-  Readonly<Props & VaporPublicProps> &
-    SetupContextToProps<Emits, Slots, Exposed>
+  TypeBlock
 >
 export function defineVaporComponent<
   Props extends Record<string, any>,
@@ -331,7 +328,7 @@ export function defineVaporComponent<
   > &
     ThisType<void>,
 ): DefineVaporSetupFnComponent<
-  Props,
+  Props & SlotsToProps<Slots> & ExposedToProps<Exposed>,
   [keyof Emits] extends [never] ? EmitFnToEmits<Emit> : Emits,
   Slots,
   Exposed,
@@ -384,7 +381,7 @@ export function defineVaporComponent<
   ResolvedEmits,
   RuntimeEmitsKeys,
   Slots,
-  Block extends Exposed ? Record<string, any> : Exposed,
+  Exposed extends VaporRenderResult ? Record<string, any> : Exposed,
   TypeBlock,
   TypeRefs,
   // MakeDefaultsOptional - if TypeProps is provided, set to false to use

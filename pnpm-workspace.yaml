@@ -5,24 +5,27 @@ packages:
   - benchmark
   - ecosystem-ci
 
-overrides:
-  estree-walker: 2.0.2
-  ts-macro: 'catalog:'
 patchedDependencies:
   '@vue-macros/volar': patches/@vue-macros__volar.patch
+
+packageExtensions:
+  ts-macro@0.3.7:
+    peerDependencies:
+      typescript: '*'
+  '@ts-macro/tsc@0.3.7':
+    peerDependencies:
+      typescript: '*'
 
 catalog:
   '@nuxt/kit': ^3.21.4
   '@nuxt/schema': ^3.21.4
 
-  '@ts-macro/tsc': ^0.3.7
   '@types/hash-sum': ^1.0.2
 
   '@vue-macros/volar': ^3.1.4
 
   '@vue/shared': 3.6.0-rc.7
   hash-sum: ^2.0.0
-  ts-macro: ^0.3.7
   unplugin: ^3.0.0
   unplugin-utils: ^0.3.1
   vite: ^8.0.10

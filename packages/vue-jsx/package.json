@@ -102,7 +102,6 @@
     "@vue-jsx/runtime": "workspace:*",
     "@vue/shared": "catalog:",
     "pathe": "^2.0.3",
-    "ts-macro": "catalog:",
     "unplugin": "catalog:",
     "unplugin-utils": "catalog:"
   },

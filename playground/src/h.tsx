@@ -5,7 +5,6 @@ import {
   ref,
   shallowRef,
   type EmitFn,
-  type VaporComponentInstance,
 } from 'vue'
 import { h } from 'vue-jsx/vapor'
 
@@ -103,7 +102,7 @@ export default defineVaporComponent(() => {
           type: () => type.value,
           // @ts-expect-error should error
           type1: () => type.value,
-          ref: (e) => expectType<VaporComponentInstance | null>(e),
+          ref: (e) => expectType<{ foo: 1 } | null>(e),
         },
         {
           default: (props) => [expectType<1>(props.id)],

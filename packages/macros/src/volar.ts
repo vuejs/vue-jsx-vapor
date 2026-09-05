@@ -36,5 +36,5 @@ const plugin: PluginReturn<Options | undefined> = createPlugin(
   },
 )
 export default plugin
-export { jsxElement }
+export { createPlugin, jsxElement, type PluginReturn }
 export { plugin as 'module.exports' }
