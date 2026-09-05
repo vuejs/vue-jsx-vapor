@@ -8,14 +8,6 @@ packages:
 patchedDependencies:
   '@vue-macros/volar': patches/@vue-macros__volar.patch
 
-packageExtensions:
-  ts-macro@0.3.7:
-    peerDependencies:
-      typescript: '*'
-  '@ts-macro/tsc@0.3.7':
-    peerDependencies:
-      typescript: '*'
-
 catalog:
   '@nuxt/kit': ^3.21.4
   '@nuxt/schema': ^3.21.4
@@ -50,3 +42,10 @@ minimumReleaseAgeExclude:
   - '@vue/server-renderer@3.6.0-rc.7'
   - '@vue/shared@3.6.0-rc.7'
   - vue@3.6.0-rc.7
+packageExtensions:
+  ts-macro@0.3.7:
+    peerDependencies:
+      typescript: '*'
+  '@ts-macro/tsc@0.3.7':
+    peerDependencies:
+      typescript: '*'

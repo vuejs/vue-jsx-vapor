@@ -6,18 +6,23 @@ import {
   type ComponentObjectPropsOptions,
   type ComponentTypeEmits,
   type DefineVaporComponent,
+  type DefineVaporSetupFnComponent,
   type EmitFn,
   type EmitsOptions,
   type ExtractPropTypes,
   type ShallowRef,
   type VaporComponent,
   type VaporComponentOptions,
-  type DefineVaporSetupFnComponent,
   type VaporRenderResult,
   type VaporSlot,
 } from 'vue'
 import * as Vue from 'vue'
-import type { EmitFnToEmits, NodeChild, ExposedToProps, SlotsToProps } from './types'
+import type {
+  EmitFnToEmits,
+  ExposedToProps,
+  NodeChild,
+  SlotsToProps,
+} from './types'
 
 // component
 

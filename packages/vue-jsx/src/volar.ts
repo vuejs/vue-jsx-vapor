@@ -1,4 +1,7 @@
-import jsxMacros, { createPlugin, type PluginReturn } from '@vue-jsx/macros/volar'
+import jsxMacros, {
+  createPlugin,
+  type PluginReturn,
+} from '@vue-jsx/macros/volar'
 import jsxDirective from '@vue-macros/volar/jsx-directive'
 import jsxRef from '@vue-macros/volar/jsx-ref'
 import type { Options } from './options'
