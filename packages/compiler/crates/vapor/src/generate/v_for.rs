@@ -38,6 +38,7 @@ pub fn gen_for<'a>(
     component,
     only_child,
     slot_root,
+    wrapped_rows,
     ..
   } = oper;
 
@@ -334,6 +335,9 @@ pub fn gen_for<'a>(
   }
   if slot_root {
     flags |= VaporVForFlags::SlotRoot as i32;
+  }
+  if wrapped_rows {
+    flags |= VaporVForFlags::WrappedRows as i32;
   }
 
   let gen_callback =

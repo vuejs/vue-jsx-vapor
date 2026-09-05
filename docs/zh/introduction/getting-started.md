@@ -26,7 +26,7 @@ Vue JSX 是一个高性能的 Vue JSX 编译器，使用 Rust 编写并基于 Ox
 pnpm add vue-jsx
 
 # 运行时
-pnpm add vue@3.6.0-rc.5
+pnpm add vue@3.6.0-rc.7
 ```
 
 ## Vite 配置

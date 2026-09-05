@@ -103,6 +103,7 @@ pub struct ForIRNode<'a> {
   pub slot_root: bool,
   pub component: bool,
   pub only_child: bool,
+  pub wrapped_rows: bool,
   pub parent: Option<i32>,
   pub anchor: Option<i32>,
   pub append_index: Option<i32>,

@@ -82,7 +82,7 @@ pub unsafe fn transform_element<'a>(
         get_operation_index,
       )
     };
-  } else if matches!(tag, "VaporTransition" | "VaporTransitionGroup") {
+  } else if is_transition(tag) {
     transform_transition(node, context);
   }
   // treat custom elements as components because the template helper cannot
@@ -647,4 +647,11 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
     }
   }
   deduped
+}
+
+pub fn is_transition(tag: &str) -> bool {
+  matches!(
+    tag,
+    "Transition" | "VaporTransition" | "TransitionGroup" | "VaporTransitionGroup"
+  )
 }

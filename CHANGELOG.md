@@ -8,6 +8,18 @@
 
 
 
+## [3.2.23](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.22...v3.2.23) (2026-09-04)
+
+
+### Bug Fixes
+
+* **runtime-vapor:** resolve hydration anchors by SSR fragment range ([832c809](https://github.com/vuejs/vue-jsx-vapor/commit/832c8092d4fa19187bf4cb8ff49afe5858e4d446))
+* **types:** correct native element ref and slot types ([39a0c93](https://github.com/vuejs/vue-jsx-vapor/commit/39a0c93944cd42af51ef45e246f15525c14e6202))
+* **types:** preserve union component props ([74c8000](https://github.com/vuejs/vue-jsx-vapor/commit/74c8000f76952f38f62227de4970ab279a6c8e1d)), closes [#67](https://github.com/vuejs/vue-jsx-vapor/issues/67)
+* **types:** use NodeChild instead of RenderResult for defineComponent ([cd45754](https://github.com/vuejs/vue-jsx-vapor/commit/cd45754bc73973024da57c36d899ef76aa17afc0))
+
+
+
 ## [3.2.22](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.21...v3.2.22) (2026-08-23)
 
 
@@ -1351,6 +1363,3 @@
 
 * **unplugin:** add effectScope for helper code ([dfb640b](https://github.com/vuejs/vue-jsx-vapor/commit/dfb640b30c59ee0103a84e73f40ba803a25050e9))
 * vue/vapor ([ea9f738](https://github.com/vuejs/vue-jsx-vapor/commit/ea9f738f6ce1a580d14c0518df29d8cae1041434))
-
-
-

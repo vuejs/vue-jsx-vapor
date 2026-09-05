@@ -174,6 +174,10 @@ pub enum VaporVForFlags {
    * validity.
    */
   SlotRoot = 1 << 5,
+  /**
+   * The server wraps each template v-for row in a fragment range.
+   */
+  WrappedRows = 1 << 6,
 }
 
 pub enum VaporBlockShape {

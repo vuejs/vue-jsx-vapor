@@ -6,11 +6,11 @@ use oxc_span::SPAN;
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, ForIRNode, IRFor, OperationNode},
-  transform::TransformContext,
+  transform::{TransformContext, transform_element::is_transition},
 };
 use common::{
   ast::RootNode,
-  check::{is_constant_node, is_custom_element, is_jsx_component, is_template},
+  check::{is_constant_node, is_custom_element, is_fragment_node, is_jsx_component, is_template},
   directive::Directives,
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
@@ -63,6 +63,11 @@ pub unsafe fn transform_v_for<'a>(
   };
 
   let is_component = directives.is_component || is_template_with_single_component(node);
+  let wrapped_rows = is_fragment_node(unsafe { &*context_node })
+    && !matches!(parent_node, JSXChild::Element(parent) if is_transition(parent.opening_element.name.get_identifier_name().as_deref().unwrap_or_default()))
+    && (node.children.len() != 1
+      || !matches!(&node.children[0], JSXChild::Element(child)
+        if !has_row_fragment_directive(child)));
   let dynamic = &mut context_block.dynamic;
   let id = context.reference(dynamic);
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
@@ -120,6 +125,7 @@ pub unsafe fn transform_v_for<'a>(
       source,
       component: is_component,
       only_child,
+      wrapped_rows,
       parent: None,
       anchor: None,
       append_index: None,
@@ -128,6 +134,19 @@ pub unsafe fn transform_v_for<'a>(
       slot_root: false,
     })));
   }))
+}
+
+fn has_row_fragment_directive(node: &JSXElement) -> bool {
+  node.opening_element.attributes.iter().any(|attribute| {
+    let oxc_ast::ast::JSXAttributeItem::Attribute(attribute) = attribute else {
+      return false;
+    };
+    matches!(
+      &attribute.name,
+      oxc_ast::ast::JSXAttributeName::Identifier(name)
+        if matches!(name.name.as_str(), "v-if" | "v-for")
+    )
+  })
 }
 
 pub fn get_for_parse_result<'a>(

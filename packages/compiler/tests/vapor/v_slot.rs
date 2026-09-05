@@ -962,14 +962,7 @@ fn multiple_dynamic_slot_roots_share_fallback_decision() {
 
 #[test]
 fn slot_root_shares_fallback_with_dynamic_sibling() {
-  let code = transform(
-    r#"<Comp><slot/><span v-if={ok}/></Comp>"#,
-    Some(TransformOptions {
-      vapor: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp><slot/><span v-if={ok}/></Comp>"#, None).code;
 
   assert!(code.contains("null, null, 12"));
 }
@@ -992,14 +985,7 @@ fn v_once_forwarded_slot_root_shares_fallback() {
 
 #[test]
 fn v_once_unique_slot_root_uses_forwarded_flag() {
-  let code = transform(
-    r#"<Comp><slot v-once /></Comp>"#,
-    Some(TransformOptions {
-      vapor: true,
-      ..Default::default()
-    }),
-  )
-  .code;
+  let code = transform(r#"<Comp><slot v-once /></Comp>"#, None).code;
 
   assert!(code.contains("null, null, 6"));
 }
