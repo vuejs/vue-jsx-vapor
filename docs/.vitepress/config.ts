@@ -63,6 +63,10 @@ export default defineConfig({
                   link: `/zh/introduction/getting-started`,
                 },
                 {
+                  text: '选项',
+                  link: `/zh/introduction/options`,
+                },
+                {
                   text: 'Vapor 模式',
                   link: `/zh/introduction/interop`,
                 },
@@ -172,6 +176,10 @@ export default defineConfig({
             {
               text: 'Getting Started',
               link: '/introduction/getting-started',
+            },
+            {
+              text: 'Options',
+              link: '/introduction/options',
             },
             {
               text: 'Vapor Mode',
