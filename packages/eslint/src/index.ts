@@ -1,5 +1,5 @@
 import rules, { type Rules } from './rules'
-import type { ClassicConfig } from '@typescript-eslint/utils/ts-eslint'
+import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint'
 
 export const plugins = {
   'vue-jsx-vapor': {
@@ -9,7 +9,7 @@ export const plugins = {
 
 export { rules, type Rules }
 
-const config: (options: ClassicConfig.Config) => Record<string, unknown> = ({
+const config: (options?: FlatConfig.Config) => FlatConfig.Config = ({
   rules = {},
   ...options
 } = {}) => ({
