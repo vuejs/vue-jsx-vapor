@@ -1,34 +1,27 @@
 import { defineComponent, ref } from 'vue'
 
-const Comp = (props) => {
-  const slots = defineSlots({
-    default: (props: { foo: number }) => <div>{props.foo}</div>,
-  })
-  return (
-    <div>
-      Virtual Dom Component:{props.model}
-      <slot foo="foo">
-        <div>{props.foo}</div>
-      </slot>
-      <slots.default foo={'foo'}></slots.default>
-    </div>
-  )
-}
+const Comp = (
+  props: { model: string },
+  { slots }: { slots: { default?: (props: { foo: number }) => any } },
+) => (
+  <div>
+    Virtual DOM Component: {props.model}
+    {slots.default?.({ foo: 1 })}
+  </div>
+)
 
-export default defineComponent({
-  setup: () => {
-    const model = ref()
-    return { model }
-  },
-  render(data) {
-    return (
-      <>
-        <input v-model={data.model}></input>
-        {data.model && data.model}
-        <Comp model={data.model}>
-          {{ default: ({ foo }) => <div>{foo}</div> }}
-        </Comp>
-      </>
-    )
-  },
+export default defineComponent(() => {
+  const model = ref('')
+  return () => (
+    <>
+      <input
+        value={model.value}
+        onInput={(event) => (model.value = event.currentTarget.value)}
+      />
+      <Comp
+        model={model.value}
+        v-slots={{ default: ({ foo }) => <div>{foo}</div> }}
+      />
+    </>
+  )
 })

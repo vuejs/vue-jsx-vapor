@@ -24,15 +24,6 @@ export type RenderResult<T = VaporComponentInstance['block']> =
   | VNode
   | RenderResult[]
 
-export type Prettify<T> = { [K in keyof T]: T[K] } & {}
-
-export type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N
-export type IsKeyValues<T, K = string> = IfAny<
-  T,
-  false,
-  T extends object ? (keyof T extends K ? true : false) : false
->
-
 export type DirectiveArgs<T extends Directive> =
   T extends Directive<any, infer Value, infer Modifiers, infer Argument>
     ?
@@ -117,6 +108,15 @@ export type EmitFnToProps<T, ExcludeKeys extends PropertyKey = ''> = T extends (
           ? never
           : `on${Capitalize<K>}`]?: (...args: Args) => any
       }
+  : {}
+
+export type EmitFnToEmits<Emit> = Emit extends (
+  event: infer Event extends string,
+  ...args: infer Args
+) => any
+  ? string extends Event
+    ? {}
+    : { [K in Event]: (...args: Args) => any }
   : {}
 
 export type SetupContextToProps<

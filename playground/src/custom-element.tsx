@@ -1,21 +1,17 @@
 import { defineVaporCustomElement } from 'vue'
 
-const Comp = defineVaporCustomElement(() => {
-  return (
-    <div>
-      <slot name="name">default</slot>
-    </div>
-  )
-})
+const Comp = defineVaporCustomElement(() => <slot name="name">default</slot>)
 
 export default () => {
   !customElements.get('ce-comp') && customElements.define('ce-comp', Comp)
   return (
     <>
-      <ce-comp></ce-comp>
-      <ce-comp v-for={i in [1, 2]}>
-        <div slot="name">name</div>
-      </ce-comp>
+      <ce-comp />
+      {[1, 2].map((id) => (
+        <ce-comp key={id}>
+          <div slot="name">name {id}</div>
+        </ce-comp>
+      ))}
     </>
   )
 }

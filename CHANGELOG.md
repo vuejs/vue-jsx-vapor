@@ -1,3 +1,13 @@
+# [3.3.0-beta.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.22...v3.3.0-beta.1) (2026-08-25)
+
+
+### Features
+
+* add vue-jsx package ([2b0cc1f](https://github.com/vuejs/vue-jsx-vapor/commit/2b0cc1ff18d2efb4e59a423d44e6abf677787d10))
+* expose vue-jsx/vapor ([89322ee](https://github.com/vuejs/vue-jsx-vapor/commit/89322ee4ad91f03b24b0893e9032bf35cdf78ef0))
+
+
+
 ## [3.2.23](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.22...v3.2.23) (2026-09-04)
 
 
@@ -1353,6 +1363,3 @@
 
 * **unplugin:** add effectScope for helper code ([dfb640b](https://github.com/vuejs/vue-jsx-vapor/commit/dfb640b30c59ee0103a84e73f40ba803a25050e9))
 * vue/vapor ([ea9f738](https://github.com/vuejs/vue-jsx-vapor/commit/ea9f738f6ce1a580d14c0518df29d8cae1041434))
-
-
-

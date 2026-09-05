@@ -8,11 +8,11 @@
 
 ```ts {7} [vite.config.ts]
 import { defineConfig } from 'vite'
-import vueJsxVapor from 'vue-jsx-vapor/vite'
+import vueJsx from 'vue-jsx/vite'
 
 export default defineConfig({
   plugins: [
-    vueJsxVapor({
+    vueJsx({
       macros: true,
     }),
   ],
@@ -20,11 +20,11 @@ export default defineConfig({
 ```
 
 ```ts {6} [ts-macro.config.ts]
-import vueJsxVapor from 'vue-jsx-vapor/volar'
+import vueJsx from 'vue-jsx/volar'
 
 export default {
   plugins: [
-    vueJsxVapor({
+    vueJsx({
       macros: true,
     }),
   ],
@@ -33,19 +33,21 @@ export default {
 
 :::
 
+TS Macro 扩展可以从 `vite.config.ts` 自动发现集成。上面的 `ts-macro.config.ts` 是另一种配置方式，可用于单独定义 `vue-jsx/volar` 插件。使用显式配置时，请保持两个文件中的选项一致。
+
 ::: details 作为单独的插件安装
 
 我们也发布了一个单独的插件，可以给 虚拟DOM 的项目使用。
 
 ```bash
-pnpm add @vue-jsx-vapor/macros -D
+pnpm add @vue-jsx/macros -D
 ```
 
 配置:
 
 ```ts
 // vite.config.ts
-import jsxMacros from '@vue-jsx-vapor/macros/vite'
+import jsxMacros from '@vue-jsx/macros/vite'
 
 export default {
   plugins: [jsxMacros()],
@@ -61,7 +63,7 @@ export default {
 ### 选项
 
 ```ts
-VueJsxVapor({
+vueJsx({
   defineComponent: {
     /**
      * @default ['defineComponent','defineVaporComponent']
@@ -254,7 +256,7 @@ export default () => (
 与在 Vue SFC 中一样。
 
 ```tsx twoslash
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 
 const Comp = <T,>({ foo = undefined as T }) => {
   defineExpose({
@@ -276,7 +278,7 @@ export default () => {
 
 ```tsx
 import { currentInstance } from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 import { useExpose } from '/vue-macros/jsx-macros/use-expose'
 
 const Comp = ({ foo }) => {

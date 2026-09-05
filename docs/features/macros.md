@@ -8,11 +8,11 @@ A collection of compile-time macros for JSX. These macros must be explicitly ena
 
 ```ts {7} [vite.config.ts]
 import { defineConfig } from 'vite'
-import vueJsxVapor from 'vue-jsx-vapor/vite'
+import vueJsx from 'vue-jsx/vite'
 
 export default defineConfig({
   plugins: [
-    vueJsxVapor({
+    vueJsx({
       macros: true,
     }),
   ],
@@ -20,11 +20,11 @@ export default defineConfig({
 ```
 
 ```ts {6} [ts-macro.config.ts]
-import vueJsxVapor from 'vue-jsx-vapor/volar'
+import vueJsx from 'vue-jsx/volar'
 
 export default {
   plugins: [
-    vueJsxVapor({
+    vueJsx({
       macros: true,
     }),
   ],
@@ -33,19 +33,24 @@ export default {
 
 :::
 
+The TS Macro extension can discover the integration from `vite.config.ts`
+automatically. The `ts-macro.config.ts` example is an alternative for defining
+the `vue-jsx/volar` plugin separately. Keep the options in both files
+consistent when using the explicit configuration.
+
 ::: details Install as a standalone plugin
 
 A standalone plugin is also available for use in Virtual DOM projects.
 
 ```bash
-pnpm add @vue-jsx-vapor/macros -D
+pnpm add @vue-jsx/macros -D
 ```
 
 Configuration:
 
 ```ts
 // vite.config.ts
-import jsxMacros from '@vue-jsx-vapor/macros/vite'
+import jsxMacros from '@vue-jsx/macros/vite'
 
 export default {
   plugins: [jsxMacros()],
@@ -61,7 +66,7 @@ export default {
 ### Options
 
 ```ts
-VueJsxVapor({
+vueJsx({
   defineComponent: {
     /**
      * @default ['defineComponent','defineVaporComponent']
@@ -267,7 +272,7 @@ export default () => (
 Functions identically to `defineExpose` in Vue SFCs.
 
 ```tsx twoslash
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 
 const Comp = <T,>({ foo = undefined as T }) => {
   defineExpose({
@@ -289,7 +294,7 @@ export default () => {
 
 ```tsx
 import { currentInstance } from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 import { useExpose } from '/vue-macros/jsx-macros/use-expose'
 
 const Comp = ({ foo }) => {

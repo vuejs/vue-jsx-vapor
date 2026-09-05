@@ -1,21 +1,21 @@
 # ESLint
 
-用于给 `vue-jsx-vapor` 自动格式化代码的 ESLint 插件。
+用于给 `vue-jsx` 自动格式化代码的 ESLint 插件。
 
 ## 安装
 
 ```sh
-pnpm add @vue-jsx-vapor/eslint
+pnpm add @vue-jsx/eslint
 ```
 
 ## 配置
 
 ```ts
 // eslint.config.ts
-import vueJsxVapor from '@vue-jsx-vapor/eslint'
+import vueJsx from '@vue-jsx/eslint'
 
 export default [
-  vueJsxVapor()
+  vueJsx()
 ]
 ```
 
@@ -24,10 +24,10 @@ export default [
 使用 `prettier` 来格式化 `defineStyle` 宏中的样式。
 
 ```ts twoslash
-import vueJsxVapor from '@vue-jsx-vapor/eslint'
+import vueJsx from '@vue-jsx/eslint'
 
 export default [
-  vueJsxVapor({
+  vueJsx({
     rules: {
       'vue-jsx-vapor/define-style': [1, { tabWidth: 2 }]
     }
@@ -40,10 +40,10 @@ export default [
 这是 [@stylistic/jsx/jsx-sort-props](https://eslint.style/rules/jsx/jsx-sort-props) 的修改版，支持自定义 `reservedFirst` 和 `reservedLast` 选项。
 
 ```ts twoslash
-import vueJsxVapor from '@vue-jsx-vapor/eslint'
+import vueJsx from '@vue-jsx/eslint'
 
 export default [
-  vueJsxVapor({
+  vueJsx({
     rules: {
       'vue-jsx-vapor/jsx-sort-props': [2, {
         reservedFirst: ['v-if', 'v-for'],

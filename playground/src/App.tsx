@@ -1,7 +1,7 @@
 import { defineVaporComponent, ref, type Ref } from 'vue'
-import { useRef } from 'vue-jsx-vapor'
-import VueComp from './Comp.vue'
-import Count2 from './count'
+import { useRef } from 'vue-jsx'
+import Count from './count'
+import Expose from './expose'
 import For from './for'
 import Html from './html'
 import If from './if'
@@ -12,74 +12,55 @@ import Slot from './slot'
 
 export default defineVaporComponent(() => {
   const count = ref('1')
+  const countRef = useRef()
 
-  const Count = (props: { value: string }) => {
-    return <div>{props.value}</div>
-  }
-
-  const Count1 = ({ value }: { value: Ref<string> }) => {
-    return <div>{value.value}</div>
-  }
-
-  const compRef = useRef()
+  const Value = (props: { value: string }) => <div>{props.value}</div>
+  const RefValue = ({ value }: { value: Ref<string> }) => (
+    <div>{value.value}</div>
+  )
 
   return (
     <>
       <fieldset>
-        <VueComp />
         <input
-          value_prop={count.value}
-          onInput={(e) => (count.value = e.currentTarget.value)}
+          value={count.value}
+          onInput={(event) => (count.value = event.currentTarget.value)}
         />
-
-        <Count value={count.value} />
-        <Count1 value={count} />
-        <Count2 ref={compRef} value={count.value} />
-        {compRef.value?.double}
+        <Value value={count.value} />
+        <RefValue value={count} />
+        <Count ref={countRef} value={count.value} />
+        {countRef.value?.double}
+        <Expose />
       </fieldset>
 
       <fieldset>
-        <legend>v-if</legend>
+        <legend>conditional rendering</legend>
         <If />
       </fieldset>
-
       <fieldset>
-        <legend>v-for</legend>
+        <legend>list rendering</legend>
         <For />
       </fieldset>
-
       <fieldset>
-        <legend>v-slot</legend>
+        <legend>slots</legend>
         <Slot />
       </fieldset>
-
       <fieldset>
-        <legend>v-model</legend>
+        <legend>model</legend>
         <Model />
       </fieldset>
-
       <fieldset>
-        <legend>v-show</legend>
+        <legend>show</legend>
         <Show />
       </fieldset>
-
       <fieldset>
-        <legend>v-html</legend>
+        <legend>HTML</legend>
         <Html />
       </fieldset>
-
       <fieldset>
-        <legend>v-once</legend>
+        <legend>once</legend>
         <Once />
       </fieldset>
     </>
   )
 })
-
-defineStyle(`
-  #app {
-    background: url(https://vuejs.org/images/logo.png);
-    background-repeat: no-repeat;
-    background-position: center;
-  }
-`)

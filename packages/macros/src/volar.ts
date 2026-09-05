@@ -2,6 +2,7 @@ import { createPlugin, type PluginReturn } from 'ts-macro'
 import { createFilter } from 'unplugin-utils'
 import { resolveOptions, type Options } from './options'
 import { getGlobalTypes, getRootMap, transformJsxMacros } from './volar/index'
+import jsxElement from './volar/jsx-element'
 
 const REGEX_VUE_SFC: RegExp = /\.vue$/
 
@@ -15,7 +16,7 @@ const plugin: PluginReturn<Options | undefined> = createPlugin(
     )
 
     return {
-      name: '@vue-jsx-vapor/macros',
+      name: '@vue-jsx/macros',
       resolveVirtualCode(virtualCode) {
         const { filePath, codes } = virtualCode
         if (!filter(filePath)) return
@@ -35,4 +36,5 @@ const plugin: PluginReturn<Options | undefined> = createPlugin(
   },
 )
 export default plugin
+export { createPlugin, jsxElement, type PluginReturn }
 export { plugin as 'module.exports' }

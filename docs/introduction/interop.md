@@ -1,116 +1,95 @@
-# Interop
+# Vapor Mode
 
-`vue-jsx-vapor` provides seamless interoperability between Virtual DOM and Vapor DOM rendering modes. When the `interop` option is set to `true`, JSX code within `defineVaporComponent` compiles to Vapor DOM, while JSX outside of `defineVaporComponent` compiles to Virtual DOM.
+Vue JSX compiles regular JSX to Vue Virtual DOM by default. Vapor is an optional
+output mode and requires Vue 3.6 or later.
 
-## Embedding Vapor Components in Virtual DOM
+## Enable Vapor Globally
 
-[Playground](https://repl.zmjs.dev/vuejs/vapor-in-virtual-dom)
-
-::: code-group
+Set `vapor: true` when an application is fully based on Vapor:
 
 ```ts [vite.config.ts]
 import { defineConfig } from 'vite'
-import vueJsxVapor from 'vue-jsx-vapor/vite'
+import vueJsx from 'vue-jsx/vite'
 
 export default defineConfig({
   plugins: [
-    vueJsxVapor({
-      interop: true,
+    vueJsx({
+      vapor: true,
     }),
   ],
 })
 ```
+
+Mount the root component with `createVaporApp`:
+
+```ts [main.ts]
+import { createVaporApp } from 'vue'
+import App from './App.tsx'
+
+createVaporApp(App).mount('#app')
+```
+
+## Opt In Incrementally
+
+You do not need to enable Vapor for the entire project. With the default
+`vapor: false`, the compiler enables Vapor for:
+
+- Files ending in `.vapor.jsx` or `.vapor.tsx`.
+- JSX owned by `defineVaporComponent` or `defineVaporCustomElement`.
+
+```tsx
+import { defineVaporComponent } from 'vue'
+
+export const Counter = defineVaporComponent((props: { count: number }) => {
+  return <button>{props.count}</button>
+})
+```
+
+Regular components and files continue to compile to Virtual DOM.
+
+## Mixing Rendering Modes
+
+Install Vue's `vaporInteropPlugin` when a component tree crosses between Virtual
+DOM and Vapor components.
+
+### Vapor inside a Virtual DOM app
 
 ```ts [main.ts]
 import { createApp, vaporInteropPlugin } from 'vue'
 import App from './App.tsx'
+
 createApp(App).use(vaporInteropPlugin).mount('#app')
 ```
 
-```tsx [App.tsx] twoslash
-import {
-  computed,
-  defineComponent,
-  defineVaporComponent,
-  ref,
-} from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+Keep `vapor` at its default `false`, then use `defineVaporComponent` or a
+`.vapor.tsx` file for the Vapor subtree.
 
-const Comp = defineVaporComponent(({ count = 0 }) => {
-  defineExpose({
-    double: computed(() => count * 2),
-  })
-  return <span> x 2 = </span>
-})
-
-export default defineComponent(() => {
-  const count = ref(1)
-  const compRef = useRef()
-  return () => (
-    <>
-      <input v-model={count.value} />
-      <Comp count={count.value} ref={compRef}></Comp>
-      {compRef.value?.double}
-    </>
-  )
-})
-```
-
-:::
-
-## Embedding Virtual DOM Components in Vapor
-
-[Playground](https://repl.zmjs.dev/vuejs/virtual-dom-in-vapor)
-
-::: code-group
-
-```ts [vite.config.ts]
-import { defineConfig } from 'vite'
-import vueJsxVapor from 'vue-jsx-vapor/vite'
-
-export default defineConfig({
-  plugins: [
-    vueJsxVapor({
-      macros: true,
-      interop: true,
-    }),
-  ],
-})
-```
+### Virtual DOM inside a Vapor app
 
 ```ts [main.ts]
 import { createVaporApp, vaporInteropPlugin } from 'vue'
-import App from './App.tsx'
+import App from './App.vapor.tsx'
+
 createVaporApp(App).use(vaporInteropPlugin).mount('#app')
 ```
 
-```tsx [App.tsx] twoslash
+Place Virtual DOM components in regular files and define them with
+`defineComponent`.
+
+## Vapor Runtime Helpers
+
+The `vue-jsx/vapor` entry exposes Vapor-specific helpers under familiar names:
+
+```ts
 import {
-  computed,
-  defineComponent,
-  defineVaporComponent,
-  ref,
-} from 'vue'
-import { useRef } from 'vue-jsx-vapor'
-
-const Comp = defineVaporComponent(({ count = 0 }) => {
-  defineExpose({
-    double: computed(() => count * 2),
-  })
-  return <span> x 2 = </span>
-})
-
-export default defineComponent(() => {
-  const count = ref(1)
-  const compRef = useRef()
-  return () => (
-    <>
-      <input v-model={count.value}/>
-      <Comp count={count.value} ref={compRef}></Comp>
-      {compRef.value?.double}
-    </>
-  )
-})
+  For,
+  KeepAlive,
+  Teleport,
+  Transition,
+  TransitionGroup,
+  h,
+} from 'vue-jsx/vapor'
 ```
 
-:::
+This entry changes runtime imports only. Compilation is still controlled by the
+`vapor` option, filename, or Vapor component boundary.

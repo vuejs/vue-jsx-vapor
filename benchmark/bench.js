@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { transformSync } from '@babel/core'
 import vueJsxVapor from '@vue-jsx-vapor/babel'
-import { transform as rsTransform } from '@vue-jsx-vapor/compiler-rs'
+import { transform as rsTransform } from '@vue-jsx/compiler'
 import vueJsx from '@vue/babel-plugin-jsx'
 import { writeFileSync } from 'node:fs'
 import path from 'node:path'
@@ -81,11 +81,11 @@ bench.add('react + babel', () => {
 })
 
 bench.add('vue-jsx-vapor + oxc', () => {
-  rsTransform(source)
+  rsTransform(source, { vapor: true })
 })
 
 bench.add('vue-jsx + oxc', () => {
-  rsTransform(source, { interop: true })
+  rsTransform(source)
 })
 
 bench.add('react + oxc', () => {

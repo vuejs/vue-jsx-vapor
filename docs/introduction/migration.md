@@ -1,226 +1,83 @@
 # Migration Guide
 
-## Migrating from `vue-jsx`
+## From `vue-jsx-vapor`
 
-### Key Differences
+Version 3.3 moves the primary package to `vue-jsx` and changes the default
+compiler output to Virtual DOM.
 
-1. **Component Definition**: Use `defineVaporComponent` instead of `defineComponent` for Vapor components. Unlike `defineComponent`, the setup function in `defineVaporComponent` returns JSX directly rather than a render function.
+### Rename the package
 
-2. **Naming Conventions**: Hyphenated prop names and component names are not automatically converted to camelCase. Use camelCase naming consistently throughout your codebase.
-
-3. **`v-model` Syntax**: Array expressions are not supported with `v-model`. Use the explicit modifier syntax instead:
-
-   ```tsx
-   <>
-     {/* ❌ Not supported */}
-     <input v-model={[foo, ['trim']]} />
-
-     {/* ✅ Use this instead */}
-     <input v-model:$name$_trim={foo} />
-   </>
-   ```
-
-4. **`v-models` Directive**: The `v-models` directive is not supported. Define multiple `v-model` bindings separately.
-
-5. **Props Destructuring**:
-
-> [!CAUTION]
-> Destructuring props in a functional component breaks reactivity, as the destructured values become static snapshots.
-
-```tsx
-function Comp({ foo }) {
-  return <div>{foo}</div>
-}
-
-export default () => {
-  const foo = ref('foo')
-  return <Comp foo={foo.value} />
-}
+```diff
+- pnpm add vue-jsx-vapor
++ pnpm add vue-jsx
 ```
 
-#### Solutions
+Update plugin and type-runtime imports:
 
-**Option 1**: Pass the ref directly instead of its value:
-
-```tsx
-function Comp({ foo }) {
-  return <div>{foo.value}</div>
-}
-
-export default () => {
-  const foo = ref('foo')
-  return <Comp foo={foo} />
-}
+```diff
+- import vueJsxVapor from 'vue-jsx-vapor/vite'
++ import vueJsx from 'vue-jsx/vite'
 ```
 
-**Option 2**: Enable macros and wrap your component with `defineVaporComponent`:
-
-- Configuration
-
-  ```ts {7}
-  // vite.config.ts
-  import vueJsxVapor from 'vue-jsx-vapor/vite'
-
-  export default defineConfig({
-    plugins: [
-      vueJsxVapor({
-        macros: true,
-      }),
-    ],
-  })
-  ```
-
-- Usage
-
-  ```tsx
-  import { defineVaporComponent, ref } from 'vue'
-
-  const Comp = defineVaporComponent(({ foo }) => {
-    return <>{foo}</>
-  })
-  // Compiles to:
-  const Comp = defineVaporComponent(
-    (_props) => {
-      return <>{_props.foo}</>
-    },
-    { props: ['foo'] },
-  )
-
-  export default () => {
-    const foo = ref('foo')
-    return <Comp foo={foo.value} />
+```diff
+{
+  "compilerOptions": {
+-   "jsxImportSource": "vue-jsx-vapor"
++   "jsxImportSource": "vue-jsx"
   }
-  ```
-
-## Migrating from React
-
-For automated migration, consider using [eslint-plugin-react2vue](https://github.com/zhiyuanzmj/eslint-plugin-react2vue), which transforms React Hooks API to Vue Composition API equivalents.
-
-### `useState` → `ref`
-
-```ts
-// React
-const [foo, setFoo] = useState(count)
-console.log([foo, setFoo(1), setFoo])
-
-// Vue
-const foo = ref(0)
-console.log([foo.value, (foo.value = 1), (val) => (foo.value = val)])
+}
 ```
 
-### `useEffect` → `watchEffect`
+The scoped companion packages are now `@vue-jsx/compiler`,
+`@vue-jsx/runtime`, `@vue-jsx/macros`, and `@vue-jsx/eslint`.
+
+### Choose the rendering mode
+
+The old package compiled to Vapor by default and used `interop: true` for
+mixed/Virtual DOM projects. The new package compiles to Virtual DOM by default:
 
 ```ts
-// React
-useEffect(() => {
-  console.log(foo)
-}, [foo])
+import vueJsx from 'vue-jsx/vite'
 
-// Vue
-watchEffect(() => {
-  console.log(foo)
+export default {
+  plugins: [vueJsx()],
+}
+```
+
+To preserve an application that previously used the default Vapor output, add
+`vapor: true`:
+
+```ts
+vueJsx({
+  vapor: true,
 })
 ```
 
-### `useMemo` → `computed`
+Remove the old `interop` option. For incremental Vapor adoption, keep
+`vapor: false` and use `.vapor.tsx`, `.vapor.jsx`, `defineVaporComponent`, or
+`defineVaporCustomElement`.
+
+### Update Vapor runtime imports
+
+Vapor aliases such as `h`, `For`, and `Transition` live under `vue-jsx/vapor`:
 
 ```ts
-// React
-const double = useMemo(() => foo * 2, [foo])
-console.log({ double }, [double])
-
-// Vue
-const double = computed(() => foo * 2)
-console.log({ double: double.value }, [double.value])
+import { For, Transition, h } from 'vue-jsx/vapor'
 ```
 
-### Functional Components → `defineVaporComponent`
+### Check the Vue version
 
-The `defineVaporComponent` macro enables props destructuring with full reactivity:
+Virtual DOM output works with Vue 3. Vapor output requires Vue 3.6 or later.
 
-```tsx
-// React
-const Comp = ({ count = 1 }) => {
-  return <div>{count}</div>
-}
+## From Babel Vue JSX
 
-// Vue
-const Comp = defineVaporComponent(({ count = 1 }) => {
-  return <div>{count}</div>
-})
-```
+1. Replace `@vitejs/plugin-vue-jsx` (or the equivalent Babel plugin) with the
+   `vue-jsx` integration for your bundler.
+2. Set `jsxImportSource` to `vue-jsx`.
+3. Start with the default Virtual DOM mode so existing Vue JSX component
+   contracts stay familiar.
+4. Enable [Vapor Mode](./interop) separately when the application is ready for
+   Vue 3.6 and Vapor component semantics.
 
-### `children` → `defineSlots`
-
-Replace the `children` prop pattern with Vue's slot system:
-
-```tsx
-// React
-const Comp = ({ children }) => {
-  return children
-}
-
-// Vue
-const Comp = () => {
-  const slots = defineSlots()
-  return <slots.default />
-}
-```
-
-### `useCallback`
-
-Vue's reactivity system eliminates the need for `useCallback`. Simply define your functions directly:
-
-```ts
-// React
-const callback = useCallback(() => {
-  console.log(foo)
-}, [foo])
-
-// Vue
-const callback = () => {
-  console.log(foo)
-}
-```
-
-### `forwardRef`
-
-Vue handles ref forwarding automatically. Remove the `forwardRef` wrapper:
-
-```tsx
-// React
-const Comp = forwardRef(({ count }, ref) => {
-  return <div>{count}</div>
-})
-
-// Vue
-const Comp = ({ count }) => {
-  return <div>{count}</div>
-}
-```
-
-### `useImperativeHandle` → `defineExpose`
-
-```tsx
-// React
-const Comp = ({ count, ref }) => {
-  useImperativeHandle(ref, () => {
-    return {
-      count: count * 2,
-    }
-  }, [count])
-  return <div>{count}</div>
-}
-
-// Vue
-const Comp = ({ count }) => {
-  defineExpose(
-    computed(() => {
-      return {
-        count: count * 2,
-      }
-    }),
-  )
-  return <div>{count}</div>
-}
-```
+Vue JSX supports Vue directives directly in TSX. Review the
+[Directives](../features/directives) page for syntax differences.

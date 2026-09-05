@@ -1,8 +1,8 @@
 {
-  "name": "@vue-jsx-vapor/runtime",
+  "name": "@vue-jsx/runtime",
   "type": "module",
-  "version": "3.2.23",
-  "description": "Vue JSX Vapor Runtime",
+  "version": "3.3.0-beta.1",
+  "description": "Vue JSX Runtime",
   "license": "MIT",
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
   "repository": {
@@ -19,22 +19,11 @@
     "runtime"
   ],
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "jsx-vapor-dev": "./src/index.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./raw": {
-      "types": "./dist/raw.d.ts",
-      "jsx-vapor-dev": "./src/raw.ts",
-      "import": "./dist/raw.js",
-      "require": "./dist/raw.cjs"
-    },
+    ".": "./dist/index.js",
+    "./raw": "./dist/raw.js",
     "./*": "./*"
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"

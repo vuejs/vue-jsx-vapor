@@ -1,0 +1,238 @@
+use compiler::transform;
+use insta::assert_snapshot;
+
+#[test]
+fn basic() {
+  let code = transform("<div v-example>foo</div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _directive_example = _resolveDirective("example");
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))])), [[_directive_example]]);
+  })();
+  "#);
+}
+
+#[test]
+fn binding_value() {
+  let code = transform("<div v-example={msg}></div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[_directive_example, msg]]);
+  })();
+  "#);
+}
+
+#[test]
+fn static_parameters() {
+  let code = transform("<div v-example:foo={msg}></div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
+  		_directive_example,
+  		msg,
+  		"foo"
+  	]]);
+  })();
+  "#);
+}
+
+#[test]
+fn modifiers() {
+  let code = transform("<div v-example_bar={msg}></div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
+  		_directive_example,
+  		msg,
+  		void 0,
+  		{ bar: true }
+  	]]);
+  })();
+  "#);
+}
+
+#[test]
+fn modifiers_with_binding() {
+  let code = transform("<div v-example_foo-bar></div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
+  		_directive_example,
+  		void 0,
+  		void 0,
+  		{ foo-bar: true }
+  	]]);
+  })();
+  "#);
+}
+
+#[test]
+fn static_argument_and_modifiers() {
+  let code = transform("<div v-example:foo_bar={msg}></div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
+  		_directive_example,
+  		msg,
+  		"foo",
+  		{ bar: true }
+  	]]);
+  })();
+  "#);
+}
+
+#[test]
+fn dynamic_argument() {
+  let code = transform("<div v-example:$foo$={msg}></div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
+  		_directive_example,
+  		msg,
+  		foo
+  	]]);
+  })();
+  "#);
+}
+
+#[test]
+fn component() {
+  let code = transform(
+    "<Comp v-test>
+      <div v-if={true}>
+        <Bar v-hello_world />
+      </div>
+    </Comp>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createBlock as _createBlock, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, resolveDirective as _resolveDirective, withCtx as _withCtx, withDirectives as _withDirectives } from "vue";
+  const _hoisted_1 = { key: 0 };
+  (() => {
+  	const _directive_test = _resolveDirective("test");
+  	const _directive_hello = _resolveDirective("hello");
+  	return _withDirectives((_openBlock(), _createBlock(Comp, null, {
+  		default: _withCtx(() => [true ? (_openBlock(), _createElementBlock("div", _hoisted_1, [_withDirectives(_createVNode(Bar, null, null, 512), [[
+  			_directive_hello,
+  			void 0,
+  			void 0,
+  			{ world: true }
+  		]])])) : _createCommentVNode("", true)]),
+  		_: 1
+  	})), [[_directive_test]]);
+  })();
+  "#);
+}
+
+#[test]
+fn is_not_directive() {
+  let code = transform("<div vExample={msg}></div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["vExample"];
+  _openBlock(), _createElementBlock("div", { vExample: msg }, null, 8, _hoisted_1);
+  "#);
+}
+
+#[test]
+fn should_not_resolve_directive() {
+  let code = transform(
+    "() => {
+      const vExample = () => {}
+      return <div v-example></div>
+    }",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, withDirectives as _withDirectives } from "vue";
+  () => {
+  	const vExample = () => {};
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[vExample]]);
+  };
+  "#);
+}
+
+#[test]
+fn array_args() {
+  let code = transform(
+    "<div v-example={[foo, bar, ['modify1', 'modify2']]} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
+  		_directive_example,
+  		foo,
+  		bar,
+  		{
+  			modify1: true,
+  			modify2: true
+  		}
+  	]]);
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_modifiers() {
+  let code = transform("<div v-example_m1={[foo, ['modify1', 'modify2']]} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
+  		_directive_example,
+  		foo,
+  		void 0,
+  		{
+  			modify1: true,
+  			modify2: true
+  		}
+  	]]);
+  })();
+  "#);
+}
+
+#[test]
+fn array_args_with_arg() {
+  let code = transform(
+    "<div v-example:foo={[foo, bar, ['modify1', 'modify2']]} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _directive_example = _resolveDirective("example");
+  	return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512)), [[
+  		_directive_example,
+  		foo,
+  		"foo",
+  		{
+  			modify1: true,
+  			modify2: true
+  		}
+  	]]);
+  })();
+  "#);
+}

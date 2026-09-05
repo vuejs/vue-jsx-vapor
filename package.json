@@ -1,8 +1,8 @@
 {
   "type": "module",
-  "version": "3.2.23",
-  "packageManager": "pnpm@10.33.2",
-  "description": "Vue JSX Vapor",
+  "version": "3.3.0-beta.1",
+  "packageManager": "pnpm@11.23.0",
+  "description": "Vue JSX",
   "license": "MIT",
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
   "repository": {
@@ -29,12 +29,13 @@
     "build": "pnpm run --filter=\"./packages/*\" --parallel build",
     "bench": "pnpm run -C ./benchmark bench",
     "bench:vue": "pnpm run -C ./benchmark bench:vue",
-    "typecheck": "tsmc --noEmit",
-    "lint": "eslint .",
-    "play": "npm -C playground run dev",
-    "play:build": "npm -C playground run build",
+    "typecheck": "tsc --noEmit && tsc -p playground --noEmit && pnpm --filter @vue-jsx/macros typecheck",
+    "lint": "node ./packages/macros/node_modules/eslint/bin/eslint.js .",
+    "play": "pnpm -C playground dev",
+    "play:macros": "pnpm --filter @vue-jsx/macros play",
+    "play:build": "pnpm -C playground build && pnpm --filter @vue-jsx/macros play:build",
     "test": "vitest",
-    "test:rs": "pnpm run --filter=\"compiler-rs\" test",
+    "test:rs": "pnpm run --filter=\"compiler\" test",
     "test:eco": "pnpm run -C ./ecosystem-ci test",
     "release": "bumpp -r --all -x 'pnpm run pre-release'",
     "pre-release": "pnpm run build && pnpm run changelog",
@@ -44,26 +45,14 @@
     "docs:build": "pnpm run -C ./docs build"
   },
   "devDependencies": {
-    "@sxzz/eslint-config": "^8.0.0",
-    "@ts-macro/tsc": "catalog:",
     "@types/node": "^25.6.0",
     "bumpp": "^11.0.1",
     "conventional-changelog-cli": "^5.0.0",
-    "eslint": "^10.3.0",
-    "tsdown": "^0.20.3",
-    "typescript": "^6.0.3",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
     "unplugin-raw": "^0.7.0",
     "vite": "catalog:",
     "vitest": "catalog:",
-    "vue-jsx-vapor": "workspace:*"
-  },
-  "pnpm": {
-    "overrides": {
-      "estree-walker": "2.0.2",
-      "ts-macro": "catalog:"
-    },
-    "patchedDependencies": {
-      "@vue-macros/volar": "patches/@vue-macros__volar.patch"
-    }
+    "vue-jsx": "workspace:*"
   }
 }

@@ -9,8 +9,8 @@ next: false
 <script setup>
 import appCode from '~/tutorial/step-6/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-6/app-solved.tsx?raw'
-import appInteropCode from '~/tutorial/step-6/app-interop.tsx?raw'
-import appInteropSolvedCode from '~/tutorial/step-6/app-interop-solved.tsx?raw'
+import appVaporCode from '~/tutorial/step-6/app-vapor.tsx?raw'
+import appVaporSolvedCode from '~/tutorial/step-6/app-vapor-solved.tsx?raw'
 import { getDefaultFiles } from '~/tutorial/template'
 import { ref } from 'vue'
 
@@ -18,16 +18,16 @@ const files = ref(getDefaultFiles())
 const apps  = {
   app: { 'src/App.tsx': appCode },
   solved: { 'src/App.tsx': appSolvedCode },
-  interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropSolvedCode }
+  vapor: { 'src/App.tsx': appVaporCode },
+  vaporSolved: { 'src/App.tsx': appVaporSolvedCode }
 }
 </script>
 
 <jsx-repl :files :apps prev="/zh/tutorial/step-5/" next="/zh/tutorial/step-7">
 
-如果对性能没有特别要求，我们可以使用 `map(...)` 来渲染列表。
+Vue JSX 支持使用 `map()` 渲染列表：
 
-```jsx
+```tsx
 <ul>
   {todos.map((todo) => {
     return <li key={todo.id}>{todo.text}</li>
@@ -35,22 +35,44 @@ const apps  = {
 </ul>
 ```
 
-## `v-for` 指令
+这种熟悉的写法适合大多数小型或简单列表。对于更新频繁或性能要求较高的场景，推荐使用对应渲染模式的列表组件。
 
-我们也可以使用 `v-for` 指令来渲染列表，它具有与 Vue 模板相同的性能：
+## Virtual DOM
 
-```jsx
+Virtual DOM 使用 `For`：
+
+```tsx
+import { For } from 'vue-jsx'
+
 <ul>
-  <li v-for={todo in todos} key={todo.id}>
-    {todo.text}
-  </li>
+  <For in={todos}>
+    {(todo) => <li key={todo.id}>{todo.text}</li>}
+  </For>
 </ul>
 ```
 
-这里的 todo 是一个局部变量，代表当前正在迭代的数组元素。它只能在 v-for 元素上或内部访问，类似于函数作用域。
+插槽会接收到当前 item 和 index。与使用 `map()` 时一样，需要为返回的根节点提供稳定的 `key`。
 
-注意我们还给每个 todo 对象一个唯一的 id，并将其绑定为每个 `<li>` 的特殊 key 属性。key 使 Vue 能够准确地移动每个 `<li>` 以匹配其对应对象在数组中的位置。
+## Vapor 模式
 
-现在我们有一个简单的待办事项列表，只渲染了一个待办事项，尝试渲染全部的待办事项使其正常工作！
+Vapor 模式使用 `VaporFor`：
+
+```tsx
+import { VaporFor } from 'vue-jsx'
+
+<ul>
+  <VaporFor in={todos}>
+    {(todo, index) => (
+      <li>
+        {todo.text}，位置：{index.value}
+      </li>
+    )}
+  </VaporFor>
+</ul>
+```
+
+`VaporFor` 会把每一项作为独立 block 管理。它的 index 是 shallow ref，因此在 JavaScript 中需要读取 `index.value`。组件默认使用 item 本身作为 key；如果列表可能用新对象替换原有 item，可以传入 `getKey={(todo) => todo.id}`。
+
+当前的待办事项列表只渲染了第一项。请用对应渲染模式的列表组件替换临时代码，渲染全部待办事项。
 
 </jsx-repl>

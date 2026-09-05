@@ -1,0 +1,603 @@
+use compiler::{TransformOptions, transform};
+use insta::assert_snapshot;
+
+#[test]
+fn should_optimize_in_functional_compoennt() {
+  let code = transform(
+    "function Comp(){
+      return <Comp>{foo}</Comp>
+    }",
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  function Comp() {
+  	return _openBlock(), _createBlock(Comp, null, _normalizeSlots(foo), 1024);
+  }
+  "#);
+}
+
+#[test]
+fn should_not_optimize_in_functional_compoennt_with_params() {
+  let code = transform(
+    "function Comp({ foo }){
+      {
+        <Comp>{foo}</Comp>
+      }
+      return <Comp>{foo}</Comp>
+    }",
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  function Comp({ foo }) {
+  	{
+  		_openBlock(), _createBlock(Comp, null, _normalizeSlots(foo), 1024);
+  	}
+  	return _openBlock(), _createBlock(Comp, null, _normalizeSlots(foo), 1024);
+  }
+  "#);
+}
+
+#[test]
+fn should_optimize_in_define_compoennt() {
+  let code = transform(
+    "export default defineComponent({
+      setup() {
+        return () => <div onClick={() => foo} />
+      }
+    })",
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  export default defineComponent({ setup() {
+  	return () => (() => {
+  		const _cache = _createVNodeCache("631d214bc2c8427c");
+  		return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
+  	})();
+  } });
+  "#);
+}
+
+#[test]
+fn should_optimize_in_functional_define_compoennt() {
+  let code = transform(
+    "export default defineComponent(() => {
+      return () => <div onClick={() => foo} />
+    })",
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  export default defineComponent(() => {
+  	return () => (() => {
+  		const _cache = _createVNodeCache("631d214bc2c8427c");
+  		return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
+  	})();
+  });
+  "#);
+}
+
+#[test]
+fn should_optimize_in_nested_define_compoennt() {
+  let code = transform(
+    "export default defineComponent(() => {
+      const Comp = defineComponent(() => {
+        return () => <div onClick={() => foo} />
+      })
+      const Comp1 = defineComponent({
+        setup: () => {
+          return () => <div onClick={() => foo} />
+        }
+      })
+      const Comp2 = () => {
+        return <div onClick={() => foo} />
+      }
+      return () => <div onClick={() => foo} />
+    })",
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  export default defineComponent(() => {
+  	const Comp = defineComponent(() => {
+  		return () => (() => {
+  			const _cache = _createVNodeCache("631d214bc2c8427c");
+  			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
+  		})();
+  	});
+  	const Comp1 = defineComponent({ setup: () => {
+  		return () => (() => {
+  			const _cache = _createVNodeCache("5c89500e299049d2");
+  			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
+  		})();
+  	} });
+  	const Comp2 = () => {
+  		return (() => {
+  			const _cache = _createVNodeCache("d10877e335888a9");
+  			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
+  		})();
+  	};
+  	return () => (() => {
+  		const _cache = _createVNodeCache("cecabad81427710a");
+  		return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
+  	})();
+  });
+  "#);
+}
+
+#[test]
+fn should_optimize_in_custom_define_compoennt() {
+  let code = transform(
+    "export default genericComponent(() => {
+      const Comp = genericComponent(() => {
+        return () => <div onClick={() => foo} />
+      })
+      const Comp1 = defineCustomElement({
+        setup: () => {
+          return () => <div onClick={() => foo} />
+        }
+      })
+      const Comp2 = () => {
+        return <div onClick={() => foo} />
+      }
+      return () => <div onClick={() => foo} />
+    })",
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  export default genericComponent(() => {
+  	const Comp = genericComponent(() => {
+  		return () => (() => {
+  			const _cache = _createVNodeCache("631d214bc2c8427c");
+  			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
+  		})();
+  	});
+  	const Comp1 = defineCustomElement({ setup: () => {
+  		return () => (() => {
+  			const _cache = _createVNodeCache("5c89500e299049d2");
+  			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
+  		})();
+  	} });
+  	const Comp2 = () => {
+  		return (() => {
+  			const _cache = _createVNodeCache("d10877e335888a9");
+  			return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
+  		})();
+  	};
+  	return () => (() => {
+  		const _cache = _createVNodeCache("cecabad81427710a");
+  		return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => foo) });
+  	})();
+  });
+  "#);
+}
+
+#[test]
+fn should_cache_in_root_arrow_function_without_params() {
+  let code = transform(
+    r#"() => <div onClick={() => item} />"#,
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  () => (() => {
+  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	return _openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = () => item) });
+  })();
+  "#);
+}
+
+#[test]
+fn should_not_cache_in_root_arrow_function_with_params() {
+  let code = transform(
+    r#"(item) => <div onClick={() => item} />"#,
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["onClick"];
+  (item) => (_openBlock(), _createElementBlock("div", { onClick: () => item }, null, 8, _hoisted_1));
+  "#);
+}
+
+#[test]
+fn should_not_cache_in_root_function_with_params() {
+  let code = transform(
+    r#"function comp(item) {
+      return <div onClick={() => item} />
+    }"#,
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["onClick"];
+  function comp(item) {
+  	return _openBlock(), _createElementBlock("div", { onClick: () => item }, null, 8, _hoisted_1);
+  }
+  "#);
+}
+
+#[test]
+fn should_not_cache_in_for_statement() {
+  let code = transform(
+    r#"for (let i = 0; i < 3; i++) {
+      const foo = 1
+      stmts.push(<div onClick={() => i} onBlur={() => foo} />)
+    }"#,
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["onClick", "onBlur"];
+  for (let i = 0; i < 3; i++) {
+  	const foo = 1;
+  	stmts.push((_openBlock(), _createElementBlock("div", {
+  		onClick: () => i,
+  		onBlur: () => foo
+  	}, null, 40, _hoisted_1)));
+  }
+  "#);
+}
+
+#[test]
+fn should_not_cache_in_for_in_statement() {
+  let code = transform(
+    r#"
+    for (let i in [1, 2, 3]) {
+      const foo = 1
+      stmts.push(<div onClick={() => i} onBlur={() => foo} />)
+    }
+    <Comp>{foo}</Comp>
+    "#,
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["onClick", "onBlur"];
+  for (let i in [
+  	1,
+  	2,
+  	3
+  ]) {
+  	const foo = 1;
+  	stmts.push((_openBlock(), _createElementBlock("div", {
+  		onClick: () => i,
+  		onBlur: () => foo
+  	}, null, 40, _hoisted_1)));
+  }
+  _openBlock(), _createBlock(Comp, null, _normalizeSlots(foo), 1024);
+  "#);
+}
+
+#[test]
+fn should_not_cache_in_for_of_statement() {
+  let code = transform(
+    r#"for (let i of [1, 2, 3]) {
+      const foo = 1
+      stmts.push(<div onClick={() => i} onBlur={() => foo} />)
+    }"#,
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["onClick", "onBlur"];
+  for (let i of [
+  	1,
+  	2,
+  	3
+  ]) {
+  	const foo = 1;
+  	stmts.push((_openBlock(), _createElementBlock("div", {
+  		onClick: () => i,
+  		onBlur: () => foo
+  	}, null, 40, _hoisted_1)));
+  }
+  "#);
+}
+
+#[test]
+fn should_not_optimize_multiple_statments() {
+  let code = transform(
+    r#"const Comp = defineComponent((props) => {
+      return () => {
+        const Foo = <>{props.foo}</>
+        return <Comp onClick={() => props.bar}>{Foo}</Comp>
+      }
+    })
+    export default () => (
+      <Comp>{Foo}</Comp>
+    )
+    "#,
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode, normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const Comp = defineComponent((props) => {
+  	return () => {
+  		const Foo = (_openBlock(), _createElementBlock(_Fragment, null, [_normalizeVNode(() => props.foo)], 64));
+  		return (() => {
+  			const _cache = _createVNodeCache("631d214bc2c8427c");
+  			return _openBlock(), _createBlock(Comp, { onClick: _cache[0] || (_cache[0] = () => props.bar) }, _normalizeSlots(Foo), 1024);
+  		})();
+  	};
+  });
+  export default () => (_openBlock(), _createBlock(Comp, null, _normalizeSlots(Foo), 1024));
+  "#);
+}
+
+#[test]
+fn should_not_optimize_in_nested_scopes() {
+  let code = transform(
+    r#"const renderRow = ({
+      rowInfo,
+    }) => {
+      const cells = iteratedCols.map((col) => {
+        return (
+          <div onClick={() => {
+            handleUpdateExpanded(rowInfo.tmNode)
+          }} />
+        )
+      })
+    }"#,
+    Some(TransformOptions {
+      vapor: false,
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = ["onClick"];
+  const renderRow = ({ rowInfo }) => {
+  	const cells = iteratedCols.map((col) => {
+  		return _openBlock(), _createElementBlock("div", { onClick: () => {
+  			handleUpdateExpanded(rowInfo.tmNode);
+  		} }, null, 8, _hoisted_1);
+  	});
+  };
+  "#);
+}
+
+#[test]
+fn should_optimize_in_define_component_with_setup() {
+  let code = transform(
+    r#"export default defineComponent({
+      setup() {
+        let foo = 1
+        return () => (
+          <Comp>
+            {() => foo}
+          </Comp>
+        )
+      },
+    })"#,
+    Some(TransformOptions {
+      vapor: false,
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  export default defineComponent({ setup() {
+  	let foo = 1;
+  	return () => (_openBlock(), _createBlock(Comp, null, {
+  		_: 1,
+  		default: _normalizeSlot(() => foo)
+  	}));
+  } });
+  "#);
+}
+
+#[test]
+fn should_not_optimize_in_define_component_with_setup() {
+  let code = transform(
+    r#"export default defineComponent({
+      setup() {
+        return () => {
+          let foo = 1
+          return (
+            <Comp>
+              {() => foo}
+            </Comp>
+          )
+        }
+      },
+    })"#,
+    Some(TransformOptions {
+      vapor: false,
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  export default defineComponent({ setup() {
+  	return () => {
+  		let foo = 1;
+  		return _openBlock(), _createBlock(Comp, null, { default: () => foo }, 1024);
+  	};
+  } });
+  "#);
+}
+
+#[test]
+fn disable_optimize() {
+  let code = transform(
+    r#"<div foo={foo}>
+      {bar}
+      <div />
+    </div>"#,
+    Some(TransformOptions {
+      vapor: false,
+      optimize: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNode as _createVNode } from "vue";
+  _createVNode("div", { foo }, [_normalizeVNode(bar), _createVNode("div")], null, ["foo"]);
+  "#);
+}
+
+#[test]
+fn if_statement_return_jsx() {
+  let code = transform(
+    r#"function Comp(props) {
+      if (props.foo) {
+        return <div key={props.foo}>{props.foo}</div>
+      } else if (props.bar) return (<div />)
+      return <span />
+    }"#,
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = { key: 2 };
+  function Comp(props) {
+  	if (props.foo) {
+  		return _openBlock(), _createElementBlock("div", { key: props.foo }, [_normalizeVNode(() => props.foo)]);
+  	} else if (props.bar) return _openBlock(), _createElementBlock("div", _hoisted_1);
+  	return _openBlock(), _createElementBlock("span");
+  }
+  "#);
+}
+
+#[test]
+fn conditional_expression_return_jsx() {
+  let code = transform(
+    r#"function Comp(props) {
+      return props.foo ? (<div>{props.foo}</div>) : props.bar ? <div /> : <slot />
+    }"#,
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
+  const _hoisted_1 = { key: 1 };
+  const _hoisted_2 = { key: 2 };
+  function Comp(props) {
+  	return props.foo ? (_openBlock(), _createElementBlock("div", _hoisted_1, [_normalizeVNode(() => props.foo)])) : props.bar ? (_openBlock(), _createElementBlock("div", _hoisted_2)) : (() => {
+  		const _slots = _useSlots();
+  		return _renderSlot(_slots, "default", { key: 3 });
+  	})();
+  }
+  "#);
+}
+
+#[test]
+fn switch_return_jsx() {
+  let code = transform(
+    r#"function Comp(props) {
+      switch(props.foo) {
+        case 'foo': {
+          return <div>{props.foo}</div>
+        }
+        case 'bar': 
+          return [<div />]
+        default:
+          return <span />
+      }
+    }"#,
+    Some(TransformOptions {
+      vapor: false,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = { key: 1 };
+  const _hoisted_2 = { key: 2 };
+  const _hoisted_3 = { key: 3 };
+  function Comp(props) {
+  	switch (props.foo) {
+  		case "foo": {
+  			return _openBlock(), _createElementBlock("div", _hoisted_1, [_normalizeVNode(() => props.foo)]);
+  		}
+  		case "bar": return [(_openBlock(), _createElementBlock("div", _hoisted_2))];
+  		default: return _openBlock(), _createElementBlock("span", _hoisted_3);
+  	}
+  }
+  "#);
+}

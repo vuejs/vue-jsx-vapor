@@ -1,4 +1,4 @@
-import macros from '@vue-jsx-vapor/macros/raw'
+import macros from '@vue-jsx/macros/raw'
 import {
   propsHelperCode,
   propsHelperId,
@@ -8,7 +8,7 @@ import {
   vaporHelperId,
   vdomHelperCode,
   vdomHelperId,
-} from '@vue-jsx-vapor/runtime/raw'
+} from '@vue-jsx/runtime/raw'
 import { relative } from 'pathe'
 import { normalizePath } from 'unplugin-utils'
 import { transformVueJsxVapor, type Options } from './core'

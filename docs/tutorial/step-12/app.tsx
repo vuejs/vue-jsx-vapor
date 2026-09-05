@@ -1,20 +1,24 @@
-import { ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 
-const Comp = (props: { modelValue: string; 'onUpdate:modelValue': (v: string) => void }) => {
-  return (
-    <input
-      value={props.modelValue}
-      onInput={(e) => props['onUpdate:modelValue']((e.target as HTMLInputElement).value)}
-    />
-  )
-}
+const Comp = defineComponent({
+  props: ['modelValue'],
+  emits: ['update:modelValue'],
+  setup(props: { modelValue: string }, { emit }) {
+    return () => (
+      <input
+        value={props.modelValue}
+        onInput={(e) => emit('update:modelValue', (e.target as HTMLInputElement).value)}
+      />
+    )
+  },
+})
 
-export default () => {
+export default defineComponent(() => {
   const msg = ref('Hello')
-  return (
+  return () => (
     <>
-      <Comp modelValue={msg.value} onUpdate:modelValue={(v) => (msg.value = v)} />
+      <Comp modelValue={msg.value} onUpdate:modelValue={(v: string) => (msg.value = v)} />
       <p>{msg.value}</p>
     </>
   )
-}
+})

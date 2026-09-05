@@ -1,35 +1,43 @@
-/* eslint-disable unused-imports/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
-import { computed, defineComponent, defineVaporComponent } from 'vue'
+import { computed, defineComponent, defineVaporComponent, type Ref } from 'vue'
 
-const Comp = () => {
-  const A = <a href=""></a>
-  A.href = '#foo'
-  return A
+export const NativeComp = () => {
+  return <a href="#foo">foo</a>
 }
-const comp = <Comp />
-comp.block.href
 
-const VaporComp = defineVaporComponent((props: { id: number }) => {
-  defineSlots({
-    default: (props: { id: 1 }) => [],
-  })
-  defineExpose({
-    id: computed(() => 1),
-  })
-  return <div>{props.id}</div>
-})
-const vaporComp = <VaporComp id={1} v-slot={{ id }} />
-vaporComp.props.id
-vaporComp.exposeProxy?.id === ({} as number)
-vaporComp.block.style
+const VaporComp = defineVaporComponent(
+  (
+    props: { id: number },
+    {
+      slots,
+      expose,
+    }: {
+      slots: { default?: (props: { id: 1 }) => any }
+      expose: (value: { id: Ref<number> }) => void
+    },
+  ) => {
+    expose({ id: computed(() => 1) })
+    return slots.default?.({ id: 1 }) ?? <div>{props.id}</div>
+  },
+)
 
-const VDomComp = defineComponent((props: { id: number }) => {
-  defineSlots({
-    default: (props: { id: 1 }) => <div />,
-  })
-  return () => <div>{props.id}</div>
-})
-const vdompComp = <VDomComp id={1} v-slot={{}} />
-vdompComp.props
+export const vaporComp = (
+  <VaporComp id={1} v-slots={{ default: ({ id }) => <div>{id}</div> }} />
+)
+
+const VDomComp = defineComponent(
+  (
+    props: { id: number },
+    { slots }: { slots: { default?: (props: { id: 1 }) => any } },
+  ) =>
+    () =>
+      slots.default?.({ id: 1 }) ?? <div>{props.id}</div>,
+)
+
+export const vdomComp = (
+  <VDomComp
+    id={1}
+    v-slots={{ default: ({ id }: { id: 1 }) => <div>{id}</div> }}
+  />
+)
+
+export default VaporComp

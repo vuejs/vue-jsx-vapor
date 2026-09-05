@@ -9,8 +9,8 @@ next: false
 <script setup>
 import appCode from '~/tutorial/step-7/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-7/app-solved.tsx?raw'
-import appInteropCode from '~/tutorial/step-7/app-interop.tsx?raw'
-import appInteropSolvedCode from '~/tutorial/step-7/app-interop-solved.tsx?raw'
+import appVaporCode from '~/tutorial/step-7/app-vapor.tsx?raw'
+import appVaporSolvedCode from '~/tutorial/step-7/app-vapor-solved.tsx?raw'
 import childCode from '~/tutorial/step-7/Child.tsx?raw'
 import { getDefaultFiles } from '~/tutorial/template'
 import { ref } from 'vue'
@@ -22,8 +22,8 @@ const files = ref({
 const apps  = {
   app: { 'src/App.tsx': appCode },
   solved: { 'src/App.tsx': appSolvedCode,  },
-  interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropSolvedCode }
+  vapor: { 'src/App.tsx': appVaporCode },
+  vaporSolved: { 'src/App.tsx': appVaporSolvedCode }
 }
 </script>
 

@@ -5,7 +5,7 @@ next: false
 ---
 
 # You Did it!
-  
+
 <script setup>
 import appCode from './app.tsx?raw'
 import { getDefaultFiles } from '../template'
@@ -17,11 +17,11 @@ const apps  = {
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-11/">
+<jsx-repl :files :apps prev="/tutorial/step-15/">
 
 You have finished the tutorial!
 
-At this point, you should have a good idea of what it's like to work with Vue JSX Vapor. However, we covered a lot of things really fast and glossed over the details, so definitely keep learning! As a next step, you can:
+At this point, you should have a good idea of what it's like to work with Vue JSX. However, we covered a lot of things really fast and glossed over the details, so definitely keep learning! As a next step, you can:
 
 - Set up a real Vue JSX Vapor project on your machine by downloading the [vitesse-jsx-vapor](https://github.com/zhiyuanzmj/vitesse-jsx-vapor) template.
 

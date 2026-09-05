@@ -1,8 +1,9 @@
-import { defineVaporComponent, ref, shallowRef } from 'vue'
+import { defineVaporComponent, shallowRef } from 'vue'
+import type { NodeChild } from 'vue-jsx'
 
 export default () => {
-  const foo = shallowRef('foo')
-  const bar = shallowRef('foo')
+  const foo = shallowRef<NodeChild>('foo')
+  const bar = shallowRef<NodeChild>('foo')
 
   const Comp = defineVaporComponent(() => <div>Comp</div>)
 

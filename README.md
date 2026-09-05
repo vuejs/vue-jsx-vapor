@@ -1,1 +1,1 @@
-./packages/vue-jsx-vapor/README.md
+./packages/vue-jsx/README.md

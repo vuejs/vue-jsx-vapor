@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { transform as rsTransform } from '@vue-jsx-vapor/compiler-rs'
+import { transform as rsTransform } from '@vue-jsx/compiler'
 import { Bench } from 'tinybench'
 import { compileTemplate } from 'vue/compiler-sfc'
 import { compile, compileVapor } from '@vizejs/native'
@@ -78,11 +78,11 @@ bench.add('vue', () => {
 })
 
 bench.add('vue-jsx-vapor + oxc', () => {
-  rsTransform(source)
+  rsTransform(source, { vapor: true })
 })
 
 bench.add('vue-jsx       + oxc', () => {
-  rsTransform(source, { interop: true })
+  rsTransform(source)
 })
 
 bench.add('vize', () => {

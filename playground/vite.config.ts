@@ -1,35 +1,15 @@
 import Vue from '@vitejs/plugin-vue'
-import DefineRender from '@vue-macros/define-render/vite'
 import { defineConfig } from 'vite'
 import Inspect from 'vite-plugin-inspect'
-import VueJsxVapor from 'vue-jsx-vapor/vite'
+import VueJsx from 'vue-jsx/vite'
 
-const interops = ['*/vdom/*.tsx', '*/interop.tsx']
+const vdom = ['*/vdom/*.tsx']
+
 export default defineConfig({
   plugins: [
     Vue(),
-    VueJsxVapor({
-      include: interops,
-      interop: true,
-      macros: {
-        include: interops,
-      },
-      compiler: {
-        runtimeModuleName: 'vue-jsx-vapor',
-      },
-    }),
-    VueJsxVapor({
-      exclude: interops,
-      macros: {
-        exclude: interops,
-      },
-      compiler: {
-        runtimeModuleName: 'vue-jsx-vapor',
-      },
-    }),
-    DefineRender({
-      vapor: true,
-    }),
+    VueJsx({ include: vdom }),
+    VueJsx({ exclude: vdom, vapor: true }),
     Inspect(),
   ],
 })
