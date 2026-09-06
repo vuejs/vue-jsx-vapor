@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use common::text::{hash_string, resolve_jsx_text, to_valid_asset_id};
+use common::text::{compact_hash_string, resolve_jsx_text, to_valid_asset_id};
 use napi::bindgen_prelude::Either3;
 use oxc_allocator::TakeIn;
 use oxc_ast::{
@@ -44,7 +44,7 @@ impl<'a> TransformContext<'a> {
                     ast
                       .expression_string_literal(
                         SPAN,
-                        ast.str(&hash_string(&format!(
+                        ast.str(&compact_hash_string(&format!(
                           "{}{}",
                           self.options.filename,
                           self.options.cache_index.borrow(),

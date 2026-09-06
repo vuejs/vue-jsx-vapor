@@ -8,7 +8,7 @@ fn as_root_node() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementVNode as _createElementVNode, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div", { id: foo }, null, 8, ["id"])).cacheIndex = 0, _setBlockTracking(1), _cache[0]);
   })();
   "#)
@@ -21,7 +21,7 @@ fn on_nested_plain_element() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div", { id: foo }, null, 8, ["id"])).cacheIndex = 0, _setBlockTracking(1), _cache[0])]);
   })();
   "#)
@@ -34,7 +34,7 @@ fn on_component() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createVNode(Comp, { id: foo }, null, 8, ["id"])).cacheIndex = 0, _setBlockTracking(1), _cache[0])]);
   })();
   "#)
@@ -47,7 +47,7 @@ fn on_slot_outlet() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, renderSlot as _renderSlot, setBlockTracking as _setBlockTracking, useSlots as _useSlots } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	const _slots = _useSlots();
   	return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _renderSlot(_slots, "default")).cacheIndex = 0, _setBlockTracking(1), _cache[0])]);
   })();
@@ -62,7 +62,7 @@ fn inside_v_once() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementVNode as _createElementVNode, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div", null, [_createElementVNode("div")])).cacheIndex = 0, _setBlockTracking(1), _cache[0]);
   })();
   "#)
@@ -76,7 +76,7 @@ fn with_hoist_static() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div")).cacheIndex = 0, _setBlockTracking(1), _cache[0])]);
   })();
   "#)
@@ -90,7 +90,7 @@ fn with_v_if_else() {
   import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, setBlockTracking as _setBlockTracking } from "vue";
   const _hoisted_1 = { key: 1 };
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock(_Fragment, null, [BOOLEAN ? _cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createElementVNode("div")).cacheIndex = 0, _setBlockTracking(1), _cache[0]) : (_openBlock(), _createElementBlock("p", _hoisted_1))], 64);
   })();
   "#)
@@ -103,7 +103,7 @@ fn with_v_for() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, renderList as _renderList, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _cache[0] || (_setBlockTracking(-1, true), (_cache[0] = _createVNode(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div"))), 256)).cacheIndex = 0, _setBlockTracking(1), _cache[0]);
   })();
   "#)

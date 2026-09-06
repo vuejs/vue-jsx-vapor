@@ -8,7 +8,7 @@ fn on_root_element() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _withMemo([x], () => (_openBlock(), _createElementBlock("div")), _cache, 0);
   })();
   "#)
@@ -21,7 +21,7 @@ fn on_normal_element() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _withMemo([x], () => (_openBlock(), _createElementBlock("div")), _cache, 0);
   })();
   "#)
@@ -34,7 +34,7 @@ fn on_normal_element_with_dynamic_key() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _withMemo([updateKey], () => (_openBlock(), _createElementBlock("div", { key: updateKey })), _cache, 0);
   })();
   "#)
@@ -56,7 +56,7 @@ fn on_normal_element_with_dynamic_key_nested_in_v_for() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, withMemo as _withMemo } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock("div", null, [_withMemo([item.id, updateKey], () => (_openBlock(), _createElementBlock("div", { key: get(item, updateKey) }, [_normalizeVNode(() => item)])), _cache, 0)]))), 256);
   })();
   "#)
@@ -69,7 +69,7 @@ fn on_component() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withMemo as _withMemo } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _withMemo([x], () => (_openBlock(), _createBlock(Comp)), _cache, 0);
   })();
   "#)
@@ -89,7 +89,7 @@ fn on_v_if() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, withMemo as _withMemo } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock(_Fragment, null, [ok ? _withMemo([x], () => (_openBlock(), _createElementBlock("div", null, [_createElementVNode("span", null, "foo"), _normalizeVNode("bar")])), _cache, 0) : _withMemo([x], () => _createVNode(Comp), _cache, 1)], 64);
   })();
   "#)
@@ -108,7 +108,7 @@ fn on_v_for() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
   		const _memo = [x, y === z];
   		if (_cached && _cached.el && _cached.key === x && _isMemoSame(_cached, _memo)) return _cached;
@@ -133,7 +133,7 @@ fn on_v_for_with_compound_key_expression() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
   		const _memo = [x, y === z];
   		if (_cached && _cached.el && _cached.key === get(x) && _isMemoSame(_cached, _memo)) return _cached;
@@ -158,7 +158,7 @@ fn on_template_v_for() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
   		const _memo = [x, y === z];
   		if (_cached && _cached.el && _cached.key === x && _isMemoSame(_cached, _memo)) return _cached;
@@ -183,7 +183,7 @@ fn on_template_v_for_with_compound_key_expression() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, isMemoSame as _isMemoSame, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ x, y }, __, ___, _cached) => {
   		const _memo = [x, y === z];
   		if (_cached && _cached.el && _cached.key === get(x) && _isMemoSame(_cached, _memo)) return _cached;

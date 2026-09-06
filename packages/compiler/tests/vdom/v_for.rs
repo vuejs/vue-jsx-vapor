@@ -175,7 +175,7 @@ fn template_v_for_key_expression_prefixing() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, { key: itemKey(item) }, [_cache[0] || (_cache[0] = _normalizeVNode("test", -1))], 64))), 128);
   })();
   "#)
@@ -192,7 +192,7 @@ fn template_v_for_key_expression_prefixing_on_simple_expression() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, { key: itemKey }, [_cache[0] || (_cache[0] = _normalizeVNode("test", -1))], 64))), 128);
   })();
   "#)
@@ -209,7 +209,7 @@ fn template_v_for_key_no_prefixing_on_attribute_key() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, { key: "key" }, [_cache[0] || (_cache[0] = _normalizeVNode("test", -1))], 64))), 128);
   })();
   "#)
@@ -226,7 +226,7 @@ fn template_v_for_with_multiple_children() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, null, [..._cache[0] || (_cache[0] = [_normalizeVNode("hello", -1), _createElementVNode("span", null, null, -1)])], 64))), 256);
   })();
   "#)
@@ -310,7 +310,7 @@ fn keyed_template_v_for() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, { key: item }, [..._cache[0] || (_cache[0] = [_normalizeVNode("hello", -1), _createElementVNode("span", null, null, -1)])], 64))), 128);
   })();
   "#)

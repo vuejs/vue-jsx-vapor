@@ -49,7 +49,7 @@ into its own `VNodeCall` IR, and then generates optimized Vue runtime calls.
 For the same source, optimized output has a very different shape:
 
 ```js
-const _cache = _createVNodeCache("9a69eae3d9f3c58f")
+const _cache = _createVNodeCache("d9f3c58f")
 return _openBlock(), _createElementBlock("section", null, [
   _cache[1] || (_cache[1] = _createElementVNode("h2", null, "Todo", -1)),
   _createElementVNode("ul", null, [

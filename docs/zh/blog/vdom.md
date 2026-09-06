@@ -46,7 +46,7 @@ Vue JSX 3.3 会经过 Oxc 解析，建立语义作用域信息，把 JSX 降级�
 的形态明显不同：
 
 ```js
-const _cache = _createVNodeCache("9a69eae3d9f3c58f")
+const _cache = _createVNodeCache("d9f3c58f")
 return _openBlock(), _createElementBlock("section", null, [
   _cache[1] || (_cache[1] = _createElementVNode("h2", null, "Todo", -1)),
   _createElementVNode("ul", null, [

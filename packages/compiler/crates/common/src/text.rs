@@ -217,3 +217,9 @@ pub fn hash_string(s: &str) -> String {
   s.hash(&mut hasher);
   format!("{:x}", hasher.finish())
 }
+
+pub fn compact_hash_string(s: &str) -> String {
+  let mut hasher = DefaultHasher::new();
+  s.hash(&mut hasher);
+  format!("{:08x}", hasher.finish() as u32)
+}

@@ -25,7 +25,7 @@ fn cache_root_node_children() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock(_Fragment, null, [..._cache[0] || (_cache[0] = [_createElementVNode("span", { class: "inline" }, "hello", -1), _createElementVNode("span", { class: "inline" }, "hello", -1)])], 64);
   })();
   "#);
@@ -38,7 +38,7 @@ fn cache_single_children_array() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _createElementVNode("span", { id: "inline" }, "hello", -1))]);
   })();
   "#);
@@ -55,7 +55,7 @@ fn cache_nested_children_array() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [..._cache[0] || (_cache[0] = [_createElementVNode("p", null, [_createElementVNode("span"), _createElementVNode("span")], -1), _createElementVNode("p", null, [_createElementVNode("span"), _createElementVNode("span")], -1)])]);
   })();
   "#);
@@ -68,7 +68,7 @@ fn cache_nested_static_tree_with_comments() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))]);
   })();
   "#);
@@ -81,7 +81,7 @@ fn cache_siblings_including_text_with_common_non_hoistable_parent() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [..._cache[0] || (_cache[0] = [
   		_createElementVNode("span", null, null, -1),
   		_normalizeVNode("foo", -1),
@@ -98,7 +98,7 @@ fn cache_inside_default_slot() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createBlock(Foo, null, {
   		default: _withCtx(() => [_normalizeVNode(() => x), _cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]),
   		_: 1
@@ -114,7 +114,7 @@ fn cache_default_slot_as_whole() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createBlock(Foo, null, {
   		default: _withCtx(() => [..._cache[0] || (_cache[0] = [_createElementVNode("span", null, null, -1), _createElementVNode("span", null, null, -1)])]),
   		_: 1
@@ -134,7 +134,7 @@ fn cache_inside_named_slot() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createBlock(Foo, null, {
   		foo: _withCtx(() => [_normalizeVNode(() => x), _cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]),
   		_: 1
@@ -154,7 +154,7 @@ fn cache_named_slot_as_a_whole() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createBlock(Foo, null, {
   		foo: _withCtx(() => [..._cache[0] || (_cache[0] = [_createElementVNode("span", null, null, -1), _createElementVNode("span", null, null, -1)])]),
   		_: 1
@@ -174,7 +174,7 @@ fn cache_dynamically_named_slot_as_a_whole() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createBlock(Foo, null, {
   		[foo]: _withCtx(() => [..._cache[0] || (_cache[0] = [_createElementVNode("span", null, null, -1), _createElementVNode("span", null, null, -1)])]),
   		_: 2
@@ -209,7 +209,7 @@ fn cache_element_with_static_key() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _createElementVNode("div", { key: "foo" }, null, -1))]);
   })();
   "#);
@@ -278,7 +278,7 @@ fn should_cache_v_if_props_or_children_if_static() {
   	id: "foo"
   };
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, ["ok" ? (_openBlock(), _createElementBlock("div", _hoisted_1, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))])) : _createCommentVNode("", true)]);
   })();
   "#);
@@ -296,7 +296,7 @@ fn should_hoist_v_for_children_if_static() {
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   const _hoisted_1 = { id: "foo" };
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div", _hoisted_1, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))]))), 256))]);
   })();
   "#);
@@ -314,7 +314,7 @@ fn should_hoist_props_for_root_with_single_element_excluding_comments() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock(_Fragment, null, [_cache[0] || (_cache[0] = _createElementVNode("div", { id: "a" }, [_createElementVNode("div", { id: "b" }, [_createElementVNode("div", { id: "c" }, [_createElementVNode("div", { id: "d" }, [_createElementVNode("div", { id: "e" }, "hello")])])])], -1))], 64);
   })();
   "#);
@@ -328,7 +328,7 @@ fn cache_nested_static_tree_with_static_interpolation() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _createElementVNode("span", null, [
   		_normalizeVNode("foo "),
   		_normalizeVNode(1),
@@ -346,7 +346,7 @@ fn cache_nested_static_tree_with_static_prop_value() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _createElementVNode("span", { foo: 0 }, 1, -1))]);
   })();
   "#);
@@ -447,7 +447,7 @@ fn should_cache_keyed_template_v_for_with_plain_element_child() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => (_openBlock(), _createElementBlock(_Fragment, { key: item }, [_cache[0] || (_cache[0] = _createElementVNode("span", null, null, -1))], 64))), 128))]);
   })();
   "#);
@@ -464,7 +464,7 @@ fn should_not_cache_svg_with_directives() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	const _directive_foo = _resolveDirective("foo");
   	return _openBlock(), _createElementBlock("div", null, [_cache[0] || (_cache[0] = _withDirectives(_createElementVNode("svg", null, [_createElementVNode("path", { d: "M2,3H5.5L12" })], -1), [[_directive_foo]]))]);
   })();
@@ -482,7 +482,7 @@ fn clone_hoisted_array_children_in_v_for_hmr_mode() {
   import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock("div", null, [(_openBlock(), _createElementBlock(_Fragment, null, _renderList(1, (i) => _cache[0] || (_cache[0] = _createElementVNode("div", null, [_createElementVNode("span", { class: "hi" })], -1))), 64))]);
   })();
   "#);

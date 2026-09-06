@@ -18,7 +18,7 @@ fn v_slots_basic() {
   _openBlock(), _createBlock(Comp, null, {
   	_: 1,
   	default: _normalizeSlot(({ foo }) => (_openBlock(), _createElementBlock(_Fragment, null, [_normalizeVNode(() => (() => {
-  		const _cache = _createVNodeCache("631d214bc2c8427c");
+  		const _cache = _createVNodeCache("c2c8427c");
   		return _withDirectives((_openBlock(), _createElementBlock("input", {
   			"onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => bar = $event),
   			onClick: () => foo
@@ -64,7 +64,7 @@ fn object_expression_children() {
   _openBlock(), _createBlock(Comp, null, {
   	_: 1,
   	default: _normalizeSlot(({ foo }) => (() => {
-  		const _cache = _createVNodeCache("631d214bc2c8427c");
+  		const _cache = _createVNodeCache("c2c8427c");
   		return _withDirectives((_openBlock(), _createElementBlock("input", {
   			"onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => bar = $event),
   			onClick: () => foo
@@ -93,7 +93,7 @@ fn object_expression_multiple_children() {
   _openBlock(), _createBlock(Comp, null, {
   	_: 1,
   	default: _normalizeSlot(({ foo }) => (() => {
-  		const _cache = _createVNodeCache("631d214bc2c8427c");
+  		const _cache = _createVNodeCache("c2c8427c");
   		return _withDirectives((_openBlock(), _createElementBlock("input", {
   			"onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => bar = $event),
   			onClick: () => foo
@@ -117,7 +117,7 @@ fn object_expression_children_with_computed_property() {
   import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, { [foo]: () => (() => {
-  	const _cache = _createVNodeCache("631d214bc2c8427c");
+  	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createElementBlock(_Fragment, null, [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))], 64);
   })() }, 1024);
   "#);
@@ -175,7 +175,7 @@ fn v_slots_with_children() {
   _openBlock(), _createBlock(Comp, null, {
   	_: 1,
   	default: _normalizeSlot(() => (() => {
-  		const _cache = _createVNodeCache("631d214bc2c8427c");
+  		const _cache = _createVNodeCache("c2c8427c");
   		return [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))];
   	})()),
   	foo: _normalizeSlot(() => "foo")
@@ -191,7 +191,7 @@ fn v_slots_dynamic_with_children() {
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	default: () => (() => {
-  		const _cache = _createVNodeCache("631d214bc2c8427c");
+  		const _cache = _createVNodeCache("c2c8427c");
   		return [_cache[0] || (_cache[0] = _createElementVNode("div", null, null, -1))];
   	})(),
   	...slots
