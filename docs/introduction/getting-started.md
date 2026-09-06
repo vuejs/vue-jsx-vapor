@@ -46,35 +46,5 @@ See [Vapor Mode](./interop) when you want Vapor output.
 It does not enable Vapor mode; the `vapor` compiler option controls the emitted
 rendering mode.
 
-## Component Naming
-
-Vue JSX follows the standard JSX naming convention:
-
-```tsx
-import UserCard from './UserCard'
-
-export function App() {
-  return (
-    <div>
-      <UserCard />
-      <UserCard.Header />
-    </div>
-  )
-}
-```
-
-Tags that start with a lowercase letter are always treated as intrinsic
-elements, including unknown or kebab-case tags. They are not resolved as Vue
-components:
-
-```tsx
-<button />       // Native HTML element
-<my-widget />    // Element tag, not a component
-```
-
-Use an uppercase identifier or a member expression for Vue components. This
-keeps component resolution deterministic and avoids changing the meaning of an
-existing component when HTML adds a new native element in the future.
-
 See [Macros](../features/macros) and [Directives](../features/directives) for
 optional syntax transforms and their type support.

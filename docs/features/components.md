@@ -1,8 +1,40 @@
-# List Components
+# Components
+
+## Component Naming
+
+Vue JSX follows the standard JSX naming convention:
+
+```tsx
+import UserCard from './UserCard'
+
+export function App() {
+  return (
+    <div>
+      <UserCard />
+      <UserCard.Header />
+    </div>
+  )
+}
+```
+
+Tags that start with a lowercase letter are always treated as intrinsic
+elements, including unknown or kebab-case tags. They are not resolved as Vue
+components:
+
+```tsx
+<button />       // Native HTML element
+<my-widget />    // Element tag, not a component
+```
+
+Use an uppercase identifier or a member expression for Vue components. This
+keeps component resolution deterministic and avoids changing the meaning of an
+existing component when HTML adds a new native element in the future.
+
+## `For`
 
 Vue JSX provides `For` for Virtual DOM and `VaporFor` for Vapor Mode. Both components preserve the item and index types inferred from `in`, without requiring directive-specific language tooling.
 
-## Virtual DOM
+### Virtual DOM
 
 Import `For` from `vue-jsx` and return a keyed node from its default slot:
 
@@ -28,7 +60,7 @@ export default defineComponent(() => {
 
 `For` uses Vue's keyed Fragment list rendering. Place a stable `key` on the root node returned for each item so Vue can reuse and move existing nodes correctly.
 
-## Vapor Mode
+### Vapor Mode
 
 Use `VaporFor` when the surrounding component is compiled in Vapor Mode:
 
@@ -64,7 +96,7 @@ import { For } from 'vue-jsx/vapor'
 
 This `For` is the same component as `VaporFor`.
 
-## Stable Keys in Vapor Mode
+### Stable Keys in Vapor Mode
 
 By default, `VaporFor` uses the item itself as its key. This works well when objects retain their identity. Use `getKey` when items can be replaced with new objects that represent the same record:
 
@@ -80,7 +112,7 @@ By default, `VaporFor` uses the item itself as its key. This works well when obj
 
 When `getKey` is present, the slot receives each item as a `ShallowRef`. This lets Vapor reuse the existing block for a stable key while updating `user.value` to the latest item object.
 
-## Supported Sources
+### Supported Sources
 
 Both components accept arrays, strings, numbers, plain objects, `Set`, and `Map` values.
 

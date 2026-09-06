@@ -22,7 +22,7 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: '首页', link: '/zh/' },
-          { text: '特性', link: '/zh/features/directives' },
+          { text: '特性', link: '/zh/features/components' },
           { text: '博客', link: '/zh/blog/', activeMatch: '/zh/blog/' },
           {
             text: '教程',
@@ -84,16 +84,16 @@ export default defineConfig({
               text: '特性',
               items: [
                 {
+                  text: '组件',
+                  link: '/zh/features/components',
+                },
+                {
                   text: '指令',
                   link: '/zh/features/directives',
                 },
                 {
                   text: '宏',
                   link: '/zh/features/macros',
-                },
-                {
-                  text: '列表组件',
-                  link: '/zh/features/for',
                 },
                 {
                   text: 'Custom Element',
@@ -141,7 +141,7 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       {
         text: 'Features',
-        link: '/features/directives',
+        link: '/features/components',
         activeMatch: 'features',
       },
       { text: 'Blog', link: '/blog/', activeMatch: '/blog/' },
@@ -199,16 +199,16 @@ export default defineConfig({
           text: 'Features',
           items: [
             {
+              text: 'Components',
+              link: '/features/components',
+            },
+            {
               text: 'Directives',
               link: '/features/directives',
             },
             {
               text: 'Macros',
               link: '/features/macros',
-            },
-            {
-              text: 'List Components',
-              link: '/features/for',
             },
             {
               text: 'Custom Elements',
