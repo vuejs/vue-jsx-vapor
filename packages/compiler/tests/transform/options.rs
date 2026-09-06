@@ -7,13 +7,13 @@ pub fn runtime_module_name() {
     "<div>{foo}</div>",
     Some(TransformOptions {
       vapor: true,
-      runtime_module_name: Some(String::from("vue-jsx-vapor")),
+      runtime_module_name: Some(String::from("vue-jsx")),
       ..Default::default()
     }),
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "vue-jsx-vapor";
+  import { setNodes as _setNodes } from "vue-jsx";
   import { template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ", 1);
   (() => {

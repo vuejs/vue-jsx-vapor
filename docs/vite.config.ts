@@ -8,6 +8,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: ['vitepress'],
+    exclude: ['vitepress', 'jsx-repl'],
   },
 })
