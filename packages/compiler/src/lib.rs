@@ -32,6 +32,8 @@ pub struct CompilerOptions {
   /// Also used for self-recursive reference in templates
   /// @default 'index.jsx'
   pub filename: Option<String>,
+  /// Root directory used to make the filename relative during SSR transforms.
+  pub root: Option<String>,
   /// Transform JSX for Vapor Mode.
   /// @default false
   pub vapor: Option<bool>,
@@ -76,12 +78,22 @@ pub struct TransformReturn {
 #[napi]
 pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) -> TransformReturn {
   let options = options.unwrap_or_default();
-  let filename = &options.filename.unwrap_or("index.jsx".to_string());
   let ssr = options.ssr.unwrap_or(false);
+  let filename = options.filename.unwrap_or("index.jsx".to_string());
+  let root = options.root.unwrap_or_default();
+  let filename = if ssr {
+    let filename = filename.replace('\\', "/");
+    Path::new(&filename)
+      .strip_prefix(root.replace('\\', "/"))
+      .map(|path| path.to_string_lossy().into_owned())
+      .unwrap_or(filename)
+  } else {
+    filename
+  };
   let CodegenReturn { code, map, .. } = transform(
     &source,
     Some(TransformOptions {
-      filename,
+      filename: &filename,
       source_map: options.source_map.unwrap_or(false),
       vapor: options.vapor.unwrap_or(false),
       hmr: options.hmr.unwrap_or(Either::A(false)),

@@ -53,6 +53,10 @@ export interface CompilerOptions {
    */
   filename?: string
   /**
+   * Root directory used to make the filename relative during SSR transforms.
+   */
+  root?: string
+  /**
    * Transform JSX for Vapor Mode.
    * @default false
    */

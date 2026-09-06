@@ -289,18 +289,12 @@ importers:
       esbuild:
         specifier: '*'
         version: 0.27.2
-      pathe:
-        specifier: ^2.0.3
-        version: 2.0.3
       rollup:
         specifier: ^3
         version: 3.29.5
       unplugin:
         specifier: 'catalog:'
         version: 3.0.0
-      unplugin-utils:
-        specifier: 'catalog:'
-        version: 0.3.1
       vite:
         specifier: '>=3'
         version: 8.0.10(@types/node@25.6.0)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.39.0)(yaml@2.8.2)
@@ -338,18 +332,12 @@ importers:
       esbuild:
         specifier: '*'
         version: 0.25.5
-      pathe:
-        specifier: ^2.0.3
-        version: 2.0.3
       rollup:
         specifier: ^3
         version: 3.29.5
       unplugin:
         specifier: 'catalog:'
         version: 3.0.0
-      unplugin-utils:
-        specifier: 'catalog:'
-        version: 0.3.1
       vite:
         specifier: '>=3'
         version: 8.0.10(@types/node@25.6.0)(esbuild@0.25.5)(jiti@2.6.1)(terser@5.39.0)(yaml@2.8.2)

@@ -9,8 +9,6 @@ import {
   vdomHelperCode,
   vdomHelperId,
 } from '@vue-jsx/runtime/raw'
-import { relative } from 'pathe'
-import { normalizePath } from 'unplugin-utils'
 import { transformVueJsxVapor, type Options } from './core'
 import type { UnpluginOptions } from 'unplugin'
 
@@ -72,18 +70,22 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
       transform: {
         filter: {
           id: {
-            include: options?.include || /\.[cm]?[jt]sx(?=$|[?#])/,
-            exclude: options?.exclude || /node_modules/,
+            include: options.include || /\.[cm]?[jt]sx(?=$|[?#])/,
+            exclude: options.exclude || /node_modules/,
           },
         },
         handler(code, id, opt?: { ssr?: boolean }) {
           const result = transformVueJsxVapor(
             code,
-            opt?.ssr ? normalizePath(relative(root, id)) : id,
-            options,
-            needSourceMap,
-            needHMR,
-            opt?.ssr,
+            id,
+            {
+              vapor: !options.interop,
+              root,
+              hmr: needHMR,
+              sourceMap: needSourceMap,
+              ssr: opt?.ssr,
+              ...options.compiler,
+            },
           )
           if (result?.code) {
             return {

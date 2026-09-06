@@ -9,8 +9,6 @@ import {
   vdomHelperCode,
   vdomHelperId,
 } from '@vue-jsx/runtime/raw'
-import { relative } from 'pathe'
-import { normalizePath } from 'unplugin-utils'
 import { transformVueJsx } from './core'
 import type { Options } from './options'
 import type { UnpluginOptions } from 'unplugin'
@@ -77,16 +75,13 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
           },
         },
         handler(code, id, { ssr }: { ssr?: boolean } = {}) {
-          const result = transformVueJsx(
-            code,
-            ssr ? normalizePath(relative(root, id)) : id,
-            {
-              hmr,
-              sourceMap,
-              ssr,
-              ...options,
-            },
-          )
+          const result = transformVueJsx(code, id, {
+            hmr,
+            sourceMap,
+            ssr,
+            root,
+            ...options,
+          })
           if (result?.code) {
             return {
               code: result.code,
