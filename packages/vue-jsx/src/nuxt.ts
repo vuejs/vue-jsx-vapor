@@ -8,8 +8,8 @@ export interface ModuleOptions extends Options {}
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
-    name: 'nuxt-vue-jsx',
-    configKey: 'vue-jsx',
+    name: 'vue-jsx',
+    configKey: 'vueJsx',
   },
   setup(options) {
     addVitePlugin(() => vite(options))
