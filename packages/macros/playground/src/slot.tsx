@@ -4,15 +4,7 @@ const Comp = (
   props: { foo: string },
   { slots }: { slots: { default?: (scope: { foo: string }) => any } },
 ) => {
-  return (
-    <>
-      {slots.default ? (
-        <slots.default foo={props.foo} />
-      ) : (
-        <div>default slot</div>
-      )}
-    </>
-  )
+  return <>{slots.default ? <slots.default foo={props.foo} /> : <div>default slot</div>}</>
 }
 
 const CompSlotlet = (props: { foo: string }) => {
@@ -59,9 +51,7 @@ export default () => {
             }}
           </Comp>
 
-          <Comp foo={foo.value}>
-            {(scope: { foo: string }) => <div>{scope.foo}</div>}
-          </Comp>
+          <Comp foo={foo.value}>{(scope: { foo: string }) => <div>{scope.foo}</div>}</Comp>
         </fieldset>
 
         <fieldset>

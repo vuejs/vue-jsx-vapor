@@ -45,8 +45,7 @@ function __getWasiWorkerExecArgv() {
 
 function __isInvalidWasiWorkerExecArgv(errorMessage, argument) {
   const __equalsIndex = argument.indexOf('=')
-  const __argumentName =
-    __equalsIndex === -1 ? argument : argument.slice(0, __equalsIndex)
+  const __argumentName = __equalsIndex === -1 ? argument : argument.slice(0, __equalsIndex)
   return (
     errorMessage.includes(': ' + __argumentName + ',') ||
     errorMessage.includes(': ' + __argumentName + '=') ||
@@ -65,10 +64,7 @@ function __removeInvalidWasiWorkerExecArgv(execArgv, error) {
   let __removed = false
   for (let __index = 0; __index < execArgv.length; __index += 1) {
     const __arg = execArgv[__index]
-    if (
-      __arg.startsWith('-') &&
-      __isInvalidWasiWorkerExecArgv(error.message, __arg)
-    ) {
+    if (__arg.startsWith('-') && __isInvalidWasiWorkerExecArgv(error.message, __arg)) {
       __removed = true
       if (
         !__arg.includes('=') &&
@@ -96,8 +92,7 @@ function __createWasiWorker(filename) {
       if (!error || error.code !== 'ERR_WORKER_INVALID_EXEC_ARGV') {
         throw error
       }
-      const __nextWorkerExecArgv =
-        __removeInvalidWasiWorkerExecArgv(__workerExecArgv, error)
+      const __nextWorkerExecArgv = __removeInvalidWasiWorkerExecArgv(__workerExecArgv, error)
       if (!__nextWorkerExecArgv) {
         throw error
       }
@@ -113,7 +108,7 @@ const __wasi = new __nodeWASI({
   env: process.env,
   preopens: {
     [__rootDir]: __rootDir,
-  }
+  },
 })
 
 const __sharedMemory = new WebAssembly.Memory({
@@ -155,11 +150,11 @@ let __emnapiWasmEnvCleanupDrained = false
 let __emnapiWasmEnvCleanupDrainPromise
 let __wasiDisposed = false
 let __wasiDisposePromise
-let __completeWasiDisposal = function() {}
+let __completeWasiDisposal = function () {}
 // Overridden by loader flavors that have a last-resort reclaim for a rollback
 // that stopped short of destroying the context. See
 // `__rollbackWasiInitialization`.
-let __retainWasiRollbackForRetry = function() {}
+let __retainWasiRollbackForRetry = function () {}
 
 function __isThenable(value) {
   return (
@@ -186,15 +181,9 @@ function __attachCleanupErrors(error, cleanupErrors) {
   if (cleanupErrors.length === 0) {
     return error
   }
-  const cleanupError = __createCleanupError(
-    cleanupErrors,
-    'WASI binding cleanup failed',
-  )
+  const cleanupError = __createCleanupError(cleanupErrors, 'WASI binding cleanup failed')
   try {
-    if (
-      error &&
-      (typeof error === 'object' || typeof error === 'function')
-    ) {
+    if (error && (typeof error === 'object' || typeof error === 'function')) {
       if (error.cause === undefined) {
         error.cause = cleanupError
         if (error.cause === cleanupError) {
@@ -327,9 +316,7 @@ function __drainWasmEnvCleanup() {
       return
     }
   }
-  const limit = observable
-    ? __WASM_ENV_CLEANUP_DRAIN_TURNS
-    : __WASM_ENV_CLEANUP_BLIND_DRAIN_TURNS
+  const limit = observable ? __WASM_ENV_CLEANUP_DRAIN_TURNS : __WASM_ENV_CLEANUP_BLIND_DRAIN_TURNS
   const drainPromise = (async () => {
     let queued = 0
     for (let turn = 0; turn < limit; turn++) {
@@ -452,10 +439,7 @@ function __terminateWasiWorkers() {
 
   const finish = () => {
     if (cleanupErrors.length > 0) {
-      throw __createCleanupError(
-        cleanupErrors,
-        'Failed to terminate WASI workers',
-      )
+      throw __createCleanupError(cleanupErrors, 'Failed to terminate WASI workers')
     }
   }
   return pending.length > 0 ? Promise.all(pending).then(finish) : finish()
@@ -656,16 +640,13 @@ function __rollbackWasiInitialization() {
 }
 
 const __wasiRollbackRegistrySymbol = Symbol.for('napi.rs.wasi.rollback.registry.v1')
-const __wasiRollbackRegistryKey =
-  typeof __filename === 'string' ? __filename : __wasmFilePath
+const __wasiRollbackRegistryKey = typeof __filename === 'string' ? __filename : __wasmFilePath
 
 function __getWasiRollbackRegistry() {
   const existing = process[__wasiRollbackRegistrySymbol]
   if (existing !== undefined) {
     if (!(existing instanceof Map)) {
-      throw new TypeError(
-        'The process-wide NAPI-RS WASI rollback registry is invalid',
-      )
+      throw new TypeError('The process-wide NAPI-RS WASI rollback registry is invalid')
     }
     return existing
   }
@@ -684,9 +665,7 @@ const __wasiRollbackRegistry = __getWasiRollbackRegistry()
 function __completeWasiInitializationRollback(record, cleanupErrors) {
   try {
     if (cleanupErrors.length === 0) {
-      if (
-        __wasiRollbackRegistry.get(__wasiRollbackRegistryKey) === record
-      ) {
+      if (__wasiRollbackRegistry.get(__wasiRollbackRegistryKey) === record) {
         __wasiRollbackRegistry.delete(__wasiRollbackRegistryKey)
       }
       return
@@ -734,9 +713,7 @@ function __runWasiInitializationRollback(record) {
   )
 }
 
-const __pendingWasiRollback = __wasiRollbackRegistry.get(
-  __wasiRollbackRegistryKey,
-)
+const __pendingWasiRollback = __wasiRollbackRegistry.get(__wasiRollbackRegistryKey)
 if (__pendingWasiRollback !== undefined) {
   __runWasiInitializationRollback(__pendingWasiRollback)
   throw __pendingWasiRollback.error
@@ -747,10 +724,7 @@ let __napiModule
 let __wasiExitListenerRegistered = false
 
 function __removeWasiExitListener() {
-  if (
-    __wasiExitListenerRegistered &&
-    typeof process.removeListener === 'function'
-  ) {
+  if (__wasiExitListenerRegistered && typeof process.removeListener === 'function') {
     process.removeListener('exit', __disposeWasiBindingAtExit)
   }
   __wasiExitListenerRegistered = false
@@ -775,10 +749,7 @@ function __disposeWasiBindingAtExit() {
 }
 
 function __registerWasiExitListener() {
-  if (
-    !__wasiExitListenerRegistered &&
-    typeof process.once === 'function'
-  ) {
+  if (!__wasiExitListenerRegistered && typeof process.once === 'function') {
     process.once('exit', __disposeWasiBindingAtExit)
     __wasiExitListenerRegistered = true
   }
@@ -846,8 +817,10 @@ try {
     napiModule: __napiModule,
   } = __emnapiInstantiateNapiModuleSync(__wasmFile, {
     context: __emnapiContext,
-    asyncWorkPoolSize: (function() {
-      const threadsSizeFromEnv = Number(process.env.NAPI_RS_ASYNC_WORK_POOL_SIZE ?? process.env.UV_THREADPOOL_SIZE)
+    asyncWorkPoolSize: (function () {
+      const threadsSizeFromEnv = Number(
+        process.env.NAPI_RS_ASYNC_WORK_POOL_SIZE ?? process.env.UV_THREADPOOL_SIZE,
+      )
       // NaN > 0 is false
       if (threadsSizeFromEnv > 0) {
         return threadsSizeFromEnv
@@ -871,21 +844,21 @@ try {
       // According to https://github.com/nodejs/node/blob/19e0d472728c79d418b74bddff588bea70a403d0/lib/internal/worker.js#L415,
       // a worker is consist of two handles: kPublicPort and kHandle.
       {
-        const kPublicPort = Object.getOwnPropertySymbols(worker).find(s =>
-          s.toString().includes("kPublicPort")
-        );
+        const kPublicPort = Object.getOwnPropertySymbols(worker).find((s) =>
+          s.toString().includes('kPublicPort'),
+        )
         if (kPublicPort) {
-          worker[kPublicPort].ref = () => {};
+          worker[kPublicPort].ref = () => {}
         }
 
-        const kHandle = Object.getOwnPropertySymbols(worker).find(s =>
-          s.toString().includes("kHandle")
-        );
+        const kHandle = Object.getOwnPropertySymbols(worker).find((s) =>
+          s.toString().includes('kHandle'),
+        )
         if (kHandle) {
-          worker[kHandle].ref = () => {};
+          worker[kHandle].ref = () => {}
         }
 
-        worker.unref();
+        worker.unref()
       }
       return worker
     },

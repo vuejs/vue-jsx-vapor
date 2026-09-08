@@ -7,10 +7,7 @@ export default createPlugin(({ ts }) => {
     name: '@vue-jsx/jsx-element',
     resolveVirtualCode({ ast, codes }) {
       let transformed = false
-      ast.forEachChild(function walk(
-        node,
-        parent: import('typescript').Node = ast,
-      ) {
+      ast.forEachChild(function walk(node, parent: import('typescript').Node = ast) {
         if (
           !ts.isJsxElement(parent) &&
           !ts.isJsxFragment(parent) &&
@@ -26,11 +23,7 @@ export default createPlugin(({ ts }) => {
             const tagName = openingElement.tagName.getText(ast)
             if (!tagName.includes('-') && tagName !== 'slot') {
               transformed = true
-              codes.replaceRange(
-                node.getStart(ast),
-                node.getStart(ast) + 1,
-                '(<',
-              )
+              codes.replaceRange(node.getStart(ast), node.getStart(ast) + 1, '(<')
               codes.replaceRange(
                 node.end,
                 node.end,
@@ -42,10 +35,7 @@ export default createPlugin(({ ts }) => {
           }
         }
 
-        if (
-          !ts.isCallExpression(node) ||
-          node.expression.getText(ast) !== 'defineSlots'
-        ) {
+        if (!ts.isCallExpression(node) || node.expression.getText(ast) !== 'defineSlots') {
           node.forEachChild((child) => walk(child, node))
         }
       })
@@ -79,7 +69,6 @@ function isConditionalExpression(
     node &&
     (ts.isBinaryExpression(node) || ts.isConditionalExpression(node)) &&
     node.parent &&
-    (ts.isJsxExpression(node.parent) ||
-      isConditionalExpression(ts, node.parent))
+    (ts.isJsxExpression(node.parent) || isConditionalExpression(ts, node.parent))
   )
 }

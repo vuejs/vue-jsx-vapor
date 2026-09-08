@@ -126,10 +126,7 @@ Vue Custom Elements use Shadow DOM by default. Pass CSS through `styles`, or set
 
 ```tsx
 const UserCard = defineVaporCustomElement(render, {
-  styles: [
-    `:host { display: block; }`,
-    `article { border: 1px solid #d8dee4; padding: 12px; }`,
-  ],
+  styles: [`:host { display: block; }`, `article { border: 1px solid #d8dee4; padding: 12px; }`],
   shadowRoot: true,
 })
 ```

@@ -15,17 +15,12 @@ export default defineVaporComponent(() => {
   const countRef = useRef()
 
   const Value = (props: { value: string }) => <div>{props.value}</div>
-  const RefValue = ({ value }: { value: Ref<string> }) => (
-    <div>{value.value}</div>
-  )
+  const RefValue = ({ value }: { value: Ref<string> }) => <div>{value.value}</div>
 
   return (
     <>
       <fieldset>
-        <input
-          value={count.value}
-          onInput={(event) => (count.value = event.currentTarget.value)}
-        />
+        <input value={count.value} onInput={(event) => (count.value = event.currentTarget.value)} />
         <Value value={count.value} />
         <RefValue value={count} />
         <Count ref={countRef} value={count.value} />

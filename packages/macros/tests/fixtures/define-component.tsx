@@ -3,15 +3,7 @@ import { defineComponent, defineVaporComponent, nextTick, unref } from 'vue'
 const $ = unref
 
 const Comp = defineVaporComponent(
-  ({
-    bar = ('bar' as string)!,
-    Comp,
-    ...attrs
-  }: {
-    bar: string
-    baz: 'baz'
-    Comp: any
-  }) => {
+  ({ bar = ('bar' as string)!, Comp, ...attrs }: { bar: string; baz: 'baz'; Comp: any }) => {
     defineModel()
     const foo = $(
       defineModel('foo', {
@@ -31,17 +23,15 @@ const Comp = defineVaporComponent(
   { name: 'Comp', props: { Comp: Object } },
 )
 
-const Comp1 = defineVaporComponent(
-  (props: { bar: 'bar'; 'onUpdate:bar': any; comp: any }) => {
-    const foo = defineModel('foo')
-    return (
-      <div>
-        {[foo.value, props['bar'], props['onUpdate:bar']]}
-        <props.comp />
-      </div>
-    )
-  },
-)
+const Comp1 = defineVaporComponent((props: { bar: 'bar'; 'onUpdate:bar': any; comp: any }) => {
+  const foo = defineModel('foo')
+  return (
+    <div>
+      {[foo.value, props['bar'], props['onUpdate:bar']]}
+      <props.comp />
+    </div>
+  )
+})
 
 const Comp2 = defineComponent(async () => {
   await nextTick()
@@ -88,11 +78,11 @@ const Comp4 = defineVaporComponent(<T,>() => {
   return <div>123</div>
 })
 
-const Comp5 = defineVaporComponent(({...props}) => {
+const Comp5 = defineVaporComponent(({ ...props }) => {
   return <div>123</div>
 })
 
 const options = {}
-const Comp6 = defineVaporComponent(({...props}) => {
+const Comp6 = defineVaporComponent(({ ...props }) => {
   return <div>123</div>
 }, options)

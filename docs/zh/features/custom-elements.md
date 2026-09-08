@@ -126,10 +126,7 @@ Vue Custom Element 默认使用 Shadow DOM。可以通过 `styles` 注入样式�
 
 ```tsx
 const UserCard = defineVaporCustomElement(render, {
-  styles: [
-    `:host { display: block; }`,
-    `article { border: 1px solid #d8dee4; padding: 12px; }`,
-  ],
+  styles: [`:host { display: block; }`, `article { border: 1px solid #d8dee4; padding: 12px; }`],
   shadowRoot: true,
 })
 ```

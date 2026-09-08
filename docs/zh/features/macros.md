@@ -105,9 +105,7 @@ import { defineComponent, useAttrs, withAsyncContext } from 'vue'
 defineComponent(
   async (props) => {
     let __temp, __restore
-    ;(([__temp, __restore] = withAsyncContext(() => nextTick())),
-      await __temp,
-      __restore())
+    ;(([__temp, __restore] = withAsyncContext(() => nextTick())), await __temp, __restore())
     const attrs = useAttrs()
     return () => (
       <div>
@@ -129,15 +127,13 @@ defineComponent(
 // @errors: 2322
 import { defineVaporComponent } from 'vue'
 
-const Comp = defineVaporComponent(
-  <T,>({ foo = undefined as T, bar = ''!, ...attrs }) => {
-    return (
-      <div>
-        <span {...attrs}>{foo}</span>
-      </div>
-    )
-  },
-)
+const Comp = defineVaporComponent(<T,>({ foo = undefined as T, bar = ''!, ...attrs }) => {
+  return (
+    <div>
+      <span {...attrs}>{foo}</span>
+    </div>
+  )
+})
 
 export default () => <Comp<string> foo={1} bar="bar" />
 ```
@@ -191,10 +187,7 @@ export default () => {
 import { ref } from 'vue'
 import { useModel } from '/vue-macros/jsx-macros/use-model'
 
-function Comp(_props: {
-  modelValue: string
-  'onUpdate:modelValue': (value: string) => any
-}) {
+function Comp(_props: { modelValue: string; 'onUpdate:modelValue': (value: string) => any }) {
   const modelValue = useModel<string>(_props, 'modelValue', { required: true })
   modelValue.value = 'foo'
   return <div>{modelValue.value}</div>
@@ -288,10 +281,7 @@ const Comp = ({ foo }) => {
 ## defineStyle
 
 ```ts
-declare function defineStyle(
-  style: string,
-  options?: { scoped?: boolean },
-): void
+declare function defineStyle(style: string, options?: { scoped?: boolean }): void
 ```
 
 - 支持 CSS 变量和 JS 变量绑定。

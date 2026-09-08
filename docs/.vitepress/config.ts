@@ -1,8 +1,5 @@
 import { defineConfig } from 'vitepress'
-import {
-  createTwoslasher,
-  transformerTwoslash,
-} from '../../packages/macros/twoslash'
+import { createTwoslasher, transformerTwoslash } from '../../packages/macros/twoslash'
 import vueJsx from '../../packages/vue-jsx/src/volar'
 
 // https://vitepress.dev/reference/site-config

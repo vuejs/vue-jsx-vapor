@@ -9,25 +9,13 @@ export default () => {
 
   return [
     <div>
-      <button
-        onClick={() => (
-          (foo.value = <div>div</div>),
-          (bar.value = <div>div</div>)
-        )}
-      >
+      <button onClick={() => ((foo.value = <div>div</div>), (bar.value = <div>div</div>))}>
         to div
       </button>
-      <button
-        onClick={() => ((foo.value = [1, 2, 3]), (bar.value = [1, 2, 3]))}
-      >
+      <button onClick={() => ((foo.value = [1, 2, 3]), (bar.value = [1, 2, 3]))}>
         to fragment
       </button>
-      <button
-        onClick={() => (
-          (foo.value = <Comp></Comp>),
-          (bar.value = <Comp></Comp>)
-        )}
-      >
+      <button onClick={() => ((foo.value = <Comp></Comp>), (bar.value = <Comp></Comp>))}>
         to component
       </button>
       <button
@@ -50,12 +38,8 @@ export default () => {
       >
         to array
       </button>
-      <button onClick={() => ((foo.value = 'foo'), (bar.value = 'foo'))}>
-        to text
-      </button>
-      <button onClick={() => ((foo.value = 'bar'), (bar.value = 'bar'))}>
-        to text2
-      </button>
+      <button onClick={() => ((foo.value = 'foo'), (bar.value = 'foo'))}>to text</button>
+      <button onClick={() => ((foo.value = 'bar'), (bar.value = 'bar'))}>to text2</button>
       <div>
         <div>1</div>
         {foo.value}

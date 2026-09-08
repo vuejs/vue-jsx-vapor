@@ -1,7 +1,4 @@
-import jsxMacros, {
-  createPlugin,
-  type PluginReturn,
-} from '@vue-jsx/macros/volar'
+import jsxMacros, { createPlugin, type PluginReturn } from '@vue-jsx/macros/volar'
 import jsxDirective from '@vue-macros/volar/jsx-directive'
 import jsxRef from '@vue-macros/volar/jsx-ref'
 import type { Options } from './options'
@@ -10,9 +7,7 @@ const plugin: PluginReturn<Options | undefined, true> = createPlugin(
   (ctx, options = ctx.vueCompilerOptions?.['vue-jsx']) => {
     return [
       jsxDirective()(ctx),
-      options?.ref === false
-        ? []
-        : jsxRef(options?.ref === true ? undefined : options?.ref)(ctx),
+      options?.ref === false ? [] : jsxRef(options?.ref === true ? undefined : options?.ref)(ctx),
       options?.macros === false
         ? []
         : options?.macros

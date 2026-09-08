@@ -5,7 +5,7 @@ next: false
 ---
 
 # Props
-  
+
 <script setup>
 import appCode from '~/tutorial/step-8/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-8/app-solved.tsx?raw'
@@ -34,9 +34,7 @@ const apps = {
 Props 在函数式组件的第一个参数中提供。
 
 ```jsx
-const Comp = (props) => (
-  <div>{props.foo}</div>
-)
+const Comp = (props) => <div>{props.foo}</div>
 ```
 
 ## 解构 Props
@@ -46,16 +44,13 @@ const Comp = (props) => (
 :::
 
 ```jsx
-const Comp = ({ foo }) => (
-  <div>
-    {foo} 这将不再更新
-  </div>
-)
-````
+const Comp = ({ foo }) => <div>{foo} 这将不再更新</div>
+```
 
 我们有两种解决方案：
 
 1. 直接传递一个响应式 ref 对象作为 prop：
+
 ```jsx
 function Comp({ foo }) {
   return <div>{foo.value}</div>
@@ -76,12 +71,15 @@ const Comp = defineVaporComponent(({ foo }) => {
   return <div>{foo}</div>
 })
 ```
+
 将被转换为：
+
 ```jsx
 const Comp = defineVaporComponent((__props) => {
   return <div>{__props.foo}</div>
 })
 ```
+
 这样 `foo` prop 就会重新获得响应性。\
 [更多详情](/zh/features/macros.html#definecomponent-definevaporcomponent)
 

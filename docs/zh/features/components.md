@@ -47,7 +47,11 @@ export default defineComponent(() => {
   return () => (
     <ul>
       <For in={users.value}>
-        {(user, index) => <li key={user.id}>{index}: {user.name}</li>}
+        {(user, index) => (
+          <li key={user.id}>
+            {index}: {user.name}
+          </li>
+        )}
       </For>
     </ul>
   )
@@ -74,7 +78,9 @@ export default () => {
     <ul>
       <VaporFor in={users.value}>
         {(user, index) => (
-          <li>{user.name}，位置：{index.value}</li>
+          <li>
+            {user.name}，位置：{index.value}
+          </li>
         )}
       </VaporFor>
     </ul>

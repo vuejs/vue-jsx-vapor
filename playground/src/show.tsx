@@ -9,9 +9,7 @@ export default () => {
         type="checkbox"
         onChange={(event) => (show.value = event.currentTarget.checked)}
       />
-      <span style={{ display: show.value ? '' : 'none' }}>
-        {String(show.value)}
-      </span>
+      <span style={{ display: show.value ? '' : 'none' }}>{String(show.value)}</span>
     </>
   )
 }

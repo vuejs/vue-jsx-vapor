@@ -32,9 +32,7 @@ function vueJsxVaporTransform(source) {
 
 function reactTransform(source) {
   transformSync(source, {
-    plugins: [
-      ['@babel/plugin-transform-react-jsx', { throwIfNamespace: false }],
-    ],
+    plugins: [['@babel/plugin-transform-react-jsx', { throwIfNamespace: false }]],
     filename: 'index.jsx',
     sourceMaps: false,
     sourceFileName: 'index.jsx',
@@ -129,9 +127,6 @@ const resultList = Object.values(groups).map((item) => {
 
 resultList.sort((a, b) => b.oxc - a.oxc)
 
-const outputPath = path.resolve(
-  import.meta.dirname,
-  '../docs/public/bench-results.json',
-)
+const outputPath = path.resolve(import.meta.dirname, '../docs/public/bench-results.json')
 writeFileSync(outputPath, JSON.stringify(resultList, null, 2))
 console.log('Bench data saved to', outputPath)

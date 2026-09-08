@@ -6,10 +6,8 @@ const Comp = defineComponent(
       slots.default?.({ foo: true }) ?? <div>fallback</div>,
 )
 
-const Comp1 = (
-  _props: {},
-  { slots }: { slots: { default?: (props: { foo: 1 }) => any } },
-) => slots.default?.({ foo: 1 }) ?? <div>fallback</div>
+const Comp1 = (_props: {}, { slots }: { slots: { default?: (props: { foo: 1 }) => any } }) =>
+  slots.default?.({ foo: 1 }) ?? <div>fallback</div>
 
 export default defineComponent(() => () => (
   <>

@@ -27,10 +27,7 @@ export default defineVaporComponent(() => {
     <>
       <fieldset>
         <VueComp />
-        <input
-          value_prop={count.value}
-          onInput={(e) => (count.value = e.currentTarget.value)}
-        />
+        <input value_prop={count.value} onInput={(e) => (count.value = e.currentTarget.value)} />
 
         <Count value={count.value} />
         <Count1 value={count} />

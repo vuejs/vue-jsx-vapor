@@ -5,7 +5,7 @@ next: false
 ---
 
 # 条件渲染
-  
+
 <script setup>
 import appCode from '~/tutorial/step-5/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-5/app-solved.tsx?raw'
@@ -35,8 +35,8 @@ const apps  = {
 
 ```jsx
 <>
-  { toggle ? <h1>标题</h1> : null }
-  { toggle && <h1>标题</h1> }
+  {toggle ? <h1>标题</h1> : null}
+  {toggle && <h1>标题</h1>}
 </>
 ```
 

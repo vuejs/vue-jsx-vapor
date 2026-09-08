@@ -2,12 +2,7 @@ import { ref } from 'vue'
 
 const Comp = (props: { modelValue: string }) => {
   const model = defineModel<string>()
-  return (
-    <input
-      value={model.value}
-      onInput={(e) => (model.value = e.currentTarget.value)}
-    />
-  )
+  return <input value={model.value} onInput={(e) => (model.value = e.currentTarget.value)} />
 }
 
 export default () => {

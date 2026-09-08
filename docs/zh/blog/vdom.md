@@ -20,21 +20,25 @@ import slotLocalUpdateCode from '../../blog/examples/vdom-slot-local-update.tsx?
 Vue 语义正确，但输出往往接近这样：
 
 ```js
-_createVNode("section", null, [
-  _createVNode("h2", null, "Todo"),
-  _createVNode("ul", null, [
-    _createVNode(_Fragment, null, _renderList(items, (item, i) =>
-      _createVNode("li", {
-        key: item.id,
-        class: _normalizeClass({ active: item.id === selected })
-      }, [
-        _normalizeVNode(i),
-        _normalizeVNode(": "),
-        _normalizeVNode(item.text)
-      ])
-    ))
+_createVNode('section', null, [
+  _createVNode('h2', null, 'Todo'),
+  _createVNode('ul', null, [
+    _createVNode(
+      _Fragment,
+      null,
+      _renderList(items, (item, i) =>
+        _createVNode(
+          'li',
+          {
+            key: item.id,
+            class: _normalizeClass({ active: item.id === selected }),
+          },
+          [_normalizeVNode(i), _normalizeVNode(': '), _normalizeVNode(item.text)],
+        ),
+      ),
+    ),
   ]),
-  _createVNode("footer", null, "static")
+  _createVNode('footer', null, 'static'),
 ])
 ```
 
@@ -46,26 +50,41 @@ Vue JSX 3.3 会经过 Oxc 解析，建立语义作用域信息，把 JSX 降级�
 的形态明显不同：
 
 ```js
-const _cache = _createVNodeCache("d9f3c58f")
-return _openBlock(), _createElementBlock("section", null, [
-  _cache[1] || (_cache[1] = _createElementVNode("h2", null, "Todo", -1)),
-  _createElementVNode("ul", null, [
-    (_openBlock(true), _createElementBlock(_Fragment, null,
-      _renderList(items, (item, i) =>
-        (_openBlock(), _createElementBlock("li", {
-          key: item.id,
-          class: _normalizeClass({ active: item.id === selected })
-        }, [
-          _normalizeVNode(() => i),
-          _cache[0] || (_cache[0] = _normalizeVNode(": ", -1)),
-          _normalizeVNode(() => item.text)
-        ], 2))
-      ),
-      128
-    ))
-  ]),
-  _cache[2] || (_cache[2] = _createElementVNode("footer", null, "static", -1))
-])
+const _cache = _createVNodeCache('d9f3c58f')
+return (
+  _openBlock(),
+  _createElementBlock('section', null, [
+    _cache[1] || (_cache[1] = _createElementVNode('h2', null, 'Todo', -1)),
+    _createElementVNode('ul', null, [
+      (_openBlock(true),
+      _createElementBlock(
+        _Fragment,
+        null,
+        _renderList(
+          items,
+          (item, i) => (
+            _openBlock(),
+            _createElementBlock(
+              'li',
+              {
+                key: item.id,
+                class: _normalizeClass({ active: item.id === selected }),
+              },
+              [
+                _normalizeVNode(() => i),
+                _cache[0] || (_cache[0] = _normalizeVNode(': ', -1)),
+                _normalizeVNode(() => item.text),
+              ],
+              2,
+            )
+          ),
+        ),
+        128,
+      )),
+    ]),
+    _cache[2] || (_cache[2] = _createElementVNode('footer', null, 'static', -1)),
+  ])
+)
 ```
 
 重点不是 helper 名称，而是编译器已经把动态边界精确告诉了 Vue。

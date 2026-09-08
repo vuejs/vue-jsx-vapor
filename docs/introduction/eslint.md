@@ -10,13 +10,11 @@ pnpm add @vue-jsx/eslint
 
 ## Configuration
 
-```ts 
+```ts
 // eslint.config.ts
 import vueJsx from '@vue-jsx/eslint'
 
-export default [
-  vueJsx()
-]
+export default [vueJsx()]
 ```
 
 ## Rules
@@ -31,9 +29,9 @@ import vueJsx from '@vue-jsx/eslint'
 export default [
   vueJsx({
     rules: {
-      'vue-jsx-vapor/define-style': [1, { tabWidth: 2 }]
-    }
-  })
+      'vue-jsx-vapor/define-style': [1, { tabWidth: 2 }],
+    },
+  }),
 ]
 ```
 
@@ -47,12 +45,15 @@ import vueJsx from '@vue-jsx/eslint'
 export default [
   vueJsx({
     rules: {
-      'vue-jsx-vapor/jsx-sort-props': [2, { 
-        reservedFirst: ['v-if', 'v-for'], 
-        reservedLast: ['v-slot'],
-      }]
-    }
-  })
+      'vue-jsx-vapor/jsx-sort-props': [
+        2,
+        {
+          reservedFirst: ['v-if', 'v-for'],
+          reservedLast: ['v-slot'],
+        },
+      ],
+    },
+  }),
 ]
 ```
 

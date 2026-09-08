@@ -5,7 +5,7 @@ next: false
 ---
 
 # 组件
-  
+
 <script setup>
 import appCode from '~/tutorial/step-7/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-7/app-solved.tsx?raw'
@@ -36,6 +36,7 @@ import Child from './Child'
 ```
 
 然后，我们可以在 JSX 中使用该组件：
+
 ```jsx
 import Child from './Child'
 

@@ -2,9 +2,7 @@ import { computed, useAttrs } from 'vue'
 import * as Vue from 'vue'
 
 /*@__NO_SIDE_EFFECTS__*/
-export function getCurrentInstance():
-  | import('vue').GenericComponentInstance
-  | null {
+export function getCurrentInstance(): import('vue').GenericComponentInstance | null {
   // @ts-ignore
   return Vue.currentInstance || Vue.getCurrentInstance()
 }

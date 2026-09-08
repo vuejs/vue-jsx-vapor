@@ -16,7 +16,7 @@ export default defineComponent(() => {
   }
 })
 
-function Output ({ label }: { label: string }) { 
+function Output({ label }: { label: string }) {
   return (
     <div class="output">
       {label}: <slot />

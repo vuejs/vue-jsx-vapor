@@ -5,7 +5,7 @@ next: false
 ---
 
 # 事件绑定
-  
+
 <script setup>
 import appCode from '~/tutorial/step-4/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-4/app-solved.tsx?raw'
@@ -36,6 +36,7 @@ const apps  = {
 ```
 
 我们还支持以 `_` 开头的[事件修饰符](https://cn.vuejs.org/guide/essentials/event-handling.html#event-modifiers)：
+
 ```tsx
 <form onSubmit_prevent>
   <input onKeyup_enter={submit} />

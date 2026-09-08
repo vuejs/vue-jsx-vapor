@@ -53,10 +53,7 @@ export function createVNodeCache(key: string) {
   }
 }
 
-export function normalizeVNode(
-  value: VNodeChild | (() => VNodeChild),
-  flag = 1,
-): VNode {
+export function normalizeVNode(value: VNodeChild | (() => VNodeChild), flag = 1): VNode {
   let create: any = createVNode
   let isBlock = false
   if (typeof value === 'function') {
@@ -93,9 +90,7 @@ function cloneIfMounted(child: VNode): VNode {
 }
 
 const normalizeSlotValue = (value: unknown): VNode[] =>
-  Array.isArray(value)
-    ? value.map((n) => normalizeVNode(n))
-    : [normalizeVNode(value as VNodeChild)]
+  Array.isArray(value) ? value.map((n) => normalizeVNode(n)) : [normalizeVNode(value as VNodeChild)]
 
 export const normalizeSlot = (rawSlot: Function): Slot => {
   if ((rawSlot as any)._n) {
@@ -109,8 +104,7 @@ export const normalizeSlot = (rawSlot: Function): Slot => {
 
 export const normalizeSlots = (slots: any): Record<string, any> | Function => {
   return typeof slots === 'function' ||
-    (Object.prototype.toString.call(slots) === '[object Object]' &&
-      !isVNode(slots))
+    (Object.prototype.toString.call(slots) === '[object Object]' && !isVNode(slots))
     ? slots
     : {
         default: withCtx(() => [normalizeVNode(() => slots)]),
@@ -221,8 +215,7 @@ declare function _defineComponent<
 declare function _defineComponent<
   // props
   TypeProps,
-  RuntimePropsOptions extends
-    ComponentObjectPropsOptions = ComponentObjectPropsOptions,
+  RuntimePropsOptions extends ComponentObjectPropsOptions = ComponentObjectPropsOptions,
   RuntimePropsKeys extends string = string,
   // emits
   TypeEmits extends ComponentTypeEmits = {},
@@ -327,13 +320,7 @@ export const defineComponent = __defineComponent as typeof _defineComponent
 
 export const For = defineComponent(
   <
-    T extends
-      | any[]
-      | Record<any, any>
-      | number
-      | string
-      | Set<any>
-      | Map<any, any>,
+    T extends any[] | Record<any, any> | number | string | Set<any> | Map<any, any>,
     Item = T extends number
       ? number
       : T extends string

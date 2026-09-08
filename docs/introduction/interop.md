@@ -81,14 +81,7 @@ Place Virtual DOM components in regular files and define them with
 The `vue-jsx/vapor` entry exposes Vapor-specific helpers under familiar names:
 
 ```ts
-import {
-  For,
-  KeepAlive,
-  Teleport,
-  Transition,
-  TransitionGroup,
-  h,
-} from 'vue-jsx/vapor'
+import { For, KeepAlive, Teleport, Transition, TransitionGroup, h } from 'vue-jsx/vapor'
 ```
 
 This entry changes runtime imports only. Compilation is still controlled by the

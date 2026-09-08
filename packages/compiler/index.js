@@ -67,7 +67,7 @@ const isMuslFromChildProcess = () => {
 function requireNative() {
   if (process.env.NAPI_RS_NATIVE_LIBRARY_PATH) {
     try {
-      return require(process.env.NAPI_RS_NATIVE_LIBRARY_PATH);
+      return require(process.env.NAPI_RS_NATIVE_LIBRARY_PATH)
     } catch (err) {
       loadErrors.push(err)
     }
@@ -80,9 +80,16 @@ function requireNative() {
       }
       try {
         const binding = require('@vue-jsx/compiler-android-arm64')
-        const bindingPackageVersion = require('@vue-jsx/compiler-android-arm64/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        const bindingPackageVersion =
+          require('@vue-jsx/compiler-android-arm64/package.json').version
+        if (
+          bindingPackageVersion !== '3.3.0-beta.1' &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          throw new Error(
+            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          )
         }
         return binding
       } catch (e) {
@@ -96,9 +103,16 @@ function requireNative() {
       }
       try {
         const binding = require('@vue-jsx/compiler-android-arm-eabi')
-        const bindingPackageVersion = require('@vue-jsx/compiler-android-arm-eabi/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        const bindingPackageVersion =
+          require('@vue-jsx/compiler-android-arm-eabi/package.json').version
+        if (
+          bindingPackageVersion !== '3.3.0-beta.1' &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          throw new Error(
+            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          )
         }
         return binding
       } catch (e) {
@@ -109,38 +123,59 @@ function requireNative() {
     }
   } else if (process.platform === 'win32') {
     if (process.arch === 'x64') {
-      if ((process.config && process.config.variables && process.config.variables.shlib_suffix === 'dll.a') || (process.config && process.config.variables && process.config.variables.node_target_type === 'shared_library')) {
+      if (
+        (process.config &&
+          process.config.variables &&
+          process.config.variables.shlib_suffix === 'dll.a') ||
+        (process.config &&
+          process.config.variables &&
+          process.config.variables.node_target_type === 'shared_library')
+      ) {
         try {
-        return require('./compiler.win32-x64-gnu.node')
-      } catch (e) {
-        loadErrors.push(e)
-      }
-      try {
-        const binding = require('@vue-jsx/compiler-win32-x64-gnu')
-        const bindingPackageVersion = require('@vue-jsx/compiler-win32-x64-gnu/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          return require('./compiler.win32-x64-gnu.node')
+        } catch (e) {
+          loadErrors.push(e)
         }
-        return binding
-      } catch (e) {
-        loadErrors.push(e)
-      }
+        try {
+          const binding = require('@vue-jsx/compiler-win32-x64-gnu')
+          const bindingPackageVersion =
+            require('@vue-jsx/compiler-win32-x64-gnu/package.json').version
+          if (
+            bindingPackageVersion !== '3.3.0-beta.1' &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+          ) {
+            throw new Error(
+              `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            )
+          }
+          return binding
+        } catch (e) {
+          loadErrors.push(e)
+        }
       } else {
         try {
-        return require('./compiler.win32-x64-msvc.node')
-      } catch (e) {
-        loadErrors.push(e)
-      }
-      try {
-        const binding = require('@vue-jsx/compiler-win32-x64-msvc')
-        const bindingPackageVersion = require('@vue-jsx/compiler-win32-x64-msvc/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          return require('./compiler.win32-x64-msvc.node')
+        } catch (e) {
+          loadErrors.push(e)
         }
-        return binding
-      } catch (e) {
-        loadErrors.push(e)
-      }
+        try {
+          const binding = require('@vue-jsx/compiler-win32-x64-msvc')
+          const bindingPackageVersion =
+            require('@vue-jsx/compiler-win32-x64-msvc/package.json').version
+          if (
+            bindingPackageVersion !== '3.3.0-beta.1' &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+          ) {
+            throw new Error(
+              `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            )
+          }
+          return binding
+        } catch (e) {
+          loadErrors.push(e)
+        }
       }
     } else if (process.arch === 'ia32') {
       try {
@@ -150,9 +185,16 @@ function requireNative() {
       }
       try {
         const binding = require('@vue-jsx/compiler-win32-ia32-msvc')
-        const bindingPackageVersion = require('@vue-jsx/compiler-win32-ia32-msvc/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        const bindingPackageVersion =
+          require('@vue-jsx/compiler-win32-ia32-msvc/package.json').version
+        if (
+          bindingPackageVersion !== '3.3.0-beta.1' &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          throw new Error(
+            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          )
         }
         return binding
       } catch (e) {
@@ -166,9 +208,16 @@ function requireNative() {
       }
       try {
         const binding = require('@vue-jsx/compiler-win32-arm64-msvc')
-        const bindingPackageVersion = require('@vue-jsx/compiler-win32-arm64-msvc/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        const bindingPackageVersion =
+          require('@vue-jsx/compiler-win32-arm64-msvc/package.json').version
+        if (
+          bindingPackageVersion !== '3.3.0-beta.1' &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          throw new Error(
+            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          )
         }
         return binding
       } catch (e) {
@@ -185,9 +234,16 @@ function requireNative() {
     }
     try {
       const binding = require('@vue-jsx/compiler-darwin-universal')
-      const bindingPackageVersion = require('@vue-jsx/compiler-darwin-universal/package.json').version
-      if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-        throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+      const bindingPackageVersion =
+        require('@vue-jsx/compiler-darwin-universal/package.json').version
+      if (
+        bindingPackageVersion !== '3.3.0-beta.1' &&
+        process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+        process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+      ) {
+        throw new Error(
+          `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+        )
       }
       return binding
     } catch (e) {
@@ -202,8 +258,14 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx/compiler-darwin-x64')
         const bindingPackageVersion = require('@vue-jsx/compiler-darwin-x64/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (
+          bindingPackageVersion !== '3.3.0-beta.1' &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          throw new Error(
+            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          )
         }
         return binding
       } catch (e) {
@@ -218,8 +280,14 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx/compiler-darwin-arm64')
         const bindingPackageVersion = require('@vue-jsx/compiler-darwin-arm64/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (
+          bindingPackageVersion !== '3.3.0-beta.1' &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          throw new Error(
+            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          )
         }
         return binding
       } catch (e) {
@@ -238,8 +306,14 @@ function requireNative() {
       try {
         const binding = require('@vue-jsx/compiler-freebsd-x64')
         const bindingPackageVersion = require('@vue-jsx/compiler-freebsd-x64/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        if (
+          bindingPackageVersion !== '3.3.0-beta.1' &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          throw new Error(
+            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          )
         }
         return binding
       } catch (e) {
@@ -253,9 +327,16 @@ function requireNative() {
       }
       try {
         const binding = require('@vue-jsx/compiler-freebsd-arm64')
-        const bindingPackageVersion = require('@vue-jsx/compiler-freebsd-arm64/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        const bindingPackageVersion =
+          require('@vue-jsx/compiler-freebsd-arm64/package.json').version
+        if (
+          bindingPackageVersion !== '3.3.0-beta.1' &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          throw new Error(
+            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          )
         }
         return binding
       } catch (e) {
@@ -274,9 +355,16 @@ function requireNative() {
         }
         try {
           const binding = require('@vue-jsx/compiler-linux-x64-musl')
-          const bindingPackageVersion = require('@vue-jsx/compiler-linux-x64-musl/package.json').version
-          if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          const bindingPackageVersion =
+            require('@vue-jsx/compiler-linux-x64-musl/package.json').version
+          if (
+            bindingPackageVersion !== '3.3.0-beta.1' &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+          ) {
+            throw new Error(
+              `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            )
           }
           return binding
         } catch (e) {
@@ -290,9 +378,16 @@ function requireNative() {
         }
         try {
           const binding = require('@vue-jsx/compiler-linux-x64-gnu')
-          const bindingPackageVersion = require('@vue-jsx/compiler-linux-x64-gnu/package.json').version
-          if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          const bindingPackageVersion =
+            require('@vue-jsx/compiler-linux-x64-gnu/package.json').version
+          if (
+            bindingPackageVersion !== '3.3.0-beta.1' &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+          ) {
+            throw new Error(
+              `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            )
           }
           return binding
         } catch (e) {
@@ -308,9 +403,16 @@ function requireNative() {
         }
         try {
           const binding = require('@vue-jsx/compiler-linux-arm64-musl')
-          const bindingPackageVersion = require('@vue-jsx/compiler-linux-arm64-musl/package.json').version
-          if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          const bindingPackageVersion =
+            require('@vue-jsx/compiler-linux-arm64-musl/package.json').version
+          if (
+            bindingPackageVersion !== '3.3.0-beta.1' &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+          ) {
+            throw new Error(
+              `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            )
           }
           return binding
         } catch (e) {
@@ -324,9 +426,16 @@ function requireNative() {
         }
         try {
           const binding = require('@vue-jsx/compiler-linux-arm64-gnu')
-          const bindingPackageVersion = require('@vue-jsx/compiler-linux-arm64-gnu/package.json').version
-          if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          const bindingPackageVersion =
+            require('@vue-jsx/compiler-linux-arm64-gnu/package.json').version
+          if (
+            bindingPackageVersion !== '3.3.0-beta.1' &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+          ) {
+            throw new Error(
+              `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            )
           }
           return binding
         } catch (e) {
@@ -342,9 +451,16 @@ function requireNative() {
         }
         try {
           const binding = require('@vue-jsx/compiler-linux-arm-musleabihf')
-          const bindingPackageVersion = require('@vue-jsx/compiler-linux-arm-musleabihf/package.json').version
-          if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          const bindingPackageVersion =
+            require('@vue-jsx/compiler-linux-arm-musleabihf/package.json').version
+          if (
+            bindingPackageVersion !== '3.3.0-beta.1' &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+          ) {
+            throw new Error(
+              `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            )
           }
           return binding
         } catch (e) {
@@ -358,9 +474,16 @@ function requireNative() {
         }
         try {
           const binding = require('@vue-jsx/compiler-linux-arm-gnueabihf')
-          const bindingPackageVersion = require('@vue-jsx/compiler-linux-arm-gnueabihf/package.json').version
-          if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          const bindingPackageVersion =
+            require('@vue-jsx/compiler-linux-arm-gnueabihf/package.json').version
+          if (
+            bindingPackageVersion !== '3.3.0-beta.1' &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+          ) {
+            throw new Error(
+              `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            )
           }
           return binding
         } catch (e) {
@@ -376,9 +499,16 @@ function requireNative() {
         }
         try {
           const binding = require('@vue-jsx/compiler-linux-loong64-musl')
-          const bindingPackageVersion = require('@vue-jsx/compiler-linux-loong64-musl/package.json').version
-          if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          const bindingPackageVersion =
+            require('@vue-jsx/compiler-linux-loong64-musl/package.json').version
+          if (
+            bindingPackageVersion !== '3.3.0-beta.1' &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+          ) {
+            throw new Error(
+              `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            )
           }
           return binding
         } catch (e) {
@@ -392,9 +522,16 @@ function requireNative() {
         }
         try {
           const binding = require('@vue-jsx/compiler-linux-loong64-gnu')
-          const bindingPackageVersion = require('@vue-jsx/compiler-linux-loong64-gnu/package.json').version
-          if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          const bindingPackageVersion =
+            require('@vue-jsx/compiler-linux-loong64-gnu/package.json').version
+          if (
+            bindingPackageVersion !== '3.3.0-beta.1' &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+          ) {
+            throw new Error(
+              `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            )
           }
           return binding
         } catch (e) {
@@ -410,9 +547,16 @@ function requireNative() {
         }
         try {
           const binding = require('@vue-jsx/compiler-linux-riscv64-musl')
-          const bindingPackageVersion = require('@vue-jsx/compiler-linux-riscv64-musl/package.json').version
-          if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          const bindingPackageVersion =
+            require('@vue-jsx/compiler-linux-riscv64-musl/package.json').version
+          if (
+            bindingPackageVersion !== '3.3.0-beta.1' &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+          ) {
+            throw new Error(
+              `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            )
           }
           return binding
         } catch (e) {
@@ -426,9 +570,16 @@ function requireNative() {
         }
         try {
           const binding = require('@vue-jsx/compiler-linux-riscv64-gnu')
-          const bindingPackageVersion = require('@vue-jsx/compiler-linux-riscv64-gnu/package.json').version
-          if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-            throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+          const bindingPackageVersion =
+            require('@vue-jsx/compiler-linux-riscv64-gnu/package.json').version
+          if (
+            bindingPackageVersion !== '3.3.0-beta.1' &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+            process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+          ) {
+            throw new Error(
+              `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            )
           }
           return binding
         } catch (e) {
@@ -443,9 +594,16 @@ function requireNative() {
       }
       try {
         const binding = require('@vue-jsx/compiler-linux-ppc64-gnu')
-        const bindingPackageVersion = require('@vue-jsx/compiler-linux-ppc64-gnu/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        const bindingPackageVersion =
+          require('@vue-jsx/compiler-linux-ppc64-gnu/package.json').version
+        if (
+          bindingPackageVersion !== '3.3.0-beta.1' &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          throw new Error(
+            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          )
         }
         return binding
       } catch (e) {
@@ -459,9 +617,16 @@ function requireNative() {
       }
       try {
         const binding = require('@vue-jsx/compiler-linux-s390x-gnu')
-        const bindingPackageVersion = require('@vue-jsx/compiler-linux-s390x-gnu/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        const bindingPackageVersion =
+          require('@vue-jsx/compiler-linux-s390x-gnu/package.json').version
+        if (
+          bindingPackageVersion !== '3.3.0-beta.1' &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          throw new Error(
+            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          )
         }
         return binding
       } catch (e) {
@@ -479,9 +644,16 @@ function requireNative() {
       }
       try {
         const binding = require('@vue-jsx/compiler-openharmony-arm64')
-        const bindingPackageVersion = require('@vue-jsx/compiler-openharmony-arm64/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        const bindingPackageVersion =
+          require('@vue-jsx/compiler-openharmony-arm64/package.json').version
+        if (
+          bindingPackageVersion !== '3.3.0-beta.1' &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          throw new Error(
+            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          )
         }
         return binding
       } catch (e) {
@@ -495,9 +667,16 @@ function requireNative() {
       }
       try {
         const binding = require('@vue-jsx/compiler-openharmony-x64')
-        const bindingPackageVersion = require('@vue-jsx/compiler-openharmony-x64/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        const bindingPackageVersion =
+          require('@vue-jsx/compiler-openharmony-x64/package.json').version
+        if (
+          bindingPackageVersion !== '3.3.0-beta.1' &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          throw new Error(
+            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          )
         }
         return binding
       } catch (e) {
@@ -511,9 +690,16 @@ function requireNative() {
       }
       try {
         const binding = require('@vue-jsx/compiler-openharmony-arm')
-        const bindingPackageVersion = require('@vue-jsx/compiler-openharmony-arm/package.json').version
-        if (bindingPackageVersion !== '3.3.0-beta.1' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          throw new Error(`Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+        const bindingPackageVersion =
+          require('@vue-jsx/compiler-openharmony-arm/package.json').version
+        if (
+          bindingPackageVersion !== '3.3.0-beta.1' &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          throw new Error(
+            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          )
         }
         return binding
       } catch (e) {
@@ -531,10 +717,7 @@ function createLoadErrorChain(errors) {
   return errors.reduce((previous, current) => {
     let message
     try {
-      message =
-        current && typeof current.message === 'string'
-          ? current.message
-          : String(current)
+      message = current && typeof current.message === 'string' ? current.message : String(current)
     } catch {
       message = 'Unknown error'
     }
@@ -554,14 +737,11 @@ function createLoadErrorChain(errors) {
 //
 // NAPI_RS_WASI_FLAVOR selects one exact generated flavor and implies strict
 // WASI loading. It never crosses into another flavor or falls back to native.
-const __napiWasiFlavors = ["wasm32-wasi"]
+const __napiWasiFlavors = ['wasm32-wasi']
 const __napiWasiFlavor = process.env.NAPI_RS_WASI_FLAVOR
 const __napiWasiFlavorRequested =
   typeof __napiWasiFlavor === 'string' && __napiWasiFlavor.length > 0
-if (
-  __napiWasiFlavorRequested &&
-  __napiWasiFlavors.indexOf(__napiWasiFlavor) === -1
-) {
+if (__napiWasiFlavorRequested && __napiWasiFlavors.indexOf(__napiWasiFlavor) === -1) {
   throw new Error(
     'Unsupported WASI flavor "' +
       __napiWasiFlavor +
@@ -571,9 +751,7 @@ if (
 }
 const forceWasiError = process.env.NAPI_RS_FORCE_WASI === 'error'
 const forceWasi =
-  process.env.NAPI_RS_FORCE_WASI === 'true' ||
-  forceWasiError ||
-  __napiWasiFlavorRequested
+  process.env.NAPI_RS_FORCE_WASI === 'true' || forceWasiError || __napiWasiFlavorRequested
 
 if (!forceWasi) {
   nativeBinding = requireNative()
@@ -623,11 +801,14 @@ if (!nativeBinding || forceWasi) {
     }
     return null
   }
-  if (!wasiBindingLoaded && (!__napiWasiFlavorRequested || __napiWasiFlavor === "wasm32-wasi")) {
+  if (!wasiBindingLoaded && (!__napiWasiFlavorRequested || __napiWasiFlavor === 'wasm32-wasi')) {
     let candidateError = null
     let candidateFailed = false
     try {
-      candidateError = __napiWasiResolveCandidate('./compiler.wasi.cjs', false, ["./compiler.wasm32-wasi.debug.wasm","./compiler.wasm32-wasi.wasm"])
+      candidateError = __napiWasiResolveCandidate('./compiler.wasi.cjs', false, [
+        './compiler.wasm32-wasi.debug.wasm',
+        './compiler.wasm32-wasi.wasm',
+      ])
       candidateFailed = candidateError !== null
       if (!candidateFailed) {
         wasiBinding = require('./compiler.wasi.cjs')
@@ -643,17 +824,23 @@ if (!nativeBinding || forceWasi) {
       loadErrors.push(candidateError)
     }
   }
-  if (!wasiBindingLoaded && (!__napiWasiFlavorRequested || __napiWasiFlavor === "wasm32-wasi")) {
+  if (!wasiBindingLoaded && (!__napiWasiFlavorRequested || __napiWasiFlavor === 'wasm32-wasi')) {
     let candidateError = null
     let candidateFailed = false
     try {
       candidateError = __napiWasiResolveCandidate('@vue-jsx/compiler-wasm32-wasi', true, undefined)
       candidateFailed = candidateError !== null
       if (!candidateFailed) {
-        if (process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          const bindingPackageVersion = require('@vue-jsx/compiler-wasm32-wasi/package.json').version
+        if (
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
+          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
+        ) {
+          const bindingPackageVersion =
+            require('@vue-jsx/compiler-wasm32-wasi/package.json').version
           if (bindingPackageVersion !== '3.3.0-beta.1') {
-            throw new Error(`WASI binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
+            throw new Error(
+              `WASI binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            )
           }
         }
         wasiBinding = require('@vue-jsx/compiler-wasm32-wasi')
@@ -669,12 +856,7 @@ if (!nativeBinding || forceWasi) {
       loadErrors.push(candidateError)
     }
   }
-  if (
-    !wasiBindingLoaded &&
-    forceWasi &&
-    !forceWasiError &&
-    !__napiWasiFlavorRequested
-  ) {
+  if (!wasiBindingLoaded && forceWasi && !forceWasiError && !__napiWasiFlavorRequested) {
     nativeBinding = requireNative()
   }
   if ((forceWasiError || __napiWasiFlavorRequested) && !wasiBindingLoaded) {

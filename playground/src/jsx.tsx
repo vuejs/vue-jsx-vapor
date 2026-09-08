@@ -26,12 +26,7 @@ declare function expectType<T>(value: T): void
 const Comp = defineComponent({
   setup: (
     props: { id: 1 },
-    {
-      slots,
-    }: SetupContext<
-      EmitsOptions,
-      SlotsType<{ default: (props: { id: 1 }) => any }>
-    >,
+    { slots }: SetupContext<EmitsOptions, SlotsType<{ default: (props: { id: 1 }) => any }>>,
   ) => {
     slots.default({ id: props.id })
     return { foo: props.id }
@@ -68,8 +63,7 @@ const Comp1 = defineComponent(
     return () => slots.default?.({ foo: props.foo }) || []
   },
 )
-const comp1Ref =
-  shallowRef<ExtractExposed<InstanceType<typeof Comp1>['$props']>>()
+const comp1Ref = shallowRef<ExtractExposed<InstanceType<typeof Comp1>['$props']>>()
 expectType<unknown>(comp1Ref.value?.foo)
 ;<Comp1
   ref={(exposed) => {
@@ -113,8 +107,7 @@ const _Comp2 = _defineComponent(
     return () => slots.default?.({ foo: props.foo })
   },
 )
-const _comp2Ref =
-  shallowRef<ExtractExposed<InstanceType<typeof _Comp2>['$props']>>()
+const _comp2Ref = shallowRef<ExtractExposed<InstanceType<typeof _Comp2>['$props']>>()
 expectType<unknown>(_comp2Ref.value?.foo)
 ;<_Comp2
   ref={(exposed) => {
@@ -129,11 +122,9 @@ expectType<unknown>(_comp2Ref.value?.foo)
   }}
 </_Comp2>
 
-const Comp2: FunctionalComponent<
-  { id: 1 },
-  {},
-  { default: (props: { id: 1 }) => [] }
-> = () => <div></div>
+const Comp2: FunctionalComponent<{ id: 1 }, {}, { default: (props: { id: 1 }) => [] }> = () => (
+  <div></div>
+)
 ;<Comp2 id={1}>{(props) => props.id}</Comp2>
 
 const Comp3: FunctionalVaporComponent<
@@ -216,9 +207,7 @@ const Comp5 = defineVaporComponent(
   {(props) => <>{expectType<number>(props.id)}</>}
 </Comp5>
 
-const Comp6 = defineVaporComponent((props: { foo: 1 }) => (
-  <div>{props.foo}</div>
-))
+const Comp6 = defineVaporComponent((props: { foo: 1 }) => <div>{props.foo}</div>)
 ;<Comp6
   ref={(e) => {
     expectType<VaporComponentInstance>(e!)
@@ -228,11 +217,9 @@ const Comp6 = defineVaporComponent((props: { foo: 1 }) => (
   <div></div>
 </Comp6>
 
-const _Comp6 = _defineVaporComponent(
-  (props: { foo: 1 }, _: { emit: EmitFn<{ foo: [1] }> }) => (
-    <div>{props.foo}</div>
-  ),
-)
+const _Comp6 = _defineVaporComponent((props: { foo: 1 }, _: { emit: EmitFn<{ foo: [1] }> }) => (
+  <div>{props.foo}</div>
+))
 ;<_Comp6 foo={1} onFoo={(e) => expectType<1>(e)}>
   <div></div>
 </_Comp6>

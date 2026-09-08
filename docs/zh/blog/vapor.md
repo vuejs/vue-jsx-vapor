@@ -28,16 +28,17 @@ export default () => {
 在 Virtual DOM 模式下，它会生成 block VNode。在 Vapor 模式下，输出更接近这样：
 
 ```js
-const _t0 = _template("<div> ", 1)
+const _t0 = _template('<div> ', 1)
 
-return () => (() => {
-  const _n0 = _t0()
-  _on(_n0, "click", () => count.value++)
-  const _x0 = _txt(_n0)
-  _setNodes(_x0, "count: ", () => count.value)
-  _renderEffect(() => _setClassName(_n0, ok.value ? 1 : 0, "active"))
-  return _n0
-})()
+return () =>
+  (() => {
+    const _n0 = _t0()
+    _on(_n0, 'click', () => count.value++)
+    const _x0 = _txt(_n0)
+    _setNodes(_x0, 'count: ', () => count.value)
+    _renderEffect(() => _setClassName(_n0, ok.value ? 1 : 0, 'active'))
+    return _n0
+  })()
 ```
 
 这里没有为了 text 或 class 做 VNode diff。template 只负责创建 DOM。编译器找到
@@ -65,7 +66,7 @@ Vapor 编译器遍历 JSX 时会维护一个 `template` buffer。带静态属性
 字符串化：
 
 ```html
-<button type=button> </button>
+<button type="button"></button>
 ```
 
 生成代码再调用 Vue 的 `template` helper，并用直接路径访问动态 children：

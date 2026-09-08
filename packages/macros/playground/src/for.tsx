@@ -33,10 +33,7 @@ export default () => {
         <fieldset>
           <legend>v-for</legend>
           <div
-            v-for={
-              (i, index) in
-              Array.from({ length: count.value }).map((_, id) => ({ id }))
-            }
+            v-for={(i, index) in Array.from({ length: count.value }).map((_, id) => ({ id }))}
             key={i.id}
             class={{ 'text-red': i.id === selected.value }}
             onClick={() => (selected.value = i.id)}

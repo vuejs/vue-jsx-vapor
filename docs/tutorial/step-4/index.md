@@ -5,7 +5,7 @@ next: false
 ---
 
 # Event Bindings
-  
+
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
@@ -36,6 +36,7 @@ In JSX, event handlers are usually written as `on` followed by a capitalized let
 ```
 
 We also support [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#event-modifiers) that start with `_`:
+
 ```tsx
 <form onSubmit_prevent>
   <input onKeyup_enter={submit} />

@@ -1,7 +1,7 @@
 {
   "name": "docs",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vitepress dev",
     "build": "vitepress build",
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@shikijs/vitepress-twoslash": "^4.0.2",
+    "oxc-minify": "0.148.0",
     "vitepress": "2.0.0-alpha.16"
   }
 }

@@ -27,13 +27,7 @@
 //                 Kanitkorn Sujautra <https://github.com/lukyth>
 //                 Sebastian Silbermann <https://github.com/eps1lon>
 
-import type {
-  EmitFnToProps,
-  ExtractExposed,
-  NodeRef,
-  RenderResult,
-  SlotsToProps,
-} from './types'
+import type { EmitFnToProps, ExtractExposed, NodeRef, RenderResult, SlotsToProps } from './types'
 import type {
   AriaAttributes,
   ReservedProps,
@@ -45,9 +39,7 @@ import type {
 
 type NativeElement = Element
 
-type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
-  ? Omit<T, K>
-  : never
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never
 
 export namespace JSX {
   export type Element = RenderResult
@@ -64,19 +56,14 @@ export namespace JSX {
     class?: ClassValue | undefined
     style?: StyleValue | undefined
   }
-  export type LibraryManagedAttributes<Component, Props> = DistributiveOmit<
-    Props,
-    'ref'
-  > &
+  export type LibraryManagedAttributes<Component, Props> = DistributiveOmit<Props, 'ref'> &
     (Component extends abstract new (...args: any[]) => infer Instance
       ? {
           ref?: NodeRef<
             ExtractExposed<
               Props,
               'exposed' extends keyof Instance
-                ? string extends keyof NonNullable<
-                    NonNullable<Instance['exposed']>
-                  >
+                ? string extends keyof NonNullable<NonNullable<Instance['exposed']>>
                   ? Instance
                   : UnwrapRef<Instance['exposed']>
                 : Instance
@@ -95,9 +82,7 @@ export namespace JSX {
               slots: infer Slots
               attrs: any
               emit: infer Emit
-              expose: (
-                exposed: infer Exposed extends Record<string, any>,
-              ) => void
+              expose: (exposed: infer Exposed extends Record<string, any>) => void
             },
           ) => any
         ? {
@@ -127,17 +112,9 @@ interface StyleMedia {}
 type CrossOrigin = 'anonymous' | 'use-credentials' | ''
 
 // Support for `class` attribute
-type ClassValue =
-  | false
-  | null
-  | undefined
-  | string
-  | Record<string, any>
-  | Array<ClassValue>
+type ClassValue = false | null | undefined | string | Record<string, any> | Array<ClassValue>
 
-export interface HTMLAttributes<T = HTMLElement>
-  extends AriaAttributes,
-    EventHandlers<Events<T>> {
+export interface HTMLAttributes<T = HTMLElement> extends AriaAttributes, EventHandlers<Events<T>> {
   innerHTML?: string | undefined
 
   class?: ClassValue | undefined
@@ -159,15 +136,7 @@ export interface HTMLAttributes<T = HTMLElement>
   contextmenu?: string | undefined
   dir?: string | undefined
   draggable?: Booleanish | undefined
-  enterkeyhint?:
-    | 'enter'
-    | 'done'
-    | 'go'
-    | 'next'
-    | 'previous'
-    | 'search'
-    | 'send'
-    | undefined
+  enterkeyhint?: 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send' | undefined
   /**
    * @deprecated Use `enterkeyhint` instead.
    */
@@ -854,12 +823,7 @@ export interface SVGAttributes extends AriaAttributes, EventHandlers<Events> {
   clipPathUnits?: Numberish | undefined
   'clip-rule'?: Numberish | undefined
   'color-interpolation'?: Numberish | undefined
-  'color-interpolation-filters'?:
-    | 'auto'
-    | 'sRGB'
-    | 'linearRGB'
-    | 'inherit'
-    | undefined
+  'color-interpolation-filters'?: 'auto' | 'sRGB' | 'linearRGB' | 'inherit' | undefined
   'color-profile'?: Numberish | undefined
   'color-rendering'?: Numberish | undefined
   contentScriptType?: Numberish | undefined
@@ -1371,9 +1335,7 @@ export interface Events<T = Element> {
 }
 
 export type EventHandlers<E> = {
-  [K in keyof E]?: E[K] extends (...args: any) => any
-    ? E[K]
-    : (payload: E[K]) => void
+  [K in keyof E]?: E[K] extends (...args: any) => any ? E[K] : (payload: E[K]) => void
 }
 
 type IntrinsicElement<K> = K extends keyof HTMLElementTagNameMap
@@ -1414,8 +1376,11 @@ export interface BaseSyntheticEvent<E = object, C = unknown, T = unknown> {
  * This might be a child element to the element on which the event listener is registered.
  * If you thought this should be `EventTarget & T`, see https://github.com/DefinitelyTyped/DefinitelyTyped/issues/11508#issuecomment-256045682
  */
-export interface SyntheticEvent<T = Element, E = Event>
-  extends BaseSyntheticEvent<E, EventTarget & T, EventTarget> {}
+export interface SyntheticEvent<T = Element, E = Event> extends BaseSyntheticEvent<
+  E,
+  EventTarget & T,
+  EventTarget
+> {}
 
 export type EventHandler<E extends SyntheticEvent<any>> = {
   bivarianceHack: (event: E) => void
@@ -1423,28 +1388,28 @@ export type EventHandler<E extends SyntheticEvent<any>> = {
 
 export type BaseEventHandler<T = Element> = EventHandler<SyntheticEvent<T>>
 
-export interface ClipboardEvent<T = Element>
-  extends SyntheticEvent<T, globalThis.ClipboardEvent> {
+export interface ClipboardEvent<T = Element> extends SyntheticEvent<T, globalThis.ClipboardEvent> {
   clipboardData: DataTransfer
 }
 export type ClipboardEventHandler<T = Element> = EventHandler<ClipboardEvent<T>>
 
-export interface CompositionEvent<T = Element>
-  extends SyntheticEvent<T, globalThis.CompositionEvent> {
+export interface CompositionEvent<T = Element> extends SyntheticEvent<
+  T,
+  globalThis.CompositionEvent
+> {
   data: string
 }
-export type CompositionEventHandler<T = Element> = EventHandler<
-  CompositionEvent<T>
->
+export type CompositionEventHandler<T = Element> = EventHandler<CompositionEvent<T>>
 
-export interface DragEvent<T = Element>
-  extends MouseEvent<T, globalThis.DragEvent> {
+export interface DragEvent<T = Element> extends MouseEvent<T, globalThis.DragEvent> {
   dataTransfer: DataTransfer
 }
 export type DragEventHandler<T = Element> = EventHandler<DragEvent<T>>
 
-export interface FocusEvent<Target = Element, RelatedTarget = Element>
-  extends SyntheticEvent<Target, globalThis.FocusEvent> {
+export interface FocusEvent<Target = Element, RelatedTarget = Element> extends SyntheticEvent<
+  Target,
+  globalThis.FocusEvent
+> {
   relatedTarget: (EventTarget & RelatedTarget) | null
   target: EventTarget & Target
 }
@@ -1458,8 +1423,7 @@ export interface ChangeEvent<T = Element> extends SyntheticEvent<T> {
 }
 export type ChangeEventHandler<T = Element> = EventHandler<ChangeEvent<T>>
 
-export interface KeyboardEvent<T = Element>
-  extends UIEvent<T, globalThis.KeyboardEvent> {
+export interface KeyboardEvent<T = Element> extends UIEvent<T, globalThis.KeyboardEvent> {
   altKey: boolean
   /** @deprecated */
   charCode: number
@@ -1500,8 +1464,7 @@ export type ModifierKey =
   | 'Super'
   | 'Symbol'
   | 'SymbolLock'
-export interface MouseEvent<T = Element, E = globalThis.MouseEvent>
-  extends UIEvent<T, E> {
+export interface MouseEvent<T = Element, E = globalThis.MouseEvent> extends UIEvent<T, E> {
   altKey: boolean
   button: number
   buttons: number
@@ -1528,15 +1491,13 @@ export interface AbstractView {
   styleMedia: StyleMedia
   document: Document
 }
-export interface UIEvent<T = Element, E = globalThis.UIEvent>
-  extends SyntheticEvent<T, E> {
+export interface UIEvent<T = Element, E = globalThis.UIEvent> extends SyntheticEvent<T, E> {
   detail: number
   view: AbstractView
 }
 export type UIEventHandler<T = Element> = EventHandler<UIEvent<T>>
 
-export interface WheelEvent<T = Element>
-  extends MouseEvent<T, globalThis.WheelEvent> {
+export interface WheelEvent<T = Element> extends MouseEvent<T, globalThis.WheelEvent> {
   deltaMode: number
   deltaX: number
   deltaY: number
@@ -1544,20 +1505,19 @@ export interface WheelEvent<T = Element>
 }
 export type WheelEventHandler<T = Element> = EventHandler<WheelEvent<T>>
 
-export interface AnimationEvent<T = Element>
-  extends SyntheticEvent<T, globalThis.AnimationEvent> {
+export interface AnimationEvent<T = Element> extends SyntheticEvent<T, globalThis.AnimationEvent> {
   animationName: string
   elapsedTime: number
   pseudoElement: string
 }
 export type AnimationEventHandler<T = Element> = EventHandler<AnimationEvent<T>>
 
-export interface TransitionEvent<T = Element>
-  extends SyntheticEvent<T, globalThis.TransitionEvent> {
+export interface TransitionEvent<T = Element> extends SyntheticEvent<
+  T,
+  globalThis.TransitionEvent
+> {
   elapsedTime: number
   propertyName: string
   pseudoElement: string
 }
-export type TransitionEventHandler<T = Element> = EventHandler<
-  TransitionEvent<T>
->
+export type TransitionEventHandler<T = Element> = EventHandler<TransitionEvent<T>>

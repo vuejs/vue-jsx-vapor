@@ -1,51 +1,32 @@
 {
   "name": "@vue-jsx/compiler",
-  "type": "module",
   "version": "3.3.0-beta.1",
   "description": "Vue JSX Compiler",
-  "license": "MIT",
-  "repository": {
-    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git",
-    "type": "git"
-  },
   "keywords": [
-    "napi-rs",
-    "NAPI",
     "N-API",
+    "NAPI",
     "Rust",
+    "napi-rs",
     "node-addon",
     "node-addon-api"
   ],
-  "main": "index.js",
-  "types": "index.d.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
+  },
   "files": [
     "browser-entry.js",
     "index.d.ts",
     "index.js"
   ],
+  "type": "module",
+  "main": "index.js",
   "browser": "browser-entry.js",
-  "napi": {
-    "binaryName": "compiler",
-    "targets": [
-      "x86_64-apple-darwin",
-      "aarch64-apple-darwin",
-      "x86_64-unknown-linux-gnu",
-      "x86_64-pc-windows-msvc",
-      "x86_64-unknown-linux-musl",
-      "aarch64-unknown-linux-gnu",
-      "i686-pc-windows-msvc",
-      "armv7-unknown-linux-gnueabihf",
-      "aarch64-linux-android",
-      "x86_64-unknown-freebsd",
-      "aarch64-unknown-linux-musl",
-      "aarch64-pc-windows-msvc",
-      "armv7-linux-androideabi",
-      "wasm32-wasip1-threads"
-    ]
-  },
+  "types": "index.d.ts",
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "artifacts": "napi artifacts && node ./scripts/patch-wasi-browser.mjs",
@@ -67,5 +48,24 @@
     "@napi-rs/wasm-runtime": "1.2.3",
     "@taplo/cli": "^0.7.0",
     "emnapi": "2.0.0-alpha.4"
+  },
+  "napi": {
+    "binaryName": "compiler",
+    "targets": [
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-unknown-linux-gnu",
+      "x86_64-pc-windows-msvc",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "i686-pc-windows-msvc",
+      "armv7-unknown-linux-gnueabihf",
+      "aarch64-linux-android",
+      "x86_64-unknown-freebsd",
+      "aarch64-unknown-linux-musl",
+      "aarch64-pc-windows-msvc",
+      "armv7-linux-androideabi",
+      "wasm32-wasip1-threads"
+    ]
   }
 }

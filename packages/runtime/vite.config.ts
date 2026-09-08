@@ -1,19 +1,21 @@
 import process from 'node:process'
-import { defineConfig, type UserConfig } from 'tsdown'
+
 import Raw from 'unplugin-raw/rolldown'
 
-export const config = (options: UserConfig = {}) =>
-  defineConfig({
+import { defineConfig } from 'vite-plus'
+
+export default defineConfig({
+  pack: {
     entry: ['./src/*.ts', '!./**.d.ts'],
     clean: true,
     fixedExtension: false,
     watch: !!process.env.DEV,
-    external: ['vue'],
-    plugins: [Raw({ transform: true })],
+    deps: {
+      neverBundle: ['vue'],
+    },
+    plugins: [Raw({ transform: true }) as any],
     outputOptions: {
       exports: 'named',
     },
-    ...options,
-  })
-
-export default config()
+  },
+})

@@ -5,7 +5,7 @@ next: false
 ---
 
 # List Rendering
-  
+
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
@@ -50,10 +50,8 @@ Use `For` with Virtual DOM:
 ```tsx
 import { For } from 'vue-jsx'
 
-<ul>
-  <For in={todos}>
-    {(todo) => <li key={todo.id}>{todo.text}</li>}
-  </For>
+;<ul>
+  <For in={todos}>{(todo) => <li key={todo.id}>{todo.text}</li>}</For>
 </ul>
 ```
 
@@ -66,7 +64,7 @@ Use `VaporFor` in Vapor Mode:
 ```tsx
 import { VaporFor } from 'vue-jsx'
 
-<ul>
+;<ul>
   <VaporFor in={todos}>
     {(todo, index) => (
       <li>

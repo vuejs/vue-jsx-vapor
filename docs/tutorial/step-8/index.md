@@ -5,7 +5,7 @@ next: false
 ---
 
 # Props
-  
+
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
@@ -34,9 +34,7 @@ const apps = {
 The props are provided in the first parameter of the functional component.
 
 ```jsx
-const Comp = (props) => (
-  <div>{props.foo}</div>
-)
+const Comp = (props) => <div>{props.foo}</div>
 ```
 
 ## Deconstruct Props
@@ -46,16 +44,13 @@ Unlike other JSX frameworks, props lose reactivity when you deconstruct them:
 :::
 
 ```jsx
-const Comp = ({ foo }) => (
-  <div>
-    {foo} this will no longer update
-  </div>
-)
-````
+const Comp = ({ foo }) => <div>{foo} this will no longer update</div>
+```
 
 We have two solutions:
 
 1. Pass a reactive ref object as a prop directly:
+
 ```jsx
 function Comp({ foo }) {
   return <div>{foo.value}</div>
@@ -76,12 +71,15 @@ const Comp = defineVaporComponent(({ foo }) => {
   return <div>{foo}</div>
 })
 ```
+
 Will be converted to:
+
 ```jsx
 const Comp = defineVaporComponent((__props) => {
   return <div>{__props.foo}</div>
 })
 ```
+
 Then the `foo` prop will regain reactivity.\
 [More details](/features/macros.html#definecomponent-definevaporcomponent)
 

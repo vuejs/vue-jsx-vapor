@@ -1,38 +1,38 @@
 {
   "name": "@vue-jsx/runtime",
-  "type": "module",
   "version": "3.3.0-beta.1",
   "description": "Vue JSX Runtime",
-  "license": "MIT",
+  "keywords": [
+    "jsx",
+    "runtime",
+    "vapor",
+    "vue"
+  ],
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
+  "bugs": {
+    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
+  },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
   },
-  "bugs": {
-    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
-  },
-  "keywords": [
-    "vue",
-    "jsx",
-    "vapor",
-    "runtime"
+  "files": [
+    "dist"
   ],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
     "./raw": "./dist/raw.js",
     "./*": "./*"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
-    "build": "tsdown",
-    "dev": "DEV=true tsdown",
+    "build": "vp pack",
+    "dev": "DEV=true vp pack",
     "release": "bumpp && npm publish",
-    "test": "vitest"
+    "test": "vp test"
   },
   "peerDependencies": {
     "vue": "catalog:"

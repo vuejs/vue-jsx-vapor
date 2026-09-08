@@ -1,5 +1,5 @@
 import Vue from '@vitejs/plugin-vue'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vite-plus'
 import Inspect from 'vite-plugin-inspect'
 import VueJsx from 'vue-jsx/vite'
 

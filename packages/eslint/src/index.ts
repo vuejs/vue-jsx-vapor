@@ -1,4 +1,4 @@
-import rules, { type Rules } from './rules'
+import rules, { type Rules } from './rules/index.ts'
 import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint'
 
 export const plugins = {
@@ -23,15 +23,7 @@ const config: (options?: FlatConfig.Config) => FlatConfig.Config = ({
       {
         callbacksLast: true,
         shorthandFirst: true,
-        reservedFirst: [
-          'v-if',
-          'v-else-if',
-          'v-else',
-          'v-for',
-          'key',
-          'ref',
-          'v-model',
-        ],
+        reservedFirst: ['v-if', 'v-else-if', 'v-else', 'v-for', 'key', 'ref', 'v-model'],
         reservedLast: ['v-slot', 'v-slots', 'v-text', 'v-html'],
       },
     ],

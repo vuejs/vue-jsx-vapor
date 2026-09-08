@@ -48,10 +48,7 @@ const apps = {
 ```jsx
 const Comp = (props) => {
   return (
-    <input
-      value={props.modelValue}
-      onInput={(e) => props['onUpdate:modelValue'](e.target.value)}
-    />
+    <input value={props.modelValue} onInput={(e) => props['onUpdate:modelValue'](e.target.value)} />
   )
 }
 ```
@@ -78,14 +75,8 @@ const Comp = (props) => {
 const Comp = (props) => {
   return (
     <>
-      <input
-        value={props.title}
-        onInput={(e) => props['onUpdate:title'](e.target.value)}
-      />
-      <input
-        value={props.content}
-        onInput={(e) => props['onUpdate:content'](e.target.value)}
-      />
+      <input value={props.title} onInput={(e) => props['onUpdate:title'](e.target.value)} />
+      <input value={props.content} onInput={(e) => props['onUpdate:content'](e.target.value)} />
     </>
   )
 }
@@ -98,12 +89,7 @@ const Comp = (props) => {
 ```jsx
 const Comp = () => {
   const model = defineModel()
-  return (
-    <input
-      value={model.value}
-      onInput={(e) => (model.value = e.target.value)}
-    />
-  )
+  return <input value={model.value} onInput={(e) => (model.value = e.target.value)} />
 }
 ```
 
@@ -115,14 +101,8 @@ const Comp = () => {
   const content = defineModel('content')
   return (
     <>
-      <input
-        value={title.value}
-        onInput={(e) => (title.value = e.target.value)}
-      />
-      <input
-        value={content.value}
-        onInput={(e) => (content.value = e.target.value)}
-      />
+      <input value={title.value} onInput={(e) => (title.value = e.target.value)} />
+      <input value={content.value} onInput={(e) => (content.value = e.target.value)} />
     </>
   )
 }

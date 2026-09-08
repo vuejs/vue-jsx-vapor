@@ -61,10 +61,7 @@ const Comp = (props, { slots }) => {
 
 ```jsx
 const Comp = (props, { slots }) => {
-  return [
-    <slot>Fallback content</slot>,
-    <slot name="title">Title fallback content</slot>,
-  ]
+  return [<slot>Fallback content</slot>, <slot name="title">Title fallback content</slot>]
 }
 ```
 

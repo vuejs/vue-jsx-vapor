@@ -1,12 +1,6 @@
 import * as Vue from 'vue'
 import { createComponent, createProxyComponent, normalizeNode } from './vapor'
-import type {
-  EmitFnToProps,
-  ExposedToProps,
-  NodeChild,
-  NodeRef,
-  SlotsToProps,
-} from './types'
+import type { EmitFnToProps, ExposedToProps, NodeChild, NodeRef, SlotsToProps } from './types'
 import type {
   Block,
   Fragment,
@@ -18,9 +12,7 @@ import type {
 } from 'vue'
 
 type HTMLElementEventHandler = {
-  [K in keyof HTMLElementEventMap as `on${Capitalize<K>}`]?: (
-    ev: HTMLElementEventMap[K],
-  ) => any
+  [K in keyof HTMLElementEventMap as `on${Capitalize<K>}`]?: (ev: HTMLElementEventMap[K]) => any
 }
 
 type ReservedProps = { key?: () => PropertyKey }
@@ -63,21 +55,14 @@ type VaporHArgs<T extends VaporHType> = T extends string
                 ? HTMLElementTagNameMap[T]
                 : Element | VaporComponentInstance
             >
-          } & (T extends keyof HTMLElementTagNameMap
-              ? HTMLElementEventHandler
-              : {}))
+          } & (T extends keyof HTMLElementTagNameMap ? HTMLElementEventHandler : {}))
         | null,
-      children?: T extends keyof HTMLElementTagNameMap
-        ? RawChildren
-        : RawChildren | RawSlots,
+      children?: T extends keyof HTMLElementTagNameMap ? RawChildren : RawChildren | RawSlots,
     ]
   : T extends typeof Fragment
     ? [props?: ReservedProps | null, children?: RawChildren]
     : T extends typeof Suspense
-      ? [
-          props?: (RawProps & SuspenseProps) | null,
-          children?: RawChildren | RawSlots,
-        ]
+      ? [props?: (RawProps & SuspenseProps) | null, children?: RawChildren | RawSlots]
       : T extends typeof VaporTeleport
         ? [props: RawProps & TeleportProps, children: RawChildren | RawSlots]
         : T extends new (...args: any[]) => infer Instance
@@ -91,9 +76,7 @@ type VaporHArgs<T extends VaporHType> = T extends string
                           : NonNullable<Instance['exposed']>
                       >)
                   | null,
-                children?: SlotsToProps<
-                  Instance['slots']
-                > extends infer SlotsProps
+                children?: SlotsToProps<Instance['slots']> extends infer SlotsProps
                   ? 'v-slots' extends keyof SlotsProps
                     ? ResolveSlots<SlotsProps['v-slots']>
                     : RawChildren | RawSlots
@@ -104,18 +87,14 @@ type VaporHArgs<T extends VaporHType> = T extends string
                 props: infer Props,
                 ctx: {
                   slots: infer Slots extends Record<string, any>
-                  expose: (
-                    exposed: infer Exposed extends Record<string, any>,
-                  ) => void
+                  expose: (exposed: infer Exposed extends Record<string, any>) => void
                   attrs: any
                   emit: infer Emit
                 },
               ) => any
             ? [
                 props?:
-                  | (ResolveProps<Props> &
-                      EmitFnToProps<Emit> &
-                      ExposedToProps<Exposed>)
+                  | (ResolveProps<Props> & EmitFnToProps<Emit> & ExposedToProps<Exposed>)
                   | null,
                 children?: SlotsToProps<Slots> extends infer SlotsProps
                   ? 'v-slots' extends keyof SlotsProps
@@ -126,10 +105,7 @@ type VaporHArgs<T extends VaporHType> = T extends string
             : never
 
 /*@__NO_SIDE_EFFECTS__*/
-export function vaporH<T extends VaporHType>(
-  type: T,
-  ...[props, children]: VaporHArgs<T>
-): any {
+export function vaporH<T extends VaporHType>(type: T, ...[props, children]: VaporHArgs<T>): any {
   const { props: resolvedProps, key, ref } = resolveProps(props)
   const render = () => {
     const comp = createComponent(
@@ -139,10 +115,7 @@ export function vaporH<T extends VaporHType>(
         ? typeof children === 'object' && !Array.isArray(children)
           ? new Proxy(children, {
               get: (target, key, receiver) =>
-                createProxyComponent(
-                  Reflect.get(target, key, receiver),
-                  normalizeNode,
-                ),
+                createProxyComponent(Reflect.get(target, key, receiver), normalizeNode),
             })
           : {
               default:

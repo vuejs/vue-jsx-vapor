@@ -76,14 +76,7 @@ createVaporApp(App).use(vaporInteropPlugin).mount('#app')
 `vue-jsx/vapor` 入口用常见名称导出了 Vapor 专用 runtime：
 
 ```ts
-import {
-  For,
-  KeepAlive,
-  Teleport,
-  Transition,
-  TransitionGroup,
-  h,
-} from 'vue-jsx/vapor'
+import { For, KeepAlive, Teleport, Transition, TransitionGroup, h } from 'vue-jsx/vapor'
 ```
 
 这个入口只影响 runtime 导入。编译模式仍由 `vapor` 选项、文件名或 Vapor 组件边界决定。

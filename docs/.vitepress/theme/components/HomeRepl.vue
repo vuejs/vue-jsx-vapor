@@ -1,12 +1,5 @@
 <script setup lang="ts">
-import {
-  defineAsyncComponent,
-  onBeforeUnmount,
-  onMounted,
-  reactive,
-  ref,
-  watch,
-} from 'vue'
+import { defineAsyncComponent, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { getDefaultFiles } from '../../../tutorial/template'
 
 const vdomAppCode = `import { defineComponent, ref } from 'vue'

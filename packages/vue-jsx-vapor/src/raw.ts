@@ -36,8 +36,7 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
             // },
             define: {
               __VUE_OPTIONS_API__: config.define?.__VUE_OPTIONS_API__ ?? true,
-              __VUE_PROD_DEVTOOLS__:
-                config.define?.__VUE_PROD_DEVTOOLS__ ?? false,
+              __VUE_PROD_DEVTOOLS__: config.define?.__VUE_PROD_DEVTOOLS__ ?? false,
               __VUE_PROD_HYDRATION_MISMATCH_DETAILS__:
                 config.define?.__VUE_PROD_HYDRATION_MISMATCH_DETAILS__ ?? false,
             },
@@ -46,8 +45,7 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
         configResolved(config) {
           root = config.root
           needHMR = config.command === 'serve'
-          needSourceMap ||=
-            config.command === 'serve' || !!config.build.sourcemap
+          needSourceMap ||= config.command === 'serve' || !!config.build.sourcemap
         },
       },
       resolveId: {
@@ -75,18 +73,14 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
           },
         },
         handler(code, id, opt?: { ssr?: boolean }) {
-          const result = transformVueJsxVapor(
-            code,
-            id,
-            {
-              vapor: !options.interop,
-              root,
-              hmr: needHMR,
-              sourceMap: needSourceMap,
-              ssr: opt?.ssr,
-              ...options.compiler,
-            },
-          )
+          const result = transformVueJsxVapor(code, id, {
+            vapor: !options.interop,
+            root,
+            hmr: needHMR,
+            sourceMap: needSourceMap,
+            ssr: opt?.ssr,
+            ...options.compiler,
+          })
           if (result?.code) {
             return {
               code: result.code,

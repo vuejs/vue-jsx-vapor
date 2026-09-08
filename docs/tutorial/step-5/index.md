@@ -5,7 +5,7 @@ next: false
 ---
 
 # Conditional Rendering
-  
+
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
@@ -35,8 +35,8 @@ We can use ternaries `{ a ? b : c }` or boolean expressions `{ a && b }` to cont
 
 ```jsx
 <>
-  { toggle ? <h1>Title</h1> : null }
-  { toggle && <h1>Title</h1> }
+  {toggle ? <h1>Title</h1> : null}
+  {toggle && <h1>Title</h1>}
 </>
 ```
 

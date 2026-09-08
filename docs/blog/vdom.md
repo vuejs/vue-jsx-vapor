@@ -22,21 +22,25 @@ A syntax-level JSX transform usually has one job: turn JSX into VNode creation
 calls. It can preserve Vue semantics, but the output tends to look like this:
 
 ```js
-_createVNode("section", null, [
-  _createVNode("h2", null, "Todo"),
-  _createVNode("ul", null, [
-    _createVNode(_Fragment, null, _renderList(items, (item, i) =>
-      _createVNode("li", {
-        key: item.id,
-        class: _normalizeClass({ active: item.id === selected })
-      }, [
-        _normalizeVNode(i),
-        _normalizeVNode(": "),
-        _normalizeVNode(item.text)
-      ])
-    ))
+_createVNode('section', null, [
+  _createVNode('h2', null, 'Todo'),
+  _createVNode('ul', null, [
+    _createVNode(
+      _Fragment,
+      null,
+      _renderList(items, (item, i) =>
+        _createVNode(
+          'li',
+          {
+            key: item.id,
+            class: _normalizeClass({ active: item.id === selected }),
+          },
+          [_normalizeVNode(i), _normalizeVNode(': '), _normalizeVNode(item.text)],
+        ),
+      ),
+    ),
   ]),
-  _createVNode("footer", null, "static")
+  _createVNode('footer', null, 'static'),
 ])
 ```
 
@@ -49,26 +53,41 @@ into its own `VNodeCall` IR, and then generates optimized Vue runtime calls.
 For the same source, optimized output has a very different shape:
 
 ```js
-const _cache = _createVNodeCache("d9f3c58f")
-return _openBlock(), _createElementBlock("section", null, [
-  _cache[1] || (_cache[1] = _createElementVNode("h2", null, "Todo", -1)),
-  _createElementVNode("ul", null, [
-    (_openBlock(true), _createElementBlock(_Fragment, null,
-      _renderList(items, (item, i) =>
-        (_openBlock(), _createElementBlock("li", {
-          key: item.id,
-          class: _normalizeClass({ active: item.id === selected })
-        }, [
-          _normalizeVNode(() => i),
-          _cache[0] || (_cache[0] = _normalizeVNode(": ", -1)),
-          _normalizeVNode(() => item.text)
-        ], 2))
-      ),
-      128
-    ))
-  ]),
-  _cache[2] || (_cache[2] = _createElementVNode("footer", null, "static", -1))
-])
+const _cache = _createVNodeCache('d9f3c58f')
+return (
+  _openBlock(),
+  _createElementBlock('section', null, [
+    _cache[1] || (_cache[1] = _createElementVNode('h2', null, 'Todo', -1)),
+    _createElementVNode('ul', null, [
+      (_openBlock(true),
+      _createElementBlock(
+        _Fragment,
+        null,
+        _renderList(
+          items,
+          (item, i) => (
+            _openBlock(),
+            _createElementBlock(
+              'li',
+              {
+                key: item.id,
+                class: _normalizeClass({ active: item.id === selected }),
+              },
+              [
+                _normalizeVNode(() => i),
+                _cache[0] || (_cache[0] = _normalizeVNode(': ', -1)),
+                _normalizeVNode(() => item.text),
+              ],
+              2,
+            )
+          ),
+        ),
+        128,
+      )),
+    ]),
+    _cache[2] || (_cache[2] = _createElementVNode('footer', null, 'static', -1)),
+  ])
+)
 ```
 
 The important part is not the helper names. The important part is that the

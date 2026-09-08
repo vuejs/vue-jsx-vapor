@@ -5,7 +5,7 @@ next: false
 ---
 
 # Components
-  
+
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
@@ -36,6 +36,7 @@ import Child from './Child'
 ```
 
 Then, we can use the component in the JSX as:
+
 ```jsx
 import Child from './Child'
 

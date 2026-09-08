@@ -5,7 +5,7 @@ next: false
 ---
 
 # 属性绑定
-  
+
 <script setup>
 import appCode from '~/tutorial/step-3/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-3/app-solved.tsx?raw'
@@ -26,6 +26,7 @@ const apps  = {
 <jsx-repl :files :apps prev="/zh/tutorial/step-2/" next="/zh/tutorial/step-4/">
 
 我们使用 `{ }` 来动态绑定 prop，或者使用展开运算符 `{...}` 来绑定多个属性：
+
 ```jsx
 export default (props) => (
   <>
@@ -34,29 +35,32 @@ export default (props) => (
     <div {...props} />
   </>
 )
-````
+```
 
 ## 样式绑定
+
 我们可以使用字符串、对象或数组表达式来条件性地绑定样式：
+
 ```tsx
 export default (props: { hidden: boolean }) => (
   <>
-    <h1 style={`display: ${ props.hidden ? 'none' : 'block' }`}>h1</h1>
-    <h2 style={{ display: props.hidden ? 'none': undefined }}>h2</h2>
-    <h3 style={[ props.hidden && 'display: none;' ]}>h3</h3>
+    <h1 style={`display: ${props.hidden ? 'none' : 'block'}`}>h1</h1>
+    <h2 style={{ display: props.hidden ? 'none' : undefined }}>h2</h2>
+    <h3 style={[props.hidden && 'display: none;']}>h3</h3>
   </>
 )
 ```
 
 ## 类名绑定
+
 我们可以使用字符串、对象或数组表达式来条件性地绑定类名：
 
 ```tsx
 export default (props: { hidden: boolean }) => (
   <>
     <h1 class={props.hidden && 'hidden'}>h1</h1>
-    <h2 class={{ 'hidden': props.hidden }}>h2</h2>
-    <h3 class={[ props.hidden && 'hidden' ]}>h3</h3>
+    <h2 class={{ hidden: props.hidden }}>h2</h2>
+    <h3 class={[props.hidden && 'hidden']}>h3</h3>
   </>
 )
 ```

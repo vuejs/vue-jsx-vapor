@@ -36,13 +36,9 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
     const tabWidth = configuration.tabWidth || 2
     return {
       CallExpression(node) {
-        const callee =
-          node.callee.type === 'MemberExpression'
-            ? node.callee.object
-            : node.callee
+        const callee = node.callee.type === 'MemberExpression' ? node.callee.object : node.callee
         const parser =
-          node.callee.type === 'MemberExpression' &&
-          node.callee.property.type === 'Identifier'
+          node.callee.type === 'MemberExpression' && node.callee.property.type === 'Identifier'
             ? node.callee.property.name
             : 'css'
         if (callee.type === 'Identifier' && callee.name === 'defineStyle') {
@@ -50,10 +46,7 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
 
           if (arg?.type === 'TemplateLiteral') {
             let index = 0
-            const cssRaw = context.sourceCode.text.slice(
-              arg.range[0] + 1,
-              arg.range[1] - 1,
-            )
+            const cssRaw = context.sourceCode.text.slice(arg.range[0] + 1, arg.range[1] - 1)
 
             let formattedCss
             try {
@@ -98,10 +91,7 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
                 node: arg,
                 messageId: 'define-style',
                 fix(fixer) {
-                  return fixer.replaceTextRange(
-                    [arg.range[0] + 1, arg.range[1] - 1],
-                    result,
-                  )
+                  return fixer.replaceTextRange([arg.range[0] + 1, arg.range[1] - 1], result)
                 },
               })
             }

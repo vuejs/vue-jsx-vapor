@@ -17,12 +17,7 @@ import {
   type VaporSlot,
 } from 'vue'
 import * as Vue from 'vue'
-import type {
-  EmitFnToEmits,
-  ExposedToProps,
-  NodeChild,
-  SlotsToProps,
-} from './types'
+import type { EmitFnToEmits, ExposedToProps, NodeChild, SlotsToProps } from './types'
 
 // component
 
@@ -75,10 +70,7 @@ export const createComponent = (
 }
 
 const proxyCache = new WeakMap()
-export function createProxyComponent(
-  type: VaporComponent,
-  normalizeNode?: (node: any) => Block,
-) {
+export function createProxyComponent(type: VaporComponent, normalizeNode?: (node: any) => Block) {
   if (typeof type === 'function') {
     const existing = proxyCache.get(type)
     if (existing) return existing
@@ -127,29 +119,19 @@ export function normalizeNode(node: NodeChild): Block {
 
 export function isBlock(val: NonNullable<unknown>): val is Block {
   return (
-    val instanceof Node ||
-    Array.isArray(val) ||
-    Vue.isVaporComponent(val) ||
-    Vue.isFragment(val)
+    val instanceof Node || Array.isArray(val) || Vue.isVaporComponent(val) || Vue.isFragment(val)
   )
 }
 
 // node
 
-function createFragment(
-  nodes: Block,
-  anchor: Node | undefined = document.createTextNode(''),
-) {
+function createFragment(nodes: Block, anchor: Node | undefined = document.createTextNode('')) {
   const frag = new Vue.VaporFragment(nodes)
   frag.anchor = anchor
   return frag
 }
 
-function normalizeBlock(
-  node: any,
-  anchor?: Node,
-  processFunction = false,
-): Block {
+function normalizeBlock(node: any, anchor?: Node, processFunction = false): Block {
   if (node instanceof Node || Vue.isFragment(node)) {
     return node
   } else if (Vue.isVaporComponent(node)) {
@@ -178,9 +160,7 @@ function resolveValue(
   anchor?: Node,
   processFunction = false,
 ) {
-  anchor =
-    anchor ||
-    (current instanceof Node && current.nodeType === 3 ? current : undefined)
+  anchor = anchor || (current instanceof Node && current.nodeType === 3 ? current : undefined)
   const node = normalizeBlock(value, anchor, processFunction)
   if (current) {
     if (Vue.isFragment(current)) {
@@ -192,10 +172,7 @@ function resolveValue(
         if (current.scope) current.scope.stop()
       }
     } else if (current instanceof Node) {
-      if (
-        current.nodeType === 3 &&
-        (!(node instanceof Node) || node.nodeType !== 3)
-      ) {
+      if (current.nodeType === 3 && (!(node instanceof Node) || node.nodeType !== 3)) {
         current.textContent = ''
       }
       if (Vue.isFragment(node) && current.parentNode) {
@@ -216,11 +193,7 @@ function resolveValue(
   return node
 }
 
-function resolveValues(
-  values: any[] = [],
-  _anchor?: Node,
-  processFunction = false,
-) {
+function resolveValues(values: any[] = [], _anchor?: Node, processFunction = false) {
   const nodes: Block[] = []
   const scopes: EffectScope[] = []
   for (const [index, value] of values.entries()) {
@@ -252,10 +225,7 @@ export function createNodes(...values: any[]) {
 export function normalizeVaporSlots(slots: any) {
   if (typeof slots === 'function') {
     return { name: 'default', fn: slots }
-  } else if (
-    Object.prototype.toString.call(slots) === '[object Object]' &&
-    !isBlock(slots)
-  ) {
+  } else if (Object.prototype.toString.call(slots) === '[object Object]' && !isBlock(slots)) {
     return Object.entries(slots).map(([name, fn]) => ({ name, fn }))
   } else {
     return {
@@ -344,8 +314,7 @@ export function defineVaporComponent<
 export function defineVaporComponent<
   // props
   TypeProps,
-  RuntimePropsOptions extends
-    ComponentObjectPropsOptions = ComponentObjectPropsOptions,
+  RuntimePropsOptions extends ComponentObjectPropsOptions = ComponentObjectPropsOptions,
   RuntimePropsKeys extends string = string,
   // emits
   TypeEmits extends ComponentTypeEmits = {},
@@ -408,19 +377,11 @@ export function defineVaporComponent(comp: any, extraOptions?: any) {
 
 // components
 
-type ResolveItem<Item, GetKey> = GetKey extends undefined
-  ? Item
-  : ShallowRef<Item>
+type ResolveItem<Item, GetKey> = GetKey extends undefined ? Item : ShallowRef<Item>
 
 export const VaporFor = defineVaporComponent(
   <
-    T extends
-      | any[]
-      | Record<any, any>
-      | number
-      | string
-      | Set<any>
-      | Map<any, any>,
+    T extends any[] | Record<any, any> | number | string | Set<any> | Map<any, any>,
     Item = T extends number
       ? number
       : T extends string

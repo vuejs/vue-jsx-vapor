@@ -5,7 +5,7 @@ next: false
 ---
 
 # Introducing JSX
-  
+
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'

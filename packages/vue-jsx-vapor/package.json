@@ -1,27 +1,44 @@
 {
   "name": "vue-jsx-vapor",
-  "type": "module",
   "version": "3.3.0-beta.1",
   "description": "Vapor Mode of Vue JSX",
-  "license": "MIT",
+  "keywords": [
+    "rollup",
+    "transform",
+    "unplugin",
+    "vapor",
+    "vite",
+    "volar",
+    "vue-jsx",
+    "webpack"
+  ],
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
+  "bugs": {
+    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
+  },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
   },
-  "bugs": {
-    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
-  },
-  "keywords": [
-    "unplugin",
-    "vite",
-    "webpack",
-    "rollup",
-    "transform",
-    "vue-jsx",
-    "volar",
-    "vapor"
+  "files": [
+    "dist",
+    "jsx-runtime"
   ],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/*",
+        "./*"
+      ],
+      "jsx-runtime": [
+        "./jsx-runtime/index.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": "./dist/index.js",
     "./astro": "./dist/astro.js",
@@ -41,30 +58,26 @@
     "./volar": "./dist/volar.js",
     "./*": "./*"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "./dist/*",
-        "./*"
-      ],
-      "jsx-runtime": [
-        "./jsx-runtime/index.d.ts"
-      ]
-    }
-  },
-  "files": [
-    "dist",
-    "jsx-runtime"
-  ],
   "scripts": {
-    "build": "tsdown",
-    "dev": "DEV=true tsdown",
-    "lint": "eslint .",
-    "play": "npm -C playground run dev",
+    "build": "vp pack",
+    "dev": "DEV=true vp pack",
+    "lint": "vp lint .",
+    "play": "vp -C playground dev",
     "release": "bumpp && npm publish",
-    "test": "vitest"
+    "test": "vp test"
+  },
+  "dependencies": {
+    "@vue-jsx/compiler": "workspace:*",
+    "@vue-jsx/macros": "workspace:*",
+    "@vue-jsx/runtime": "workspace:*",
+    "@vue/shared": "catalog:",
+    "unplugin": "catalog:"
+  },
+  "devDependencies": {
+    "@nuxt/kit": "catalog:",
+    "@nuxt/schema": "catalog:",
+    "@vue-macros/volar": "catalog:",
+    "vue": "catalog:"
   },
   "peerDependencies": {
     "@nuxt/kit": "^3",
@@ -94,18 +107,5 @@
     "webpack": {
       "optional": true
     }
-  },
-  "dependencies": {
-    "@vue-jsx/compiler": "workspace:*",
-    "@vue-jsx/macros": "workspace:*",
-    "@vue-jsx/runtime": "workspace:*",
-    "@vue/shared": "catalog:",
-    "unplugin": "catalog:"
-  },
-  "devDependencies": {
-    "@nuxt/kit": "catalog:",
-    "@nuxt/schema": "catalog:",
-    "@vue-macros/volar": "catalog:",
-    "vue": "catalog:"
   }
 }

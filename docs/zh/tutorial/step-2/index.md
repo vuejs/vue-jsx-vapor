@@ -5,7 +5,7 @@ next: false
 ---
 
 # JSX 介绍
-  
+
 <script setup>
 import appCode from '~/tutorial/step-2/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-2/app-solved.tsx?raw'

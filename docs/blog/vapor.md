@@ -30,16 +30,17 @@ In Virtual DOM mode this becomes a block VNode. In Vapor mode, the shape is
 closer to this:
 
 ```js
-const _t0 = _template("<div> ", 1)
+const _t0 = _template('<div> ', 1)
 
-return () => (() => {
-  const _n0 = _t0()
-  _on(_n0, "click", () => count.value++)
-  const _x0 = _txt(_n0)
-  _setNodes(_x0, "count: ", () => count.value)
-  _renderEffect(() => _setClassName(_n0, ok.value ? 1 : 0, "active"))
-  return _n0
-})()
+return () =>
+  (() => {
+    const _n0 = _t0()
+    _on(_n0, 'click', () => count.value++)
+    const _x0 = _txt(_n0)
+    _setNodes(_x0, 'count: ', () => count.value)
+    _renderEffect(() => _setClassName(_n0, ok.value ? 1 : 0, 'active'))
+    return _n0
+  })()
 ```
 
 There is no VNode diff for the text or class. The template creates the DOM once.
@@ -71,7 +72,7 @@ The Vapor compiler keeps a `template` buffer while walking JSX. Native elements
 with static attributes are stringified:
 
 ```html
-<button type=button> </button>
+<button type="button"></button>
 ```
 
 The generated code then calls Vue's `template` helper and accesses dynamic

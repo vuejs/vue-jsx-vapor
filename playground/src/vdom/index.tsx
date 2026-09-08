@@ -14,14 +14,8 @@ export default defineComponent(() => {
   const model = ref('')
   return () => (
     <>
-      <input
-        value={model.value}
-        onInput={(event) => (model.value = event.currentTarget.value)}
-      />
-      <Comp
-        model={model.value}
-        v-slots={{ default: ({ foo }) => <div>{foo}</div> }}
-      />
+      <input value={model.value} onInput={(event) => (model.value = event.currentTarget.value)} />
+      <Comp model={model.value} v-slots={{ default: ({ foo }) => <div>{foo}</div> }} />
     </>
   )
 })

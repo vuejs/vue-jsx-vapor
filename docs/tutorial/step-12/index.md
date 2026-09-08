@@ -48,10 +48,7 @@ The child component receives `modelValue` as a prop and emits `onUpdate:modelVal
 ```jsx
 const Comp = (props) => {
   return (
-    <input
-      value={props.modelValue}
-      onInput={(e) => props['onUpdate:modelValue'](e.target.value)}
-    />
+    <input value={props.modelValue} onInput={(e) => props['onUpdate:modelValue'](e.target.value)} />
   )
 }
 ```
@@ -78,14 +75,8 @@ The child receives them as separate props:
 const Comp = (props) => {
   return (
     <>
-      <input
-        value={props.title}
-        onInput={(e) => props['onUpdate:title'](e.target.value)}
-      />
-      <input
-        value={props.content}
-        onInput={(e) => props['onUpdate:content'](e.target.value)}
-      />
+      <input value={props.title} onInput={(e) => props['onUpdate:title'](e.target.value)} />
+      <input value={props.content} onInput={(e) => props['onUpdate:content'](e.target.value)} />
     </>
   )
 }
@@ -98,12 +89,7 @@ When the macros option is enabled, you can use the `defineModel` macro inside th
 ```jsx
 const Comp = () => {
   const model = defineModel()
-  return (
-    <input
-      value={model.value}
-      onInput={(e) => (model.value = e.target.value)}
-    />
-  )
+  return <input value={model.value} onInput={(e) => (model.value = e.target.value)} />
 }
 ```
 
@@ -115,14 +101,8 @@ const Comp = () => {
   const content = defineModel('content')
   return (
     <>
-      <input
-        value={title.value}
-        onInput={(e) => (title.value = e.target.value)}
-      />
-      <input
-        value={content.value}
-        onInput={(e) => (content.value = e.target.value)}
-      />
+      <input value={title.value} onInput={(e) => (title.value = e.target.value)} />
+      <input value={content.value} onInput={(e) => (content.value = e.target.value)} />
     </>
   )
 }

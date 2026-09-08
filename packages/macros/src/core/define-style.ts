@@ -17,9 +17,7 @@ export function transformDefineStyle(
   const { expression, lang, isCssModules } = defineStyle
   if (expression.arguments[0]?.type !== 'TemplateLiteral') return
 
-  let css = s
-    .slice(expression.arguments[0].start!, expression.arguments[0].end!)
-    .slice(1, -1)
+  let css = s.slice(expression.arguments[0].start!, expression.arguments[0].end!).slice(1, -1)
   const scopeId = hash(css)
   const vars = new Map<string, string>()
   expression.arguments[0].expressions.forEach((exp) => {
@@ -45,10 +43,7 @@ export function transformDefineStyle(
       .join(', ')
     for (const child of children) {
       if (child.type === 'JSXElement') {
-        s.appendRight(
-          child.openingElement.name.end!,
-          ` {...{style:{${varString}}}}`,
-        )
+        s.appendRight(child.openingElement.name.end!, ` {...{style:{${varString}}}}`)
       }
     }
   }
@@ -73,8 +68,7 @@ export function transformDefineStyle(
         ? defineSlots.id.name
         : defineSlots.id.type === 'ObjectPattern'
           ? defineSlots.id.properties.map((prop) => {
-              const value =
-                prop.type === 'RestElement' ? prop.argument : prop.value
+              const value = prop.type === 'RestElement' ? prop.argument : prop.value
               return s.slice(value.start!, value.end!)
             })
           : []
@@ -83,10 +77,7 @@ export function transformDefineStyle(
       enter(node) {
         if (
           node.type === 'JSXElement' &&
-          s.slice(
-            node.openingElement.name.start!,
-            node.openingElement.name.end!,
-          ) !== 'template'
+          s.slice(node.openingElement.name.start!, node.openingElement.name.end!) !== 'template'
         ) {
           let subfix = ''
           if (slotNames.length) {
@@ -97,10 +88,7 @@ export function transformDefineStyle(
             const name = s.slice(tagName.start!, tagName.end!)
             subfix = slotNames.includes(name) ? '-s' : ''
           }
-          s.appendRight(
-            node.openingElement.name.end!,
-            ` data-v-${scopeId}${subfix}=""`,
-          )
+          s.appendRight(node.openingElement.name.end!, ` data-v-${scopeId}${subfix}=""`)
         }
       },
     })
@@ -115,22 +103,14 @@ export function transformDefineStyle(
   importMap.set(importId, css)
   s.appendLeft(
     0,
-    isCssModules
-      ? `import style${index} from "${importId}";`
-      : `import "${importId}";`,
+    isCssModules ? `import style${index} from "${importId}";` : `import "${importId}";`,
   )
-  s.overwrite(
-    expression.start!,
-    expression.end!,
-    isCssModules ? `style${index}` : '',
-  )
+  s.overwrite(expression.start!, expression.end!, isCssModules ? `style${index}` : '')
 }
 
 function getReturnStatement(root: FunctionalNode) {
   if (root.body.type === 'BlockStatement') {
-    const returnStatement = root.body.body.find(
-      (node) => node.type === 'ReturnStatement',
-    )
+    const returnStatement = root.body.body.find((node) => node.type === 'ReturnStatement')
     if (returnStatement) {
       return returnStatement.argument
     }
@@ -143,9 +123,7 @@ function toCssVarId(name: string, prefix = '') {
   return (
     prefix +
     name.replaceAll(/\W/g, (searchValue, replaceValue) => {
-      return searchValue === '.'
-        ? '-'
-        : name.charCodeAt(replaceValue).toString()
+      return searchValue === '.' ? '-' : name.charCodeAt(replaceValue).toString()
     })
   )
 }

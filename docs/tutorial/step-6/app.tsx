@@ -26,10 +26,12 @@ export default defineComponent(() => {
   }
   return () => (
     <>
-      <form onSubmit={(event) => {
-        event.preventDefault()
-        addTodo()
-      }}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          addTodo()
+        }}
+      >
         <input
           value={newTodo.value}
           onInput={(e) => (newTodo.value = e.currentTarget.value)}

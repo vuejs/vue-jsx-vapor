@@ -42,12 +42,14 @@ watch(
       macros.toString(),
     )
 
-    props.files['ts-macro.config.ts'] = props.files[
-      'ts-macro.config.ts'
-    ].replace(/(?<=vapor: )(true|false)/, vapor.toString())
-    props.files['ts-macro.config.ts'] = props.files[
-      'ts-macro.config.ts'
-    ].replace(/(?<=macros: )(true|false)/, macros.toString())
+    props.files['ts-macro.config.ts'] = props.files['ts-macro.config.ts'].replace(
+      /(?<=vapor: )(true|false)/,
+      vapor.toString(),
+    )
+    props.files['ts-macro.config.ts'] = props.files['ts-macro.config.ts'].replace(
+      /(?<=macros: )(true|false)/,
+      macros.toString(),
+    )
 
     props.files['src/index.html'] = vapor ? vaporHtmlCode : htmlCode
   },
@@ -92,9 +94,7 @@ watch(
       <button
         class="repl-button"
         :style="{
-          'background-color': solved
-            ? 'var(--vp-c-green)'
-            : 'var(--vp-c-brand)',
+          'background-color': solved ? 'var(--vp-c-green)' : 'var(--vp-c-brand)',
         }"
         @click="solved = !solved"
       >

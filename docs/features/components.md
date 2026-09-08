@@ -51,7 +51,11 @@ export default defineComponent(() => {
   return () => (
     <ul>
       <For in={users.value}>
-        {(user, index) => <li key={user.id}>{index}: {user.name}</li>}
+        {(user, index) => (
+          <li key={user.id}>
+            {index}: {user.name}
+          </li>
+        )}
       </For>
     </ul>
   )
@@ -78,7 +82,9 @@ export default () => {
     <ul>
       <VaporFor in={users.value}>
         {(user, index) => (
-          <li>{user.name} at {index.value}</li>
+          <li>
+            {user.name} at {index.value}
+          </li>
         )}
       </VaporFor>
     </ul>

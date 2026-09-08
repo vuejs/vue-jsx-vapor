@@ -93,9 +93,7 @@ export type LibraryManagedAttributes<Component, Props> = Props &
           ExtractExposed<
             Props,
             'exposed' extends keyof Instance
-              ? string extends keyof NonNullable<
-                  NonNullable<Instance['exposed']>
-                >
+              ? string extends keyof NonNullable<NonNullable<Instance['exposed']>>
                 ? Instance
                 : UnwrapRef<Instance['exposed']>
               : Instance
@@ -160,9 +158,9 @@ export type EmitFnToProps<T, ExcludeKeys extends PropertyKey = ''> = T extends (
   ? string extends Event
     ? {}
     : {
-        readonly [K in Event as `on${Capitalize<K>}` extends ExcludeKeys
-          ? never
-          : `on${Capitalize<K>}`]?: (...args: Args) => any
+        readonly [
+          K in Event as `on${Capitalize<K>}` extends ExcludeKeys ? never : `on${Capitalize<K>}`
+        ]?: (...args: Args) => any
       }
   : {}
 ```
@@ -197,29 +195,22 @@ public component type already knows what the component exposes; the JSX layer
 only has to extract it.
 
 ```ts
-export type NodeRef<T> =
-  | ((ref: T | null, refs: Record<string, any>) => void)
-  | Ref
-  | string
+export type NodeRef<T> = ((ref: T | null, refs: Record<string, any>) => void) | Ref | string
 
 declare const exposedType: unique symbol
 
-export type ExtractExposed<
-  Props,
-  Default = never,
-> = typeof exposedType extends keyof Props
+export type ExtractExposed<Props, Default = never> = typeof exposedType extends keyof Props
   ? Exclude<Props[typeof exposedType], undefined>
   : Default
 
-export type ExposedToProps<T extends Record<string, any>> =
-  string extends keyof T
+export type ExposedToProps<T extends Record<string, any>> = string extends keyof T
+  ? {}
+  : [keyof T] extends [never]
     ? {}
-    : [keyof T] extends [never]
-      ? {}
-      : {
-          readonly [exposedType]?: T
-          readonly ref?: NodeRef<T>
-        }
+    : {
+        readonly [exposedType]?: T
+        readonly ref?: NodeRef<T>
+      }
 ```
 
 For constructor components, `LibraryManagedAttributes` looks for an `exposed`
@@ -261,9 +252,7 @@ syntax, but Vue children are slots. Vue JSX connects the two with
 
 ```ts
 type ResolveSlots<Slots> = {
-  readonly [Key in keyof Slots]?: Slots[Key] extends (
-    ...args: infer Args
-  ) => VNode | VNode[]
+  readonly [Key in keyof Slots]?: Slots[Key] extends (...args: infer Args) => VNode | VNode[]
     ? (...args: Args) => NodeChild
     : Slots[Key]
 }
@@ -271,9 +260,7 @@ type ResolveSlots<Slots> = {
 export type SlotsToProps<
   RawSlots extends SlotsType | Record<string, any> = Record<string, any>,
   Slots = ResolveSlots<
-    RawSlots extends SlotsType
-      ? SetupContext<EmitsOptions, RawSlots>['slots']
-      : RawSlots
+    RawSlots extends SlotsType ? SetupContext<EmitsOptions, RawSlots>['slots'] : RawSlots
   >,
 > = string extends keyof Slots
   ? {}
@@ -281,8 +268,7 @@ export type SlotsToProps<
     ? {}
     : {
         readonly 'v-slots'?:
-          | ('default' extends keyof Slots ? Slots['default'] | Slots : Slots)
-          | NoInfer<NodeChild>
+          ('default' extends keyof Slots ? Slots['default'] | Slots : Slots) | NoInfer<NodeChild>
       }
 ```
 
@@ -322,9 +308,7 @@ const Panel = defineComponent(
   { props: ['title'] },
 )
 
-;<Panel title="Settings">
-  {({ active }) => <div>{active ? 'open' : 'closed'}</div>}
-</Panel>
+;<Panel title="Settings">{({ active }) => <div>{active ? 'open' : 'closed'}</div>}</Panel>
 ;<Panel
   title="Settings"
   v-slots={{

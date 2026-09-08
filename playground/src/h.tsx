@@ -1,11 +1,4 @@
-import {
-  computed,
-  defineVaporComponent,
-  Fragment,
-  ref,
-  shallowRef,
-  type EmitFn,
-} from 'vue'
+import { computed, defineVaporComponent, Fragment, ref, shallowRef, type EmitFn } from 'vue'
 import { h } from 'vue-jsx/vapor'
 
 function expectType<T>(_value: T): void {}

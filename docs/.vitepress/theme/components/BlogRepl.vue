@@ -93,10 +93,7 @@ const files = reactive({
   'ts-macro.config.ts': undefined,
   'src/index.html': htmlCode,
   'src/App.tsx': props.app,
-  'vite.config.ts': defaultFiles['vite.config.ts'].replace(
-    /(?<=vapor: )(true|false)/,
-    'false',
-  ),
+  'vite.config.ts': defaultFiles['vite.config.ts'].replace(/(?<=vapor: )(true|false)/, 'false'),
 })
 
 watch(

@@ -28,7 +28,7 @@ export declare const enum ErrorCodes {
   VModelOnFileInputElement = 59,
   VModelUnnecessaryValue = 60,
   VShowNoExpression = 61,
-  VSlotsNoExpression = 62
+  VSlotsNoExpression = 62,
 }
 
 export interface Hmr {
@@ -52,9 +52,7 @@ export interface CompilerOptions {
    * @default 'index.jsx'
    */
   filename?: string
-  /**
-   * Root directory used to make the filename relative during SSR transforms.
-   */
+  /** Root directory used to make the filename relative during SSR transforms. */
   root?: string
   /**
    * Transform JSX for Vapor Mode.
@@ -101,7 +99,10 @@ export interface CompilerOptions {
   mergeProps?: boolean
 }
 
-export declare function transform(source: string, options?: CompilerOptions | undefined | null): TransformReturn
+export declare function transform(
+  source: string,
+  options?: CompilerOptions | undefined | null,
+): TransformReturn
 
 export interface TransformReturn {
   code: string

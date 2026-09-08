@@ -1,58 +1,59 @@
 {
-  "type": "module",
   "version": "3.3.0-beta.1",
-  "packageManager": "pnpm@11.23.0",
   "description": "Vue JSX",
-  "license": "MIT",
+  "keywords": [
+    "babel",
+    "compiler",
+    "rollup",
+    "transform",
+    "unplugin",
+    "vapor",
+    "vite",
+    "volar",
+    "vue-jsx",
+    "webpack"
+  ],
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
+  "bugs": {
+    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
+  },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
   },
-  "bugs": {
-    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
-  },
-  "keywords": [
-    "unplugin",
-    "vite",
-    "webpack",
-    "rollup",
-    "transform",
-    "vue-jsx",
-    "volar",
-    "vapor",
-    "babel",
-    "compiler"
-  ],
+  "type": "module",
   "scripts": {
-    "dev": "pnpm run --filter=\"./packages/*\" --parallel dev",
-    "build": "pnpm run --filter=\"./packages/*\" --parallel build",
-    "bench": "pnpm run -C ./benchmark bench",
-    "bench:vue": "pnpm run -C ./benchmark bench:vue",
-    "typecheck": "tsc --noEmit && tsc -p playground --noEmit && pnpm --filter @vue-jsx/macros typecheck",
-    "lint": "node ./packages/macros/node_modules/eslint/bin/eslint.js .",
-    "play": "pnpm -C playground dev",
-    "play:macros": "pnpm --filter @vue-jsx/macros play",
-    "play:build": "pnpm -C playground build && pnpm --filter @vue-jsx/macros play:build",
-    "test": "vitest",
-    "test:rs": "pnpm run --filter=\"compiler\" test",
-    "test:eco": "pnpm run -C ./ecosystem-ci test",
-    "release": "bumpp -r --all -x 'pnpm run pre-release'",
-    "pre-release": "pnpm run build && pnpm run changelog",
+    "dev": "vp run --filter \"./packages/*\" --parallel dev",
+    "build": "vp run --filter \"./packages/*\" --parallel build",
+    "bench": "vp -C benchmark run bench",
+    "bench:vue": "vp -C benchmark run bench:vue",
+    "typecheck": "vp exec -- tsc --noEmit && vp exec -- tsc -p playground --noEmit && vp run --filter @vue-jsx/macros typecheck",
+    "lint": "vp lint .",
+    "format": "vp fmt .",
+    "play": "vp -C playground dev",
+    "play:macros": "vp run --filter @vue-jsx/macros play",
+    "play:build": "vp -C playground build && vp run --filter @vue-jsx/macros play:build",
+    "test": "vp test",
+    "test:rs": "cargo test --manifest-path packages/compiler/Cargo.toml",
+    "test:eco": "vp -C ecosystem-ci run test",
+    "release": "bumpp -r --all -x 'vp run pre-release'",
+    "pre-release": "vp run build && vp run changelog",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
-    "docs:dev": "pnpm run -C ./docs dev",
-    "docs:preview": "pnpm run -C ./docs preview",
-    "docs:build": "pnpm run -C ./docs build"
+    "docs:dev": "vp run --filter docs dev",
+    "docs:preview": "vp run --filter docs preview",
+    "docs:build": "vp run --filter docs build",
+    "prepare": "vp config"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
     "bumpp": "^11.0.1",
     "conventional-changelog-cli": "^5.0.0",
-    "tsdown": "^0.22.14",
     "typescript": "^7.0.2",
-    "unplugin-raw": "^0.7.0",
+    "unplugin-raw": "^0.8.0",
     "vite": "catalog:",
-    "vitest": "catalog:",
+    "vite-plus": "catalog:",
     "vue-jsx": "workspace:*"
-  }
+  },
+  "packageManager": "pnpm@11.23.0"
 }

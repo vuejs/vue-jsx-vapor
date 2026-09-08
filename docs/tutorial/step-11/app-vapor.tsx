@@ -12,8 +12,7 @@ const Comp = (
 }
 
 export default () => {
-  const compRef =
-    shallowRef<UnwrapRef<Parameters<Parameters<typeof Comp>[1]['expose']>[0]>>()
+  const compRef = shallowRef<UnwrapRef<Parameters<Parameters<typeof Comp>[1]['expose']>[0]>>()
   return (
     <>
       <Comp count={1} />

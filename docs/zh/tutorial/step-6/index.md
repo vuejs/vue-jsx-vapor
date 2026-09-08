@@ -5,7 +5,7 @@ next: false
 ---
 
 # 列表渲染
-  
+
 <script setup>
 import appCode from '~/tutorial/step-6/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-6/app-solved.tsx?raw'
@@ -44,10 +44,8 @@ Virtual DOM 使用 `For`：
 ```tsx
 import { For } from 'vue-jsx'
 
-<ul>
-  <For in={todos}>
-    {(todo) => <li key={todo.id}>{todo.text}</li>}
-  </For>
+;<ul>
+  <For in={todos}>{(todo) => <li key={todo.id}>{todo.text}</li>}</For>
 </ul>
 ```
 
@@ -60,7 +58,7 @@ Vapor 模式使用 `VaporFor`：
 ```tsx
 import { VaporFor } from 'vue-jsx'
 
-<ul>
+;<ul>
   <VaporFor in={todos}>
     {(todo, index) => (
       <li>

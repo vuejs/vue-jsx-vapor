@@ -20,24 +20,16 @@ const VaporComp = defineVaporComponent(
   },
 )
 
-export const vaporComp = (
-  <VaporComp id={1} v-slots={{ default: ({ id }) => <div>{id}</div> }} />
-)
+export const vaporComp = <VaporComp id={1} v-slots={{ default: ({ id }) => <div>{id}</div> }} />
 
 const VDomComp = defineComponent(
-  (
-    props: { id: number },
-    { slots }: { slots: { default?: (props: { id: 1 }) => any } },
-  ) =>
+  (props: { id: number }, { slots }: { slots: { default?: (props: { id: 1 }) => any } }) =>
     () =>
       slots.default?.({ id: 1 }) ?? <div>{props.id}</div>,
 )
 
 export const vdomComp = (
-  <VDomComp
-    id={1}
-    v-slots={{ default: ({ id }: { id: 1 }) => <div>{id}</div> }}
-  />
+  <VDomComp id={1} v-slots={{ default: ({ id }: { id: 1 }) => <div>{id}</div> }} />
 )
 
 export default VaporComp

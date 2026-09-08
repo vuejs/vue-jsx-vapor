@@ -12,9 +12,7 @@ const VaporComp = defineVaporComponent(
   { props: ['model'] },
 )
 
-const Comp = (props: { model?: string }) => (
-  <div>Virtual Dom Component:{props.model}</div>
-)
+const Comp = (props: { model?: string }) => <div>Virtual Dom Component:{props.model}</div>
 
 const VDom = defineComponent(() => {
   const model = ref()
