@@ -1,5 +1,5 @@
 import { computed, ref, type Ref } from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 
 export const Comp = (
   props: { foo: number },

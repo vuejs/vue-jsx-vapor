@@ -13,11 +13,7 @@ import type MagicString from 'magic-string'
 type Options = {
   withDefaultsFrom?: string
   skipDefaultProps?: boolean
-  generateRestProps?: (
-    restPropsName: string,
-    index: number,
-    list: Prop[],
-  ) => string | undefined
+  generateRestProps?: (restPropsName: string, index: number, list: Prop[]) => string | undefined
 }
 
 type Prop = {
@@ -28,16 +24,12 @@ type Prop = {
   isRest?: boolean
 }
 
-export function restructure(
-  s: MagicString,
-  node: FunctionalNode,
-  options: Options = {},
-): Prop[] {
+export function restructure(s: MagicString, node: FunctionalNode, options: Options = {}): Prop[] {
   let index = 0
   const propList: Prop[] = []
   for (const param of node.params) {
     const path = `${HELPER_PREFIX}props${index++ || ''}`
-    const props = getProps(s, options, param, path)
+    const props = getProps(s, param, path)
     if (props) {
       s.overwrite(param.start!, param.end!, path)
       propList.push(...props)
@@ -79,9 +71,7 @@ export function restructure(
         options.withDefaultsFrom ?? withDefaultsHelperId,
       )
       const resolvedValues = values
-        .map(
-          (i) => `'${i.path.replace(path, '')}${i.value}': ${i.defaultValue}`,
-        )
+        .map((i) => `'${i.path.replace(path, '')}${i.value}': ${i.defaultValue}`)
         .join(', ')
       prependFunctionalNode(
         node,
@@ -99,9 +89,7 @@ export function restructure(
             id.start!,
             id.end!,
             `${
-              parent?.type === 'ObjectProperty' && parent.shorthand
-                ? `${id.name}: `
-                : ''
+              parent?.type === 'ObjectProperty' && parent.shorthand ? `${id.name}: ` : ''
             }${prop.path}${prop.value}`,
           )
         }
@@ -113,13 +101,7 @@ export function restructure(
   return propList
 }
 
-function getProps(
-  s: MagicString,
-  options: Options,
-  node: Node,
-  path = '',
-  props: Prop[] = [],
-) {
+function getProps(s: MagicString, node: Node, path = '', props: Prop[] = []) {
   const properties =
     node.type === 'ObjectPattern'
       ? node.properties
@@ -138,10 +120,7 @@ function getProps(
         value: `[${index}]`,
       })
       propNames.push(`'${prop.name}'`)
-    } else if (
-      prop?.type === 'AssignmentPattern' &&
-      prop.left.type === 'Identifier'
-    ) {
+    } else if (prop?.type === 'AssignmentPattern' && prop.left.type === 'Identifier') {
       // [foo = 'foo']
       const defaultValue = getDefaultValue(prop.right)
       props.push({
@@ -151,10 +130,7 @@ function getProps(
         defaultValue: s.slice(defaultValue.start!, defaultValue.end!),
       })
       propNames.push(`'${prop.left.name}'`)
-    } else if (
-      prop?.type === 'ObjectProperty' &&
-      prop.key.type === 'Identifier'
-    ) {
+    } else if (prop?.type === 'ObjectProperty' && prop.key.type === 'Identifier') {
       if (prop.value.type === 'AssignmentPattern') {
         if (prop.value.left.type === 'Identifier') {
           // { foo: bar = 'foo' }
@@ -167,20 +143,11 @@ function getProps(
           })
         } else {
           // { foo: { bar } = {} }
-          getProps(
-            s,
-            options,
-            prop.value.left,
-            `${path}.${prop.key.name}`,
-            props,
-          )
+          getProps(s, prop.value.left, `${path}.${prop.key.name}`, props)
         }
-      } else if (
-        !getProps(s, options, prop.value, `${path}.${prop.key.name}`, props)
-      ) {
+      } else if (!getProps(s, prop.value, `${path}.${prop.key.name}`, props)) {
         // { foo: bar }
-        const name =
-          prop.value.type === 'Identifier' ? prop.value.name : prop.key.name
+        const name = prop.value.type === 'Identifier' ? prop.value.name : prop.key.name
         props.push({
           path,
           name,
@@ -201,7 +168,7 @@ function getProps(
         isRest: true,
       })
     } else if (prop) {
-      getProps(s, options, prop, `${path}[${index}]`, props)
+      getProps(s, prop, `${path}[${index}]`, props)
     }
   })
   return props.length ? props : undefined

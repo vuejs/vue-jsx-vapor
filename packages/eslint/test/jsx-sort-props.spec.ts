@@ -1,5 +1,5 @@
 import { createRuleTester } from 'eslint-vitest-rule-tester'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 import jsxSortProps from '../src/rules/jsx-sort-props'
 
 describe('jsx-sort-props', () => {
@@ -28,9 +28,7 @@ describe('jsx-sort-props', () => {
     const { result } = await invalid({
       code: '<App a v-for={i in 4} v-if={true} b />',
       errors: ['listReservedPropsFirst', 'listReservedPropsFirst'],
-      options: [
-        { reservedFirst: ['v-if', 'v-for'], noSortAlphabetically: true },
-      ],
+      options: [{ reservedFirst: ['v-if', 'v-for'], noSortAlphabetically: true }],
     })
     expect(result.output).toMatchSnapshot()
   })

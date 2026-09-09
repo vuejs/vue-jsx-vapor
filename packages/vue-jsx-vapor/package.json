@@ -1,130 +1,32 @@
 {
   "name": "vue-jsx-vapor",
-  "type": "module",
-  "version": "3.2.23",
+  "version": "3.3.0-beta.1",
   "description": "Vapor Mode of Vue JSX",
-  "license": "MIT",
+  "keywords": [
+    "rollup",
+    "transform",
+    "unplugin",
+    "vapor",
+    "vite",
+    "volar",
+    "vue-jsx",
+    "webpack"
+  ],
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
+  "bugs": {
+    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
+  },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vuejs/vue-jsx-vapor.git"
   },
-  "bugs": {
-    "url": "https://github.com/vuejs/vue-jsx-vapor/issues"
-  },
-  "keywords": [
-    "unplugin",
-    "vite",
-    "webpack",
-    "rollup",
-    "transform",
-    "vue-jsx",
-    "volar",
-    "vapor"
+  "files": [
+    "dist",
+    "jsx-runtime"
   ],
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "jsx-vapor-dev": "./src/index.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./astro": {
-      "types": "./dist/astro.d.ts",
-      "jsx-vapor-dev": "./src/astro.ts",
-      "import": "./dist/astro.js",
-      "require": "./dist/astro.cjs"
-    },
-    "./rspack": {
-      "types": "./dist/rspack.d.ts",
-      "jsx-vapor-dev": "./src/rspack.ts",
-      "import": "./dist/rspack.js",
-      "require": "./dist/rspack.cjs"
-    },
-    "./rsbuild": {
-      "types": "./dist/rsbuild.d.ts",
-      "jsx-vapor-dev": "./src/rsbuild.ts",
-      "import": "./dist/rsbuild.js",
-      "require": "./dist/rsbuild.cjs"
-    },
-    "./vite": {
-      "types": "./dist/vite.d.ts",
-      "jsx-vapor-dev": "./src/vite.ts",
-      "import": "./dist/vite.js",
-      "require": "./dist/vite.cjs"
-    },
-    "./webpack": {
-      "types": "./dist/webpack.d.ts",
-      "jsx-vapor-dev": "./src/webpack.ts",
-      "import": "./dist/webpack.js",
-      "require": "./dist/webpack.cjs"
-    },
-    "./rollup": {
-      "types": "./dist/rollup.d.ts",
-      "jsx-vapor-dev": "./src/rollup.ts",
-      "import": "./dist/rollup.js",
-      "require": "./dist/rollup.cjs"
-    },
-    "./esbuild": {
-      "types": "./dist/esbuild.d.ts",
-      "jsx-vapor-dev": "./src/esbuild.ts",
-      "import": "./dist/esbuild.js",
-      "require": "./dist/esbuild.cjs"
-    },
-    "./nuxt": {
-      "types": "./dist/nuxt.d.ts",
-      "jsx-vapor-dev": "./src/nuxt.ts",
-      "import": "./dist/nuxt.js",
-      "require": "./dist/nuxt.cjs"
-    },
-    "./api": {
-      "types": "./dist/api.d.ts",
-      "jsx-vapor-dev": "./src/api.ts",
-      "import": "./dist/api.js",
-      "require": "./dist/api.cjs"
-    },
-    "./raw": {
-      "types": "./dist/raw.d.ts",
-      "jsx-vapor-dev": "./src/raw.ts",
-      "import": "./dist/raw.js",
-      "require": "./dist/raw.cjs"
-    },
-    "./rolldown": {
-      "types": "./dist/rolldown.d.ts",
-      "jsx-vapor-dev": "./src/rolldown.ts",
-      "import": "./dist/rolldown.js",
-      "require": "./dist/rolldown.cjs"
-    },
-    "./bun": {
-      "types": "./dist/bun.d.ts",
-      "jsx-vapor-dev": "./src/bun.ts",
-      "import": "./dist/bun.js",
-      "require": "./dist/bun.cjs"
-    },
-    "./unplugin": {
-      "types": "./dist/unplugin.d.ts",
-      "jsx-vapor-dev": "./src/unplugin.ts",
-      "import": "./dist/unplugin.js",
-      "require": "./dist/unplugin.cjs"
-    },
-    "./jsx-runtime": {
-      "types": "./jsx-runtime/vapor.d.ts",
-      "default": "./jsx-runtime/vapor.js"
-    },
-    "./vdom/jsx-runtime": {
-      "types": "./jsx-runtime/vdom.d.ts",
-      "default": "./jsx-runtime/vdom.js"
-    },
-    "./volar": {
-      "types": "./dist/volar.d.ts",
-      "jsx-vapor-dev": "./src/volar.ts",
-      "import": "./dist/volar.js",
-      "require": "./dist/volar.cjs"
-    },
-    "./*": "./*"
-  },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
+  "type": "module",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "typesVersions": {
     "*": {
@@ -137,17 +39,45 @@
       ]
     }
   },
-  "files": [
-    "dist",
-    "jsx-runtime"
-  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./astro": "./dist/astro.js",
+    "./rspack": "./dist/rspack.js",
+    "./rsbuild": "./dist/rsbuild.js",
+    "./vite": "./dist/vite.js",
+    "./webpack": "./dist/webpack.js",
+    "./rollup": "./dist/rollup.js",
+    "./esbuild": "./dist/esbuild.js",
+    "./nuxt": "./dist/nuxt.js",
+    "./api": "./dist/api.js",
+    "./raw": "./dist/raw.js",
+    "./rolldown": "./dist/rolldown.js",
+    "./bun": "./dist/bun.js",
+    "./unplugin": "./dist/unplugin.js",
+    "./jsx-runtime": "./jsx-runtime/index.js",
+    "./volar": "./dist/volar.js",
+    "./*": "./*"
+  },
   "scripts": {
-    "build": "tsdown",
-    "dev": "DEV=true tsdown",
-    "lint": "eslint .",
-    "play": "npm -C playground run dev",
+    "build": "vp pack",
+    "dev": "DEV=true vp pack",
+    "lint": "vp lint .",
+    "play": "vp -C playground dev",
     "release": "bumpp && npm publish",
-    "test": "vitest"
+    "test": "vp test"
+  },
+  "dependencies": {
+    "@vue-jsx/compiler": "workspace:*",
+    "@vue-jsx/macros": "workspace:*",
+    "@vue-jsx/runtime": "workspace:*",
+    "@vue/shared": "catalog:",
+    "unplugin": "catalog:"
+  },
+  "devDependencies": {
+    "@nuxt/kit": "catalog:",
+    "@nuxt/schema": "catalog:",
+    "@vue-macros/volar": "catalog:",
+    "vue": "catalog:"
   },
   "peerDependencies": {
     "@nuxt/kit": "^3",
@@ -177,21 +107,5 @@
     "webpack": {
       "optional": true
     }
-  },
-  "dependencies": {
-    "@vue-jsx-vapor/compiler-rs": "workspace:*",
-    "@vue-jsx-vapor/macros": "workspace:*",
-    "@vue-jsx-vapor/runtime": "workspace:*",
-    "@vue/shared": "catalog:",
-    "pathe": "^2.0.3",
-    "ts-macro": "catalog:",
-    "unplugin": "catalog:",
-    "unplugin-utils": "catalog:"
-  },
-  "devDependencies": {
-    "@nuxt/kit": "catalog:",
-    "@nuxt/schema": "catalog:",
-    "@vue-macros/volar": "catalog:",
-    "vue": "catalog:"
   }
 }

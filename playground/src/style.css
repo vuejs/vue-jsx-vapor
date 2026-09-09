@@ -1,0 +1,17 @@
+#app {
+  background: url('https://vuejs.org/images/logo.png') no-repeat center;
+}
+
+.text-red {
+  color: red;
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}

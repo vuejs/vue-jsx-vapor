@@ -1,51 +1,50 @@
 # Macros
 
-A collection of compile-time macros for JSX. These macros must be explicitly enabled by setting the `macros` option to `true`.
+A collection of compile-time macros for JSX. Macros are disabled by default and
+must be explicitly enabled by setting the `macros` option to `true`.
 
 ## Setup
 
-::: code-group
-
 ```ts {7} [vite.config.ts]
 import { defineConfig } from 'vite'
-import vueJsxVapor from 'vue-jsx-vapor/vite'
+import vueJsx from 'vue-jsx/vite'
 
 export default defineConfig({
   plugins: [
-    vueJsxVapor({
+    vueJsx({
       macros: true,
     }),
   ],
 })
 ```
 
-```ts {6} [ts-macro.config.ts]
-import vueJsxVapor from 'vue-jsx-vapor/volar'
+The `vue-jsx/volar` plugin is optional. Use it only when you need editor or
+type-checking support for macro syntax. In that case, enable the macro transform
+there as well and keep the option consistent with the Vite configuration:
+
+```ts [ts-macro.config.ts]
+import vueJsx from 'vue-jsx/volar'
 
 export default {
-  plugins: [
-    vueJsxVapor({
-      macros: true,
-    }),
-  ],
+  plugins: [vueJsx({ macros: true })],
 }
 ```
 
-:::
+See [Directives](./directives) for the general TS Macro setup.
 
 ::: details Install as a standalone plugin
 
 A standalone plugin is also available for use in Virtual DOM projects.
 
 ```bash
-pnpm add @vue-jsx-vapor/macros -D
+pnpm add @vue-jsx/macros -D
 ```
 
 Configuration:
 
 ```ts
 // vite.config.ts
-import jsxMacros from '@vue-jsx-vapor/macros/vite'
+import jsxMacros from '@vue-jsx/macros/vite'
 
 export default {
   plugins: [jsxMacros()],
@@ -61,7 +60,7 @@ export default {
 ### Options
 
 ```ts
-VueJsxVapor({
+vueJsx({
   defineComponent: {
     /**
      * @default ['defineComponent','defineVaporComponent']
@@ -111,9 +110,7 @@ import { defineComponent, useAttrs, withAsyncContext } from 'vue'
 defineComponent(
   async (props) => {
     let __temp, __restore
-    ;(([__temp, __restore] = withAsyncContext(() => nextTick())),
-      await __temp,
-      __restore())
+    ;(([__temp, __restore] = withAsyncContext(() => nextTick())), await __temp, __restore())
     const attrs = useAttrs()
     return () => (
       <div>
@@ -137,15 +134,13 @@ defineComponent(
 // @errors: 2322
 import { defineVaporComponent } from 'vue'
 
-const Comp = defineVaporComponent(
-  <T,>({ foo = undefined as T, bar = ''!, ...attrs }) => {
-    return (
-      <div>
-        <span {...attrs}>{foo}</span>
-      </div>
-    )
-  },
-)
+const Comp = defineVaporComponent(<T,>({ foo = undefined as T, bar = ''!, ...attrs }) => {
+  return (
+    <div>
+      <span {...attrs}>{foo}</span>
+    </div>
+  )
+})
 
 export default () => <Comp<string> foo={1} bar="bar" />
 ```
@@ -204,10 +199,7 @@ export default () => {
 import { ref } from 'vue'
 import { useModel } from '/vue-macros/jsx-macros/use-model'
 
-function Comp(_props: {
-  modelValue: string
-  'onUpdate:modelValue': (value: string) => any
-}) {
+function Comp(_props: { modelValue: string; 'onUpdate:modelValue': (value: string) => any }) {
   const modelValue = useModel<string>(_props, 'modelValue', { required: true })
   modelValue.value = 'foo'
   return <div>{modelValue.value}</div>
@@ -267,7 +259,7 @@ export default () => (
 Functions identically to `defineExpose` in Vue SFCs.
 
 ```tsx twoslash
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 
 const Comp = <T,>({ foo = undefined as T }) => {
   defineExpose({
@@ -289,7 +281,7 @@ export default () => {
 
 ```tsx
 import { currentInstance } from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 import { useExpose } from '/vue-macros/jsx-macros/use-expose'
 
 const Comp = ({ foo }) => {
@@ -305,10 +297,7 @@ const Comp = ({ foo }) => {
 ## defineStyle
 
 ```ts
-declare function defineStyle(
-  style: string,
-  options?: { scoped?: boolean },
-): void
+declare function defineStyle(style: string, options?: { scoped?: boolean }): void
 ```
 
 ### Features

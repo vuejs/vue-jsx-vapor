@@ -1,6 +1,36 @@
 # Directives
 
-Vue JSX Vapor provides full support for Vue's built-in directives within JSX syntax.
+Vue JSX provides full support for Vue's built-in directives within JSX syntax.
+
+## Type Support
+
+Directive transforms work at compile time without additional editor tooling. To
+get directive type support in the editor or during command-line type checking,
+install [TS Macro](https://marketplace.visualstudio.com/items?itemName=zhiyuanzmj.vscode-ts-macro)
+and enable the `vue-jsx/volar` plugin:
+
+```ts [ts-macro.config.ts]
+import vueJsx from 'vue-jsx/volar'
+
+export default {
+  plugins: [vueJsx()],
+}
+```
+
+For command-line type checking, install `@ts-macro/tsc` and use `tsmc` instead
+of `tsc`:
+
+```bash
+pnpm add -D @ts-macro/tsc
+```
+
+```json [package.json]
+{
+  "scripts": {
+    "typecheck": "tsmc --noEmit"
+  }
+}
+```
 
 |           Directive           |        Vue         |       Volar        |
 | :---------------------------: | :----------------: | :----------------: |

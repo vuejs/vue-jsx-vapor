@@ -1,88 +1,50 @@
 # Getting Started
 
-Vue JSX Vapor is a Vue JSX compiler inspired by the Vue Compiler, written in Rust 🦀 and powered by Oxc. It supports both Virtual DOM and Vapor Mode code generation.
+Vue JSX is a high-performance JSX compiler for Vue, written in Rust and powered
+by Oxc. It generates Vue Virtual DOM code by default and can optionally generate
+code for Vapor Mode.
 
-This guide assumes familiarity with Vue fundamentals.
+This guide assumes familiarity with Vue and Vite.
 
-## Prerequisites
+## Requirements
 
-- **Vapor Mode** requires Vue 3.6 or later. For projects using only Virtual DOM (Interop Mode), Vue 3.0+ is sufficient.
-- If you plan to use directives or macros, we recommend installing the [TS Macro](https://marketplace.visualstudio.com/items?itemName=zhiyuanzmj.vscode-ts-macro) VSCode extension to enable the Volar plugin for TSX. Additionally, use `@ts-macro/tsc` instead of `tsc` for type checking:
-
-  ```json
-  // package.json
-  {
-    "scripts": {
-      "typecheck": "tsmc --noEmit"
-    }
-  }
-  ```
+- Virtual DOM mode supports Vue 3.
+- Vapor mode requires Vue 3.6 or later.
 
 ## Installation
 
 ```bash
-# Plugin
-pnpm add vue-jsx-vapor
-
-# Runtime
-pnpm add vue@3.6.0-rc.7
+pnpm add vue-jsx
 ```
 
-## Configuration
-
-::: code-group
+## Vite Configuration
 
 ```ts [vite.config.ts]
 import { defineConfig } from 'vite'
-import vueJsxVapor from 'vue-jsx-vapor/vite'
+import vueJsx from 'vue-jsx/vite'
 
 export default defineConfig({
-  plugins: [
-    vueJsxVapor({
-      macros: true,
-    }),
-  ],
+  plugins: [vueJsx()],
 })
 ```
 
-:::
+This configuration compiles regular `.jsx` and `.tsx` files to Vue Virtual DOM.
+See [Vapor Mode](./interop) when you want Vapor output.
 
 ## TypeScript Configuration
 
-### tsconfig.json
-
-```json
+```json [tsconfig.json]
 {
   "compilerOptions": {
     "jsx": "preserve",
-    "jsxImportSource": "vue-jsx-vapor"
+    "jsxImportSource": "vue-jsx"
   }
 }
 ```
 
-### Volar Plugin
+`jsxImportSource` selects the JSX types and automatic JSX runtime declarations.
+It does not enable Vapor mode; the `vapor` compiler option controls the emitted
+rendering mode.
 
-The TS Macro VSCode extension automatically loads `vue-jsx-vapor/volar` by analyzing your `vite.config.ts`. It shares the configuration from the `vue-jsx-vapor/vite` plugin, eliminating the need to manually configure `ts-macro.config.ts`.
-
-::: details Manual Configuration
-
-::: code-group
-
-```ts [ts-macro.config.ts]
-import vueJsxVapor from 'vue-jsx-vapor/volar'
-
-export default {
-  plugins: [
-    vueJsxVapor({
-      macros: true,
-    }),
-  ],
-}
-```
-
-:::
-
-## Starter Templates
-
-- [vitesse-jsx-vapor](https://github.com/zhiyuanzmj/vitesse-jsx-vapor) – Opinionated starter template
-- [vue-jsx-vapor-ssr](https://github.com/zhiyuanzmj/vue-jsx-vapor-ssr) – SSR example
+See [Macros](../features/macros) and [Directives](../features/directives) for
+optional syntax transforms and their type support.

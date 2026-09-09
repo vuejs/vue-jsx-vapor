@@ -1,22 +1,20 @@
 # ESLint
 
-An ESLint plugin for `vue-jsx-vapor` that provides automatic code formatting for directives and macros.
+An ESLint plugin for `vue-jsx` that provides automatic code formatting for directives and macros.
 
 ## Installation
 
 ```sh
-pnpm add @vue-jsx-vapor/eslint
+pnpm add @vue-jsx/eslint
 ```
 
 ## Configuration
 
-```ts 
+```ts
 // eslint.config.ts
-import vueJsxVapor from '@vue-jsx-vapor/eslint'
+import vueJsx from '@vue-jsx/eslint'
 
-export default [
-  vueJsxVapor()
-]
+export default [vueJsx()]
 ```
 
 ## Rules
@@ -26,14 +24,14 @@ export default [
 Formats styles within the `defineStyle` macro using Prettier.
 
 ```ts twoslash
-import vueJsxVapor from '@vue-jsx-vapor/eslint'
+import vueJsx from '@vue-jsx/eslint'
 
 export default [
-  vueJsxVapor({
+  vueJsx({
     rules: {
-      'vue-jsx-vapor/define-style': [1, { tabWidth: 2 }]
-    }
-  })
+      'vue-jsx-vapor/define-style': [1, { tabWidth: 2 }],
+    },
+  }),
 ]
 ```
 
@@ -42,17 +40,20 @@ export default [
 A modified version of [@stylistic/jsx/jsx-sort-props](https://eslint.style/rules/jsx/jsx-sort-props) with support for custom `reservedFirst` and `reservedLast` options.
 
 ```ts twoslash
-import vueJsxVapor from '@vue-jsx-vapor/eslint'
+import vueJsx from '@vue-jsx/eslint'
 
 export default [
-  vueJsxVapor({
+  vueJsx({
     rules: {
-      'vue-jsx-vapor/jsx-sort-props': [2, { 
-        reservedFirst: ['v-if', 'v-for'], 
-        reservedLast: ['v-slot'],
-      }]
-    }
-  })
+      'vue-jsx-vapor/jsx-sort-props': [
+        2,
+        {
+          reservedFirst: ['v-if', 'v-for'],
+          reservedLast: ['v-slot'],
+        },
+      ],
+    },
+  }),
 ]
 ```
 

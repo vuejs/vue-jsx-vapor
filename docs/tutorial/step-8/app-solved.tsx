@@ -1,15 +1,18 @@
-import { ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 
-function Comp({ foo }) {
-  return <div>{foo.value}</div>
-}
+const Comp = defineComponent(
+  ({ foo }) => {
+    return () => <div>{foo}</div>
+  },
+  { props: ['foo'] },
+)
 
-export default () => {
+export default defineComponent(() => {
   const foo = ref(1)
-  return (
+  return () => (
     <>
       <button onClick={() => foo.value++}>+</button>
-      <Comp foo={foo} />
+      <Comp foo={foo.value} />
     </>
   )
-}
+})

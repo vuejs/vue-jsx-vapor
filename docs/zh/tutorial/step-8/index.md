@@ -5,15 +5,14 @@ next: false
 ---
 
 # Props
-  
+
 <script setup>
 import appCode from '~/tutorial/step-8/app.tsx?raw'
 import appSolvedCode from '~/tutorial/step-8/app-solved.tsx?raw'
-import appInteropCode from '~/tutorial/step-8/app-interop.tsx?raw'
-import appInteropSolvedCode from '~/tutorial/step-8/app-interop-solved.tsx?raw'
+import appVaporCode from '~/tutorial/step-8/app-vapor.tsx?raw'
+import appVaporSolvedCode from '~/tutorial/step-8/app-vapor-solved.tsx?raw'
 import appMacrosSolvedCode from '~/tutorial/step-8/app-macros-solved.tsx?raw'
-import appInteropMacrosCode from '~/tutorial/step-8/app-interop-macros.tsx?raw'
-import appInteropMacrosSolvedCode from '~/tutorial/step-8/app-interop-macros-solved.tsx?raw'
+import appVaporMacrosSolvedCode from '~/tutorial/step-8/app-vapor-macros-solved.tsx?raw'
 import { getDefaultFiles } from '~/tutorial/template'
 import { ref } from 'vue'
 
@@ -21,12 +20,12 @@ const files = ref(getDefaultFiles())
 const apps = {
   app: { 'src/App.tsx': appCode },
   solved: { 'src/App.tsx': appSolvedCode },
-  interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropSolvedCode },
+  vapor: { 'src/App.tsx': appVaporCode },
+  vaporSolved: { 'src/App.tsx': appVaporSolvedCode },
   macros: { 'src/App.tsx': appCode },
   macrosSolved: { 'src/App.tsx': appMacrosSolvedCode },
-  interopMacros: { 'src/App.tsx': appInteropMacrosCode },
-  interopMacrosSolved: { 'src/App.tsx': appInteropMacrosSolvedCode },
+  vaporMacros: { 'src/App.tsx': appVaporCode },
+  vaporMacrosSolved: { 'src/App.tsx': appVaporMacrosSolvedCode },
 }
 </script>
 
@@ -35,9 +34,7 @@ const apps = {
 Props 在函数式组件的第一个参数中提供。
 
 ```jsx
-const Comp = (props) => (
-  <div>{props.foo}</div>
-)
+const Comp = (props) => <div>{props.foo}</div>
 ```
 
 ## 解构 Props
@@ -47,16 +44,13 @@ const Comp = (props) => (
 :::
 
 ```jsx
-const Comp = ({ foo }) => (
-  <div>
-    {foo} 这将不再更新
-  </div>
-)
-````
+const Comp = ({ foo }) => <div>{foo} 这将不再更新</div>
+```
 
 我们有两种解决方案：
 
 1. 直接传递一个响应式 ref 对象作为 prop：
+
 ```jsx
 function Comp({ foo }) {
   return <div>{foo.value}</div>
@@ -77,12 +71,15 @@ const Comp = defineVaporComponent(({ foo }) => {
   return <div>{foo}</div>
 })
 ```
+
 将被转换为：
+
 ```jsx
 const Comp = defineVaporComponent((__props) => {
   return <div>{__props.foo}</div>
 })
 ```
+
 这样 `foo` prop 就会重新获得响应性。\
 [更多详情](/zh/features/macros.html#definecomponent-definevaporcomponent)
 

@@ -1,4 +1,4 @@
-import macros from '@vue-jsx-vapor/macros/raw'
+import macros from '@vue-jsx/macros/raw'
 import {
   propsHelperCode,
   propsHelperId,
@@ -8,9 +8,7 @@ import {
   vaporHelperId,
   vdomHelperCode,
   vdomHelperId,
-} from '@vue-jsx-vapor/runtime/raw'
-import { relative } from 'pathe'
-import { normalizePath } from 'unplugin-utils'
+} from '@vue-jsx/runtime/raw'
 import { transformVueJsxVapor, type Options } from './core'
 import type { UnpluginOptions } from 'unplugin'
 
@@ -38,8 +36,7 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
             // },
             define: {
               __VUE_OPTIONS_API__: config.define?.__VUE_OPTIONS_API__ ?? true,
-              __VUE_PROD_DEVTOOLS__:
-                config.define?.__VUE_PROD_DEVTOOLS__ ?? false,
+              __VUE_PROD_DEVTOOLS__: config.define?.__VUE_PROD_DEVTOOLS__ ?? false,
               __VUE_PROD_HYDRATION_MISMATCH_DETAILS__:
                 config.define?.__VUE_PROD_HYDRATION_MISMATCH_DETAILS__ ?? false,
             },
@@ -48,8 +45,7 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
         configResolved(config) {
           root = config.root
           needHMR = config.command === 'serve'
-          needSourceMap ||=
-            config.command === 'serve' || !!config.build.sourcemap
+          needSourceMap ||= config.command === 'serve' || !!config.build.sourcemap
         },
       },
       resolveId: {
@@ -72,19 +68,19 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
       transform: {
         filter: {
           id: {
-            include: options?.include || /\.[cm]?[jt]sx(?=$|[?#])/,
-            exclude: options?.exclude || /node_modules/,
+            include: options.include || /\.[cm]?[jt]sx(?=$|[?#])/,
+            exclude: options.exclude || /node_modules/,
           },
         },
         handler(code, id, opt?: { ssr?: boolean }) {
-          const result = transformVueJsxVapor(
-            code,
-            opt?.ssr ? normalizePath(relative(root, id)) : id,
-            options,
-            needSourceMap,
-            needHMR,
-            opt?.ssr,
-          )
+          const result = transformVueJsxVapor(code, id, {
+            vapor: !options.interop,
+            root,
+            hmr: needHMR,
+            sourceMap: needSourceMap,
+            ssr: opt?.ssr,
+            ...options.compiler,
+          })
           if (result?.code) {
             return {
               code: result.code,

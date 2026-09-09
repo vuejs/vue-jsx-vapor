@@ -19,7 +19,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
 
   return [
     {
-      name: '@vue-jsx-vapor/macros',
+      name: '@vue-jsx/macros',
       enforce: 'pre',
 
       resolveId: {
@@ -61,7 +61,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
       },
     },
     {
-      name: '@vue-jsx-vapor/macros/define-style',
+      name: '@vue-jsx/macros/define-style',
 
       resolveId: {
         filter: {
