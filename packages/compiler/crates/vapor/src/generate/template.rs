@@ -167,7 +167,12 @@ fn gen_children<'a>(
       None
     };
 
-    if id.is_none() && !child.has_dynamic_child {
+    // A child created by its own operation (component, block, createElement-
+    // backed element) owns its subtree through genSelf; only children that
+    // sit in the parent template are descended into from here.
+    let owns_subtree = child.operation.is_some();
+
+    if id.is_none() && (!child.has_dynamic_child || owns_subtree) {
       gen_self(
         statements,
         child,
@@ -295,8 +300,11 @@ fn gen_children<'a>(
       block_statement_count += 1;
     }
 
-    let child_children = mem::take(&mut child.children);
-    if id.eq(&child.anchor) && !child.has_dynamic_child {
+    // gen_self owns operation-backed descendants. Keep children on `child` so
+    // it can traverse them from the newly-created node instead of the parent
+    // template access path.
+    let child_children = (!owns_subtree).then(|| mem::take(&mut child.children));
+    if id.eq(&child.anchor) && (!child.has_dynamic_child || owns_subtree) {
       gen_self(
         statements,
         child,
@@ -313,17 +321,19 @@ fn gen_children<'a>(
       statements.push(directives)
     };
 
-    let inserted = gen_children(
-      statements,
-      child_children,
-      context,
-      unsafe { &mut *_context_block },
-      statement_index,
-      ast.expression_identifier(SPAN, ast.str(&variable)),
-      Rc::clone(&flush_before_dynamic),
-    );
-    statement_index += inserted;
-    block_statement_count += inserted;
+    if let Some(child_children) = child_children {
+      let inserted = gen_children(
+        statements,
+        child_children,
+        context,
+        unsafe { &mut *_context_block },
+        statement_index,
+        ast.expression_identifier(SPAN, ast.str(&variable)),
+        Rc::clone(&flush_before_dynamic),
+      );
+      statement_index += inserted;
+      block_statement_count += inserted;
+    }
     prev = Some((variable, element_index, id.is_none()));
     index += 1;
   }
