@@ -90,7 +90,7 @@ export namespace JSX {
               ? SlotsToProps<Instance['slots'] & {}>
               : {})
       : Component extends (
-            props: Props,
+            props: any,
             ctx: {
               slots: infer Slots
               attrs: any
