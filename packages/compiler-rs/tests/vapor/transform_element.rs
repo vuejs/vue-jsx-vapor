@@ -681,6 +681,38 @@ fn zcustom_element() {
 }
 
 #[test]
+fn nested_custom_element_with_dynamic_child() {
+  let code = transform(
+    r#"<div><my-custom-element><span>{msg}</span></my-custom-element></div>"#,
+    None,
+  )
+  .code;
+
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createPlainElement as _createPlainElement, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<span> ");
+  const _t1 = _template("<div>", 1);
+  (() => {
+  	const _n2 = _t1();
+  	_setInsertionState(_n2);
+  	const _n1 = _createPlainElement("my-custom-element", null, () => {
+  		const _n0 = _t0();
+  		const _x0 = _txt(_n0);
+  		_setNodes(_x0, () => msg);
+  		return _n0;
+  	});
+  	return _n2;
+  })();
+  "#);
+
+  assert!(code.contains("_createPlainElement(\"my-custom-element\""));
+  assert!(code.contains("_setInsertionState("));
+  assert!(code.contains("_setNodes("));
+  assert!(!code.contains("_nthChild("));
+}
+
+#[test]
 fn custom_element_with_v_model() {
   let code = transform(
     r#"<my-custom-element v-model={foo}></my-custom-element>"#,
