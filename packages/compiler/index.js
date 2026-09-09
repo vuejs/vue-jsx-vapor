@@ -296,55 +296,6 @@ function requireNative() {
     } else {
       loadErrors.push(new Error(`Unsupported architecture on macOS: ${process.arch}`))
     }
-  } else if (process.platform === 'freebsd') {
-    if (process.arch === 'x64') {
-      try {
-        return require('./compiler.freebsd-x64.node')
-      } catch (e) {
-        loadErrors.push(e)
-      }
-      try {
-        const binding = require('@vue-jsx/compiler-freebsd-x64')
-        const bindingPackageVersion = require('@vue-jsx/compiler-freebsd-x64/package.json').version
-        if (
-          bindingPackageVersion !== '3.3.0-beta.1' &&
-          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
-          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
-        ) {
-          throw new Error(
-            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
-          )
-        }
-        return binding
-      } catch (e) {
-        loadErrors.push(e)
-      }
-    } else if (process.arch === 'arm64') {
-      try {
-        return require('./compiler.freebsd-arm64.node')
-      } catch (e) {
-        loadErrors.push(e)
-      }
-      try {
-        const binding = require('@vue-jsx/compiler-freebsd-arm64')
-        const bindingPackageVersion =
-          require('@vue-jsx/compiler-freebsd-arm64/package.json').version
-        if (
-          bindingPackageVersion !== '3.3.0-beta.1' &&
-          process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
-          process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0'
-        ) {
-          throw new Error(
-            `Native binding package version mismatch, expected 3.3.0-beta.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
-          )
-        }
-        return binding
-      } catch (e) {
-        loadErrors.push(e)
-      }
-    } else {
-      loadErrors.push(new Error(`Unsupported architecture on FreeBSD: ${process.arch}`))
-    }
   } else if (process.platform === 'linux') {
     if (process.arch === 'x64') {
       if (isMusl()) {

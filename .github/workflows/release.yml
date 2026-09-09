@@ -180,57 +180,6 @@ jobs:
             ./packages/compiler/wasi-worker-browser.mjs
             ./packages/compiler/index.js
           if-no-files-found: error
-  build-freebsd:
-    runs-on: ubuntu-latest
-    name: Build FreeBSD
-    defaults:
-      run:
-        working-directory: ./packages/compiler
-    steps:
-      - uses: actions/checkout@v5
-      - name: Build
-        id: build
-        uses: cross-platform-actions/action@v0.29.0
-        env:
-          DEBUG: napi:*
-          RUSTUP_IO_THREADS: 1
-        with:
-          operating_system: freebsd
-          version: '14.3'
-          memory: 8G
-          cpu_count: 3
-          environment_variables: DEBUG RUSTUP_IO_THREADS
-          shell: bash
-          run: |
-            sudo pkg install -y -f curl node libnghttp2 npm ca_root_nss
-            sudo npm install -g corepack
-            curl https://sh.rustup.rs -sSf --output rustup.sh
-            sh rustup.sh -y --profile minimal --default-toolchain beta
-            corepack prepare
-            corepack enable
-            source "$HOME/.cargo/env"
-            export PATH="$HOME/.cargo/bin:$PATH"
-            echo "~~~~ rustc --version ~~~~"
-            rustc --version
-            echo "~~~~ node -v ~~~~"
-            node -v
-            echo "~~~~ pnpm --version ~~~~"
-            pnpm --version
-            pwd
-            ls -lah
-            whoami
-            env
-            freebsd-version
-            pnpm install --filter @vue-jsx/compiler...
-            pnpm --filter @vue-jsx/compiler build
-            rm -rf node_modules
-            rm -rf packages/compiler/target
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: bindings-freebsd
-          path: ./packages/compiler/${{ env.APP_NAME }}.*.node
-          if-no-files-found: error
   test-macOS-windows-binding:
     name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
     needs:
@@ -391,7 +340,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - lint
-      - build-freebsd
       - test-macOS-windows-binding
       - test-linux-binding
       - test-wasi
