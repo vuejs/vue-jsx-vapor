@@ -43,8 +43,10 @@ See [Vapor Mode](./interop) when you want Vapor output.
 ```
 
 `jsxImportSource` selects the JSX types and automatic JSX runtime declarations.
-It does not enable Vapor mode; the `vapor` compiler option controls the emitted
-rendering mode.
+
+There is no global `JSX` namespace by default. For using the types in type
+positions, restoring a global `JSX` namespace, or extending the types with
+module augmentation, see [TypeScript](../typescript/overview).
 
 See [Macros](../features/macros) and [Directives](../features/directives) for
 optional syntax transforms and their type support.

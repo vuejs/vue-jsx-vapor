@@ -1,17 +1,24 @@
-# Native TypeScript 7 Support: Props, Refs, And Children In Pure TypeScript
+# Type Inference: Props, Refs, And Children In Pure TypeScript
 
 Vue JSX 3.3 makes ordinary component inference a TypeScript feature. With
 `jsxImportSource: "vue-jsx"`, TypeScript reads the
 JSX namespace exported by `vue-jsx/jsx-runtime`, and that namespace teaches the
-compiler how Vue components should look at JSX call sites.
+compiler how Vue components should look at JSX call sites — including the new
+TypeScript 7 (the native tsgo port), where it works out of the box.
 
 The key is `JSX.LibraryManagedAttributes`. TypeScript calls this type whenever
 it checks `<Comp ... />`. Vue JSX uses that hook to rewrite the raw component
 props into the actual JSX-facing props: normal props stay normal, emitted events
 become `onXxx`, `ref` points at the exposed type, and JSX children are checked
-as Vue slots.
+as Vue slots. Vapor components take the same path: components wrapped in
+`defineVaporComponent` and plain vapor function components get the same props,
+emits, slots, and exposed-`ref` inference as Virtual DOM components.
 
-[简体中文](/zh/blog/typescript-7)
+[简体中文](/zh/blog/type-inference)
+
+<script setup>
+import inferenceCode from './examples/type-inference-vapor.tsx?raw'
+</script>
 
 ## The Entry Point
 
@@ -26,21 +33,8 @@ The only default TypeScript setup is the JSX runtime:
 }
 ```
 
-`vue-jsx/jsx-runtime/index.d.ts` exports the runtime JSX namespace and also
-places it in the global type space:
-
-```ts
-import type { Fragment, VNode } from 'vue'
-export type { JSX } from 'vue-jsx'
-
-declare global {
-  export type { JSX } from 'vue-jsx'
-}
-
-declare function jsx(type: any, props: any, key: any): VNode
-
-export { Fragment, jsx, jsx as jsxDEV, jsx as jsxs }
-```
+`vue-jsx/jsx-runtime` exports the runtime JSX namespace that TypeScript
+resolves through `jsxImportSource`.
 
 That is enough for TypeScript itself to ask Vue JSX three questions:
 
@@ -82,11 +76,13 @@ then performs the real type-level adaptation.
 
 ## What LibraryManagedAttributes Does
 
-Here is the important part of the type, copied from the runtime declarations and
-trimmed only around unrelated DOM attributes:
+Here is the important part of the type, from the runtime declarations:
+
+<details>
+<summary>Expand the full <code>LibraryManagedAttributes</code> type</summary>
 
 ```ts
-export type LibraryManagedAttributes<Component, Props> = Props &
+export type LibraryManagedAttributes<Component, Props> = Omit<Props, 'ref'> &
   (Component extends abstract new (...args: any[]) => infer Instance
     ? {
         ref?: NodeRef<
@@ -107,7 +103,7 @@ export type LibraryManagedAttributes<Component, Props> = Props &
             ? SlotsToProps<Instance['slots'] & {}>
             : {})
     : Component extends (
-          props: Props,
+          props: any,
           ctx: {
             slots: infer Slots
             attrs: any
@@ -129,6 +125,8 @@ export type LibraryManagedAttributes<Component, Props> = Props &
           ref?: VNodeRef
         })
 ```
+
+</details>
 
 The type has three branches.
 
@@ -251,17 +249,9 @@ syntax, but Vue children are slots. Vue JSX connects the two with
 `ElementChildrenAttribute` and `SlotsToProps`.
 
 ```ts
-type ResolveSlots<Slots> = {
-  readonly [Key in keyof Slots]?: Slots[Key] extends (...args: infer Args) => VNode | VNode[]
-    ? (...args: Args) => NodeChild
-    : Slots[Key]
-}
-
 export type SlotsToProps<
   RawSlots extends SlotsType | Record<string, any> = Record<string, any>,
-  Slots = ResolveSlots<
-    RawSlots extends SlotsType ? SetupContext<EmitsOptions, RawSlots>['slots'] : RawSlots
-  >,
+  Slots = RawSlots extends SlotsType ? SetupContext<EmitsOptions, RawSlots>['slots'] : RawSlots,
 > = string extends keyof Slots
   ? {}
   : [keyof Slots] extends [never]
@@ -272,54 +262,41 @@ export type SlotsToProps<
       }
 ```
 
+The trick is how the two types pair up. `LibraryManagedAttributes` first
+generates a typed `v-slots` prop carrying the component's slot signatures;
+`ElementChildrenAttribute` then tells TypeScript to check JSX children against
+that `v-slots` prop instead of a `children` prop — it takes over the position
+`children` occupies in React. Vue JSX never had a `children` prop concept, but
+`v-slots` is already a directive the compiler understands, so the type layer
+and the compile layer meet at the same attribute. When you write
+`<Panel>{({ active }) => ...}</Panel>`, TypeScript is actually matching your
+children function against `Slots['default'] | Slots` on `v-slots`, and `active`
+is inferred from the default slot signature.
+
 This helper does several small but important things:
 
 1. It accepts both Vue `SlotsType` and plain slot records.
-2. It keeps slot parameter types while relaxing return values to Vue JSX's
-   `NodeChild`.
-3. It returns nothing for open-ended or empty slot objects, so untyped
-   components do not become noisy.
-4. It models the default slot ergonomics: if a component has `default`, the
-   caller may pass the default slot function directly as children, or pass a
-   slot object through `v-slots`.
+2. It models the children forms: when the component has `default`, the slot
+   function can be passed directly as children; a full slots object works too —
+   either as children directly, or via the `v-slots` directive.
 
 ```tsx
-import { defineComponent } from 'vue-jsx'
+import { defineComponent } from 'vue'
 
 const Panel = defineComponent(
-  (
-    props: { title: string },
-    {
-      slots,
-    }: {
-      slots: {
-        default?: (scope: { active: boolean }) => JSX.Element
-        footer?: (scope: { close: () => void }) => JSX.Element
-      }
-    },
-  ) => {
-    return () => (
-      <section>
-        <h2>{props.title}</h2>
-        {slots.default?.({ active: true })}
-      </section>
-    )
+  (_, { slots }: { slots: { default?: () => []; footer?: () => [] } }) => {
+    return () => <section>{slots.default?.()}</section>
   },
-  { props: ['title'] },
 )
 
-;<Panel title="Settings">{({ active }) => <div>{active ? 'open' : 'closed'}</div>}</Panel>
-;<Panel
-  title="Settings"
-  v-slots={{
-    default: ({ active }) => <div>{active}</div>,
-    footer: ({ close }) => <button onClick={close}>Close</button>,
-  }}
-/>
+export default () => (
+  <>
+    <Panel>{() => <p />}</Panel>
+    <Panel>{{ default: () => <p />, footer: () => <p /> }}</Panel>
+    <Panel v-slots={{ default: () => <p />, footer: () => <p /> }} />
+  </>
+)
 ```
-
-`active` and `close` are inferred from the component's slot type. The caller did
-not install an editor plugin and did not write a generated helper file.
 
 ## Why This Removes The Editor-Plugin Requirement
 
@@ -341,3 +318,15 @@ Macros and editor-only syntax helpers can still exist as optional extensions.
 They are not the default type story. For normal component authoring, the source
 of truth is the component's TypeScript type, and the inference runs in the
 native TypeScript checker.
+
+## Try It
+
+`Stepper` is a plain vapor function component exercising all four attributes at
+once:
+typed `props` (`init`), `emit` surfaced as `onChange` (with `value: number`
+inferred in the handler), the `default` slot written as children (with the
+`value` ref typed from the slot signature), and `expose` flowing into the type
+of the `ref` callback — that is where `reset` comes from.
+
+<BlogRepl :app="inferenceCode" vapor />
+```

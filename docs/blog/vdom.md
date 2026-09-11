@@ -14,90 +14,78 @@ handlers, cached static nodes, and slot stability metadata.
 
 <script setup>
 import slotLocalUpdateCode from './examples/vdom-slot-local-update.tsx?raw'
+import basicsCode from './examples/vdom-basics.tsx?raw'
 </script>
 
-## The Babel Baseline
+## What Ordinary JSX Compiles To
 
-A syntax-level JSX transform usually has one job: turn JSX into VNode creation
-calls. It can preserve Vue semantics, but the output tends to look like this:
+The REPL below contains ordinary JSX, plus a button that toggles the state so
+you can watch updates happen. The compiled output is already open for you (the
+`js` tab): the source on top, the Vue JSX compilation result below.
 
-```js
-_createVNode('section', null, [
-  _createVNode('h2', null, 'Todo'),
-  _createVNode('ul', null, [
-    _createVNode(
-      _Fragment,
-      null,
-      _renderList(items, (item, i) =>
-        _createVNode(
-          'li',
-          {
-            key: item.id,
-            class: _normalizeClass({ active: item.id === selected }),
-          },
-          [_normalizeVNode(i), _normalizeVNode(': '), _normalizeVNode(item.text)],
-        ),
-      ),
-    ),
-  ]),
-  _createVNode('footer', null, 'static'),
-])
-```
+<BlogRepl :app="basicsCode" auto-select-output />
 
-That code is correct, but it leaves the runtime with little structural
-information. On update, Vue has to treat many children and props as if they
-might have changed.
+A plain Babel transform turns this into correct VNode creation calls, but it
+hands the runtime very little structural information. On update, Vue has to
+assume that all children and props might have changed and re-diff the whole
+tree.
 
-Vue JSX 3.3 runs through Oxc, builds semantic scope information, lowers JSX
-into its own `VNodeCall` IR, and then generates optimized Vue runtime calls.
-For the same source, optimized output has a very different shape:
+The output you see in the `js` tab is what you get after parsing through Oxc,
+building semantic scope information, lowering JSX into the `VNodeCall` IR, and
+generating optimized calls. Every line tells Vue something structural:
 
-```js
-const _cache = _createVNodeCache('d9f3c58f')
-return (
-  _openBlock(),
-  _createElementBlock('section', null, [
-    _cache[1] || (_cache[1] = _createElementVNode('h2', null, 'Todo', -1)),
-    _createElementVNode('ul', null, [
-      (_openBlock(true),
-      _createElementBlock(
-        _Fragment,
-        null,
-        _renderList(
-          items,
-          (item, i) => (
-            _openBlock(),
-            _createElementBlock(
-              'li',
-              {
-                key: item.id,
-                class: _normalizeClass({ active: item.id === selected }),
-              },
-              [
-                _normalizeVNode(() => i),
-                _cache[0] || (_cache[0] = _normalizeVNode(': ', -1)),
-                _normalizeVNode(() => item.text),
-              ],
-              2,
-            )
-          ),
-        ),
-        128,
-      )),
-    ]),
-    _cache[2] || (_cache[2] = _createElementVNode('footer', null, 'static', -1)),
-  ])
-)
-```
+- The compiler proves that the only prop that can change on the `<p>` is
+  `class`, so the patch flag is `2` (`CLASS`) and the props diff only looks at
+  class:
+
+  ```js
+  _createElementVNode('p', { class: ... }, [_normalizeVNode(() => text)], 2)
+  ```
+
+- Dynamic text is wrapped in a getter that is evaluated on demand:
+
+  ```js
+  _normalizeVNode(() => text)
+  ```
+
+- The `<button>`'s inline `onClick` only references `isDone`, a ref declared
+  in setup scope, so the compiler proves the handler is stable and caches it.
+  Every render reuses the same closure — the runtime never receives a fresh
+  function prop, and the button needs no patch flag:
+
+  ```js
+  _createElementVNode(
+    'button',
+    { onClick: _cache[0] || (_cache[0] = () => (isDone.value = !isDone.value)) },
+    'toggle',
+  )
+  ```
+
+- The static `<footer>` is created once and skipped forever after (`-1` means
+  "never patch"):
+
+  ```js
+  _cache[1] || (_cache[1] = _createElementVNode('footer', null, 'static', -1))
+  ```
+
+- The `<section>` becomes a block boundary (`_createElementBlock`): on update,
+  Vue walks only the dynamic children recorded by the block, not the whole
+  tree.
 
 The important part is not the helper names. The important part is that the
 compiler has told Vue exactly where the dynamic surface is.
+
+Go back to the REPL above and edit the source — for example, change `class` to
+a static string, or make `<footer>` read a ref — and watch how the compiled
+output changes. That is the most direct way to feel how the compiler separates
+static from dynamic.
 
 ## Where The Runtime Work Disappears
 
 The compiler classifies every JSX node and expression before code generation.
 Static text, static elements, and cacheable props are lifted out of the hot
-path. Stable VNodes are stored through `_createVNodeCache`, and their patch flag
+path. Stable VNodes are stored in the per-component-instance cache created by
+`_createVNodeCache`, and their patch flag
 is set to `-1`, so Vue can skip the subtree.
 
 Dynamic props are not diffed as arbitrary objects when the compiler can prove
@@ -105,23 +93,17 @@ their names. A dynamic class on a native element becomes the `CLASS` patch flag.
 A known dynamic prop list becomes `PROPS` plus a `dynamicProps` array. Dynamic
 keys and spreads fall back to `FULL_PROPS`, which is slower but correct.
 
-Event handlers get the same treatment. The compiler checks whether an inline
-handler references local scope or `this`. Stable handlers are cached so the
-runtime does not receive a fresh closure on every render:
+Event handlers get the same treatment — the toggle button's `onClick` above is
+the example. The compiler checks whether an inline handler references
+render-local scope or `this`. If it does not, the handler is cached and the
+runtime receives the same function identity on every render. If it does, the
+closure has to be recreated each render, and the compiler says so explicitly:
+`onClick` lands in `dynamicProps` and is diffed on update.
 
-```js
-onClick: _cache[0] || (_cache[0] = () => count.value++)
-```
-
-Text is also compiled with intent. Literal text is cached. Dynamic text can be
-wrapped in a getter:
-
-```js
-_normalizeVNode(() => count.value)
-```
-
-That getter lets Vue normalize the value lazily in a block-aware way, instead of
-normalizing everything eagerly on every render.
+Text gets the same treatment as the static `<footer>` above: literal text is
+cached, and dynamic text goes through a getter. That lets Vue normalize values
+lazily in a block-aware way, instead of normalizing everything eagerly on every
+render.
 
 ## Local Updates In Virtual DOM Mode
 

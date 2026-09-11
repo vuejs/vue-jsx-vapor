@@ -81,3 +81,19 @@ Virtual DOM output works with Vue 3. Vapor output requires Vue 3.6 or later.
 
 Vue JSX supports Vue directives directly in TSX. Review the
 [Directives](../features/directives) page for syntax differences.
+
+## Replace global JSX types
+
+`vue-jsx` does not register a global `JSX` namespace. Code that references
+`JSX.Element`, `JSX.IntrinsicElements`, or similar in type positions must
+import the namespace explicitly:
+
+```ts
+import type { JSX } from 'vue-jsx'
+```
+
+For the `vue-jsx-vapor` package, import from `vue-jsx-vapor` instead.
+
+If a large codebase references the global `JSX` namespace in too many places
+to update at once, a `global.d.ts` can restore it. See
+[TypeScript](../typescript/overview) for the snippet.

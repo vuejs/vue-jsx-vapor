@@ -1,115 +1,161 @@
-# Vapor 模式：真正的局部更新，真正的函数式编程
+# Vapor 模式篇：真正的局部更新，真正的函数式编程
 
-Vapor Mode 是 Vue JSX 不再为热路径创建 Virtual DOM 树的地方。编译器会把 JSX
-转换成 DOM block factory 加上一组很小的响应式操作。组件写起来仍然像函数，但更新
-不再是组件级 render pass。
+Vapor 模式是 Vue JSX 不再为热路径构建 Virtual DOM 树的地方。编译器把 JSX
+转换成 DOM 模板加一组很小的响应式操作。组件写起来仍然像函数——但它只执行
+一次。之后每次状态变化，都只落在一条定向的 DOM 操作上。
+
+产物不是「更快的 VDOM」。这里没有 VNode、没有 diff、没有组件级 re-render。
+静态 DOM 从模板字符串创建一次，每个动态绑定变成自己的 effect，只更新 DOM
+里的一个位置。
 
 [English](/blog/vapor)
 
-## 从 JSX 到 Block Factory
+<script setup>
+import basicsCode from '../../blog/examples/vapor-basics.tsx?raw'
+</script>
 
-看一个小组件：
+## 组件只执行一次
 
-```tsx
-import { ref } from 'vue'
+下面 REPL 里的 JSX 和 [Virtual DOM 篇](/zh/blog/vdom)是同一类普通代码：
+一个动态 class、一段动态文本、一个条件分支、两个事件处理器。编译输出已经为你打开
+（`js` 标签）：上面是源码，下面就是 Vue JSX Vapor 的编译产物。
 
-export default () => {
-  const count = ref(0)
-  const ok = ref(true)
+<BlogRepl :app="basicsCode" auto-select-output vapor />
 
-  return () => (
-    <div class={{ active: ok.value }} onClick={() => count.value++}>
-      count: {count.value}
-    </div>
+产物足够短，可以逐行读。注意两个 import 来源：`template`、`txt`、`on`、
+`renderEffect`、`setClassName`、`createIf`、`setInsertionState` 来自 Vue 的
+Vapor runtime；`setNodes` 来自 vue-jsx 的 helper 模块。
+
+- 整个静态结构是一个 HTML 字符串：
+
+  ```js
+  const _t2 = _template(
+    '<section class=demo><p> </p><!><button>increment</button><button>toggle',
+    1,
   )
-}
-```
+  ```
 
-在 Virtual DOM 模式下，它会生成 block VNode。在 Vapor 模式下，输出更接近这样：
+  `class=demo` 这类静态 prop 直接烤进字符串。`<p>` 里的空格是为动态文本
+  预留的锚点，`<!>` 是条件分支的锚点。末尾的 `1` 是标记组件根节点的 flag。
+
+- 三元表达式的两个分支各自是一个独立模板：
+
+  ```js
+  const _t0 = _template('<p>on', 2)
+  const _t1 = _template('<p>off', 2)
+  ```
+
+- 克隆模板会一次性创建所有 DOM，然后代码用直接路径走到动态节点：
+
+  ```js
+  const _n9 = _t2()
+  const _n0 = _child(_n9)
+  const _n8 = _next(_n0)
+  const _n6 = _next(_n8)
+  const _n7 = _next(_n6)
+  ```
+
+  `_child` 取第一个子节点，`_next` 走到下一个兄弟节点。相邻节点复用游标，
+  不需要再按下标向父节点查询。
+
+- 动态文本是「静态前缀 + getter」，挂到锚点上：
+
+  ```js
+  const _x0 = _txt(_n0)
+  _setNodes(_x0, 'count: ', () => count.value)
+  ```
+
+  前缀只解析一次。getter 在 render effect 里执行，所以 `count` 变化时，
+  只有这个文本位置会更新。
+
+- 事件只绑定一次：
+
+  ```js
+  _on(_n6, 'click', () => count.value++)
+  _on(_n7, 'click', () => (ok.value = !ok.value))
+  ```
+
+  不存在第二次 render，Virtual DOM 篇里 handler 缓存的问题在这里根本
+  不存在。
+
+- 动态 class 是一个 effect 包一个 setter：
+
+  ```js
+  _renderEffect(() => _setClassName(_n0, ok.value ? 1 : 0, 'active'))
+  ```
+
+  `ok` 变化时，effect 重新执行，翻转 `<p>` 上的 `active` class 位。没有
+  props diff，更新时也没有 class 归一化。
+
+- 条件分支是一个 `_createIf` 调用：
+
+  ```js
+  _setInsertionState(_n9, _n8)
+  const _n1 = _createIf(
+    () => ok.value,
+    () => {
+      const _n3 = _t0()
+      return _n3
+    },
+    () => {
+      const _n5 = _t1()
+      return _n5
+    },
+  )
+  ```
+
+  初始渲染 `on` 分支；`ok` 翻转时，runtime 在 `<!>` 锚点处把整棵分支 DOM
+  换成另一棵。
+
+最重要的观察是：组件函数不会第二次出现。更新不是「重新 render 再对比」，
+而是各个 effect 重新执行各自的 setter。
+
+在 REPL 里改一改源码——把 class 换成静态字符串，或者让按钮文本读一个
+ref——然后观察模板字符串和 effect 列表怎么变。
+
+## 更新发生在哪里
+
+每个动态绑定都编译成一个 effect 包一个定向操作。但操作的方向，在元素和
+组件上是相反的。
+
+在元素上，编译器生成 setter。动态 class 变成
+`_renderEffect(() => _setClassName(...))`，动态 prop 变成
+`_renderEffect(() => _setProp(_n0, 'id', id.value))`。你组件里的 effect 执行
+setter——把值推进 DOM。
+
+组件 props 恰好相反：它们变成 getter。
 
 ```js
-const _t0 = _template('<div> ', 1)
-
-return () =>
-  (() => {
-    const _n0 = _t0()
-    _on(_n0, 'click', () => count.value++)
-    const _x0 = _txt(_n0)
-    _setNodes(_x0, 'count: ', () => count.value)
-    _renderEffect(() => _setClassName(_n0, ok.value ? 1 : 0, 'active'))
-    return _n0
-  })()
+const _n0 = _createComponent(Comp, {
+  prop: () => ok.value,
+  static: 'x',
+})
 ```
 
-这里没有为了 text 或 class 做 VNode diff。template 只负责创建 DOM。编译器找到
-文本节点，`count.value` 只更新这个文本位置；`ok.value` 只更新这个 class bit。
+动态 prop 值以 getter 函数的形式传入，静态值原样传递。求值被推迟到子组件
+内部：子组件自己的 effect 调用这些 getter，自己追踪依赖，自己更新自己。
+父组件不推送更新——子组件按需拉取。
 
-## 什么是真正的局部更新
+## 为什么说是「函数式编程」
 
-Vapor 的局部更新意味着响应式单元是 operation，而不是组件 render 函数。
+因为组件就是一个普通的函数：props 进去，UI 出来。没有 `this`，没有实例，
+也不用关心框架什么时候再调用你——它只在挂载时执行一次。
 
-编译器会构建 Vapor IR，里面有 `SetText`、`SetProp`、`SetNodes`、
-`CreateComponent`、`If`、`For`、`SlotOutlet`、`Key` 等操作节点。随后编译器判断
-每个操作是可以执行一次，还是必须被包进 `renderEffect`。
+那更新谁来做？就是你在编译产物里已经认识的那些 effect：`_setNodes` 管文本，
+`_renderEffect` 管动态 class，`_createIf` 管分支，各自只守着自己那一小块
+DOM。状态变了，对应的 effect 自己重新运行，你的函数完全不知情。
 
-如果 prop 是静态值，它会进入 HTML template 字符串；如果是动态值，它会变成一个
-定向 setter。如果一段文本包含动态值，编译器会留下 anchor 或 text child，然后生成
-`setNodes` 或 `setText`。
+对比一下就很清楚：Virtual DOM 的 Options API 里，每次状态变化，整个
+render 函数都要重新执行一遍，重建虚拟树再 diff。Vapor 里你写一遍，它只
+跑一遍——你的代码里没有一行「去改 DOM」，那些都是编译器写的。
 
-runtime 的 `setNodes` 只解析传给这个位置的值。动态函数由 `renderEffect` 追踪；
-变化时只围绕同一个 anchor 更新或替换之前的节点/Fragment。组件其余部分不会为了
-重新发现同一棵 DOM 结构而再次执行。
+## 实际收益与渐进启用
 
-## 静态 HTML 与动态岛
+Vapor 模式适合频繁局部更新的界面：计数器、表单、dashboard、可编辑行、
+实时数据、接近动画的 UI。静态 DOM 创建一次，每个响应式读取只更新它被
+使用的位置。
 
-Vapor 编译器遍历 JSX 时会维护一个 `template` buffer。带静态属性的原生元素会被
-字符串化：
-
-```html
-<button type="button"></button>
-```
-
-生成代码再调用 Vue 的 `template` helper，并用直接路径访问动态 children：
-
-```js
-const _n0 = _t0()
-const _x0 = _txt(_n0)
-```
-
-更深的节点会通过 `_child`、`_next`、`_nthChild` 访问。相邻动态节点还能复用游标，
-避免反复从父节点按下标查询。这是一个很小的细节，但很好地说明了 Vapor 的设计：
-只要编译器已经知道 DOM 形状，runtime 就不应该再重新发现一次。
-
-## 控制流也会被编译
-
-`v-if` 不会变成“重新调用 render 函数再 diff 结果”。它会变成
-`createIf(condition, positiveBlock, negativeBlock, flags)`。flags 会编码分支形状、
-`v-once`、slot-root 行为，以及某个分支是否可以跳过自己的 `EffectScope`。
-
-`v-for` 会变成 `createFor(source, block, getKey, flags)`。编译器会传入形状信息，
-例如“这个列表是父元素唯一 child”、“列表项是组件”、“block 是单节点”或“block 是
-Fragment”。有 key 时，编译器还可以为 `item.id === id` 这类模式创建 selector，
-让列表项内部 effect 只在相关 key 改变时 reset。
-
-换句话说，Vapor 不是去掉编译器。Vapor 更依赖编译器，因为正是编译器把声明式 JSX
-变成精确的 DOM 操作。
-
-## 为什么它仍然是函数式的
-
-作者面对的模型仍然是函数。组件接收 props 和 context，闭包里读取响应式状态，然后
-返回 block result。心智模型里不需要实例代理，也不需要基于 `this` 的 render 契约。
-
-真正会修改 DOM 的非函数式部分，由编译器生成，并隔离成一个个小操作。你写的代码在
-描述一个值；编译器输出的代码知道如何把这个值维护到 DOM 上。
-
-这就是 Vapor JSX 的“真正的函数式编程”：组件保持为可组合函数，而 effect 变得显式、
-局部，并且由编译器生成。
-
-## 实际收益
-
-Vapor 模式适合频繁局部更新的界面：计数器、表单、dashboard、可编辑行、实时数据、
-接近动画的 UI。静态 DOM 创建一次，每个响应式读取只更新它被使用的位置。
-
-Virtual DOM 模式仍然是兼容性默认值。Vapor 可以通过 `vapor: true`、`.vapor.tsx`、
-`.vapor.jsx`、`defineVaporComponent` 或 `defineVaporCustomElement` 渐进启用。
-这样你可以逐步把真正的局部更新引入项目。
+Virtual DOM 模式仍然是兼容性默认值。Vapor 按需启用：在插件选项里设置
+`vapor: true`、把文件命名为 `*.vapor.tsx` / `*.vapor.jsx`、或用
+`defineVaporComponent` / `defineVaporCustomElement` 包裹组件。这样可以按
+文件、按组件渐进地引入真正的局部更新。

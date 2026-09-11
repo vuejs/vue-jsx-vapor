@@ -147,6 +147,12 @@ declare module 'vue-jsx' {
     }
   }
 }
+
+export {}
 ```
 
 扩展后，`<user-card>` 会获得属性补全和类型检查，同时仍可继续使用其他 Custom Element。
+
+`export {}` 不可省略：增强文件必须是一个模块。没有顶层 `import` 或 `export` 时，
+`declare module 'vue-jsx'` 会变成环境模块声明，遮蔽真实的包，
+导致 `vue-jsx` 导出的所有类型消失。完整的扩展点介绍请参考[扩展 JSX 类型](../typescript/extending-jsx-types)。

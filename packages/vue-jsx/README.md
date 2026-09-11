@@ -41,6 +41,55 @@ Add the JSX runtime to TypeScript:
 }
 ```
 
+`jsxImportSource` is required: there is no global `JSX` namespace, so classic
+JSX mode without `jsxImportSource` won't be type-checked. In a mixed
+React/Vue codebase that shares one `tsconfig`, use a per-file pragma instead:
+
+```tsx
+/** @jsxImportSource vue-jsx */
+```
+
+In type positions, import the `JSX` namespace explicitly instead of relying on
+a global:
+
+```ts
+import type { JSX } from 'vue-jsx'
+```
+
+If you prefer to keep a global `JSX` namespace, write your own `global.d.ts`:
+
+```ts
+import type { JSX as VueJSX } from 'vue-jsx'
+
+declare global {
+  namespace JSX {
+    type Element = VueJSX.Element
+    type ElementChildrenAttribute = VueJSX.ElementChildrenAttribute
+    type IntrinsicElements = VueJSX.IntrinsicElements
+    type IntrinsicAttributes = VueJSX.IntrinsicAttributes
+    type LibraryManagedAttributes<Component, Props> = VueJSX.LibraryManagedAttributes<
+      Component,
+      Props
+    >
+  }
+}
+```
+
+To extend the JSX types, augment the module named in `jsxImportSource` from a
+module file (one with a top-level `import` or `export`):
+
+```ts
+export {}
+
+declare module 'vue-jsx' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'user-card': { name: string }
+    }
+  }
+}
+```
+
 ## Vapor Mode
 
 ```ts

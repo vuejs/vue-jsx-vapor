@@ -18,6 +18,7 @@ import {
   defineVaporComponent as _defineVaporComponent,
   type ExtractExposed,
   type SetupContextToProps,
+  type JSX,
 } from 'vue-jsx'
 
 declare function expectType<T>(value: T): void

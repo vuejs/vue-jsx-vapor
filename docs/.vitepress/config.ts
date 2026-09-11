@@ -20,12 +20,12 @@ export default defineConfig({
         nav: [
           { text: '首页', link: '/zh/' },
           { text: '特性', link: '/zh/features/components' },
-          { text: '博客', link: '/zh/blog/', activeMatch: '/zh/blog/' },
           {
             text: '教程',
             link: '/zh/tutorial/step-1',
             activeMatch: 'tutorial',
           },
+          { text: '博客', link: '/zh/blog/', activeMatch: '/zh/blog/' },
           {
             text: 'Playground',
             link: 'https://repl.vuejsx.dev/',
@@ -41,12 +41,12 @@ export default defineConfig({
                   link: '/zh/blog/vdom',
                 },
                 {
-                  text: 'Vapor 模式',
+                  text: 'Vapor 模式篇',
                   link: '/zh/blog/vapor',
                 },
                 {
-                  text: '原生 TS7 支持',
-                  link: '/zh/blog/typescript-7',
+                  text: '类型推断篇',
+                  link: '/zh/blog/type-inference',
                 },
               ],
             },
@@ -98,6 +98,24 @@ export default defineConfig({
                 },
               ],
             },
+            {
+              text: 'TypeScript',
+              collapsed: false,
+              items: [
+                {
+                  text: '概览',
+                  link: `/zh/typescript/overview`,
+                },
+                {
+                  text: '扩展 JSX 类型',
+                  link: `/zh/typescript/extending-jsx-types`,
+                },
+                {
+                  text: 'Volar 插件',
+                  link: `/zh/typescript/volar`,
+                },
+              ],
+            },
           ],
           '/zh/tutorial/': [
             {
@@ -141,8 +159,8 @@ export default defineConfig({
         link: '/features/components',
         activeMatch: 'features',
       },
-      { text: 'Blog', link: '/blog/', activeMatch: '/blog/' },
       { text: 'Tutorial', link: '/tutorial/step-1', activeMatch: 'tutorial' },
+      { text: 'Blog', link: '/blog/', activeMatch: '/blog/' },
       { text: 'Playground', link: 'https://repl.vuejsx.dev/' },
     ],
 
@@ -160,8 +178,8 @@ export default defineConfig({
               link: '/blog/vapor',
             },
             {
-              text: 'Native TypeScript 7',
-              link: '/blog/typescript-7',
+              text: 'Type Inference',
+              link: '/blog/type-inference',
             },
           ],
         },
@@ -210,6 +228,24 @@ export default defineConfig({
             {
               text: 'Custom Elements',
               link: '/features/custom-elements',
+            },
+          ],
+        },
+        {
+          text: 'TypeScript',
+          collapsed: false,
+          items: [
+            {
+              text: 'Overview',
+              link: '/typescript/overview',
+            },
+            {
+              text: 'Extending the JSX Types',
+              link: '/typescript/extending-jsx-types',
+            },
+            {
+              text: 'Volar Plugin',
+              link: '/typescript/volar',
             },
           ],
         },

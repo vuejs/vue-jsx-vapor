@@ -4,29 +4,7 @@
 
 ## 类型支持
 
-指令转换在编译阶段完成，不需要额外的编辑器插件。如果希望在编辑器或命令行类型检查中获得指令类型支持，请安装 [TS Macro](https://marketplace.visualstudio.com/items?itemName=zhiyuanzmj.vscode-ts-macro)，并启用 `vue-jsx/volar` 插件：
-
-```ts [ts-macro.config.ts]
-import vueJsx from 'vue-jsx/volar'
-
-export default {
-  plugins: [vueJsx()],
-}
-```
-
-命令行类型检查请安装 `@ts-macro/tsc`，并使用 `tsmc` 替代 `tsc`：
-
-```bash
-pnpm add -D @ts-macro/tsc
-```
-
-```json [package.json]
-{
-  "scripts": {
-    "typecheck": "tsmc --noEmit"
-  }
-}
-```
+指令转换在编译阶段完成，不需要额外的编辑器插件。如果希望在编辑器或命令行类型检查中获得指令类型支持，请参考 [Volar 插件](../typescript/volar)。
 
 |             指令              |        Vue         |       Volar        |
 | :---------------------------: | :----------------: | :----------------: |

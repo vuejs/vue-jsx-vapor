@@ -17,17 +17,7 @@ export default defineConfig({
 })
 ```
 
-`vue-jsx/volar` 插件是可选的。只有在需要宏语法的编辑器或类型检查支持时才需要启用它。这种情况下也要在其中开启宏转换，并确保选项与 Vite 配置保持一致：
-
-```ts [ts-macro.config.ts]
-import vueJsx from 'vue-jsx/volar'
-
-export default {
-  plugins: [vueJsx({ macros: true })],
-}
-```
-
-TS Macro 的通用配置请参考[指令](./directives)章节。
+`vue-jsx/volar` 插件是可选的。只有在需要宏语法的编辑器或类型检查支持时才需要启用它，并保持其选项与 Vite 配置一致。配置方式请参考 [Volar 插件](../typescript/volar)。
 
 ::: details 作为单独的插件安装
 

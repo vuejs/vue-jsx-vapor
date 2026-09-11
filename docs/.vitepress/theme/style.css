@@ -152,3 +152,7 @@
     max-width: 1472px;
   }
 }
+
+.vp-doc details summary {
+  cursor: pointer;
+}

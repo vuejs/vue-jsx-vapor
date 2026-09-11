@@ -1,16 +1,23 @@
-# 原生 TS7 支持：让 TypeScript 原生推断 props、ref 与 children
+# 类型推断篇：让 props、ref 与 children 回归纯 TypeScript
 
 Vue JSX 3.3 把普通组件的类型推断放回 TypeScript 自己的 JSX 类型系统里。配置
 `jsxImportSource: "vue-jsx"` 后，TypeScript
 会读取 `vue-jsx/jsx-runtime` 导出的 JSX namespace，这个 namespace 会告诉 TS：
-Vue 组件在 JSX 调用点应该如何检查。
+Vue 组件在 JSX 调用点应该如何检查——TypeScript 7（tsgo 原生版）也同样
+开箱即用。
 
 核心是 `JSX.LibraryManagedAttributes`。TypeScript 每次检查 `<Comp ... />` 时，
 都会调用这个类型。Vue JSX 就借这个 hook，把组件原始 props 改写成 JSX 用户真正能写
 的 props：普通 props 保持原样，emit 变成 `onXxx`，`ref` 指向 exposed 类型，
-JSX children 则按 Vue slots 检查。
+JSX children 则按 Vue slots 检查。Vapor 组件走的是同一条路径：
+`defineVaporComponent` 包裹的组件和普通 vapor 函数组件，props、emit、slots
+和 ref（exposed）的推断与 Virtual DOM 组件完全一致。
 
-[English](/blog/typescript-7)
+[English](/blog/type-inference)
+
+<script setup>
+import inferenceCode from '../../blog/examples/type-inference-vapor.tsx?raw'
+</script>
 
 ## 类型入口
 
@@ -25,21 +32,8 @@ JSX children 则按 Vue slots 检查。
 }
 ```
 
-`vue-jsx/jsx-runtime/index.d.ts` 会导出 runtime JSX namespace，并把它放进全局类型
-空间：
-
-```ts
-import type { Fragment, VNode } from 'vue'
-export type { JSX } from 'vue-jsx'
-
-declare global {
-  export type { JSX } from 'vue-jsx'
-}
-
-declare function jsx(type: any, props: any, key: any): VNode
-
-export { Fragment, jsx, jsx as jsxDEV, jsx as jsxs }
-```
+`vue-jsx/jsx-runtime` 会导出 runtime JSX namespace，TypeScript
+通过 `jsxImportSource` 解析到它。
 
 这样 TypeScript 自己就能向 Vue JSX 问三个问题：
 
@@ -80,10 +74,13 @@ export namespace JSX {
 
 ## LibraryManagedAttributes 做了什么
 
-下面是 runtime 类型里最关键的一段，只省略了无关的 DOM attributes：
+下面是 runtime 里最关键的一段类型：
+
+<details>
+<summary>展开 <code>LibraryManagedAttributes</code> 完整类型</summary>
 
 ```ts
-export type LibraryManagedAttributes<Component, Props> = Props &
+export type LibraryManagedAttributes<Component, Props> = Omit<Props, 'ref'> &
   (Component extends abstract new (...args: any[]) => infer Instance
     ? {
         ref?: NodeRef<
@@ -104,7 +101,7 @@ export type LibraryManagedAttributes<Component, Props> = Props &
             ? SlotsToProps<Instance['slots'] & {}>
             : {})
     : Component extends (
-          props: Props,
+          props: any,
           ctx: {
             slots: infer Slots
             attrs: any
@@ -126,6 +123,8 @@ export type LibraryManagedAttributes<Component, Props> = Props &
           ref?: VNodeRef
         })
 ```
+
+</details>
 
 这段类型分三条路。
 
@@ -241,17 +240,9 @@ slot 映射是 Vue 用户最关心的部分。JSX children 是语法，但 Vue c
 Vue JSX 用 `ElementChildrenAttribute` 和 `SlotsToProps` 把两者接起来。
 
 ```ts
-type ResolveSlots<Slots> = {
-  readonly [Key in keyof Slots]?: Slots[Key] extends (...args: infer Args) => VNode | VNode[]
-    ? (...args: Args) => NodeChild
-    : Slots[Key]
-}
-
 export type SlotsToProps<
   RawSlots extends SlotsType | Record<string, any> = Record<string, any>,
-  Slots = ResolveSlots<
-    RawSlots extends SlotsType ? SetupContext<EmitsOptions, RawSlots>['slots'] : RawSlots
-  >,
+  Slots = RawSlots extends SlotsType ? SetupContext<EmitsOptions, RawSlots>['slots'] : RawSlots,
 > = string extends keyof Slots
   ? {}
   : [keyof Slots] extends [never]
@@ -262,51 +253,38 @@ export type SlotsToProps<
       }
 ```
 
+这里的妙处在于两个类型的配合。`LibraryManagedAttributes` 先为组件生成一个
+携带 slots 类型的 `v-slots` prop；`ElementChildrenAttribute` 再告诉
+TypeScript：JSX children 不检查 `children` prop，而是检查 `v-slots`——它顶替了
+React 里 `children` 的位置。Vue JSX 本来就没有 `children` prop 的概念，编译期
+却有现成的 `v-slots` 指令编译，类型层和编译层就这样接上了。所以写
+`<Panel>{({ active }) => ...}</Panel>` 时，TypeScript 实际是拿 children 函数
+去匹配 `v-slots` 上的 `Slots['default'] | Slots` 类型，`active` 由此从默认槽
+签名推断出来。
+
 这段辅助类型做了几件细活：
 
 1. 同时接受 Vue `SlotsType` 和普通 slots record。
-2. 保留 slot 参数类型，但把返回值放宽到 Vue JSX 的 `NodeChild`。
-3. 对开放索引或空 slots 返回 `{}`，避免未声明 slots 的组件变得很吵。
-4. 建模默认 slot 的写法：有 `default` 时，调用者既可以直接把 default slot 函数写成
-   children，也可以通过 `v-slots` 传完整 slots object。
+2. 建模 children 的几种写法：有 `default` 时，slot 函数可以直接写成 children；
+   完整 slots object 同样支持——直接当 children 传，或用 `v-slots` 指令。
 
 ```tsx
-import { defineComponent } from 'vue-jsx'
+import { defineComponent } from 'vue'
 
 const Panel = defineComponent(
-  (
-    props: { title: string },
-    {
-      slots,
-    }: {
-      slots: {
-        default?: (scope: { active: boolean }) => JSX.Element
-        footer?: (scope: { close: () => void }) => JSX.Element
-      }
-    },
-  ) => {
-    return () => (
-      <section>
-        <h2>{props.title}</h2>
-        {slots.default?.({ active: true })}
-      </section>
-    )
+  (_, { slots }: { slots: { default?: () => []; footer?: () => [] } }) => {
+    return () => <section>{slots.default?.()}</section>
   },
-  { props: ['title'] },
 )
 
-;<Panel title="Settings">{({ active }) => <div>{active ? 'open' : 'closed'}</div>}</Panel>
-;<Panel
-  title="Settings"
-  v-slots={{
-    default: ({ active }) => <div>{active}</div>,
-    footer: ({ close }) => <button onClick={close}>Close</button>,
-  }}
-/>
+export default () => (
+  <>
+    <Panel>{() => <p />}</Panel>
+    <Panel>{{ default: () => <p />, footer: () => <p /> }}</Panel>
+    <Panel v-slots={{ default: () => <p />, footer: () => <p /> }} />
+  </>
+)
 ```
-
-`active` 和 `close` 都来自组件自己的 slots 类型。调用者不需要安装任何编辑器插件，
-也没有写生成文件。
 
 ## 为什么不再需要编辑器插件
 
@@ -324,3 +302,13 @@ Vue JSX 3.3 把这件事收进包声明里：
 
 宏和编辑器语法增强仍然可以作为可选能力存在，但它们不是默认类型方案。对普通组件编写
 来说，类型真相来自组件自己的 TypeScript 类型，推断发生在原生 TypeScript checker 里。
+
+## 试试看
+
+`Stepper` 是一个普通的 vapor 函数组件，四件事一次占全：带类型的 `props`（`init`）、
+变成 `onChange` 的 `emit`（处理器里推断出 `value: number`）、写成 children 的
+`default` 插槽（`value` 的类型来自插槽签名）、以及流入 `ref` callback 类型的
+`expose`——`reset` 就是从这里来的。
+
+<BlogRepl :app="inferenceCode" vapor />
+```

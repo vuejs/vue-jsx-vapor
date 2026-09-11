@@ -1,20 +1,35 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, reactive, watch } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+  watch,
+} from 'vue'
 import { getDefaultFiles } from '../../../tutorial/template'
 
 const props = defineProps<{
   app: string
   height?: string
+  /** click the "js" output tab once the REPL is ready */
+  autoSelectOutput?: boolean
+  /** compile and run the app in Vapor mode */
+  vapor?: boolean
 }>()
 
 const defaultFiles = getDefaultFiles()
-const htmlCode = `<html>
+
+function createHtmlCode(vapor: boolean) {
+  const create = vapor ? 'createVaporApp' : 'createApp'
+  return `<html>
   <body>
     <script type="module">
-      import { createApp } from 'vue'
+      import { ${create} } from 'vue'
       import App from './App.tsx'
 
-      createApp(App).mount('#app')
+      ${create}(App).mount('#app')
     ${'</'}script>
 
     <div id="app"></div>
@@ -87,13 +102,19 @@ const htmlCode = `<html>
   </style>
 </html>
 `
+}
+
+const vapor = props.vapor ?? false
 
 const files = reactive({
   ...defaultFiles,
   'ts-macro.config.ts': undefined,
-  'src/index.html': htmlCode,
+  'src/index.html': createHtmlCode(vapor),
   'src/App.tsx': props.app,
-  'vite.config.ts': defaultFiles['vite.config.ts'].replace(/(?<=vapor: )(true|false)/, 'false'),
+  'vite.config.ts': defaultFiles['vite.config.ts'].replace(
+    /(?<=vapor: )(true|false)/,
+    vapor.toString(),
+  ),
 })
 
 watch(
@@ -107,13 +128,32 @@ const replStyle = computed(() => ({
   height: props.height ?? '720px',
 }))
 
+const root = ref<HTMLElement>()
+let pollTimer: ReturnType<typeof setInterval> | undefined
+
+onMounted(() => {
+  if (!props.autoSelectOutput) return
+  pollTimer = setInterval(() => {
+    const jsTab = Array.from(root.value?.querySelectorAll<HTMLButtonElement>('button') ?? []).find(
+      (btn) => btn.textContent?.trim() === 'js',
+    )
+    if (jsTab) {
+      jsTab.click()
+      clearInterval(pollTimer)
+      pollTimer = undefined
+    }
+  }, 300)
+})
+
+onBeforeUnmount(() => clearInterval(pollTimer))
+
 const Repl = defineAsyncComponent({
   loader: () => import('./Repl.vue'),
 })
 </script>
 
 <template>
-  <div class="blog-repl" :style="replStyle">
+  <div ref="root" class="blog-repl" :style="replStyle">
     <ClientOnly>
       <Repl
         :files

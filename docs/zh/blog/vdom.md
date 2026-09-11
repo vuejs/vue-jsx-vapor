@@ -12,87 +12,68 @@ Vue JSX 3.3 对 JSX 的定位不是 `h()` 的语法糖，而是 Vue 编译器的
 
 <script setup>
 import slotLocalUpdateCode from '../../blog/examples/vdom-slot-local-update.tsx?raw'
+import basicsCode from '../../blog/examples/vdom-basics.tsx?raw'
 </script>
 
-## Babel 基线
+## 普通 JSX 会编译成什么
 
-普通 JSX transform 通常只做一件事：把 JSX 转成 VNode 创建调用。它可以保持
-Vue 语义正确，但输出往往接近这样：
+下面 REPL 里是一段普通的 JSX，外加一个切换状态的按钮，方便观察更新。
+编译输出已经为你打开（`js` 标签）：上面是源码，
+下面就是 Vue JSX 的编译产物。
 
-```js
-_createVNode('section', null, [
-  _createVNode('h2', null, 'Todo'),
-  _createVNode('ul', null, [
-    _createVNode(
-      _Fragment,
-      null,
-      _renderList(items, (item, i) =>
-        _createVNode(
-          'li',
-          {
-            key: item.id,
-            class: _normalizeClass({ active: item.id === selected }),
-          },
-          [_normalizeVNode(i), _normalizeVNode(': '), _normalizeVNode(item.text)],
-        ),
-      ),
-    ),
-  ]),
-  _createVNode('footer', null, 'static'),
-])
-```
+<BlogRepl :app="basicsCode" auto-select-output />
 
-这段代码是对的，但 runtime 得到的结构信息太少。更新时，Vue 只能假设很多
-children 和 props 都可能变化。
+普通 Babel transform 会把它转成正确的 VNode 创建调用，但交给 runtime 的
+结构信息太少。更新时，Vue 只能假设所有 children 和 props 都可能变化，
+整棵树重新对比。
 
-Vue JSX 3.3 会经过 Oxc 解析，建立语义作用域信息，把 JSX 降级到自己的
-`VNodeCall` IR，然后再生成优化后的 Vue runtime 调用。同一段源码，优化后输出
-的形态明显不同：
+而你在 `js` 标签里看到的输出，是经过 Oxc 解析、语义作用域分析、降级到
+`VNodeCall` IR 后再生成的调用。每一行都在向 Vue 传递结构信息：
 
-```js
-const _cache = _createVNodeCache('d9f3c58f')
-return (
-  _openBlock(),
-  _createElementBlock('section', null, [
-    _cache[1] || (_cache[1] = _createElementVNode('h2', null, 'Todo', -1)),
-    _createElementVNode('ul', null, [
-      (_openBlock(true),
-      _createElementBlock(
-        _Fragment,
-        null,
-        _renderList(
-          items,
-          (item, i) => (
-            _openBlock(),
-            _createElementBlock(
-              'li',
-              {
-                key: item.id,
-                class: _normalizeClass({ active: item.id === selected }),
-              },
-              [
-                _normalizeVNode(() => i),
-                _cache[0] || (_cache[0] = _normalizeVNode(': ', -1)),
-                _normalizeVNode(() => item.text),
-              ],
-              2,
-            )
-          ),
-        ),
-        128,
-      )),
-    ]),
-    _cache[2] || (_cache[2] = _createElementVNode('footer', null, 'static', -1)),
-  ])
-)
-```
+- 编译器证明了 `<p>` 上唯一会变的 prop 是 `class`，于是 patch flag 是 `2`
+  （`CLASS`），props diff 只看 class，其他属性不参与：
 
-重点不是 helper 名称，而是编译器已经把动态边界精确告诉了 Vue。
+  ```js
+  _createElementVNode('p', { class: ... }, [_normalizeVNode(() => text)], 2)
+  ```
+
+- 动态文本包装成 getter，按需取值：
+
+  ```js
+  _normalizeVNode(() => text)
+  ```
+
+- `<button>` 的内联 `onClick` 只引用了 setup 作用域里的 `isDone`，编译器因此
+  证明这个 handler 是稳定的，并把它缓存起来。每次 render 复用同一个闭包，runtime
+  不会再拿到新的函数 prop，按钮本身也不需要 patch flag：
+
+  ```js
+  _createElementVNode(
+    'button',
+    { onClick: _cache[0] || (_cache[0] = () => (isDone.value = !isDone.value)) },
+    'toggle',
+  )
+  ```
+
+- 静态的 `<footer>` 只创建一次，之后永远跳过（`-1` 表示「无需 patch」）：
+
+  ```js
+  _cache[1] || (_cache[1] = _createElementVNode('footer', null, 'static', -1))
+  ```
+
+- `<section>` 成为 block 边界（`_createElementBlock`），更新时 Vue 不再遍历
+  整棵 children 树，只走 block 记录下来的动态节点。
+
+重点不是 helper 名称，而是编译器已经把「哪里会变」精确告诉了 Vue。
+
+回到上面的 REPL 动手改一改——比如把 `class` 换成静态字符串，或者让
+`<footer>` 读一个 ref——然后观察编译输出的变化，就能直观感受编译器是
+怎么区分静态和动态的。
 
 ## 运行时少做了什么
 
 编译器会在代码生成前分类每个 JSX 节点和表达式。静态文本、静态元素、可缓存
-props 会从热路径中移走。稳定 VNode 会通过 `_createVNodeCache` 保存，并带上
+props 会从热路径中移走。稳定 VNode 保存在 `_createVNodeCache` 为每个组件实例创建的缓存里，并带上
 `-1` patch flag，让 Vue 跳过整棵静态子树。
 
 当编译器能证明动态 prop 的名字时，runtime 不再需要把 props 当任意对象 diff。
@@ -100,24 +81,17 @@ props 会从热路径中移走。稳定 VNode 会通过 `_createVNodeCache` 保�
 `PROPS` 加 `dynamicProps` 数组；动态 key 和 spread 则回退到 `FULL_PROPS`，
 慢一点但正确。
 
-事件处理器也会被分析。编译器会判断内联 handler 是否引用了局部作用域或 `this`。
-稳定 handler 会被缓存，避免每次 render 都传给 runtime 一个新闭包：
+事件处理器也是同样的待遇——上面 toggle 按钮的 `onClick` 就是例子。编译器会判断
+内联 handler 是否引用了 render-local 作用域或 `this`。没有引用就缓存，runtime
+每次 render 拿到的是同一个函数引用；引用了就只能在每次 render 重建闭包，
+编译器也会明确说明这一点：`onClick` 进入 `dynamicProps`，更新时参与 diff。
 
-```js
-onClick: _cache[0] || (_cache[0] = () => count.value++)
-```
-
-文本也不是简单地每次归一化。静态文本会缓存，动态文本可以被包装成 getter：
-
-```js
-_normalizeVNode(() => count.value)
-```
-
-这样 Vue 可以在 block 语义下按需归一化，而不是每次 render 都急着处理所有值。
+文本的待遇和上面静态 `<footer>` 那条一致：静态文本缓存，动态文本走 getter。这样
+Vue 可以在 block 语义下按需归一化，而不是每次 render 都急着处理所有值。
 
 ## VDOM 模式里的局部更新
 
-Virtual DOM 模式不是“真正的细粒度 DOM 更新”，那是 Vapor 的工作。但它已经是
+Virtual DOM 模式不是「真正的细粒度 DOM 更新」，那是 Vapor 的工作。但它已经是
 Vue block tree 意义上的局部更新。
 
 当 Vue 进入编译产物的 optimized mode 后，它不会盲目遍历整棵 children 树。
@@ -133,7 +107,7 @@ forwarded。稳定 slot 能自己捕获依赖，父组件不需要因为存在 s
 下面 REPL 里的两个 slot 几乎一模一样，唯一的区别是：`dynamic` slot 读到了
 `offset`——一个声明在父组件 render 函数里的变量，而 `stable` slot 只碰
 setup 作用域里的状态。计数器只是探针——在 slot 里改状态不是编码建议，只是
-为了让“这个 slot 有没有被重新调用”一眼可见。
+为了让「这个 slot 有没有被重新调用」一眼可见。
 
 点击按钮让父组件 rerender。`dynamic` 的数字每次点击都会增长，因为 dynamic
 slot 在父组件每次 render 时都会被重新调用；`stable` 的数字永远不动，因为
@@ -163,7 +137,7 @@ props diff、更少 children 遍历，以及更少不必要的组件更新。
 
 ## 编译器原理
 
-Vue JSX 3.3 的 Virtual DOM 编译器大致遵循四步。
+Vue JSX 3.3 的 Virtual DOM 编译器大致遵循四条原则。
 
 1. 使用真正的 compiler 前端。Oxc 提供快速 parser、类型化 AST、allocator-backed
    AST 修改，以及语义作用域分析。

@@ -71,3 +71,16 @@ Virtual DOM 输出支持 Vue 3；Vapor 输出需要 Vue 3.6 或更高版本。
 4. 当项目已经升级到 Vue 3.6 并准备采用 Vapor 组件语义后，再单独开启 [Vapor 模式](./interop)。
 
 Vue JSX 可以在 TSX 中直接使用 Vue 指令，具体语法请参考[指令](../features/directives)页面。
+
+## 替换全局 JSX 类型
+
+`vue-jsx` 不再注册全局 `JSX` namespace。在类型位置使用 `JSX.Element`、
+`JSX.IntrinsicElements` 等时，需要显式导入：
+
+```ts
+import type { JSX } from 'vue-jsx'
+```
+
+`vue-jsx-vapor` 包则从 `vue-jsx-vapor` 导入。
+
+如果代码库中有大量位置引用全局 `JSX` namespace，无法一次性全部改为显式导入，可以通过 `global.d.ts` 恢复它，代码片段请参阅 [TypeScript 配置](../typescript/overview)。

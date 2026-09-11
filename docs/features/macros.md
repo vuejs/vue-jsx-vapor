@@ -19,18 +19,8 @@ export default defineConfig({
 ```
 
 The `vue-jsx/volar` plugin is optional. Use it only when you need editor or
-type-checking support for macro syntax. In that case, enable the macro transform
-there as well and keep the option consistent with the Vite configuration:
-
-```ts [ts-macro.config.ts]
-import vueJsx from 'vue-jsx/volar'
-
-export default {
-  plugins: [vueJsx({ macros: true })],
-}
-```
-
-See [Directives](./directives) for the general TS Macro setup.
+type-checking support for macro syntax, and keep its options consistent with the
+Vite configuration. See [Volar Plugin](../typescript/volar) for the setup.
 
 ::: details Install as a standalone plugin
 

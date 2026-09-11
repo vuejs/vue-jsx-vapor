@@ -135,7 +135,7 @@ const UserCard = defineVaporCustomElement(render, {
 
 Unknown Custom Element names are accepted so third-party elements work without setup. A library or application can augment `JSX.IntrinsicElements` to validate a specific element's props and events:
 
-```ts
+```ts [jsx.d.ts]
 declare module 'vue-jsx' {
   namespace JSX {
     interface IntrinsicElements {
@@ -147,6 +147,15 @@ declare module 'vue-jsx' {
     }
   }
 }
+
+export {}
 ```
 
 After augmentation, `<user-card>` receives completion and type checking while other Custom Elements remain available.
+
+The `export {}` matters: the augmentation file must be a module. Without a
+top-level `import` or `export`, `declare module 'vue-jsx'` becomes an ambient
+module declaration that shadows the real package, and every type exported from
+`vue-jsx` disappears. See
+[Extending the JSX Types](../typescript/extending-jsx-types)
+for the full set of extension points.
