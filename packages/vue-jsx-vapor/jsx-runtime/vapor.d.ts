@@ -1,10 +1,17 @@
 import { Fragment } from 'vue'
-import type { JSX, RenderResult } from 'vue-jsx-vapor'
+import type { RenderResult, JSX as VueJSX } from 'vue-jsx-vapor'
 
 declare global {
-  export type { JSX } from 'vue-jsx-vapor'
+  namespace JSX {
+    type Element = VueJSX.Element
+    type ElementChildrenAttribute = VueJSX.ElementChildrenAttribute
+    type IntrinsicElements = VueJSX.IntrinsicElements
+    type IntrinsicAttributes = VueJSX.IntrinsicAttributes
+    type LibraryManagedAttributes<Component, Props> =
+      VueJSX.LibraryManagedAttributes<Component, Props>
+  }
 }
 
 declare function jsx(type: any, props: any, key: any): RenderResult
 
-export { Fragment, jsx, jsx as jsxDEV, jsx as jsxs, type JSX }
+export { Fragment, jsx, jsx as jsxDEV, jsx as jsxs }
