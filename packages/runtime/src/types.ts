@@ -9,20 +9,16 @@ import type {
   VNode,
 } from 'vue'
 
+type VaporBlock = VaporComponentInstance extends { block: infer B } ? B : never
+
 declare module 'vue' {
-  interface VaporComponentInstance {
-    // @ts-expect-error Compatible with vue3.5
-    block: never
-  }
+  interface VaporComponentInstance {}
   interface RenderResultExtensions {
     render: RenderResult
   }
 }
 
-export type RenderResult<T = VaporComponentInstance['block']> =
-  | T
-  | VNode
-  | RenderResult[]
+export type RenderResult<T = VaporBlock> = T | VNode | RenderResult[]
 
 export type Prettify<T> = { [K in keyof T]: T[K] } & {}
 
@@ -56,9 +52,7 @@ type NodeChildAtom<T> =
 export type NodeArrayChildren<T> = Array<
   NodeArrayChildren<T> | NodeChildAtom<T>
 >
-export type NodeChild<T = VaporComponentInstance['block']> =
-  | NodeChildAtom<T>
-  | NodeArrayChildren<T>
+export type NodeChild<T = VaporBlock> = NodeChildAtom<T> | NodeArrayChildren<T>
 
 export type NodeRef<T> =
   | ((ref: T | null, refs: Record<string, any>) => void)
