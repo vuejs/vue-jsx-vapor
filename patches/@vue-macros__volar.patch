@@ -1,5 +1,5 @@
 diff --git a/dist/jsx-directive-w2gUTWdx.js b/dist/jsx-directive-w2gUTWdx.js
-index 637b42ba829bb5f90d4de93cc8ed1d562694b49f..6ecccf518d3d5fd532c31212d6cc4bbc55181a85 100644
+index 637b42b..50bdd7d 100644
 --- a/dist/jsx-directive-w2gUTWdx.js
 +++ b/dist/jsx-directive-w2gUTWdx.js
 @@ -1,6 +1,4 @@
@@ -9,6 +9,15 @@ index 637b42ba829bb5f90d4de93cc8ed1d562694b49f..6ecccf518d3d5fd532c31212d6cc4bbc
  import { isHTMLTag, isSVGTag } from "@vue/shared";
  
  //#region src/jsx-directive/common.ts
+@@ -64,7 +62,7 @@ declare function __VLS_asFunctionalComponent<
+           ? Props
+           : any),
+       ctx?: any,
+-    ) => JSX.Element & {
++    ) => {
+       __ctx: {
+         attrs: Record<string, any>,
+         props: (K extends { $props: infer Props }
 @@ -143,7 +141,7 @@ function transformCtx(node, root, index, options) {
  		const prefixModel = `${prefix}model`;
  		if (name.startsWith(prefixModel)) {
@@ -53,7 +62,7 @@ index 637b42ba829bb5f90d4de93cc8ed1d562694b49f..6ecccf518d3d5fd532c31212d6cc4bbc
  				codes,
  				ast,
 diff --git a/dist/jsx-directive.js b/dist/jsx-directive.js
-index accace0c32b6a1cf5ceb297c8fbf07f22f438a23..5023f21444592741c43a4950f08fe959a452da4c 100644
+index accace0..5023f21 100644
 --- a/dist/jsx-directive.js
 +++ b/dist/jsx-directive.js
 @@ -1,4 +1,3 @@
@@ -63,7 +72,7 @@ index accace0c32b6a1cf5ceb297c8fbf07f22f438a23..5023f21444592741c43a4950f08fe959
  export { jsx_directive_default as default, plugin as "module.exports" };
 \ No newline at end of file
 diff --git a/dist/jsx-ref-DZlb-F7c.js b/dist/jsx-ref-DZlb-F7c.js
-index ffe0b9f6eab21f435b60e4eeb32e0931d629a1bd..a874bc6b4b38e64ee4fa7ea061070498408301cf 100644
+index ffe0b9f..a874bc6 100644
 --- a/dist/jsx-ref-DZlb-F7c.js
 +++ b/dist/jsx-ref-DZlb-F7c.js
 @@ -1,5 +1,4 @@

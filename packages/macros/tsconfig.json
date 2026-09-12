@@ -15,6 +15,5 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["src", "tests/*.spec.ts"],
-  "exclude": ["playground", "tests/fixtures"]
+  "include": ["src", "tests"]
 }

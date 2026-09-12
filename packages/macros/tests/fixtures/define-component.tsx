@@ -20,7 +20,7 @@ const Comp = defineVaporComponent(
       </div>
     )
   },
-  { name: 'Comp', props: { Comp: Object } },
+  { name: 'Comp', props: ['Comp'] },
 )
 
 const Comp1 = defineVaporComponent((props: { bar: 'bar'; 'onUpdate:bar': any; comp: any }) => {

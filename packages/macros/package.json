@@ -51,7 +51,7 @@
   "scripts": {
     "build": "vp pack",
     "dev": "DEV=true vp pack",
-    "typecheck": "tsc --noEmit && tsmc -p playground --noEmit",
+    "typecheck": "tsmc --noEmit && tsmc -p playground --noEmit",
     "play": "vp ./playground",
     "play:build": "vp build ./playground"
   },

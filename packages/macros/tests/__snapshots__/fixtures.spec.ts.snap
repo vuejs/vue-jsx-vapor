@@ -38,7 +38,7 @@ const Comp = defineVaporComponent(
         }, type: String }, 
 'onUpdate:foo': null, 
 'fooModifiers': null
-}, ...{ name: 'Comp', props: { Comp: Object } } },
+}, ...{ name: 'Comp', props: ['Comp'] } },
 )
 
 const Comp1 = defineVaporComponent(() => {const props = __useFullProps();

@@ -83,9 +83,8 @@ export function transformJsxMacros(rootMap: RootMap, options: TransformOptions):
         codes.replaceRange(
           node.getStart(ast),
           node.expression.getStart(ast),
-          'const ',
-          [`__rndr`, node.getStart(ast), { verification: true }],
-          isDefineComponent ? (macros.slots ? ' = (' : ': () => JSX.Element = ') : ' = ',
+          'const __render = ',
+          isDefineComponent && macros.slots ? '(' : '',
         )
         codes.replaceRange(
           node.expression.end,
@@ -99,7 +98,7 @@ return {} as {
     expose: (exposed: import('vue').ShallowUnwrapRef<${macros.defineExpose ?? 'Record<string, any>'}>) => void,
     attrs: Record<string, any>
   },
-  render: ${isDefineComponent ? `ReturnType<` : ''}typeof __rndr${isDefineComponent ? '>' : ''}
+  render: ${isDefineComponent ? `ReturnType<` : ''}typeof __render${isDefineComponent ? '>' : ''}
 }`,
         )
       }

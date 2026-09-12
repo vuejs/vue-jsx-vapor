@@ -54,7 +54,7 @@ type __InferJsxElement<T> = T extends keyof HTMLElementTagNameMap
         ? Instance extends { $: any }
           ? import('vue').VNode
           : Instance
-        : JSX.Element
+        : import('vue').VNode
       `)
       }
     },
