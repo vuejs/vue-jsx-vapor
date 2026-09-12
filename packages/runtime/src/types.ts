@@ -9,17 +9,16 @@ import type {
   VNode,
 } from 'vue'
 
+type VaporBlock = VaporComponentInstance extends { block: infer B } ? B : never
+
 declare module 'vue' {
-  interface VaporComponentInstance {
-    // @ts-expect-error Compatible with vue3.5
-    block: never
-  }
+  interface VaporComponentInstance {}
   interface RenderResultExtensions {
     render: RenderResult
   }
 }
 
-export type RenderResult<T = VaporComponentInstance['block']> = T | VNode | RenderResult[]
+export type RenderResult<T = VaporBlock> = T | VNode | RenderResult[]
 
 export type DirectiveArgs<T extends Directive> =
   T extends Directive<any, infer Value, infer Modifiers, infer Argument>
@@ -34,7 +33,7 @@ export type DirectiveArgs<T extends Directive> =
 type NodeChildAtom<T> = T | VNode | string | number | boolean | null | undefined | void
 
 export type NodeArrayChildren<T> = Array<NodeArrayChildren<T> | NodeChildAtom<T>>
-export type NodeChild<T = VaporComponentInstance['block']> = NodeChildAtom<T> | NodeArrayChildren<T>
+export type NodeChild<T = VaporBlock> = NodeChildAtom<T> | NodeArrayChildren<T>
 
 export type NodeRef<T> = ((ref: T | null, refs: Record<string, any>) => void) | Ref | string
 
