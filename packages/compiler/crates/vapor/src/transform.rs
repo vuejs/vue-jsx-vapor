@@ -486,12 +486,13 @@ impl<'a> TransformContext<'a> {
     index: i32,
     is_last_effective_child: bool,
     block: &mut BlockIRNode<'a>,
+    in_v_once: bool,
   ) -> impl FnOnce() {
     let is_on_rightmost_path = *self.is_on_rightmost_path.borrow() && is_last_effective_child;
 
     self.node.replace(node);
     let index = self.index.replace(index);
-    let in_v_once = *self.in_v_once.borrow();
+    let prev_in_v_once = self.in_v_once.replace(in_v_once);
     let template = self.template.replace(String::new());
     let is_last_effective_child = self
       .is_last_effective_child
@@ -506,7 +507,7 @@ impl<'a> TransformContext<'a> {
 
     move || {
       self.index.replace(index);
-      self.in_v_once.replace(in_v_once);
+      self.in_v_once.replace(prev_in_v_once);
       self.template.replace(template);
       self
         .is_last_effective_child

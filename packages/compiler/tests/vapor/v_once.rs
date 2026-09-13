@@ -324,3 +324,110 @@ fn should_raise_error_if_has_no_expression() {
   );
   assert_eq!(*error.borrow(), Some(ErrorCodes::VShowNoExpression));
 }
+
+#[test]
+fn with_v_show() {
+  let code = transform("<div v-show={show} v-once />", Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    })).code;
+  assert!(code.contains("_withOnce(() => _applyVShow(_n0, () => show))"));
+  // the helper creates its own effect; none should be emitted by the compiler
+  assert!(!code.contains("renderEffect"));
+  assert_snapshot!(code, @r#"
+  import { applyVShow as _applyVShow, template as _template, withOnce as _withOnce } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_withOnce(() => _applyVShow(_n0, () => show));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn with_v_model() {
+  let code = transform("<input v-model={text} v-once />", Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    })).code;
+  assert!(code.contains("_withOnce(() => _applyTextModel("));
+  assert_snapshot!(code, @r#"
+  import { applyTextModel as _applyTextModel, template as _template, withOnce as _withOnce } from "vue";
+  const _t0 = _template("<input>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_withOnce(() => _applyTextModel(_n0, () => text, (_value) => text = _value));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn with_custom_directive() {
+  let code = transform("<div v-dir={val} v-once />", Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    })).code;
+  assert!(code.contains("_withOnce(() => _withVaporDirectives("));
+  assert_snapshot!(code, @r#"
+  import { resolveDirective as _resolveDirective, template as _template, withOnce as _withOnce, withVaporDirectives as _withVaporDirectives } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _directive_dir = _resolveDirective("dir");
+  	const _n0 = _t0();
+  	_withOnce(() => _withVaporDirectives(_n0, [[_directive_dir, () => val]]));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn directives_outside_v_once_are_not_wrapped() {
+  let code = transform("<><div v-show={show} v-dir={val} /><div v-once /></>", Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    })).code;
+  assert!(!code.contains("withOnce"));
+  assert_snapshot!(code, @r#"
+  import { applyVShow as _applyVShow, resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
+  const _t0 = _template("<div>");
+  const _t1 = _template("<div>", 2);
+  (() => {
+  	const _directive_dir = _resolveDirective("dir");
+  	const _n0 = _t0();
+  	_withVaporDirectives(_n0, [[_directive_dir, () => val]]);
+  	const _n1 = _t1();
+  	_applyVShow(_n0, () => show);
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn component_slot_content_keeps_its_effects() {
+  let code = transform(
+    "<Comp v-once id={foo} v-slot={({ n })}>{ n }{ msg }</Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  // The component itself is once, but its slot content is executed by the child
+  // on its own updates, so it keeps its reactive getters instead of being
+  // frozen into the once ambient.
+  assert!(code.contains("_createNodes(() => _slotProps0.n, () => msg)"));
+  assert!(!code.contains("_withOnce"));
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx/vapor";
+  import { extend as _extend } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, { id: () => foo }, _extend((_slotProps0) => {
+  		const _n0 = _createNodes(() => _slotProps0.n, () => msg);
+  		return _n0;
+  	}, { _: 1 }), true, true);
+  	return _n2;
+  })();
+  "#);
+}

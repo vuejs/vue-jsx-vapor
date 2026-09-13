@@ -3,7 +3,6 @@ use oxc_allocator::CloneIn;
 use oxc_ast::NONE;
 use oxc_ast::ast::Expression;
 use oxc_ast::ast::FormalParameterKind;
-use oxc_ast::ast::Statement;
 use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
@@ -15,7 +14,7 @@ use crate::ir::index::DirectiveIRNode;
 pub fn gen_v_model<'a>(
   oper: DirectiveIRNode<'a>,
   context: &'a CodegenContext<'a>,
-) -> Statement<'a> {
+) -> Expression<'a> {
   let ast = &context.ast;
   let DirectiveIRNode {
     model_type,
@@ -27,73 +26,70 @@ pub fn gen_v_model<'a>(
     unreachable!();
   };
 
-  ast.statement_expression(
+  ast.expression_call(
     SPAN,
-    ast.expression_call(
+    ast.expression_identifier(
       SPAN,
-      ast.expression_identifier(
-        SPAN,
-        ast.str(
-          context
-            .options
-            .helper(match model_type.unwrap_or_default() {
-              "text" => "_applyTextModel",
-              "radio" => "_applyRadioModel",
-              "checkbox" => "_applyCheckboxModel",
-              "select" => "_applySelectModel",
-              "dynamic" => "_applyDynamicModel",
-              _ => panic!("Unsupported model type"),
-            }),
-        ),
+      ast.str(
+        context
+          .options
+          .helper(match model_type.unwrap_or_default() {
+            "text" => "_applyTextModel",
+            "radio" => "_applyRadioModel",
+            "checkbox" => "_applyCheckboxModel",
+            "select" => "_applySelectModel",
+            "dynamic" => "_applyDynamicModel",
+            _ => panic!("Unsupported model type"),
+          }),
       ),
-      NONE,
-      ast.vec_from_iter(
-        [
-          Some(
-            ast
-              .expression_identifier(SPAN, ast.str(&format!("_n{element}")))
-              .into(),
-          ),
-          // getter
-          Some(
-            ast
-              .expression_arrow_function(
-                SPAN,
-                true,
-                false,
-                NONE,
-                ast.formal_parameters(
-                  SPAN,
-                  FormalParameterKind::ArrowFormalParameters,
-                  ast.vec(),
-                  NONE,
-                ),
-                NONE,
-                ast.function_body(
-                  SPAN,
-                  ast.vec(),
-                  ast.vec1(ast.statement_expression(
-                    SPAN,
-                    gen_expression(exp.clone_in(ast.allocator), context, None, false),
-                  )),
-                ),
-              )
-              .into(),
-          ),
-          // setter
-          Some(gen_model_handler(exp, context).into()),
-          // modifiers
-          if !modifiers.is_empty() {
-            Some(Expression::ObjectExpression(gen_directive_modifiers(modifiers, ast)).into())
-          } else {
-            None
-          },
-        ]
-        .into_iter()
-        .flatten(),
-      ),
-      false,
     ),
+    NONE,
+    ast.vec_from_iter(
+      [
+        Some(
+          ast
+            .expression_identifier(SPAN, ast.str(&format!("_n{element}")))
+            .into(),
+        ),
+        // getter
+        Some(
+          ast
+            .expression_arrow_function(
+              SPAN,
+              true,
+              false,
+              NONE,
+              ast.formal_parameters(
+                SPAN,
+                FormalParameterKind::ArrowFormalParameters,
+                ast.vec(),
+                NONE,
+              ),
+              NONE,
+              ast.function_body(
+                SPAN,
+                ast.vec(),
+                ast.vec1(ast.statement_expression(
+                  SPAN,
+                  gen_expression(exp.clone_in(ast.allocator), context, None, false),
+                )),
+              ),
+            )
+            .into(),
+        ),
+        // setter
+        Some(gen_model_handler(exp, context).into()),
+        // modifiers
+        if !modifiers.is_empty() {
+          Some(Expression::ObjectExpression(gen_directive_modifiers(modifiers, ast)).into())
+        } else {
+          None
+        },
+      ]
+      .into_iter()
+      .flatten(),
+    ),
+    false,
   )
 }
 

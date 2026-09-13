@@ -590,6 +590,7 @@ pub fn transform_prop<'a>(
         asset,
         builtin: false,
         model_type: None,
+        once: *context.in_v_once.borrow(),
       }),
       Some(Rc::clone(&get_operation_index)),
     )
