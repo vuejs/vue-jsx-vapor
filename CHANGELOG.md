@@ -1,3 +1,26 @@
+# [3.3.0-rc.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.23...v3.3.0-rc.1) (2026-09-13)
+
+### Bug Fixes
+
+- **compiler-vapor:** emit createElement-backed children nested in a ([e25739e](https://github.com/vuejs/vue-jsx-vapor/commit/e25739e7e34ef452c9f2f09c250b23752918ad01))
+- **compiler/vapor:** create dynamic component element fallbacks in the ([46db99c](https://github.com/vuejs/vue-jsx-vapor/commit/46db99c8af5587d4893a4384c134f99e19571012))
+- **compiler/vdom:** remove root Fragment text optimization ([b50d8a4](https://github.com/vuejs/vue-jsx-vapor/commit/b50d8a46a77ca6f06953b8ca63ea854786102dc9))
+- **compiler:** declare package as ESM ([24cf4c8](https://github.com/vuejs/vue-jsx-vapor/commit/24cf4c8a4640016f77529f33b377807645c118bd))
+- **types:** use any instead of Props for functional component ([06eaedd](https://github.com/vuejs/vue-jsx-vapor/commit/06eaedd5dc330acbdf815bdecf657ca96adc42dc)), closes [#70](https://github.com/vuejs/vue-jsx-vapor/issues/70)
+- **types/eslint:** use FlatConfig instead of ClassicConfig ([48bed78](https://github.com/vuejs/vue-jsx-vapor/commit/48bed78a6a0127bfc3ecca696d260b06e288d966))
+- **types:** correct native element ref and slot types ([3e61d81](https://github.com/vuejs/vue-jsx-vapor/commit/3e61d81d7d3ee181ff47585abd2ec8b41a337247))
+- **types:** infer Vapor block type via conditional type ([40c6e8f](https://github.com/vuejs/vue-jsx-vapor/commit/40c6e8f30569df510d956b2c32ced699df83df96))
+- **types:** preserve union component props ([2571d88](https://github.com/vuejs/vue-jsx-vapor/commit/2571d88f6cb7b9410d41d17895a5c62252a31024))
+- **types:** use NodeChild instead of RenderResult for defineComponent ([819a48c](https://github.com/vuejs/vue-jsx-vapor/commit/819a48c95552f51a36f09b5530ab1f6bf8689075))
+- **vapor:** correct v-once handling for components, slots and directives ([4d640b1](https://github.com/vuejs/vue-jsx-vapor/commit/4d640b11aa4b6e04d53b70bde2355b7f9537aa74))
+
+# [3.3.0-beta.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.22...v3.3.0-beta.1) (2026-08-25)
+
+### Features
+
+- add vue-jsx package ([2b0cc1f](https://github.com/vuejs/vue-jsx-vapor/commit/2b0cc1ff18d2efb4e59a423d44e6abf677787d10))
+- expose vue-jsx/vapor ([89322ee](https://github.com/vuejs/vue-jsx-vapor/commit/89322ee4ad91f03b24b0893e9032bf35cdf78ef0))
+
 # [3.3.0-beta.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.22...v3.3.0-beta.1) (2026-08-25)
 
 ### Features

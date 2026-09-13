@@ -1,6 +1,6 @@
 {
   "name": "vue-jsx-vapor",
-  "version": "3.3.0-beta.1",
+  "version": "3.3.0-rc.1",
   "description": "Vapor Mode of Vue JSX",
   "keywords": [
     "rollup",
