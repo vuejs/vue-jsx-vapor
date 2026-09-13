@@ -16,11 +16,11 @@ catalog:
 
   '@vue-macros/volar': ^3.1.4
 
-  '@vue/shared': 3.6.0-rc.7
+  '@vue/shared': 3.6.0-rc.8
   hash-sum: ^2.0.0
   unplugin: ^3.0.0
   unplugin-utils: ^0.3.1
-  vue: 3.6.0-rc.7
+  vue: 3.6.0-rc.8
   vite-plus: 0.3.1
   vite: npm:@voidzero-dev/vite-plus-core@0.3.1
   vitest: 4.1.11
@@ -29,30 +29,6 @@ allowBuilds:
   esbuild: true
   vue-demi: true
 
-minimumReleaseAgeExclude:
-  - jsx-repl@0.0.18 || 0.0.20
-  - '@vue/compiler-core@3.6.0-rc.7'
-  - '@vue/compiler-dom@3.6.0-rc.7'
-  - '@vue/compiler-sfc@3.6.0-rc.7'
-  - '@vue/compiler-ssr@3.6.0-rc.7'
-  - '@vue/compiler-vapor@3.6.0-rc.7'
-  - '@vue/reactivity@3.6.0-rc.7'
-  - '@vue/runtime-core@3.6.0-rc.7'
-  - '@vue/runtime-dom@3.6.0-rc.7'
-  - '@vue/runtime-vapor@3.6.0-rc.7'
-  - '@vue/server-renderer@3.6.0-rc.7'
-  - '@vue/shared@3.6.0-rc.7'
-  - vue@3.6.0-rc.7
-  - '@voidzero-dev/vite-plus-core@0.3.1'
-  - '@voidzero-dev/vite-plus-darwin-arm64@0.3.1'
-  - '@voidzero-dev/vite-plus-darwin-x64@0.3.1'
-  - '@voidzero-dev/vite-plus-linux-arm64-gnu@0.3.1'
-  - '@voidzero-dev/vite-plus-linux-arm64-musl@0.3.1'
-  - '@voidzero-dev/vite-plus-linux-x64-gnu@0.3.1'
-  - '@voidzero-dev/vite-plus-linux-x64-musl@0.3.1'
-  - '@voidzero-dev/vite-plus-win32-arm64-msvc@0.3.1'
-  - '@voidzero-dev/vite-plus-win32-x64-msvc@0.3.1'
-  - vite-plus@0.3.1
 packageExtensions:
   ts-macro@0.3.7:
     peerDependencies:
