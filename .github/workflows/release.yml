@@ -375,11 +375,14 @@ jobs:
           npm config set provenance true
           if git log -1 --pretty=%B | grep -E "v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$";
           then
-            if [ "$GITHUB_REF_NAME" = "minor" ]; then
-              NPM_TAG=beta
-            else
-              NPM_TAG=latest
-            fi
+            VERSION=$(npm pkg get version | tr -d '"')
+            case "$VERSION" in
+              *-alpha.*) NPM_TAG=alpha ;;
+              *-beta.*) NPM_TAG=beta ;;
+              *-rc.*) NPM_TAG=rc ;;
+              *) NPM_TAG=latest ;;
+            esac
+            echo "Publishing $VERSION under dist-tag $NPM_TAG"
             export npm_config_tag="$NPM_TAG"
             npm publish --access public --tag "$NPM_TAG"
             cd ../../
