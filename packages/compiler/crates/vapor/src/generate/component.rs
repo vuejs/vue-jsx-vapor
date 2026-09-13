@@ -12,6 +12,7 @@ use oxc_ast::NONE;
 use oxc_ast::ast::BinaryOperator;
 use oxc_ast::ast::Expression;
 use oxc_ast::ast::FormalParameterKind;
+use oxc_ast::ast::NumberBase;
 use oxc_ast::ast::ObjectPropertyKind;
 use oxc_ast::ast::PropertyKey;
 use oxc_ast::ast::PropertyKind;
@@ -52,6 +53,7 @@ pub fn gen_create_component<'a>(
     id,
     asset,
     is_custom_element,
+    ns,
     ..
   } = operation;
 
@@ -95,6 +97,19 @@ pub fn gen_create_component<'a>(
   }
   if once {
     arguments.push(ast.expression_boolean_literal(SPAN, true).into());
+  }
+  // The component/plain-element helpers may fall back to a plain element at
+  // runtime, which needs the surrounding namespace (1 = SVG, 2 = MathML).
+  // HTML (0) is the default, so it is omitted to keep output minimal.
+  if ns != 0 {
+    while arguments.len() < 5 {
+      arguments.push(ast.expression_null_literal(SPAN).into());
+    }
+    arguments.push(
+      ast
+        .expression_numeric_literal(SPAN, ns as f64, None, NumberBase::Decimal)
+        .into(),
+    );
   }
   statements.push(Statement::VariableDeclaration(
     ast.alloc_variable_declaration(

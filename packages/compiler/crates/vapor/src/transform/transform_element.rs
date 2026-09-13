@@ -17,7 +17,7 @@ use crate::{
     },
   },
   transform::{
-    DirectiveTransformResult, TransformContext, transform_key::resolve_static_key,
+    DirectiveTransformResult, NsContext, TransformContext, transform_key::resolve_static_key,
     transform_slot_outlet::transform_slot_outlet, transform_transition::transform_transition,
     v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
     v_on::transform_v_on, v_show::transform_v_show, v_text::transform_v_text,
@@ -26,8 +26,8 @@ use crate::{
 
 use common::{
   check::{
-    get_directive_name, is_always_close_tag, is_block_tag, is_built_in_directive,
-    is_formatting_tag, is_inline_tag, is_template, is_void_tag,
+    get_directive_name, get_namespace, is_always_close_tag, is_block_tag, is_built_in_directive,
+    is_formatting_tag, is_html_annotation_xml, is_inline_tag, is_template, is_void_tag,
   },
   directive::{Directives, resolve_directive, resolve_prop_name},
   dom::is_valid_html_nesting,
@@ -90,6 +90,23 @@ pub unsafe fn transform_element<'a>(
   let is_custom_element = directives.is_custom_element;
   let is_component = directives.is_component;
 
+  // Resolve this element's namespace (0 = HTML, 1 = SVG, 2 = MathML) from the
+  // enclosing element, so components and custom elements that fall back to
+  // plain elements at runtime are created in the right namespace
+  // (https://github.com/vuejs/core/pull/15451). The context is installed before
+  // the children are visited and the parent restored on exit (see below).
+  //
+  // The parent is taken from `context.ns` rather than `parent_node`,
+  // because directives like `v-if`/`v-for` wrap the element in a synthetic
+  // fragment, which would lose the real parent tag.
+  let parent = *context.ns.borrow();
+  let ns = get_namespace(tag, parent.tag, parent.ns, parent.is_html_annotation_xml);
+  *context.ns.borrow_mut() = NsContext {
+    tag: Some(tag),
+    ns,
+    is_html_annotation_xml: is_html_annotation_xml(node),
+  };
+
   let static_key = resolve_static_key(directives, context);
 
   // If the element is a component, we need to isolate its slots context.
@@ -123,6 +140,7 @@ pub unsafe fn transform_element<'a>(
         static_key,
         single_root,
         is_custom_element,
+        ns,
         context,
         context_block,
         Rc::clone(&get_operation_index),
@@ -144,6 +162,7 @@ pub unsafe fn transform_element<'a>(
     if let Some(parent_slots) = parent_slots {
       unsafe { &mut *context_block_ptr }.slots = parent_slots;
     }
+    *context.ns.borrow_mut() = parent;
   }))
 }
 
@@ -335,6 +354,7 @@ pub fn transform_component_element<'a>(
   static_key: Option<Expression<'a>>,
   single_root: bool,
   is_custom_element: bool,
+  ns: i32,
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
   get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
@@ -357,6 +377,7 @@ pub fn transform_component_element<'a>(
       slots: mem::take(&mut context_block.slots),
       once: *context.in_v_once.borrow(),
       is_custom_element,
+      ns,
       parent: None,
       anchor: None,
       append_index: None,
