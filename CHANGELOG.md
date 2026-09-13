@@ -1,3 +1,18 @@
+## [3.2.24](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.23...v3.2.24) (2026-09-13)
+
+
+### Bug Fixes
+
+* **compiler-vapor:** emit createElement-backed children nested in a ([bdcc64d](https://github.com/vuejs/vue-jsx-vapor/commit/bdcc64d84e5109dacce917effcbecce90a44d75e))
+* **compiler/vapor:** create dynamic component element fallbacks in the ([0c3a875](https://github.com/vuejs/vue-jsx-vapor/commit/0c3a875cb4d7a6259c1b832285f711c6c5c50ff2))
+* **types:**  use any instead of Props for functional component ([a12b456](https://github.com/vuejs/vue-jsx-vapor/commit/a12b456b523763d070bac6eea9585f41a2f1b93c)), closes [#70](https://github.com/vuejs/vue-jsx-vapor/issues/70)
+* **types/eslint:** use FlatConfig instead of ClassicConfig ([03c4745](https://github.com/vuejs/vue-jsx-vapor/commit/03c474532d4482d3a61c3e758f5667827a7bd6c5))
+* **types:** infer Vapor block type via conditional type ([c7fceb4](https://github.com/vuejs/vue-jsx-vapor/commit/c7fceb47c1efd5a005f01e7604eff4694fd205c0))
+* **types:** populate JSX global namespace ([b70efaf](https://github.com/vuejs/vue-jsx-vapor/commit/b70efafd45303fb333bf761584ff9c6b8f2e7fb9))
+* **vapor:** correct v-once handling for components, slots and directives ([bfa163d](https://github.com/vuejs/vue-jsx-vapor/commit/bfa163de55930b4f1f108ac80f6c6aecc727bd88))
+
+
+
 ## [3.2.23](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.22...v3.2.23) (2026-09-04)
 
 
