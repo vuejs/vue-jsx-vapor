@@ -202,6 +202,9 @@ pub struct DirectiveIRNode<'a> {
   pub builtin: bool,
   pub asset: bool,
   pub model_type: Option<&'a str>,
+  // The helper creates its own effects, so a v-once site runs it in the once
+  // ambient instead of eliding a compiler effect.
+  pub once: bool,
 }
 
 #[derive(Debug)]

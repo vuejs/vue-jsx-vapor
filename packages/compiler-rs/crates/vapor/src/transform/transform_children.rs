@@ -64,6 +64,9 @@ pub unsafe fn transform_children<'a>(
   {
     children.pop();
   }
+  // Slot content is executed by the child component, which re-runs it on its
+  // own updates (vdom parity), so v-once does not reach into it.
+  let child_in_v_once = *context.in_v_once.borrow() && !directives.is_component;
   let mut children_len = children.len();
   while let Some(child) = children.get_mut(i) {
     if is_empty_text(child) {
@@ -102,6 +105,7 @@ pub unsafe fn transform_children<'a>(
         true
       },
       unsafe { &mut *_context_block },
+      child_in_v_once,
     );
     let is_same_template = is_in_same_template_as_parent(tag, parent_tag_name);
     if is_same_template {

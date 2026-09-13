@@ -30,6 +30,7 @@ pub fn transform_v_show<'a>(
       builtin: true,
       asset: false,
       model_type: None,
+      once: *context.in_v_once.borrow(),
     }),
     None,
   );

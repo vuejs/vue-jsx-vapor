@@ -1,9 +1,9 @@
 use oxc_ast::AstBuilder;
 use oxc_ast::NONE;
+use oxc_ast::ast::Expression;
+use oxc_ast::ast::FormalParameterKind;
 use oxc_ast::ast::Statement;
-use oxc_ast::ast::{
-  Argument, ArrayExpressionElement, FormalParameterKind, ObjectExpression, PropertyKind,
-};
+use oxc_ast::ast::{Argument, ArrayExpressionElement, ObjectExpression, PropertyKind};
 use oxc_span::GetSpan;
 use oxc_span::SPAN;
 
@@ -17,15 +17,56 @@ use crate::ir::index::OperationNode;
 use common::check::is_simple_identifier;
 use common::text::to_valid_asset_id;
 
+/**
+ * Run a helper call inside the once ambient: a helper that creates its own
+ * effects at a v-once site has them run once like compiled ones do.
+ */
+fn gen_once<'a>(call: Expression<'a>, context: &'a CodegenContext<'a>) -> Expression<'a> {
+  let ast = &context.ast;
+  let arrow = ast.alloc_arrow_function_expression(
+    SPAN,
+    true,
+    false,
+    NONE,
+    ast.formal_parameters(
+      SPAN,
+      FormalParameterKind::ArrowFormalParameters,
+      ast.vec(),
+      NONE,
+    ),
+    NONE,
+    ast.function_body(
+      SPAN,
+      ast.vec(),
+      ast.vec1(ast.statement_expression(call.span(), call)),
+    ),
+  );
+  ast.expression_call(
+    SPAN,
+    ast.expression_identifier(SPAN, ast.str(context.options.helper("_withOnce"))),
+    NONE,
+    ast.vec1(Argument::ArrowFunctionExpression(arrow)),
+    false,
+  )
+}
+
 pub fn gen_builtin_directive<'a>(
   oper: DirectiveIRNode<'a>,
   context: &'a CodegenContext<'a>,
 ) -> Option<Statement<'a>> {
-  match oper.name.as_ref() {
-    "show" => Some(gen_v_show(oper, context)),
-    "model" => Some(gen_v_model(oper, context)),
-    _ => None,
-  }
+  let once = oper.once;
+  let call = if oper.name.as_ref() == "show" {
+    gen_v_show(oper, context)
+  } else if oper.name.as_ref() == "model" {
+    gen_v_model(oper, context)
+  } else {
+    return None;
+  };
+  Some(
+    context
+      .ast
+      .statement_expression(SPAN, if once { gen_once(call, context) } else { call }),
+  )
 }
 
 /**
@@ -38,6 +79,7 @@ pub fn gen_directives_for_element<'a>(
 ) -> Option<Statement<'a>> {
   let ast = &context.ast;
   let mut element = String::new();
+  let mut once = false;
   let mut directive_items = ast.vec();
   for item in &mut context_block.operation {
     if let OperationNode::Directive(item) = item
@@ -46,6 +88,9 @@ pub fn gen_directives_for_element<'a>(
     {
       if element.is_empty() {
         element = item.element.to_string();
+        // All directives on the same element share the same once ambient; the
+        // first one mirrors upstream's `opers[0].once`.
+        once = item.once;
       }
       let name = &item.name;
       let asset = item.asset;
@@ -128,24 +173,23 @@ pub fn gen_directives_for_element<'a>(
     return None;
   }
   let directives = ast.alloc_array_expression(SPAN, directive_items);
-  Some(ast.statement_expression(
+  let call = ast.expression_call(
     SPAN,
-    ast.expression_call(
+    ast.expression_identifier(
       SPAN,
-      ast.expression_identifier(
-        SPAN,
-        ast.str(context.options.helper("_withVaporDirectives")),
-      ),
-      NONE,
-      ast.vec_from_array([
-        Argument::Identifier(
-          ast.alloc_identifier_reference(SPAN, ast.str(&format!("_n{}", element))),
-        ),
-        Argument::ArrayExpression(directives),
-      ]),
-      false,
+      ast.str(context.options.helper("_withVaporDirectives")),
     ),
-  ))
+    NONE,
+    ast.vec_from_array([
+      Argument::Identifier(
+        ast.alloc_identifier_reference(SPAN, ast.str(&format!("_n{}", element))),
+      ),
+      Argument::ArrayExpression(directives),
+    ]),
+    false,
+  );
+  let expression = if once { gen_once(call, context) } else { call };
+  Some(ast.statement_expression(SPAN, expression))
 }
 
 pub fn gen_directive_modifiers<'a>(
