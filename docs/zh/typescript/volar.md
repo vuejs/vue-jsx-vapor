@@ -81,7 +81,7 @@ pnpm add -D @ts-macro/tsc
 
 ## 选项
 
-指令支持始终开启。`ref` 与 `macros` 是两个开关，两种装配方式接受的选项形状完全相同——在 `ts-macro.config.ts` 里作为工厂函数的入参，在 `tsconfig.json` 里写在 `vueCompilerOptions['vue-jsx']` 下（使用 `vue-jsx-vapor` 时键名为 `vue-jsx-vapor`）：
+指令支持始终开启。`ref` 与 `macros` 是两个开关，两种装配方式接受的选项形状完全相同——在 `ts-macro.config.ts` 里作为工厂函数的入参，在 `tsconfig.json` 里写在 `vueCompilerOptions['vue-jsx']` 下：
 
 ```json [tsconfig.json]
 {
@@ -108,4 +108,4 @@ pnpm add -D @ts-macro/tsc
 
 - [指令](../features/directives)：各指令的编译产物，以及插件覆盖哪些指令。
 - [宏](../features/macros)：在 Vite 插件中开启宏转换。
-- [扩展 JSX 类型](./extending-jsx-types)：插件生成的代码最终也解析自 JSX namespace。
+- [扩展 JSX 类型](./configuration#扩展-jsx-类型)：插件生成的代码最终也解析自 JSX namespace。

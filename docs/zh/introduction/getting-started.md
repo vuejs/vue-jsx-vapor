@@ -45,6 +45,6 @@ export default defineConfig({
 
 `jsxImportSource` 用来选择 JSX 类型和自动 JSX runtime 声明。
 
-默认没有全局 `JSX` namespace。在类型位置使用类型、恢复全局 `JSX` namespace，以及通过模块增强扩展类型，请参阅 [TypeScript 配置](../typescript/overview)。
+默认没有全局 `JSX` namespace。在类型位置使用类型、恢复全局 `JSX` namespace，以及通过模块增强扩展类型，请参阅 [配置](../typescript/configuration)。
 
 可选语法转换及其类型支持请阅读[宏](../features/macros)和[指令](../features/directives)章节。

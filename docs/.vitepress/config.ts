@@ -78,6 +78,23 @@ export default defineConfig({
               ],
             },
             {
+              text: 'TypeScript',
+              items: [
+                {
+                  text: '配置',
+                  link: `/zh/typescript/configuration`,
+                },
+                {
+                  text: '组件类型',
+                  link: `/zh/typescript/component-types`,
+                },
+                {
+                  text: 'Volar 插件',
+                  link: `/zh/typescript/volar`,
+                },
+              ],
+            },
+            {
               text: '特性',
               items: [
                 {
@@ -95,24 +112,6 @@ export default defineConfig({
                 {
                   text: 'Custom Element',
                   link: '/zh/features/custom-elements',
-                },
-              ],
-            },
-            {
-              text: 'TypeScript',
-              collapsed: false,
-              items: [
-                {
-                  text: '概览',
-                  link: `/zh/typescript/overview`,
-                },
-                {
-                  text: '扩展 JSX 类型',
-                  link: `/zh/typescript/extending-jsx-types`,
-                },
-                {
-                  text: 'Volar 插件',
-                  link: `/zh/typescript/volar`,
                 },
               ],
             },
@@ -211,6 +210,23 @@ export default defineConfig({
           ],
         },
         {
+          text: 'TypeScript',
+          items: [
+            {
+              text: 'Configuration',
+              link: '/typescript/configuration',
+            },
+            {
+              text: 'Component Types',
+              link: '/typescript/component-types',
+            },
+            {
+              text: 'Volar Plugin',
+              link: '/typescript/volar',
+            },
+          ],
+        },
+        {
           text: 'Features',
           items: [
             {
@@ -228,24 +244,6 @@ export default defineConfig({
             {
               text: 'Custom Elements',
               link: '/features/custom-elements',
-            },
-          ],
-        },
-        {
-          text: 'TypeScript',
-          collapsed: false,
-          items: [
-            {
-              text: 'Overview',
-              link: '/typescript/overview',
-            },
-            {
-              text: 'Extending the JSX Types',
-              link: '/typescript/extending-jsx-types',
-            },
-            {
-              text: 'Volar Plugin',
-              link: '/typescript/volar',
             },
           ],
         },

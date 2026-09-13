@@ -46,7 +46,7 @@ See [Vapor Mode](./interop) when you want Vapor output.
 
 There is no global `JSX` namespace by default. For using the types in type
 positions, restoring a global `JSX` namespace, or extending the types with
-module augmentation, see [TypeScript](../typescript/overview).
+module augmentation, see [TypeScript Configuration](../typescript/configuration).
 
 See [Macros](../features/macros) and [Directives](../features/directives) for
 optional syntax transforms and their type support.

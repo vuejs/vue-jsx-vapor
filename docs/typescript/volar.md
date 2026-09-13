@@ -100,8 +100,7 @@ Type checking an SFC project with `tsmc` doesn't work: TS Macro doesn't parse
 
 Directive support is always on. `ref` and `macros` are the knobs, and both setups
 take the same shape — as the factory argument in `ts-macro.config.ts`, or under
-`vueCompilerOptions['vue-jsx']` (`vueCompilerOptions['vue-jsx-vapor']` for that
-package) in `tsconfig.json`:
+`vueCompilerOptions['vue-jsx']` in `tsconfig.json`:
 
 ```json [tsconfig.json]
 {
@@ -131,5 +130,5 @@ described in [Macros](../features/macros).
 - [Directives](../features/directives) — what each directive compiles to, and
   which ones the plugin types.
 - [Macros](../features/macros) — enabling the macro transform in the Vite plugin.
-- [Extending the JSX Types](./extending-jsx-types) — augment the JSX namespace
+- [Extending the JSX Types](./configuration#extending-the-jsx-types) — augment the JSX namespace
   that the plugin's generated code resolves against.

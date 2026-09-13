@@ -92,8 +92,6 @@ import the namespace explicitly:
 import type { JSX } from 'vue-jsx'
 ```
 
-For the `vue-jsx-vapor` package, import from `vue-jsx-vapor` instead.
-
 If a large codebase references the global `JSX` namespace in too many places
 to update at once, a `global.d.ts` can restore it. See
-[TypeScript](../typescript/overview) for the snippet.
+[TypeScript Configuration](../typescript/configuration) for the snippet.

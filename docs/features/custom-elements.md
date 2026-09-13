@@ -157,5 +157,5 @@ The `export {}` matters: the augmentation file must be a module. Without a
 top-level `import` or `export`, `declare module 'vue-jsx'` becomes an ambient
 module declaration that shadows the real package, and every type exported from
 `vue-jsx` disappears. See
-[Extending the JSX Types](../typescript/extending-jsx-types)
+[Extending the JSX Types](../typescript/configuration#extending-the-jsx-types)
 for the full set of extension points.

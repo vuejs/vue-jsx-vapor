@@ -81,6 +81,4 @@ Vue JSX 可以在 TSX 中直接使用 Vue 指令，具体语法请参考[指令]
 import type { JSX } from 'vue-jsx'
 ```
 
-`vue-jsx-vapor` 包则从 `vue-jsx-vapor` 导入。
-
-如果代码库中有大量位置引用全局 `JSX` namespace，无法一次性全部改为显式导入，可以通过 `global.d.ts` 恢复它，代码片段请参阅 [TypeScript 配置](../typescript/overview)。
+如果代码库中有大量位置引用全局 `JSX` namespace，无法一次性全部改为显式导入，可以通过 `global.d.ts` 恢复它，代码片段请参阅 [配置](../typescript/configuration)。
