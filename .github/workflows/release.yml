@@ -371,6 +371,17 @@ jobs:
       - name: Update npm
         run: npm i -g npm@latest
       - name: Publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # `napi create-npm-dirs`/`napi prepublish` inject the per-platform
+          # optionalDependencies into packages/compiler/package.json during this
+          # job, so the committed lockfile can never match at that point. pnpm
+          # defaults to verify-deps-before-run=install, which would then run a
+          # frozen install inside `pnpm run` and die with ERR_PNPM_OUTDATED_LOCKFILE.
+          # Must be spelled `pnpm_config_*`: `npm_config_*` is ignored by pnpm 11
+          # and npm itself rejects unknown keys, and will hard-error on unknown
+          # `npm_config_*` env in its next major.
+          pnpm_config_verify_deps_before_run: 'false'
         run: |
           npm config set provenance true
           if git log -1 --pretty=%B | grep -E "v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$";
@@ -383,14 +394,29 @@ jobs:
               *) NPM_TAG=latest ;;
             esac
             echo "Publishing $VERSION under dist-tag $NPM_TAG"
+            published() { [ -n "$(npm view "$1@$VERSION" version 2>/dev/null)" ]; }
             export npm_config_tag="$NPM_TAG"
-            npm publish --access public --tag "$NPM_TAG"
+            # Skip whatever is already on npm so a retry of a half-finished
+            # release does not fail with E409 "cannot publish over it".
+            if published @vue-jsx/compiler; then
+              echo "@vue-jsx/compiler@$VERSION is already on npm, skipping"
+            else
+              npm publish --access public --tag "$NPM_TAG"
+            fi
             cd ../../
             pnpm install --no-frozen-lockfile
             pnpm run --filter="./packages/*" --filter="!compiler" --parallel build
-            pnpm publish --filter="./packages/*" --filter="!compiler" --access public --no-git-checks --tag "$NPM_TAG"
+            for dir in packages/*/; do
+              if [ "$dir" = "packages/compiler/" ]; then
+                continue
+              fi
+              NAME=$(node -p "require('./$dir/package.json').name")
+              if published "$NAME"; then
+                echo "$NAME@$VERSION is already on npm, skipping"
+                continue
+              fi
+              pnpm publish --filter="$NAME" --access public --no-git-checks --tag "$NPM_TAG"
+            done
           else
             echo "Not a release, skipping publish"
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
