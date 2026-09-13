@@ -18,9 +18,6 @@ catalogs:
     '@vue-macros/volar':
       specifier: ^3.1.4
       version: 3.1.4
-    '@vue/shared':
-      specifier: 3.6.0-rc.8
-      version: 3.6.0-rc.8
     hash-sum:
       specifier: ^2.0.0
       version: 2.0.0
@@ -50,7 +47,7 @@ overrides:
 packageExtensionsChecksum: sha256-jdAbGbew+2+gePgrHAZl9dXRaNgX1ZDV36j6omZgSBk=
 
 patchedDependencies:
-  '@vue-macros/volar': d8be5a6c1e994dbfb3ce1460e2ad01370c74ef764601d5565d43d51537f8043e
+  '@vue-macros/volar': 4d7df65192eceb1e3a4c08b7e3c28c2aea947987c838490dcb28c0b93289af01
 
 importers:
 
@@ -256,7 +253,7 @@ importers:
         version: 6.0.6(@voidzero-dev/vite-plus-core@0.3.1(@types/node@25.6.0)(esbuild@0.25.8)(jiti@2.7.0)(terser@5.39.0)(typescript@6.0.3)(yaml@2.9.0))(vue@3.6.0-rc.8(typescript@6.0.3))
       '@vue-macros/volar':
         specifier: 'catalog:'
-        version: 3.1.4(patch_hash=d8be5a6c1e994dbfb3ce1460e2ad01370c74ef764601d5565d43d51537f8043e)(typescript@6.0.3)(vue@3.6.0-rc.8(typescript@6.0.3))
+        version: 3.1.4(patch_hash=4d7df65192eceb1e3a4c08b7e3c28c2aea947987c838490dcb28c0b93289af01)(typescript@6.0.3)(vue@3.6.0-rc.8(typescript@6.0.3))
       ast-kit:
         specifier: ^2.2.0
         version: 2.2.0
@@ -287,9 +284,6 @@ importers:
       '@vue-jsx/runtime':
         specifier: workspace:*
         version: link:../runtime
-      '@vue/shared':
-        specifier: 'catalog:'
-        version: 3.6.0-rc.8
       esbuild:
         specifier: '*'
         version: 0.27.2
@@ -314,7 +308,7 @@ importers:
         version: 4.5.2
       '@vue-macros/volar':
         specifier: 'catalog:'
-        version: 3.1.4(patch_hash=d8be5a6c1e994dbfb3ce1460e2ad01370c74ef764601d5565d43d51537f8043e)(typescript@7.0.2)(vue@3.6.0-rc.8(typescript@7.0.2))
+        version: 3.1.4(patch_hash=4d7df65192eceb1e3a4c08b7e3c28c2aea947987c838490dcb28c0b93289af01)(typescript@7.0.2)(vue@3.6.0-rc.8(typescript@7.0.2))
       vue:
         specifier: 'catalog:'
         version: 3.6.0-rc.8(typescript@7.0.2)
@@ -330,9 +324,6 @@ importers:
       '@vue-jsx/runtime':
         specifier: workspace:*
         version: link:../runtime
-      '@vue/shared':
-        specifier: 'catalog:'
-        version: 3.6.0-rc.8
       esbuild:
         specifier: '*'
         version: 0.25.5
@@ -357,7 +348,7 @@ importers:
         version: 4.5.2
       '@vue-macros/volar':
         specifier: 'catalog:'
-        version: 3.1.4(patch_hash=d8be5a6c1e994dbfb3ce1460e2ad01370c74ef764601d5565d43d51537f8043e)(typescript@7.0.2)(vue@3.6.0-rc.8(typescript@7.0.2))
+        version: 3.1.4(patch_hash=4d7df65192eceb1e3a4c08b7e3c28c2aea947987c838490dcb28c0b93289af01)(typescript@7.0.2)(vue@3.6.0-rc.8(typescript@7.0.2))
       vue:
         specifier: 'catalog:'
         version: 3.6.0-rc.8(typescript@7.0.2)
@@ -7836,7 +7827,7 @@ snapshots:
     transitivePeerDependencies:
       - vue
 
-  '@vue-macros/volar@3.1.4(patch_hash=d8be5a6c1e994dbfb3ce1460e2ad01370c74ef764601d5565d43d51537f8043e)(typescript@6.0.3)(vue@3.6.0-rc.8(typescript@6.0.3))':
+  '@vue-macros/volar@3.1.4(patch_hash=4d7df65192eceb1e3a4c08b7e3c28c2aea947987c838490dcb28c0b93289af01)(typescript@6.0.3)(vue@3.6.0-rc.8(typescript@6.0.3))':
     dependencies:
       '@vue-macros/boolean-prop': 3.1.4(vue@3.6.0-rc.8(typescript@6.0.3))
       '@vue-macros/common': 3.1.4(vue@3.6.0-rc.8(typescript@6.0.3))
@@ -7851,7 +7842,7 @@ snapshots:
       - typescript
       - vue
 
-  '@vue-macros/volar@3.1.4(patch_hash=d8be5a6c1e994dbfb3ce1460e2ad01370c74ef764601d5565d43d51537f8043e)(typescript@7.0.2)(vue@3.6.0-rc.8(typescript@7.0.2))':
+  '@vue-macros/volar@3.1.4(patch_hash=4d7df65192eceb1e3a4c08b7e3c28c2aea947987c838490dcb28c0b93289af01)(typescript@7.0.2)(vue@3.6.0-rc.8(typescript@7.0.2))':
     dependencies:
       '@vue-macros/boolean-prop': 3.1.4(vue@3.6.0-rc.8(typescript@7.0.2))
       '@vue-macros/common': 3.1.4(vue@3.6.0-rc.8(typescript@7.0.2))

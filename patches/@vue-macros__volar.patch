@@ -1,15 +1,16 @@
 diff --git a/dist/jsx-directive-w2gUTWdx.js b/dist/jsx-directive-w2gUTWdx.js
-index 637b42b..50bdd7d 100644
+index 637b42b..5e74108 100644
 --- a/dist/jsx-directive-w2gUTWdx.js
 +++ b/dist/jsx-directive-w2gUTWdx.js
-@@ -1,6 +1,4 @@
+@@ -1,7 +1,4 @@
 -import { addCode } from "./common-BTTMZY21.js";
  import { allCodeFeatures, createPlugin } from "ts-macro";
 -import { createFilter } from "@vue-macros/common";
- import { isHTMLTag, isSVGTag } from "@vue/shared";
+-import { isHTMLTag, isSVGTag } from "@vue/shared";
  
  //#region src/jsx-directive/common.ts
-@@ -64,7 +62,7 @@ declare function __VLS_asFunctionalComponent<
+ function getDirectiveArgs(attribute, options) {
+@@ -64,7 +61,7 @@ declare function __VLS_asFunctionalComponent<
            ? Props
            : any),
        ctx?: any,
@@ -18,7 +19,7 @@ index 637b42b..50bdd7d 100644
        __ctx: {
          attrs: Record<string, any>,
          props: (K extends { $props: infer Props }
-@@ -143,7 +141,7 @@ function transformCtx(node, root, index, options) {
+@@ -143,7 +140,7 @@ function transformCtx(node, root, index, options) {
  		const prefixModel = `${prefix}model`;
  		if (name.startsWith(prefixModel)) {
  			const dir = getDirectiveArgs(prop, options);
@@ -27,7 +28,16 @@ index 637b42b..50bdd7d 100644
  			continue;
  		} else if (name.includes("_")) name = name.split("_")[0];
  		else if (prefix && name.startsWith(prefix)) continue;
-@@ -167,6 +165,10 @@ function transformCtx(node, root, index, options) {
+@@ -154,7 +151,7 @@ function transformCtx(node, root, index, options) {
+ 	const ctxName = `__VLS_ctx_${refValue || index}`;
+ 	let tagName = "";
+ 	const originTagName = tagName = getTagName(node, options);
+-	if (isHTMLTag(tagName) || isSVGTag(tagName) || tagName.includes("-")) tagName = `{}`;
++	if (!tagName.includes(".") && /^[a-z]/.test(tagName) || tagName.includes("-")) tagName = `{}`;
+ 	else {
+ 		let types = "";
+ 		if (openingElement.typeArguments?.length) {
+@@ -167,6 +164,10 @@ function transformCtx(node, root, index, options) {
  	else addCode(codes, result);
  	return ctxName;
  }
@@ -38,7 +48,7 @@ index 637b42b..50bdd7d 100644
  function getRefValue(expression, options) {
  	const { ts, ast } = options;
  	if (ts.isIdentifier(expression)) return expression.getText(ast);
-@@ -550,7 +552,7 @@ function transformVSlot(nodeMap, ctxMap, options) {
+@@ -550,7 +551,7 @@ function transformVSlot(nodeMap, ctxMap, options) {
  				} else if (`${prefix}else` === vIfAttributeName) result.push("},");
  			}
  		});
@@ -47,7 +57,7 @@ index 637b42b..50bdd7d 100644
  		if (attributeMap.has(null)) result.push("default: () => <>");
  		else result.push(slotType);
  		if (vSlotAttribute) codes.replaceRange(vSlotAttribute.getStart(ast), vSlotAttribute.end, ...result);
-@@ -737,11 +739,10 @@ function getTagName(node, options) {
+@@ -737,11 +738,10 @@ function getTagName(node, options) {
  //#region src/jsx-directive.ts
  const plugin = createPlugin(({ ts, vueCompilerOptions }, options = vueCompilerOptions?.vueMacros?.jsxDirective === true ? {} : vueCompilerOptions?.vueMacros?.jsxDirective ?? {}) => {
  	if (!options) return [];
