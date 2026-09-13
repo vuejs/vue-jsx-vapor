@@ -219,6 +219,9 @@ pub struct CreateComponentIRNode<'a> {
   pub root: bool,
   pub once: bool,
   pub is_custom_element: bool,
+  // namespace of the surrounding template (0 = HTML, 1 = SVG, 2 = MathML),
+  // used when the component falls back to a plain element at runtime
+  pub ns: i32,
 
   pub parent: Option<i32>,
   pub anchor: Option<i32>,

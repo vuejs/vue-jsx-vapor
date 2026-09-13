@@ -71,6 +71,18 @@ impl<'a> DirectiveTransformResult<'a> {
 
 type GetIndex<'a> = Option<Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>>;
 
+/// The namespace context of an element being transformed, used to resolve the
+/// namespace of its children (mirrors `compiler-dom`'s `getNamespace`).
+#[derive(Clone, Copy, Default)]
+pub struct NsContext<'a> {
+  /// The element's tag name, or `None` for a fragment/root.
+  pub tag: Option<&'a str>,
+  /// The element's own namespace (0 = HTML, 1 = SVG, 2 = MathML).
+  pub ns: i32,
+  /// Whether the element is `<annotation-xml>` with an HTML `encoding`.
+  pub is_html_annotation_xml: bool,
+}
+
 pub struct TransformContext<'a> {
   pub allocator: &'a Allocator,
   pub source_text: &'a str,
@@ -106,6 +118,16 @@ pub struct TransformContext<'a> {
   // in the same template to close explicitly.
   pub template_close_blocks: RefCell<bool>,
 
+  // Namespace (0 = HTML, 1 = SVG, 2 = MathML) context of the innermost element
+  // currently being transformed. `transform_element` saves it, installs its own
+  // context before visiting children and restores the parent on exit, so a
+  // child resolves its namespace from the enclosing element exactly like
+  // `compiler-dom`'s `getNamespace` (exit callbacks run strictly innermost-first,
+  // so a single slot is enough). Components/custom elements that fall back to
+  // plain elements at runtime are created in this namespace
+  // (https://github.com/vuejs/core/pull/15451).
+  pub ns: RefCell<NsContext<'a>>,
+
   global_id: RefCell<i32>,
   if_index: RefCell<i32>,
 
@@ -139,6 +161,7 @@ impl<'a> TransformContext<'a> {
       is_on_rightmost_path: RefCell::new(true),
       template_close_blocks: RefCell::new(false),
       template_close_tags: RefCell::new(HashSet::new()),
+      ns: RefCell::default(),
       global_id: RefCell::new(0),
       if_index: RefCell::new(0),
       node: RefCell::new(RootNode::from(ast, options, node, true, None)),

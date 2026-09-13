@@ -912,6 +912,190 @@ fn component_keeps_is_props() {
 }
 
 #[test]
+fn component_in_svg_get_namespace() {
+  let code = transform(r#"<svg><Comp/></svg>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<svg>", 1, 1);
+  (() => {
+  	const _n1 = _t0();
+  	_setInsertionState(_n1);
+  	const _n0 = _createComponent(Comp, null, null, null, null, 1);
+  	return _n1;
+  })();
+  "#)
+}
+
+#[test]
+fn component_in_svg_with_v_if_get_namespace() {
+  // v-if wraps the element in a synthetic fragment; the namespace must still be
+  // inherited from the real `<svg>` parent via the namespace stack.
+  let code = transform(r#"<svg><Comp v-if={ok}/></svg>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<svg>", 1, 1);
+  (() => {
+  	const _n3 = _t0();
+  	_setInsertionState(_n3);
+  	const _n0 = _createIf(() => ok, () => {
+  		const _n2 = _createComponent(Comp, null, null, null, null, 1);
+  		return _n2;
+  	});
+  	return _n3;
+  })();
+  "#)
+}
+
+#[test]
+fn component_in_svg_with_v_for_get_namespace() {
+  let code = transform(r#"<svg><G v-for={i in list}/></svg>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<svg>", 1, 1);
+  (() => {
+  	const _n3 = _t0();
+  	_setInsertionState(_n3);
+  	const _n0 = _createFor(() => list, (_for_item0) => {
+  		const _n2 = _createComponent(G, null, null, null, null, 1);
+  		return _n2;
+  	}, void 0, 3);
+  	return _n3;
+  })();
+  "#)
+}
+
+#[test]
+fn custom_element_in_svg_get_namespace() {
+  let code = transform(r#"<svg><custom-el/></svg>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createPlainElement as _createPlainElement, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<svg>", 1, 1);
+  (() => {
+  	const _n1 = _t0();
+  	_setInsertionState(_n1);
+  	const _n0 = _createPlainElement("custom-el", null, null, null, null, 1);
+  	return _n1;
+  })();
+  "#)
+}
+
+#[test]
+fn component_in_nested_svg_child_get_namespace() {
+  let code = transform(r#"<svg><g><Comp/></g></svg>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { child as _child, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<svg><g>", 1, 1);
+  (() => {
+  	const _n2 = _t0();
+  	const _n1 = _child(_n2);
+  	_setInsertionState(_n1);
+  	const _n0 = _createComponent(Comp, null, null, null, null, 1);
+  	return _n2;
+  })();
+  "#)
+}
+
+#[test]
+fn component_in_math_get_namespace() {
+  let code = transform(r#"<math><Comp/></math>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<math>", 1, 2);
+  (() => {
+  	const _n1 = _t0();
+  	_setInsertionState(_n1);
+  	const _n0 = _createComponent(Comp, null, null, null, null, 2);
+  	return _n1;
+  })();
+  "#)
+}
+
+#[test]
+fn dynamic_component_in_container_does_not_inherit_namespace() {
+  // TODO: a dynamic component expression is compiled by an independent
+  // `TransformContext` at codegen time, so it currently does not inherit the
+  // namespace of the enclosing `<svg>`. This test pins the known limitation;
+  // update once the ambient namespace is propagated to nested roots.
+  let code = transform(r#"<svg>{<D.value/>}</svg>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<svg> ", 1, 1);
+  (() => {
+  	const _n0 = _t0();
+  	const _x0 = _txt(_n0);
+  	_setNodes(_x0, () => (() => {
+  		const _n0 = _createComponent(D.value, null, null, true);
+  		return _n0;
+  	})());
+  	return _n0;
+  })();
+  "#)
+}
+
+#[test]
+fn component_in_foreign_object_falls_back_to_html_namespace() {
+  let code = transform(r#"<svg><foreignObject><Comp/></foreignObject></svg>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { child as _child, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<svg><foreignObject>", 1, 1);
+  (() => {
+  	const _n2 = _t0();
+  	const _n1 = _child(_n2);
+  	_setInsertionState(_n1);
+  	const _n0 = _createComponent(Comp);
+  	return _n2;
+  })();
+  "#)
+}
+
+#[test]
+fn component_in_html_annotation_xml_falls_back_to_html_namespace() {
+  let code = transform(
+    r#"<math><annotation-xml encoding="text/html"><Comp/></annotation-xml></math>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createPlainElement as _createPlainElement, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<math>", 1, 2);
+  (() => {
+  	const _n2 = _t0();
+  	_setInsertionState(_n2);
+  	const _n1 = _createPlainElement("annotation-xml", { encoding: "text/html" }, () => {
+  		const _n0 = _createComponent(Comp);
+  		return _n0;
+  	}, null, null, 2);
+  	return _n2;
+  })();
+  "#)
+}
+
+#[test]
+fn component_in_math_text_integration_point_falls_back_to_html_namespace() {
+  let code = transform(r#"<math><mi><Comp/></mi></math>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { child as _child, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<math><mi>", 1, 2);
+  (() => {
+  	const _n2 = _t0();
+  	const _n1 = _child(_n2);
+  	_setInsertionState(_n1);
+  	const _n0 = _createComponent(Comp);
+  	return _n2;
+  })();
+  "#)
+}
+
+#[test]
 fn v_on_obj_before_static_event_keeps_handler_getters() {
   let code = transform(r#"<Foo v-on={obj} onFoo={bar} />"#, None).code;
   assert_snapshot!(code, @r#"

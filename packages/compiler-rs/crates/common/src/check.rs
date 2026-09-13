@@ -1,8 +1,8 @@
 use oxc_ast::{
   AstKind,
   ast::{
-    ArrayExpressionElement, Expression, IdentifierReference, JSXChild, JSXElement, JSXElementName,
-    ObjectPropertyKind,
+    ArrayExpressionElement, Expression, IdentifierReference, JSXAttributeItem, JSXAttributeName,
+    JSXAttributeValue, JSXChild, JSXElement, JSXElementName, ObjectPropertyKind,
   },
 };
 use oxc_span::GetSpan;
@@ -125,6 +125,58 @@ static MATH_TAGS: phf::Set<&'static str> = phf_set! {
 };
 pub fn is_math_ml_tag(tag_name: &str) -> bool {
   MATH_TAGS.contains(tag_name)
+}
+
+// Mirrors `compiler-dom`'s `getNamespace`: resolves the namespace of `tag`
+// from its parent element's tag and namespace.
+// https://html.spec.whatwg.org/multipage/parsing.html#tree-construction
+pub fn get_namespace(
+  tag: &str,
+  parent_tag: Option<&str>,
+  parent_ns: i32,
+  parent_is_html_annotation_xml: bool,
+) -> i32 {
+  let mut ns = parent_ns;
+  if let Some(parent_tag) = parent_tag {
+    if ns == 2 {
+      if parent_tag == "annotation-xml" {
+        if is_svg_tag(tag) {
+          return 1;
+        }
+        if parent_is_html_annotation_xml {
+          ns = 0;
+        }
+      } else if matches!(parent_tag, "mi" | "mo" | "mn" | "ms" | "mtext")
+        && tag != "mglyph"
+        && tag != "malignmark"
+      {
+        ns = 0;
+      }
+    } else if ns == 1 && matches!(parent_tag, "foreignObject" | "desc" | "title") {
+      ns = 0;
+    }
+  }
+  if ns == 0 {
+    if is_svg_tag(tag) {
+      return 1;
+    }
+    if is_math_ml_tag(tag) {
+      return 2;
+    }
+  }
+  ns
+}
+
+pub fn is_html_annotation_xml(node: &JSXElement) -> bool {
+  matches!(&node.opening_element.name, JSXElementName::Identifier(name) if name.name == "annotation-xml")
+    && node.opening_element.attributes.iter().any(|attr| {
+      let JSXAttributeItem::Attribute(attr) = attr else {
+        return false;
+      };
+      matches!(&attr.name, JSXAttributeName::Identifier(name) if name.name == "encoding")
+        && matches!(&attr.value, Some(JSXAttributeValue::StringLiteral(value))
+          if matches!(value.value.as_str(), "text/html" | "application/xhtml+xml"))
+    })
 }
 
 pub fn is_jsx_component(node: &JSXElement) -> bool {
