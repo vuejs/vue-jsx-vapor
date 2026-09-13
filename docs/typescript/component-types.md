@@ -8,12 +8,12 @@ the missing part back.
 
 ## What Gets Rewritten
 
-| On the component      | In JSX                               |
-| --------------------- | ------------------------------------ |
-| the `props` parameter | the attributes themselves            |
-| `emit`                | `onXxx` callback props               |
-| `slots`               | the `v-slots` prop, and JSX children |
-| `exposed`             | the target type of `ref`             |
+| On the component | In JSX                               |
+| ---------------- | ------------------------------------ |
+| `props`          | the attributes themselves            |
+| `emit`           | `onXxx` callback props               |
+| `slots`          | the `v-slots` prop, and JSX children |
+| `exposed`        | the target type of `ref`             |
 
 ```tsx
 const Panel = (props: { step: number }, { slots }: { slots: { default?: (n: number) => any } }) => (
@@ -51,7 +51,8 @@ export default () => <List items={[{ id: 1 }]}>{{ row: (item) => <li>{item.id}</
   The generated `v-slots` still comes from the unresolved signature.
 
 The way out is to stop asking the rewrite for those three: declare them as
-props, in the position TypeScript infers from.
+props, in the position TypeScript infers from — or let
+`defineComponent` / `defineVaporComponent` declare them for you.
 
 ## The Props Helpers
 
@@ -136,6 +137,76 @@ export default () => (
 )
 ```
 
+## defineComponent And defineVaporComponent
+
+`vue-jsx` exports both: `defineComponent` for Virtual DOM components,
+`defineVaporComponent` for Vapor ones. They take the same setup signature you
+would write by hand and put emits, slots, and exposed into the props of the
+returned component, which is the position the attributes are inferred from. A
+type parameter therefore reaches slot params, `ref`, and the event props:
+
+```tsx
+import { defineComponent } from 'vue-jsx'
+
+const List = defineComponent(
+  <T,>(
+    props: { items: T[] },
+    ctx: {
+      emit: (e: 'change', v: T) => void
+      slots: { row?: (item: T) => any }
+      expose: (exposed?: { reset: () => void }) => void
+    },
+  ) => {
+    ctx.expose({ reset: () => {} })
+    return () => <ul>{props.items.length}</ul>
+  },
+)
+
+export default () => (
+  <List
+    items={[{ id: 1 }]}
+    onChange={(value) => value.id}
+    ref={(exposed) => exposed?.reset()}
+    v-slots={{ row: (item) => <li>{item.id}</li> }}
+  />
+)
+```
+
+What each part of the context type buys you:
+
+- `slots`: a plain slot record is enough, `SlotsType` is not required. Both are
+  accepted, and `T` reaches the slot parameters — as children or as `v-slots`.
+- `expose`: the parameter type is what `ref` resolves to, `T` included.
+- `emit`: the event props are derived from the `emit` signature, so `onXxx`
+  appears without declaring `emits` at all, and the payload keeps `T`.
+
+`defineVaporComponent` behaves the same way, except the setup returns a block
+instead of a render function:
+
+```tsx
+import { defineVaporComponent } from 'vue-jsx'
+
+const VaporList = defineVaporComponent(
+  <T,>(
+    props: { items: T[] },
+    ctx: {
+      emit: (e: 'change', v: T) => void
+      slots: { row?: (item: T) => any }
+      expose: (exposed?: { reset: () => void }) => void
+    },
+  ) => {
+    ctx.expose({ reset: () => {} })
+    return <ul>{props.items.length}</ul>
+  },
+)
+
+export default () => (
+  <VaporList items={[{ id: 1 }]} ref={(exposed) => exposed?.reset()}>
+    {(item) => <li>{item.id}</li>}
+  </VaporList>
+)
+```
+
 ## Which To Use
 
 | Situation                                        | Use                                          |
@@ -144,3 +215,4 @@ export default () => (
 | generic component, children must see `T`         | `SlotsToProps` in the props                  |
 | generic component, `ref` must see `T`            | `ExposedToProps` in the props                |
 | generic component with emits, slots, and exposed | `SetupContextToProps`                        |
+| generic component, no helper props in the source | `defineComponent` / `defineVaporComponent`   |

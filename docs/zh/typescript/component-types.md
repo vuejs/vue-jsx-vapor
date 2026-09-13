@@ -7,12 +7,12 @@ helper 类型如何补上缺失的部分。
 
 ## 改写什么
 
-| 组件上       | 在 JSX 中                         |
-| ------------ | --------------------------------- |
-| `props` 参数 | attribute 本身                    |
-| `emit`       | `onXxx` 回调 props                |
-| `slots`      | `v-slots` prop，以及 JSX children |
-| `exposed`    | `ref` 的目标类型                  |
+| 组件上    | 在 JSX 中                         |
+| --------- | --------------------------------- |
+| `props`   | attribute 本身                    |
+| `emit`    | `onXxx` 回调 props                |
+| `slots`   | `v-slots` prop，以及 JSX children |
+| `exposed` | `ref` 的目标类型                  |
 
 ```tsx
 const Panel = (props: { step: number }, { slots }: { slots: { default?: (n: number) => any } }) => (
@@ -47,7 +47,8 @@ export default () => <List items={[{ id: 1 }]}>{{ row: (item) => <li>{item.id}</
 - 显式类型实参 `<List<{ id: number }>>` 也只影响 props。生成的 `v-slots` 仍来自
   未解析的那份签名。
 
-出路是别再让改写去负责这三样：把它们声明成 props，放进 TypeScript 推断所在的位置。
+出路是别再让改写去负责这三样：把它们声明成 props，放进 TypeScript 推断所在的位置
+—— 或者交给 `defineComponent` / `defineVaporComponent` 替你声明。
 
 ## Props helper
 
@@ -129,11 +130,80 @@ export default () => (
 )
 ```
 
+## defineComponent 与 defineVaporComponent
+
+`vue-jsx` 同时导出这两个：`defineComponent` 定义 Virtual DOM 组件，
+`defineVaporComponent` 定义 Vapor 组件。它们接受的 setup 签名跟你手写的完全一样，
+然后把 emits、slots、exposed 放进返回组件的 props 里 —— 也就是 attribute 被推断的
+那个位置。于是类型参数能到达 slot 参数、`ref` 和事件 props：
+
+```tsx
+import { defineComponent } from 'vue-jsx'
+
+const List = defineComponent(
+  <T,>(
+    props: { items: T[] },
+    ctx: {
+      emit: (e: 'change', v: T) => void
+      slots: { row?: (item: T) => any }
+      expose: (exposed?: { reset: () => void }) => void
+    },
+  ) => {
+    ctx.expose({ reset: () => {} })
+    return () => <ul>{props.items.length}</ul>
+  },
+)
+
+export default () => (
+  <List
+    items={[{ id: 1 }]}
+    onChange={(value) => value.id}
+    ref={(exposed) => exposed?.reset()}
+    v-slots={{ row: (item) => <li>{item.id}</li> }}
+  />
+)
+```
+
+context 类型里每一部分换来什么：
+
+- `slots`：一份普通 slot 记录就够，不需要 `SlotsType`。两种都接受，`T` 会到达 slot
+  参数 —— children 或 `v-slots` 都行。
+- `expose`：`expose` 的入参类型就是 `ref` 解析到的类型，`T` 也在里面。
+- `emit`：事件 props 直接从 `emit` 签名推导，所以完全不写 `emits` 也会出现 `onXxx`，
+  载荷保留 `T`。
+
+`defineVaporComponent` 行为一致，只是 setup 返回 block 而不是渲染函数：
+
+```tsx
+import { defineVaporComponent } from 'vue-jsx'
+
+const VaporList = defineVaporComponent(
+  <T,>(
+    props: { items: T[] },
+    ctx: {
+      emit: (e: 'change', v: T) => void
+      slots: { row?: (item: T) => any }
+      expose: (exposed?: { reset: () => void }) => void
+    },
+  ) => {
+    ctx.expose({ reset: () => {} })
+    return <ul>{props.items.length}</ul>
+  },
+)
+
+export default () => (
+  <VaporList items={[{ id: 1 }]} ref={(exposed) => exposed?.reset()}>
+    {(item) => <li>{item.id}</li>}
+  </VaporList>
+)
+```
+
 ## 该用哪个
 
-| 场景                                 | 用法                        |
-| ------------------------------------ | --------------------------- |
-| 普通组件，context 有标注             | 什么都不用加，推断已经完整  |
-| 泛型组件，children 需要看到 `T`      | props 里加 `SlotsToProps`   |
-| 泛型组件，`ref` 需要看到 `T`         | props 里加 `ExposedToProps` |
-| 泛型组件，emits、slots、exposed 都要 | `SetupContextToProps`       |
+| 场景                                 | 用法                                       |
+| ------------------------------------ | ------------------------------------------ |
+| 普通组件，context 有标注             | 什么都不用加，推断已经完整                 |
+| 泛型组件，children 需要看到 `T`      | props 里加 `SlotsToProps`                  |
+| 泛型组件，`ref` 需要看到 `T`         | props 里加 `ExposedToProps`                |
+| 泛型组件，emits、slots、exposed 都要 | `SetupContextToProps`                      |
+| 泛型组件，源码里不想加 helper props  | `defineComponent` / `defineVaporComponent` |
