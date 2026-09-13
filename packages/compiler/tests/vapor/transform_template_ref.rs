@@ -62,7 +62,7 @@ fn function_ref() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
   const _t0 = _template("<div>");
   (() => {

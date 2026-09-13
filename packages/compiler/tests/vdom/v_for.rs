@@ -5,7 +5,7 @@ use insta::assert_snapshot;
 fn number_expression() {
   let code = transform(r#"<span v-for={index in 5}>{index}</span>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(), _createElementBlock(_Fragment, null, _renderList(5, (index) => _createElementVNode("span", null, [_normalizeVNode(() => index)])), 64);
   "#);
@@ -100,7 +100,7 @@ fn should_not_prefix_v_for_aliases() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i, j, k) => (_openBlock(), _createElementBlock("span", null, [_normalizeVNode(() => i + j + k), _normalizeVNode(() => l)]))), 256);
   "#)
@@ -116,7 +116,7 @@ fn nested_v_for() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div", null, [_normalizeVNode(() => i + j)]))), 256)), _normalizeVNode(() => i)]))), 256);
   "#)
@@ -132,7 +132,7 @@ fn v_for_aliases_with_complex_expressions() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ foo:foo = bar, baz: [qux = quux] }) => (_openBlock(), _createElementBlock("div", null, [_normalizeVNode(() => foo + bar + baz + qux + quux)]))), 256);
   "#)
@@ -172,7 +172,7 @@ fn template_v_for_key_expression_prefixing() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -189,7 +189,7 @@ fn template_v_for_key_expression_prefixing_on_simple_expression() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -206,7 +206,7 @@ fn template_v_for_key_no_prefixing_on_attribute_key() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -223,7 +223,7 @@ fn template_v_for_with_multiple_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -307,7 +307,7 @@ fn keyed_template_v_for() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -422,7 +422,7 @@ fn stable_v_for_lifecycle_calls_vnode_unmounted_hooks_on_branch_removal() {
 fn stable_v_for_lifecycle_runs_directive_before_update_before_child_updates() {
   let code = transform(r#"<div v-for={i in 1} v-dir>{ value }</div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _directive_dir = _resolveDirective("dir");
@@ -439,7 +439,7 @@ fn stable_v_for_lifecycle_runs_vnode_before_update_before_nested_child_updates()
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   const _hoisted_1 = ["onVnodeBeforeUpdate"];
   _openBlock(), _createElementBlock(_Fragment, null, _renderList(1, (i) => (_openBlock(), _createElementBlock("div", { onVnodeBeforeUpdate }, [_createElementVNode("span", null, [_normalizeVNode(() => value)])], 8, _hoisted_1))), 64);

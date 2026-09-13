@@ -78,7 +78,7 @@ fn starts_with_underline() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["._id"];
   (() => {
@@ -97,7 +97,7 @@ fn starts_with_underline() {
 fn prevent_hoisted_expression_with_this() {
   let code = transform(r#"<div class={this.foo} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeClass as _normalizeClass } from "/vue-jsx-vapor/vdom";
+  import { normalizeClass as _normalizeClass } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", { class: _normalizeClass(this.foo) }, null, 2);
   "#);
@@ -111,7 +111,7 @@ fn prevent_cache_expression_with_this() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onMousedown"];
   _openBlock(), _createElementBlock("div", { onMousedown: this.onMousedown }, [_normalizeVNode(() => this.foo)], 40, _hoisted_1);

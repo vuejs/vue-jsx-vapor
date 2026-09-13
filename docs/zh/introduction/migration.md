@@ -29,6 +29,17 @@
 
 相关作用域包现在分别是 `@vue-jsx/compiler`、`@vue-jsx/runtime`、`@vue-jsx/macros` 和 `@vue-jsx/eslint`。
 
+### 修改 ESLint 规则前缀
+
+`@vue-jsx/eslint` 的规则注册在 `vue-jsx/` 前缀下：
+
+```diff
+- 'vue-jsx-vapor/define-style': 'warn',
+- 'vue-jsx-vapor/jsx-sort-props': 'warn',
++ 'vue-jsx/define-style': 'warn',
++ 'vue-jsx/jsx-sort-props': 'warn',
+```
+
 ### 选择渲染模式
 
 旧包默认生成 Vapor，并通过 `interop: true` 适配混合模式或 Virtual DOM 项目。新包默认生成 Virtual DOM：

@@ -14,7 +14,7 @@ fn basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { applyVShow as _applyVShow, template as _template } from "vue";
   const _t0 = _template("<h1>foo", 1);
   (() => {
@@ -77,7 +77,7 @@ fn v_show_with_appear() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { applyVShow as _applyVShow, template as _template } from "vue";
   const _t0 = _template("<h1>foo", 1);
   (() => {
@@ -108,7 +108,7 @@ fn work_with_v_if() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createIf as _createIf, extend as _extend, template as _template } from "vue";
   const _t0 = _template("<h1>foo", 3);
   (() => {
@@ -139,7 +139,7 @@ fn work_with_v_if_v_else() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createIf as _createIf, extend as _extend, template as _template } from "vue";
   const _t0 = _template("<h1>1", 3);
   const _t1 = _template("<h2>2", 3);
@@ -180,7 +180,7 @@ fn work_with_condition_expression() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createIf as _createIf, extend as _extend, template as _template } from "vue";
   const _t0 = _template("<h1>1", 3);
   const _t1 = _template("<h2>2", 3);
@@ -217,7 +217,7 @@ fn transition_work_with_dynamic_keyed_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
   const _t0 = _template("<h1>foo", 3);
   (() => {
@@ -246,7 +246,7 @@ fn does_not_inject_persisted_when_v_if_owns_a_v_show_child() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { applyVShow as _applyVShow, createIf as _createIf, extend as _extend, template as _template } from "vue";
   const _t0 = _template("<h1>");
   (() => {

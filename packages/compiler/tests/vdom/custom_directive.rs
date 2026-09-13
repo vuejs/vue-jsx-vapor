@@ -5,7 +5,7 @@ use insta::assert_snapshot;
 fn basic() {
   let code = transform("<div v-example>foo</div>", None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");

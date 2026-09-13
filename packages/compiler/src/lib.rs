@@ -54,8 +54,8 @@ pub struct CompilerOptions {
   /// Note: this option is only used in Virtual DOM mode.
   /// @default true
   pub optimize: Option<bool>,
-  /// Customize where to import runtime helpers from vue-jsx-vapor.
-  /// If not specified, defaults to the virtual module path (e.g., `/vue-jsx-vapor/vapor`).
+  /// Customize where to import runtime helpers from vue-jsx.
+  /// If not specified, defaults to the virtual module path (e.g., `/vue-jsx/vapor`).
   pub runtime_module_name: Option<String>,
   /// Whether to merge props when using JSXSpreadAttribute.
   /// - `true`: Use Vue's `mergeProps` behavior

@@ -12,7 +12,7 @@ pub fn ssr_export() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { ssrRegisterHelper } from "/vue-jsx-vapor/ssr";
+  import { ssrRegisterHelper } from "/vue-jsx/ssr";
   const __moduleId = "index.jsx";
   export const foo = () => {};
   ssrRegisterHelper(foo, __moduleId);
@@ -33,7 +33,7 @@ pub fn ssr_export_default() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { ssrRegisterHelper } from "/vue-jsx-vapor/ssr";
+  import { ssrRegisterHelper } from "/vue-jsx/ssr";
   const __moduleId = "index.jsx";
   const Comp = () => {};
   export default Comp;
@@ -53,7 +53,7 @@ pub fn ssr_define_vapor_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { defineVaporSSRComponent as _defineVaporSSRComponent } from "/vue-jsx-vapor/vapor";
+  import { defineVaporSSRComponent as _defineVaporSSRComponent } from "/vue-jsx/vapor";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   const Comp = _defineVaporSSRComponent(() => (_openBlock(), _createBlock("div")));
   "#);
@@ -74,7 +74,7 @@ pub fn ssr_slots() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlot as _normalizeSlot } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	_: 1,

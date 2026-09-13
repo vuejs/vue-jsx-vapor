@@ -221,7 +221,7 @@ fn component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createIf as _createIf, extend as _extend, resolveDirective as _resolveDirective, setInsertionState as _setInsertionState, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
   const _t0 = _template("<div>");
   (() => {

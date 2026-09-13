@@ -192,7 +192,7 @@ impl<'a> Transform<'a> {
               if let Some(runtime_module_name) = &self.options.runtime_module_name {
                 runtime_module_name.as_str()
               } else {
-                "/vue-jsx-vapor/vdom"
+                "/vue-jsx/vdom"
               },
             ),
             None,
@@ -237,7 +237,7 @@ impl<'a> Transform<'a> {
               if let Some(runtime_module_name) = &self.options.runtime_module_name {
                 runtime_module_name.as_str()
               } else {
-                "/vue-jsx-vapor/vapor"
+                "/vue-jsx/vapor"
               },
             ),
             None,

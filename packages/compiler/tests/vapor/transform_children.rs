@@ -14,7 +14,7 @@ fn basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ", 1);
   (() => {
@@ -57,7 +57,7 @@ fn fragment() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { createNodes as _createNodes } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createNodes(() => foo);
   	return _n0;
@@ -80,7 +80,7 @@ fn children_sibling_references() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { child as _child, next as _next, renderEffect as _renderEffect, setProp as _setProp, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div><p> </p> <p> ", 1);
   (() => {
@@ -115,7 +115,7 @@ fn efficient_traversal() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { child as _child, next as _next, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div><div>x</div><div><span> </div><div><span> </div><div><span> ", 1);
   (() => {
@@ -157,7 +157,7 @@ fn efficient_find() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { nthChild as _nthChild, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div><div>x</div><div>x</div><div> ", 1);
   (() => {
@@ -190,7 +190,7 @@ fn inline_placeholder_when_branching_access_paths_share_one_parent_access() {
   assert!(code.contains("const _n0 = _child(_p0);"));
   assert!(code.contains("const _n1 = _child(_p0 = _next(_p0));"));
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { child as _child, next as _next, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div><div><section><span> </section><section><span> ", 1);
   (() => {
@@ -226,7 +226,7 @@ fn reuse_cursor_assignment_for_non_adjacent_following_access_path() {
   assert!(code.contains("const _n0 = _child(_p0);"));
   assert!(code.contains("const _n1 = _child(_p0 = _nthChild("));
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { child as _child, nthChild as _nthChild, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div><div><span> </div><i></i><div><span> ", 1);
   (() => {
@@ -266,7 +266,7 @@ fn materialize_placeholder_when_inline_would_duplicate_parent_access() {
   assert!(code.contains("const _n1 = _child(_p1 = _nthChild(_p0, 2));"));
   assert!(!code.contains("_nthChild(_child("));
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { child as _child, nthChild as _nthChild, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div><section><div><span> </div><i></i><div><span> ", 1);
   (() => {
@@ -303,7 +303,7 @@ fn keep_nested_operation_parent_as_node_variable_before_sibling_lookup() {
   assert!(code.contains("_setInsertionState(_n1);"));
   assert!(!code.contains("_p0 = _next"));
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, next as _next, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div><section></section><section><span> ", 1);
   (() => {
@@ -364,7 +364,7 @@ fn jsx_component_in_jsx_expression_container() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx/vapor";
   import { template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ", 1);
   (() => {
@@ -393,7 +393,7 @@ fn flushes_previous_effects_before_creating_child_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx/vapor";
   import { template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   (() => {
@@ -417,7 +417,7 @@ fn flushes_parent_props_before_creating_child_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { renderEffect as _renderEffect, setInsertionState as _setInsertionState, setProp as _setProp, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
   (() => {
@@ -446,7 +446,7 @@ fn does_not_flush_later_v_for_effects_before_child_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, createFor as _createFor, createSelector as _createSelector, createTemplateRefSetter as _createTemplateRefSetter, next as _next, renderEffect as _renderEffect, setInsertionState as _setInsertionState, setText as _setText, template as _template, toDisplayString as _toDisplayString, txt as _txt } from "vue";
   const _t0 = _template("<div><span> </span><!><span> </span>");
   (() => {

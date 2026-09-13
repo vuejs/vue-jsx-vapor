@@ -440,7 +440,7 @@ fn component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, {
   		modelValue: () => foo,
@@ -462,7 +462,7 @@ fn component_with_arguments() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, {
   		bar: () => foo,
@@ -484,7 +484,7 @@ fn component_with_dynamic_arguments() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, { $: [() => ({
   		[arg]: foo,
@@ -506,7 +506,7 @@ fn component_with_dynamic_arguments_with_v_for() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createFor as _createFor } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
@@ -532,7 +532,7 @@ fn component_should_generate_model_value_modifiers() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, {
   		modelValue: () => foo,
@@ -558,7 +558,7 @@ fn component_with_arguments_should_generate_model_modifiers() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, {
   		foo: () => foo,
@@ -584,7 +584,7 @@ fn component_with_dynamic_arguments_should_generate_model_modifiers() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, { $: [() => ({
   		[foo]: foo,
@@ -611,7 +611,7 @@ fn component_v_model_should_merge_with_explicit() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, {
   		modelValue: () => counter,
@@ -633,7 +633,7 @@ fn v_model_after_dynamic_bind_keeps_model_getters() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, { $: [() => obj, {
   		modelValue: () => foo,
@@ -656,7 +656,7 @@ fn array_args() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, { $: [() => ({
   		[bar]: foo,
@@ -682,7 +682,7 @@ fn array_args_with_modifiers() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, {
   		modelValue: () => foo,
@@ -708,7 +708,7 @@ fn array_args_with_arg() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, {
   		foo: () => foo,

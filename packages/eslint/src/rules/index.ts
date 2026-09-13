@@ -10,8 +10,8 @@ const ruleOptions = {
 }
 
 export interface RuleOptions {
-  'vue-jsx-vapor/jsx-sort-props': JsxSortPropsRuleOptions
-  'vue-jsx-vapor/define-style': DefineStyleRuleOptions
+  'vue-jsx/jsx-sort-props': JsxSortPropsRuleOptions
+  'vue-jsx/define-style': DefineStyleRuleOptions
 }
 
 export type Rules = Partial<{

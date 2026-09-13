@@ -238,7 +238,7 @@ impl<'a> HmrOrSsrTransform<'a> {
                 if let Some(runtime_module_name) = &self.options.runtime_module_name {
                   runtime_module_name.as_str()
                 } else {
-                  "/vue-jsx-vapor/ssr"
+                  "/vue-jsx/ssr"
                 },
               ),
               None,

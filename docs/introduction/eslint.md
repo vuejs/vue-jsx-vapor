@@ -29,7 +29,7 @@ import vueJsx from '@vue-jsx/eslint'
 export default [
   vueJsx({
     rules: {
-      'vue-jsx-vapor/define-style': [1, { tabWidth: 2 }],
+      'vue-jsx/define-style': [1, { tabWidth: 2 }],
     },
   }),
 ]
@@ -45,7 +45,7 @@ import vueJsx from '@vue-jsx/eslint'
 export default [
   vueJsx({
     rules: {
-      'vue-jsx-vapor/jsx-sort-props': [
+      'vue-jsx/jsx-sort-props': [
         2,
         {
           reservedFirst: ['v-if', 'v-for'],

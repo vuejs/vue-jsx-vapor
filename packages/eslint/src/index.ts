@@ -2,7 +2,7 @@ import rules, { type Rules } from './rules/index.ts'
 import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint'
 
 export const plugins = {
-  'vue-jsx-vapor': {
+  'vue-jsx': {
     rules,
   },
 }
@@ -13,12 +13,12 @@ const config: (options?: FlatConfig.Config) => FlatConfig.Config = ({
   rules = {},
   ...options
 } = {}) => ({
-  name: 'vue-jsx-vapor',
+  name: 'vue-jsx',
   plugins,
   rules: {
     'style/jsx-sort-props': 'off',
     'react/jsx-sort-props': 'off',
-    'vue-jsx-vapor/jsx-sort-props': rules['vue-jsx-vapor/jsx-sort-props'] || [
+    'vue-jsx/jsx-sort-props': rules['vue-jsx/jsx-sort-props'] || [
       'warn',
       {
         callbacksLast: true,
@@ -27,7 +27,7 @@ const config: (options?: FlatConfig.Config) => FlatConfig.Config = ({
         reservedLast: ['v-slot', 'v-slots', 'v-text', 'v-html'],
       },
     ],
-    'vue-jsx-vapor/define-style': rules['vue-jsx-vapor/define-style'] || 'warn',
+    'vue-jsx/define-style': rules['vue-jsx/define-style'] || 'warn',
   },
   ...options,
 })

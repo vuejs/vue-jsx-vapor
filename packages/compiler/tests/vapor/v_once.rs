@@ -18,7 +18,7 @@ fn basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { child as _child, next as _next, setClass as _setClass, template as _template } from "vue";
   const _t0 = _template("<div> <span>", 1);
   (() => {
@@ -86,7 +86,7 @@ fn on_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
   (() => {
@@ -134,7 +134,7 @@ fn root_slot_outlet_in_slot_content_should_not_be_marked_as_slot_root() {
   assert!(code.contains("_createSlot(\"default\", null, null, 6)"));
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createSlot as _createSlot, extend as _extend } from "vue";
   (() => {
   	const _n1 = _createComponent(Comp, null, _extend(() => {
@@ -227,7 +227,7 @@ fn with_conditional_expression() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span> ");
   const _t1 = _template("<div>fail", 2);
@@ -288,7 +288,7 @@ fn execution_order() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { child as _child, next as _next, nthChild as _nthChild, setProp as _setProp, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div><span> </span> <br> <div> ", 1);
   (() => {

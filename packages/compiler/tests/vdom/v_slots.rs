@@ -12,7 +12,7 @@ fn v_slots_basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode, normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode, normalizeSlot as _normalizeSlot } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = ["onClick"];
   _openBlock(), _createBlock(Comp, null, {
@@ -38,7 +38,7 @@ fn function_expression_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlot as _normalizeSlot } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick"];
   _openBlock(), _createBlock(Comp, null, {
@@ -58,7 +58,7 @@ fn object_expression_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeSlot as _normalizeSlot } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = ["onClick"];
   _openBlock(), _createBlock(Comp, null, {
@@ -87,7 +87,7 @@ fn object_expression_multiple_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode, normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode, normalizeSlot as _normalizeSlot } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = ["onClick"];
   _openBlock(), _createBlock(Comp, null, {
@@ -114,7 +114,7 @@ fn object_expression_children_with_computed_property() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, { [foo]: () => (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -170,7 +170,7 @@ fn for_component_should_be_dynamic() {
 fn v_slots_with_children() {
   let code = transform("<Comp v-slots={{ foo: () => 'foo' }}><div /></Comp>", None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeSlot as _normalizeSlot } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	_: 1,
@@ -187,7 +187,7 @@ fn v_slots_with_children() {
 fn v_slots_dynamic_with_children() {
   let code = transform("<Comp v-slots={slots}><div /></Comp>", None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	default: () => (() => {
@@ -203,7 +203,7 @@ fn v_slots_dynamic_with_children() {
 fn v_slots_dynamic_with_identify_children() {
   let code = transform("<Comp v-slots={slots}>{defaultSlot}</Comp>", None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	default: () => [_normalizeVNode(() => defaultSlot)],
@@ -216,7 +216,7 @@ fn v_slots_dynamic_with_identify_children() {
 fn identify_children() {
   let code = transform("<Comp>{slots}</Comp>", None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, _normalizeSlots(slots), 1024);
   "#);
@@ -226,7 +226,7 @@ fn identify_children() {
 fn this_expression_slots_children() {
   let code = transform("<Comp>{this.$slots}</Comp>", None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, _normalizeSlots(this.$slots), 1024);
   "#);
@@ -240,7 +240,7 @@ fn condition_expression_children() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, _normalizeSlots(slots ? { default: () => (_openBlock(), _createElementBlock("div")) } : undefined), 1024);
   "#);
@@ -250,7 +250,7 @@ fn condition_expression_children() {
 fn logical_expression_children() {
   let code = transform("<Comp>{slots || { default: () => <div /> }}</Comp>", None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, _normalizeSlots(slots || { default: () => (_openBlock(), _createElementBlock("div")) }), 1024);
   "#);
@@ -269,7 +269,7 @@ fn identify_slots_in_nested_component_should_be_dynamic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   () => {
   	const child = (_openBlock(), _createElementBlock("div"));

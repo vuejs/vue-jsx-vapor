@@ -29,12 +29,7 @@ export function transformDefineComponent(
       prependFunctionalNode(
         root,
         s,
-        `const ${propsName} = ${importHelperFn(
-          s,
-          'useFullProps',
-          undefined,
-          '/vue-jsx-vapor/props',
-        )}()`,
+        `const ${propsName} = ${importHelperFn(s, 'useFullProps', undefined, '/vue-jsx/props')}()`,
       )
       s.overwrite(
         root.params[0].start!,

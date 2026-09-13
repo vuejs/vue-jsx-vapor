@@ -11,7 +11,7 @@ exports[`transform > reconstruct 1`] = `
 
 exports[`transform > reconstruct AssignmentPattern 1`] = `
 "
-import { createPropsDefaultProxy as __createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";function App(__props){
+import { createPropsDefaultProxy as __createPropsDefaultProxy } from "/vue-jsx/macros/with-defaults";function App(__props){
 __props = __createPropsDefaultProxy(__props, {'.foo.foo': 1, '.bar[0]': 2});
         return <>{[__props.foo.foo, __props.bar[0]]}</>
       }"
@@ -26,7 +26,7 @@ exports[`transform > reconstruct arrowFunctionExpression 1`] = `
 exports[`transform > reconstruct default-prop 1`] = `
 "
 import { createPropsRestProxy as __createPropsRestProxy } from "vue";
-import { createPropsDefaultProxy as __createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";function App(__props, __props1){
+import { createPropsDefaultProxy as __createPropsDefaultProxy } from "/vue-jsx/macros/with-defaults";function App(__props, __props1){
 const rest = __createPropsRestProxy(__props, ['foo', 'baz']);
 __props = __createPropsDefaultProxy(__props, {'.foo': 'bar'});
 __props1 = __createPropsDefaultProxy(__props1, {'[0]': 'foo'});
@@ -37,7 +37,7 @@ __props1 = __createPropsDefaultProxy(__props1, {'[0]': 'foo'});
 exports[`transform > reconstruct rest-prop 1`] = `
 "
 import { createPropsRestProxy as __createPropsRestProxy } from "vue";
-import { createPropsDefaultProxy as __createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";function App(__props){
+import { createPropsDefaultProxy as __createPropsDefaultProxy } from "/vue-jsx/macros/with-defaults";function App(__props){
 const rest = __createPropsRestProxy(__props, ['foo', 'bar']);
 __props = __createPropsDefaultProxy(__props, {'.bar': 1});
         return <>{[__props.foo, __props.bar, rest]}</>

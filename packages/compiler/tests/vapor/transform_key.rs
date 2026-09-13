@@ -113,7 +113,7 @@ fn key_in_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
   (() => {
@@ -143,7 +143,7 @@ fn static_key() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { setBlockKey as _setBlockKey, template as _template } from "vue";
   const _t0 = _template("<div>");
   (() => {
@@ -170,7 +170,7 @@ fn boolean_static_expression_key() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { setBlockKey as _setBlockKey, template as _template } from "vue";
   const _t0 = _template("<div>");
   (() => {
@@ -197,7 +197,7 @@ fn null_static_expression_key() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { setBlockKey as _setBlockKey, template as _template } from "vue";
   const _t0 = _template("<div>");
   (() => {
@@ -224,7 +224,7 @@ fn v_once_with_static_key() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { setBlockKey as _setBlockKey, template as _template } from "vue";
   const _t0 = _template("<div>");
   (() => {
@@ -251,7 +251,7 @@ fn key_without_value() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { setBlockKey as _setBlockKey, template as _template } from "vue";
   const _t0 = _template("<div>");
   (() => {

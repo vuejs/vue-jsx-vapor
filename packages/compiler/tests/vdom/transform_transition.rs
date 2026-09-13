@@ -29,7 +29,7 @@ fn v_show_with_appear() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, vShow as _vShow, withCtx as _withCtx, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");

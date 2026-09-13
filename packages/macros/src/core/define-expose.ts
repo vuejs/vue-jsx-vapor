@@ -12,7 +12,7 @@ export function transformDefineExpose(node: CallExpression, s: MagicString): voi
       s,
       'getCurrentInstance',
       undefined,
-      '/vue-jsx-vapor/props',
+      '/vue-jsx/props',
     )}().exposed = ${argument ? '' : '{}'}`,
   )
 }

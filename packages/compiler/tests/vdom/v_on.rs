@@ -18,7 +18,7 @@ fn basic() {
 fn call_expression() {
   let code = transform(r#"<div onClick={foo($event)}/>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -31,7 +31,7 @@ fn call_expression() {
 fn arrow_function_expression() {
   let code = transform(r#"<div onClick={$event => foo($event)}/>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -44,7 +44,7 @@ fn arrow_function_expression() {
 fn async_arrow_function_expression() {
   let code = transform(r#"<div onClick={async $event => foo($event)}/>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -63,7 +63,7 @@ fn function_expression() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -103,7 +103,7 @@ fn should_error_if_no_expression_and_no_modifier() {
 fn should_not_error_if_no_expression_but_has_modifier() {
   let code = transform(r#"<input onClick_prevent />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -139,7 +139,7 @@ fn vue_prefixed_events() {
 fn empty_handler() {
   let code = transform(r#"<div onClick_prevent />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, withModifiers as _withModifiers } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -172,7 +172,7 @@ fn bail_on_component_member_expression_handler() {
 fn should_not_be_cached_inside_v_once() {
   let code = transform(r#"<div v-once><div onClick={foo}/></div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementVNode as _createElementVNode, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");

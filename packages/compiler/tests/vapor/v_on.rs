@@ -530,7 +530,7 @@ fn namespace_event_with_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, { "onUpdate:modelValue": () => () => {} }, null, true);
   	return _n0;

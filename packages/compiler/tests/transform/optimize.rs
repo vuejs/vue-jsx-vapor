@@ -14,7 +14,7 @@ fn should_optimize_in_functional_compoennt() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   function Comp() {
   	return _openBlock(), _createBlock(Comp, null, _normalizeSlots(foo), 1024);
@@ -38,7 +38,7 @@ fn should_not_optimize_in_functional_compoennt_with_params() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   function Comp({ foo }) {
   	{
@@ -64,7 +64,7 @@ fn should_optimize_in_define_compoennt() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   export default defineComponent({ setup() {
   	return () => (() => {
@@ -88,7 +88,7 @@ fn should_optimize_in_functional_define_compoennt() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   export default defineComponent(() => {
   	return () => (() => {
@@ -123,7 +123,7 @@ fn should_optimize_in_nested_define_compoennt() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   export default defineComponent(() => {
   	const Comp = defineComponent(() => {
@@ -176,7 +176,7 @@ fn should_optimize_in_custom_define_compoennt() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   export default genericComponent(() => {
   	const Comp = genericComponent(() => {
@@ -216,7 +216,7 @@ fn should_cache_in_root_arrow_function_without_params() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   () => (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -306,7 +306,7 @@ fn should_not_cache_in_for_in_statement() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["onClick", "onBlur"];
   for (let i in [
@@ -374,7 +374,7 @@ fn should_not_optimize_multiple_statments() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode, normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode, normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const Comp = defineComponent((props) => {
   	return () => {
@@ -444,7 +444,7 @@ fn should_optimize_in_define_component_with_setup() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlot as _normalizeSlot } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlot as _normalizeSlot } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   export default defineComponent({ setup() {
   	let foo = 1;
@@ -504,7 +504,7 @@ fn disable_optimize() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createVNode as _createVNode } from "vue";
   _createVNode("div", { foo }, [_normalizeVNode(bar), _createVNode("div")], null, ["foo"]);
   "#);
@@ -526,7 +526,7 @@ fn if_statement_return_jsx() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 2 };
   function Comp(props) {
@@ -551,7 +551,7 @@ fn conditional_expression_return_jsx() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, renderSlot as _renderSlot, useSlots as _useSlots } from "vue";
   const _hoisted_1 = { key: 1 };
   const _hoisted_2 = { key: 2 };
@@ -585,7 +585,7 @@ fn switch_return_jsx() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 1 };
   const _hoisted_2 = { key: 2 };

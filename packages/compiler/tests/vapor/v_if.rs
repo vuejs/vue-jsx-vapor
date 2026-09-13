@@ -21,7 +21,7 @@ fn basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createIf as _createIf, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ", 1);
   (() => {
@@ -47,7 +47,7 @@ fn omits_default_single_root_flags_when_branch_needs_scope() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createIf as _createIf, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ", 1);
   (() => {
@@ -275,7 +275,7 @@ fn template_v_if_with_v_for() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, createIf as _createIf, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   (() => {
@@ -403,7 +403,7 @@ fn template_v_if_with_key() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createIf as _createIf, createKeyedFragment as _createKeyedFragment, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   const _t1 = _template("<template>");
@@ -460,7 +460,7 @@ fn component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createIf as _createIf } from "vue";
   (() => {
   	const _n0 = _createIf(() => foo, () => {
@@ -723,7 +723,7 @@ fn v_if_in_template_v_for_forces_multi_root_shape() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { child as _child, createFor as _createFor, createIf as _createIf, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span><span> ");
   (() => {

@@ -12,7 +12,7 @@ fn member_expression_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo.Example, null, null, true);
   	return _n0;
@@ -31,7 +31,7 @@ fn component_generate_single_root_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, null, null, true);
   	return _n0;
@@ -50,7 +50,7 @@ fn emit_single_default_slot_as_raw_slot_function() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { template as _template } from "vue";
   const _t0 = _template("<div>", 2);
   (() => {
@@ -74,7 +74,7 @@ fn component_generate_multi_root_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { template as _template } from "vue";
   const _t0 = _template("123", 2);
   (() => {
@@ -96,7 +96,7 @@ fn component_fragment_should_not_mark_as_single_root() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp);
   	return _n0;
@@ -115,7 +115,7 @@ fn component_v_for_should_not_mark_as_single_root() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createFor as _createFor } from "vue";
   (() => {
   	const _n0 = _createFor(() => items, (_for_item0) => {
@@ -138,7 +138,7 @@ fn component_static_props() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, {
   		id: "foo",
@@ -160,7 +160,7 @@ fn component_static_literal_bind_props() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, { literal: "bar" }, null, true);
   	return _n0;
@@ -189,7 +189,7 @@ fn component_constant_bind_props_are_direct_raw_prop_values() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, {
   		size: 16,
@@ -239,7 +239,7 @@ fn component_dynamic_non_literal_prop_values_stay_as_getter_sources() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, {
   		foo: () => bar,
@@ -285,7 +285,7 @@ fn component_dynamic_props_after_static_prop() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, {
   		id: "foo",
@@ -307,7 +307,7 @@ fn component_dynamic_props_before_static_prop() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, { $: [() => obj, { id: "foo" }] }, null, true);
   	return _n0;
@@ -326,7 +326,7 @@ fn component_dynamic_props_between_static_prop() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, {
   		id: "foo",
@@ -348,7 +348,7 @@ fn component_props_merging_event_handlers() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, { onClick: () => [a, (e) => b(e)] }, null, true);
   	return _n0;
@@ -367,7 +367,7 @@ fn component_props_merging_event_handlers_with_modifiers() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
   (() => {
   	const _n0 = _createComponent(Foo, { onKeydown: () => [_withKeys(_withModifiers(a, ["prevent"]), ["enter"]), _withKeys(_withModifiers(b, ["prevent"]), ["esc"])] }, null, true);
@@ -387,7 +387,7 @@ fn component_props_merging_style() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, { style: () => ["color: green", { color: "red" }] }, null, true);
   	return _n0;
@@ -406,7 +406,7 @@ fn component_props_merging_class() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, { class: () => ["foo", { bar: isBar }] }, null, true);
   	return _n0;
@@ -425,7 +425,7 @@ fn component_v_on() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { toHandlers as _toHandlers } from "vue";
   (() => {
   	const _n0 = _createComponent(Foo, { $: [() => _toHandlers(obj)] }, null, true);
@@ -445,7 +445,7 @@ fn component_event_with_once_modifier() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, { onFooOnce: () => bar }, null, true);
   	return _n0;
@@ -464,7 +464,7 @@ fn component_event_with_multiple_modifier_and_event_options() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { withModifiers as _withModifiers } from "vue";
   (() => {
   	const _n0 = _createComponent(Foo, { onFooCaptureOnce: () => _withModifiers(bar, ["stop", "prevent"]) }, null, true);
@@ -909,7 +909,7 @@ fn invalid_table_nesting_with_dynamic_child() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { child as _child, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<tr><td> ");
   const _t1 = _template("<table>", 1);
@@ -936,7 +936,7 @@ fn custom_element() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
+  import { normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx/vapor";
   import { createPlainElement as _createPlainElement } from "vue";
   (() => {
   	const _n0 = _createPlainElement("my-custom-element", null, { $: [() => _normalizeVaporSlots(foo)] }, true);
@@ -957,7 +957,7 @@ fn nested_custom_element_with_dynamic_child() {
   .code;
 
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createPlainElement as _createPlainElement, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span> ");
   const _t1 = _template("<div>", 1);
@@ -1146,7 +1146,7 @@ fn is_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(组件);
   	const _n1 = _createComponent(_foo);
@@ -1204,7 +1204,7 @@ fn component_vue_vnode_hooks() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, { onVnodeMounted: () => handleMounted }, null, true);
   	return _n0;
@@ -1223,7 +1223,7 @@ fn component_keeps_is_props() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, { is: "Parent" });
   	const _n1 = _createComponent(Comp, { is: "Parent" });
@@ -1243,7 +1243,7 @@ fn v_on_obj_before_static_event_keeps_handler_getters() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { toHandlers as _toHandlers } from "vue";
   (() => {
   	const _n0 = _createComponent(Foo, { $: [() => _toHandlers(obj), { onFoo: () => bar }] }, null, true);

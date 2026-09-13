@@ -36,7 +36,7 @@ fn interpolation() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { createNodes as _createNodes } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createNodes(1, 2, () => a + b + c);
   	return _n0;
@@ -55,7 +55,7 @@ fn on_consecutive_text() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { createNodes as _createNodes } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createNodes("hello world");
   	return _n0;
@@ -74,7 +74,7 @@ fn consecutive_text() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { createNodes as _createNodes } from "/vue-jsx/vapor";
   import { template as _template } from "vue";
   const _t0 = _template("<div>", 2);
   (() => {
@@ -204,7 +204,7 @@ fn should_not_escape_quotes_in_component_slot_text() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { template as _template } from "vue";
   const _t0 = _template("Howdy y'all", 2);
   (() => {
@@ -248,7 +248,7 @@ fn conditional_expression() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx/vapor";
   import { createIf as _createIf, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span> ");
   const _t1 = _template("<div>fail", 2);
@@ -281,7 +281,7 @@ fn multiple_conditional() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { createNodes as _createNodes } from "/vue-jsx/vapor";
   import { createIf as _createIf, template as _template } from "vue";
   const _t0 = _template(" ", 2);
   const _t1 = _template("<span>", 2);
@@ -321,7 +321,7 @@ fn logical_expression() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx/vapor";
   import { template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ", 1);
   (() => {
@@ -347,7 +347,7 @@ fn logical_expression_or() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ", 1);
   (() => {
@@ -375,7 +375,7 @@ fn logical_expression_coalesce() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ", 1);
   (() => {
@@ -409,7 +409,7 @@ fn expression_map() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx/vapor";
   import { template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div>1", 3);
   const _t1 = _template("<span> ", 1);
@@ -453,7 +453,7 @@ fn expression_with_comment() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { child as _child, template as _template } from "vue";
   const _t0 = _template("<div> <a>", 1);
   (() => {
@@ -476,7 +476,7 @@ fn slot_interpolation() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Comp, null, { $: [() => _normalizeVaporSlots(Hello)] }, true);
   	return _n0;
@@ -495,7 +495,7 @@ fn slot_literal_interpolation() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx/vapor";
   import { extend as _extend } from "vue";
   (() => {
   	const _n1 = _createComponent(Comp, null, _extend(() => {
@@ -518,7 +518,7 @@ fn fragment_with_interpolation() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { createNodes as _createNodes } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createNodes("Message: ", "Hello", "!");
   	return _n0;

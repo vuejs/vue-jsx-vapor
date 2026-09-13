@@ -20,7 +20,7 @@ fn child_nth_child_next_with_placeholder_alignment() {
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, createIf as _createIf, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
   const _t1 = _template("<div><div></div><!><div></div>", 1);
@@ -56,7 +56,7 @@ fn child_with_placeholder_alignment_when_prepend_exists_and_insert_anchor_needed
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, nthChild as _nthChild, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div><!><div></div><!><span>", 1);
   (() => {
@@ -90,7 +90,7 @@ fn multiple_prepends_affect_placeholder_alignment() {
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, next as _next, nthChild as _nthChild, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div><!><!><div></div><!><span>", 1);
   (() => {
@@ -124,7 +124,7 @@ fn set_insertion_state_scenarios_single_component_prepend() {
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div><!><span>A", 1);
   (() => {
@@ -153,7 +153,7 @@ fn set_insertion_state_scenarios_multiple_consecutive_prepend() {
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div><!><!><span>A", 1);
   (() => {
@@ -185,7 +185,7 @@ fn set_insertion_state_scenarios_single_component_insert_in_middle() {
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div><span>A</span><!><p>B", 1);
   (() => {
@@ -215,7 +215,7 @@ fn set_insertion_state_scenarios_multiple_consecutive_insert_in_middle() {
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div><span>A</span><!><!><p>B", 1);
   (() => {
@@ -246,7 +246,7 @@ fn set_insertion_state_scenarios_single_component_append() {
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div><span>A</span>", 1);
   (() => {
@@ -274,7 +274,7 @@ fn set_insertion_state_scenarios_multiple_consecutive_append() {
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div><span>A</span>", 1);
   (() => {
@@ -302,7 +302,7 @@ fn set_insertion_state_scenarios_only_component_append_with_placeholder_alignmen
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
   (() => {
@@ -330,7 +330,7 @@ fn set_insertion_state_scenarios_mixed_scenarios_prepend_and_append() {
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div><!><span>A</span>", 1);
   (() => {
@@ -363,7 +363,7 @@ fn set_insertion_state_scenarios_mixed_scenarios_prepend_and_insert_and_append()
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, nthChild as _nthChild, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div><!><span>A</span><!><p>B</p>", 1);
   (() => {
@@ -849,7 +849,7 @@ fn set_insertion_state_scenarios_v_if_and_v_else_followed_by_component() {
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div>if", 2);
   const _t1 = _template("<div>else", 2);
@@ -888,7 +888,7 @@ fn set_insertion_state_scenarios_component_followed_by_v_if_v_else() {
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, createIf as _createIf, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div>if", 2);
   const _t1 = _template("<div>else", 2);
@@ -929,7 +929,7 @@ fn set_insertion_state_scenarios_component_and_v_if_v_else_and_component() {
   .code;
 
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div>if", 2);
   const _t1 = _template("<div>else", 2);

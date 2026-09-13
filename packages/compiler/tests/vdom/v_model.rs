@@ -8,7 +8,7 @@ use insta::assert_snapshot;
 fn simple_expression() {
   let code = transform(r#"<input v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -21,7 +21,7 @@ fn simple_expression() {
 fn simple_expression_for_input_text() {
   let code = transform(r#"<input type="text" v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -37,7 +37,7 @@ fn simple_expression_for_input_text() {
 fn simple_expression_for_input_radio() {
   let code = transform(r#"<input type="radio" v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelRadio as _vModelRadio, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -53,7 +53,7 @@ fn simple_expression_for_input_radio() {
 fn simple_expression_for_input_checkbox() {
   let code = transform(r#"<input type="checkbox" v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelCheckbox as _vModelCheckbox, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -69,7 +69,7 @@ fn simple_expression_for_input_checkbox() {
 fn simple_expression_for_input_dynamic_type() {
   let code = transform(r#"<input type={foo} v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelDynamic as _vModelDynamic, withDirectives as _withDirectives } from "vue";
   const _hoisted_1 = ["type"];
   (() => {
@@ -86,7 +86,7 @@ fn simple_expression_for_input_dynamic_type() {
 fn input_with_dynamic_v_bind() {
   let code = transform(r#"<input {...obj} v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, mergeProps as _mergeProps, openBlock as _openBlock, vModelDynamic as _vModelDynamic, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -99,7 +99,7 @@ fn input_with_dynamic_v_bind() {
 fn simple_expression_for_select() {
   let code = transform(r#"<select v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelSelect as _vModelSelect, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -112,7 +112,7 @@ fn simple_expression_for_select() {
 fn simple_expression_for_textarea() {
   let code = transform(r#"<textarea v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -125,7 +125,7 @@ fn simple_expression_for_textarea() {
 fn compound_expression() {
   let code = transform(r#"<input v-model={model[index]} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -138,7 +138,7 @@ fn compound_expression() {
 fn component_with_argument() {
   let code = transform(r#"<Comp v-model:foo-value_foo={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -155,7 +155,7 @@ fn component_with_argument() {
 fn component_with_dynamic_argument() {
   let code = transform(r#"<Comp v-model:$value$={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -180,7 +180,7 @@ fn should_not_cache_update_handler_if_it_refers_v_for_scope_variables() {
 fn should_not_cache_update_handler_if_it_inside_v_once() {
   let code = transform(r#"<div v-once><input v-model={foo} /></div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementVNode as _createElementVNode, setBlockTracking as _setBlockTracking, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -209,7 +209,7 @@ fn should_mark_update_handler_dynamic_if_it_refers_slot_scope_variables() {
 fn should_generate_model_modifiers_for_component_v_model() {
   let code = transform(r#"<Comp v-model_trim_bar-baz={foo} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -233,7 +233,7 @@ fn should_generate_model_modifiers_for_component_v_model_with_arguments() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -253,7 +253,7 @@ fn should_generate_model_modifiers_for_component_v_model_with_arguments() {
 fn should_generate_model_modifiers_dollar_for_component_v_model_model_with_arguments() {
   let code = transform(r#"<Comp v-model:model_trim={foo} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -270,7 +270,7 @@ fn should_generate_model_modifiers_dollar_for_component_v_model_model_with_argum
 fn modifiers_number() {
   let code = transform(r#"<input v-model_number={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -288,7 +288,7 @@ fn modifiers_number() {
 fn modifiers_trim() {
   let code = transform(r#"<input v-model_trim={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -306,7 +306,7 @@ fn modifiers_trim() {
 fn modifiers_lazy() {
   let code = transform(r#"<input v-model_lazy={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -331,7 +331,7 @@ fn v_model_with_event() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -410,7 +410,7 @@ fn should_error_on_dynamic_value_binding_alongside_v_model() {
 fn should_not_error_on_static_value_binding_alongside_v_model() {
   let code = transform(r#"<input v-model={test} value="test"/>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -426,7 +426,7 @@ fn should_not_error_on_static_value_binding_alongside_v_model() {
 fn should_allow_usage_on_custom_element() {
   let code = transform(r#"<my-input v-model={model} />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = ["modelValue"];
   (() => {
@@ -462,7 +462,7 @@ fn array_args() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, normalizeProps as _normalizeProps, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -482,7 +482,7 @@ fn array_args() {
 fn array_args_with_modifiers() {
   let code = transform("<Comp v-model={[foo, ['modify1', 'modify2']]} />", None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -506,7 +506,7 @@ fn array_args_with_arg() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");

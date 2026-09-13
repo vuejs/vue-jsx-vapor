@@ -258,7 +258,7 @@ fn nested_root_v_for_fallbck() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, createIf as _createIf, createSlot as _createSlot, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span> ");
   (() => {

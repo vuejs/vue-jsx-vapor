@@ -5,7 +5,7 @@ use insta::assert_snapshot;
 fn text() {
   let code = transform(r#"<>foo</>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -18,7 +18,7 @@ fn text() {
 fn no_consecutive_text() {
   let code = transform(r#"<>{foo}</>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock(_Fragment, null, [_normalizeVNode(() => foo)], 64);
   "#);
@@ -28,7 +28,7 @@ fn no_consecutive_text() {
 fn consecutive_text() {
   let code = transform(r#"<>{foo} bar {baz}</>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -45,7 +45,7 @@ fn consecutive_text() {
 fn consecutive_text_between_elements() {
   let code = transform(r#"<><div/>{foo} bar {baz}<div/></>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -64,7 +64,7 @@ fn consecutive_text_between_elements() {
 fn text_between_elements_static() {
   let code = transform(r#"<><div/>hello<div/></>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -81,7 +81,7 @@ fn text_between_elements_static() {
 fn whitespace_text() {
   let code = transform(r#"<><div/>hello<div/>  <div/></>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -100,7 +100,7 @@ fn whitespace_text() {
 fn consecutive_text_mixed_with_elements() {
   let code = transform(r#"<><div/>{ foo } bar { baz }<div/>hello<div/></>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -121,7 +121,7 @@ fn consecutive_text_mixed_with_elements() {
 fn template_v_for() {
   let code = transform(r#"<template v-for={i in list}>foo</template>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -134,7 +134,7 @@ fn template_v_for() {
 fn element_with_custom_directives_and_only_one_text_child_node() {
   let code = transform(r#"<p v-foo>{foo}</p>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue";
   (() => {
   	const _directive_foo = _resolveDirective("foo");
@@ -154,7 +154,7 @@ fn condition_expression() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   const _hoisted_1 = { key: 0 };
   (() => {
@@ -168,7 +168,7 @@ fn condition_expression() {
 fn logical_expression() {
   let code = transform(r#"<div>{foo && (<div>{foo}</div>)}</div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", null, [_normalizeVNode(() => foo && (_openBlock(), _createElementBlock("div", null, [_normalizeVNode(() => foo)])))]);
   "#)
@@ -178,7 +178,7 @@ fn logical_expression() {
 fn logical_expression_or() {
   let code = transform(r#"<div>{foo || (<div>{foo}</div>)}</div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", null, [_normalizeVNode(() => foo || (_openBlock(), _createElementBlock("div", null, [_normalizeVNode(() => foo)])))]);
   "#)
@@ -188,7 +188,7 @@ fn logical_expression_or() {
 fn logical_expression_coalesce() {
   let code = transform(r#"<div>{foo ?? (<div>{foo}</div>)}</div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock("div", null, [_normalizeVNode(() => foo ?? (_openBlock(), _createElementBlock("div", null, [_normalizeVNode(() => foo)])))]);
   "#)
@@ -206,7 +206,7 @@ fn expression_with_comment() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -219,7 +219,7 @@ fn expression_with_comment() {
 fn condition_expression_with_slot_outlet() {
   let code = transform(r#"<>{foo ? <slot /> : <div v-once={true} />}</>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, renderSlot as _renderSlot, setBlockTracking as _setBlockTracking, useSlots as _useSlots } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -233,7 +233,7 @@ fn condition_expression_with_slot_outlet() {
 fn condition_expression_with_assign_target() {
   let code = transform(r#"<>{(foo = <div />) ? foo : null}</>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock(_Fragment, null, [(foo = ((foo) => {
   	return _openBlock(), _createElementBlock("div");
@@ -245,7 +245,7 @@ fn condition_expression_with_assign_target() {
 fn logical_expression_with_assign_target() {
   let code = transform(r#"<>{(foo = <div />) || foo}</>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createElementBlock(_Fragment, null, [_normalizeVNode(() => (foo = ((foo) => {
   	return _openBlock(), _createElementBlock("div");

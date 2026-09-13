@@ -5,7 +5,7 @@ use insta::assert_snapshot;
 fn as_root_node() {
   let code = transform(r#"<div id={foo} v-once />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementVNode as _createElementVNode, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -18,7 +18,7 @@ fn as_root_node() {
 fn on_nested_plain_element() {
   let code = transform(r#"<div><div id={foo} v-once /></div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -31,7 +31,7 @@ fn on_nested_plain_element() {
 fn on_component() {
   let code = transform(r#"<div><Comp id={foo} v-once /></div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -44,7 +44,7 @@ fn on_component() {
 fn on_slot_outlet() {
   let code = transform(r#"<div><slot v-once /></div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, openBlock as _openBlock, renderSlot as _renderSlot, setBlockTracking as _setBlockTracking, useSlots as _useSlots } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -59,7 +59,7 @@ fn inside_v_once() {
   // v-once inside v-once should not be cached
   let code = transform(r#"<div v-once><div v-once/></div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementVNode as _createElementVNode, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -73,7 +73,7 @@ fn with_hoist_static() {
   // cached nodes should be ignored by hoistStatic transform
   let code = transform(r#"<div><div v-once /></div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -86,7 +86,7 @@ fn with_hoist_static() {
 fn with_v_if_else() {
   let code = transform(r#"<><div v-if={BOOLEAN} v-once /><p v-else/></>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, setBlockTracking as _setBlockTracking } from "vue";
   const _hoisted_1 = { key: 1 };
   (() => {
@@ -100,7 +100,7 @@ fn with_v_if_else() {
 fn with_v_for() {
   let code = transform(r#"<div v-for={i in list} v-once />"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, renderList as _renderList, setBlockTracking as _setBlockTracking } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");

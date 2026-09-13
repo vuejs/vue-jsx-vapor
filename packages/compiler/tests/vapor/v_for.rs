@@ -15,7 +15,7 @@ fn basic() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, on as _on, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   (() => {
@@ -47,7 +47,7 @@ fn key_only_binding_pattern() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<tr> ");
   (() => {
@@ -348,7 +348,7 @@ fn nested_v_for() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span> ");
   const _t1 = _template("<div>");
@@ -380,7 +380,7 @@ fn object_value_key_and_index() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span> ");
   (() => {
@@ -406,7 +406,7 @@ fn object_de_structured_value() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span> ");
   (() => {
@@ -432,7 +432,7 @@ fn object_de_structured_value_with_rest() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, getRestElement as _getRestElement, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   (() => {
@@ -458,7 +458,7 @@ fn array_de_structured_value() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   (() => {
@@ -477,7 +477,7 @@ fn array_de_structured_value() {
 fn array_de_structured_value_with_rest() {
   let code = transform("<div v-for={([id, [foo], {bar}, ...other], index) in list} key={id}>{ id + other + index + foo + bar }</div>", Some(TransformOptions { vapor: true, ..Default::default() })).code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   (() => {
@@ -505,7 +505,7 @@ fn aliases_with_complex_expressions() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   (() => {
@@ -533,7 +533,7 @@ fn fast_remove_flag() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<span> ");
   const _t1 = _template("<div>", 1);
@@ -562,7 +562,7 @@ fn on_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx/vapor";
   import { createFor as _createFor } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
@@ -607,7 +607,7 @@ fn v_for_single_node_flag_is_not_set_for_fragment_item_blocks() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> </div>");
   const _t1 = _template("<span> ");
@@ -637,7 +637,7 @@ fn on_template_with_single_component_child() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent, normalizeVaporSlots as _normalizeVaporSlots } from "/vue-jsx/vapor";
   import { createFor as _createFor } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
@@ -663,7 +663,7 @@ fn v_for_on_template_with_element_and_component_v_if_branches() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createFor as _createFor, createIf as _createIf, template as _template } from "vue";
   const _t0 = _template("<div>hi");
   (() => {
@@ -693,7 +693,7 @@ fn v_for_on_template_with_nested_v_for_child_marks_fragment_block() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   (() => {
@@ -733,7 +733,7 @@ fn v_for_on_template_with_keyed_child_marks_fragment_block() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, createKeyedFragment as _createKeyedFragment, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   (() => {
@@ -776,7 +776,7 @@ fn identifiers() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, renderEffect as _renderEffect, setProp as _setProp, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   let item = "";
@@ -810,7 +810,7 @@ fn expression_object() {
       {item}
     </div>", Some(TransformOptions { vapor: true, ..Default::default() })).code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createFor as _createFor, renderEffect as _renderEffect, setProp as _setProp, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
   (() => {

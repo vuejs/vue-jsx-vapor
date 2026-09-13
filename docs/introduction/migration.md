@@ -31,6 +31,17 @@ Update plugin and type-runtime imports:
 The scoped companion packages are now `@vue-jsx/compiler`,
 `@vue-jsx/runtime`, `@vue-jsx/macros`, and `@vue-jsx/eslint`.
 
+### Rename the ESLint rule prefix
+
+`@vue-jsx/eslint` registers its rules under the `vue-jsx/` prefix:
+
+```diff
+- 'vue-jsx-vapor/define-style': 'warn',
+- 'vue-jsx-vapor/jsx-sort-props': 'warn',
++ 'vue-jsx/define-style': 'warn',
++ 'vue-jsx/jsx-sort-props': 'warn',
+```
+
 ### Choose the rendering mode
 
 The old package compiled to Vapor by default and used `interop: true` for

@@ -37,7 +37,7 @@ pub fn filename() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ", 1);
   (() => {
@@ -61,7 +61,7 @@ pub fn optimize_slots() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { createVNode as _createVNode } from "vue";
   _createVNode(Comp, null, _normalizeSlots(foo));
   "#);

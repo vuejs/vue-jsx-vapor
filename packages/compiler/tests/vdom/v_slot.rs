@@ -8,7 +8,7 @@ use insta::assert_snapshot;
 fn implicit_default_slot() {
   let code = transform(r#"<Comp><div/></Comp>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -24,7 +24,7 @@ fn implicit_default_slot() {
 fn on_component_default_slot() {
   let code = transform(r#"<Comp v-slot={{ foo }}>{ foo }{ bar }</Comp>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	default: _withCtx(({ foo }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
@@ -44,7 +44,7 @@ fn on_component_named_slot() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createElementBlock(_Fragment, null, [_createVNode(Comp, null, {
   	named: _withCtx(({ foo }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
@@ -71,7 +71,7 @@ fn template_named_slots() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	one: _withCtx(({ foo }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
@@ -94,7 +94,7 @@ fn on_component_dynamically_named_slot() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	[named]: _withCtx(({ foo }) => [
@@ -120,7 +120,7 @@ fn named_slots_with_implicit_default_slot() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -148,7 +148,7 @@ fn dynamically_named_slots() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	[one]: _withCtx(({ foo }) => [_normalizeVNode(() => foo), _normalizeVNode(() => bar)]),
@@ -174,7 +174,7 @@ fn nested_slots_scoping() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode, normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode, normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	foo: _withCtx(({ foo }) => [
@@ -206,7 +206,7 @@ fn should_force_dynamic_when_inside_v_for() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -228,7 +228,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars1() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => (_openBlock(), _createElementBlock("div", null, [_createVNode(Comp, null, _normalizeSlots(i), 1024)]))), 256);
   "#);
@@ -245,7 +245,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars2() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	default: _withCtx((foo) => [_createVNode(Comp, null, {
@@ -271,7 +271,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars3() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   () => {
   	let foo = 1;
@@ -315,7 +315,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars5() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createBlock as _createBlock, createElementBlock as _createElementBlock, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -337,7 +337,7 @@ fn should_only_force_dynamic_slots_when_actually_using_scope_vars6() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, renderList as _renderList, withCtx as _withCtx } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -359,7 +359,7 @@ fn named_slot_with_v_if() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createSlots as _createSlots, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -382,7 +382,7 @@ fn named_slot_with_v_if2() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createSlots as _createSlots, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [ok ? {
   	name: one,
@@ -404,7 +404,7 @@ fn named_slot_with_v_if_v_else_if_v_else() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createSlots as _createSlots, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -438,7 +438,7 @@ fn named_slot_with_v_for() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode, normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode, normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { Fragment as _Fragment, createElementBlock as _createElementBlock, createSlots as _createSlots, createVNode as _createVNode, openBlock as _openBlock, renderList as _renderList } from "vue";
   _openBlock(), _createElementBlock(_Fragment, null, [_createVNode(Comp, null, _createSlots({ _: 2 }, [_renderList(list, (name) => ({
   	name,
@@ -599,7 +599,7 @@ fn named_default_slot_with_implicit_whitespace_content() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -623,7 +623,7 @@ fn implicit_default_slot_with_whitespace() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createElementVNode as _createElementVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -647,7 +647,7 @@ fn implicit_default_slot_with_non_breaking_space() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -671,7 +671,7 @@ fn named_slot_with_v_if_v_else() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createSlots as _createSlots, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -702,7 +702,7 @@ fn named_slot_with_v_if_v_else_and_comments() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache, normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createSlots as _createSlots, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -729,7 +729,7 @@ fn should_mark_stable_slot_in_funciton_without_params() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlot as _normalizeSlot, normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlot as _normalizeSlot, normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	_: 1,
@@ -748,7 +748,7 @@ fn should_not_mark_stable_slot_in_funciton_with_params() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeSlot as _normalizeSlot, normalizeSlots as _normalizeSlots } from "/vue-jsx-vapor/vdom";
+  import { normalizeSlot as _normalizeSlot, normalizeSlots as _normalizeSlots } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	_: 1,
@@ -765,7 +765,7 @@ fn provider_component_should_use_dynamic_slots() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(ContextProvider, null, {
   	default: _withCtx(() => [_normalizeVNode(() => slots.default?.())]),
@@ -782,7 +782,7 @@ fn isolator_component_should_use_dynamic_slots() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(ContextIsolator, null, {
   	default: _withCtx(() => [_normalizeVNode(() => slots.default?.())]),
@@ -795,7 +795,7 @@ fn isolator_component_should_use_dynamic_slots() {
 fn for_component_should_be_dynamic() {
   let code = transform(r#"<div><For><div /></For></div>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
   import { createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock } from "vue";
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
@@ -817,7 +817,7 @@ fn array_args() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	[bar]: _withCtx((foo) => [_normalizeVNode(() => foo)]),
@@ -838,7 +838,7 @@ fn array_args_with_template() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	[bar]: _withCtx((foo) => [_normalizeVNode(() => foo)]),
@@ -857,7 +857,7 @@ fn array_args_with_arg() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { normalizeVNode as _normalizeVNode } from "/vue-jsx-vapor/vdom";
+  import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, openBlock as _openBlock, withCtx as _withCtx } from "vue";
   _openBlock(), _createBlock(Comp, null, {
   	foo: _withCtx((foo) => [_normalizeVNode(() => foo)]),

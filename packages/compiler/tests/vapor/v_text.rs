@@ -37,7 +37,7 @@ fn work_with_component() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { toDisplayString as _toDisplayString } from "vue";
   (() => {
   	const _n0 = _createComponent(Comp, { textContent: () => _toDisplayString(foo) }, null, true);
@@ -57,7 +57,7 @@ fn should_preserve_constant_component_values() {
   )
   .code;
   assert_snapshot!(code.replace('\t', "  "), @r#"
-  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
     const _n0 = _createComponent(Comp, { textContent: 1 });
     const _n1 = _createComponent(Comp, { textContent: () => () => 1 });

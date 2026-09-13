@@ -16,7 +16,7 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
   let root = ''
   let needHMR = false
   let needSourceMap = options.sourceMap || false
-  const helperId = /^\/vue-jsx-vapor\//
+  const helperId = /^\/vue-jsx\//
   return [
     ...(options.macros === false
       ? []
