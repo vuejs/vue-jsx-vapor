@@ -32,7 +32,7 @@
     "artifacts": "napi artifacts && node ./scripts/patch-wasi-browser.mjs",
     "build": "napi build --platform --release --esm",
     "dev": "nodemon -w crates -e rs -x 'napi build --platform --esm'",
-    "format": "taplo format",
+    "format": "cargo fmt",
     "prepublishOnly": "napi prepublish -t npm",
     "version": "napi version",
     "bench": "cargo bench --no-default-features --bench bench_vdom",
@@ -46,7 +46,6 @@
     "@emnapi/runtime": "2.0.0-alpha.4",
     "@napi-rs/cli": "3.8.6",
     "@napi-rs/wasm-runtime": "1.2.3",
-    "@taplo/cli": "^0.7.0",
     "emnapi": "2.0.0-alpha.4"
   },
   "napi": {

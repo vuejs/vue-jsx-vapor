@@ -1234,10 +1234,14 @@ fn component_keeps_is_props() {
 
 #[test]
 fn component_in_svg_get_namespace() {
-  let code = transform(r#"<svg><Comp/></svg>"#, Some(TransformOptions {
+  let code = transform(
+    r#"<svg><Comp/></svg>"#,
+    Some(TransformOptions {
       vapor: true,
       ..Default::default()
-    })).code;
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { setInsertionState as _setInsertionState, template as _template } from "vue";
@@ -1255,10 +1259,14 @@ fn component_in_svg_get_namespace() {
 fn component_in_svg_with_v_if_get_namespace() {
   // v-if wraps the element in a synthetic fragment; the namespace must still be
   // inherited from the real `<svg>` parent via the namespace stack.
-  let code = transform(r#"<svg><Comp v-if={ok}/></svg>"#, Some(TransformOptions {
+  let code = transform(
+    r#"<svg><Comp v-if={ok}/></svg>"#,
+    Some(TransformOptions {
       vapor: true,
       ..Default::default()
-    })).code;
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
@@ -1277,10 +1285,14 @@ fn component_in_svg_with_v_if_get_namespace() {
 
 #[test]
 fn component_in_svg_with_v_for_get_namespace() {
-  let code = transform(r#"<svg><G v-for={i in list}/></svg>"#, Some(TransformOptions {
+  let code = transform(
+    r#"<svg><G v-for={i in list}/></svg>"#,
+    Some(TransformOptions {
       vapor: true,
       ..Default::default()
-    })).code;
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createFor as _createFor, setInsertionState as _setInsertionState, template as _template } from "vue";
@@ -1299,10 +1311,14 @@ fn component_in_svg_with_v_for_get_namespace() {
 
 #[test]
 fn custom_element_in_svg_get_namespace() {
-  let code = transform(r#"<svg><custom-el/></svg>"#, Some(TransformOptions {
+  let code = transform(
+    r#"<svg><custom-el/></svg>"#,
+    Some(TransformOptions {
       vapor: true,
       ..Default::default()
-    })).code;
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createPlainElement as _createPlainElement, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<svg>", 1, 1);
@@ -1317,10 +1333,14 @@ fn custom_element_in_svg_get_namespace() {
 
 #[test]
 fn component_in_nested_svg_child_get_namespace() {
-  let code = transform(r#"<svg><g><Comp/></g></svg>"#, Some(TransformOptions {
+  let code = transform(
+    r#"<svg><g><Comp/></g></svg>"#,
+    Some(TransformOptions {
       vapor: true,
       ..Default::default()
-    })).code;
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, setInsertionState as _setInsertionState, template as _template } from "vue";
@@ -1337,10 +1357,14 @@ fn component_in_nested_svg_child_get_namespace() {
 
 #[test]
 fn component_in_math_get_namespace() {
-  let code = transform(r#"<math><Comp/></math>"#, Some(TransformOptions {
+  let code = transform(
+    r#"<math><Comp/></math>"#,
+    Some(TransformOptions {
       vapor: true,
       ..Default::default()
-    })).code;
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { setInsertionState as _setInsertionState, template as _template } from "vue";
@@ -1360,10 +1384,14 @@ fn dynamic_component_in_container_does_not_inherit_namespace() {
   // `TransformContext` at codegen time, so it currently does not inherit the
   // namespace of the enclosing `<svg>`. This test pins the known limitation;
   // update once the ambient namespace is propagated to nested roots.
-  let code = transform(r#"<svg>{<D.value/>}</svg>"#, Some(TransformOptions {
+  let code = transform(
+    r#"<svg>{<D.value/>}</svg>"#,
+    Some(TransformOptions {
       vapor: true,
       ..Default::default()
-    })).code;
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx/vapor";
   import { template as _template, txt as _txt } from "vue";
@@ -1382,10 +1410,14 @@ fn dynamic_component_in_container_does_not_inherit_namespace() {
 
 #[test]
 fn component_in_foreign_object_falls_back_to_html_namespace() {
-  let code = transform(r#"<svg><foreignObject><Comp/></foreignObject></svg>"#, Some(TransformOptions {
+  let code = transform(
+    r#"<svg><foreignObject><Comp/></foreignObject></svg>"#,
+    Some(TransformOptions {
       vapor: true,
       ..Default::default()
-    })).code;
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, setInsertionState as _setInsertionState, template as _template } from "vue";
@@ -1428,10 +1460,14 @@ fn component_in_html_annotation_xml_falls_back_to_html_namespace() {
 
 #[test]
 fn component_in_math_text_integration_point_falls_back_to_html_namespace() {
-  let code = transform(r#"<math><mi><Comp/></mi></math>"#, Some(TransformOptions {
+  let code = transform(
+    r#"<math><mi><Comp/></mi></math>"#,
+    Some(TransformOptions {
       vapor: true,
       ..Default::default()
-    })).code;
+    }),
+  )
+  .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { child as _child, setInsertionState as _setInsertionState, template as _template } from "vue";

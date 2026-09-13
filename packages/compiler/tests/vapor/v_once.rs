@@ -327,10 +327,14 @@ fn should_raise_error_if_has_no_expression() {
 
 #[test]
 fn with_v_show() {
-  let code = transform("<div v-show={show} v-once />", Some(TransformOptions {
+  let code = transform(
+    "<div v-show={show} v-once />",
+    Some(TransformOptions {
       vapor: true,
       ..Default::default()
-    })).code;
+    }),
+  )
+  .code;
   assert!(code.contains("_withOnce(() => _applyVShow(_n0, () => show))"));
   // the helper creates its own effect; none should be emitted by the compiler
   assert!(!code.contains("renderEffect"));
@@ -347,10 +351,14 @@ fn with_v_show() {
 
 #[test]
 fn with_v_model() {
-  let code = transform("<input v-model={text} v-once />", Some(TransformOptions {
+  let code = transform(
+    "<input v-model={text} v-once />",
+    Some(TransformOptions {
       vapor: true,
       ..Default::default()
-    })).code;
+    }),
+  )
+  .code;
   assert!(code.contains("_withOnce(() => _applyTextModel("));
   assert_snapshot!(code, @r#"
   import { applyTextModel as _applyTextModel, template as _template, withOnce as _withOnce } from "vue";
@@ -365,10 +373,14 @@ fn with_v_model() {
 
 #[test]
 fn with_custom_directive() {
-  let code = transform("<div v-dir={val} v-once />", Some(TransformOptions {
+  let code = transform(
+    "<div v-dir={val} v-once />",
+    Some(TransformOptions {
       vapor: true,
       ..Default::default()
-    })).code;
+    }),
+  )
+  .code;
   assert!(code.contains("_withOnce(() => _withVaporDirectives("));
   assert_snapshot!(code, @r#"
   import { resolveDirective as _resolveDirective, template as _template, withOnce as _withOnce, withVaporDirectives as _withVaporDirectives } from "vue";
@@ -384,10 +396,14 @@ fn with_custom_directive() {
 
 #[test]
 fn directives_outside_v_once_are_not_wrapped() {
-  let code = transform("<><div v-show={show} v-dir={val} /><div v-once /></>", Some(TransformOptions {
+  let code = transform(
+    "<><div v-show={show} v-dir={val} /><div v-once /></>",
+    Some(TransformOptions {
       vapor: true,
       ..Default::default()
-    })).code;
+    }),
+  )
+  .code;
   assert!(!code.contains("withOnce"));
   assert_snapshot!(code, @r#"
   import { applyVShow as _applyVShow, resolveDirective as _resolveDirective, template as _template, withVaporDirectives as _withVaporDirectives } from "vue";
