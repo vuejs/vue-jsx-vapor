@@ -88,10 +88,11 @@ export function createProxyComponent(type: VaporComponent, normalizeNode?: (node
         return normalizeNode ? normalizeNode(node) : node
       },
       get(target, p, receiver) {
-        if (i && i.appContext.vapor && p === '__vapor') {
+        const result = Reflect.get(target, p, receiver)
+        if (p === '__vapor' && result === undefined && i && i.appContext.vapor) {
           return true
         }
-        return Reflect.get(target, p, receiver)
+        return result
       },
     })
     proxyCache.set(type, proxy)
@@ -377,61 +378,59 @@ export function defineVaporComponent(comp: any, extraOptions?: any) {
 
 // components
 
-type ResolveItem<Item, GetKey> = GetKey extends undefined ? Item : ShallowRef<Item>
+type VaporForSlots<T, Item, GetKey> = {
+  default: (
+    ...args: string extends keyof Item
+      ? [
+          item: GetKey extends undefined ? T[keyof T] : ShallowRef<T[keyof T]>,
+          key: ShallowRef<keyof T>,
+          index: ShallowRef<number>,
+        ]
+      : [item: GetKey extends undefined ? Item : ShallowRef<Item>, index: ShallowRef<number>]
+  ) => any
+}
 
-export const VaporFor = defineVaporComponent(
-  <
-    T extends any[] | Record<any, any> | number | string | Set<any> | Map<any, any>,
-    Item = T extends number
-      ? number
-      : T extends string
-        ? string
-        : T extends any[]
-          ? T[number]
-          : T extends Iterable<infer T1>
-            ? T1
-            : Record<any, any>,
-    GetKeyDefault = (
-      ...args: string extends keyof Item
-        ? [item: T[keyof T], key: keyof T, index: number]
-        : [item: Item, index: number]
-    ) => any,
-    GetKey extends GetKeyDefault | null | undefined = undefined,
-  >(
-    props: {
-      in: T
-      getKey?: GetKey extends undefined ? GetKeyDefault : GetKey
-    },
-    {
-      slots,
-    }: {
-      slots: {
-        default: (
-          ...args: string extends keyof Item
-            ? [
-                item: ResolveItem<T[keyof T], GetKey>,
-                key: ShallowRef<keyof T>,
-                index: ShallowRef<number>,
-              ]
-            : [item: ResolveItem<Item, GetKey>, index: ShallowRef<number>]
-        ) => any
-      }
-    },
-  ) => {
-    return Vue.createFor(
-      () => props.in as any,
-      (item, key, index) => {
-        return slots.default
-          ? slots.default(
-              // @ts-ignore
-              props.getKey === undefined ? item.value : item,
-              key,
-              index,
-            )
-          : []
-      },
-      props.getKey === undefined ? (item) => item : (props.getKey as any),
-    )
+export const VaporFor = <
+  T extends any[] | Record<any, any> | number | string | Set<any> | Map<any, any>,
+  Item = T extends number
+    ? number
+    : T extends string
+      ? string
+      : T extends any[]
+        ? T[number]
+        : T extends Iterable<infer T1>
+          ? T1
+          : Record<any, any>,
+  GetKeyDefault = (
+    ...args: string extends keyof Item
+      ? [item: T[keyof T], key: keyof T, index: number]
+      : [item: Item, index: number]
+  ) => any,
+  GetKey extends GetKeyDefault | null | undefined = undefined,
+>(
+  props: {
+    in: T
+    getKey?: GetKey extends undefined ? GetKeyDefault : GetKey
+  } & SlotsToProps<VaporForSlots<T, Item, GetKey>>,
+  {
+    slots,
+  }: {
+    slots: VaporForSlots<T, Item, GetKey>
   },
-  { props: ['in', 'getKey'] },
-)
+) => {
+  return Vue.createFor(
+    () => props.in as any,
+    (item, key, index) => {
+      return slots.default
+        ? slots.default(
+            // @ts-ignore
+            props.getKey === undefined ? item.value : item,
+            key,
+            index,
+          )
+        : []
+    },
+    props.getKey === undefined ? (item) => item : (props.getKey as any),
+  )
+}
+VaporFor.__vapor = true
