@@ -28,9 +28,10 @@ export default () => <Panel step={1}>{(n) => <span>{n.toFixed()}</span>}</Panel>
 
 ## 泛型 props 停在 setup context
 
-类型实参是从 **attributes 对象**推断的。组件通过第二个参数、或通过实例类型暴露
-出去的东西，都在这一步推断之前就被解析，所以只用在那里的类型参数会保持自己的
-约束——没有约束时就是 `unknown`：
+类型实参是从**标签上写的 attributes** 推断的。
+而组件通过第二个参数（setup context）或实例类型暴露的东西，在推断之前就已经
+解析完，所以只出现在这些位置的类型参数拿不到实参，只能回落到自己的约束——
+没有约束时就是 `unknown`：
 
 ```tsx
 const List = <T,>(props: { items: T[] }, { slots }: { slots: { row?: (item: T) => any } }) => (
@@ -47,8 +48,8 @@ export default () => <List items={[{ id: 1 }]}>{{ row: (item) => <li>{item.id}</
 - 显式类型实参 `<List<{ id: number }>>` 也只影响 props。生成的 `v-slots` 仍来自
   未解析的那份签名。
 
-出路是别再让改写去负责这三样：把它们声明成 props，放进 TypeScript 推断所在的位置
-—— 或者交给 `defineComponent` / `defineVaporComponent` 替你声明。
+解法：把 slots、emits、exposed 直接声明在 props 里，让 TypeScript 能从标签上
+推断它们 —— 或者交给 `defineComponent` / `defineVaporComponent` 替你声明。
 
 ## Props helper
 
@@ -61,12 +62,8 @@ export default () => <List items={[{ id: 1 }]}>{{ row: (item) => <li>{item.id}</
 它们从 `vue-jsx` 导出：
 
 ```ts
-import type { ExposedToProps, SetupContextToProps, SlotsToProps } from 'vue-jsx'
+import type { ExposedToProps, SlotsToProps, SetupContextToProps } from 'vue-jsx'
 ```
-
-改写不会重复生成它们：只有 `'v-slots' extends keyof Props` 为假时才合成
-`v-slots`，只有 `'ref' extends keyof Props` 为假时才从组件推断 `ref`。已声明的
-prop 永远优先。
 
 ### SlotsToProps
 

@@ -7,12 +7,12 @@ compiler how Vue components should look at JSX call sites — including the new
 TypeScript 7 (the native tsgo port), where it works out of the box.
 
 The key is `JSX.LibraryManagedAttributes`. TypeScript calls this type whenever
-it checks `<Comp ... />`. Vue JSX uses that hook to rewrite the raw component
-props into the actual JSX-facing props: normal props stay normal, emitted events
-become `onXxx`, `ref` points at the exposed type, and JSX children are checked
-as Vue slots. Vapor components take the same path: components wrapped in
-`defineVaporComponent` and plain vapor function components get the same props,
-emits, slots, and exposed-`ref` inference as Virtual DOM components.
+it checks `<Comp ... />`. Vue JSX uses that hook to extend the component's
+props: normal props stay normal, emitted events become `onXxx`, `ref` points
+at the exposed type, and JSX children are checked as Vue slots. Vapor
+components take the same path: components wrapped in `defineVaporComponent`
+and plain vapor function components get the same props, emits, slots, and
+exposed-`ref` inference as Virtual DOM components.
 
 [简体中文](/zh/blog/type-inference)
 
@@ -36,13 +36,9 @@ The only default TypeScript setup is the JSX runtime:
 `vue-jsx/jsx-runtime` exports the runtime JSX namespace that TypeScript
 resolves through `jsxImportSource`.
 
-That is enough for TypeScript itself to ask Vue JSX three questions:
-
-1. What counts as a JSX element?
-2. Where should component props be read from?
-3. How should the raw props be rewritten for this component?
-
-The namespace answers those questions in `packages/runtime/src/jsx.ts`:
+Every rule TypeScript applies when checking JSX comes from this namespace: what
+counts as an element, and where props and children are read from and how they
+are extended. It is defined in `packages/runtime/src/jsx.ts`:
 
 ```ts
 export namespace JSX {
@@ -70,9 +66,9 @@ export namespace JSX {
 ```
 
 `ElementAttributesProperty` makes constructor-style Vue components expose their
-JSX props through `$props`. `ElementChildrenAttribute` says JSX children are not
-React-style `children`; they flow through `v-slots`. `LibraryManagedAttributes`
-then performs the real type-level adaptation.
+JSX props through `$props`. `ElementChildrenAttribute` points the children
+check at the `v-slots` prop type. The real type-level adaptation is left to
+`LibraryManagedAttributes`.
 
 ## What LibraryManagedAttributes Does
 
@@ -175,12 +171,14 @@ const Counter = (
   { emit }: { emit: EmitFn<{ change: [value: number] }> },
 ) => <button onClick={() => emit('change', props.value + 1)} />
 
-;<Counter
-  value={1}
-  onChange={(value) => {
-    value.toFixed()
-  }}
-/>
+export default () => (
+  <Counter
+    value={1}
+    onChange={(value) => {
+      value.toFixed()
+    }}
+  />
+)
 ```
 
 No editor plugin needs to synthesize `onChange`. It is produced by
@@ -188,9 +186,10 @@ No editor plugin needs to synthesize `onChange`. It is produced by
 
 ## Ref Means Exposed
 
-`ref` is where Vue JSX differs most from a simple `VNodeRef` pass-through. The
-public component type already knows what the component exposes; the JSX layer
-only has to extract it.
+In Vue JSX 3.3, `ref` no longer just passes `VNodeRef` through: it derives a
+more precise type from what the component exposes. The public component type
+already knows what the component exposes; the JSX layer only has to extract
+it.
 
 ```ts
 export type NodeRef<T> = ((ref: T | null, refs: Record<string, any>) => void) | Ref | string
@@ -231,12 +230,14 @@ const Doubler = (
   return <span>{props.count}</span>
 }
 
-;<Doubler
-  count={2}
-  ref={(exposed) => {
-    exposed?.double.toFixed()
-  }}
-/>
+export default () => (
+  <Doubler
+    count={2}
+    ref={(exposed) => {
+      exposed?.double.toFixed()
+    }}
+  />
+)
 ```
 
 The callback sees `{ double: number } | null`, because the type path goes through

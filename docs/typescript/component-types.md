@@ -30,10 +30,11 @@ function components, and unknown components.
 
 ## Generic Props Stop At The Setup Context
 
-Type arguments are inferred from the **attributes object**. Everything the
-component exposes through its second parameter, or through the instance type, is
-resolved before that inference happens, so a type parameter used only there keeps
-its constraint — `unknown` when there is none:
+Type arguments are inferred from the **attributes written on the tag**.
+Everything the component exposes through its second parameter (the setup
+context), or through the instance type, is resolved before that inference
+happens, so a type parameter used only there never gets an argument and falls
+back to its constraint — `unknown` when there is none:
 
 ```tsx
 const List = <T,>(props: { items: T[] }, { slots }: { slots: { row?: (item: T) => any } }) => (
@@ -47,11 +48,12 @@ export default () => <List items={[{ id: 1 }]}>{{ row: (item) => <li>{item.id}</
 - `items` is still checked as `T[]`: props are props.
 - `item` inside the slot is `unknown`, and with `T extends string | number` it is
   `string | number` — the constraint, not the type argument.
-- An explicit type argument, `<List<{ id: number }>>`, changes the props only.
-  The generated `v-slots` still comes from the unresolved signature.
+- An explicit type argument, `<List<{ id: number }>>`, changes the props only:
+  `v-slots` was generated during the rewrite, when `T` had already been
+  replaced.
 
-The way out is to stop asking the rewrite for those three: declare them as
-props, in the position TypeScript infers from — or let
+The fix: declare slots, emits, and exposed directly in the props, where
+TypeScript can infer them from the tag — or let
 `defineComponent` / `defineVaporComponent` declare them for you.
 
 ## The Props Helpers
@@ -67,12 +69,8 @@ Three exported types turn a piece of the setup context into a prop:
 They are exported from `vue-jsx`:
 
 ```ts
-import type { ExposedToProps, SetupContextToProps, SlotsToProps } from 'vue-jsx'
+import type { ExposedToProps, SlotsToProps, SetupContextToProps } from 'vue-jsx'
 ```
-
-The rewrite never duplicates them: it synthesizes `v-slots` only when
-`'v-slots' extends keyof Props` is false, and infers `ref` from the component
-only when `'ref' extends keyof Props` is false. A declared prop always wins.
 
 ### SlotsToProps
 

@@ -7,8 +7,8 @@ Vue 组件在 JSX 调用点应该如何检查——TypeScript 7（tsgo 原生版
 开箱即用。
 
 核心是 `JSX.LibraryManagedAttributes`。TypeScript 每次检查 `<Comp ... />` 时，
-都会调用这个类型。Vue JSX 就借这个 hook，把组件原始 props 改写成 JSX 用户真正能写
-的 props：普通 props 保持原样，emit 变成 `onXxx`，`ref` 指向 exposed 类型，
+都会调用这个类型。Vue JSX 就借这个 hook 扩展组件的 props：普通
+props 保持原样，emit 变成 `onXxx`，`ref` 指向 exposed 类型，
 JSX children 则按 Vue slots 检查。Vapor 组件走的是同一条路径：
 `defineVaporComponent` 包裹的组件和普通 vapor 函数组件，props、emit、slots
 和 ref（exposed）的推断与 Virtual DOM 组件完全一致。
@@ -35,13 +35,8 @@ import inferenceCode from '../../blog/examples/type-inference-vapor.tsx?raw'
 `vue-jsx/jsx-runtime` 会导出 runtime JSX namespace，TypeScript
 通过 `jsxImportSource` 解析到它。
 
-这样 TypeScript 自己就能向 Vue JSX 问三个问题：
-
-1. 什么东西算 JSX element？
-2. 组件 props 应该从哪里读取？
-3. 对这个组件来说，原始 props 要怎么改写？
-
-答案定义在 `packages/runtime/src/jsx.ts` 的 namespace 里：
+TypeScript 检查 JSX 的规则全部来自这个 namespace：什么算 element，props 和
+children 从哪里读取、怎么扩展。它定义在 `packages/runtime/src/jsx.ts`：
 
 ```ts
 export namespace JSX {
@@ -69,8 +64,8 @@ export namespace JSX {
 ```
 
 `ElementAttributesProperty` 让构造器形式的 Vue 组件从 `$props` 暴露 JSX props。
-`ElementChildrenAttribute` 明确告诉 TS：JSX children 不是 React 那种 `children`，
-而是流入 `v-slots`。真正的类型适配则交给 `LibraryManagedAttributes`。
+`ElementChildrenAttribute` 把 children 的检查目标指到 `v-slots` prop 类型上。剩下真正
+的类型适配，交给 `LibraryManagedAttributes`。
 
 ## LibraryManagedAttributes 做了什么
 
@@ -172,12 +167,14 @@ const Counter = (
   { emit }: { emit: EmitFn<{ change: [value: number] }> },
 ) => <button onClick={() => emit('change', props.value + 1)} />
 
-;<Counter
-  value={1}
-  onChange={(value) => {
-    value.toFixed()
-  }}
-/>
+export default () => (
+  <Counter
+    value={1}
+    onChange={(value) => {
+      value.toFixed()
+    }}
+  />
+)
 ```
 
 这里不需要任何编辑器插件去虚拟生成 `onChange`。它是在 TypeScript 原生 JSX 检查过程中
@@ -185,8 +182,9 @@ const Counter = (
 
 ## Ref 指向 Exposed
 
-`ref` 是 Vue JSX 3.3 不只是透传 `VNodeRef` 的地方。组件公开类型里已经知道自己暴露
-了什么，JSX 层只需要把它提取出来。
+`ref` 在 Vue JSX 3.3 里不再只是透传 `VNodeRef`，而是根据组件暴露的东西生成
+更精确的类型。组件公开类型里已经知道自己暴露了什么，JSX 层只需要把它提取
+出来。
 
 ```ts
 export type NodeRef<T> = ((ref: T | null, refs: Record<string, any>) => void) | Ref | string
@@ -224,12 +222,14 @@ const Doubler = (
   return <span>{props.count}</span>
 }
 
-;<Doubler
-  count={2}
-  ref={(exposed) => {
-    exposed?.double.toFixed()
-  }}
-/>
+export default () => (
+  <Doubler
+    count={2}
+    ref={(exposed) => {
+      exposed?.double.toFixed()
+    }}
+  />
+)
 ```
 
 callback 里看到的是 `{ double: number } | null`，因为这条类型链路经过了 `UnwrapRef`。
