@@ -4,6 +4,7 @@ import type { RenderResult, JSX as VueJSX } from 'vue-jsx-vapor'
 declare global {
   namespace JSX {
     type Element = VueJSX.Element
+    type ElementAttributesProperty = VueJSX.ElementAttributesProperty
     type ElementChildrenAttribute = VueJSX.ElementChildrenAttribute
     type IntrinsicElements = VueJSX.IntrinsicElements
     type IntrinsicAttributes = VueJSX.IntrinsicAttributes
