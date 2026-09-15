@@ -64,7 +64,7 @@ fn static_parameters() {
   	_withVaporDirectives(_n0, [[
   		_directive_example,
   		() => msg,
-  		"foo"
+  		() => "foo"
   	]]);
   	return _n0;
   })();
@@ -123,7 +123,7 @@ fn static_argument_and_modifiers() {
   	_withVaporDirectives(_n0, [[
   		_directive_example,
   		() => msg,
-  		"foo",
+  		() => "foo",
   		{ bar: true }
   	]]);
   	return _n0;
@@ -143,7 +143,7 @@ fn dynamic_argument() {
   	_withVaporDirectives(_n0, [[
   		_directive_example,
   		() => msg,
-  		foo
+  		() => foo
   	]]);
   	return _n0;
   })();
@@ -243,7 +243,7 @@ fn array_args() {
   	_withVaporDirectives(_n0, [[
   		_directive_example,
   		() => foo,
-  		bar,
+  		() => bar,
   		{
   			modify1: true,
   			modify2: true
@@ -293,7 +293,7 @@ fn array_args_with_arg() {
   	_withVaporDirectives(_n0, [[
   		_directive_example,
   		() => foo,
-  		"foo",
+  		() => "foo",
   		{
   			modify1: true,
   			modify2: true
