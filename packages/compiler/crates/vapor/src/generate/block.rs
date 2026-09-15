@@ -10,10 +10,12 @@ use oxc_ast::ast::{
 use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
+use crate::generate::directive::gen_custom_directives;
 use crate::generate::operation::gen_operations;
 use crate::generate::template::gen_self;
 use crate::ir::index::{BlockIRNode, ForIRNode, IRDynamicInfo, IREffect, IfIRNode, OperationNode};
 use common::patch_flag::VaporSlotFlags;
+use indexmap::IndexMap;
 
 pub fn gen_block<'a>(
   oper: BlockIRNode<'a>,
@@ -64,6 +66,8 @@ pub fn gen_block_content<'a>(
   // selects the text, checkbox, or radio implementation from the DOM property.
   let model_operations = Rc::new(RefCell::new(Vec::new()));
   let deferred_model_operations = Rc::clone(&model_operations);
+  let custom_directives = Rc::new(RefCell::new(IndexMap::new()));
+  let deferred_custom_directives = Rc::clone(&custom_directives);
   let flush_before_dynamic = Rc::new(RefCell::new(Box::new(
     move |dynamic: &mut IRDynamicInfo<'a>,
           statements: &mut oxc_allocator::Vec<'a, Statement<'a>>| {
@@ -93,6 +97,7 @@ pub fn gen_block_content<'a>(
               .drain(0..operation_end - operation_index)
               .collect::<Vec<_>>(),
             Some(&mut deferred_model_operations.borrow_mut()),
+            Some(&mut deferred_custom_directives.borrow_mut()),
             context,
             unsafe { &mut *context_block },
           );
@@ -130,6 +135,7 @@ pub fn gen_block_content<'a>(
     &mut statements,
     mem::take(&mut unsafe { &mut *context_block }.operation),
     Some(&mut model_operations.borrow_mut()),
+    Some(&mut custom_directives.borrow_mut()),
     context,
     unsafe { &mut *context_block },
   );
@@ -147,9 +153,14 @@ pub fn gen_block_content<'a>(
     &mut statements,
     mem::take(&mut model_operations.borrow_mut()),
     None,
+    None,
     context,
     unsafe { &mut *context_block },
   );
+  statements.extend(gen_custom_directives(
+    mem::take(&mut custom_directives.borrow_mut()),
+    context,
+  ));
 
   let mut return_nodes = unsafe { &mut *context_block }.returns.iter().map(|n| {
     ast
@@ -187,9 +198,14 @@ fn gen_effects<'a>(
 
   for effect in effects {
     operations_count += effect.operations.len();
-    gen_operations(&mut statements, effect.operations, None, context, unsafe {
-      &mut *context_block
-    });
+    gen_operations(
+      &mut statements,
+      effect.operations,
+      None,
+      None,
+      context,
+      unsafe { &mut *context_block },
+    );
   }
 
   if operations_count > 0 {

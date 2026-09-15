@@ -10,8 +10,8 @@ use crate::{
   transform::{TransformContext, transform_element::build_props},
 };
 use common::{
-  directive::Directives, error::ErrorCodes, expression::jsx_attribute_value_to_expression,
-  patch_flag::VaporSlotFlags, text::is_empty_text,
+  directive::Directives, expression::jsx_attribute_value_to_expression, patch_flag::VaporSlotFlags,
+  text::is_empty_text,
 };
 
 /// # SAFETY
@@ -58,26 +58,6 @@ pub unsafe fn transform_slot_outlet<'a>(
       && let Some(value) = &mut name_prop.value
     {
       slot_name = jsx_attribute_value_to_expression(value, context.ast)
-    }
-
-    if let Some(runtime_directive) =
-      unsafe { &*context_block_ptr }
-        .operation
-        .iter()
-        .find_map(|oper| {
-          if let OperationNode::Directive(oper) = oper
-            && oper.element == id
-          {
-            Some(oper)
-          } else {
-            None
-          }
-        })
-    {
-      context.options.on_error.as_ref()(
-        ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet,
-        runtime_directive.dir.span,
-      );
     }
   }
 

@@ -2,6 +2,8 @@ use oxc_ast::NONE;
 use oxc_ast::ast::{Argument, NumberBase, Statement};
 use oxc_span::SPAN;
 
+use indexmap::IndexMap;
+
 use crate::generate::CodegenContext;
 use crate::generate::component::gen_create_component;
 use crate::generate::directive::gen_builtin_directive;
@@ -21,29 +23,42 @@ use crate::generate::text::gen_set_text;
 use crate::generate::v_for::gen_for;
 use crate::generate::v_if::gen_if;
 use crate::ir::index::BlockIRNode;
+use crate::ir::index::DirectiveIRNode;
 use crate::ir::index::OperationNode;
 
 pub fn gen_operations<'a>(
   statements: &mut oxc_allocator::Vec<'a, Statement<'a>>,
   opers: Vec<OperationNode<'a>>,
   mut post_opers: Option<&mut Vec<OperationNode<'a>>>,
+  mut custom_directives: Option<&mut IndexMap<i32, Vec<DirectiveIRNode<'a>>>>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) {
   let _context_block = context_block as *mut BlockIRNode;
   for operation in opers {
-    if let Some(post_opers) = post_opers.as_deref_mut()
-      && matches!(
-        &operation,
-        OperationNode::Directive(operation)
-          if operation.builtin && operation.name == "model"
-      )
-    {
-      post_opers.push(operation);
-    } else {
-      gen_operation_with_insertion_state(statements, operation, context, unsafe {
+    match operation {
+      // Custom directives are collected and emitted at the end of the block so
+      // the element's props, children and v-model are in place first. Grouped by
+      // element here, preserving first-seen order.
+      OperationNode::Directive(operation) if !operation.builtin => {
+        if let Some(custom_directives) = custom_directives.as_deref_mut() {
+          custom_directives
+            .entry(operation.element)
+            .or_default()
+            .push(operation);
+        }
+      }
+      OperationNode::Directive(operation)
+        if operation.builtin && operation.name == "model" && post_opers.is_some() =>
+      {
+        post_opers
+          .as_deref_mut()
+          .unwrap()
+          .push(OperationNode::Directive(operation));
+      }
+      operation => gen_operation_with_insertion_state(statements, operation, context, unsafe {
         &mut *_context_block
-      });
+      }),
     }
   }
 }

@@ -22,7 +22,6 @@ use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
 use crate::generate::directive::gen_directive_modifiers;
-use crate::generate::directive::gen_directives_for_element;
 use crate::generate::event::gen_event_handler;
 use crate::generate::expression::gen_expression;
 use crate::generate::prop::gen_prop_key;
@@ -139,9 +138,6 @@ pub fn gen_create_component<'a>(
       false,
     ),
   ));
-  if let Some(directive_statement) = gen_directives_for_element(id, context, context_block) {
-    statements.push(directive_statement);
-  }
 }
 
 pub fn gen_raw_props<'a>(

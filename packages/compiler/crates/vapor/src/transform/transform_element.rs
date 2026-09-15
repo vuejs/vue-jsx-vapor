@@ -574,6 +574,13 @@ pub fn transform_prop<'a>(
   };
 
   if !is_built_in_directive(dir_name_raw) {
+    if get_tag_name(node, context.options) == "slot" {
+      context.options.on_error.as_ref()(
+        ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet,
+        prop.span,
+      );
+      return None;
+    }
     let mut dir_name = Cow::Borrowed(dir_name_raw);
     let asset = if dir_name_raw
       .chars()
