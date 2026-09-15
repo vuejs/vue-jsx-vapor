@@ -21,7 +21,7 @@ use crate::{
   },
 };
 
-use common::{check::is_simple_identifier, patch_flag::VaporSlotStability};
+use common::{check::is_simple_identifier, expression::gen_getter, patch_flag::VaporSlotStability};
 
 pub fn gen_raw_slots<'a>(
   mut slots: Vec<IRSlots<'a>>,
@@ -135,38 +135,20 @@ fn gen_dynamic_slots<'a>(
       Either4::D(slot) => {
         let expression = gen_expression(slot.slots, context, None, false);
         if slot.dynamic {
-          ast
-            .expression_arrow_function(
+          gen_getter(
+            ast.expression_call(
               SPAN,
-              true,
+              ast.expression_identifier(
+                SPAN,
+                ast.str(context.options.helper("_normalizeVaporSlots")),
+              ),
+              NONE,
+              ast.vec1(expression.into()),
               false,
-              NONE,
-              ast.formal_parameters(
-                SPAN,
-                FormalParameterKind::ArrowFormalParameters,
-                ast.vec(),
-                NONE,
-              ),
-              NONE,
-              ast.function_body(
-                SPAN,
-                ast.vec(),
-                ast.vec1(ast.statement_expression(
-                  SPAN,
-                  ast.expression_call(
-                    SPAN,
-                    ast.expression_identifier(
-                      SPAN,
-                      ast.str(context.options.helper("_normalizeVaporSlots")),
-                    ),
-                    NONE,
-                    ast.vec1(expression.into()),
-                    false,
-                  ),
-                )),
-              ),
-            )
-            .into()
+            ),
+            ast,
+          )
+          .into()
         } else {
           expression.into()
         }
@@ -253,26 +235,7 @@ fn gen_loop_slot<'a>(
     }
   });
 
-  let source = ast.expression_arrow_function(
-    SPAN,
-    true,
-    false,
-    NONE,
-    ast.formal_parameters(
-      SPAN,
-      FormalParameterKind::ArrowFormalParameters,
-      ast.vec(),
-      NONE,
-    ),
-    NONE,
-    ast.function_body(
-      SPAN,
-      ast.vec(),
-      ast.vec1(
-        ast.statement_expression(SPAN, gen_expression(source.unwrap(), context, None, false)),
-      ),
-    ),
-  );
+  let source = gen_getter(gen_expression(source.unwrap(), context, None, false), ast);
 
   let (depth, exit_scope) = context.enter_scope();
   let item_var = format!("_for_item{depth}");
@@ -496,24 +459,7 @@ fn gen_conditional_slot<'a>(
   );
 
   if with_function {
-    ast.expression_arrow_function(
-      SPAN,
-      true,
-      false,
-      NONE,
-      ast.formal_parameters(
-        SPAN,
-        FormalParameterKind::ArrowFormalParameters,
-        ast.vec(),
-        NONE,
-      ),
-      NONE,
-      ast.function_body(
-        SPAN,
-        ast.vec(),
-        ast.vec1(ast.statement_expression(SPAN, expression)),
-      ),
-    )
+    gen_getter(expression, ast)
   } else {
     expression
   }

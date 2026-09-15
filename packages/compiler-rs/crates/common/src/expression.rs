@@ -2,8 +2,8 @@ use std::borrow::Cow;
 
 use oxc_allocator::{Allocator, CloneIn, FromIn, TakeIn};
 use oxc_ast::{
-  AstBuilder,
-  ast::{Expression, JSXAttributeValue, Str},
+  AstBuilder, NONE,
+  ast::{Expression, FormalParameterKind, JSXAttributeValue, Str},
 };
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SPAN, SourceType, Span};
@@ -118,4 +118,27 @@ pub fn jsx_attribute_value_to_expression<'a>(
       .as_expression_mut()
       .map(|exp| exp.take_in(ast.allocator)),
   }
+}
+
+/// Wrap an expression in a zero-arg arrow function so it is evaluated lazily
+/// by the runtime instead of eagerly when the surrounding code runs.
+pub fn gen_getter<'a>(expression: Expression<'a>, ast: &AstBuilder<'a>) -> Expression<'a> {
+  ast.expression_arrow_function(
+    SPAN,
+    true,
+    false,
+    NONE,
+    ast.formal_parameters(
+      SPAN,
+      FormalParameterKind::ArrowFormalParameters,
+      ast.vec(),
+      NONE,
+    ),
+    NONE,
+    ast.function_body(
+      SPAN,
+      ast.vec(),
+      ast.vec1(ast.statement_expression(SPAN, expression)),
+    ),
+  )
 }

@@ -1,11 +1,12 @@
 use oxc_ast::{
   NONE,
-  ast::{FormalParameterKind, JSXChild, NumberBase},
+  ast::{JSXChild, NumberBase},
 };
 use oxc_span::SPAN;
 
 use crate::{ast::NodeTypes, transform::TransformContext};
 use common::directive::Directives;
+use common::expression::gen_getter;
 
 /// # SAFETY
 pub unsafe fn transform_v_memo<'a>(
@@ -41,28 +42,7 @@ pub unsafe fn transform_v_memo<'a>(
             NONE,
             ast.vec_from_array([
               context.jsx_attribute_value_to_expression(&mut value).into(),
-              ast
-                .expression_arrow_function(
-                  SPAN,
-                  true,
-                  false,
-                  NONE,
-                  ast.formal_parameters(
-                    SPAN,
-                    FormalParameterKind::ArrowFormalParameters,
-                    ast.vec(),
-                    NONE,
-                  ),
-                  NONE,
-                  ast.function_body(
-                    SPAN,
-                    ast.vec(),
-                    ast.vec1(
-                      ast.statement_expression(SPAN, context.gen_vnode_call(codegen, codegen_map)),
-                    ),
-                  ),
-                )
-                .into(),
+              gen_getter(context.gen_vnode_call(codegen, codegen_map), ast).into(),
               ast.expression_identifier(SPAN, "_cache").into(),
               ast
                 .expression_numeric_literal(

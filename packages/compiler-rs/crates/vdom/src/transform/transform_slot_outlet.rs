@@ -1,4 +1,6 @@
-use common::{directive::Directives, error::ErrorCodes, text::is_empty_text};
+use common::{
+  directive::Directives, error::ErrorCodes, expression::gen_getter, text::is_empty_text,
+};
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
@@ -81,33 +83,15 @@ pub unsafe fn transform_slot_outlet<'a>(
             let codegen_map = &mut context.codegen_map.borrow_mut();
             if let Some(NodeTypes::VNodeCall(mut vnode_call)) = codegen_map.remove(&node_span) {
               Some(
-                ast
-                  .expression_arrow_function(
-                    node.span,
-                    true,
-                    false,
-                    NONE,
-                    ast.formal_parameters(
-                      SPAN,
-                      oxc_ast::ast::FormalParameterKind::ArrowFormalParameters,
-                      ast.vec(),
-                      NONE,
-                    ),
-                    NONE,
-                    ast.function_body(
-                      SPAN,
-                      ast.vec(),
-                      ast.vec1(ast.statement_expression(
-                        SPAN,
-                        if let Some(children) = vnode_call.children.take() {
-                          context.gen_node_list(children, codegen_map)
-                        } else {
-                          ast.expression_null_literal(SPAN)
-                        },
-                      )),
-                    ),
-                  )
-                  .into(),
+                gen_getter(
+                  if let Some(children) = vnode_call.children.take() {
+                    context.gen_node_list(children, codegen_map)
+                  } else {
+                    ast.expression_null_literal(SPAN)
+                  },
+                  ast,
+                )
+                .into(),
               )
             } else {
               None

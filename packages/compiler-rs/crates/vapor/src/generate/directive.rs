@@ -1,11 +1,8 @@
 use oxc_ast::AstBuilder;
 use oxc_ast::NONE;
-use oxc_ast::ast::ArrowFunctionExpression;
 use oxc_ast::ast::Expression;
-use oxc_ast::ast::FormalParameterKind;
 use oxc_ast::ast::Statement;
 use oxc_ast::ast::{Argument, ArrayExpressionElement, ObjectExpression, PropertyKind};
-use oxc_span::GetSpan;
 use oxc_span::SPAN;
 
 use indexmap::IndexMap;
@@ -16,6 +13,7 @@ use crate::generate::v_model::gen_v_model;
 use crate::generate::v_show::gen_v_show;
 use crate::ir::index::DirectiveIRNode;
 use common::check::is_simple_identifier;
+use common::expression::gen_getter;
 use common::text::to_valid_asset_id;
 
 /**
@@ -24,58 +22,12 @@ use common::text::to_valid_asset_id;
  */
 fn gen_once<'a>(call: Expression<'a>, context: &'a CodegenContext<'a>) -> Expression<'a> {
   let ast = &context.ast;
-  let arrow = ast.alloc_arrow_function_expression(
-    SPAN,
-    true,
-    false,
-    NONE,
-    ast.formal_parameters(
-      SPAN,
-      FormalParameterKind::ArrowFormalParameters,
-      ast.vec(),
-      NONE,
-    ),
-    NONE,
-    ast.function_body(
-      SPAN,
-      ast.vec(),
-      ast.vec1(ast.statement_expression(call.span(), call)),
-    ),
-  );
   ast.expression_call(
     SPAN,
     ast.expression_identifier(SPAN, ast.str(context.options.helper("_withOnce"))),
     NONE,
-    ast.vec1(Argument::ArrowFunctionExpression(arrow)),
+    ast.vec1(gen_getter(call, ast).into()),
     false,
-  )
-}
-
-/**
- * Wrap an expression in a zero-arg getter so the runtime can re-read it; custom
- * directive values and arguments are both passed to the runtime as getters.
- */
-fn gen_getter<'a>(
-  expression: Expression<'a>,
-  ast: &AstBuilder<'a>,
-) -> oxc_allocator::Box<'a, ArrowFunctionExpression<'a>> {
-  ast.alloc_arrow_function_expression(
-    SPAN,
-    true,
-    false,
-    NONE,
-    ast.formal_parameters(
-      SPAN,
-      FormalParameterKind::ArrowFormalParameters,
-      ast.vec(),
-      NONE,
-    ),
-    NONE,
-    ast.function_body(
-      SPAN,
-      ast.vec(),
-      ast.vec1(ast.statement_expression(expression.span(), expression)),
-    ),
   )
 }
 
@@ -157,7 +109,7 @@ fn gen_element_directives<'a>(
           [
             Some(ArrayExpressionElement::Identifier(directive_var)),
             if let Some(value) = value {
-              Some(ArrayExpressionElement::ArrowFunctionExpression(value))
+              Some(value.into())
             } else if argument.is_some() || modifiers.is_some() {
               Some(ArrayExpressionElement::Identifier(
                 ast.alloc_identifier_reference(SPAN, "void 0"),
@@ -166,7 +118,7 @@ fn gen_element_directives<'a>(
               None
             },
             if let Some(argument) = argument {
-              Some(ArrayExpressionElement::ArrowFunctionExpression(argument))
+              Some(argument.into())
             } else if modifiers.is_some() {
               Some(ArrayExpressionElement::Identifier(
                 ast.alloc_identifier_reference(SPAN, "void 0"),

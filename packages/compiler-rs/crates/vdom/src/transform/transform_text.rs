@@ -3,8 +3,7 @@ use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
   ast::{
-    ConditionalExpression, Expression, FormalParameterKind, JSXChild, NumberBase,
-    ObjectPropertyKind, PropertyKind,
+    ConditionalExpression, Expression, JSXChild, NumberBase, ObjectPropertyKind, PropertyKind,
   },
 };
 use oxc_span::{GetSpan, SPAN};
@@ -17,6 +16,7 @@ use crate::{
 use common::{
   check::{get_directive_name, is_built_in_directive, is_template},
   directive::Directives,
+  expression::gen_getter,
   patch_flag::PatchFlags,
   text::resolve_jsx_text,
 };
@@ -112,33 +112,13 @@ pub unsafe fn transform_text<'a>(
             );
           } else {
             call_args.push(
-              ast
-                .expression_arrow_function(
-                  SPAN,
-                  true,
-                  false,
-                  NONE,
-                  ast.formal_parameters(
-                    SPAN,
-                    FormalParameterKind::ArrowFormalParameters,
-                    ast.vec(),
-                    NONE,
-                  ),
-                  NONE,
-                  ast.function_body(
-                    SPAN,
-                    ast.vec(),
-                    ast.vec1(
-                      ast.statement_expression(
-                        SPAN,
-                        context
-                          .process_expression(child.expression.to_expression_mut())
-                          .0,
-                      ),
-                    ),
-                  ),
-                )
-                .into(),
+              gen_getter(
+                context
+                  .process_expression(child.expression.to_expression_mut())
+                  .0,
+                ast,
+              )
+              .into(),
             )
           }
         };
@@ -190,28 +170,7 @@ fn transform_branch<'a>(
       SPAN,
       ast.expression_identifier(SPAN, ast.str(context.options.helper("_normalizeVNode"))),
       NONE,
-      ast.vec1(
-        ast
-          .expression_arrow_function(
-            SPAN,
-            true,
-            false,
-            NONE,
-            ast.formal_parameters(
-              SPAN,
-              FormalParameterKind::ArrowFormalParameters,
-              ast.vec(),
-              NONE,
-            ),
-            NONE,
-            ast.function_body(
-              SPAN,
-              ast.vec(),
-              ast.vec1(ast.statement_expression(SPAN, exp.take_in(context.allocator))),
-            ),
-          )
-          .into(),
-      ),
+      ast.vec1(gen_getter(exp.take_in(context.allocator), ast).into()),
       false,
     );
     return;
