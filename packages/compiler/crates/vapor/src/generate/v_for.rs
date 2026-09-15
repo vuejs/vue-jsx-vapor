@@ -1,6 +1,10 @@
 use std::{collections::HashMap, mem};
 
-use common::{expression::is_globally_allowed, patch_flag::VaporVForFlags, walk::WalkIdentifiers};
+use common::{
+  expression::{gen_getter, is_globally_allowed},
+  patch_flag::VaporVForFlags,
+  walk::WalkIdentifiers,
+};
 use oxc_allocator::CloneIn;
 use oxc_ast::{
   NONE,
@@ -61,24 +65,7 @@ pub fn gen_for<'a>(
     (None, SPAN)
   };
 
-  let source_expr = ast.expression_arrow_function(
-    SPAN,
-    true,
-    false,
-    NONE,
-    ast.formal_parameters(
-      SPAN,
-      FormalParameterKind::ArrowFormalParameters,
-      ast.vec(),
-      NONE,
-    ),
-    NONE,
-    ast.function_body(
-      SPAN,
-      ast.vec(),
-      ast.vec1(ast.statement_expression(SPAN, gen_expression(source, context, None, false))),
-    ),
-  );
+  let source_expr = gen_getter(gen_expression(source, context, None, false), ast);
 
   let (depth, exit_scope) = context.enter_scope();
   let item_var = format!("_for_item{depth}");
@@ -157,28 +144,7 @@ pub fn gen_for<'a>(
             SPAN,
             ast.expression_identifier(SPAN, ast.str(context.options.helper("_createSelector"))),
             NONE,
-            ast.vec1(Argument::ArrowFunctionExpression(
-              ast.alloc_arrow_function_expression(
-                SPAN,
-                true,
-                false,
-                NONE,
-                ast.formal_parameters(
-                  SPAN,
-                  FormalParameterKind::ArrowFormalParameters,
-                  ast.vec(),
-                  NONE,
-                ),
-                NONE,
-                ast.function_body(
-                  SPAN,
-                  ast.vec(),
-                  ast.vec1(
-                    ast.statement_expression(SPAN, gen_expression(selector, context, None, false)),
-                  ),
-                ),
-              ),
-            )),
+            ast.vec1(gen_getter(gen_expression(selector, context, None, false), ast).into()),
             false,
           )),
           false,

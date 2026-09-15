@@ -1,8 +1,9 @@
 use std::borrow::Cow;
 
 use common::directive::Modifiers;
+use common::expression::gen_getter;
 use oxc_ast::NONE;
-use oxc_ast::ast::{Expression, FormalParameterKind, ObjectPropertyKind, PropertyKind, Statement};
+use oxc_ast::ast::{Expression, ObjectPropertyKind, PropertyKind, Statement};
 use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
@@ -168,24 +169,7 @@ pub fn gen_event_handler<'a>(
   }
 
   if extra_wrap {
-    handler_exp = ast.expression_arrow_function(
-      SPAN,
-      true,
-      false,
-      NONE,
-      ast.formal_parameters(
-        SPAN,
-        FormalParameterKind::ArrowFormalParameters,
-        ast.vec(),
-        NONE,
-      ),
-      NONE,
-      ast.function_body(
-        SPAN,
-        ast.vec(),
-        ast.vec1(ast.statement_expression(SPAN, handler_exp)),
-      ),
-    )
+    handler_exp = gen_getter(handler_exp, ast)
   }
   handler_exp
 }

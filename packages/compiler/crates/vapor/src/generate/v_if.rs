@@ -1,3 +1,4 @@
+use common::expression::gen_getter;
 use common::patch_flag::VaporBlockShape;
 use common::patch_flag::VaporIfFlags;
 use napi::Either;
@@ -43,24 +44,7 @@ pub fn gen_if<'a>(
     },
   );
 
-  let condition_expr = ast.expression_arrow_function(
-    SPAN,
-    true,
-    false,
-    NONE,
-    ast.formal_parameters(
-      SPAN,
-      FormalParameterKind::ArrowFormalParameters,
-      ast.vec(),
-      NONE,
-    ),
-    NONE,
-    ast.function_body(
-      SPAN,
-      ast.vec(),
-      ast.vec1(ast.statement_expression(SPAN, gen_expression(condition, context, None, false))),
-    ),
-  );
+  let condition_expr = gen_getter(gen_expression(condition, context, None, false), ast);
 
   let _context_block = context_block as *mut BlockIRNode;
   let positive_arg = gen_block(

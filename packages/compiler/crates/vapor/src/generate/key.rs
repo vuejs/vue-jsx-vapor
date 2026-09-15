@@ -1,5 +1,5 @@
+use common::expression::gen_getter;
 use oxc_ast::NONE;
-use oxc_ast::ast::FormalParameterKind;
 use oxc_ast::ast::Statement;
 use oxc_ast::ast::VariableDeclarationKind;
 use oxc_span::SPAN;
@@ -25,24 +25,7 @@ pub fn gen_key<'a>(
     ..
   } = oper;
 
-  let expr = ast.expression_arrow_function(
-    SPAN,
-    true,
-    false,
-    NONE,
-    ast.formal_parameters(
-      SPAN,
-      FormalParameterKind::ArrowFormalParameters,
-      ast.vec(),
-      NONE,
-    ),
-    NONE,
-    ast.function_body(
-      SPAN,
-      ast.vec(),
-      ast.vec1(ast.statement_expression(SPAN, gen_expression(value, context, None, false))),
-    ),
-  );
+  let expr = gen_getter(gen_expression(value, context, None, false), ast);
 
   let _context_block = context_block as *mut BlockIRNode;
   let block_fn = gen_block(block, context, unsafe { &mut *_context_block }, ast.vec());

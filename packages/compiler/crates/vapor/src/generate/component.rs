@@ -4,6 +4,7 @@ use std::mem;
 use common::check::is_constant_node;
 use common::directive::Modifiers;
 use common::directive::get_modifier_prop_name;
+use common::expression::gen_getter;
 use common::text::capitalize;
 use indexmap::IndexMap;
 use napi::bindgen_prelude::Either3;
@@ -312,24 +313,7 @@ fn gen_static_props<'a>(
         SPAN,
         PropertyKind::Init,
         group.key_frag,
-        ast.expression_arrow_function(
-          SPAN,
-          true,
-          false,
-          NONE,
-          ast.formal_parameters(
-            SPAN,
-            FormalParameterKind::ArrowFormalParameters,
-            ast.vec(),
-            NONE,
-          ),
-          NONE,
-          ast.function_body(
-            SPAN,
-            ast.vec(),
-            ast.vec1(ast.statement_expression(SPAN, handler_value)),
-          ),
-        ),
+        gen_getter(handler_value, ast),
         false,
         false,
         false,
@@ -470,24 +454,7 @@ fn gen_prop<'a>(
       if direct_static_literal {
         values
       } else {
-        ast.expression_arrow_function(
-          SPAN,
-          true,
-          false,
-          NONE,
-          ast.formal_parameters(
-            SPAN,
-            FormalParameterKind::ArrowFormalParameters,
-            ast.vec(),
-            NONE,
-          ),
-          NONE,
-          ast.function_body(
-            SPAN,
-            ast.vec(),
-            ast.vec1(ast.statement_expression(SPAN, values)),
-          ),
-        )
+        gen_getter(values, ast)
       }
     } else {
       values
@@ -589,24 +556,7 @@ fn gen_model<'a>(
         SPAN,
         PropertyKind::Init,
         key_frag,
-        ast.expression_arrow_function(
-          SPAN,
-          true,
-          false,
-          NONE,
-          ast.formal_parameters(
-            SPAN,
-            FormalParameterKind::ArrowFormalParameters,
-            ast.vec(),
-            NONE,
-          ),
-          NONE,
-          ast.function_body(
-            SPAN,
-            ast.vec(),
-            ast.vec1(ast.statement_expression(SPAN, handler_value)),
-          ),
-        ),
+        gen_getter(handler_value, ast),
         false,
         false,
         false,

@@ -4,6 +4,7 @@ use common::{
   check::{is_simple_identifier, is_template},
   directive::{Directives, find_prop, resolve_directive},
   error::ErrorCodes,
+  expression::gen_getter,
   options::SlotScope,
   patch_flag::SlotFlags,
 };
@@ -476,29 +477,11 @@ pub fn build_slots<'a>(
           ),
           NONE,
           ast.vec1(
-            ast
-              .expression_arrow_function(
-                SPAN,
-                true,
-                false,
-                NONE,
-                ast.alloc_formal_parameters(
-                  SPAN,
-                  FormalParameterKind::ArrowFormalParameters,
-                  ast.vec(),
-                  NONE,
-                ),
-                NONE,
-                ast.function_body(
-                  SPAN,
-                  ast.vec(),
-                  ast.vec1(ast.statement_expression(
-                    SPAN,
-                    gen_cache_node_list(&mut implicit_default_children, context),
-                  )),
-                ),
-              )
-              .into(),
+            gen_getter(
+              gen_cache_node_list(&mut implicit_default_children, context),
+              ast,
+            )
+            .into(),
           ),
           false,
         ),
@@ -532,29 +515,11 @@ pub fn build_slots<'a>(
             ),
             NONE,
             ast.vec1(
-              ast
-                .expression_arrow_function(
-                  SPAN,
-                  true,
-                  false,
-                  NONE,
-                  ast.alloc_formal_parameters(
-                    SPAN,
-                    FormalParameterKind::ArrowFormalParameters,
-                    ast.vec(),
-                    NONE,
-                  ),
-                  NONE,
-                  ast.function_body(
-                    SPAN,
-                    ast.vec(),
-                    ast.vec1(ast.statement_expression(
-                      SPAN,
-                      gen_cache_node_list(&mut implicit_default_children, context),
-                    )),
-                  ),
-                )
-                .into(),
+              gen_getter(
+                gen_cache_node_list(&mut implicit_default_children, context),
+                ast,
+              )
+              .into(),
             ),
             false,
           ),

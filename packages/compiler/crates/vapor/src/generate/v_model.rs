@@ -1,4 +1,5 @@
 use common::directive::DirectiveNode;
+use common::expression::gen_getter;
 use oxc_allocator::CloneIn;
 use oxc_ast::NONE;
 use oxc_ast::ast::Expression;
@@ -53,29 +54,11 @@ pub fn gen_v_model<'a>(
         ),
         // getter
         Some(
-          ast
-            .expression_arrow_function(
-              SPAN,
-              true,
-              false,
-              NONE,
-              ast.formal_parameters(
-                SPAN,
-                FormalParameterKind::ArrowFormalParameters,
-                ast.vec(),
-                NONE,
-              ),
-              NONE,
-              ast.function_body(
-                SPAN,
-                ast.vec(),
-                ast.vec1(ast.statement_expression(
-                  SPAN,
-                  gen_expression(exp.clone_in(ast.allocator), context, None, false),
-                )),
-              ),
-            )
-            .into(),
+          gen_getter(
+            gen_expression(exp.clone_in(ast.allocator), context, None, false),
+            ast,
+          )
+          .into(),
         ),
         // setter
         Some(gen_model_handler(exp, context).into()),

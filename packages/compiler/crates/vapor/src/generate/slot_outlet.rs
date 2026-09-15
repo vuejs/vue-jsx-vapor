@@ -1,3 +1,4 @@
+use common::expression::gen_getter;
 use oxc_ast::NONE;
 use oxc_ast::ast::{Expression, Statement, VariableDeclarationKind};
 use oxc_span::SPAN;
@@ -49,31 +50,7 @@ pub fn gen_slot_outlet<'a>(
                   } else if let Expression::StringLiteral(name) = name {
                     Some(ast.expression_string_literal(SPAN, name.value, None).into())
                   } else {
-                    Some(
-                      ast
-                        .expression_arrow_function(
-                          SPAN,
-                          true,
-                          false,
-                          NONE,
-                          ast.formal_parameters(
-                            SPAN,
-                            oxc_ast::ast::FormalParameterKind::ArrowFormalParameters,
-                            ast.vec(),
-                            NONE,
-                          ),
-                          NONE,
-                          ast.function_body(
-                            SPAN,
-                            ast.vec(),
-                            ast.vec1(ast.statement_expression(
-                              SPAN,
-                              gen_expression(name, context, None, false),
-                            )),
-                          ),
-                        )
-                        .into(),
-                    )
+                    Some(gen_getter(gen_expression(name, context, None, false), ast).into())
                   },
                   if !props.is_empty()
                     && let Some(props) = gen_raw_props(props, context)
