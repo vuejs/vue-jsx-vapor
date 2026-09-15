@@ -1,5 +1,6 @@
 use oxc_ast::AstBuilder;
 use oxc_ast::NONE;
+use oxc_ast::ast::ArrowFunctionExpression;
 use oxc_ast::ast::Expression;
 use oxc_ast::ast::FormalParameterKind;
 use oxc_ast::ast::Statement;
@@ -47,6 +48,34 @@ fn gen_once<'a>(call: Expression<'a>, context: &'a CodegenContext<'a>) -> Expres
     NONE,
     ast.vec1(Argument::ArrowFunctionExpression(arrow)),
     false,
+  )
+}
+
+/**
+ * Wrap an expression in a zero-arg getter so the runtime can re-read it; custom
+ * directive values and arguments are both passed to the runtime as getters.
+ */
+fn gen_getter<'a>(
+  expression: Expression<'a>,
+  ast: &AstBuilder<'a>,
+) -> oxc_allocator::Box<'a, ArrowFunctionExpression<'a>> {
+  ast.alloc_arrow_function_expression(
+    SPAN,
+    true,
+    false,
+    NONE,
+    ast.formal_parameters(
+      SPAN,
+      FormalParameterKind::ArrowFormalParameters,
+      ast.vec(),
+      NONE,
+    ),
+    NONE,
+    ast.function_body(
+      SPAN,
+      ast.vec(),
+      ast.vec1(ast.statement_expression(expression.span(), expression)),
+    ),
   )
 }
 
@@ -106,24 +135,7 @@ fn gen_element_directives<'a>(
     );
     let value = if let Some(exp) = item.dir.exp.take() {
       let expression = gen_expression(exp, context, None, false);
-      Some(ast.alloc_arrow_function_expression(
-        SPAN,
-        true,
-        false,
-        NONE,
-        ast.formal_parameters(
-          SPAN,
-          FormalParameterKind::ArrowFormalParameters,
-          ast.vec(),
-          NONE,
-        ),
-        NONE,
-        ast.function_body(
-          SPAN,
-          ast.vec(),
-          ast.vec1(ast.statement_expression(expression.span(), expression)),
-        ),
-      ))
+      Some(gen_getter(expression, ast))
     } else {
       None
     };
@@ -131,7 +143,7 @@ fn gen_element_directives<'a>(
       .dir
       .arg
       .take()
-      .map(|arg| gen_expression(arg, context, None, false));
+      .map(|arg| gen_getter(gen_expression(arg, context, None, false), ast));
     let modifiers = if !item.dir.modifiers.is_empty() {
       Some(gen_directive_modifiers(item.dir.modifiers.clone(), ast))
     } else {
@@ -154,7 +166,7 @@ fn gen_element_directives<'a>(
               None
             },
             if let Some(argument) = argument {
-              Some(argument.into())
+              Some(ArrayExpressionElement::ArrowFunctionExpression(argument))
             } else if modifiers.is_some() {
               Some(ArrayExpressionElement::Identifier(
                 ast.alloc_identifier_reference(SPAN, "void 0"),
