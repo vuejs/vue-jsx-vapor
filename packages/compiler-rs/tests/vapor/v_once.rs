@@ -311,9 +311,9 @@ fn directives_outside_v_once_are_not_wrapped() {
   (() => {
   	const _directive_dir = _resolveDirective("dir");
   	const _n0 = _t0();
-  	_withVaporDirectives(_n0, [[_directive_dir, () => val]]);
   	const _n1 = _t1();
   	_applyVShow(_n0, () => show);
+  	_withVaporDirectives(_n0, [[_directive_dir, () => val]]);
   	return [_n0, _n1];
   })();
   "#);

@@ -7,13 +7,13 @@ use oxc_ast::ast::{Argument, ArrayExpressionElement, ObjectExpression, PropertyK
 use oxc_span::GetSpan;
 use oxc_span::SPAN;
 
+use indexmap::IndexMap;
+
 use crate::generate::CodegenContext;
 use crate::generate::expression::gen_expression;
 use crate::generate::v_model::gen_v_model;
 use crate::generate::v_show::gen_v_show;
-use crate::ir::index::BlockIRNode;
 use crate::ir::index::DirectiveIRNode;
-use crate::ir::index::OperationNode;
 use common::check::is_simple_identifier;
 use common::text::to_valid_asset_id;
 
@@ -70,107 +70,105 @@ pub fn gen_builtin_directive<'a>(
 }
 
 /**
- * user directives via `withVaporDirectives`
+ * user directives via `withVaporDirectives`, emitted at the end of the block
+ * so the element's props, children and v-model are in place first
  */
-pub fn gen_directives_for_element<'a>(
-  id: i32,
+pub fn gen_custom_directives<'a>(
+  by_element: IndexMap<i32, Vec<DirectiveIRNode<'a>>>,
   context: &'a CodegenContext<'a>,
-  context_block: &mut BlockIRNode<'a>,
-) -> Option<Statement<'a>> {
-  let ast = &context.ast;
-  let mut element = String::new();
-  let mut once = false;
-  let mut directive_items = ast.vec();
-  for item in &mut context_block.operation {
-    if let OperationNode::Directive(item) = item
-      && item.element == id
-      && !item.builtin
-    {
-      if element.is_empty() {
-        element = item.element.to_string();
-        // All directives on the same element share the same once ambient; the
-        // first one mirrors upstream's `opers[0].once`.
-        once = item.once;
-      }
-      let name = &item.name;
-      let asset = item.asset;
-      let directive_var = ast.alloc_identifier_reference(
-        SPAN,
-        if asset {
-          ast.str(&to_valid_asset_id(name, "directive"))
-        } else {
-          ast.str(name)
-        },
-      );
-      let value = if let Some(exp) = item.dir.exp.take() {
-        let expression = gen_expression(exp, context, None, false);
-        Some(ast.alloc_arrow_function_expression(
-          SPAN,
-          true,
-          false,
-          NONE,
-          ast.formal_parameters(
-            SPAN,
-            FormalParameterKind::ArrowFormalParameters,
-            ast.vec(),
-            NONE,
-          ),
-          NONE,
-          ast.function_body(
-            SPAN,
-            ast.vec(),
-            ast.vec1(ast.statement_expression(expression.span(), expression)),
-          ),
-        ))
-      } else {
-        None
-      };
-      let argument = item
-        .dir
-        .arg
-        .take()
-        .map(|arg| gen_expression(arg, context, None, false));
-      let modifiers = if !item.dir.modifiers.is_empty() {
-        Some(gen_directive_modifiers(item.dir.modifiers.clone(), ast))
-      } else {
-        None
-      };
+) -> Vec<Statement<'a>> {
+  by_element
+    .into_values()
+    .map(|dirs| gen_element_directives(dirs, context))
+    .collect()
+}
 
-      directive_items.push(ArrayExpressionElement::ArrayExpression(
-        ast.alloc_array_expression(
+fn gen_element_directives<'a>(
+  mut opers: Vec<DirectiveIRNode<'a>>,
+  context: &'a CodegenContext<'a>,
+) -> Statement<'a> {
+  let ast = &context.ast;
+  let element = opers[0].element;
+  // All directives on the same element share the same once ambient; the first
+  // one mirrors upstream's `opers[0].once`.
+  let once = opers[0].once;
+  let mut directive_items = ast.vec();
+  for item in &mut opers {
+    let name = &item.name;
+    let asset = item.asset;
+    let directive_var = ast.alloc_identifier_reference(
+      SPAN,
+      if asset {
+        ast.str(&to_valid_asset_id(name, "directive"))
+      } else {
+        ast.str(name)
+      },
+    );
+    let value = if let Some(exp) = item.dir.exp.take() {
+      let expression = gen_expression(exp, context, None, false);
+      Some(ast.alloc_arrow_function_expression(
+        SPAN,
+        true,
+        false,
+        NONE,
+        ast.formal_parameters(
           SPAN,
-          ast.vec_from_iter(
-            [
-              Some(ArrayExpressionElement::Identifier(directive_var)),
-              if let Some(value) = value {
-                Some(ArrayExpressionElement::ArrowFunctionExpression(value))
-              } else if argument.is_some() || modifiers.is_some() {
-                Some(ArrayExpressionElement::Identifier(
-                  ast.alloc_identifier_reference(SPAN, "void 0"),
-                ))
-              } else {
-                None
-              },
-              if let Some(argument) = argument {
-                Some(argument.into())
-              } else if modifiers.is_some() {
-                Some(ArrayExpressionElement::Identifier(
-                  ast.alloc_identifier_reference(SPAN, "void 0"),
-                ))
-              } else {
-                None
-              },
-              modifiers.map(ArrayExpressionElement::ObjectExpression),
-            ]
-            .into_iter()
-            .flatten(),
-          ),
+          FormalParameterKind::ArrowFormalParameters,
+          ast.vec(),
+          NONE,
         ),
-      ));
-    }
-  }
-  if directive_items.is_empty() {
-    return None;
+        NONE,
+        ast.function_body(
+          SPAN,
+          ast.vec(),
+          ast.vec1(ast.statement_expression(expression.span(), expression)),
+        ),
+      ))
+    } else {
+      None
+    };
+    let argument = item
+      .dir
+      .arg
+      .take()
+      .map(|arg| gen_expression(arg, context, None, false));
+    let modifiers = if !item.dir.modifiers.is_empty() {
+      Some(gen_directive_modifiers(item.dir.modifiers.clone(), ast))
+    } else {
+      None
+    };
+
+    directive_items.push(ArrayExpressionElement::ArrayExpression(
+      ast.alloc_array_expression(
+        SPAN,
+        ast.vec_from_iter(
+          [
+            Some(ArrayExpressionElement::Identifier(directive_var)),
+            if let Some(value) = value {
+              Some(ArrayExpressionElement::ArrowFunctionExpression(value))
+            } else if argument.is_some() || modifiers.is_some() {
+              Some(ArrayExpressionElement::Identifier(
+                ast.alloc_identifier_reference(SPAN, "void 0"),
+              ))
+            } else {
+              None
+            },
+            if let Some(argument) = argument {
+              Some(argument.into())
+            } else if modifiers.is_some() {
+              Some(ArrayExpressionElement::Identifier(
+                ast.alloc_identifier_reference(SPAN, "void 0"),
+              ))
+            } else {
+              None
+            },
+            modifiers.map(ArrayExpressionElement::ObjectExpression),
+          ]
+          .into_iter()
+          .flatten(),
+        ),
+      ),
+    ));
   }
   let directives = ast.alloc_array_expression(SPAN, directive_items);
   let call = ast.expression_call(
@@ -189,7 +187,7 @@ pub fn gen_directives_for_element<'a>(
     false,
   );
   let expression = if once { gen_once(call, context) } else { call };
-  Some(ast.statement_expression(SPAN, expression))
+  ast.statement_expression(SPAN, expression)
 }
 
 pub fn gen_directive_modifiers<'a>(

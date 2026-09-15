@@ -15,7 +15,6 @@ use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
 use crate::generate::block::FlushBeforeDynamic;
-use crate::generate::directive::gen_directives_for_element;
 use crate::generate::operation::gen_operation_with_insertion_state;
 use crate::ir::index::BlockIRNode;
 use crate::ir::index::DynamicFlag;
@@ -63,9 +62,6 @@ pub fn gen_self<'a>(
         false,
       ),
     ));
-    if let Some(directives) = gen_directives_for_element(id, context, context_block) {
-      statements.push(directives)
-    }
   }
 
   if let Some(operation) = operation {
@@ -313,13 +309,6 @@ fn gen_children<'a>(
         Rc::clone(&flush_before_dynamic),
       );
     }
-
-    if let Some(id) = id
-      && let Some(directives) =
-        gen_directives_for_element(id, context, unsafe { &mut *_context_block })
-    {
-      statements.push(directives)
-    };
 
     if let Some(child_children) = child_children {
       let inserted = gen_children(
