@@ -51,6 +51,73 @@ fn key_with_v_if() {
 }
 
 #[test]
+fn key_with_template_v_if() {
+  let code = transform(
+    r#"<div>
+      <template v-if={ok} key={a}><div /></template>
+      <template v-else-if={foo} key={b}><div /></template>
+      <template v-else key={c}><div /></template>
+    </div>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, createKeyedFragment as _createKeyedFragment, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<div>", 2);
+  const _t1 = _template("<template></template>");
+  const _t2 = _template("<template>");
+  const _t3 = _template("<div>", 1);
+  (() => {
+  	const _n13 = _t3();
+  	_setInsertionState(_n13);
+  	const _n0 = _createIf(() => ok, () => {
+  		const _n2 = _createKeyedFragment(() => a, () => {
+  			const _n4 = _t0();
+  			return _n4;
+  		});
+  		return _n2;
+  	}, () => _createIf(() => foo, () => {
+  		const _n6 = _createKeyedFragment(() => b, () => {
+  			const _n8 = _t0();
+  			return _n8;
+  		});
+  		return _n6;
+  	}, () => {
+  		const _n10 = _createKeyedFragment(() => c, () => {
+  			const _n12 = _t0();
+  			return _n12;
+  		});
+  		return _n10;
+  	}, 517), 261);
+  	return _n13;
+  })();
+  "#);
+}
+
+#[test]
+fn key_with_template_v_slot() {
+  let code = transform(
+    r#"<Comp><template v-slot:foo={({ x })} key={a}>{ x }</template></Comp>"#,
+    None,
+  )
+  .code;
+  // same as vdom: the key on a <template> slot is ignored
+  assert!(!code.contains("_createKeyedFragment("));
+  assert!(code.contains("foo: _extend((_slotProps0) =>"));
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, { foo: _extend((_slotProps0) => {
+  		const _n0 = _createNodes(() => _slotProps0.x);
+  		return _n0;
+  	}, { _: 1 }) }, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
 fn key_with_anchor_insertion_in_middle() {
   let code = transform(
     "<div>
