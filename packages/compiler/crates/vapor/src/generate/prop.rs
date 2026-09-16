@@ -34,8 +34,8 @@ pub struct HelperConfig<'a> {
 
 fn helpers<'a>(name: &str, is_svg: bool) -> HelperConfig<'a> {
   match name {
-    "setText" => HelperConfig {
-      name: "_setText",
+    "setElementText" => HelperConfig {
+      name: "_setElementText",
       need_key: false,
       is_svg,
     },
@@ -532,7 +532,7 @@ fn get_special_helper<'a>(key_name: &str, tag_name: &str) -> Option<HelperConfig
     "class" => Some(helpers("setClass", false)),
     "style" => Some(helpers("setStyle", false)),
     "innerHTML" => Some(helpers("setHtml", false)),
-    "textContent" => Some(helpers("setText", false)),
+    "textContent" => Some(helpers("setElementText", false)),
     _ => None,
   }
 }

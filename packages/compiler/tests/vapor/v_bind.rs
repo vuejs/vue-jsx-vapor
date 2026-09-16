@@ -148,6 +148,50 @@ fn prop_modifier_with_no_expression() {
 }
 
 #[test]
+fn prop_modifier_with_text_content() {
+  let code = transform(
+    "<div textContent_prop={foo} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setElementText as _setElementText, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setElementText(_n0, foo));
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains("_setElementText(_n0, foo)"));
+}
+
+#[test]
+fn text_content_binding() {
+  let code = transform(
+    "<div textContent={foo} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setElementText as _setElementText, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setElementText(_n0, foo));
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains("_setElementText(_n0, foo)"));
+}
+
+#[test]
 fn attr_modifier() {
   let code = transform(
     "<div foo-bar_attr={id}/>",
