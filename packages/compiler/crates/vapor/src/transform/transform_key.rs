@@ -7,7 +7,9 @@ use crate::{
   transform::TransformContext,
 };
 use common::{
-  check::is_constant_node, directive::Directives, expression::jsx_attribute_value_to_expression,
+  check::{is_constant_node, is_template},
+  directive::Directives,
+  expression::jsx_attribute_value_to_expression,
 };
 
 /// # SAFETY
@@ -21,6 +23,10 @@ pub unsafe fn transform_key<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
+  // same as vdom: a key on a <template> slot is ignored
+  if is_template(node) && directives.v_slot.is_some() {
+    return None;
+  }
   let key = directives.key.as_mut()?;
   let value = key.value.as_mut()?;
   let JSXAttributeValue::ExpressionContainer(value) = value else {
