@@ -287,6 +287,31 @@ fn multiple_selector_patterns_on_one_v_for() {
 }
 
 #[test]
+fn selector_pattern_requires_the_key_itself_on_one_side() {
+  let compile_class = |key: &str, cond: &str| {
+    transform(
+      &format!(
+        r#"<li v-for={{(item, i) in items}} key={{{key}}} class={{{{ active: {cond} }}}}></li>"#
+      ),
+      Some(TransformOptions {
+        vapor: true,
+        ..Default::default()
+      }),
+    )
+    .code
+  };
+
+  // the selector only re-runs rows whose key equals the old/new value
+  assert!(!compile_class("i", "i + 1 === page").contains("_createSelector"));
+  assert!(!compile_class("i", "page === i * 2").contains("_createSelector"));
+  assert!(!compile_class("item.id", "item.id + 1 === page").contains("_createSelector"));
+  assert!(
+    compile_class("i", "i === page - 1")
+      .contains("const _selector0 = _createSelector(() => page - 1);")
+  );
+}
+
+#[test]
 fn multi_effect() {
   let code = transform(
     "<div v-for={(item, index) in items} item={item} index={index} />",
