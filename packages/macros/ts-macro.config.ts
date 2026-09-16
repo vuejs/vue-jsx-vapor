@@ -3,6 +3,6 @@ import jsxRef from '@vue-macros/volar/jsx-ref'
 import jsxMacros, { jsxElement } from './src/volar'
 
 export default {
-  exclude: ['**/slots.tsx'],
+  exclude: ['**/*-raw.tsx'],
   plugins: [jsxDirective(), jsxRef(), jsxMacros(), jsxElement()],
 }

@@ -97,3 +97,32 @@ export type SetupContextToProps<
   Slots extends SlotsType | Record<string, any> = {},
   Exposed extends Record<string, any> = {},
 > = EmitsToProps<Emits> & SlotsToProps<Slots> & ExposedToProps<Exposed>
+
+// Internal type-level helpers.
+
+// A homomorphic mapped type: distributes over unions (unlike `Omit`) while also
+// preserving named-property required-ness when `T` carries an index signature
+// (e.g. Volar's `__VLS_PROPS_FALLBACK`), which `Omit` silently collapses away.
+export type HomomorphicOmit<T, K extends PropertyKey> = {
+  [P in keyof T as P extends K ? never : P]: T[P]
+}
+
+type NoIndexSignature<T> = {
+  [
+    K in keyof T as string extends K
+      ? never
+      : number extends K
+        ? never
+        : symbol extends K
+          ? never
+          : K
+  ]: T[K]
+}
+
+export type HasOwnKey<T, K extends PropertyKey> = K extends keyof T
+  ? string extends keyof T
+    ? K extends keyof NoIndexSignature<T>
+      ? true
+      : false
+    : true
+  : false

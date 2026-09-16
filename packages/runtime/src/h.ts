@@ -1,6 +1,13 @@
 import * as Vue from 'vue'
 import { createComponent, createProxyComponent, normalizeNode } from './vapor'
-import type { EmitFnToProps, ExposedToProps, NodeChild, NodeRef, SlotsToProps } from './types'
+import type {
+  EmitFnToProps,
+  ExposedToProps,
+  HomomorphicOmit,
+  NodeChild,
+  NodeRef,
+  SlotsToProps,
+} from './types'
 import type {
   Block,
   Fragment,
@@ -69,7 +76,7 @@ type VaporHArgs<T extends VaporHType> = T extends string
           ? Instance extends VaporComponentInstance
             ? [
                 props?:
-                  | (ResolveProps<Omit<Instance['props'], 'ref'>> &
+                  | (ResolveProps<HomomorphicOmit<Instance['props'], 'ref'>> &
                       ExposedToProps<
                         string extends keyof NonNullable<Instance['exposed']>
                           ? VaporComponentInstance

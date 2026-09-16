@@ -27,7 +27,15 @@
 //                 Kanitkorn Sujautra <https://github.com/lukyth>
 //                 Sebastian Silbermann <https://github.com/eps1lon>
 
-import type { EmitFnToProps, ExtractExposed, NodeRef, RenderResult, SlotsToProps } from './types'
+import type {
+  EmitFnToProps,
+  ExtractExposed,
+  HasOwnKey,
+  HomomorphicOmit,
+  NodeRef,
+  RenderResult,
+  SlotsToProps,
+} from './types'
 import type {
   AriaAttributes,
   ReservedProps,
@@ -38,8 +46,6 @@ import type {
 } from 'vue'
 
 type NativeElement = Element
-
-type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never
 
 export namespace JSX {
   export type Element = RenderResult
@@ -56,7 +62,7 @@ export namespace JSX {
     class?: ClassValue | undefined
     style?: StyleValue | undefined
   }
-  export type LibraryManagedAttributes<Component, Props> = DistributiveOmit<Props, 'ref'> &
+  export type LibraryManagedAttributes<Component, Props> = HomomorphicOmit<Props, 'ref'> &
     (Component extends abstract new (...args: any[]) => infer Instance
       ? {
           ref?: NodeRef<
@@ -69,7 +75,7 @@ export namespace JSX {
                 : Instance
             >
           >
-        } & ('v-slots' extends keyof Props
+        } & (HasOwnKey<Props, 'v-slots'> extends true
           ? {}
           : '$slots' extends keyof Instance
             ? SlotsToProps<Instance['$slots'] & {}>
@@ -86,15 +92,15 @@ export namespace JSX {
             },
           ) => any
         ? {
-            ref?: 'ref' extends keyof Props
-              ? Props['ref']
+            ref?: HasOwnKey<Props, 'ref'> extends true
+              ? Props['ref' & keyof Props]
               : NodeRef<
                   string extends keyof Exposed
                     ? NativeElement | VaporComponentInstance
                     : UnwrapRef<Exposed>
                 >
           } & EmitFnToProps<Emit, keyof Props> &
-            ('v-slots' extends keyof Props ? {} : SlotsToProps<Slots & {}>)
+            (HasOwnKey<Props, 'v-slots'> extends true ? {} : SlotsToProps<Slots & {}>)
         : {
             ref?: VNodeRef
           })
