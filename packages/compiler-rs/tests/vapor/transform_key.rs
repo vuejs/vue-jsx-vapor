@@ -284,3 +284,60 @@ fn key_without_value() {
   })();
   "#);
 }
+
+#[test]
+fn nested_element_and_key() {
+  let code = transform(r#"<div><span key="a"></span></div>"#, None).code;
+  assert!(code.contains("_setBlockKey("));
+  assert!(code.contains("_child("));
+  assert_snapshot!(code, @r#"
+  import { child as _child, setBlockKey as _setBlockKey, template as _template } from "vue";
+  const _t0 = _template("<div><span>", 1);
+  (() => {
+  	const _n1 = _t0();
+  	const _n0 = _child(_n1);
+  	_setBlockKey(_n0, "a");
+  	return _n1;
+  })();
+  "#);
+}
+
+#[test]
+fn slot_roots_with_key() {
+  let code = transform(r#"<Foo><div key="a"></div><div key="b"></div></Foo>"#, None).code;
+  assert_eq!(code.matches("_setBlockKey(").count(), 2);
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { setBlockKey as _setBlockKey, template as _template } from "vue";
+  const _t0 = _template("<div></div>");
+  const _t1 = _template("<div>");
+  (() => {
+  	const _n2 = _createComponent(Foo, null, () => {
+  		const _n0 = _t0();
+  		const _n1 = _t1();
+  		_setBlockKey(_n0, "a");
+  		_setBlockKey(_n1, "b");
+  		return [_n0, _n1];
+  	}, true);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn v_if_branch_root_with_key() {
+  let code = transform(r#"<div v-if="ok" key="a"></div>"#, None).code;
+  assert!(code.contains("_setBlockKey("));
+  assert_snapshot!(code, @r#"
+  import { createIf as _createIf, setBlockKey as _setBlockKey, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _createIf(() => "ok", () => {
+  		const _n2 = _t0();
+  		_setBlockKey(_n2, "a");
+  		return _n2;
+  	}, null, 17);
+  	return _n0;
+  })();
+  "#);
+}
