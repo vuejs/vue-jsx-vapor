@@ -27,7 +27,8 @@ use crate::{
 use common::{
   check::{
     get_directive_name, get_namespace, is_always_close_tag, is_block_tag, is_built_in_directive,
-    is_formatting_tag, is_html_annotation_xml, is_inline_tag, is_template, is_void_tag,
+    is_formatting_tag, is_html_annotation_xml, is_ignore_newline_tag, is_inline_tag, is_template,
+    is_void_tag,
   },
   directive::{Directives, resolve_directive, resolve_prop_name},
   dom::is_valid_html_nesting,
@@ -151,6 +152,7 @@ pub unsafe fn transform_element<'a>(
         props_result,
         static_key,
         single_root,
+        ns,
         context,
         context_block,
         parent_node,
@@ -175,6 +177,7 @@ pub fn transform_native_element<'a>(
   props_result: PropsResult<'a>,
   static_key: Option<Expression<'a>>,
   single_root: bool,
+  ns: i32,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   parent_node: &'a mut JSXChild<'a>,
@@ -244,7 +247,16 @@ pub fn transform_native_element<'a>(
     }
   }
 
-  template += &format!(">{}", context.children_template.borrow().join(""));
+  // The template string is parsed as HTML again at runtime, which drops the
+  // first newline after the start tag a second time - double it to compensate.
+  let mut children = context.children_template.borrow().join("");
+  if ns == 0
+    && is_ignore_newline_tag(tag)
+    && (children.starts_with('\n') || children.starts_with("\r\n"))
+  {
+    children.insert(0, '\n');
+  }
+  template += &format!(">{children}");
   if !is_void_tag(tag) && !can_omit_end_tag(tag, parent_node, context) {
     template += &format!("</{}>", tag)
   }
