@@ -86,7 +86,7 @@ fn children_sibling_references() {
   (() => {
   	const _n3 = _t0();
   	const _n0 = _child(_n3);
-  	const _n1 = _next(_n0);
+  	const _n1 = _next(_n0, true);
   	const _n2 = _next(_n1);
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, () => first);

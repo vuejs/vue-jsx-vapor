@@ -5,6 +5,7 @@ use std::rc::Rc;
 use oxc_allocator::CloneIn;
 use oxc_ast::NONE;
 
+use oxc_ast::ast::Argument;
 use oxc_ast::ast::AssignmentOperator;
 use oxc_ast::ast::Expression;
 use oxc_ast::ast::NumberBase;
@@ -132,6 +133,7 @@ fn gen_children<'a>(
                 from.clone_in(ast.allocator),
                 element_index,
                 &prev,
+                false,
               )),
               false,
             )),
@@ -187,7 +189,13 @@ fn gen_children<'a>(
       && child.operation.is_none()
       && child.flags & (DynamicFlag::Insert as i32 | DynamicFlag::NonTemplate as i32) == 0
       && can_inline_placehoder(&child);
-    let access_path = gen_access_path(context, from.clone_in(ast.allocator), element_index, &prev);
+    let access_path = gen_access_path(
+      context,
+      from.clone_in(ast.allocator),
+      element_index,
+      &prev,
+      child.is_text,
+    );
 
     if inline_placeholder {
       if let Some(prev) = &mut prev
@@ -332,79 +340,82 @@ fn gen_children<'a>(
 
 // Build one DOM lookup path while preserving the fast sibling walk:
 // adjacent nodes use _next(prev), otherwise fall back to _nthChild(parent).
+// `is_text` appends a hint so a missing SSR text node is seeded in place.
 fn gen_access_path<'a>(
   context: &CodegenContext<'a>,
   from: Expression<'a>,
   element_index: i32,
   prev: &Option<(String, i32, bool)>,
+  is_text: bool,
 ) -> Expression<'a> {
   let ast = context.ast;
   if let Some(prev) = prev {
     return if element_index - prev.1 == 1 {
-      ast.expression_call(
-        SPAN,
-        ast.expression_identifier(SPAN, ast.str(context.options.helper("_next"))),
-        NONE,
-        ast.vec1(ast.expression_identifier(SPAN, ast.str(&prev.0)).into()),
-        false,
+      gen_access_call(
+        context,
+        "_next",
+        vec![
+          context
+            .ast
+            .expression_identifier(SPAN, context.ast.str(&prev.0)),
+        ],
+        is_text,
       )
     } else {
-      ast.expression_call(
-        SPAN,
-        ast.expression_identifier(SPAN, ast.str(context.options.helper("_nthChild"))),
-        NONE,
-        ast.vec_from_array([
-          from.clone_in(ast.allocator).into(),
-          ast
-            .expression_numeric_literal(SPAN, element_index as f64, None, NumberBase::Decimal)
-            .into(),
-        ]),
-        false,
+      gen_access_call(
+        context,
+        "_nthChild",
+        vec![
+          from,
+          ast.expression_numeric_literal(SPAN, element_index as f64, None, NumberBase::Decimal),
+        ],
+        is_text,
       )
     };
   }
 
   if element_index == 0 {
-    return ast.expression_call(
-      SPAN,
-      ast.expression_identifier(SPAN, ast.str(context.options.helper("_child"))),
-      NONE,
-      ast.vec1(from.clone_in(ast.allocator).into()),
-      false,
-    );
+    return gen_access_call(context, "_child", vec![from], is_text);
   }
 
   // adjacent to the first child: chain off it instead of an indexed lookup
   if element_index == 1 {
-    let first_child = ast.expression_call(
-      SPAN,
-      ast.expression_identifier(SPAN, ast.str(context.options.helper("_child"))),
-      NONE,
-      ast.vec1(from.clone_in(ast.allocator).into()),
-      false,
-    );
-
-    ast.expression_call(
-      SPAN,
-      ast.expression_identifier(SPAN, ast.str(context.options.helper("_next"))),
-      NONE,
-      ast.vec1(first_child.into()),
-      false,
-    )
+    let first_child = gen_access_call(context, "_child", vec![from], false);
+    gen_access_call(context, "_next", vec![first_child], is_text)
   } else {
-    ast.expression_call(
-      SPAN,
-      ast.expression_identifier(SPAN, ast.str(context.options.helper("_nthChild"))),
-      NONE,
-      ast.vec_from_array([
-        from.clone_in(ast.allocator).into(),
-        ast
-          .expression_numeric_literal(SPAN, element_index as f64, None, NumberBase::Decimal)
-          .into(),
-      ]),
-      false,
+    gen_access_call(
+      context,
+      "_nthChild",
+      vec![
+        from,
+        ast.expression_numeric_literal(SPAN, element_index as f64, None, NumberBase::Decimal),
+      ],
+      is_text,
     )
   }
+}
+
+fn gen_access_call<'a>(
+  context: &CodegenContext<'a>,
+  helper: &'static str,
+  args: Vec<Expression<'a>>,
+  is_text: bool,
+) -> Expression<'a> {
+  let ast = context.ast;
+  let mut arguments: oxc_allocator::Vec<'a, Argument<'a>> = ast.vec();
+  for arg in args {
+    arguments.push(arg.into());
+  }
+  if is_text {
+    arguments.push(ast.expression_boolean_literal(SPAN, true).into());
+  }
+  ast.expression_call(
+    SPAN,
+    ast.expression_identifier(SPAN, ast.str(context.options.helper(helper))),
+    NONE,
+    arguments,
+    false,
+  )
 }
 
 // Only inline a placeholder when materializing it would not save a parent

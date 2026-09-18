@@ -205,6 +205,7 @@ fn process_interpolation<'a>(
       None,
     );
   } else {
+    context_block.dynamic.is_text = true;
     let mut template = context.template.borrow_mut();
     *template = format!("{} ", template);
     context.register_operation(
