@@ -306,6 +306,7 @@ pub struct IRDynamicInfo<'a> {
   pub anchor: Option<i32>,
   pub children: Vec<IRDynamicInfo<'a>>,
   pub template: Option<i32>,
+  pub is_text: bool,
   pub has_dynamic_child: bool,
   pub operation: Option<Box<OperationNode<'a>>>,
 }
@@ -315,6 +316,7 @@ impl<'a> IRDynamicInfo<'a> {
       flags: DynamicFlag::Referenced as i32,
       children: Vec::new(),
       template: None,
+      is_text: false,
       has_dynamic_child: false,
       operation: None,
       id: None,

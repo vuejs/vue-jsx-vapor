@@ -20,7 +20,7 @@ fn basic() {
   const _t0 = _template("<div> <span>", 1);
   (() => {
   	const _n2 = _t0();
-  	const _n0 = _child(_n2);
+  	const _n0 = _child(_n2, true);
   	const _n1 = _next(_n0);
   	_setNodes(_n0, msg);
   	_setClass(_n1, clz);
@@ -222,8 +222,8 @@ fn execution_order() {
   (() => {
   	const _n4 = _t0();
   	const _n0 = _child(_n4);
-  	const _n1 = _next(_n0);
-  	const _n2 = _nthChild(_n4, 3);
+  	const _n1 = _next(_n0, true);
+  	const _n2 = _nthChild(_n4, 3, true);
   	const _n3 = _next(_n2);
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, foo);

@@ -322,7 +322,7 @@ fn applies_custom_directives_after_props_children_and_v_model() {
   (() => {
   	const _directive_dir = _resolveDirective("dir");
   	const _n0 = _t1();
-  	const _n1 = _child(_n0);
+  	const _n1 = _child(_n0, true);
   	const _n7 = _next(_n1);
   	const _n8 = _next(_n7);
   	const _n6 = _next(_n8);

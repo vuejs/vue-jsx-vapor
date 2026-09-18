@@ -352,7 +352,7 @@ fn expression_with_comment() {
   const _t0 = _template("<div> <a>", 1);
   (() => {
   	const _n1 = _t0();
-  	const _n0 = _child(_n1);
+  	const _n0 = _child(_n1, true);
   	_setNodes(_n0, () => foo);
   	return _n1;
   })();
@@ -415,6 +415,32 @@ fn fragment_with_empty_interpolation() {
   (() => {
   	const _n0 = _t0();
   	return _n0;
+  })();
+  "#)
+}
+
+#[test]
+fn text_references_among_element_children() {
+  let code = transform(r#"<p>{before}<br id={id}/>{between}<br/>{after}</p>"#, None).code;
+  assert!(code.contains("const _n0 = _child(_n4, true)"));
+  assert!(code.contains("const _n1 = _next(_n0)"));
+  assert!(code.contains("const _n2 = _next(_n1, true)"));
+  assert!(code.contains("const _n3 = _nthChild(_n4, 4, true)"));
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { child as _child, next as _next, nthChild as _nthChild, renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
+  const _t0 = _template("<p> <br> <br> ", 1);
+  (() => {
+  	const _n4 = _t0();
+  	const _n0 = _child(_n4, true);
+  	const _n1 = _next(_n0);
+  	const _n2 = _next(_n1, true);
+  	const _n3 = _nthChild(_n4, 4, true);
+  	_setNodes(_n0, () => before);
+  	_setNodes(_n2, () => between);
+  	_setNodes(_n3, () => after);
+  	_renderEffect(() => _setProp(_n1, "id", id));
+  	return _n4;
   })();
   "#)
 }
