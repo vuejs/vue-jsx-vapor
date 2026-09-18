@@ -262,7 +262,7 @@ fn get_block_shape(block: &BlockIRNode) -> i32 {
   if block.returns.is_empty() {
     return VaporBlockShape::Empty as i32;
   }
-  if block.returns.len() == 1 {
+  if block.returns.len() == 1 && !block.node_text_only {
     VaporBlockShape::SingleRoot as i32
   } else {
     VaporBlockShape::MultiRoot as i32
