@@ -1107,3 +1107,37 @@ fn v_on_obj_before_static_event_keeps_handler_getters() {
   })();
   "#)
 }
+
+#[test]
+fn keep_the_leading_newline_of_pre_and_textarea() {
+  // The compiler already dropped the first newline after these start tags, and
+  // the template string is parsed as HTML again at runtime, which drops one
+  // more - so a newline surviving into the template has to be doubled.
+  for (source, template) in [
+    ("<pre>{'\\n\\nline'}</pre>", "<pre>\n\n\nline"),
+    ("<pre>{'\\n\\n\\nline'}</pre>", "<pre>\n\n\n\nline"),
+    ("<pre>{'\\nline'}</pre>", "<pre>\n\nline"),
+    (
+      "<textarea>{'\\n\\nline'}</textarea>",
+      "<textarea>\n\n\nline",
+    ),
+    ("<pre>{'\\r\\n\\r\\nline'}</pre>", "<pre>\n\r\n\r\nline"),
+    ("<pre v-text={'\\n\\nline'}/>", "<pre>\n\n\nline"),
+    // untouched
+    ("<pre>{'line\\n\\nmore'}</pre>", "<pre>line\n\nmore"),
+    ("<pre>{'line'}</pre>", "<pre>line"),
+    ("<div>{'\\n\\nline'}</div>", "<div>\n\nline"),
+  ] {
+    let code = transform(source, None).code;
+    assert!(
+      code.contains(&format!("_template({template:?}")),
+      "`{source}` should compile to a template starting with {template:?}, got:\n{code}"
+    );
+  }
+}
+
+#[test]
+fn leading_newline_outside_the_html_namespace_is_untouched() {
+  let code = transform("<svg><pre>{'\\n\\nline'}</pre></svg>", None).code;
+  assert!(code.contains(r#"_template("<pre>\n\nline")"#), "{code}");
+}

@@ -252,6 +252,12 @@ pub fn is_always_close_tag(tag_name: &str) -> bool {
   ALWAYS_CLOSE_TAGS.contains(tag_name)
 }
 
+// Tags for which the HTML parser drops the first newline after the start tag.
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inbody
+pub fn is_ignore_newline_tag(tag_name: &str) -> bool {
+  matches!(tag_name, "pre" | "textarea")
+}
+
 // Inline elements
 static INLINE_TAGS: phf::Set<&'static str> = phf_set! {
   "a", "abbr", "acronym", "b", "bdi", "bdo", "big", "br", "button" , "canvas", "cite", "code", "data", "datalist",
