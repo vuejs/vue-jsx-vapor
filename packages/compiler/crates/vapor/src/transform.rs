@@ -4,7 +4,7 @@ use common::expression::get_constant_expression_text;
 use common::options::Template;
 pub use common::options::TransformOptions;
 use oxc_allocator::{Allocator, TakeIn};
-use oxc_ast::ast::{Expression, JSXAttributeItem, JSXChild, JSXElement};
+use oxc_ast::ast::{Expression, JSXAttributeItem, JSXChild, JSXElement, JSXExpression};
 use oxc_ast::{AstBuilder, NONE};
 use oxc_span::{GetSpan, SPAN, Span};
 use std::borrow::Cow;
@@ -40,6 +40,23 @@ use crate::{
 };
 
 use common::check::{is_constant_node, is_math_ml_tag, is_native_tag, is_svg_tag, is_template};
+
+/// A text/interpolation-only owner renders nothing when empty, so a block it
+/// owns cannot be a single root when hydrating.
+fn is_text_only_owner(node: &JSXChild) -> bool {
+  let children = match node {
+    JSXChild::Element(element) => &element.children,
+    JSXChild::Fragment(fragment) => &fragment.children,
+    _ => return false,
+  };
+  children.iter().all(|child| match child {
+    JSXChild::Text(_) => true,
+    JSXChild::ExpressionContainer(exp) => {
+      !matches!(exp.expression, JSXExpression::EmptyExpression(_))
+    }
+    _ => false,
+  })
+}
 
 pub struct DirectiveTransformResult<'a> {
   pub key: Expression<'a>,
@@ -495,8 +512,9 @@ impl<'a> TransformContext<'a> {
     is_v_for: bool,
     parent_node: Option<&JSXChild<'a>>,
   ) -> Box<dyn FnOnce() -> BlockIRNode<'a> + 'a> {
-    let block = BlockIRNode::new();
+    let mut block = BlockIRNode::new();
     *context_node = self.wrap_fragment(node, parent_node);
+    block.node_text_only = is_text_only_owner(context_node);
     let _context_block = context_block as *mut BlockIRNode;
     let exit_block = self.enter_block(unsafe { &mut *_context_block }, block, is_v_for);
     self.reference(&mut context_block.dynamic);

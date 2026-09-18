@@ -19,6 +19,9 @@ pub struct BlockIRNode<'a> {
   pub slots: Vec<IRSlots<'a>>,
   pub props: Option<Expression<'a>>,
   pub root: bool,
+  /// Whether the block's owner has only text/interpolation children (such a
+  /// block cannot be a single root when hydrating).
+  pub node_text_only: bool,
 }
 impl<'a> BlockIRNode<'a> {
   pub fn new() -> Self {
@@ -31,6 +34,7 @@ impl<'a> BlockIRNode<'a> {
       slots: Vec::new(),
       props: None,
       root: false,
+      node_text_only: false,
     }
   }
 }

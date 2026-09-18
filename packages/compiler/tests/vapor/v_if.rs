@@ -310,7 +310,7 @@ fn template_v_if_with_text() {
   	const _n0 = _createIf(() => foo, () => {
   		const _n2 = _t0();
   		return _n2;
-  	}, null, 33);
+  	}, null, 34);
   	return _n0;
   })();
   "#);
@@ -598,7 +598,7 @@ fn v_if_v_else_if_v_else() {
   	}, () => {
   		const _n10 = _t2();
   		return _n10;
-  	}, 117), 549), 293);
+  	}, 121), 549), 293);
   	return _n0;
   })();
   "#);
