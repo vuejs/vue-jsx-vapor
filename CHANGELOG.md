@@ -1,3 +1,21 @@
+# [3.3.0-rc.2](https://github.com/vuejs/vue-jsx-vapor/compare/v3.3.0-rc.1...v3.3.0-rc.2) (2026-09-19)
+
+### Bug Fixes
+
+- **compiler-vapor:** keep raw values on v-model value props ([abb1a28](https://github.com/vuejs/vue-jsx-vapor/commit/abb1a286e31700bb734454e8d4e2d93d03786aa0))
+- **compiler-vapor:** preserve raw checkbox values with .attr ([640833a](https://github.com/vuejs/vue-jsx-vapor/commit/640833a73a4b677a17ab8db3fe45eccf796fecec))
+- **compiler-vapor:** stabilize dynamic slot function references ([edebf7c](https://github.com/vuejs/vue-jsx-vapor/commit/edebf7cc233926c52e68d9663579eaeba02d8eca))
+- **compiler/vapor:** hydrate missing text among element children ([fb6762f](https://github.com/vuejs/vue-jsx-vapor/commit/fb6762fedd9c3725afe427e76773ba91be533d81))
+- **compiler/vapor:** ignore key on <template> slots ([8603db5](https://github.com/vuejs/vue-jsx-vapor/commit/8603db5658de822e8421d8e1c526b4715ed5e0eb))
+- **compiler/vapor:** keep number literals on slot outlet props ([7ab23be](https://github.com/vuejs/vue-jsx-vapor/commit/7ab23be69e6b5bcfd2a05ee2b5afeab5eab99f82))
+- **compiler/vapor:** keep the leading newline of pre and textarea ([8e0ac6a](https://github.com/vuejs/vue-jsx-vapor/commit/8e0ac6aa5eb60ae04c9306f6df5cb41a4c8eb50d))
+- **compiler/vapor:** pass custom directive arguments as getters ([0c9e435](https://github.com/vuejs/vue-jsx-vapor/commit/0c9e435f96cee766a121217352026784d55dc3ff))
+- **compiler/vapor:** preserve fragment ownership when hydrating empty ([1bf5416](https://github.com/vuejs/vue-jsx-vapor/commit/1bf5416429a6f2ba13f70fe104bbe636967b3677))
+- **compiler/vapor:** process v-for callback parameter defaults ([85c1283](https://github.com/vuejs/vue-jsx-vapor/commit/85c128364316b477a54e3cecbfb94648921f22f2))
+- **compiler/vapor:** resolve v-for aliases through their ast ([56b0109](https://github.com/vuejs/vue-jsx-vapor/commit/56b0109e6810ea4dc76de33dafe6d9f68f0ec8ff))
+- **compiler/vapor:** set element text for textContent bindings ([92f6698](https://github.com/vuejs/vue-jsx-vapor/commit/92f66980efcb72f698b86cd5e04eba2b82e46ab0))
+- **types:** correct infer slots for vue generate component ([23c626b](https://github.com/vuejs/vue-jsx-vapor/commit/23c626b851d2487d72e0ca957f2accc6a638bd71)), closes [#72](https://github.com/vuejs/vue-jsx-vapor/issues/72)
+
 # [3.3.0-rc.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.23...v3.3.0-rc.1) (2026-09-13)
 
 ### Bug Fixes

@@ -1,6 +1,6 @@
 {
   "name": "@vue-jsx/macros",
-  "version": "3.3.0-rc.1",
+  "version": "3.3.0-rc.2",
   "description": "Macros for Vue JSX",
   "keywords": [
     "macros",
