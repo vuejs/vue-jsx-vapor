@@ -137,11 +137,11 @@ fn prop_modifier_with_no_expression() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setProp as _setProp, template as _template } from "vue";
+  import { setDOMProp as _setDOMProp, template as _template } from "vue";
   const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
-  	_setProp(_n0, "fooBar", true);
+  	_setDOMProp(_n0, "fooBar", true);
   	return _n0;
   })();
   "#);
@@ -1076,6 +1076,11 @@ fn number_literals_with_v_model_value_props() {
     (
       r#"<input type="checkbox" false-value_attr={0} />"#,
       r#"_setAttr(_n0, "false-value", 0)"#,
+    ),
+    // special boolean attributes still inspect the raw value in `setAttr`
+    (
+      r#"<input readonly_attr={0} />"#,
+      r#"_setAttr(_n0, "readonly", 0)"#,
     ),
     // these `.attr` bindings only need the serialized attribute value
     (

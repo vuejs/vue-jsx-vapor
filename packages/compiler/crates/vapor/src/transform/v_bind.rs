@@ -1,5 +1,5 @@
 use common::{
-  check::{is_boolean_attr, is_reserved_prop},
+  check::{is_boolean_attr, is_reserved_prop, is_special_boolean_attr},
   directive::{Directives, resolve_prop_name},
   expression::jsx_attribute_value_to_expression,
   text::{camelize, get_text_like_value},
@@ -52,6 +52,13 @@ pub fn transform_v_bind<'a>(
     return None;
   }
   let modifiers = name_splited[1..].to_vec();
+  let modifier = if modifiers.contains(&"prop") {
+    Some(".")
+  } else if modifiers.contains(&"attr") {
+    Some("^")
+  } else {
+    None
+  };
 
   let mut arg = ast.alloc_string_literal(SPAN, ast.str(name_splited[0]), None);
   if modifiers.contains(&"camel") {
@@ -66,10 +73,11 @@ pub fn transform_v_bind<'a>(
         // the template, so hold it back wherever the value is consumed as a
         // raw value: component, slot outlet and custom element props, boolean
         // attributes are folded from the type of the value itself, and v-model
-        // reads its value props back off the element. Checkbox true/false
-        // values must also stay raw with `.attr` because `setAttr` stores them
-        // before calling `setAttribute`.
+        // reads its value props back off the element. With `.attr`, `setAttr`
+        // still checks special boolean attributes and stores raw checkbox
+        // true/false values before calling `setAttribute`.
         let exclude_number = (directives.is_component || directives.tag_name == "slot")
+          || is_special_boolean_attr(&arg.value)
           || is_checkbox_value_prop(directives, &arg.value)
           || (!modifiers.contains(&"attr")
             && (is_boolean_attr(&arg.value) || is_model_value_prop(directives, &arg.value)));
@@ -101,6 +109,7 @@ pub fn transform_v_bind<'a>(
       return Some(DirectiveTransformResult::new(
         Expression::StringLiteral(arg),
         value,
+        modifier,
       ));
     } else {
       jsx_attribute_value_to_expression(value, ast)?
@@ -115,15 +124,8 @@ pub fn transform_v_bind<'a>(
     return Some(DirectiveTransformResult::new(
       Expression::StringLiteral(arg),
       value,
+      modifier,
     ));
-  };
-
-  let modifier = if modifiers.contains(&"prop") {
-    Some(".")
-  } else if modifiers.contains(&"attr") {
-    Some("^")
-  } else {
-    None
   };
 
   Some(DirectiveTransformResult {
