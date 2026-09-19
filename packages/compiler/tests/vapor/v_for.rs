@@ -1106,3 +1106,90 @@ fn v_for_object_destructured_alias_shorthand_is_not_supported() {
   let code = transform("<div v-for={({ foo = 1 }) in items}>{{ foo }}</div>", None).code;
   assert!(!code.contains("_getDefaultValue"), "{code}");
 }
+
+// upstream: `processes key callback defaults in %s`. The ts-annotation variant
+// and the `_ctx`/inline variants are not expressible here.
+#[test]
+fn key_callback_defaults_are_kept_in_the_key_function_params() {
+  let code = transform(
+    "<div v-for={(item = fallback, i) in items} key={i} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("}, (item = fallback, i) => i,"), "{code}");
+}
+
+// upstream: `preserves callback locals while resolving defaults from an outer loop`
+#[test]
+fn preserves_callback_locals_while_resolving_defaults_from_an_outer_loop() {
+  let code = transform(
+    "<div v-for={(row, item) in rows}><span v-for={(item = row.fallback, key, index = item.id) in row.items} key={index} /></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("(item = _for_item0.value.fallback, key, index = item.id) => index"),
+    "{code}"
+  );
+}
+
+// the aliases are resolved through the ast, so a callback parameter wins over an
+// outer loop alias of the same name instead of resolving to it.
+#[test]
+fn callback_params_shadow_an_outer_alias_of_the_same_name() {
+  let code = transform(
+    "<div v-for={(item) in a}><span v-for={(item) in b} key={item}>{item}</span></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("}, (item) => item,"), "{code}");
+  assert!(
+    code.contains("_setNodes(_x4, () => _for_item1.value)"),
+    "{code}"
+  );
+}
+
+// the default of an alias must not leak into the body: the bound name has to
+// come off the value alias, not the default expression referencing it.
+#[test]
+fn body_of_an_alias_with_a_default_reads_the_bound_name() {
+  let code = transform(
+    "<div v-for={(row, item) in rows}><span v-for={(item = row.fallback, key, index = item.id) in row.items} key={index}>{item.name}</span></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_setNodes(_x4, () => _getDefaultValue(_for_item1.value, () => _for_item0.value.fallback).name)"),
+    "{code}"
+  );
+}
+
+// a default referring to the alias it is bound to must not be resolved again.
+#[test]
+fn self_referencing_callback_default_does_not_recurse() {
+  let code = transform(
+    "<div v-for={(item = item.fallback) in list} key={item}>{item}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("(item = item.fallback) => item,"), "{code}");
+  assert!(
+    code.contains("_setNodes(_x2, () => _getDefaultValue(_for_item0.value, () => item.fallback))"),
+    "{code}"
+  );
+}

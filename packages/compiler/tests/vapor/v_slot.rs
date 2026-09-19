@@ -1978,3 +1978,43 @@ fn slot_prop_destructuring_with_default_value() {
     "{code}"
   );
 }
+
+// upstream: `processes defaults in dynamic slot name and key callbacks`. This
+// repository generates the slot callbacks from synthetic `_for_raw_*` params
+// instead of the loop aliases, so the outer alias resolution is what carries
+// over here.
+#[test]
+fn v_for_defaults_in_dynamic_slot_name_and_key_callbacks() {
+  let code = transform(
+    "<Comp v-for={(row) in rows}><template v-for={(item = row.fallback, key, index = item.id) in row.items} v-slot:$item$ key={index}>{item.name}</template></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_getDefaultValue(_for_raw_item1, () => _for_item0.value.fallback)"),
+    "{code}"
+  );
+  assert!(
+    code.contains("_getDefaultValue(_for_raw_index1, () => _getDefaultValue(_for_raw_item1, () => _for_item0.value.fallback).id)"),
+    "{code}"
+  );
+}
+
+#[test]
+fn self_referencing_default_in_dynamic_slot_name_callback_does_not_recurse() {
+  let code = transform(
+    "<Comp><template v-for={(item = item.fallback, key) in list} v-slot:$item$ key={key}>{item}</template></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_getDefaultValue(_for_raw_item0, () => item.fallback)"),
+    "{code}"
+  );
+}

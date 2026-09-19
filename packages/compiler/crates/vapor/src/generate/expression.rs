@@ -38,7 +38,7 @@ pub fn gen_expression<'a>(
   }
 
   WalkIdentifiersMut::new(
-    Box::new(|id, _| Some(gen_identifier(&id.name, context, id.span, None))),
+    Box::new(|id, _| Some(gen_identifier(id.name.as_str(), context, id.span, None))),
     context.options,
   )
   .visit(&mut expression);
@@ -86,21 +86,43 @@ pub fn gen_expression<'a>(
 }
 
 pub fn gen_identifier<'a>(
-  name: &str,
-  context: &CodegenContext<'a>,
+  name: &'a str,
+  context: &'a CodegenContext<'a>,
   loc: Span,
   assignment: Option<Expression<'a>>,
 ) -> Expression<'a> {
   let ast = &context.ast;
-  if let Some(id_map) = context.identifiers.borrow().get(name)
-    && !id_map.is_empty()
-    && let Some(replacement) = id_map.first()
-  {
-    let mut replacement = replacement.clone_in(ast.allocator);
+  let replacement = {
+    let identifiers = context.identifiers.borrow();
+    match identifiers.get(name).and_then(|ids| ids.last()) {
+      // shadowed by a parameter of the same name - keep the name as is
+      Some(None) => return plain_identifier(name, context, loc, assignment),
+      Some(Some(expression)) => Some(expression.clone_in(ast.allocator)),
+      None => None,
+    }
+  };
+  if let Some(mut replacement) = replacement {
     *replacement.span_mut() = loc;
-    return replacement;
+    // the replacement may itself reference a name needing resolution (an outer
+    // loop alias used as a default). It is popped first so a self reference
+    // falls back to the name itself instead of recursing.
+    if let Some(popped) = context.pop_identifier(name) {
+      let resolved = gen_expression(replacement, context, assignment, false);
+      context.push_identifier(name, popped);
+      return resolved;
+    }
   }
 
+  plain_identifier(name, context, loc, assignment)
+}
+
+fn plain_identifier<'a>(
+  name: &str,
+  context: &'a CodegenContext<'a>,
+  loc: Span,
+  assignment: Option<Expression<'a>>,
+) -> Expression<'a> {
+  let ast = &context.ast;
   if let Some(assignment) = assignment {
     ast.expression_assignment(
       loc,

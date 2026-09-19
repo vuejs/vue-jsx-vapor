@@ -1,16 +1,91 @@
 use std::{borrow::Cow, cell::RefCell, collections::HashMap, rc::Rc};
 
 use common::{expression::gen_getter, walk::WalkIdentifiers, walk_mut::WalkIdentifiersMut};
-use oxc_allocator::CloneIn;
+use oxc_allocator::{CloneIn, Vec};
 use oxc_ast::{
   AstKind, NONE,
-  ast::{Argument, Expression, NumberBase, ObjectPropertyKind, PropertyKey},
+  ast::{
+    Argument, AssignmentOperator, AssignmentTarget, BindingPattern, Expression, FormalParameter,
+    NumberBase, ObjectPropertyKind, PropertyKey,
+  },
 };
 use oxc_span::{GetSpan, SPAN};
 
-use crate::generate::CodegenContext;
+use crate::generate::{CodegenContext, expression::gen_expression};
+
+/// Whether `id` is a name bound by the pattern, rather than one it merely
+/// references (a default value, a computed key, a member expression).
+fn is_binding_pattern_id<'a>(
+  id: &oxc_ast::ast::IdentifierReference<'a>,
+  stack: &[AstKind<'a>],
+) -> bool {
+  match stack.last() {
+    None => true,
+    Some(AstKind::AssignmentExpression(parent)) => parent.left.span().eq(&id.span),
+    Some(AstKind::ObjectProperty(parent)) => parent.value.span().eq(&id.span),
+    Some(AstKind::ArrayExpression(_)) => true,
+    Some(AstKind::SpreadElement(_)) => true,
+    _ => false,
+  }
+}
 
 impl<'a> CodegenContext<'a> {
+  /// The parameter list of a `v-for` callback (`:key`), rebuilt from the loop
+  /// aliases so anything they reference (a default value, a computed key) is
+  /// resolved like a normal expression.
+  pub fn gen_alias_params(
+    &'a self,
+    value: Option<&Expression<'a>>,
+    key: Option<&Expression<'a>>,
+    index: Option<&Expression<'a>>,
+  ) -> Vec<'a, FormalParameter<'a>> {
+    let ast = self.ast;
+    let mut params = ast.vec();
+    if let Some(value) = value {
+      params.push(ast.plain_formal_parameter(SPAN, self.alias_binding_pattern(value)));
+    } else if key.is_some() || index.is_some() {
+      params
+        .push(ast.plain_formal_parameter(SPAN, ast.binding_pattern_binding_identifier(SPAN, "_")));
+    }
+    if let Some(key) = key {
+      params.push(ast.plain_formal_parameter(SPAN, self.alias_binding_pattern(key)));
+    } else if index.is_some() {
+      params
+        .push(ast.plain_formal_parameter(SPAN, ast.binding_pattern_binding_identifier(SPAN, "__")));
+    }
+    if let Some(index) = index {
+      params.push(ast.plain_formal_parameter(SPAN, self.alias_binding_pattern(index)));
+    }
+    params
+  }
+
+  /// Aliases are parsed as expressions, so an alias carrying a default value has
+  /// to be rebuilt before it can be printed as a parameter; any other pattern is
+  /// printed from source, which leaves its formatting alone.
+  fn alias_binding_pattern(&'a self, alias: &Expression<'a>) -> BindingPattern<'a> {
+    if let Expression::AssignmentExpression(assignment) = alias
+      && assignment.operator == AssignmentOperator::Assign
+      && let AssignmentTarget::AssignmentTargetIdentifier(id) = &assignment.left
+    {
+      return self.ast.binding_pattern_assignment_pattern(
+        assignment.span,
+        self
+          .ast
+          .binding_pattern_binding_identifier(id.span, self.ast.str(&id.name)),
+        gen_expression(
+          assignment.right.clone_in(self.ast.allocator),
+          self,
+          None,
+          false,
+        ),
+      );
+    }
+    let span = alias.span();
+    self
+      .ast
+      .binding_pattern_binding_identifier(span, self.ast.str(span.source_text(self.source_text)))
+  }
+
   // construct a id -> accessor path map.
   // e.g. `{ x: { y: [z] }}` -> `Map{ 'z' => '.x.y[0]' }`
   pub fn parse_value_destructure(
@@ -27,6 +102,11 @@ impl<'a> CodegenContext<'a> {
     let id_map_clone = id_map.clone();
     WalkIdentifiers::new(
       Box::new(move |id, _, parent_stack| {
+        // the walk also reports identifiers an alias references (a default
+        // value, a computed key) - only the ones it binds belong in the map.
+        if !is_binding_pattern_id(id, parent_stack) {
+          return;
+        }
         let mut path = path.clone_in(ast.allocator);
         let mut default_value: Option<Expression> = None;
         for i in 0..parent_stack.len() {
