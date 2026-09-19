@@ -855,7 +855,16 @@ fn number_literals_with_v_model_value_props() {
       r#"<input type="text" true-value={1} />"#,
       "_template(\"<input type=text true-value=1>\"",
     ),
-    // `.attr` is stringified by `setAttribute` anyway
+    // checkbox values stay raw even when forced through `setAttr`
+    (
+      r#"<input type="checkbox" true-value_attr={1} />"#,
+      r#"_setAttr(_n0, "true-value", 1)"#,
+    ),
+    (
+      r#"<input type="checkbox" false-value_attr={0} />"#,
+      r#"_setAttr(_n0, "false-value", 0)"#,
+    ),
+    // these `.attr` bindings only need the serialized attribute value
     (
       r#"<input value_attr={1} />"#,
       r#"_template("<input value=1>""#,
