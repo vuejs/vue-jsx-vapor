@@ -66,9 +66,11 @@ pub fn transform_v_bind<'a>(
         // the template, so hold it back wherever the value is consumed as a
         // raw value: component, slot outlet and custom element props, boolean
         // attributes are folded from the type of the value itself, and v-model
-        // reads its value props back off the element. `.attr` always goes
-        // through `setAttribute`, which stringifies anyway.
+        // reads its value props back off the element. Checkbox true/false
+        // values must also stay raw with `.attr` because `setAttr` stores them
+        // before calling `setAttribute`.
         let exclude_number = (directives.is_component || directives.tag_name == "slot")
+          || is_checkbox_value_prop(directives, &arg.value)
           || (!modifiers.contains(&"attr")
             && (is_boolean_attr(&arg.value) || is_model_value_prop(directives, &arg.value)));
         if exclude_number && expression.is_number_literal() {
