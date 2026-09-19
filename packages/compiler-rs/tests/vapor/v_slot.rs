@@ -516,6 +516,55 @@ fn dynamic_slots_name_with_destructured_v_for_value() {
   );
 }
 
+// aliases with a default value or a pattern are part of the alias source, so the
+// bound name has to come off the ast (upstream also covers ts annotations, which
+// this parser cannot express).
+#[test]
+fn dynamic_slots_name_with_v_for_alias_default() {
+  let code = transform(
+    r#"<Comp>
+      <template v-for={(item, key, index = 99) in list} v-slot:$item$>
+        {index}
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+
+  assert!(
+    code.contains("(_for_item0, _for_key0, _for_index0) =>"),
+    "{code}"
+  );
+  assert!(
+    code.contains("_getDefaultValue(_for_index0.value, () => 99)"),
+    "{code}"
+  );
+  assert!(
+    code.contains("(_for_raw_item0, _for_raw_key0, _for_raw_index0) => _for_raw_item0"),
+    "{code}"
+  );
+}
+
+#[test]
+fn dynamic_slots_name_with_destructured_v_for_key_alias() {
+  let code = transform(
+    r#"<Comp>
+      <template v-for={(item, { k }) in list} v-slot:$item$>
+        {k}
+      </template>
+    </Comp>"#,
+    None,
+  )
+  .code;
+
+  assert!(code.contains("(_for_item0, _for_key0) =>"), "{code}");
+  assert!(code.contains("_for_key0.value.k"), "{code}");
+  assert!(
+    code.contains("(_for_raw_item0, _for_raw_key0) => _for_raw_item0"),
+    "{code}"
+  );
+}
+
 #[test]
 fn dynamic_slots_name_with_v_if_and_v_else_if() {
   let code = transform(
@@ -1595,4 +1644,37 @@ fn array_args_with_arg() {
   	return _n1;
   })();
   "#);
+}
+
+// the slot props pattern is parsed as an expression too, so a default only
+// survives when the property is renamed (`foo: bar = 1`); the shorthand form
+// (`foo = 1`) is rejected by the parser.
+#[test]
+fn slot_prop_destructuring_with_default_value() {
+  let code = transform(
+    r#"<Comp><template v-slot:default={{ foo: bar = 1 }}>{ bar }</template></Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend, getDefaultValue as _getDefaultValue } from "vue";
+  (() => {
+  	const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
+  		const _n0 = _createNodes(() => _getDefaultValue(_slotProps0.foo, () => 1));
+  		return _n0;
+  	}, { _: 1 }), true);
+  	return _n2;
+  })();
+  "#);
+
+  let code = transform(
+    r#"<Comp><template v-slot:default={{ foo: { bar: baz = 2 } }}>{ baz }</template></Comp>"#,
+    None,
+  )
+  .code;
+  assert!(
+    code.contains("_getDefaultValue(_slotProps0.foo.bar, () => 2)"),
+    "{code}"
+  );
 }

@@ -49,7 +49,7 @@ export default () => (
 ## `v-slot`, `v-slots`
 
 > [!WARNING]
-> Default parameter values in slot scope destructuring (e.g., `v-slot={({ foo = '' })}`) are not supported due to AST generation limitations.
+> A default value in slot scope destructuring is only applied when the property is renamed, e.g. `v-slot={({ foo: bar = '' })}`. The shorthand form `v-slot={({ foo = '' })}` is not supported, since the scope expression is parsed as an object literal, where `{ foo = '' }` is not valid syntax.
 
 ::: code-group
 

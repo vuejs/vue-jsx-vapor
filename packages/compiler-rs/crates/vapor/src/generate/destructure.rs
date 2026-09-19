@@ -1,6 +1,6 @@
 use std::{borrow::Cow, cell::RefCell, collections::HashMap, rc::Rc};
 
-use common::{walk::WalkIdentifiers, walk_mut::WalkIdentifiersMut};
+use common::{expression::gen_getter, walk::WalkIdentifiers, walk_mut::WalkIdentifiersMut};
 use oxc_allocator::CloneIn;
 use oxc_ast::{
   AstKind, NONE,
@@ -28,6 +28,7 @@ impl<'a> CodegenContext<'a> {
     WalkIdentifiers::new(
       Box::new(move |id, _, parent_stack| {
         let mut path = path.clone_in(ast.allocator);
+        let mut default_value: Option<Expression> = None;
         for i in 0..parent_stack.len() {
           let parent = parent_stack[i];
           let child = parent_stack.get(i + 1);
@@ -143,7 +144,25 @@ impl<'a> CodegenContext<'a> {
               ]),
               false,
             );
+          } else if let AstKind::AssignmentExpression(parent) = &parent
+            && parent.left.span().eq(&id.span)
+          {
+            // default value, either inside a pattern (`[a = 1]`) or on the
+            // alias itself (`(item, index = 0)`) - both parse as assignment
+            // expressions here, as aliases are parsed as expressions.
+            default_value = Some(parent.right.clone_in(ast.allocator));
           }
+        }
+        if let Some(default_value) = default_value {
+          path = ast
+            .expression_call(
+              SPAN,
+              ast.expression_identifier(SPAN, ast.str(self.options.helper("_getDefaultValue"))),
+              NONE,
+              ast.vec_from_array([path.into(), gen_getter(default_value, ast).into()]),
+              false,
+            )
+            .into();
         }
         id_map_clone
           .borrow_mut()
