@@ -63,6 +63,24 @@ fn dynamically_named_slot_outlet() {
 }
 
 #[test]
+fn slot_outlet_with_number_literal_props() {
+  // slot props are passed along as raw values, so number literals must not
+  // be stringified the way they are for plain element attributes
+  let code = transform(
+    r#"<slot count={0} level={1} ratio={1.5} str="1" />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("count: 0"), "{code}");
+  assert!(code.contains("level: 1"), "{code}");
+  assert!(code.contains("ratio: 1.5"), "{code}");
+  assert!(code.contains(r#"str: "1""#), "{code}");
+}
+
+#[test]
 fn default_slot_outlet_with_props() {
   let code = transform(
     r#"<slot foo="bar" baz={qux} foo-bar={foo-bar} />"#,
