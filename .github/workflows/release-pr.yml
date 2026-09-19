@@ -1,0 +1,126 @@
+name: Publish Any Commit
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1-threads
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ./packages/compiler/target/
+          key: wasm32-wasip1-threads-cargo
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm build
+
+      # WASI is the only artifact a preview needs: it is the one binary that runs
+      # on every platform, so a preview built here is usable from macOS, Linux,
+      # Windows and CI alike. `pnpm build` only produces the host binding, hence
+      # this extra pass. `--dts` is required (and must end in .d.cts) because the
+      # package is `type: module`.
+      - name: Build WASI binding
+        working-directory: ./packages/compiler
+        run: pnpm exec napi build --platform --release --esm --target wasm32-wasip1-threads --dts compiler.wasi.d.cts
+
+      # packages/compiler/package.json lists neither the *.node, the WASI runtime
+      # files nor the WASI runtime dependencies, because the release workflow
+      # runs `napi artifacts` first and would then ship every platform binding in
+      # the real tarball. A preview has no artifacts step, so it opts in here, in
+      # CI only, leaving the committed manifest untouched.
+      - name: Package the WASI runtime in the preview tarball
+        working-directory: ./packages/compiler
+        run: |
+          npm pkg set \
+            'files[]=compiler.wasi.cjs' \
+            'files[]=compiler.wasi-browser.js' \
+            'files[]=compiler.wasm32-wasi.wasm' \
+            'files[]=wasi-worker.mjs' \
+            'files[]=wasi-worker-browser.mjs'
+          # compiled by compiler.wasi.cjs / compiler.wasi-browser.js at runtime
+          npm pkg set \
+            'dependencies[@napi-rs/wasm-runtime]=1.2.3' \
+            'dependencies[@emnapi/core]=2.0.0-alpha.4' \
+            'dependencies[@emnapi/runtime]=2.0.0-alpha.4'
+          npm pkg delete \
+            'devDependencies[@napi-rs/wasm-runtime]' \
+            'devDependencies[@emnapi/core]' \
+            'devDependencies[@emnapi/runtime]'
+
+      # `browser-entry.js` points at the published @vue-jsx/compiler-wasm32-wasi
+      # subpackage, which a preview does not ship. Bundlers pick up the `browser`
+      # field, so without this the preview would work under Node but fail to
+      # resolve in Vite/webpack. Rewrap it around the local WASI runtime.
+      - name: Point the browser entry at the packaged WASI runtime
+        working-directory: ./packages/compiler
+        run: |
+          cat > browser-entry.js <<'EOF'
+          import compiler, { ErrorCodes, transform } from './compiler.wasi-browser.js'
+
+          export default compiler
+          export { ErrorCodes, transform }
+          EOF
+
+      - name: Verify the preview package
+        working-directory: ./packages/compiler
+        run: |
+          npm pack --dry-run 2>&1 | tee /tmp/pack.log
+          for f in compiler.wasm32-wasi.wasm compiler.wasi.cjs compiler.wasi-browser.js wasi-worker.mjs wasi-worker-browser.mjs; do
+            grep -q "$f" /tmp/pack.log || { echo "::error::$f is missing from the tarball"; exit 1; }
+          done
+          # A native binding would be platform-specific, defeating the point.
+          if grep -qE 'compiler\.[a-z0-9-]+\.node' /tmp/pack.log; then
+            echo "::error::a platform-specific .node binding was packaged"
+            exit 1
+          fi
+          # Must not keep pointing at a subpackage the preview never ships.
+          ! grep -q 'compiler-wasm32-wasi' browser-entry.js
+
+      # Runs against the generated loader with no native binding present, i.e.
+      # exactly what a consumer on any platform will hit.
+      - name: Smoke test the WASI fallback
+        working-directory: ./packages/compiler
+        run: |
+          rm -f compiler.*.node
+          node -e "
+            import('./index.js').then((m) => {
+              if (typeof m.transform !== 'function') throw new Error('transform is not exported')
+              if (m.ErrorCodes === undefined) throw new Error('ErrorCodes is not exported')
+              for (const [name, options] of [['vapor', { vapor: true }], ['vdom', {}]]) {
+                const { code } = m.transform('const A = () => <div class=\"x\"/>', options)
+                if (!code || !code.includes('from \"vue\"')) {
+                  throw new Error(name + ' transform produced unexpected output: ' + code)
+                }
+              }
+              console.log('WASI fallback OK')
+            }).catch((e) => { console.error(e); process.exit(1) })
+          "
+
+      - name: Publish
+        run: pnpx pkg-pr-new publish --compact --pnpm './packages/*' --packageManager=pnpm
