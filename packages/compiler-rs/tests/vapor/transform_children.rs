@@ -421,3 +421,81 @@ fn does_not_flush_later_v_for_effects_before_child_component() {
   })();
   "#);
 }
+
+#[test]
+fn children_that_render_nothing_do_not_shift_sibling_lookup() {
+  // The parser drops the leading newline of <pre> per the html spec but keeps
+  // the now empty text node in the ast; an empty literal among element children
+  // renders nothing either. Neither has a node in the template string, so
+  // siblings must not be located past them.
+  for (source, template, access) in [
+    (
+      "<pre>\n<b>{msg}</b></pre>",
+      "<pre><b> ",
+      "const _n0 = _child(_n1)",
+    ),
+    (
+      "<pre>\n<code>{msg}</code>\n</pre>",
+      "<pre><code> ",
+      "const _n0 = _child(_n1)",
+    ),
+    (
+      "<pre>\r\n<b>{msg}</b></pre>",
+      "<pre><b> ",
+      "const _n0 = _child(_n1)",
+    ),
+    (
+      "<pre>\n<b>x</b>{msg}</pre>",
+      "<pre><b>x</b> ",
+      "const _n0 = _next(_child(_n1), true)",
+    ),
+    // untouched: only the leading newline is dropped by the compiler, and jsx
+    // text resolution already condenses the blank line (pre-existing deviation
+    // from upstream, which keeps it as a text node of its own)
+    (
+      "<pre>\n\n<b>{msg}</b></pre>",
+      "<pre><b> ",
+      "const _n0 = _child(_n1)",
+    ),
+    (
+      "<div>\n<b>{msg}</b></div>",
+      "<div><b> ",
+      "const _n0 = _child(_n1)",
+    ),
+  ] {
+    let code = transform(source, None).code;
+    assert!(
+      code.contains(&format!("_template({template:?}")),
+      "`{source}` should compile to a template starting with {template:?}, got:\n{code}"
+    );
+    assert!(
+      code.contains(access),
+      "`{source}` should locate its children with `{access}`, got:\n{code}"
+    );
+  }
+}
+
+#[test]
+fn empty_literal_among_element_children_materializes_a_node() {
+  // Unlike upstream, an empty literal among element children is not inlined:
+  // it keeps its own (empty) text node, which is what the vdom compiler emits
+  // for the same input. It therefore does occupy a position in the template.
+  let code = transform("<div>{''}<b>{msg}</b></div>", None).code;
+  assert!(code.contains(r#"_template("<div> <b> ""#), "{code}");
+  assert!(code.contains("const _n0 = _child(_n2, true)"), "{code}");
+  assert!(code.contains("const _n1 = _next(_n0)"), "{code}");
+  assert!(code.contains(r#"_setNodes(_n0, "")"#), "{code}");
+}
+
+#[test]
+fn child_that_renders_nothing_does_not_make_the_parent_dynamic() {
+  let code = transform("<div><pre>\n<b>s</b></pre><i>{msg}</i></div>", None).code;
+  assert!(code.contains("const _n0 = _next(_child(_n1))"), "{code}");
+  assert!(!code.contains("let _p"), "{code}");
+}
+
+#[test]
+fn child_that_renders_nothing_keeps_a_fully_static_template_static() {
+  let code = transform("<pre>\n<b>s</b></pre>", None).code;
+  assert!(code.contains(r#"_template("<pre><b>s", 3)"#), "{code}");
+}
