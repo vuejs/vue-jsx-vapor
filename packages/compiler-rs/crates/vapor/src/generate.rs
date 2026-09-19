@@ -43,6 +43,7 @@ pub struct CodegenContext<'a> {
   pub scope_level: RefCell<i32>,
   pub in_slot_block: RefCell<bool>,
   pub ast: &'a AstBuilder<'a>,
+  slot_index: RefCell<usize>,
 }
 
 impl<'a> CodegenContext<'a> {
@@ -60,6 +61,7 @@ impl<'a> CodegenContext<'a> {
       in_slot_block: RefCell::new(false),
       ir,
       ast: context.ast,
+      slot_index: RefCell::new(0),
     }
   }
 

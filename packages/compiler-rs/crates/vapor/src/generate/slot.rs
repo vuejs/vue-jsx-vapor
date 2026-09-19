@@ -5,7 +5,10 @@ use napi::bindgen_prelude::{Either, Either4};
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
-  ast::{Expression, FormalParameterKind, ObjectPropertyKind, PropertyKind, Str},
+  ast::{
+    AssignmentOperator, AssignmentTarget, Expression, FormalParameterKind, LogicalOperator,
+    ObjectPropertyKind, PropertyKind, Str,
+  },
 };
 use oxc_span::{GetSpan, SPAN};
 
@@ -23,10 +26,26 @@ use crate::{
 
 use common::{check::is_simple_identifier, expression::gen_getter, patch_flag::VaporSlotStability};
 
+impl<'a> CodegenContext<'a> {
+  /// Name for the nth cached slot function (`_s`, `_s1`, ...). Only needs to be
+  /// unique among these locals, which share the render scope.
+  fn next_slot_name(&self) -> String {
+    let mut index = self.slot_index.borrow_mut();
+    let name = if *index == 0 {
+      "_s".to_string()
+    } else {
+      format!("_s{index}")
+    };
+    *index += 1;
+    name
+  }
+}
+
 pub fn gen_raw_slots<'a>(
   mut slots: Vec<IRSlots<'a>>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
+  slot_declarations: &mut Vec<String>,
 ) -> Option<Expression<'a>> {
   if slots.is_empty() {
     return None;
@@ -51,6 +70,7 @@ pub fn gen_raw_slots<'a>(
         context,
         context_block,
         if slots.len() > 1 { Some(slots) } else { None },
+        slot_declarations,
       ))
     } else {
       None
@@ -61,6 +81,7 @@ pub fn gen_raw_slots<'a>(
       context,
       context_block,
       Some(slots),
+      slot_declarations,
     ))
   }
 }
@@ -70,6 +91,7 @@ fn gen_static_slots<'a>(
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   dynamic_slots: Option<Vec<IRSlots<'a>>>,
+  slot_declarations: &mut Vec<String>,
 ) -> Expression<'a> {
   let ast = context.ast;
   let mut properties = ast.vec();
@@ -106,7 +128,12 @@ fn gen_static_slots<'a>(
       SPAN,
       PropertyKind::Init,
       ast.property_key_static_identifier(SPAN, ast.str("$")),
-      gen_dynamic_slots(dynamic_slots, context, unsafe { &mut *context_block }),
+      gen_dynamic_slots(
+        dynamic_slots,
+        context,
+        unsafe { &mut *context_block },
+        slot_declarations,
+      ),
       false,
       false,
       false,
@@ -119,19 +146,36 @@ fn gen_dynamic_slots<'a>(
   slots: Vec<IRSlots<'a>>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
+  slot_declarations: &mut Vec<String>,
 ) -> Expression<'a> {
   let ast = context.ast;
   let mut elements = ast.vec();
   let context_block = context_block as *mut BlockIRNode;
   for slot in slots {
     elements.push(match slot {
-      Either4::A(slot) => {
-        gen_static_slots(slot.slots, context, unsafe { &mut *context_block }, None).into()
-      }
-      Either4::B(slot) => gen_dynamic_slot(slot, context, unsafe { &mut *context_block }).into(),
-      Either4::C(slot) => {
-        gen_conditional_slot(slot, context, unsafe { &mut *context_block }, true).into()
-      }
+      Either4::A(slot) => gen_static_slots(
+        slot.slots,
+        context,
+        unsafe { &mut *context_block },
+        None,
+        slot_declarations,
+      )
+      .into(),
+      Either4::B(slot) => gen_dynamic_slot(
+        slot,
+        context,
+        unsafe { &mut *context_block },
+        slot_declarations,
+      )
+      .into(),
+      Either4::C(slot) => gen_conditional_slot(
+        slot,
+        context,
+        unsafe { &mut *context_block },
+        true,
+        slot_declarations,
+      )
+      .into(),
       Either4::D(slot) => {
         let expression = gen_expression(slot.slots, context, None, false);
         if slot.dynamic {
@@ -162,9 +206,10 @@ fn gen_dynamic_slot<'a>(
   slot: IRSlotDynamicBasic<'a>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
+  slot_declarations: &mut Vec<String>,
 ) -> Expression<'a> {
   if slot._loop.is_none() {
-    gen_basic_dynamic_slot(slot, context, context_block)
+    gen_basic_dynamic_slot(slot, context, context_block, slot_declarations)
   } else {
     gen_loop_slot(slot, context, context_block)
   }
@@ -174,8 +219,13 @@ fn gen_basic_dynamic_slot<'a>(
   slot: IRSlotDynamicBasic<'a>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
+  slot_declarations: &mut Vec<String>,
 ) -> Expression<'a> {
   let ast = &context.ast;
+  let slot_name = context.next_slot_name();
+  // Cache the function lazily in the component's scope, so a recomputing slot
+  // list keeps handing the runtime the same function reference.
+  slot_declarations.push(slot_name.clone());
   ast.expression_object(
     SPAN,
     ast.vec_from_array([
@@ -192,7 +242,22 @@ fn gen_basic_dynamic_slot<'a>(
         SPAN,
         PropertyKind::Init,
         ast.property_key_static_identifier(SPAN, ast.str("fn")),
-        gen_slot_block_with_props(slot._fn, context, context_block, false),
+        ast.expression_logical(
+          SPAN,
+          ast.expression_identifier(SPAN, ast.str(&slot_name)),
+          LogicalOperator::Or,
+          ast.expression_parenthesized(
+            SPAN,
+            ast.expression_assignment(
+              SPAN,
+              AssignmentOperator::Assign,
+              AssignmentTarget::AssignmentTargetIdentifier(
+                ast.alloc_identifier_reference(SPAN, ast.str(&slot_name)),
+              ),
+              gen_slot_block_with_props(slot._fn, context, context_block, false),
+            ),
+          ),
+        ),
         false,
         false,
         false,
@@ -429,6 +494,7 @@ fn gen_conditional_slot<'a>(
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   with_function: bool,
+  slot_declarations: &mut Vec<String>,
 ) -> Expression<'a> {
   let ast = &context.ast;
   let IRSlotDynamicConditional {
@@ -442,13 +508,27 @@ fn gen_conditional_slot<'a>(
   let expression = ast.expression_conditional(
     SPAN,
     gen_expression(condition, context, None, false),
-    gen_dynamic_slot(positive, context, unsafe { &mut *context_block }),
+    gen_dynamic_slot(
+      positive,
+      context,
+      unsafe { &mut *context_block },
+      slot_declarations,
+    ),
     if let Some(negative) = negative {
       match *negative {
-        Either::A(negative) => gen_dynamic_slot(negative, context, unsafe { &mut *context_block }),
-        Either::B(negative) => {
-          gen_conditional_slot(negative, context, unsafe { &mut *context_block }, false)
-        }
+        Either::A(negative) => gen_dynamic_slot(
+          negative,
+          context,
+          unsafe { &mut *context_block },
+          slot_declarations,
+        ),
+        Either::B(negative) => gen_conditional_slot(
+          negative,
+          context,
+          unsafe { &mut *context_block },
+          false,
+          slot_declarations,
+        ),
       }
     } else {
       ast.expression_identifier(SPAN, "undefined")
