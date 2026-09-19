@@ -1141,3 +1141,28 @@ fn leading_newline_outside_the_html_namespace_is_untouched() {
   let code = transform("<svg><pre>{'\\n\\nline'}</pre></svg>", None).code;
   assert!(code.contains(r#"_template("<pre>\n\nline")"#), "{code}");
 }
+
+// upstream: `props the template string cannot carry`. `<textarea>` / `<select>`
+// ignore a `value` content attribute, the value only takes effect as a dom
+// property. Upstream also takes `true-value` / `false-value` out of a checkbox
+// template here; that half only matters for hydration, which this repo has no
+// vapor path for, so only the inert `value` is covered.
+#[test]
+fn props_the_template_string_cannot_carry() {
+  for (source, template) in [
+    // `<textarea>` / `<select>` ignore a `value` content attribute
+    (r#"<textarea value="1"></textarea>"#, "<textarea>"),
+    (r#"<textarea value={'x'}></textarea>"#, "<textarea>"),
+    (r#"<select value="b"></select>"#, "<select>"),
+    // untouched
+    (r#"<div value="1"></div>"#, "<div value=1>"),
+    (r#"<input value="1" />"#, "<input value=1>"),
+    (r#"<option value="1"></option>"#, "<option value=1>"),
+  ] {
+    let code = transform(source, None).code;
+    assert!(
+      code.contains(&format!("_template({template:?}")),
+      "`{source}` should compile to a template starting with {template:?}, got:\n{code}"
+    );
+  }
+}
