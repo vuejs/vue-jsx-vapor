@@ -48,20 +48,6 @@ pub fn gen_for<'a>(
 
   let key_span = key.as_ref().map(|key| key.span()).unwrap_or(SPAN);
   let index_span = index.as_ref().map(|index| index.span()).unwrap_or(SPAN);
-  let (raw_key, raw_index) = (
-    key
-      .as_ref()
-      .map(|_| key_span.source_text(context.source_text)),
-    index
-      .as_ref()
-      .map(|_| index_span.source_text(context.source_text)),
-  );
-  let (raw_value, value_span) = if let Some(value) = &value {
-    let span = value.span();
-    (Some(span.source_text(context.source_text)), span)
-  } else {
-    (None, SPAN)
-  };
 
   let source_expr = gen_getter(gen_expression(source, context, None, false), ast);
 
@@ -119,6 +105,12 @@ pub fn gen_for<'a>(
 
   let (effect_patterns, selector_patterns, key_only_binding_patterns) =
     match_patterns(&mut render, &key_prop, &id_map, context);
+  // in the `:key` callback the aliases are parameters, so they shadow any outer
+  // loop binding of the same name
+  let self_id_map = id_map
+    .keys()
+    .map(|id| (*id, None))
+    .collect::<HashMap<_, _>>();
   let key_prop_for_effects = if !selector_patterns.is_empty() {
     key_prop.as_ref().map(|expr| expr.clone_in(ast.allocator))
   } else {
@@ -309,75 +301,40 @@ pub fn gen_for<'a>(
     flags |= VaporVForFlags::WrappedRows as i32;
   }
 
-  let gen_callback =
-    if let Some(key_prop) = key_prop {
-      let res = context.with_id(
-        || gen_expression(key_prop, context, None, false),
-        HashMap::new(),
-      );
+  let gen_callback = if let Some(key_prop) = key_prop {
+    let (params, res) = context.with_id(
+      || {
+        (
+          context.gen_alias_params(value.as_ref(), key.as_ref(), index.as_ref()),
+          gen_expression(key_prop, context, None, false),
+        )
+      },
+      self_id_map,
+    );
 
-      Some(
-        ast.expression_arrow_function(
-          SPAN,
-          true,
-          false,
-          NONE,
-          ast.formal_parameters(
-            SPAN,
-            FormalParameterKind::ArrowFormalParameters,
-            ast.vec_from_iter(
-              [
-                if let Some(raw_value) = raw_value {
-                  Some(ast.plain_formal_parameter(
-                    SPAN,
-                    ast.binding_pattern_binding_identifier(value_span, ast.str(raw_value)),
-                  ))
-                } else if raw_key.is_some() || raw_index.is_some() {
-                  Some(ast.plain_formal_parameter(
-                    SPAN,
-                    ast.binding_pattern_binding_identifier(SPAN, "_"),
-                  ))
-                } else {
-                  None
-                },
-                if let Some(raw_key) = raw_key {
-                  Some(ast.plain_formal_parameter(
-                    SPAN,
-                    ast.binding_pattern_binding_identifier(key_span, ast.str(raw_key)),
-                  ))
-                } else if raw_index.is_some() {
-                  Some(ast.plain_formal_parameter(
-                    SPAN,
-                    ast.binding_pattern_binding_identifier(SPAN, "__"),
-                  ))
-                } else {
-                  None
-                },
-                raw_index.map(|raw_index| {
-                  ast.plain_formal_parameter(
-                    SPAN,
-                    ast.binding_pattern_binding_identifier(index_span, ast.str(raw_index)),
-                  )
-                }),
-              ]
-              .into_iter()
-              .flatten(),
-            ),
-            NONE,
-          ),
-          NONE,
-          ast.function_body(
-            SPAN,
-            ast.vec(),
-            ast.vec1(ast.statement_expression(SPAN, res)),
-          ),
-        ),
-      )
-    } else if flags > 0 {
-      Some(ast.expression_identifier(SPAN, "void 0"))
-    } else {
-      None
-    };
+    Some(ast.expression_arrow_function(
+      SPAN,
+      true,
+      false,
+      NONE,
+      ast.formal_parameters(
+        SPAN,
+        FormalParameterKind::ArrowFormalParameters,
+        params,
+        NONE,
+      ),
+      NONE,
+      ast.function_body(
+        SPAN,
+        ast.vec(),
+        ast.vec1(ast.statement_expression(SPAN, res)),
+      ),
+    ))
+  } else if flags > 0 {
+    Some(ast.expression_identifier(SPAN, "void 0"))
+  } else {
+    None
+  };
 
   statements.extend(selector_declarations);
   statements.push(Statement::VariableDeclaration(

@@ -22,7 +22,6 @@ pub mod v_show;
 use std::{cell::RefCell, collections::HashMap, mem};
 
 use common::{options::TransformOptions, text::to_valid_asset_id};
-use oxc_allocator::TakeIn;
 use oxc_ast::{
   AstBuilder, NONE,
   ast::{Argument, Expression, FormalParameterKind, Statement, VariableDeclarationKind},
@@ -38,7 +37,7 @@ use crate::{
 pub struct CodegenContext<'a> {
   pub source_text: &'a str,
   pub options: &'a TransformOptions<'a>,
-  pub identifiers: RefCell<HashMap<&'a str, Vec<Expression<'a>>>>,
+  pub identifiers: RefCell<HashMap<&'a str, Vec<Option<Expression<'a>>>>>,
   pub ir: RootIRNode<'a>,
   pub block: RefCell<BlockIRNode<'a>>,
   pub scope_level: RefCell<i32>,
@@ -64,31 +63,36 @@ impl<'a> CodegenContext<'a> {
     }
   }
 
-  pub fn with_id(
+  pub fn with_id<T, V: Into<Option<Expression<'a>>>>(
     &self,
-    _fn: impl FnOnce() -> Expression<'a>,
-    mut id_map: HashMap<&'a str, Expression<'a>>,
-  ) -> Expression<'a> {
-    for (id, value) in id_map.iter_mut() {
-      let mut identifiers = self.identifiers.borrow_mut();
-      if identifiers.get(id).is_none() {
-        identifiers.insert(id, vec![]);
-      }
-      identifiers
-        .get_mut(id)
-        .unwrap()
-        .insert(0, value.take_in(self.ast.allocator));
+    _fn: impl FnOnce() -> T,
+    id_map: HashMap<&'a str, V>,
+  ) -> T {
+    let ids = id_map.keys().copied().collect::<Vec<_>>();
+    for (id, value) in id_map {
+      self.push_identifier(id, value.into());
     }
 
     let ret = _fn();
 
-    for id in id_map.keys() {
-      if let Some(ids) = self.identifiers.borrow_mut().get_mut(id) {
-        ids.clear();
-      }
+    for id in ids {
+      self.pop_identifier(id);
     }
 
     ret
+  }
+
+  pub(crate) fn push_identifier(&self, id: &'a str, value: Option<Expression<'a>>) {
+    self
+      .identifiers
+      .borrow_mut()
+      .entry(id)
+      .or_default()
+      .push(value);
+  }
+
+  pub(crate) fn pop_identifier(&self, id: &'a str) -> Option<Option<Expression<'a>>> {
+    self.identifiers.borrow_mut().get_mut(id)?.pop()
   }
 
   pub fn enter_slot_block(&self) -> impl FnOnce() {
