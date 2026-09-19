@@ -171,6 +171,13 @@ pub unsafe fn transform_element<'a>(
 // keys cannot be a part of the template and need to be set dynamically
 static DYNAMIC_KEYS: [&str; 1] = ["indeterminate"];
 
+// Props the template string cannot carry, so they have to be applied by a
+// runtime prop setter instead: `<textarea>` / `<select>` ignore a `value`
+// content attribute, the value only takes effect as a dom property.
+fn is_runtime_only_prop(tag: &str, key: &str) -> bool {
+  key == "value" && (tag == "textarea" || tag == "select")
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn transform_native_element<'a>(
   tag: &'a str,
@@ -210,6 +217,7 @@ pub fn transform_native_element<'a>(
           && values.len() == 1
           && let Some(Expression::StringLiteral(first_value)) = values.first()
           && !DYNAMIC_KEYS.contains(&key.value.as_str())
+          && !is_runtime_only_prop(tag, &key.value)
         {
           template += " ";
           let value = first_value.value;

@@ -241,6 +241,8 @@ pub struct Directives<'a> {
   pub tag_name: &'a str,
   pub is_component: bool,
   pub is_custom_element: bool,
+  /// a `v-bind` with a dynamic key or a spread may carry a `type`
+  pub has_dynamic_key_v_bind: bool,
   pub v_if: Option<&'a mut JSXAttribute<'a>>,
   pub v_else_if: Option<&'a mut JSXAttribute<'a>>,
   pub v_else: Option<&'a mut JSXAttribute<'a>>,
@@ -261,6 +263,7 @@ impl<'a> Directives<'a> {
       tag_name: get_tag_name(node, options),
       is_component: is_jsx_component(node),
       is_custom_element: is_custom_element(node),
+      has_dynamic_key_v_bind: false,
       ..Default::default()
     };
     for dir in node.opening_element.attributes.iter_mut() {
@@ -284,6 +287,8 @@ impl<'a> Directives<'a> {
           "value" => directives.value = Some(dir),
           _ => (),
         }
+      } else {
+        directives.has_dynamic_key_v_bind = true;
       }
     }
     directives

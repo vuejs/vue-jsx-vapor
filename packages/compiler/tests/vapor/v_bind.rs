@@ -975,3 +975,133 @@ fn custom_element_number_literals_with_v_bind_object() {
   let code = transform("<number-probe {...{count: 0}} />", None).code;
   assert!(code.contains("{ count: 0 }"), "{code}");
 }
+
+// upstream: `v-model value number literals`
+#[test]
+fn model_value_prop_number_literals_stay_raw() {
+  let code = transform(
+    r#"<input type="checkbox" value={1} true-value={1} false-value={0} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+
+  assert!(code.contains("_setValue(_n0, 1)"), "{code}");
+  assert!(code.contains(r#"_setAttr(_n0, "true-value", 1)"#), "{code}");
+  assert!(
+    code.contains(r#"_setAttr(_n0, "false-value", 0)"#),
+    "{code}"
+  );
+}
+
+// upstream: `textarea and select value literals`. The `value` content attribute
+// is inert on both tags, so it has to be assigned as a dom property. Upstream
+// compiles the two roots as siblings; jsx needs a fragment to spell that.
+#[test]
+fn textarea_and_select_value_literals() {
+  let code = transform(
+    r#"<><textarea value={'hello'}></textarea><select value={'b'}><option value="b"></option></select></>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+
+  assert!(code.contains(r#"_template("<textarea>")"#), "{code}");
+  assert!(
+    code.contains(r#"_template("<select><option value=b>")"#),
+    "{code}"
+  );
+  assert!(code.contains(r#"_setValue(_n0, "hello")"#), "{code}");
+  assert!(code.contains(r#"_setValue(_n1, "b")"#), "{code}");
+}
+
+// upstream: `number literals with %s` (jsx spelling of each case)
+#[test]
+fn number_literals_with_v_model_value_props() {
+  for (source, expected) in [
+    // v-model reads these back off the element, so they stay raw values
+    (r#"<input value={1} />"#, "_setValue(_n0, 1)"),
+    (r#"<input value={1n} />"#, "_setValue(_n0, 1n)"),
+    (r#"<option value={1}></option>"#, "_setValue(_n0, 1)"),
+    (r#"<textarea value={1}></textarea>"#, "_setValue(_n0, 1)"),
+    (r#"<select value={1}></select>"#, "_setValue(_n0, 1)"),
+    (
+      r#"<input type="checkbox" true-value={1} />"#,
+      r#"_setAttr(_n0, "true-value", 1)"#,
+    ),
+    (
+      r#"<input type="checkbox" false-value={0} />"#,
+      r#"_setAttr(_n0, "false-value", 0)"#,
+    ),
+    // the type is only known at runtime, so it may still be a checkbox
+    (
+      r#"<input type={type} true-value={1} />"#,
+      r#"_setAttr(_n0, "true-value", 1)"#,
+    ),
+    // a spread may carry the `type` that makes it a checkbox
+    (
+      r#"<input {...attrs} true-value={1} />"#,
+      r#""true-value": 1"#,
+    ),
+    // `.prop` goes through the same `setValue`
+    (r#"<input value_prop={1} />"#, "_setValue(_n0, 1)"),
+    // boolean attributes are folded from the value's own type
+    (
+      r#"<input disabled={0} />"#,
+      r#"_setProp(_n0, "disabled", 0)"#,
+    ),
+    (r#"<div hidden={0} />"#, r#"_setProp(_n0, "hidden", 0)"#),
+    // still stringified into the template
+    (r#"<div value={1} />"#, r#"_template("<div value=1>""#),
+    (r#"<input value={'1'} />"#, r#"_template("<input value=1>""#),
+    (r#"<input size={2} />"#, r#"_template("<input size=2>""#),
+    // `true-value` is only read back on a checkbox
+    (
+      r#"<input true-value={1} />"#,
+      r#"_template("<input true-value=1>""#,
+    ),
+    (
+      r#"<input type="text" true-value={1} />"#,
+      "_template(\"<input type=text true-value=1>\"",
+    ),
+    // `.attr` is stringified by `setAttribute` anyway
+    (
+      r#"<input value_attr={1} />"#,
+      r#"_template("<input value=1>""#,
+    ),
+    (
+      r#"<input disabled_attr={0} />"#,
+      r#"_template("<input disabled=0>""#,
+    ),
+  ] {
+    let code = transform(
+      source,
+      Some(TransformOptions {
+        vapor: true,
+        ..Default::default()
+      }),
+    )
+    .code;
+    assert!(code.contains(expected), "{source}\n{code}");
+  }
+}
+
+// upstream: `:[key]="0"` and `v-bind="{...}"` cannot be expressed as a dynamic
+// attribute name in jsx; a dynamic key inside a spread is the equivalent and is
+// always applied at runtime, so it never reaches the template.
+#[test]
+fn number_literals_with_dynamic_key() {
+  let code = transform(
+    r#"<div {...{[key]: 0}} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("[key]: 0"), "{code}");
+}

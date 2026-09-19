@@ -3,8 +3,7 @@ use oxc_ast::{
   NONE,
   ast::{
     AssignmentOperator, AssignmentTarget, BinaryOperator, Expression, FormalParameterKind,
-    JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElement,
-    ObjectPropertyKind, PropertyKey, PropertyKind,
+    JSXAttribute, JSXAttributeValue, JSXElement, ObjectPropertyKind, PropertyKey, PropertyKind,
   },
 };
 use oxc_span::{GetSpan, SPAN, Span};
@@ -255,7 +254,7 @@ pub fn transform_v_model<'a>(
             _ => check_duplicated_value(directives, context),
           }
         }
-      } else if has_dynamic_key_v_bind(node) {
+      } else if directives.has_dynamic_key_v_bind {
         // element has bindings with dynamic keys, which can possibly contain "type".
         directive_to_use = "_vModelDynamic";
       } else {
@@ -309,14 +308,4 @@ fn check_duplicated_value(directives: &Directives, context: &TransformContext) {
   {
     context.options.on_error.as_ref()(ErrorCodes::VModelUnnecessaryValue, value.span);
   }
-}
-
-fn has_dynamic_key_v_bind(node: &JSXElement) -> bool {
-  node.opening_element.attributes.iter().any(|p| match p {
-    JSXAttributeItem::Attribute(p) => match &p.name {
-      JSXAttributeName::NamespacedName(name) => !name.namespace.name.starts_with("v-"),
-      _ => false,
-    },
-    JSXAttributeItem::SpreadAttribute(_) => true,
-  })
 }

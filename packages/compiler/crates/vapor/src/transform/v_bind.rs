@@ -10,6 +10,33 @@ use oxc_span::SPAN;
 
 use crate::transform::{DirectiveTransformResult, TransformContext};
 
+// `true-value` / `false-value` are only read back by `v-model` on a checkbox,
+// and a dynamic `type` can still make the element a checkbox at runtime.
+fn is_checkbox_value_prop(directives: &Directives, key: &str) -> bool {
+  if directives.tag_name != "input" || !matches!(key, "true-value" | "false-value") {
+    return false;
+  }
+  match &directives._type {
+    Some(attr) => match &attr.value {
+      Some(JSXAttributeValue::ExpressionContainer(_)) => true,
+      Some(JSXAttributeValue::StringLiteral(value)) => value.value == "checkbox",
+      _ => false,
+    },
+    None => directives.has_dynamic_key_v_bind,
+  }
+}
+
+// Props `v-model` reads back off the element as raw values (`_value`,
+// `_trueValue`, `_falseValue`), so a bound number literal has to keep its type.
+fn is_model_value_prop(directives: &Directives, key: &str) -> bool {
+  (key == "value"
+    && matches!(
+      directives.tag_name,
+      "input" | "option" | "textarea" | "select"
+    ))
+    || is_checkbox_value_prop(directives, key)
+}
+
 pub fn transform_v_bind<'a>(
   directives: &Directives,
   dir: &'a mut JSXAttribute<'a>,
@@ -35,12 +62,16 @@ pub fn transform_v_bind<'a>(
     if let Some(value) = match value {
       JSXAttributeValue::ExpressionContainer(value) => {
         let expression = value.expression.as_expression_mut()?;
-        // component and slot outlet props are passed along as raw values
-        // instead of being stringified into the template, so number literals
-        // must keep their type
-        if (directives.is_component || directives.tag_name == "slot")
-          && expression.is_number_literal()
-        {
+        // A number literal loses its type as soon as it is stringified into
+        // the template, so hold it back wherever the value is consumed as a
+        // raw value: component, slot outlet and custom element props, boolean
+        // attributes are folded from the type of the value itself, and v-model
+        // reads its value props back off the element. `.attr` always goes
+        // through `setAttribute`, which stringifies anyway.
+        let exclude_number = (directives.is_component || directives.tag_name == "slot")
+          || (!modifiers.contains(&"attr")
+            && (is_boolean_attr(&arg.value) || is_model_value_prop(directives, &arg.value)));
+        if exclude_number && expression.is_number_literal() {
           if let Expression::NumericLiteral(_) = expression {
             Some(expression.take_in(ast.allocator))
           } else if let Expression::BigIntLiteral(node) = expression
