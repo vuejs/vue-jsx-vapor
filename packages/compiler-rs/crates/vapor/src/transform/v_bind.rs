@@ -35,7 +35,12 @@ pub fn transform_v_bind<'a>(
     if let Some(value) = match value {
       JSXAttributeValue::ExpressionContainer(value) => {
         let expression = value.expression.as_expression_mut()?;
-        if directives.is_component && expression.is_number_literal() {
+        // component and slot outlet props are passed along as raw values
+        // instead of being stringified into the template, so number literals
+        // must keep their type
+        if (directives.is_component || directives.tag_name == "slot")
+          && expression.is_number_literal()
+        {
           if let Expression::NumericLiteral(_) = expression {
             Some(expression.take_in(ast.allocator))
           } else if let Expression::BigIntLiteral(node) = expression
