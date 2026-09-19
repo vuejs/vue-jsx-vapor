@@ -1,3 +1,26 @@
+## [3.2.25](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.24...v3.2.25) (2026-09-19)
+
+
+### Bug Fixes
+
+* **compiler-vapor:** keep raw values on v-model value props ([062f7d1](https://github.com/vuejs/vue-jsx-vapor/commit/062f7d1142278658c5d8dc7a2c6287a348938eb8))
+* **compiler-vapor:** preserve raw checkbox values with .attr ([b503fb9](https://github.com/vuejs/vue-jsx-vapor/commit/b503fb9fe33036803227abafea6cb8d50b4bf44f))
+* **compiler-vapor:** preserve special boolean values with .attr ([dca27ac](https://github.com/vuejs/vue-jsx-vapor/commit/dca27ac828662300d4b77ef07b6a3bf03f25f20f))
+* **compiler-vapor:** stabilize dynamic slot function references ([6feaa7a](https://github.com/vuejs/vue-jsx-vapor/commit/6feaa7a35b840a49084fe2cdd50c231029527c31))
+* **compiler/vapor:** hydrate missing text among element children ([9c56b87](https://github.com/vuejs/vue-jsx-vapor/commit/9c56b87e8e81c0eb3f41d53b5fd56001ef7446b5))
+* **compiler/vapor:** ignore key on <template> slots ([ebe1816](https://github.com/vuejs/vue-jsx-vapor/commit/ebe1816cbf1bd5cbbcb6ffd463653b088690ac8e))
+* **compiler/vapor:** keep number literals on slot outlet props ([c7d0afe](https://github.com/vuejs/vue-jsx-vapor/commit/c7d0afe2527a003b69e4124cb08eb0a650a1c1ed))
+* **compiler/vapor:** keep the leading newline of pre and textarea- ([1a9fdce](https://github.com/vuejs/vue-jsx-vapor/commit/1a9fdce33fd7042d456416ebe650cccb67ce9649))
+* **compiler/vapor:** pass custom directive arguments as getters ([8e8035d](https://github.com/vuejs/vue-jsx-vapor/commit/8e8035d4f31e8b77e3ca1767502d4cfc91389d0a))
+* **compiler/vapor:** preserve fragment ownership when hydrating empty ([171c52a](https://github.com/vuejs/vue-jsx-vapor/commit/171c52a8003068f036efd8ae5005494793fd2a01))
+* **compiler/vapor:** process v-for callback parameter defaults ([5b9cf0a](https://github.com/vuejs/vue-jsx-vapor/commit/5b9cf0a8e832e0559691873510bb3a1f359af288))
+* **compiler/vapor:** resolve v-for aliases through their ast ([1d06812](https://github.com/vuejs/vue-jsx-vapor/commit/1d06812feecacdebc988b058dfbc9f44b4859fff))
+* **compiler/vapor:** set element text for textContent bindings- [#15511](https://github.com/vuejs/vue-jsx-vapor/issues/15511) ([3023361](https://github.com/vuejs/vue-jsx-vapor/commit/302336121f1e4d3b133b2e3bf4d32ffef845df16))
+* **types:** add ElementAttributesProperty to JSX global namespace ([#74](https://github.com/vuejs/vue-jsx-vapor/issues/74)) ([a714ff0](https://github.com/vuejs/vue-jsx-vapor/commit/a714ff03c8b4d004059f3eb8576fa038579d8392))
+* **volar:** resolve type error with v-slot directive ([015a18b](https://github.com/vuejs/vue-jsx-vapor/commit/015a18bdbf638de83bf0ff5a3b0b96d0c60e1b30)), closes [#72](https://github.com/vuejs/vue-jsx-vapor/issues/72)
+
+
+
 ## [3.2.24](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.23...v3.2.24) (2026-09-13)
 
 
