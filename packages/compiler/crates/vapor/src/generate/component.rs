@@ -77,7 +77,13 @@ pub fn gen_create_component<'a>(
 
   let raw_props = gen_raw_props(props, context);
   let _context_block = context_block as *mut BlockIRNode;
-  let raw_slots = gen_raw_slots(slots, context, unsafe { &mut *_context_block });
+  let mut slot_declarations = Vec::new();
+  let raw_slots = gen_raw_slots(
+    slots,
+    context,
+    unsafe { &mut *_context_block },
+    &mut slot_declarations,
+  );
 
   let mut arguments = ast.vec1(tag);
   if let Some(raw_props) = raw_props {
@@ -110,6 +116,25 @@ pub fn gen_create_component<'a>(
         .expression_numeric_literal(SPAN, ns as f64, None, NumberBase::Decimal)
         .into(),
     );
+  }
+  if !slot_declarations.is_empty() {
+    statements.push(Statement::VariableDeclaration(
+      ast.alloc_variable_declaration(
+        SPAN,
+        VariableDeclarationKind::Let,
+        ast.vec_from_iter(slot_declarations.iter().map(|name| {
+          ast.variable_declarator(
+            SPAN,
+            VariableDeclarationKind::Let,
+            ast.binding_pattern_binding_identifier(SPAN, ast.str(name)),
+            NONE,
+            None,
+            false,
+          )
+        })),
+        false,
+      ),
+    ));
   }
   statements.push(Statement::VariableDeclaration(
     ast.alloc_variable_declaration(

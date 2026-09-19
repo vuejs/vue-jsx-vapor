@@ -131,12 +131,13 @@ fn on_component_dynamically_named_slot() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
+  	let _s;
   	const _n1 = _createComponent(Comp, null, { $: [{
   		name: named,
-  		fn: (_slotProps0) => {
+  		fn: _s || (_s = (_slotProps0) => {
   			const _n0 = _createNodes(() => _slotProps0.foo + bar);
   			return _n0;
-  		}
+  		})
   	}] }, true);
   	return _n1;
   })();
@@ -456,12 +457,13 @@ fn dynamic_slots_name() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
+  	let _s;
   	const _n2 = _createComponent(Comp, null, { $: [{
   		name,
-  		fn: () => {
+  		fn: _s || (_s = () => {
   			const _n0 = _createNodes(() => foo);
   			return _n0;
-  		}
+  		})
   	}] }, true);
   	return _n2;
   })();
@@ -672,30 +674,31 @@ fn dynamic_slots_name_with_v_if_and_v_else_if() {
   const _t2 = _template("other condition", 2);
   const _t3 = _template("else condition", 2);
   (() => {
+  	let _s, _s1, _s2, _s3;
   	const _n8 = _createComponent(Comp, null, { $: [() => condition ? {
   		name: "condition",
-  		fn: () => {
+  		fn: _s || (_s = () => {
   			const _n0 = _t0();
   			return _n0;
-  		}
+  		})
   	} : anotherCondition ? {
   		name: "condition",
-  		fn: (_slotProps0) => {
+  		fn: _s1 || (_s1 = (_slotProps0) => {
   			const _n2 = _t1();
   			return _n2;
-  		}
+  		})
   	} : otherCondition ? {
   		name: "condition",
-  		fn: () => {
+  		fn: _s2 || (_s2 = () => {
   			const _n4 = _t2();
   			return _n4;
-  		}
+  		})
   	} : {
   		name: "condition",
-  		fn: () => {
+  		fn: _s3 || (_s3 = () => {
   			const _n6 = _t3();
   			return _n6;
-  		}
+  		})
   	}] }, true);
   	return _n8;
   })();
@@ -1316,11 +1319,12 @@ fn default_slot_with_v_if_directive() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
+  	let _s;
   	const _n1 = _createComponent(Comp, null, { $: [() => show ? {
   		name: "default",
-  		fn: () => {
+  		fn: _s || (_s = () => {
   			return [];
-  		}
+  		})
   	} : undefined] }, true);
   	return _n1;
   })();
@@ -1874,12 +1878,13 @@ fn array_args() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
+  	let _s;
   	const _n1 = _createComponent(Comp, null, { $: [{
   		name: bar,
-  		fn: (foo) => {
+  		fn: _s || (_s = (foo) => {
   			const _n0 = _createNodes(() => foo);
   			return _n0;
-  		}
+  		})
   	}] }, true);
   	return _n1;
   })();
@@ -1903,12 +1908,13 @@ fn array_args_with_template() {
   assert_snapshot!(code, @r#"
   import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
+  	let _s;
   	const _n2 = _createComponent(Comp, null, { $: [{
   		name: bar,
-  		fn: (foo) => {
+  		fn: _s || (_s = (foo) => {
   			const _n0 = _createNodes(() => foo);
   			return _n0;
-  		}
+  		})
   	}] }, true);
   	return _n2;
   })();
@@ -2017,4 +2023,47 @@ fn self_referencing_default_in_dynamic_slot_name_callback_does_not_recurse() {
     code.contains("_getDefaultValue(_for_raw_item0, () => item.fallback)"),
     "{code}"
   );
+}
+
+// Upstream also guards generated slot names against user bindings and sibling
+// declarations. This repository deliberately does not: the `_s` base is
+// unlikely to collide, and a collision would only shadow the user's binding.
+
+#[test]
+fn dynamic_slot_function_is_cached_in_the_component_scope() {
+  let code = transform(
+    "<Comp><template v-if={ok} v-slot:default>{foo}</template></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("let _s;"), "{code}");
+  assert!(code.contains("fn: _s || (_s = () =>"), "{code}");
+}
+
+// Several dynamic slots share the render scope, so their cached functions must
+// still get distinct names.
+#[test]
+fn dynamic_slot_functions_get_distinct_names() {
+  let code = transform(
+    r#"function App() {
+      const ok = true
+      const name = 'default'
+      return <>
+        <Comp><template v-if={ok} v-slot:default>{foo}</template></Comp>
+        <Comp><template v-slot:$name$>{bar}</template></Comp>
+      </>
+    }"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("let _s;"), "{code}");
+  assert!(code.contains("let _s1;"), "{code}");
+  assert!(code.contains("fn: _s || (_s = () =>"), "{code}");
+  assert!(code.contains("fn: _s1 || (_s1 = () =>"), "{code}");
 }
