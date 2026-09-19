@@ -36,6 +36,7 @@ pub fn transform_v_html<'a>(
         .ast
         .expression_string_literal(dir.span, context.ast.str("innerHTML"), None),
       exp,
+      None,
     ));
   }
 

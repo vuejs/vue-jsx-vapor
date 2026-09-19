@@ -71,12 +71,12 @@ pub struct DirectiveTransformResult<'a> {
 }
 
 impl<'a> DirectiveTransformResult<'a> {
-  pub fn new(key: Expression<'a>, value: Expression<'a>) -> Self {
+  pub fn new(key: Expression<'a>, value: Expression<'a>, modifier: Option<&'a str>) -> Self {
     DirectiveTransformResult {
       key,
       value,
       to_display_string: false,
-      modifier: None,
+      modifier,
       runtime_camelize: false,
       handler: false,
       handler_modifiers: None,

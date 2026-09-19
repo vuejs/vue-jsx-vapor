@@ -297,6 +297,15 @@ pub fn is_boolean_attr(prop_name: &str) -> bool {
   BOOLEAN_ATTRS.contains(prop_name)
 }
 
+// Boolean attributes whose name differs from their dom property; `setAttr`
+// inspects the raw value before `setAttribute`.
+static SPECIAL_BOOLEAN_ATTRS: phf::Set<&'static str> = phf_set! {
+  "itemscope", "allowfullscreen", "formnovalidate", "ismap", "nomodule", "novalidate", "readonly"
+};
+pub fn is_special_boolean_attr(prop_name: &str) -> bool {
+  SPECIAL_BOOLEAN_ATTRS.contains(prop_name)
+}
+
 pub fn is_simple_identifier(s: &str) -> bool {
   if s.is_empty() {
     return false;
