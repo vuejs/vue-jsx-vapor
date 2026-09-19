@@ -740,7 +740,10 @@ fn v_for_on_template_with_nested_v_for_child_marks_fragment_block() {
 fn v_for_on_template_under_transition_group_has_no_wrapped_rows() {
   let code = transform(
     "<TransitionGroup tag=\"ul\"><template v-for={item in items}><li>{item}</li><li>b</li></template></TransitionGroup>",
-    None,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
   )
   .code;
   assert!(!code.contains("void 0, 80"));
@@ -925,4 +928,181 @@ fn should_raise_error_if_malformed_expression() {
     }),
   );
   assert_eq!(*error.borrow(), Some(ErrorCodes::VForMalformedExpression));
+}
+
+// aliases are parsed as expressions here, so a default value or a destructuring
+// pattern is part of the alias source and the bound name has to come off the ast.
+// Upstream also covers ts type annotations, which this parser cannot express.
+#[test]
+fn v_for_alias_with_default_value() {
+  let code = transform(
+    "<div v-for={(item, index = 0) in items}>{{ index }}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
+  import { createFor as _createFor, getDefaultValue as _getDefaultValue, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n0 = _createFor(() => items, (_for_item0, _for_key0) => {
+  		const _n2 = _t0();
+  		const _x2 = _txt(_n2);
+  		_setNodes(_x2, () => ({ index: _getDefaultValue(_for_key0.value, () => 0) }));
+  		return _n2;
+  	}, void 0, 8);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_alias_with_default_value_on_key_and_index() {
+  let code = transform(
+    "<div v-for={(item = 'x', key, index = 99) in items}>{{ item }}{{ index }}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
+  import { createFor as _createFor, getDefaultValue as _getDefaultValue, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n0 = _createFor(() => items, (_for_item0, _for_key0, _for_index0) => {
+  		const _n2 = _t0();
+  		const _x2 = _txt(_n2);
+  		_setNodes(_x2, () => ({ item: _getDefaultValue(_for_item0.value, () => "x") }), () => ({ index: _getDefaultValue(_for_index0.value, () => 99) }));
+  		return _n2;
+  	}, void 0, 8);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_alias_defaults_are_kept_in_the_key_function_params() {
+  let code = transform(
+    "<div v-for={(item, key, index = 99) in items} key={index}>{{ item }}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("(item, key, index = 99) => index"), "{code}");
+}
+
+#[test]
+fn v_for_destructured_key_alias() {
+  let code = transform(
+    "<div v-for={(item, { k }) in items}>{{ item }}{{ k }}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
+  import { createFor as _createFor, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n0 = _createFor(() => items, (_for_item0, _for_key0) => {
+  		const _n2 = _t0();
+  		const _x2 = _txt(_n2);
+  		_setNodes(_x2, () => ({ item: _for_item0.value }), () => ({ k: _for_key0.value.k }));
+  		return _n2;
+  	}, void 0, 8);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_array_destructured_key_alias() {
+  let code = transform(
+    "<div v-for={(item, [c, d]) in items}>{{ item }}{{ c }}{{ d }}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("() => ({ c: _for_key0.value[0] })"), "{code}");
+  assert!(code.contains("() => ({ d: _for_key0.value[1] })"), "{code}");
+}
+
+#[test]
+fn v_for_destructured_key_alias_in_the_key_function_params() {
+  let code = transform(
+    "<div v-for={(item, { k }) in items} key={item}>{{ item }}{{ k }}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("}, (item, { k }) => item,"), "{code}");
+}
+
+#[test]
+fn v_for_object_destructured_key_alias_with_default() {
+  let code = transform(
+    "<div v-for={(item, { ku: kk = 1 }) in items}>{{ kk }}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("() => ({ kk: _getDefaultValue(_for_key0.value.ku, () => 1) })"),
+    "{code}"
+  );
+}
+
+#[test]
+fn v_for_object_destructured_value_alias_with_default() {
+  let code = transform(
+    "<div v-for={({ foo: bar = 1 }) in items}>{{ bar }}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("() => ({ bar: _getDefaultValue(_for_item0.value.foo, () => 1) })"),
+    "{code}"
+  );
+}
+
+#[test]
+fn v_for_object_destructured_index_alias_with_default() {
+  let code = transform(
+    "<div v-for={(item, key, { idx: i = 1 }) in items}>{{ i }}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("() => ({ i: _getDefaultValue(_for_index0.value.idx, () => 1) })"),
+    "{code}"
+  );
+}
+
+// a shorthand default (`{ foo = 1 }`) is not expressible: the alias is parsed as
+// an expression, and oxc rejects a shorthand assignment in an object literal.
+#[test]
+fn v_for_object_destructured_alias_shorthand_is_not_supported() {
+  let code = transform("<div v-for={({ foo = 1 }) in items}>{{ foo }}</div>", None).code;
+  assert!(!code.contains("_getDefaultValue"), "{code}");
 }

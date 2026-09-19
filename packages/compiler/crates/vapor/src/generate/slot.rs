@@ -216,24 +216,20 @@ fn gen_loop_slot<'a>(
   } = slot;
   let IRFor {
     mut value,
-    key,
-    index,
+    mut key,
+    mut index,
     source,
   } = _loop.unwrap();
-  let raw_key = key.as_ref().and_then(|key| {
-    if let Expression::Identifier(key) = key {
-      Some(key.name.as_str())
-    } else {
-      None
-    }
-  });
-  let raw_index = index.as_ref().and_then(|index| {
-    if let Expression::Identifier(index) = index {
-      Some(index.name.as_str())
-    } else {
-      None
-    }
-  });
+  let key_span = key.as_ref().map(|key| key.span()).unwrap_or(SPAN);
+  let index_span = index.as_ref().map(|index| index.span()).unwrap_or(SPAN);
+  let (raw_key, raw_index) = (
+    key
+      .as_ref()
+      .map(|_| key_span.source_text(context.source_text)),
+    index
+      .as_ref()
+      .map(|_| index_span.source_text(context.source_text)),
+  );
 
   let source = gen_getter(gen_expression(source.unwrap(), context, None, false), ast);
 
@@ -255,18 +251,20 @@ fn gen_loop_slot<'a>(
     SPAN,
     ast.binding_pattern_binding_identifier(SPAN, ast.str(&item_var)),
   ));
-  if let Some(raw_key) = raw_key {
+  if key.is_some() {
     let key_var = format!("_for_key{depth}");
-    id_map.insert(
-      raw_key,
-      ast
-        .member_expression_static(
-          SPAN,
-          ast.expression_identifier(SPAN, ast.str(&key_var)),
-          ast.identifier_name(SPAN, "value"),
-          false,
-        )
-        .into(),
+    id_map.extend(
+      context.parse_value_destructure(
+        key.as_mut(),
+        ast
+          .member_expression_static(
+            SPAN,
+            ast.expression_identifier(SPAN, ast.str(&key_var)),
+            ast.identifier_name(SPAN, "value"),
+            false,
+          )
+          .into(),
+      ),
     );
     render_params.push(ast.plain_formal_parameter(
       SPAN,
@@ -276,18 +274,20 @@ fn gen_loop_slot<'a>(
     render_params
       .push(ast.plain_formal_parameter(SPAN, ast.binding_pattern_binding_identifier(SPAN, "_")));
   }
-  if let Some(raw_index) = raw_index {
+  if index.is_some() {
     let index_var = format!("_for_index{depth}");
-    id_map.insert(
-      raw_index,
-      ast
-        .member_expression_static(
-          SPAN,
-          ast.expression_identifier(SPAN, ast.str(&index_var)),
-          ast.identifier_name(SPAN, "value"),
-          false,
-        )
-        .into(),
+    id_map.extend(
+      context.parse_value_destructure(
+        index.as_mut(),
+        ast
+          .member_expression_static(
+            SPAN,
+            ast.expression_identifier(SPAN, ast.str(&index_var)),
+            ast.identifier_name(SPAN, "value"),
+            false,
+          )
+          .into(),
+      ),
     );
     render_params.push(ast.plain_formal_parameter(
       SPAN,
@@ -321,23 +321,20 @@ fn gen_loop_slot<'a>(
   let raw_item_var = format!("_for_raw_item{depth}");
   let raw_key_var = format!("_for_raw_key{depth}");
   let raw_index_var = format!("_for_raw_index{depth}");
-  let build_raw_id_map = |value: Option<&mut Expression<'a>>| {
+  let build_raw_id_map = |value: Option<&mut Expression<'a>>,
+                          key: Option<&mut Expression<'a>>,
+                          index: Option<&mut Expression<'a>>| {
     let mut id_map = context.parse_value_destructure(
       value,
       ast.expression_identifier(SPAN, ast.str(&raw_item_var)),
     );
-    if let Some(raw_key) = raw_key {
-      id_map.insert(
-        raw_key,
-        ast.expression_identifier(SPAN, ast.str(&raw_key_var)),
-      );
-    }
-    if let Some(raw_index) = raw_index {
-      id_map.insert(
-        raw_index,
-        ast.expression_identifier(SPAN, ast.str(&raw_index_var)),
-      );
-    }
+    id_map.extend(
+      context.parse_value_destructure(key, ast.expression_identifier(SPAN, ast.str(&raw_key_var))),
+    );
+    id_map.extend(context.parse_value_destructure(
+      index,
+      ast.expression_identifier(SPAN, ast.str(&raw_index_var)),
+    ));
     id_map
   };
   let raw_params = || {
@@ -364,7 +361,7 @@ fn gen_loop_slot<'a>(
   };
   let name = context.with_id(
     || gen_expression(name, context, None, false),
-    build_raw_id_map(value.as_mut()),
+    build_raw_id_map(value.as_mut(), key.as_mut(), index.as_mut()),
   );
   let get_name = ast.expression_arrow_function(
     SPAN,
@@ -387,7 +384,7 @@ fn gen_loop_slot<'a>(
   let get_key = key_prop.map(|key_prop| {
     let key_prop = context.with_id(
       || gen_expression(key_prop, context, None, false),
-      build_raw_id_map(value.as_mut()),
+      build_raw_id_map(value.as_mut(), key.as_mut(), index.as_mut()),
     );
     ast.expression_arrow_function(
       SPAN,

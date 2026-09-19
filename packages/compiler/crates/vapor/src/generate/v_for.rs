@@ -33,8 +33,8 @@ pub fn gen_for<'a>(
   let ForIRNode {
     source,
     mut value,
-    key,
-    index,
+    mut key,
+    mut index,
     id,
     key_prop,
     mut render,
@@ -46,18 +46,16 @@ pub fn gen_for<'a>(
     ..
   } = oper;
 
-  let (raw_key, key_span) = if let Some(Expression::Identifier(key)) = key {
-    let span = key.span();
-    (Some(span.source_text(context.source_text)), span)
-  } else {
-    (None, SPAN)
-  };
-  let (raw_index, index_span) = if let Some(index) = index {
-    let span = index.span();
-    (Some(span.source_text(context.source_text)), span)
-  } else {
-    (None, SPAN)
-  };
+  let key_span = key.as_ref().map(|key| key.span()).unwrap_or(SPAN);
+  let index_span = index.as_ref().map(|index| index.span()).unwrap_or(SPAN);
+  let (raw_key, raw_index) = (
+    key
+      .as_ref()
+      .map(|_| key_span.source_text(context.source_text)),
+    index
+      .as_ref()
+      .map(|_| index_span.source_text(context.source_text)),
+  );
   let (raw_value, value_span) = if let Some(value) = &value {
     let span = value.span();
     (Some(span.source_text(context.source_text)), span)
@@ -83,33 +81,38 @@ pub fn gen_for<'a>(
 
   let mut args: Vec<String> = vec![];
   args.push(item_var);
-  if let Some(raw_key) = raw_key {
+  // key/index are aliases too, so they go through the same destructure walk as value
+  if key.is_some() {
     let key_var = format!("_for_key{depth}");
-    id_map.insert(
-      raw_key,
-      ast
-        .member_expression_static(
-          key_span,
-          ast.expression_identifier(SPAN, ast.str(&key_var)),
-          ast.identifier_name(SPAN, "value"),
-          false,
-        )
-        .into(),
+    id_map.extend(
+      context.parse_value_destructure(
+        key.as_mut(),
+        ast
+          .member_expression_static(
+            key_span,
+            ast.expression_identifier(SPAN, ast.str(&key_var)),
+            ast.identifier_name(SPAN, "value"),
+            false,
+          )
+          .into(),
+      ),
     );
     args.push(key_var);
   }
-  if let Some(raw_index) = raw_index {
+  if index.is_some() {
     let index_var = format!("_for_index{depth}");
-    id_map.insert(
-      raw_index,
-      ast
-        .member_expression_static(
-          index_span,
-          ast.expression_identifier(SPAN, ast.str(&index_var)),
-          ast.identifier_name(SPAN, "value"),
-          false,
-        )
-        .into(),
+    id_map.extend(
+      context.parse_value_destructure(
+        index.as_mut(),
+        ast
+          .member_expression_static(
+            index_span,
+            ast.expression_identifier(SPAN, ast.str(&index_var)),
+            ast.identifier_name(SPAN, "value"),
+            false,
+          )
+          .into(),
+      ),
     );
     args.push(index_var);
   }
