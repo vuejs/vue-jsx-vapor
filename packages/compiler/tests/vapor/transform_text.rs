@@ -581,3 +581,18 @@ fn text_references_among_element_children() {
   })();
   "#)
 }
+
+#[test]
+fn empty_literal_next_to_an_element_in_slot_content() {
+  // Unlike element children, slot content keeps its empty text node.
+  let code = transform(
+    "<Comp>{''}<b>{msg}</b></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains(r#"_createNodes("")"#), "{code}");
+  assert!(code.contains("return [_n0, _n1]"), "{code}");
+}

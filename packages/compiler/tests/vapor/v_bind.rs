@@ -922,3 +922,56 @@ fn class_with_v_bind_object_falls_back_to_dynamic_props() {
   );
   assert!(!code.contains("_setClassName"));
 }
+
+#[test]
+fn custom_element_number_literals() {
+  // Custom element props are passed along as raw values instead of being
+  // stringified into the template, so number literals must keep their type.
+  let code = transform(
+    r#"<number-probe count={0} ratio={1.5} bigint={1n} str={'0'} text={`0`} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createPlainElement as _createPlainElement } from "vue";
+  (() => {
+  	const _n0 = _createPlainElement("number-probe", {
+  		count: 0,
+  		ratio: 1.5,
+  		bigint: 1n,
+  		str: "0",
+  		text: "0"
+  	}, null, true);
+  	return _n0;
+  })();
+  "#);
+
+  assert!(code.contains("count: 0"));
+  assert!(code.contains("ratio: 1.5"));
+  assert!(code.contains("bigint: 1n"));
+  assert!(code.contains(r#"str: "0""#));
+  assert!(code.contains(r#"text: "0""#));
+}
+
+#[test]
+fn custom_element_number_literals_with_dynamic_key() {
+  // jsx cannot express a dynamic attribute name, so the equivalent of upstream
+  // `:[key]="0"` is a computed key inside a spread.
+  let code = transform("<number-probe {...{[key]: 0}} />", None).code;
+  assert!(code.contains("[key]: 0"), "{code}");
+}
+
+#[test]
+fn custom_element_number_literals_with_spread_props() {
+  let code = transform("<number-probe {...props} count={0} />", None).code;
+  assert!(code.contains("{ count: 0 }"), "{code}");
+}
+
+#[test]
+fn custom_element_number_literals_with_v_bind_object() {
+  let code = transform("<number-probe {...{count: 0}} />", None).code;
+  assert!(code.contains("{ count: 0 }"), "{code}");
+}
