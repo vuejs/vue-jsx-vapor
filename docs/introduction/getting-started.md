@@ -14,7 +14,11 @@ This guide assumes familiarity with Vue and Vite.
 ## Installation
 
 ```bash
+# Plugin
 pnpm add vue-jsx
+
+# Runtime
+pnpm add vue@3.6.0-rc.9
 ```
 
 ## Vite Configuration

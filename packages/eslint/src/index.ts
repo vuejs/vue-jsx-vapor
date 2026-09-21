@@ -1,4 +1,4 @@
-import rules, { type Rules } from './rules/index.ts'
+import rules, { type Rules } from './rules'
 import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint'
 
 export const plugins = {
