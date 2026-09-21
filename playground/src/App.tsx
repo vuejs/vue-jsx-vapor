@@ -9,6 +9,7 @@ import Model from './model'
 import Once from './once'
 import Show from './show'
 import Slot from './slot'
+import VueComp from './Comp.vue'
 
 export default defineVaporComponent(() => {
   const count = ref('1')
@@ -20,6 +21,7 @@ export default defineVaporComponent(() => {
   return (
     <>
       <fieldset>
+        <VueComp />
         <input value={count.value} onInput={(event) => (count.value = event.currentTarget.value)} />
         <Value value={count.value} />
         <RefValue value={count} />
