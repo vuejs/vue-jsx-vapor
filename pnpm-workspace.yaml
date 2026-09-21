@@ -5,28 +5,43 @@ packages:
   - benchmark
   - ecosystem-ci
 
-defines:
-  - &vue-macros ^3.1.4
-  - &ts-macro ^0.3.7
-  - &vue 3.6.0-rc.9
+patchedDependencies:
+  '@vue-macros/volar': patches/@vue-macros__volar.patch
 
 catalog:
-  '@nuxt/kit': ^3.21.4
-  '@nuxt/schema': ^3.21.4
+  '@nuxt/kit': ^4.5.2
+  '@nuxt/schema': ^4.5.2
 
-  '@vue/shared': *vue
-
-  '@vue-macros/common': *vue-macros
-  '@vue-macros/define-render': *vue-macros
-  '@vue-macros/jsx-directive': *vue-macros
-  '@vue-macros/volar': *vue-macros
-
-  '@ts-macro/tsc': *ts-macro
   '@types/hash-sum': ^1.0.2
+
+  '@vue-macros/volar': ^3.1.4
+
   hash-sum: ^2.0.0
-  ts-macro: *ts-macro
   unplugin: ^3.0.0
   unplugin-utils: ^0.3.1
-  vite: ^8.0.10
-  vitest: ^4.1.5
-  vue: *vue
+  vue: 3.6.0-rc.9
+  vite-plus: 0.3.1
+  vite: npm:@voidzero-dev/vite-plus-core@0.3.1
+  vitest: 4.1.11
+
+allowBuilds:
+  esbuild: true
+  vue-demi: true
+
+packageExtensions:
+  ts-macro@0.3.7:
+    peerDependencies:
+      typescript: '*'
+  '@ts-macro/tsc@0.3.7':
+    peerDependencies:
+      typescript: '*'
+overrides:
+  vite@*: 'catalog:'
+  vitest@*: 'catalog:'
+peerDependencyRules:
+  allowAny:
+    - vite
+    - vitest
+  allowedVersions:
+    vite: '*'
+    vitest: '*'

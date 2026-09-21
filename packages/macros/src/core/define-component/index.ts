@@ -29,12 +29,7 @@ export function transformDefineComponent(
       prependFunctionalNode(
         root,
         s,
-        `const ${propsName} = ${importHelperFn(
-          s,
-          'useFullProps',
-          undefined,
-          '/vue-jsx-vapor/props',
-        )}()`,
+        `const ${propsName} = ${importHelperFn(s, 'useFullProps', undefined, '/vue-jsx/props')}()`,
       )
       s.overwrite(
         root.params[0].start!,
@@ -48,8 +43,7 @@ export function transformDefineComponent(
     } else if (root.params[0].type === 'ObjectPattern') {
       const restructuredProps = root.params[0]
       for (const prop of restructuredProps.properties) {
-        if (prop.type !== 'ObjectProperty' || prop.key.type !== 'Identifier')
-          continue
+        if (prop.type !== 'ObjectProperty' || prop.key.type !== 'Identifier') continue
         const propName = prop.key.name
         if (prop.value.type !== 'AssignmentPattern') {
           props[propName] = null
@@ -123,8 +117,7 @@ function getWalkedIds(root: FunctionalNode, propsName: string) {
         parent?.type === 'OptionalMemberExpression')
     ) {
       const prop =
-        parent.property.type === 'Identifier' ||
-        parent.property.type === 'JSXIdentifier'
+        parent.property.type === 'Identifier' || parent.property.type === 'JSXIdentifier'
           ? parent.property.name
           : parent.property.type === 'StringLiteral'
             ? parent.property.value

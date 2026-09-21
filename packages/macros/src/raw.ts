@@ -14,12 +14,12 @@ import type { UnpluginOptions } from 'unplugin'
 const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
   const options = resolveOptions(userOptions)
   const importMap = new Map()
-  const macrosHelperId = /^\/vue-jsx-vapor\/macros\//
-  const defineStyleHelperId = /^\/vue-jsx-vapor\/macros\/define-style/
+  const macrosHelperId = /^\/vue-jsx\/macros\//
+  const defineStyleHelperId = /^\/vue-jsx\/macros\/define-style/
 
   return [
     {
-      name: '@vue-jsx-vapor/macros',
+      name: '@vue-jsx/macros',
       enforce: 'pre',
 
       resolveId: {
@@ -61,7 +61,7 @@ const plugin = (userOptions: Options = {}): UnpluginOptions[] => {
       },
     },
     {
-      name: '@vue-jsx-vapor/macros/define-style',
+      name: '@vue-jsx/macros/define-style',
 
       resolveId: {
         filter: {

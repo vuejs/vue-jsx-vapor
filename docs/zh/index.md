@@ -1,44 +1,34 @@
 ---
-# https://vitepress.dev/reference/default-theme-home-page
 layout: home
 
 hero:
-  name: "Vue JSX Vapor"
-  text: "类型安全、高性能、更舒适的开发体验"
-  tagline: Vue JSX 的 Vapor 模式
-  image:
-    src: /logo.svg
-    alt: Vue JSX Vapor
+  name: 'Vue JSX'
+  text: '编译器驱动的高性能 JSX'
+  tagline: 支持 Virtual DOM 与 Vapor Mode
   actions:
     - theme: brand
       text: 快速上手
       link: /zh/introduction/getting-started
     - theme: alt
       text: 互动教程
-      link: /tutorial/step-1
+      link: /zh/tutorial/step-1
 
 features:
-  - icon: ⚒️ ️
-    title: 指令
-    details: 支持 Vue 的所有内置指令。
-  - icon: ✨
-    title: 宏
-    details: 支持 Vue 的大部分宏，对 JSX 友好。
-  - icon: 🦾
-    title: 类型安全
-    details: 通过安装 TS Macro (VSCode 插件) 提供 Volar 插件支持。
   - icon: ⚡️
     title: 高性能
-    details: 拥有与 Vue Vapor 同等的性能！
+    details: 将 Vue 编译器的优化能力带到 JSX，生成高效的运行时代码。
+  - icon: 💨
+    title: Vapor 模式
+    details: 将 JSX 编译为 Vapor Mode 代码，实现细粒度响应式更新。
   - icon: 🦀
     title: Rust 编译器
-    details: 基于 Oxc，相比于 Babel 插件，虚拟DOM 编译速度提升了35倍，Vapor 编译速度提升了50倍。
-  - icon: ⚙️
-    title: ESLint
-    details: 提供 ESLint 插件为 vue-jsx-vapor 自动格式化代码。
+    details: 基于 Oxc，相比 Babel，Virtual DOM 编译速度提升 30 倍，Vapor 模式提升 50 倍。
+  - icon: 🦾
+    title: 类型安全
+    details: 原生支持 TypeScript 7.0，自动推断 JSX 组件的 props、ref 和 children 类型。
 ---
 
-## Compiler 基准测试
+## 编译器基准测试
 
 <script setup>
 import PerformanceChart from '../.vitepress/theme/components/PerformanceChart.vue'

@@ -1,6 +1,8 @@
-export default () => {
+import { defineComponent } from 'vue'
+
+export default defineComponent(() => {
   const titleClass = 'title'
-  return (
+  return () => (
     <>
       <h1>Make me red</h1>
 
@@ -11,4 +13,4 @@ export default () => {
       `}</style>
     </>
   )
-}
+})

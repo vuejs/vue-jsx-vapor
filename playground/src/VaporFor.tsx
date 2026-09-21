@@ -1,5 +1,5 @@
 import { ref, watch } from 'vue'
-import { defineVaporComponent, VaporFor } from 'vue-jsx-vapor'
+import { defineVaporComponent, VaporFor } from 'vue-jsx'
 
 export default defineVaporComponent(() => {
   const count = ref(1)
@@ -18,8 +18,8 @@ export default defineVaporComponent(() => {
       <button onClick={() => count.value--}>-</button>
       <button
         onClick={() => {
-          const first = list.value[0]
-          list.value[0] = list.value.at(-1)
+          const first = list.value[0]!
+          list.value[0] = list.value.at(-1)!
           list.value[list.value.length - 1] = first
         }}
       >

@@ -9,10 +9,7 @@ export function transformAwait(root: FunctionalNode, s: MagicString): void {
   if (root.body.type !== 'BlockStatement') return
   let hasAwait = false
   for (const node of root.body.body) {
-    if (
-      (node.type === 'VariableDeclaration' && !node.declare) ||
-      node.type.endsWith('Statement')
-    ) {
+    if ((node.type === 'VariableDeclaration' && !node.declare) || node.type.endsWith('Statement')) {
       const scope: Statement[][] = [root.body.body]
       walkAST<Node>(node, {
         enter(child, parent) {
@@ -36,12 +33,7 @@ export function transformAwait(root: FunctionalNode, s: MagicString): void {
                 n.start === child.start
               )
             })
-            processAwait(
-              s,
-              child,
-              needsSemi,
-              parent!.type === 'ExpressionStatement',
-            )
+            processAwait(s, child, needsSemi, parent!.type === 'ExpressionStatement')
           }
         },
         leave(node: Node) {

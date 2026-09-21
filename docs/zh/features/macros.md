@@ -1,51 +1,37 @@
 # 宏
 
-为 JSX 设计的一系列宏。需要通过将 `macros` 设置为 `true` 来手动启用。
+为 JSX 设计的一系列宏。宏默认关闭，需要通过将 `macros` 设置为 `true` 来手动启用。
 
 ## 配置
 
-::: code-group
-
 ```ts {7} [vite.config.ts]
 import { defineConfig } from 'vite'
-import vueJsxVapor from 'vue-jsx-vapor/vite'
+import vueJsx from 'vue-jsx/vite'
 
 export default defineConfig({
   plugins: [
-    vueJsxVapor({
+    vueJsx({
       macros: true,
     }),
   ],
 })
 ```
 
-```ts {6} [ts-macro.config.ts]
-import vueJsxVapor from 'vue-jsx-vapor/volar'
-
-export default {
-  plugins: [
-    vueJsxVapor({
-      macros: true,
-    }),
-  ],
-}
-```
-
-:::
+`vue-jsx/volar` 插件是可选的。只有在需要宏语法的编辑器或类型检查支持时才需要启用它，并保持其选项与 Vite 配置一致。配置方式请参考 [Volar 插件](../typescript/volar)。
 
 ::: details 作为单独的插件安装
 
 我们也发布了一个单独的插件，可以给 虚拟DOM 的项目使用。
 
 ```bash
-pnpm add @vue-jsx-vapor/macros -D
+pnpm add @vue-jsx/macros -D
 ```
 
 配置:
 
 ```ts
 // vite.config.ts
-import jsxMacros from '@vue-jsx-vapor/macros/vite'
+import jsxMacros from '@vue-jsx/macros/vite'
 
 export default {
   plugins: [jsxMacros()],
@@ -61,7 +47,7 @@ export default {
 ### 选项
 
 ```ts
-VueJsxVapor({
+vueJsx({
   defineComponent: {
     /**
      * @default ['defineComponent','defineVaporComponent']
@@ -109,9 +95,7 @@ import { defineComponent, useAttrs, withAsyncContext } from 'vue'
 defineComponent(
   async (props) => {
     let __temp, __restore
-    ;(([__temp, __restore] = withAsyncContext(() => nextTick())),
-      await __temp,
-      __restore())
+    ;(([__temp, __restore] = withAsyncContext(() => nextTick())), await __temp, __restore())
     const attrs = useAttrs()
     return () => (
       <div>
@@ -133,15 +117,13 @@ defineComponent(
 // @errors: 2322
 import { defineVaporComponent } from 'vue'
 
-const Comp = defineVaporComponent(
-  <T,>({ foo = undefined as T, bar = ''!, ...attrs }) => {
-    return (
-      <div>
-        <span {...attrs}>{foo}</span>
-      </div>
-    )
-  },
-)
+const Comp = defineVaporComponent(<T,>({ foo = undefined as T, bar = ''!, ...attrs }) => {
+  return (
+    <div>
+      <span {...attrs}>{foo}</span>
+    </div>
+  )
+})
 
 export default () => <Comp<string> foo={1} bar="bar" />
 ```
@@ -195,10 +177,7 @@ export default () => {
 import { ref } from 'vue'
 import { useModel } from '/vue-macros/jsx-macros/use-model'
 
-function Comp(_props: {
-  modelValue: string
-  'onUpdate:modelValue': (value: string) => any
-}) {
+function Comp(_props: { modelValue: string; 'onUpdate:modelValue': (value: string) => any }) {
   const modelValue = useModel<string>(_props, 'modelValue', { required: true })
   modelValue.value = 'foo'
   return <div>{modelValue.value}</div>
@@ -254,7 +233,7 @@ export default () => (
 与在 Vue SFC 中一样。
 
 ```tsx twoslash
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 
 const Comp = <T,>({ foo = undefined as T }) => {
   defineExpose({
@@ -276,7 +255,7 @@ export default () => {
 
 ```tsx
 import { currentInstance } from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+import { useRef } from 'vue-jsx'
 import { useExpose } from '/vue-macros/jsx-macros/use-expose'
 
 const Comp = ({ foo }) => {
@@ -292,10 +271,7 @@ const Comp = ({ foo }) => {
 ## defineStyle
 
 ```ts
-declare function defineStyle(
-  style: string,
-  options?: { scoped?: boolean },
-): void
+declare function defineStyle(style: string, options?: { scoped?: boolean }): void
 ```
 
 - 支持 CSS 变量和 JS 变量绑定。

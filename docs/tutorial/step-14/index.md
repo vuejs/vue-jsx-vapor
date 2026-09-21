@@ -8,23 +8,23 @@ next: false
 
 <script setup>
 import appCode from './app.tsx?raw'
-import appSolvedCode from './app-solved.tsx?raw'
-import appInteropCode from './app-interop.tsx?raw'
+import appVaporCode from './app-vapor.tsx?raw'
+import appVaporSolvedCode from './app-vapor-solved.tsx?raw'
 import { getDefaultFiles } from '../template'
 import { ref } from 'vue'
 
 const files = ref(getDefaultFiles())
 const apps = {
   app: { 'src/App.tsx': appCode },
-  solved: { 'src/App.tsx': appSolvedCode },
-  interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropCode },
+  solved: { 'src/App.tsx': appCode },
+  vapor: { 'src/App.tsx': appVaporCode },
+  vaporSolved: { 'src/App.tsx': appVaporSolvedCode },
 }
 </script>
 
-<jsx-repl :files :apps prev="/tutorial/step-13/" next="/tutorial/step-done/">
+<jsx-repl :files :apps prev="/tutorial/step-13/" next="/tutorial/step-15/">
 
-Besides JSX, `vue-jsx-vapor` also provides an `h` function for manually creating Vapor nodes. This style is commonly called HyperScript, and it is useful when you want finer-grained control over node creation.
+Besides JSX, `vue-jsx/vapor` also provides an `h` function for manually creating Vapor nodes. This style is commonly called HyperScript, and it is useful when you want finer-grained control over node creation.
 
 ## Basic Usage
 
@@ -37,7 +37,7 @@ h(type, props?, children?)
 For example, the following code creates a simple `div`:
 
 ```tsx
-import { h } from 'vue-jsx-vapor'
+import { h } from 'vue-jsx/vapor'
 export default () => h('div', null, 'hello')
 ```
 

@@ -1,5 +1,5 @@
 import { createRuleTester } from 'eslint-vitest-rule-tester'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 import _defineStyle from '../src/rules/define-style'
 
 describe('define-style', () => {

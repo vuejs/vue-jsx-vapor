@@ -5,27 +5,19 @@ import {
   type Block,
   type ComponentObjectPropsOptions,
   type ComponentTypeEmits,
+  type DefineVaporComponent,
+  type DefineVaporSetupFnComponent,
   type EmitFn,
   type EmitsOptions,
-  type EmitsToProps,
-  type ExtractDefaultPropTypes,
   type ExtractPropTypes,
   type ShallowRef,
-  type TypeEmitsToOptions,
   type VaporComponent,
-  type VaporComponentInstance,
   type VaporComponentOptions,
-  type VaporPublicProps,
   type VaporRenderResult,
+  type VaporSlot,
 } from 'vue'
 import * as Vue from 'vue'
-import type {
-  EmitFnToProps,
-  IsKeyValues,
-  NodeChild,
-  Prettify,
-  SetupContextToProps,
-} from './types'
+import type { EmitFnToEmits, ExposedToProps, NodeChild, SlotsToProps } from './types'
 
 // component
 
@@ -78,10 +70,7 @@ export const createComponent = (
 }
 
 const proxyCache = new WeakMap()
-export function createProxyComponent(
-  type: VaporComponent,
-  normalizeNode?: (node: any) => Block,
-) {
+export function createProxyComponent(type: VaporComponent, normalizeNode?: (node: any) => Block) {
   if (typeof type === 'function') {
     const existing = proxyCache.get(type)
     if (existing) return existing
@@ -99,10 +88,11 @@ export function createProxyComponent(
         return normalizeNode ? normalizeNode(node) : node
       },
       get(target, p, receiver) {
-        if (i && i.appContext.vapor && p === '__vapor') {
+        const result = Reflect.get(target, p, receiver)
+        if (p === '__vapor' && result === undefined && i && i.appContext.vapor) {
           return true
         }
-        return Reflect.get(target, p, receiver)
+        return result
       },
     })
     proxyCache.set(type, proxy)
@@ -130,29 +120,19 @@ export function normalizeNode(node: NodeChild): Block {
 
 export function isBlock(val: NonNullable<unknown>): val is Block {
   return (
-    val instanceof Node ||
-    Array.isArray(val) ||
-    Vue.isVaporComponent(val) ||
-    Vue.isFragment(val)
+    val instanceof Node || Array.isArray(val) || Vue.isVaporComponent(val) || Vue.isFragment(val)
   )
 }
 
 // node
 
-function createFragment(
-  nodes: Block,
-  anchor: Node | undefined = document.createTextNode(''),
-) {
+function createFragment(nodes: Block, anchor: Node | undefined = document.createTextNode('')) {
   const frag = new Vue.VaporFragment(nodes)
   frag.anchor = anchor
   return frag
 }
 
-function normalizeBlock(
-  node: any,
-  anchor?: Node,
-  processFunction = false,
-): Block {
+function normalizeBlock(node: any, anchor?: Node, processFunction = false): Block {
   if (node instanceof Node || Vue.isFragment(node)) {
     return node
   } else if (Vue.isVaporComponent(node)) {
@@ -181,9 +161,7 @@ function resolveValue(
   anchor?: Node,
   processFunction = false,
 ) {
-  anchor =
-    anchor ||
-    (current instanceof Node && current.nodeType === 3 ? current : undefined)
+  anchor = anchor || (current instanceof Node && current.nodeType === 3 ? current : undefined)
   const node = normalizeBlock(value, anchor, processFunction)
   if (current) {
     if (Vue.isFragment(current)) {
@@ -195,10 +173,7 @@ function resolveValue(
         if (current.scope) current.scope.stop()
       }
     } else if (current instanceof Node) {
-      if (
-        current.nodeType === 3 &&
-        (!(node instanceof Node) || node.nodeType !== 3)
-      ) {
+      if (current.nodeType === 3 && (!(node instanceof Node) || node.nodeType !== 3)) {
         current.textContent = ''
       }
       if (Vue.isFragment(node) && current.parentNode) {
@@ -219,11 +194,7 @@ function resolveValue(
   return node
 }
 
-function resolveValues(
-  values: any[] = [],
-  _anchor?: Node,
-  processFunction = false,
-) {
+function resolveValues(values: any[] = [], _anchor?: Node, processFunction = false) {
   const nodes: Block[] = []
   const scopes: EffectScope[] = []
   for (const [index, value] of values.entries()) {
@@ -255,10 +226,7 @@ export function createNodes(...values: any[]) {
 export function normalizeVaporSlots(slots: any) {
   if (typeof slots === 'function') {
     return { name: 'default', fn: slots }
-  } else if (
-    Object.prototype.toString.call(slots) === '[object Object]' &&
-    !isBlock(slots)
-  ) {
+  } else if (Object.prototype.toString.call(slots) === '[object Object]' && !isBlock(slots)) {
     return Object.entries(slots).map(([name, fn]) => ({ name, fn }))
   } else {
     return {
@@ -270,71 +238,7 @@ export function normalizeVaporSlots(slots: any) {
 
 // defineVaporComponent
 
-type VaporComponentInstanceConstructor<T extends VaporComponentInstance> = {
-  __isFragment?: never
-  __isTeleport?: never
-  __isSuspense?: never
-  new (...args: any[]): T
-}
-
-export type DefineVaporComponent<
-  RuntimePropsOptions = {},
-  RuntimePropsKeys extends string = string,
-  InferredProps = string extends RuntimePropsKeys
-    ? ComponentObjectPropsOptions extends RuntimePropsOptions
-      ? {}
-      : ExtractPropTypes<RuntimePropsOptions>
-    : { [key in RuntimePropsKeys]?: any },
-  Emits extends EmitsOptions = {},
-  RuntimeEmitsKeys extends string = string,
-  Slots extends Record<string, any> = Record<string, any>,
-  Exposed extends Record<string, any> = Record<string, any>,
-  TypeBlock extends Block = Block,
-  TypeRefs extends Record<string, unknown> = {},
-  MakeDefaultsOptional extends boolean = true,
-  PublicProps = VaporPublicProps,
-  ResolvedProps = Readonly<InferredProps> & EmitsToProps<Emits>,
-  Defaults = ExtractDefaultPropTypes<RuntimePropsOptions>,
-> = VaporComponentInstanceConstructor<
-  VaporComponentInstance<
-    MakeDefaultsOptional extends true
-      ? keyof Defaults extends never
-        ? Prettify<ResolvedProps> & PublicProps
-        : Partial<Defaults> &
-            Omit<Prettify<ResolvedProps> & PublicProps, keyof Defaults>
-      : Prettify<ResolvedProps> & PublicProps,
-    Emits,
-    Slots,
-    Exposed,
-    TypeBlock,
-    TypeRefs
-  >
-> &
-  VaporComponentOptions<
-    RuntimePropsOptions | RuntimePropsKeys[],
-    Emits,
-    RuntimeEmitsKeys,
-    Slots,
-    Exposed
-  >
-
-export type DefineVaporSetupFnComponent<
-  Props extends Record<string, any> = {},
-  Emits extends EmitsOptions = {},
-  Slots extends Record<string, any> = Record<string, any>,
-  Exposed extends Record<string, any> = Record<string, any>,
-  TypeBlock extends Block = Block,
-  ResolvedProps extends Record<string, any> = Readonly<
-    Props & VaporPublicProps
-  > &
-    SetupContextToProps<Emits, Slots, Exposed>,
-> = new () => VaporComponentInstance<
-  ResolvedProps,
-  Emits,
-  Slots,
-  Exposed,
-  TypeBlock
->
+type SlotsType = Record<string, VaporSlot>
 
 // overload 1: direct setup function
 // (uses user defined props interface)
@@ -342,7 +246,7 @@ export function defineVaporComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
-  Slots extends Record<string, any> = Record<string, any>,
+  Slots extends SlotsType = SlotsType,
   Exposed extends Record<string, any> = Record<string, any>,
   TypeBlock extends Block = Block,
   Emit = EmitFn<Emits>,
@@ -366,8 +270,8 @@ export function defineVaporComponent<
   > &
     ThisType<void>,
 ): DefineVaporSetupFnComponent<
-  Props & ([keyof Emits] extends [never] ? EmitFnToProps<Emit> : {}),
-  Emits,
+  Props & ExposedToProps<Exposed> & SlotsToProps<Slots>,
+  [keyof Emits] extends [never] ? EmitFnToEmits<Emit> : Emits,
   Slots,
   Exposed,
   TypeBlock
@@ -376,7 +280,7 @@ export function defineVaporComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
-  Slots extends Record<string, any> = Record<string, any>,
+  Slots extends SlotsType = SlotsType,
   Exposed extends Record<string, any> = Record<string, any>,
   TypeBlock extends Block = Block,
   Emit = EmitFn<Emits>,
@@ -400,8 +304,8 @@ export function defineVaporComponent<
   > &
     ThisType<void>,
 ): DefineVaporSetupFnComponent<
-  Props & ([keyof Emits] extends [never] ? EmitFnToProps<Emit> : {}),
-  Emits,
+  Props & SlotsToProps<Slots> & ExposedToProps<Exposed>,
+  [keyof Emits] extends [never] ? EmitFnToEmits<Emit> : Emits,
   Slots,
   Exposed,
   TypeBlock
@@ -411,26 +315,25 @@ export function defineVaporComponent<
 export function defineVaporComponent<
   // props
   TypeProps,
-  RuntimePropsOptions extends
-    ComponentObjectPropsOptions = ComponentObjectPropsOptions,
+  RuntimePropsOptions extends ComponentObjectPropsOptions = ComponentObjectPropsOptions,
   RuntimePropsKeys extends string = string,
   // emits
   TypeEmits extends ComponentTypeEmits = {},
   RuntimeEmitsOptions extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
-  Slots extends Record<string, any> = Record<string, any>,
+  Slots extends SlotsType = SlotsType,
   Exposed extends Record<string, any> = Record<string, any>,
   // resolved types
   ResolvedEmits extends EmitsOptions = {} extends RuntimeEmitsOptions
-    ? TypeEmitsToOptions<TypeEmits>
+    ? EmitFnToEmits<EmitFn<TypeEmits>>
     : RuntimeEmitsOptions,
-  InferredProps = IsKeyValues<TypeProps> extends true
-    ? TypeProps
-    : string extends RuntimePropsKeys
+  InferredProps = unknown extends TypeProps
+    ? string extends RuntimePropsKeys
       ? ComponentObjectPropsOptions extends RuntimePropsOptions
         ? {}
         : ExtractPropTypes<RuntimePropsOptions>
-      : { [key in RuntimePropsKeys]?: any },
+      : { [key in RuntimePropsKeys]?: any }
+    : TypeProps,
   TypeRefs extends Record<string, unknown> = {},
   TypeBlock extends Block = Block,
 >(
@@ -445,22 +348,6 @@ export function defineVaporComponent<
   > & {
     // allow any custom options
     [key: string]: any
-    /**
-     * @private
-     */
-    __typeProps?: TypeProps
-    /**
-     * @private
-     */
-    __typeEmits?: TypeEmits
-    /**
-     * @private
-     */
-    __typeRefs?: TypeRefs
-    /**
-     * @private
-     */
-    __typeEl?: TypeBlock
   } & ThisType<void>,
 ): DefineVaporComponent<
   RuntimePropsOptions,
@@ -469,7 +356,7 @@ export function defineVaporComponent<
   ResolvedEmits,
   RuntimeEmitsKeys,
   Slots,
-  Block extends Exposed ? Record<string, any> : Exposed,
+  Exposed extends VaporRenderResult ? Record<string, any> : Exposed,
   TypeBlock,
   TypeRefs,
   // MakeDefaultsOptional - if TypeProps is provided, set to false to use
@@ -491,69 +378,59 @@ export function defineVaporComponent(comp: any, extraOptions?: any) {
 
 // components
 
-type ResolveItem<Item, GetKey> = GetKey extends undefined
-  ? Item
-  : ShallowRef<Item>
+type VaporForSlots<T, Item, GetKey> = {
+  default: (
+    ...args: string extends keyof Item
+      ? [
+          item: GetKey extends undefined ? T[keyof T] : ShallowRef<T[keyof T]>,
+          key: ShallowRef<keyof T>,
+          index: ShallowRef<number>,
+        ]
+      : [item: GetKey extends undefined ? Item : ShallowRef<Item>, index: ShallowRef<number>]
+  ) => any
+}
 
-export const VaporFor = defineVaporComponent(
-  <
-    T extends
-      | any[]
-      | Record<any, any>
-      | number
-      | string
-      | Set<any>
-      | Map<any, any>,
-    Item = T extends number
-      ? number
-      : T extends string
-        ? string
-        : T extends any[]
-          ? T[number]
-          : T extends Iterable<infer T1>
-            ? T1
-            : Record<any, any>,
-    GetKeyDefault = (
-      ...args: string extends keyof Item
-        ? [item: T[keyof T], key: keyof T, index: number]
-        : [item: Item, index: number]
-    ) => any,
-    GetKey extends GetKeyDefault | null | undefined = undefined,
-  >(
-    props: {
-      in: T
-      getKey?: GetKey extends undefined ? GetKeyDefault : GetKey
-    },
-    {
-      slots,
-    }: {
-      slots: {
-        default: (
-          ...args: string extends keyof Item
-            ? [
-                item: ResolveItem<T[keyof T], GetKey>,
-                key: ShallowRef<keyof T>,
-                index: ShallowRef<number>,
-              ]
-            : [item: ResolveItem<Item, GetKey>, index: ShallowRef<number>]
-        ) => any
-      }
-    },
-  ) => {
-    return Vue.createFor(
-      () => props.in as any,
-      (item, key, index) => {
-        return slots.default
-          ? slots.default(
-              // @ts-ignore
-              props.getKey === undefined ? item.value : item,
-              key,
-              index,
-            )
-          : []
-      },
-      props.getKey === undefined ? (item) => item : (props.getKey as any),
-    )
+export const VaporFor = <
+  T extends any[] | Record<any, any> | number | string | Set<any> | Map<any, any>,
+  Item = T extends number
+    ? number
+    : T extends string
+      ? string
+      : T extends any[]
+        ? T[number]
+        : T extends Iterable<infer T1>
+          ? T1
+          : Record<any, any>,
+  GetKeyDefault = (
+    ...args: string extends keyof Item
+      ? [item: T[keyof T], key: keyof T, index: number]
+      : [item: Item, index: number]
+  ) => any,
+  GetKey extends GetKeyDefault | null | undefined = undefined,
+>(
+  props: {
+    in: T
+    getKey?: GetKey extends undefined ? GetKeyDefault : GetKey
+  } & SlotsToProps<VaporForSlots<T, Item, GetKey>>,
+  {
+    slots,
+  }: {
+    slots: VaporForSlots<T, Item, GetKey>
   },
-  { props: ['in', 'getKey'] },
-)
+) => {
+  return Vue.createFor(
+    () => props.in as any,
+    (item, key, index) => {
+      return slots.default
+        ? slots.default(
+            // @ts-ignore
+            props.getKey === undefined ? item.value : item,
+            key,
+            index,
+          )
+        : []
+    },
+    props.getKey === undefined ? (item) => item : (props.getKey as any),
+  )
+}
+VaporFor.__vapor = true

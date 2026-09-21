@@ -2,9 +2,7 @@ import { computed, useAttrs } from 'vue'
 import * as Vue from 'vue'
 
 /*@__NO_SIDE_EFFECTS__*/
-export function getCurrentInstance():
-  | import('vue').GenericComponentInstance
-  | null {
+export function getCurrentInstance(): import('vue').GenericComponentInstance | null {
   // @ts-ignore
   return Vue.currentInstance || Vue.getCurrentInstance()
 }
@@ -14,7 +12,7 @@ export function getCurrentInstance():
  *
  * @example
  * ```tsx
- * import { useProps } from 'vue-jsx-vapor'
+ * import { useProps } from 'vue-jsx'
  *
  * defineComponent(({ foo = '' })=>{
  *   const props = useProps() // { foo: '' }
@@ -33,7 +31,7 @@ export function useProps() {
  *
  * @example
  * ```tsx
- * import { useFullProps } from 'vue-jsx-vapor'
+ * import { useFullProps } from 'vue-jsx'
  *
  * defineComponent((props) => {
  *   const fullProps = useFullProps() // = useAttrs() + useProps()

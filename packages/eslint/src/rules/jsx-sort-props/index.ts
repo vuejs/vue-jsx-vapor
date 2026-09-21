@@ -6,11 +6,7 @@
 
 import type { MessageIds, RuleOptions } from './types'
 import type { TSESTree as Tree } from '@typescript-eslint/utils'
-import type {
-  RuleContext,
-  RuleFixer,
-  RuleModule,
-} from '@typescript-eslint/utils/ts-eslint'
+import type { RuleContext, RuleFixer, RuleModule } from '@typescript-eslint/utils/ts-eslint'
 type ASTNode = Tree.Node
 
 // See https://github.com/babel/babel/blob/ce420ba51c68591e057696ef43e028f41c6e04cd/packages/babel-types/src/validators/react/isCompatTag.js
@@ -22,9 +18,7 @@ const COMPAT_TAG_REGEX = /^[a-z]/
  * @param node - JSXOpeningElement to check.
  * @returns Whether or not the node corresponds to a DOM element.
  */
-export function isDOMComponent(
-  node: Tree.JSXOpeningElement | Tree.JSXOpeningFragment,
-) {
+export function isDOMComponent(node: Tree.JSXOpeningElement | Tree.JSXOpeningFragment) {
   const name = getElementType(node)
   return COMPAT_TAG_REGEX.test(name)
 }
@@ -37,9 +31,7 @@ export function isDOMComponent(
  */
 export function getPropName(prop: Tree.JSXAttribute | Tree.JSXSpreadAttribute) {
   if (!prop.type || prop.type !== 'JSXAttribute')
-    throw new Error(
-      'The prop must be a JSXAttribute collected by the AST parser.',
-    )
+    throw new Error('The prop must be a JSXAttribute collected by the AST parser.')
   if (prop.name.type === 'JSXNamespacedName')
     return `${prop.name.namespace.name}:${prop.name.name.name}`
   return prop.name.name
@@ -61,9 +53,7 @@ function resolveMemberExpressions(
  * Ported from `jsx-ast-utils/elementType` to reduce bundle size
  * @see https://github.com/jsx-eslint/jsx-ast-utils/blob/main/src/elementType.js
  */
-export function getElementType(
-  node: Tree.JSXOpeningElement | Tree.JSXOpeningFragment,
-) {
+export function getElementType(node: Tree.JSXOpeningElement | Tree.JSXOpeningFragment) {
   if (node.type === 'JSXOpeningFragment') return '<>'
 
   const { name } = node
@@ -74,8 +64,7 @@ export function getElementType(
     return resolveMemberExpressions(object, property)
   }
 
-  if (name.type === 'JSXNamespacedName')
-    return `${name.namespace.name}:${name.name.name}`
+  if (name.type === 'JSXNamespacedName') return `${name.namespace.name}:${name.name.name}`
 
   return (node.name as Tree.JSXIdentifier).name
 }
@@ -103,8 +92,7 @@ function isMultilineProp(node: ASTNode) {
 
 const messages = {
   listIsEmpty: 'A customized reserved first list must not be empty',
-  listReservedPropsFirst:
-    'Reserved props must be listed before all other props',
+  listReservedPropsFirst: 'Reserved props must be listed before all other props',
   listReservedPropsLast: 'Reserved props must be listed after all other props',
   listCallbacksLast: 'Callbacks must be listed after all other props',
   listShorthandFirst: 'Shorthand props must be listed before all other props',
@@ -114,21 +102,13 @@ const messages = {
   sortPropsByAlpha: 'Props should be sorted alphabetically',
 }
 
-const RESERVED_PROPS_LIST = [
-  'children',
-  'dangerouslySetInnerHTML',
-  'key',
-  'ref',
-]
+const RESERVED_PROPS_LIST = ['children', 'dangerouslySetInnerHTML', 'key', 'ref']
 
 function getReservedPropIndex(name: string, list: string[]) {
   return list.indexOf(name.split(':')[0])
 }
 
-let attributeMap: WeakMap<
-  Tree.JSXAttribute,
-  { end: number; hasComment: boolean }
->
+let attributeMap: WeakMap<Tree.JSXAttribute, { end: number; hasComment: boolean }>
 // attributeMap = { end: endrange, hasComment: true||false if comment in between nodes exists, it needs to be sorted to end }
 
 function shouldSortToEnd(node: Tree.JSXAttribute) {
@@ -136,11 +116,7 @@ function shouldSortToEnd(node: Tree.JSXAttribute) {
   return !!attr && !!attr.hasComment
 }
 
-function contextCompare(
-  a: Tree.JSXAttribute,
-  b: Tree.JSXAttribute,
-  options: JsxCompareOptions,
-) {
+function contextCompare(a: Tree.JSXAttribute, b: Tree.JSXAttribute, options: JsxCompareOptions) {
   let aProp = getPropName(a)
   let bProp = getPropName(b)
   const aPropNamespace = aProp.split(':')[0]
@@ -248,10 +224,7 @@ function getGroupsOfSortableAttributes(
     // If we have no groups or if the last attribute was JSXSpreadAttribute
     // then we start a new group. Append attributes to the group until we
     // come across another JSXSpreadAttribute or exhaust the array.
-    if (
-      !lastAttr ||
-      (lastAttr.type === 'JSXSpreadAttribute' && !attrIsSpread)
-    ) {
+    if (!lastAttr || (lastAttr.type === 'JSXSpreadAttribute' && !attrIsSpread)) {
       groupCount += 1
       sortableAttributeGroups[groupCount - 1] = []
     }
@@ -298,16 +271,14 @@ function getGroupsOfSortableAttributes(
           attributeline + 1 === comment[1].loc.start.line &&
           nextAttribute
         ) {
-          const commentNextAttribute =
-            sourceCode.getCommentsAfter(nextAttribute)
+          const commentNextAttribute = sourceCode.getCommentsAfter(nextAttribute)
           attributeMap.set(attribute, {
             end: nextAttribute.range[1],
             hasComment: true,
           })
           if (
             commentNextAttribute.length === 1 &&
-            nextAttribute.loc.start.line ===
-              commentNextAttribute[0].loc.start.line
+            nextAttribute.loc.start.line === commentNextAttribute[0].loc.start.line
           ) {
             attributeMap.set(attribute, {
               end: commentNextAttribute[0].range[1],
@@ -357,10 +328,7 @@ function generateFixerFunction(
     reservedLast,
     locale,
   }
-  const sortableAttributeGroups = getGroupsOfSortableAttributes(
-    attributes,
-    context,
-  )
+  const sortableAttributeGroups = getGroupsOfSortableAttributes(attributes, context)
   const sortedAttributeGroups = sortableAttributeGroups
     .slice(0)
     .map((group) => [...group].sort((a, b) => contextCompare(a, b, options)))
@@ -372,10 +340,7 @@ function generateFixerFunction(
     sortableAttributeGroups.forEach((sortableGroup, ii) => {
       sortableGroup.forEach((attr, jj) => {
         const sortedAttr = sortedAttributeGroups[ii][jj]
-        const sortedAttrText = source.slice(
-          sortedAttr.range[0],
-          attributeMap.get(sortedAttr)!.end,
-        )
+        const sortedAttrText = source.slice(sortedAttr.range[0], attributeMap.get(sortedAttr)!.end)
         fixers.push({
           range: [attr.range[0], attributeMap.get(attr)!.end],
           text: sortedAttrText,
@@ -394,10 +359,7 @@ function generateFixerFunction(
       source = `${source.slice(0, fix.range[0])}${fix.text}${source.slice(fix.range[1])}`
     })
 
-    return fixer.replaceTextRange(
-      [rangeStart, rangeEnd],
-      source.slice(rangeStart, rangeEnd),
-    )
+    return fixer.replaceTextRange([rangeStart, rangeEnd], source.slice(rangeStart, rangeEnd))
   }
 }
 
@@ -412,11 +374,7 @@ function validateReservedFirstConfig(
   context: Readonly<RuleContext<MessageIds, RuleOptions>>,
   reservedFirst: unknown[] | boolean,
 ) {
-  if (
-    reservedFirst &&
-    Array.isArray(reservedFirst) &&
-    reservedFirst.length === 0
-  ) {
+  if (reservedFirst && Array.isArray(reservedFirst) && reservedFirst.length === 0) {
     return function Report(decl: ASTNode | Tree.Token) {
       context.report({
         node: decl,
@@ -531,13 +489,8 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
     const multiline = configuration.multiline || 'ignore'
     const noSortAlphabetically = configuration.noSortAlphabetically || false
     const reservedFirst = configuration.reservedFirst || false
-    const reservedFirstError = validateReservedFirstConfig(
-      context,
-      reservedFirst,
-    )
-    const reservedList = Array.isArray(reservedFirst)
-      ? reservedFirst
-      : RESERVED_PROPS_LIST
+    const reservedFirstError = validateReservedFirstConfig(context, reservedFirst)
+    const reservedList = Array.isArray(reservedFirst) ? reservedFirst : RESERVED_PROPS_LIST
     const reservedLastList = configuration.reservedLast || []
     const locale = configuration.locale || 'auto'
 
@@ -576,30 +529,16 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
               return memo
             }
 
-            const previousReservedIndex = getReservedPropIndex(
-              previousPropName,
-              nodeReservedList,
-            )
-            const currentReservedIndex = getReservedPropIndex(
-              currentPropName,
-              nodeReservedList,
-            )
+            const previousReservedIndex = getReservedPropIndex(previousPropName, nodeReservedList)
+            const currentReservedIndex = getReservedPropIndex(currentPropName, nodeReservedList)
 
-            if (previousReservedIndex > -1 && currentReservedIndex === -1)
-              return decl
+            if (previousReservedIndex > -1 && currentReservedIndex === -1) return decl
 
             if (
-              (reservedFirst !== true &&
-                previousReservedIndex > currentReservedIndex) ||
+              (reservedFirst !== true && previousReservedIndex > currentReservedIndex) ||
               (previousReservedIndex === -1 && currentReservedIndex > -1)
             ) {
-              reportNodeAttribute(
-                decl,
-                'listReservedPropsFirst',
-                node,
-                context,
-                nodeReservedList,
-              )
+              reportNodeAttribute(decl, 'listReservedPropsFirst', node, context, nodeReservedList)
 
               return memo
             }
@@ -614,29 +553,16 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
           }
 
           if (reservedLastList.length > 0) {
-            const previousReservedIndex = getReservedPropIndex(
-              previousPropName,
-              reservedLastList,
-            )
-            const currentReservedIndex = getReservedPropIndex(
-              currentPropName,
-              reservedLastList,
-            )
+            const previousReservedIndex = getReservedPropIndex(previousPropName, reservedLastList)
+            const currentReservedIndex = getReservedPropIndex(currentPropName, reservedLastList)
 
-            if (previousReservedIndex === -1 && currentReservedIndex > -1)
-              return decl
+            if (previousReservedIndex === -1 && currentReservedIndex > -1) return decl
 
             if (
               previousReservedIndex < currentReservedIndex ||
               (previousReservedIndex > -1 && currentReservedIndex === -1)
             ) {
-              reportNodeAttribute(
-                decl,
-                'listReservedPropsLast',
-                node,
-                context,
-                nodeReservedList,
-              )
+              reportNodeAttribute(decl, 'listReservedPropsLast', node, context, nodeReservedList)
 
               return memo
             }
@@ -657,13 +583,7 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
             }
             if (previousIsCallback && !currentIsCallback) {
               // Encountered a non-callback prop after a callback prop
-              reportNodeAttribute(
-                memo,
-                'listCallbacksLast',
-                node,
-                context,
-                nodeReservedList,
-              )
+              reportNodeAttribute(memo, 'listCallbacksLast', node, context, nodeReservedList)
 
               return memo
             }
@@ -673,13 +593,7 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
             if (currentValue && !previousValue) return decl
 
             if (!currentValue && previousValue) {
-              reportNodeAttribute(
-                decl,
-                'listShorthandFirst',
-                node,
-                context,
-                nodeReservedList,
-              )
+              reportNodeAttribute(decl, 'listShorthandFirst', node, context, nodeReservedList)
 
               return memo
             }
@@ -689,13 +603,7 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
             if (!currentValue && previousValue) return decl
 
             if (currentValue && !previousValue) {
-              reportNodeAttribute(
-                memo,
-                'listShorthandLast',
-                node,
-                context,
-                nodeReservedList,
-              )
+              reportNodeAttribute(memo, 'listShorthandLast', node, context, nodeReservedList)
 
               return memo
             }
@@ -710,13 +618,7 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
             }
             if (!previousIsMultiline && currentIsMultiline) {
               // Encountered a non-multiline prop before a multiline prop
-              reportNodeAttribute(
-                decl,
-                'listMultilineFirst',
-                node,
-                context,
-                nodeReservedList,
-              )
+              reportNodeAttribute(decl, 'listMultilineFirst', node, context, nodeReservedList)
 
               return memo
             }
@@ -727,13 +629,7 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
             }
             if (previousIsMultiline && !currentIsMultiline) {
               // Encountered a non-multiline prop after a multiline prop
-              reportNodeAttribute(
-                memo,
-                'listMultilineLast',
-                node,
-                context,
-                nodeReservedList,
-              )
+              reportNodeAttribute(memo, 'listMultilineLast', node, context, nodeReservedList)
 
               return memo
             }
@@ -748,13 +644,7 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
                 ) > 0
               : previousPropName > currentPropName)
           ) {
-            reportNodeAttribute(
-              decl,
-              'sortPropsByAlpha',
-              node,
-              context,
-              nodeReservedList,
-            )
+            reportNodeAttribute(decl, 'sortPropsByAlpha', node, context, nodeReservedList)
 
             return memo
           }

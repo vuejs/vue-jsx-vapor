@@ -13,8 +13,7 @@ export function transformDefineComponent(
   codes.replaceRange(comp.end, node.end - 1)
 
   const isFnComponent =
-    (ts.isArrowFunction(comp) || ts.isFunctionExpression(comp)) &&
-    comp.typeParameters?.length
+    (ts.isArrowFunction(comp) || ts.isFunctionExpression(comp)) && comp.typeParameters?.length
   const isVaporComponent = node.expression.getText(ast).includes('defineVapor')
 
   codes.replaceRange(
@@ -28,11 +27,7 @@ const __setup = `,
   )
 
   if (isFnComponent) {
-    codes.push(
-      '\n;[',
-      [node.expression.getText(ast), node.expression.getStart(ast)],
-      ']',
-    )
+    codes.push('\n;[', [node.expression.getText(ast), node.expression.getStart(ast)], ']')
     return
   }
 

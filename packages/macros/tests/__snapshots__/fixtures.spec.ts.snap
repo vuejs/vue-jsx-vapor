@@ -3,8 +3,8 @@
 exports[`fixtures > ./fixtures/define-component.tsx 1`] = `
 "
 import { useAttrs as __useAttrs } from "vue";
-import { useModel as __useModel } from "/vue-jsx-vapor/macros/use-model";
-import { useFullProps as __useFullProps } from "/vue-jsx-vapor/props";
+import { useModel as __useModel } from "/vue-jsx/macros/use-model";
+import { useFullProps as __useFullProps } from "/vue-jsx/props";
 import { withAsyncContext as __withAsyncContext } from "vue";import { defineComponent, defineVaporComponent, nextTick, unref } from 'vue'
 
 const $ = unref
@@ -38,27 +38,25 @@ const Comp = defineVaporComponent(
         }, type: String }, 
 'onUpdate:foo': null, 
 'fooModifiers': null
-}, ...{ name: 'Comp', props: { Comp: Object } } },
+}, ...{ name: 'Comp', props: ['Comp'] } },
 )
 
-const Comp1 = defineVaporComponent(
-  () => {const props = __useFullProps();
-    const foo = __useModel(props, 'foo')
-    return (
-      <div>
-        {[foo.value, props['bar'], props['onUpdate:bar']]}
-        <props.comp />
-      </div>
-    )
-  }, { props: {
+const Comp1 = defineVaporComponent(() => {const props = __useFullProps();
+  const foo = __useModel(props, 'foo')
+  return (
+    <div>
+      {[foo.value, props['bar'], props['onUpdate:bar']]}
+      <props.comp />
+    </div>
+  )
+}, { props: {
 'bar': null, 
 'onUpdate:bar': null, 
 'comp': null, 
 'foo': null, 
 'onUpdate:foo': null, 
 'fooModifiers': null
-}, },
-)
+}, })
 
 const Comp2 = defineComponent(async () => {
 let __temp, __restore
@@ -129,7 +127,7 @@ const Comp6 = defineVaporComponent((__props) => {const props = __useAttrs();
 
 exports[`fixtures > ./fixtures/define-expose.tsx 1`] = `
 "
-import { getCurrentInstance as __getCurrentInstance } from "/vue-jsx-vapor/props";export function Comp() {
+import { getCurrentInstance as __getCurrentInstance } from "/vue-jsx/props";export function Comp() {
   ;(__getCurrentInstance().exposed = {
     foo: 1,
   })
@@ -169,8 +167,7 @@ export const Comp5 = () => {
 
 exports[`fixtures > ./fixtures/define-model.tsx 1`] = `
 "
-import { useModel as __useModel } from "/vue-jsx-vapor/macros/use-model";
-import { defineVaporComponent, unref } from 'vue'
+import { useModel as __useModel } from "/vue-jsx/macros/use-model";import { defineVaporComponent, unref } from 'vue'
 
 const $ = unref
 
@@ -197,7 +194,7 @@ export default function (__props) {
 
 exports[`fixtures > ./fixtures/define-slots.tsx 1`] = `
 "
-import { useSlots as __useSlots } from "/vue-jsx-vapor/macros/use-slots";export const Comp = () => {
+import { useSlots as __useSlots } from "/vue-jsx/macros/use-slots";export const Comp = () => {
   const slots = __useSlots<{
     default: () => any
   }>()
@@ -214,8 +211,8 @@ export default function () {
 `;
 
 exports[`fixtures > ./fixtures/define-style.tsx 1`] = `
-"import "/vue-jsx-vapor/macros/define-style/0?scopeId=4e9d5cd0&scoped=true&lang.css";import style1 from "/vue-jsx-vapor/macros/define-style/1?scopeId=13f8dd3a&scoped=true&lang.module.scss";
-import { useSlots as __useSlots } from "/vue-jsx-vapor/macros/use-slots";import "/vue-jsx-vapor/macros/define-style/2?scopeId=63a7910c&scoped=false&lang.scss";import { defineComponent, ref } from 'vue'
+"import "/vue-jsx/macros/define-style/0?scopeId=4e9d5cd0&scoped=true&lang.css";import style1 from "/vue-jsx/macros/define-style/1?scopeId=13f8dd3a&scoped=true&lang.module.scss";
+import { useSlots as __useSlots } from "/vue-jsx/macros/use-slots";import "/vue-jsx/macros/define-style/2?scopeId=63a7910c&scoped=false&lang.scss";import { defineComponent, ref } from 'vue'
 
 export const Comp = () => {
   const color = ref('red')
@@ -246,40 +243,46 @@ export default defineComponent(() => {
 
 exports[`fixtures > ./fixtures/slot.tsx 1`] = `
 "
-import { useFullProps as __useFullProps } from "/vue-jsx-vapor/props";import { defineComponent, defineVaporComponent } from 'vue';
+import { useFullProps as __useFullProps } from "/vue-jsx/props";import { defineComponent, defineVaporComponent } from 'vue'
 
 const Comp = defineComponent(() => {const props = __useFullProps();
   const computedText = () => {
-   return props.text
+    return props.text
   }
-  return () => <div><slot foo="" /></div>
+  return () => (
+    <div>
+      <slot foo="" />
+    </div>
+  )
 }, { props: {
 'text': null
 }, })
-;<Comp>
-  {{ default: (props) => [props.foo === ''] }}
-</Comp>
+;<Comp>{{ default: (props) => [props.foo === ''] }}</Comp>
 
 const Comp1 = defineVaporComponent(() => {const props = __useFullProps();
   const computedText = () => {
-   return props.text
+    return props.text
   }
-  return <div><slot foo="" /></div>
+  return (
+    <div>
+      <slot foo="" />
+    </div>
+  )
 }, { props: {
 'text': null
-}, }) 
-;<Comp1>
-  {{ default: (props) => [props.foo === ''] }}
-</Comp1>
+}, })
+;<Comp1>{{ default: (props) => [props.foo === ''] }}</Comp1>
 
-const Comp2 = (props: {text?: string}) => {
+const Comp2 = (props: { text?: string }) => {
   const computedText = () => {
-   return props.text
+    return props.text
   }
-  return <div><slot foo="" /></div>
+  return (
+    <div>
+      <slot foo="" />
+    </div>
+  )
 }
-;<Comp2>
-  {{ default: (props) => [props.foo === ''] }}
-</Comp2>
+;<Comp2>{{ default: (props) => [props.foo === ''] }}</Comp2>
 "
 `;

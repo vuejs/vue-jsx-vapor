@@ -23,10 +23,7 @@ export type JsxMacros = {
   defineExpose?: string
   defineStyle?: DefineStyle[]
   defineComponent?: import('typescript').CallExpression
-  slots?: (
-    | import('typescript').JsxOpeningElement
-    | import('typescript').JsxSelfClosingElement
-  )[]
+  slots?: (import('typescript').JsxOpeningElement | import('typescript').JsxSelfClosingElement)[]
 }
 
 export type Root =
@@ -83,9 +80,7 @@ function getMacro(
       node = node.expression
     }
     if (!ts.isCallExpression(node)) return
-    const expression = ts.isPropertyAccessExpression(node.expression)
-      ? node.expression
-      : node
+    const expression = ts.isPropertyAccessExpression(node.expression) ? node.expression : node
     return (
       ts.isIdentifier(expression.expression) &&
       [
@@ -99,7 +94,7 @@ function getMacro(
     )
   }
 }
- 
+
 const getModifierPropName = (name: string): string => {
   return `${
     name === 'modelValue' || name === 'model-value' ? 'model' : name
@@ -163,22 +158,17 @@ export function getRootMap(options: TransformOptions): RootMap {
       if (root) {
         if (options.defineModel.alias.includes(macroName)) {
           const modelName =
-            expression.arguments[0] &&
-            ts.isStringLiteralLike(expression.arguments[0])
+            expression.arguments[0] && ts.isStringLiteralLike(expression.arguments[0])
               ? expression.arguments[0].text
               : 'modelValue'
           const modelOptions =
-            expression.arguments[0] &&
-            ts.isStringLiteralLike(expression.arguments[0])
+            expression.arguments[0] && ts.isStringLiteralLike(expression.arguments[0])
               ? expression.arguments[1]
               : expression.arguments[0]
           if (modelOptions && ts.isObjectLiteralExpression(modelOptions)) {
             let hasRequired = false
             for (const prop of modelOptions.properties) {
-              if (
-                ts.isPropertyAssignment(prop) &&
-                prop.name.getText(ast) === 'required'
-              ) {
+              if (ts.isPropertyAssignment(prop) && prop.name.getText(ast) === 'required') {
                 hasRequired = true
                 isRequired = prop.initializer.kind === ts.SyntaxKind.TrueKeyword
               }
