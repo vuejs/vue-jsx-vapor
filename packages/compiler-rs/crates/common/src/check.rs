@@ -13,6 +13,19 @@ use crate::expression::is_globally_allowed;
 pub fn is_template<'a>(node: &'a JSXElement<'a>) -> bool {
   if let JSXElementName::Identifier(name) = &node.opening_element.name {
     name.name.eq("template")
+      && node
+        .opening_element
+        .attributes
+        .iter()
+        .any(|attr| match attr {
+          JSXAttributeItem::Attribute(attr) => {
+            ["v-if", "v-else", "v-else-if", "v-for", "v-slot", "key"].contains(&match &attr.name {
+              JSXAttributeName::Identifier(name) => name.name.as_ref(),
+              JSXAttributeName::NamespacedName(name) => name.namespace.name.as_str(),
+            })
+          }
+          JSXAttributeItem::SpreadAttribute(_) => false,
+        })
   } else {
     false
   }

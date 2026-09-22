@@ -9,7 +9,10 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SPAN, SourceType, Span};
 use phf::phf_set;
 
-use crate::{options::TransformOptions, text::get_text_like_value};
+use crate::{
+  options::TransformOptions,
+  text::{decode_attr_value, get_text_like_value},
+};
 
 pub fn get_constant_expression_text<'a>(
   exp: &Expression<'a>,
@@ -110,9 +113,11 @@ pub fn jsx_attribute_value_to_expression<'a>(
     JSXAttributeValue::Fragment(value) => {
       Some(Expression::JSXFragment(value.clone_in(ast.allocator)))
     }
-    JSXAttributeValue::StringLiteral(value) => {
-      Some(ast.expression_string_literal(value.span, value.value, value.raw))
-    }
+    JSXAttributeValue::StringLiteral(node) => Some(ast.expression_string_literal(
+      node.span,
+      ast.str_from_cow(&decode_attr_value(node.value.as_str())),
+      None,
+    )),
     JSXAttributeValue::ExpressionContainer(value) => value
       .expression
       .as_expression_mut()

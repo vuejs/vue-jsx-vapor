@@ -232,6 +232,57 @@ fn multiple_conditional() {
 }
 
 #[test]
+fn text_before_parenthesized_conditional_is_kept() {
+  // `(ok ? a : b)` is a conditional, not an interpolation: the parentheses must
+  // not make the leading text look like a text run that the conditional joins.
+  let code = transform("<>a{(ok ? a : b)}</>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, template as _template } from "vue";
+  const _t0 = _template("a", 2);
+  (() => {
+  	const _n0 = _t0();
+  	const _n1 = _createIf(() => ok, () => {
+  		const _n3 = _createNodes(() => a);
+  		return _n3;
+  	}, () => {
+  		const _n5 = _createNodes(() => b);
+  		return _n5;
+  	}, 266);
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn text_before_parenthesized_conditional_in_element_is_kept() {
+  // Same as above, but inside a plain element whose later interpolation makes
+  // the parent scan for text runs: the scan must not treat the conditional as
+  // an interpolation either, or `a` is dropped from the template.
+  let code = transform("<div>a{(ok ? a : b)}{x}<span/></div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes, createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { child as _child, createIf as _createIf, next as _next, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<div>a<!> <span>", 1);
+  (() => {
+  	const _n7 = _t0();
+  	const _n6 = _next(_child(_n7));
+  	const _n5 = _next(_n6, true);
+  	_setInsertionState(_n7, _n6);
+  	const _n0 = _createIf(() => ok, () => {
+  		const _n2 = _createNodes(() => a);
+  		return _n2;
+  	}, () => {
+  		const _n4 = _createNodes(() => b);
+  		return _n4;
+  	}, 266);
+  	_setNodes(_n5, () => x);
+  	return _n7;
+  })();
+  "#);
+}
+
+#[test]
 fn logical_expression() {
   let code = transform("<>{ok && (<div>{msg}</div>)}</>", None).code;
   assert_snapshot!(code, @r#"
@@ -451,4 +502,183 @@ fn empty_literal_next_to_an_element_in_slot_content() {
   let code = transform("<Comp>{''}<b>{msg}</b></Comp>", None).code;
   assert!(code.contains(r#"_createNodes("")"#), "{code}");
   assert!(code.contains("return [_n0, _n1]"), "{code}");
+}
+
+#[test]
+fn leading_lt_in_root_level_text_is_materialized() {
+  // The runtime parses a template string that starts with "<" as HTML, so a
+  // raw text node whose content starts with "<" has to be created imperatively.
+  let code = transform("<>&lt;b&gt;<i/></>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { template as _template } from "vue";
+  const _t0 = _template("<i>", 2);
+  (() => {
+  	const _n1 = _t0();
+  	const _n0 = _createNodes("<b>");
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn leading_lt_in_component_and_custom_element_text_is_materialized() {
+  let code = transform("<Comp>&lt;b&gt;foo&lt;/b&gt;</Comp>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { extend as _extend } from "vue";
+  (() => {
+  	const _n1 = _createComponent(Comp, null, _extend(() => {
+  		const _n0 = _createNodes("<b>foo</b>");
+  		return _n0;
+  	}, { _: 1 }), true);
+  	return _n1;
+  })();
+  "#);
+
+  let code = transform("<my-el>&lt;b&gt;x&lt;/b&gt;</my-el>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { createPlainElement as _createPlainElement, extend as _extend } from "vue";
+  (() => {
+  	const _n1 = _createPlainElement("my-el", null, _extend(() => {
+  		const _n0 = _createNodes("<b>x</b>");
+  		return _n0;
+  	}, { _: 1 }), true);
+  	return _n1;
+  })();
+  "#);
+}
+
+#[test]
+fn leading_lt_text_adjacent_to_interpolation_is_merged() {
+  // Text that an interpolation would collect must not be materialized twice.
+  let code = transform("<>&lt;b&gt;{x}</>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createNodes("<b>", () => x);
+  	return _n0;
+  })();
+  "#);
+
+  let code = transform("<>{x}&lt;b&gt;</>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createNodes(() => x, "<b>");
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn leading_lt_text_in_transparent_fragment_inside_template_is_merged() {
+  // A `<>` is spliced into its parent while `transform_children` walks the
+  // children, i.e. after the parent's own text pre-pass has already run, so the
+  // marked-before-interpolation decision can only be made at the child level.
+  let code = transform(r#"<template v-if="ok"><>&lt;b&gt;{x}</></template>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf } from "vue";
+  (() => {
+  	const _n0 = _createIf(() => "ok", () => {
+  		const _n2 = _createNodes("<b>", () => x);
+  		return _n2;
+  	}, null, 17);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn leading_text_in_transparent_fragment_counts_as_one_unit() {
+  // The text is consumed by the interpolation, so it materializes no node of
+  // its own in the parent template and must not consume a logical unit.
+  // Otherwise the append below would claim unit 2 while the parent template
+  // only renders a single text node before it.
+  let code = transform(r#"<div><>a{x}<span v-if="ok"/></></div>"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { child as _child, createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<span>", 2);
+  const _t1 = _template("<div> ", 1);
+  (() => {
+  	const _n4 = _t1();
+  	const _n0 = _child(_n4, true);
+  	_setNodes(_n0, "a", () => x);
+  	_setInsertionState(_n4, 1);
+  	const _n1 = _createIf(() => "ok", () => {
+  		const _n3 = _t0();
+  		return _n3;
+  	}, null, 49);
+  	return _n4;
+  })();
+  "#);
+}
+
+#[test]
+fn leading_lt_in_element_text_stays_escaped_in_template() {
+  let code = transform("<div>&lt;b&gt;foo&lt;/b&gt;</div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div>&lt;b&gt;foo&lt;/b&gt;", 3);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn leading_lt_in_template_directive_text_is_materialized() {
+  let code = transform(
+    r#"<template v-if="ok">&lt;b&gt;foo&lt;/b&gt;</template>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf } from "vue";
+  (() => {
+  	const _n0 = _createIf(() => "ok", () => {
+  		const _n2 = _createNodes("<b>foo</b>");
+  		return _n2;
+  	}, null, 18);
+  	return _n0;
+  })();
+  "#);
+
+  let code = transform(
+    "<template v-for={item in list}>&lt;b&gt;x&lt;/b&gt;</template>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes } from "/vue-jsx-vapor/vapor";
+  import { createFor as _createFor } from "vue";
+  (() => {
+  	const _n0 = _createFor(() => list, (_for_item0) => {
+  		const _n2 = _createNodes("<b>x</b>");
+  		return _n2;
+  	}, void 0, 64);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn leading_lt_in_bare_template_is_not_materialized() {
+  // A bare <template> is inlined into the surrounding template and shares the
+  // block that locates it, so materializing there would redeclare its variable.
+  let code = transform("<div><template>&lt;b&gt;x&lt;/b&gt;</template></div>", None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div><template>&lt;b&gt;x&lt;/b&gt;", 3);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+  assert_eq!(code.matches("const _n0").count(), 1, "{code}");
 }

@@ -2,7 +2,7 @@ use common::{
   check::{is_boolean_attr, is_reserved_prop, is_special_boolean_attr},
   directive::{Directives, resolve_prop_name},
   expression::jsx_attribute_value_to_expression,
-  text::{camelize, get_text_like_value},
+  text::{camelize, decode_attr_value, get_text_like_value},
 };
 use oxc_allocator::TakeIn;
 use oxc_ast::ast::{BigintBase, Expression, JSXAttribute, JSXAttributeName, JSXAttributeValue};
@@ -101,9 +101,11 @@ pub fn transform_v_bind<'a>(
             .map(|value| ast.expression_string_literal(SPAN, ast.str(value.as_ref()), None))
         }
       }
-      JSXAttributeValue::StringLiteral(value) => {
-        Some(ast.expression_string_literal(SPAN, ast.str(value.value.as_ref()), None))
-      }
+      JSXAttributeValue::StringLiteral(value) => Some(ast.expression_string_literal(
+        SPAN,
+        ast.str_from_cow(&decode_attr_value(value.value.as_str())),
+        None,
+      )),
       _ => None,
     } {
       return Some(DirectiveTransformResult::new(

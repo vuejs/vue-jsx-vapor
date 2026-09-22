@@ -236,3 +236,23 @@ fn deduped_props() {
   }, null, 8, _hoisted_1);
   "#);
 }
+
+#[test]
+fn static_props_decode_entities() {
+  let code = transform(
+    r#"<div title="a&amp;b" class="a&amp;amp;b" />"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+  const _hoisted_1 = {
+  	title: "a&b",
+  	class: "a&amp;b"
+  };
+  _openBlock(), _createElementBlock("div", _hoisted_1);
+  "#);
+}

@@ -447,6 +447,73 @@ fn static_props_escapes_double_quotes_in_value() {
 }
 
 #[test]
+fn static_props_escapes_ampersand_in_value() {
+  // The value is decoded by the parser, so an ampersand has to be escaped back
+  // or the runtime would decode it a second time.
+  let code = transform(r#"<div title="&amp;lt;" />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div title=&amp;lt;>", 3);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+
+  let code = transform(r#"<div title="a &amp;lt; b" />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div title=\"a &amp;lt; b\">", 3);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+
+  let code = transform(r#"<div title='a&amp;lt;"b' />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div title=\"a&amp;lt;&quot;b\">", 3);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn props_decode_entities_to_js_values() {
+  let code = transform(r#"<Comp title="a&amp;b" />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, { title: "a&b" }, null, true);
+  	return _n0;
+  })();
+  "#);
+
+  let code = transform(r#"<my-el title="a&amp;b" />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { createPlainElement as _createPlainElement } from "vue";
+  (() => {
+  	const _n0 = _createPlainElement("my-el", { title: "a&b" }, null, true);
+  	return _n0;
+  })();
+  "#);
+
+  let code = transform(r#"<div class="a&amp;amp;b" class={x} />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setClass(_n0, ["a&amp;b", x]));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn static_props_mixed_quoting_with_boolean_attribute() {
   let code = transform(
     r#"<div title="has whitespace" inert data-targets="foo>bar" />"#,

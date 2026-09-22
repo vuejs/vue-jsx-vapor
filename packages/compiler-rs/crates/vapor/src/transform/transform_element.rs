@@ -34,7 +34,7 @@ use common::{
   dom::is_valid_html_nesting,
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
-  text::{camelize, get_tag_name},
+  text::{camelize, escape_attr_value, get_tag_name},
 };
 
 /// # SAFETY
@@ -230,8 +230,11 @@ pub fn transform_native_element<'a>(
             let needs_quotes = value.contains(|c: char| {
               c.is_whitespace() || matches!(c, '"' | '\'' | '`' | '=' | '<' | '>')
             });
+            // The template is parsed as HTML again at runtime, so a decoded
+            // value has to be escaped back to survive that round trip.
+            let value = escape_attr_value(&value);
             template += &if needs_quotes {
-              format!(r#"="{}""#, value.replace("\"", "&quot;"))
+              format!(r#"="{}""#, value)
             } else {
               format!("={}", value)
             };

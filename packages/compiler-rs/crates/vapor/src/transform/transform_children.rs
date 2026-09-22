@@ -1,7 +1,7 @@
 use std::{borrow::Cow, mem};
 
 use oxc_allocator::{CloneIn, TakeIn};
-use oxc_ast::ast::{JSXChild, JSXExpression};
+use oxc_ast::ast::{Expression, JSXChild};
 use oxc_span::{GetSpan, SPAN};
 
 use crate::{
@@ -12,6 +12,7 @@ use crate::{
   transform::{
     TransformContext,
     transform_element::{get_child_template_close_tags, is_in_same_template_as_parent},
+    transform_text::mark_non_template,
   },
 };
 
@@ -85,9 +86,10 @@ pub unsafe fn transform_children<'a>(
       if is_text_child
         && let Some(next) = unsafe { &mut *children_ptr }.get_mut(i + 1)
         && let JSXChild::ExpressionContainer(exp) = next
+        && let Some(expression) = exp.expression.as_expression()
         && !matches!(
-          exp.expression,
-          JSXExpression::ConditionalExpression(_) | JSXExpression::EmptyExpression(_)
+          expression.get_inner_expression(),
+          Expression::ConditionalExpression(_)
         )
       {
         next_is_interpolation = true;
@@ -107,6 +109,13 @@ pub unsafe fn transform_children<'a>(
       unsafe { &mut *_context_block },
       child_in_v_once,
     );
+    // The text belongs to the interpolation that follows it, so it must not be
+    // materialized on its own. Marking it here rather than in the parent
+    // pre-pass covers the root (which never runs the pre-pass) and nested
+    // fragments (flattened into their parent after the pre-pass ran).
+    if next_is_interpolation {
+      mark_non_template(child, &mut context.seen.borrow_mut());
+    }
     let is_same_template = is_in_same_template_as_parent(tag, parent_tag_name);
     if is_same_template {
       *context.template_close_tags.borrow_mut() = child_template_close_tags.clone();
@@ -123,9 +132,7 @@ pub unsafe fn transform_children<'a>(
     let mut parent_dynamic = context.parent_dynamic.borrow_mut();
     let flags = context_block.dynamic.flags;
     if is_fragment_or_component {
-      if next_is_interpolation {
-        context.template.borrow_mut().clear();
-      } else {
+      if !next_is_interpolation {
         context.register_template(
           context_block,
           Some(tag),

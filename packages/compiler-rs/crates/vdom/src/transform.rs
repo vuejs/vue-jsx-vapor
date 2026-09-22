@@ -1,6 +1,7 @@
 use common::ast::{RootNode, get_first_child};
 use common::directive::Directives;
 pub use common::options::TransformOptions;
+use common::text::decode_attr_value;
 use common::walk::WalkIdentifiers;
 use common::walk_mut::WalkIdentifiersMut;
 use indexmap::IndexSet;
@@ -445,11 +446,13 @@ impl<'a> TransformContext<'a> {
     match value {
       JSXAttributeValue::Element(value) => Expression::JSXElement(value.clone_in(self.allocator)),
       JSXAttributeValue::Fragment(value) => Expression::JSXFragment(value.clone_in(self.allocator)),
-      JSXAttributeValue::StringLiteral(value) => {
+      JSXAttributeValue::StringLiteral(node) => self.ast.expression_string_literal(
+        node.span,
         self
           .ast
-          .expression_string_literal(value.span, value.value, value.raw)
-      }
+          .str_from_cow(&decode_attr_value(node.value.as_str())),
+        None,
+      ),
       JSXAttributeValue::ExpressionContainer(value) => {
         self
           .process_expression(value.expression.to_expression_mut())
