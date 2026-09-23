@@ -27,8 +27,7 @@ use crate::{
 use common::{
   check::{
     get_directive_name, get_namespace, is_always_close_tag, is_block_tag, is_built_in_directive,
-    is_formatting_tag, is_html_annotation_xml, is_ignore_newline_tag, is_inline_tag, is_template,
-    is_void_tag,
+    is_formatting_tag, is_html_annotation_xml, is_ignore_newline_tag, is_inline_tag, is_void_tag,
   },
   directive::{Directives, resolve_directive, resolve_prop_name},
   dom::is_valid_html_nesting,
@@ -48,15 +47,6 @@ pub unsafe fn transform_element<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  if is_template(node)
-    && (directives.v_if.is_some()
-      || directives.v_else_if.is_some()
-      || directives.v_else.is_some()
-      || directives.v_for.is_some()
-      || directives.v_slot.is_some())
-  {
-    return None;
-  }
   let mut effect_index = context_block.effect.len() as i32;
   let get_effect_index = Rc::new(RefCell::new(Box::new(move || {
     let current = effect_index;

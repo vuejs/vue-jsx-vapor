@@ -318,6 +318,32 @@ fn template_v_if_with_v_for_inside() {
 }
 
 #[test]
+fn v_if_with_key() {
+  let code = transform(
+    r#"<div v-if={arr.length > 0} key={index}>item: { item }</div>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, createKeyedFragment as _createKeyedFragment, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ", 1);
+  (() => {
+  	const _n0 = _createIf(() => arr.length > 0, () => {
+  		const _n2 = _createKeyedFragment(() => index, () => {
+  			const _n4 = _t0();
+  			const _x4 = _txt(_n4);
+  			_setNodes(_x4, "item: ", () => item);
+  			return _n4;
+  		});
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn template_v_if_with_key() {
   let code = transform(
     r#"<template v-if={arr.length > 0} key={index}>
@@ -330,7 +356,6 @@ fn template_v_if_with_key() {
   import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { createIf as _createIf, createKeyedFragment as _createKeyedFragment, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
-  const _t1 = _template("<template>");
   (() => {
   	const _n0 = _createIf(() => arr.length > 0, () => {
   		const _n2 = _createKeyedFragment(() => index, () => {

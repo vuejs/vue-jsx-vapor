@@ -2,34 +2,13 @@ use oxc_ast::{
   AstKind,
   ast::{
     ArrayExpressionElement, Expression, IdentifierReference, JSXAttributeItem, JSXAttributeName,
-    JSXAttributeValue, JSXChild, JSXElement, JSXElementName, ObjectPropertyKind,
+    JSXAttributeValue, JSXElement, JSXElementName, ObjectPropertyKind,
   },
 };
 use oxc_span::GetSpan;
 use phf::phf_set;
 
 use crate::expression::is_globally_allowed;
-
-pub fn is_template<'a>(node: &'a JSXElement<'a>) -> bool {
-  if let JSXElementName::Identifier(name) = &node.opening_element.name {
-    name.name.eq("template")
-      && node
-        .opening_element
-        .attributes
-        .iter()
-        .any(|attr| match attr {
-          JSXAttributeItem::Attribute(attr) => {
-            ["v-if", "v-else", "v-else-if", "v-for", "v-slot", "key"].contains(&match &attr.name {
-              JSXAttributeName::Identifier(name) => name.name.as_ref(),
-              JSXAttributeName::NamespacedName(name) => name.namespace.name.as_str(),
-            })
-          }
-          JSXAttributeItem::SpreadAttribute(_) => false,
-        })
-  } else {
-    false
-  }
-}
 
 pub fn is_constant_node(node: &Expression) -> bool {
   match node.without_parentheses().get_inner_expression() {
@@ -225,14 +204,6 @@ pub fn is_native_tag(tag: &str) -> bool {
       .chars()
       .next()
       .is_some_and(|c| !(c.is_ascii_uppercase() || !c.is_ascii() || c == '_' || c == '$'))
-}
-
-pub fn is_fragment_node(node: &JSXChild) -> bool {
-  match node {
-    JSXChild::Fragment(_) => true,
-    JSXChild::Element(node) => is_template(node),
-    _ => false,
-  }
 }
 
 static VOID_TAGS: phf::Set<&'static str> = phf_set! {

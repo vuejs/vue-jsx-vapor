@@ -1,24 +1,15 @@
-use oxc_ast::ast::JSXChild;
-
 use crate::{
   ir::index::{BlockIRNode, OperationNode, SetTemplateRefIRNode},
   transform::TransformContext,
 };
-use common::{
-  check::is_fragment_node, directive::Directives, expression::jsx_attribute_value_to_expression,
-};
+use common::{directive::Directives, expression::jsx_attribute_value_to_expression};
 
 /// # SAFETY
 pub unsafe fn transform_template_ref<'a>(
   directives: &'a mut Directives<'a>,
-  context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
-  let node = unsafe { &mut *context_node };
-  if is_fragment_node(node) {
-    return None;
-  }
   let dir = directives._ref.as_mut()?;
   let Some(value) = &mut dir.value else {
     return None;

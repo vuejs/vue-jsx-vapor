@@ -45,8 +45,6 @@ use crate::transform::{
   v_once::transform_v_once, v_slots::transform_v_slots,
 };
 
-use common::check::is_template;
-
 pub struct DirectiveTransformResult<'a> {
   pub props: Vec<ObjectPropertyKind<'a>>,
   pub runtime: Option<Expression<'a>>,
@@ -400,7 +398,11 @@ impl<'a> TransformContext<'a> {
     if let Expression::JSXFragment(node) = node {
       JSXChild::Fragment(node)
     } else if let Expression::JSXElement(node) = &mut node
-      && is_template(node)
+      && node
+        .opening_element
+        .name
+        .get_identifier_name()
+        .is_some_and(|name| name == "template")
     {
       let name =
         ast.jsx_element_name_identifier(node.span, ast.str(self.options.helper("_Fragment")));
@@ -556,6 +558,7 @@ impl<'a> TransformContext<'a> {
           if (directives.v_if.is_some()
             || directives.v_else_if.is_some()
             || directives.v_else.is_some())
+            && !(directives.is_template && directives.v_slot.is_some())
             && let Some(on_exit) =
               transform_v_if(&mut directives, node, &*context, &mut *parent_node)
           {
@@ -575,6 +578,7 @@ impl<'a> TransformContext<'a> {
           };
 
           if directives.v_for.is_some()
+            && !(directives.is_template && directives.v_slot.is_some())
             && let Some(on_exit) = transform_v_for(&mut directives, node, &*context)
           {
             exit_fns.push(on_exit);
@@ -587,11 +591,13 @@ impl<'a> TransformContext<'a> {
           };
         }
 
-        if let Some(on_exit) =
-          transform_element(&mut directives, node, &*context, &mut *parent_node)
-        {
-          exit_fns.push(on_exit);
-        };
+        if !directives.is_template {
+          if let Some(on_exit) =
+            transform_element(&mut directives, node, &*context, &mut *parent_node)
+          {
+            exit_fns.push(on_exit);
+          };
+        }
 
         if let Some(on_exit) = track_slot_scopes(&mut directives, node, &*parent_node, &*context) {
           exit_fns.push(on_exit);

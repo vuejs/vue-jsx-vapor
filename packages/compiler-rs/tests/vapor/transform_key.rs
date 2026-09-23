@@ -64,11 +64,9 @@ fn key_with_template_v_if() {
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, createKeyedFragment as _createKeyedFragment, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
-  const _t1 = _template("<template></template>");
-  const _t2 = _template("<template>");
-  const _t3 = _template("<div>", 1);
+  const _t1 = _template("<div>", 1);
   (() => {
-  	const _n13 = _t3();
+  	const _n13 = _t1();
   	_setInsertionState(_n13);
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _createKeyedFragment(() => a, () => {

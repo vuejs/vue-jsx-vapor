@@ -18,21 +18,23 @@ use crate::{
 
 use common::{
   ast::RootNode,
-  check::is_fragment_node,
   directive::Directives,
   text::{get_tag_name, is_empty_text},
 };
 
 /// # SAFETY
 pub unsafe fn transform_children<'a>(
-  directives: &Directives<'a>,
+  directives: Directives<'a>,
   node: &mut JSXChild<'a>,
   context: &TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   parent_node: Option<&JSXChild<'a>>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
-  let is_fragment_or_component =
-    RootNode::is_root(node) || is_fragment_node(node) || directives.is_component;
+  let is_fragment_or_component = RootNode::is_root(node)
+    || matches!(node, JSXChild::Fragment(_))
+    || directives.is_template
+    || (directives.tag_name == "template" && directives.key.is_some())
+    || directives.is_component;
 
   if !matches!(&node, JSXChild::Element(_)) && !is_fragment_or_component {
     return None;
@@ -50,11 +52,15 @@ pub unsafe fn transform_children<'a>(
     JSXChild::Fragment(node) => &mut node.children,
     _ => unreachable!(),
   };
+  // Slot content is executed by the child component, which re-runs it on its
+  // own updates (vdom parity), so v-once does not reach into it.
+  let child_in_v_once = *context.in_v_once.borrow() && !directives.is_component;
   let children_ptr = children as *mut oxc_allocator::Vec<JSXChild>;
   let mut parent_children_template = context.children_template.take();
   let grand_parent_dynamic = context
     .parent_dynamic
     .replace(mem::take(&mut context_block.dynamic));
+  let grand_parent_directives = context.parent_directives.replace(directives);
   let grandparent_node_span = context
     .grandparent_node_span
     .replace(parent_node.map_or(SPAN, |node| node.span()));
@@ -65,9 +71,7 @@ pub unsafe fn transform_children<'a>(
   {
     children.pop();
   }
-  // Slot content is executed by the child component, which re-runs it on its
-  // own updates (vdom parity), so v-once does not reach into it.
-  let child_in_v_once = *context.in_v_once.borrow() && !directives.is_component;
+
   let mut children_len = children.len();
   while let Some(child) = children.get_mut(i) {
     if is_empty_text(child) {
@@ -167,6 +171,7 @@ pub unsafe fn transform_children<'a>(
   *context.children_template.borrow_mut() = parent_children_template;
   *context.grandparent_node_span.borrow_mut() = grandparent_node_span;
   context_block.dynamic = context.parent_dynamic.replace(grand_parent_dynamic);
+  *context.parent_directives.borrow_mut() = grand_parent_directives;
 
   if !is_fragment_or_component {
     process_dynamic_children(context, context_block);

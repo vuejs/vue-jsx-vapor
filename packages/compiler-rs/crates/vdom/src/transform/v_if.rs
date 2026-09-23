@@ -15,7 +15,7 @@ use crate::{
   },
 };
 
-use common::{check::is_template, error::ErrorCodes};
+use common::error::ErrorCodes;
 
 /// # SAFETY
 pub unsafe fn transform_v_if<'a>(
@@ -27,10 +27,7 @@ pub unsafe fn transform_v_if<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  let is_template_node = is_template(node);
-  if is_template_node && directives.v_slot.is_some() {
-    return None;
-  }
+  let is_template = directives.is_template;
   let node = node as *mut oxc_allocator::Box<JSXElement>;
 
   let dir = directives
@@ -81,7 +78,7 @@ pub unsafe fn transform_v_if<'a>(
     context.codegen_map.borrow_mut().insert(
       fragment_span,
       NodeTypes::VNodeCall(VNodeCall {
-        tag: if is_template_node {
+        tag: if is_template {
           context.options.helper("_Fragment")
         } else {
           ""

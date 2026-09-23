@@ -8,8 +8,8 @@ use crate::{
 };
 
 use common::{
-  check::{is_constant_node, is_template},
-  directive::{Directives, find_prop},
+  check::is_constant_node,
+  directive::Directives,
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
   patch_flag::{VaporBlockShape, VaporIfFlags},
@@ -26,9 +26,6 @@ pub unsafe fn transform_v_if<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  if is_template(node) && directives.v_slot.is_some() {
-    return None;
-  }
   let node = node as *mut oxc_allocator::Box<JSXElement>;
 
   let dir = directives
@@ -55,7 +52,7 @@ pub unsafe fn transform_v_if<'a>(
 
   let dynamic = &mut context_block.dynamic;
   dynamic.flags |= DynamicFlag::NonTemplate as i32;
-  let force_multi_root = should_force_multi_root(parent_node);
+  let force_multi_root = should_force_multi_root(context);
   // Nested dynamic units are owned by an enclosing branch scope, so only mark
   // root-block branches with the compiler-proven no-scope flag.
   let allow_no_scope = context_block.root;
@@ -208,15 +205,9 @@ pub fn encode_if_block_shape(
 
 // SSR renders `v-if` inside `<template v-for>` always output <!--[-->...<!--]-->.
 // should mark the block as multi-root
-pub fn should_force_multi_root(parent: &JSXChild) -> bool {
-  if let JSXChild::Element(parent) = parent
-    && is_template(parent)
-    && find_prop(parent, vec!["v-for"]).is_some()
-  {
-    true
-  } else {
-    false
-  }
+pub fn should_force_multi_root(context: &TransformContext) -> bool {
+  let parent_directives = &context.parent_directives.borrow();
+  parent_directives.is_template && parent_directives.v_for.is_some()
 }
 
 fn get_negative_block_shape(negative: Option<&Either<BlockIRNode, IfIRNode>>) -> i32 {

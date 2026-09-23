@@ -241,6 +241,7 @@ pub struct Directives<'a> {
   pub tag_name: &'a str,
   pub is_component: bool,
   pub is_custom_element: bool,
+  pub is_template: bool,
   /// a `v-bind` with a dynamic key or a spread may carry a `type`
   pub has_dynamic_key_v_bind: bool,
   pub v_if: Option<&'a mut JSXAttribute<'a>>,
@@ -290,6 +291,15 @@ impl<'a> Directives<'a> {
       } else {
         directives.has_dynamic_key_v_bind = true;
       }
+    }
+    if directives.tag_name == "template"
+      && (directives.v_if.is_some()
+        || directives.v_else_if.is_some()
+        || directives.v_else.is_some()
+        || directives.v_for.is_some()
+        || directives.v_slot.is_some())
+    {
+      directives.is_template = true;
     }
     directives
   }

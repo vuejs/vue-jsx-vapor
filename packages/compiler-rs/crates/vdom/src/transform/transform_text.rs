@@ -14,7 +14,7 @@ use crate::{
 };
 
 use common::{
-  check::{get_directive_name, is_built_in_directive, is_template},
+  check::{get_directive_name, is_built_in_directive},
   directive::Directives,
   expression::gen_getter,
   patch_flag::PatchFlags,
@@ -32,6 +32,7 @@ pub unsafe fn transform_text<'a>(
   let ast = &context.ast;
   let node = unsafe { &mut *context_node };
   let is_component = directives.is_component;
+  let is_template = directives.is_template;
   if !matches!(node, JSXChild::Element(_) | JSXChild::Fragment(_)) {
     return None;
   }
@@ -56,7 +57,7 @@ pub unsafe fn transform_text<'a>(
           // we need to avoid setting textContent of the element at runtime
           // to avoid accidentally overwriting the DOM elements added
           // by the user through custom directives.
-          !is_template(node)
+          !is_template
             && !is_component
             && !node.opening_element.attributes.iter().any(|p| {
               p.as_attribute()

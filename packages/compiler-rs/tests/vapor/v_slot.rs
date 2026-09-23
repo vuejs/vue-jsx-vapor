@@ -123,7 +123,7 @@ fn on_component_dynamically_named_slot() {
 fn nested_component_should_not_inherit_parent_slots() {
   let code = transform(
     "<Comp>
-      <template v-slot:header></template>
+      <template v-slot:header key={foo}></template>
       <Bar />
     </Comp>",
     None,
@@ -983,7 +983,6 @@ fn keyed_slot_block_with_stable_sibling_does_not_track_slot_boundary() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { createKeyedFragment as _createKeyedFragment, createSlot as _createSlot, template as _template } from "vue";
   const _t0 = _template("<span>", 2);
-  const _t1 = _template("<template>");
   (() => {
   	const _n4 = _createComponent(Comp, null, () => {
   		const _n0 = _createKeyedFragment(() => key, () => {

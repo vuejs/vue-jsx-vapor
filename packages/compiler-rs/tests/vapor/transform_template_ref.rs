@@ -103,3 +103,59 @@ fn ref_v_for() {
   })();
   "#);
 }
+
+#[test]
+fn ref_key() {
+  let code = transform("<div ref={foo} key={key} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createKeyedFragment as _createKeyedFragment, createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _setTemplateRef = _createTemplateRefSetter();
+  	const _n0 = _createKeyedFragment(() => key, () => {
+  		const _n2 = _t0();
+  		_renderEffect(() => _setTemplateRef(_n2, foo));
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+// A `<template>` is compiled away as a fragment boundary, so a `ref` on it has
+// no element to attach to and must be ignored.
+#[test]
+fn ref_template_with_key() {
+  let code = transform("<template key={foo} ref={foo}><div /></template>", None).code;
+  assert_snapshot!(code, @r#"
+  import { createKeyedFragment as _createKeyedFragment, template as _template } from "vue";
+  const _t0 = _template("<div>", 2);
+  (() => {
+  	const _n0 = _createKeyedFragment(() => foo, () => {
+  		const _n2 = _t0();
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn ref_template_with_v_for() {
+  let code = transform(
+    "<template v-for={i in foo} ref={foo}><div /></template>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createFor as _createFor, template as _template } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n0 = _createFor(() => foo, (_for_item0) => {
+  		const _n2 = _t0();
+  		return _n2;
+  	}, void 0, 8);
+  	return _n0;
+  })();
+  "#);
+}

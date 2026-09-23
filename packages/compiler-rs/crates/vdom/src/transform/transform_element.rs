@@ -27,7 +27,6 @@ use common::{
   ast::RootNode,
   check::{
     get_directive_name, is_built_in_directive, is_event, is_reserved_prop, is_slots_component,
-    is_template,
   },
   directive::{DirectiveNode, resolve_directive, resolve_prop_name},
   error::ErrorCodes,
@@ -70,15 +69,6 @@ pub unsafe fn transform_element<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  if is_template(node)
-    && (directives.v_if.is_some()
-      || directives.v_else_if.is_some()
-      || directives.v_else.is_some()
-      || directives.v_for.is_some()
-      || directives.v_slot.is_some())
-  {
-    return None;
-  }
 
   // The goal of the transform is to create a codegenNode implementing the
   // VNodeCall interface.
