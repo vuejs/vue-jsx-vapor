@@ -309,11 +309,11 @@ fn attr_modifier_merged_with_v_bind_object() {
   const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setDynamicProps(_n0, [{ "^fooBar": id }, obj]));
+  	_renderEffect(() => _setDynamicProps(_n0, [{ "^fooBar": id }, obj], ["^fooBar"]));
   	return _n0;
   })();
   "#);
-  assert!(code.contains(r#"_setDynamicProps(_n0, [{ "^fooBar": id }, obj])"#));
+  assert!(code.contains(r#"_setDynamicProps(_n0, [{ "^fooBar": id }, obj], ["^fooBar"])"#));
 }
 
 // a kebab-case key must reach the runtime verbatim - camelizing it while
@@ -326,11 +326,101 @@ fn attr_modifier_merged_with_v_bind_object_kebab_case_key() {
   const _t0 = _template("<div>", 1);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setDynamicProps(_n0, [{ "^data-x": id }, obj]));
+  	_renderEffect(() => _setDynamicProps(_n0, [{ "^data-x": id }, obj], ["^data-x"]));
   	return _n0;
   })();
   "#);
-  assert!(code.contains(r#"_setDynamicProps(_n0, [{ "^data-x": id }, obj])"#));
+  assert!(code.contains(r#"_setDynamicProps(_n0, [{ "^data-x": id }, obj], ["^data-x"])"#));
+}
+
+// vdom writes the static keys of dynamic props during hydration (`dynamicProps`),
+// so they have to survive the merge with `{...obj}`. upstream hoists the list next
+// to the templates, it is inlined here instead.
+#[test]
+fn static_key_list_merged_with_v_bind_object() {
+  let code = transform(
+    "<>
+      <div id={id} {...obj} />
+      <div {...obj} id={id} title={title} />
+      <div id={a} {...o} />
+      <div id={b} {...p} />
+      <div title={c} {...q} />
+      <svg viewBox={v} {...obj} />
+    </>",
+    None,
+  )
+  .code;
+  assert!(
+    code.contains(r#"_setDynamicProps(_n0, [{ id }, obj], ["id"])"#),
+    "{code}"
+  );
+  assert!(
+    code.contains(r#"_setDynamicProps(_n2, [{ id: a }, o], ["id"])"#),
+    "{code}"
+  );
+  assert!(
+    code.contains(r#"_setDynamicProps(_n3, [{ id: b }, p], ["id"])"#),
+    "{code}"
+  );
+  assert!(
+    code.contains(r#"_setDynamicProps(_n4, [{ title: c }, q], ["title"])"#),
+    "{code}"
+  );
+  assert!(
+    code.contains(r#"_setDynamicProps(_n5, [{ viewBox: v }, obj], ["viewBox"], true)"#),
+    "{code}"
+  );
+  assert!(code.contains("_setDynamicProps(_n1, [obj, {"), "{code}");
+  assert!(code.contains(r#"}], ["id", "title"]);"#), "{code}");
+}
+
+// a constant value is not a dynamic binding in vdom either, `class` / `style` are
+// never part of its `dynamicProps` and `.prop` / a computed key write on their own
+#[test]
+fn static_key_list_is_omitted_for_constant_props() {
+  for (source, expected) in [
+    (
+      r#"<div id="foo" {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ id: "foo" }, obj])"#,
+    ),
+    (
+      r#"<div id={'foo'} {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ id: "foo" }, obj])"#,
+    ),
+    (
+      r#"<div id={1 + 1} {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ id: 1 + 1 }, obj])"#,
+    ),
+    (
+      r#"<div id={undefined} {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ id: undefined }, obj])"#,
+    ),
+    (
+      r#"<div class={cls} {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ class: cls }, obj])"#,
+    ),
+    (
+      r#"<div foo_prop={id} {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ ".foo": id }, obj])"#,
+    ),
+    (
+      r#"<div {...{[key]: id}} {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ [key]: id }, obj])"#,
+    ),
+  ] {
+    let code = transform(source, None).code;
+    assert!(code.contains(expected), "{source}\n{code}");
+  }
+
+  // upstream also skips a key bound to a `SETUP_CONST` / `LITERAL_CONST` binding;
+  // without binding metadata a `const` identifier is indistinguishable from a
+  // reactive one, so the key is kept - a longer list is harmless, the runtime only
+  // writes the key twice
+  let code = transform(r#"<div id={FOO} {...obj} />"#, None).code;
+  assert!(
+    code.contains(r#"_setDynamicProps(_n0, [{ id: FOO }, obj], ["id"])"#),
+    "{code}"
+  );
 }
 
 #[test]
@@ -427,7 +517,7 @@ fn bind_with_svg_elements() {
   const _t0 = _template("<svg>", 1, 1);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setDynamicProps(_n0, [obj], true));
+  	_renderEffect(() => _setDynamicProps(_n0, [obj], null, true));
   	return _n0;
   })();
   "#);
