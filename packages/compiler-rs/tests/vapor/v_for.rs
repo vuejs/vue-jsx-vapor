@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use common::{error::ErrorCodes, options::TransformOptions};
+use common::{error::ErrorCodes, options::TransformOptions, patch_flag::VaporVForFlags};
 use compiler_rs::transform;
 use insta::assert_snapshot;
 
@@ -658,14 +658,23 @@ fn v_for_on_template_with_nested_v_for_child_marks_fragment_block() {
 }
 
 #[test]
-fn v_for_on_template_under_transition_group_has_no_wrapped_rows() {
+// mirrors compiler-ssr for a vapor component: only Transition still renders
+// its children without nested fragment markers
+fn v_for_on_template_under_a_transition_group_has_wrapped_rows() {
+  let rows = "<template v-for={item in items}><li>{item}</li><li>b</li></template>";
+  let slot_root = VaporVForFlags::SlotRoot as i32;
+  let wrapped_rows = slot_root | VaporVForFlags::WrappedRows as i32;
+
   let code = transform(
-    "<TransitionGroup tag=\"ul\"><template v-for={item in items}><li>{item}</li><li>b</li></template></TransitionGroup>",
+    &format!("<TransitionGroup tag=\"ul\">{rows}</TransitionGroup>"),
     None,
   )
   .code;
-  assert!(!code.contains("void 0, 80"));
-  assert!(!code.contains("WRAPPED_ROWS"));
+  assert!(code.contains(&format!("void 0, {wrapped_rows}")), "{code}");
+
+  let code = transform(&format!("<Transition>{rows}</Transition>"), None).code;
+  assert!(code.contains(&format!("void 0, {slot_root}")), "{code}");
+  assert!(!code.contains(&format!("void 0, {wrapped_rows}")), "{code}");
 }
 
 #[test]

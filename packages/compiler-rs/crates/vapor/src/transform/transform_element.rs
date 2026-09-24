@@ -73,7 +73,7 @@ pub unsafe fn transform_element<'a>(
         get_operation_index,
       )
     };
-  } else if is_transition(tag) {
+  } else if is_transition_host(tag) {
     transform_transition(node, context);
   }
   // treat custom elements as components because the template helper cannot
@@ -727,9 +727,13 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
   deduped
 }
 
-pub fn is_transition(tag: &str) -> bool {
-  matches!(
-    tag,
-    "Transition" | "VaporTransition" | "TransitionGroup" | "VaporTransitionGroup"
-  )
+/// Only a Transition renders its children without nested fragment markers; a
+/// TransitionGroup keeps them (mirrors compiler-ssr for a vapor component).
+pub fn is_transition_tag(tag: &str) -> bool {
+  matches!(tag, "Transition" | "VaporTransition")
+}
+
+/// Transition or TransitionGroup: hosts whose children render specially.
+pub fn is_transition_host(tag: &str) -> bool {
+  is_transition_tag(tag) || matches!(tag, "TransitionGroup" | "VaporTransitionGroup")
 }

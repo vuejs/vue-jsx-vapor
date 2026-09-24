@@ -6,7 +6,7 @@ use oxc_span::SPAN;
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, ForIRNode, IRFor, OperationNode},
-  transform::{TransformContext, transform_element::is_transition},
+  transform::{TransformContext, transform_element::is_transition_tag},
 };
 use common::{
   ast::RootNode,
@@ -61,8 +61,12 @@ pub unsafe fn transform_v_for<'a>(
 
   let is_component =
     directives.is_component || (directives.is_template && is_template_with_single_component(node));
+  // mirrors compiler-ssr: a template row that is not a single element renders
+  // as a fragment, except under a Transition, whose children render without
+  // nested fragment markers. A v-if or v-for on the child turns it into an
+  // if/for node by the time the runtime decides, so it counts.
   let wrapped_rows = directives.is_template
-    && !matches!(parent_node, JSXChild::Element(parent) if is_transition(parent.opening_element.name.get_identifier_name().as_deref().unwrap_or_default()))
+    && !matches!(parent_node, JSXChild::Element(parent) if is_transition_tag(parent.opening_element.name.get_identifier_name().as_deref().unwrap_or_default()))
     && (node.children.len() != 1
       || !matches!(&node.children[0], JSXChild::Element(child)
         if !has_row_fragment_directive(child)));
