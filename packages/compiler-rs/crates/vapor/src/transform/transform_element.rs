@@ -1,12 +1,12 @@
 use std::{borrow::Cow, cell::RefCell, collections::HashSet, mem, rc::Rc};
 
 use napi::{Either, bindgen_prelude::Either3};
-use oxc_allocator::TakeIn;
+use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::ast::{
   Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild,
   JSXElement, JSXElementName, JSXExpression,
 };
-use oxc_span::{GetSpan, Span};
+use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ir::{
@@ -375,16 +375,43 @@ pub fn transform_component_element<'a>(
   let dynamic = &mut context_block.dynamic;
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
   let id = context.reference(dynamic);
+
+  let mut props = match props_result.props {
+    Either::A(props) => props,
+    Either::B(props) => vec![Either3::A(props)],
+  };
+
+  // KeepAlive needs the explicit key before the component is created.
+  if let Some(static_key) = &static_key
+    && !is_custom_element
+  {
+    let key_prop = IRProp {
+      key: context
+        .ast
+        .expression_string_literal(SPAN, context.ast.str("key"), None),
+      to_display_string: false,
+      modifier: None,
+      runtime_camelize: false,
+      handler: false,
+      handler_modifiers: None,
+      model: false,
+      model_modifiers: None,
+      values: vec![static_key.clone_in(context.ast.allocator)],
+      dynamic: false,
+    };
+    match props.first_mut() {
+      Some(Either3::A(static_props)) => static_props.push(key_prop),
+      _ => props.insert(0, Either3::A(vec![key_prop])),
+    }
+  }
+
   dynamic.operation = Some(Box::new(OperationNode::CreateComponent(
     CreateComponentIRNode {
       create_component: true,
       id,
       tag,
       tag_span,
-      props: match props_result.props {
-        Either::A(props) => props,
-        Either::B(props) => vec![Either3::A(props)],
-      },
+      props,
       asset: false,
       root: single_root,
       slots: mem::take(&mut context_block.slots),
