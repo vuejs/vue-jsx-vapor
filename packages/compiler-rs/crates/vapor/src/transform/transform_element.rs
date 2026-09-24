@@ -159,7 +159,16 @@ pub unsafe fn transform_element<'a>(
 }
 
 // keys cannot be a part of the template and need to be set dynamically
-static DYNAMIC_KEYS: [&str; 1] = ["indeterminate"];
+static DYNAMIC_KEYS: [&str; 6] = [
+  "indeterminate",
+  // media element playback state
+  "volume",
+  "playbackRate",
+  "defaultPlaybackRate",
+  "currentTime",
+  // typed value of an `<input>`
+  "valueAsNumber",
+];
 
 // Props the template string cannot carry, so they have to be applied by a
 // runtime prop setter instead:

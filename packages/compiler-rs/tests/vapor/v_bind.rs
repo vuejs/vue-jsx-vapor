@@ -1159,3 +1159,71 @@ fn number_literals_with_dynamic_key() {
   let code = transform(r#"<div {...{[key]: 0}} />"#, None).code;
   assert!(code.contains("[key]: 0"), "{code}");
 }
+
+// upstream: `constant props with no content attribute behind them` - these
+// properties have no content attribute and require a runtime setter.
+#[test]
+fn constant_props_without_a_content_attribute() {
+  for (source, template, setter) in [
+    (
+      r#"<video volume={0.5} />"#,
+      r#"_template("<video>""#,
+      r#"_setProp(_n0, "volume", "0.5")"#,
+    ),
+    (
+      r#"<video volume="0.5" />"#,
+      r#"_template("<video>""#,
+      r#"_setProp(_n0, "volume", "0.5")"#,
+    ),
+    (
+      r#"<video playbackRate={2} />"#,
+      r#"_template("<video>""#,
+      r#"_setProp(_n0, "playbackRate", "2")"#,
+    ),
+    (
+      r#"<video defaultPlaybackRate={2} />"#,
+      r#"_template("<video>""#,
+      r#"_setProp(_n0, "defaultPlaybackRate", "2")"#,
+    ),
+    (
+      r#"<video currentTime={3} />"#,
+      r#"_template("<video>""#,
+      r#"_setProp(_n0, "currentTime", "3")"#,
+    ),
+    (
+      r#"<input valueAsNumber={5} />"#,
+      r#"_template("<input>""#,
+      r#"_setProp(_n0, "valueAsNumber", "5")"#,
+    ),
+  ] {
+    let code = transform(source, None).code;
+    assert!(code.contains(template), "{source}\n{code}");
+    assert!(code.contains(setter), "{source}\n{code}");
+  }
+}
+
+// upstream: `constant props with no content attribute behind them: .attr` -
+// these keys skip folding even with `.attr`, which selects `setAttr` at runtime.
+#[test]
+fn constant_props_without_a_content_attribute_forced_through_set_attr() {
+  let code = transform(r#"<video volume_attr={0.5} />"#, None).code;
+  assert!(code.contains(r#"_template("<video>""#), "{code}");
+  assert!(code.contains(r#"_setAttr(_n0, "volume", "0.5")"#), "{code}");
+}
+
+// upstream: `constant props the template string does carry` - content attributes
+// keep folding. jsx spells a boolean attribute without a value, `{true}` is an
+// expression and is never folded, a pre-existing difference.
+#[test]
+fn constant_props_the_template_string_carries() {
+  for (source, expected) in [
+    (r#"<input value={'a'} />"#, r#"_template("<input value=a>""#),
+    (r#"<input checked />"#, r#"_template("<input checked>""#),
+    (r#"<video muted />"#, r#"_template("<video muted>""#),
+    (r#"<div hidden />"#, r#"_template("<div hidden>""#),
+  ] {
+    let code = transform(source, None).code;
+    assert!(code.contains(expected), "{source}\n{code}");
+    assert!(!code.contains("_setProp"), "{source}\n{code}");
+  }
+}
