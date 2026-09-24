@@ -635,7 +635,12 @@ pub fn gen_prop_key<'a>(
         &handler_modifier_postfix
       )
     } else {
-      format!("{}{}", node.value, &handler_modifier_postfix)
+      format!(
+        "{}{}{}",
+        modifier.unwrap_or(""),
+        node.value,
+        &handler_modifier_postfix
+      )
     };
     let key_name = if is_simple_identifier(&key_name) {
       &key_name

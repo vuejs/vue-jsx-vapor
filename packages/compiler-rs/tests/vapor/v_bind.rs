@@ -156,6 +156,82 @@ fn attr_modifier_with_no_expression() {
   "#);
 }
 
+// `.prop` / `.attr` are applied by the runtime from the `.` / `^` key prefix,
+// so the prefix has to survive into the generated props object - component
+// props and props merged with `{...obj}` are only resolved at runtime.
+#[test]
+fn prop_modifier_on_component_props() {
+  let code = transform("<Comp fooBar_prop={id} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, { ".fooBar": () => id }, null, true);
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains(r#"".fooBar": () => id"#));
+}
+
+#[test]
+fn attr_modifier_on_component_props() {
+  let code = transform("<Comp fooBar_attr={id} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, { "^fooBar": () => id }, null, true);
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains(r#""^fooBar": () => id"#));
+}
+
+#[test]
+fn prop_modifier_merged_with_v_bind_object() {
+  let code = transform("<div fooBar_prop={id} {...obj} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [{ ".fooBar": id }, obj]));
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains(r#"_setDynamicProps(_n0, [{ ".fooBar": id }, obj])"#));
+}
+
+#[test]
+fn attr_modifier_merged_with_v_bind_object() {
+  let code = transform("<div fooBar_attr={id} {...obj} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [{ "^fooBar": id }, obj]));
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains(r#"_setDynamicProps(_n0, [{ "^fooBar": id }, obj])"#));
+}
+
+// a kebab-case key must reach the runtime verbatim - camelizing it while
+// prefixing would silently rename the attribute.
+#[test]
+fn attr_modifier_merged_with_v_bind_object_kebab_case_key() {
+  let code = transform("<div data-x_attr={id} {...obj} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [{ "^data-x": id }, obj]));
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains(r#"_setDynamicProps(_n0, [{ "^data-x": id }, obj])"#));
+}
+
 #[test]
 fn with_constant_value() {
   let code = transform(
