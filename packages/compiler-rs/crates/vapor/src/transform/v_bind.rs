@@ -71,12 +71,14 @@ pub fn transform_v_bind<'a>(
         let expression = value.expression.as_expression_mut()?;
         // A number literal loses its type as soon as it is stringified into
         // the template, so hold it back wherever the value is consumed as a
-        // raw value: component, slot outlet and custom element props, boolean
+        // raw value: component, slot outlet and custom element props, a
+        // `.prop` binding sets a dom property from the raw value, boolean
         // attributes are folded from the type of the value itself, and v-model
         // reads its value props back off the element. With `.attr`, `setAttr`
         // still checks special boolean attributes and stores raw checkbox
         // true/false values before calling `setAttribute`.
         let exclude_number = (directives.is_component || directives.tag_name == "slot")
+          || modifiers.contains(&"prop")
           || is_special_boolean_attr(&arg.value)
           || is_checkbox_value_prop(directives, &arg.value)
           || (!modifiers.contains(&"attr")

@@ -156,6 +156,107 @@ fn attr_modifier_with_no_expression() {
   "#);
 }
 
+// A constant value only folds into the template string when the string can
+// carry it: `innerHTML` / `textContent` write the element's content and
+// `.prop` forces a dom property, so both have to reach a runtime setter.
+#[test]
+fn inner_html_with_constant_value() {
+  let code = transform("<div innerHTML={'<b>x</b>'} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { setHtml as _setHtml, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_setHtml(_n0, "<b>x</b>");
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn text_content_with_constant_value() {
+  let code = transform("<div textContent={'hi'} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { setElementText as _setElementText, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_setElementText(_n0, "hi");
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn prop_modifier_with_constant_expression_value() {
+  let code = transform("<div foo_prop={'bar'} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { setDOMProp as _setDOMProp, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_setDOMProp(_n0, "foo", "bar");
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn prop_modifier_with_static_attribute_value() {
+  let code = transform("<div foo_prop=\"bar\" />", None).code;
+  assert_snapshot!(code, @r#"
+  import { setDOMProp as _setDOMProp, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_setDOMProp(_n0, "foo", "bar");
+  	return _n0;
+  })();
+  "#);
+}
+
+// a number stays a number, it never passes through the template string
+#[test]
+fn prop_modifier_keeps_number_value() {
+  let code = transform("<div scrollTop_prop={10} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { setDOMProp as _setDOMProp, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_setDOMProp(_n0, "scrollTop", 10);
+  	return _n0;
+  })();
+  "#);
+}
+
+// `.attr` does mean the content attribute and still folds
+#[test]
+fn attr_modifier_with_constant_value_still_folds() {
+  let code = transform("<div foo_attr={'bar'} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div foo=bar>", 3);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn attr_modifier_with_number_still_folds() {
+  let code = transform("<div foo_attr={1} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div foo=1>", 3);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
 // `.prop` / `.attr` are applied by the runtime from the `.` / `^` key prefix,
 // so the prefix has to survive into the generated props object - component
 // props and props merged with `{...obj}` are only resolved at runtime.

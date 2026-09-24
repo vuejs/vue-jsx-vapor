@@ -162,10 +162,15 @@ pub unsafe fn transform_element<'a>(
 static DYNAMIC_KEYS: [&str; 1] = ["indeterminate"];
 
 // Props the template string cannot carry, so they have to be applied by a
-// runtime prop setter instead: `<textarea>` / `<select>` ignore a `value`
-// content attribute, the value only takes effect as a dom property.
+// runtime prop setter instead:
+// - `innerHTML` / `textContent` are dom properties that set the element's
+//   content; as a content attribute they would only sit on the element and
+//   the content would never be written
+// - `<textarea>` / `<select>` ignore a `value` content attribute, the value
+//   only takes effect as a dom property.
 fn is_runtime_only_prop(tag: &str, key: &str) -> bool {
-  key == "value" && (tag == "textarea" || tag == "select")
+  matches!(key, "innerHTML" | "textContent")
+    || (key == "value" && (tag == "textarea" || tag == "select"))
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -205,6 +210,10 @@ pub fn transform_native_element<'a>(
         let values = &prop.values;
         if let Expression::StringLiteral(key) = &prop.key
           && values.len() == 1
+          // `.prop` forces a dom property, which a content attribute in the
+          // template string is not; `.attr` (`^`) does mean the attribute and
+          // can still be folded
+          && prop.modifier != Some(".")
           && let Some(Expression::StringLiteral(first_value)) = values.first()
           && !DYNAMIC_KEYS.contains(&key.value.as_str())
           && !is_runtime_only_prop(tag, &key.value)
