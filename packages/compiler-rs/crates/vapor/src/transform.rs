@@ -28,6 +28,7 @@ pub mod v_slots;
 pub mod v_text;
 
 use crate::generate::CodegenContext;
+use crate::transform::transform_element::{is_keep_alive_tag, is_transition_tag};
 use crate::transform::transform_key::transform_key;
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, OperationNode, RootIRNode},
@@ -415,7 +416,7 @@ impl<'a> TransformContext<'a> {
         .opening_element
         .name
         .get_identifier_name()
-        .is_some_and(|name| matches!(name.as_str(), "VaporTransition"))
+        .is_some_and(|name| is_transition_tag(&name) || is_keep_alive_tag(&name))
     {
       RootNode::is_single_root(*self.grandparent_node_span.borrow())
     } else {
@@ -487,7 +488,7 @@ impl<'a> TransformContext<'a> {
             .opening_element
             .name
             .get_identifier_name()
-            .is_some_and(|name| matches!(name.as_str(), "VaporTransition"))
+            .is_some_and(|name| is_transition_tag(&name) || is_keep_alive_tag(&name))
         {
           *self.grandparent_node_span.borrow()
         } else if RootNode::is_root(parent_node) {

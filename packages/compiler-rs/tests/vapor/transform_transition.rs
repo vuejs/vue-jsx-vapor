@@ -221,7 +221,7 @@ fn does_not_inject_persisted_when_v_if_owns_a_v_show_child() {
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   import { applyVShow as _applyVShow, createIf as _createIf, extend as _extend, template as _template } from "vue";
-  const _t0 = _template("<h1>");
+  const _t0 = _template("<h1>", 1);
   (() => {
   	const _n3 = _createComponent(Transition, null, _extend(() => {
   		const _n0 = _createIf(() => show, () => {

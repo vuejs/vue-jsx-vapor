@@ -740,6 +740,12 @@ pub fn is_transition_tag(tag: &str) -> bool {
   matches!(tag, "Transition" | "VaporTransition")
 }
 
+/// KeepAlive or VaporKeepAlive: a host that renders its single child in place,
+/// so the child is the root of the component (`isKeepAliveTag` upstream).
+pub fn is_keep_alive_tag(tag: &str) -> bool {
+  matches!(tag, "KeepAlive" | "VaporKeepAlive")
+}
+
 /// Transition or TransitionGroup: hosts whose children render specially.
 pub fn is_transition_host(tag: &str) -> bool {
   is_transition_tag(tag) || matches!(tag, "TransitionGroup" | "VaporTransitionGroup")

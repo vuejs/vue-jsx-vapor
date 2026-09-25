@@ -126,7 +126,7 @@ pub unsafe fn transform_element<'a>(
     let node_span = node.span;
     let children = &mut node.children;
     if !children.is_empty() {
-      if vnode_tag == "KeepAlive" || vnode_tag == "keep-alive" {
+      if vnode_tag == "KeepAlive" {
         // Although a built-in component, we compile KeepAlive with raw children
         // instead of slot functions so that it can be used inside Transition
         // or other Transition-wrapping HOCs.
@@ -149,7 +149,7 @@ pub unsafe fn transform_element<'a>(
 
       let should_build_as_slots = is_component
         && vnode_tag != "Teleport" // Teleport is not a real component and has dedicated runtime handling
-        && vnode_tag != "KeepAlive" && vnode_tag != "keep-alive"; // explained above.
+        && vnode_tag != "KeepAlive"; // explained above.
 
       if is_fragment && should_use_block {
         patch_flag |= PatchFlags::StableFragment as i32;
