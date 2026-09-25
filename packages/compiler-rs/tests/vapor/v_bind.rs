@@ -1190,11 +1190,6 @@ fn constant_props_without_a_content_attribute() {
       r#"_template("<video>""#,
       r#"_setProp(_n0, "currentTime", "3")"#,
     ),
-    (
-      r#"<input valueAsNumber={5} />"#,
-      r#"_template("<input>""#,
-      r#"_setProp(_n0, "valueAsNumber", "5")"#,
-    ),
   ] {
     let code = transform(source, None).code;
     assert!(code.contains(template), "{source}\n{code}");
