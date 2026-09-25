@@ -442,7 +442,9 @@ pub fn transform_component_element<'a>(
     },
   )));
 
-  if let Some(static_key) = static_key {
+  if let Some(static_key) = static_key
+    && is_custom_element
+  {
     context.register_operation(
       context_block,
       OperationNode::SetBlockKey(SetBlockKeyIRNode {
