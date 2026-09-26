@@ -93,7 +93,6 @@ function getMacro(
         ...options.defineSlots.alias,
         ...options.defineStyle.alias,
         ...options.defineExpose.alias,
-        ...options.defineComponent.alias,
       ].includes(expression.expression.escapedText!) &&
       node
     )

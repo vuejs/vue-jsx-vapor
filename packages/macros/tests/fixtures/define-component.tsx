@@ -96,3 +96,12 @@ const options = {}
 const Comp6 = defineVaporComponent(({...props}) => {
   return <div>123</div>
 }, options)
+
+
+function useComp(){ 
+    const Comp = defineVaporComponent(({ foo = undefined! as 1})=>{
+        return (<div>useComp</div>)
+    })
+    return <Comp foo={1} />
+}
+useComp()

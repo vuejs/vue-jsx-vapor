@@ -124,7 +124,17 @@ const options = {}
 const Comp6 = defineVaporComponent((__props) => {const props = __useAttrs();
   return <div>123</div>
 }, { inheritAttrs: false, ...options })
-"
+
+
+function useComp(){ 
+    const Comp = defineVaporComponent((__props)=>{
+        return (<div>useComp</div>)
+    }, { props: {
+'foo': { default: undefined }
+}, })
+    return <Comp foo={1} />
+}
+useComp()"
 `;
 
 exports[`fixtures > ./fixtures/define-expose.tsx 1`] = `
