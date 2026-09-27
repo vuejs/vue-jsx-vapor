@@ -4,9 +4,10 @@ use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::{
   AstBuilder, NONE,
   ast::{
-    Argument, AssignmentOperator, AssignmentTarget, BindingPattern, Declaration,
+    Argument, AssignmentOperator, AssignmentTarget, BinaryOperator, BindingPattern, Declaration,
     ExportDefaultDeclarationKind, Expression, FormalParameterKind, ImportOrExportKind,
-    LogicalOperator, Program, Statement, VariableDeclaration, VariableDeclarationKind,
+    LogicalOperator, Program, Statement, UnaryOperator, VariableDeclaration,
+    VariableDeclarationKind,
   },
 };
 use oxc_span::{GetSpan, SPAN};
@@ -265,6 +266,7 @@ impl<'a> HmrOrSsrTransform<'a> {
           ))
         }
       } else if !self.options.filename.contains("?vue&type=script") {
+        let mut statements = ast.vec();
         let mut callbacks = ast.vec();
 
         for Component {
@@ -273,7 +275,7 @@ impl<'a> HmrOrSsrTransform<'a> {
           id,
         } in self.components.drain(..)
         {
-          program.body.push(ast.statement_expression(
+          statements.push(ast.statement_expression(
             SPAN,
             ast.expression_assignment(
               SPAN,
@@ -287,7 +289,7 @@ impl<'a> HmrOrSsrTransform<'a> {
               ast.expression_string_literal(SPAN, ast.str(&id), None),
             ),
           ));
-          program.body.push(ast.statement_expression(
+          statements.push(ast.statement_expression(
             SPAN,
             ast.expression_call(
               SPAN,
@@ -378,7 +380,7 @@ impl<'a> HmrOrSsrTransform<'a> {
           ast.identifier_name(SPAN, "hot"),
           false,
         );
-        program.body.push(
+        statements.push(
           ast.statement_if(
             SPAN,
             import_meta_hot.clone_in(ast.allocator).into(),
@@ -420,6 +422,25 @@ impl<'a> HmrOrSsrTransform<'a> {
             None,
           ),
         );
+
+        // Skip the whole registration outside of a Vue realm (e.g. in a web
+        // worker that does not import Vue), so that the module is left to plain
+        // full reload instead of a no-op HMR accept.
+        program.body.push(ast.statement_if(
+          SPAN,
+          ast.expression_binary(
+            SPAN,
+            ast.expression_unary(
+              SPAN,
+              UnaryOperator::Typeof,
+              ast.expression_identifier(SPAN, "__VUE_HMR_RUNTIME__"),
+            ),
+            BinaryOperator::StrictInequality,
+            ast.expression_string_literal(SPAN, ast.str("undefined"), None),
+          ),
+          ast.statement_block(SPAN, statements),
+          None,
+        ));
       }
     }
   }
