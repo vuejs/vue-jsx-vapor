@@ -97,6 +97,9 @@ pub struct NsContext<'a> {
   pub tag: Option<&'a str>,
   /// The element's own namespace (0 = HTML, 1 = SVG, 2 = MathML).
   pub ns: i32,
+  /// The namespace of the enclosing element, i.e. the `ns` this one was
+  /// resolved from (mirrors `parent.node.ns` in `compiler-vapor`).
+  pub parent_ns: i32,
   /// Whether the element is `<annotation-xml>` with an HTML `encoding`.
   pub is_html_annotation_xml: bool,
 }

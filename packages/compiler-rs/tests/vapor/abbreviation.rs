@@ -689,3 +689,53 @@ fn form_end_tag() {
     "{code}"
   );
 }
+
+// upstream: `foreign scope boundary elements`. The end tag of a foreign parent
+// does not close a child in another namespace, and an ancestor's end tag does
+// not close a foreign scope boundary element, so both have to close themselves.
+#[test]
+fn foreign_scope_boundary_elements() {
+  for (source, template) in [
+    (
+      "<svg><foreignObject><div>text</div></foreignObject><rect /></svg>",
+      "<svg><foreignObject><div>text</div></foreignObject><rect>",
+    ),
+    (
+      "<svg><g><foreignObject><div><p>text</p></div></foreignObject></g><rect /></svg>",
+      "<svg><g><foreignObject><div><p>text</div></foreignObject></g><rect>",
+    ),
+    (
+      "<math><mi><span>x</span></mi><mo>+</mo></math>",
+      "<math><mi><span>x</span></mi><mo>+",
+    ),
+    (
+      "<svg><g><desc><div>text</div></desc></g><rect /></svg>",
+      "<svg><g><desc><div>text</div></desc></g><rect>",
+    ),
+    (
+      "<svg><foreignObject><math><mi>x</mi></math></foreignObject><rect /></svg>",
+      "<svg><foreignObject><math><mi>x</mi></math></foreignObject><rect>",
+    ),
+    // an ancestor's end tag does not close a foreign scope boundary element
+    (
+      "<div><p><math><mi>x</mi></math></p><p>next</p></div>",
+      "<div><p><math><mi>x</mi></p><p>next",
+    ),
+    (
+      "<div><div><svg><foreignObject>text</foreignObject></svg></div><p>next</p></div>",
+      "<div><div><svg><foreignObject>text</foreignObject></div><p>next",
+    ),
+    // rightmost path can still omit
+    (
+      "<svg><foreignObject><div>text</div></foreignObject></svg>",
+      "<svg><foreignObject><div>text",
+    ),
+    ("<p><math><mi>x</mi></math></p>", "<p><math><mi>x"),
+  ] {
+    let code = transform(source, None).code;
+    assert!(
+      code.contains(&format!("_template(\"{template}\"")),
+      "{source}\n{code}"
+    );
+  }
+}

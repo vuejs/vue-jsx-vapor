@@ -95,6 +95,7 @@ pub unsafe fn transform_element<'a>(
   *context.ns.borrow_mut() = NsContext {
     tag: Some(tag),
     ns,
+    parent_ns: parent.ns,
     is_html_annotation_xml: is_html_annotation_xml(node),
   };
 
@@ -368,9 +369,13 @@ fn can_omit_end_tag<'a>(
   // unless on the rightmost path of the tree:
   // - Formatting tags: https://html.spec.whatwg.org/multipage/parsing.html#reconstruct-the-active-formatting-elements
   // - Same-name tags: parent's close tag would incorrectly close the child
+  // - Children of a foreign parent in another namespace (e.g. HTML inside
+  //   `<foreignObject>`): parent's close tag would not close the child
   if is_formatting_tag(tag)
     || if let JSXChild::Element(parent_node) = parent_node {
+      let ns = *context.ns.borrow();
       get_tag_name(parent_node, context.options) == tag
+        || (ns.parent_ns != 0 && ns.ns != ns.parent_ns)
     } else {
       false
     }
