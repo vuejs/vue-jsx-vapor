@@ -42,7 +42,12 @@ import {
   type VNode,
   type VNodeChild,
 } from 'vue'
-import type { EmitFnToProps, IsKeyValues, NodeChild, SetupContextToProps } from './types'
+import type {
+  EmitFnToProps,
+  IsKeyValues,
+  NodeChild,
+  SetupContextToProps,
+} from './types'
 
 const cacheMap = new WeakMap()
 
@@ -490,3 +495,29 @@ export const For = defineComponent(
   },
   { props: ['in'] },
 )
+
+/**
+ * Wraps a function component so that it can be hot updated in place.
+ *
+ * The wrapper stays a plain function, so the parent's render calls it with
+ * `(props, ctx)` exactly like the unwrapped one. The implementation hangs off
+ * `__hmrImpl`: `reload` copies the new component's own properties onto the
+ * registered one (`updateComponentDef`), and a remount of the recorded
+ * instance then calls the latest body.
+ *
+ * Unlike the vapor wrapper there is no `render` adapter — a real HMR flush
+ * does not refresh a vdom function component through `instance.render`, so the
+ * emitted callback must pick `reload` for these components.
+ *
+ * The wrapper declares exactly two named parameters — Vue passes `null`
+ * instead of the context when a function component declares fewer than two
+ * (`render.length > 1`) — plus a rest tail, because the compiler wraps by name
+ * convention and a wrapped binding may be an ordinary function (e.g. a hook)
+ * called with more arguments than a component's `(props, ctx)`.
+ */
+export function defineHmrComponent(impl: (...args: any[]) => any) {
+  const component: any = (props: any, ctx: any, ...rest: any[]) =>
+    component.__hmrImpl(props, ctx, ...rest)
+  component.__hmrImpl = impl
+  return component
+}
