@@ -653,3 +653,39 @@ fn inline_block_ancestor_relationships6() {
   })();
   "#);
 }
+
+// upstream: `form end tag`. `</form>` removes only the form element, so a
+// descendant left open would swallow the form's next sibling
+#[test]
+fn form_end_tag() {
+  let code = transform("<div><form><div>x</div></form><p>y</p></div>", None).code;
+  assert!(
+    code.contains("_template(\"<div><form><div>x</div></form><p>y\""),
+    "{code}"
+  );
+
+  let code = transform("<div><form><div><b>x</b></div></form><p>y</p></div>", None).code;
+  assert!(
+    code.contains("_template(\"<div><form><div><b>x</b></div></form><p>y\""),
+    "{code}"
+  );
+
+  // a form closed by its parent's end tag leaves the form element pointer set,
+  // so the next `<form>` start tag is ignored
+  let code = transform(
+    "<div><div><form><input /></form></div><div><form><input /></form></div></div>",
+    None,
+  )
+  .code;
+  assert!(
+    code.contains("_template(\"<div><div><form><input></form></div><div><form><input>\""),
+    "{code}"
+  );
+
+  // a form on the rightmost path can still omit
+  let code = transform("<div><p>y</p><form><div>x</div></form></div>", None).code;
+  assert!(
+    code.contains("_template(\"<div><p>y</p><form><div>x\""),
+    "{code}"
+  );
+}

@@ -230,7 +230,7 @@ pub fn is_formatting_tag(tag_name: &str) -> bool {
 // - Scope boundary elements
 static ALWAYS_CLOSE_TAGS: phf::Set<&'static str> = phf_set! {
   "title", "style", "script", "noscript", "template", // raw text / special parsing
-  "object", "table", "button", "textarea", "select", "iframe", "fieldset", // scope boundary / form elements
+  "object", "table", "button", "textarea", "select", "iframe", "fieldset", "form", // scope boundary / form elements
 };
 pub fn is_always_close_tag(tag_name: &str) -> bool {
   ALWAYS_CLOSE_TAGS.contains(tag_name)

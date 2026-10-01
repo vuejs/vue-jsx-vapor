@@ -346,7 +346,13 @@ fn can_omit_end_tag<'a>(
   let template_close_tags = context.template_close_tags.borrow();
   let template_close_blocks = *context.template_close_blocks.borrow();
   if (!template_close_tags.is_empty()
-    && (template_close_tags.contains(tag) || is_always_close_tag(tag) || is_formatting_tag(tag)))
+    && (template_close_tags.contains(tag)
+      // `</form>` goes through the form element pointer and removes only the
+      // form element itself, so an element inside a form whose end tag is
+      // emitted has to close itself or it swallows the form's next sibling
+      || template_close_tags.contains("form")
+      || is_always_close_tag(tag)
+      || is_formatting_tag(tag)))
     || (template_close_blocks && is_block_tag(tag))
   {
     return false;
