@@ -26,7 +26,6 @@ use crate::ir::index::SetDynamicPropsIRNode;
 use crate::ir::index::SetPropIRNode;
 use common::check::is_constant_node;
 use common::check::is_simple_identifier;
-use common::check::is_svg_tag;
 use indexmap::IndexMap;
 use indexmap::map::Entry;
 
@@ -103,6 +102,7 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
       ..
     },
     tag,
+    is_svg,
     ..
   } = oper;
 
@@ -117,7 +117,7 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
   } else {
     ""
   };
-  let resolved_helper = get_runtime_helper(tag, key_value, modifier);
+  let resolved_helper = get_runtime_helper(tag, is_svg, key_value, modifier);
   if key_value == "class"
     && !resolved_helper.is_svg
     && resolved_helper.name == "_setClass"
@@ -444,31 +444,33 @@ fn append_class<'a>(base: Cow<'a, str>, value: Cow<'a, str>) -> Cow<'a, str> {
   }
 }
 
-fn get_runtime_helper<'a>(tag: &str, key: &str, modifier: Option<&str>) -> HelperConfig<'a> {
+fn get_runtime_helper<'a>(
+  tag: &str,
+  is_svg: bool,
+  key: &str,
+  modifier: Option<&str>,
+) -> HelperConfig<'a> {
   let tag_name = tag.to_uppercase();
   if let Some(modifier) = modifier {
     return if modifier.eq(".") {
-      if let Some(result) = get_special_helper(key, &tag_name) {
+      if let Some(result) = get_special_helper(key, &tag_name, is_svg) {
         result
       } else {
         helpers("setDOMProp", false)
       }
+    } else if is_svg {
+      helpers("setAttr", true)
     } else {
       helpers("setAttr", false)
     };
   }
 
-  // 1. SVG: always attribute
-  if is_svg_tag(tag) {
-    return helpers("setAttr", true);
-  }
-
-  // 2. special handling for value / style / class / textContent /  innerHTML
-  if let Some(helper) = get_special_helper(key, &tag_name) {
+  // 1. special handling for value / style / class / textContent /  innerHTML
+  if let Some(helper) = get_special_helper(key, &tag_name, is_svg) {
     return helper;
   };
 
-  // 3. Aria DOM properties shared between all Elements in
+  // 2. Aria DOM properties shared between all Elements in
   //    https://developer.mozilla.org/en-US/docs/Web/API/Element
   if key.starts_with("aria")
     && key
@@ -478,6 +480,11 @@ fn get_runtime_helper<'a>(tag: &str, key: &str, modifier: Option<&str>) -> Helpe
       .unwrap_or(false)
   {
     return helpers("setDOMProp", false);
+  }
+
+  // 3. SVG: always attribute
+  if is_svg {
+    return helpers("setAttr", true);
   }
 
   // 4. respect shouldSetAsAttr used in vdom and setDynamicProp for consistency
@@ -529,11 +536,16 @@ fn can_set_value_directly(tag_name: &str) -> bool {
     !tag_name.contains("-")
 }
 
-fn get_special_helper<'a>(key_name: &str, tag_name: &str) -> Option<HelperConfig<'a>> {
+fn get_special_helper<'a>(
+  key_name: &str,
+  tag_name: &str,
+  is_svg: bool,
+) -> Option<HelperConfig<'a>> {
   // special case for 'value' property
   match key_name {
     "value" if can_set_value_directly(tag_name) => Some(helpers("setValue", false)),
-    "class" => Some(helpers("setClass", false)),
+    // for svg, class should be set as attribute
+    "class" => Some(helpers("setClass", is_svg)),
     "style" => Some(helpers("setStyle", false)),
     "innerHTML" => Some(helpers("setHtml", false)),
     "textContent" => Some(helpers("setElementText", false)),
@@ -589,7 +601,7 @@ pub fn gen_dynamic_props<'a>(
 ) -> Statement<'a> {
   let ast = &context.ast;
   let dynamic_prop_names = get_dynamic_prop_names(&oper);
-  let is_svg = is_svg_tag(oper.tag);
+  let is_svg = oper.is_svg;
   let values = oper.props.into_iter().map(|props| {
     match props {
       Either3::A(props) => gen_literal_object_props(props, context).into(),

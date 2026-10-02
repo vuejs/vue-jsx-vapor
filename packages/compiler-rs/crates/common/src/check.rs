@@ -376,6 +376,18 @@ pub fn is_event(mut s: &str) -> bool {
       .unwrap_or(false)
 }
 
+// vdom's `isNativeOn` (`/^on[a-z]/`): native event properties like `onclick`
+// that are set by value (dom property or attribute) rather than through
+// `addEventListener`.
+pub fn is_native_on(s: &str) -> bool {
+  s.starts_with("on")
+    && s
+      .as_bytes()
+      .get(2)
+      .map(|c| c.is_ascii_lowercase())
+      .unwrap_or(false)
+}
+
 pub fn get_directive_name(s: &str) -> &str {
   if is_event(s) {
     "on"

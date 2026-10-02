@@ -27,7 +27,8 @@ use crate::{
 use common::{
   check::{
     get_directive_name, get_namespace, is_always_close_tag, is_block_tag, is_built_in_directive,
-    is_formatting_tag, is_html_annotation_xml, is_ignore_newline_tag, is_inline_tag, is_void_tag,
+    is_formatting_tag, is_html_annotation_xml, is_ignore_newline_tag, is_inline_tag, is_native_on,
+    is_void_tag,
   },
   directive::{Directives, resolve_directive, resolve_prop_name},
   dom::is_valid_html_nesting,
@@ -194,6 +195,9 @@ pub fn transform_native_element<'a>(
   get_effect_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
   get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
 ) {
+  // SVG-ness comes from the namespace, not the tag name: elements like `<a>`
+  // exist in both namespaces and take different prop helpers per namespace.
+  let is_svg = ns == 1;
   let mut template = format!("<{tag}");
 
   match props_result.props {
@@ -207,13 +211,17 @@ pub fn transform_native_element<'a>(
           set_dynamic_props: true,
           props,
           element,
-          tag,
+          is_svg,
         }),
         Some(get_effect_index),
         Some(Rc::clone(&get_operation_index)),
       )
     }
     Either::B(props) => {
+      // Native event bindings on svg elements need the runtime value to choose
+      // prop vs attr, and one call per element keeps the dynamic prop cache
+      // shared by these keys.
+      let mut native_on_props = vec![];
       for prop in props {
         let values = &prop.values;
         if let Expression::StringLiteral(key) = &prop.key
@@ -246,6 +254,11 @@ pub fn transform_native_element<'a>(
               format!("={}", value)
             };
           }
+        } else if is_svg
+          && prop.modifier.is_none()
+          && matches!(&prop.key, Expression::StringLiteral(key) if is_native_on(&key.value))
+        {
+          native_on_props.push(prop);
         } else {
           let element = context.reference(&mut context_block.dynamic);
           context.register_effect(
@@ -256,11 +269,32 @@ pub fn transform_native_element<'a>(
               prop,
               element,
               tag,
+              is_svg,
             }),
             Some(Rc::clone(&get_effect_index)),
             Some(Rc::clone(&get_operation_index)),
           );
         }
+      }
+
+      if !native_on_props.is_empty() {
+        let values = native_on_props
+          .iter()
+          .flat_map(|prop| prop.values.iter())
+          .collect::<Vec<_>>();
+        let element = context.reference(&mut context_block.dynamic);
+        context.register_effect(
+          context_block,
+          context.is_operation(values),
+          OperationNode::SetDynamicProps(SetDynamicPropsIRNode {
+            set_dynamic_props: true,
+            props: vec![Either3::A(native_on_props)],
+            element,
+            is_svg,
+          }),
+          Some(get_effect_index),
+          Some(Rc::clone(&get_operation_index)),
+        );
       }
     }
   }

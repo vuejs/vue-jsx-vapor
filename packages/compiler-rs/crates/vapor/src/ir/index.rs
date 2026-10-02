@@ -122,6 +122,7 @@ pub struct SetPropIRNode<'a> {
   pub element: i32,
   pub prop: IRProp<'a>,
   pub tag: &'a str,
+  pub is_svg: bool,
 }
 
 #[derive(Debug)]
@@ -129,7 +130,7 @@ pub struct SetDynamicPropsIRNode<'a> {
   pub set_dynamic_props: bool,
   pub element: i32,
   pub props: Vec<IRProps<'a>>,
-  pub tag: &'a str,
+  pub is_svg: bool,
 }
 
 #[derive(Debug)]

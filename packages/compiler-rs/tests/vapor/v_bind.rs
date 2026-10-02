@@ -499,11 +499,11 @@ fn number_value() {
 fn class_with_svg_elements() {
   let code = transform(r#"<svg class={cls}/>"#, None).code;
   assert_snapshot!(code, @r#"
-  import { renderEffect as _renderEffect, setAttr as _setAttr, template as _template } from "vue";
+  import { renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
   const _t0 = _template("<svg>", 1, 1);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setAttr(_n0, "class", cls, true));
+  	_renderEffect(() => _setClass(_n0, cls, true));
   	return _n0;
   })();
   "#);
@@ -1221,4 +1221,64 @@ fn constant_props_the_template_string_carries() {
     assert!(code.contains(expected), "{source}\n{code}");
     assert!(!code.contains("_setProp"), "{source}\n{code}");
   }
+}
+
+// upstream: `svg namespace elements that share a tag name with html` - svg-ness
+// comes from the namespace, not the tag name
+#[test]
+fn svg_namespace_elements_that_share_a_tag_name_with_html() {
+  let code = transform("<svg><a href={url} class={cls} /></svg>", None).code;
+  assert!(
+    code.contains("_setAttr(_n0, \"href\", url, true)"),
+    "{code}"
+  );
+  assert!(code.contains("_setClass(_n0, cls, true)"), "{code}");
+
+  let code = transform("<svg><a {...obj} /></svg>", None).code;
+  assert!(
+    code.contains("_setDynamicProps(_n0, [obj], null, true)"),
+    "{code}"
+  );
+
+  // back to html inside <foreignObject>
+  let code = transform(
+    "<svg><foreignObject><a href={url} class={cls} /></foreignObject></svg>",
+    None,
+  )
+  .code;
+  assert!(code.contains("_setProp(_n0, \"href\", url)"), "{code}");
+  assert!(code.contains("_setClass(_n0, cls)"), "{code}");
+}
+
+// upstream: `uses the svg class helper for object class bindings on svg anchors`
+#[test]
+fn uses_the_svg_class_helper_for_object_class_bindings_on_svg_anchors() {
+  let code = transform("<svg><a class={{ active: flag }} /></svg>", None).code;
+  assert!(
+    code.contains("_setClass(_n0, { active: flag }, true)"),
+    "{code}"
+  );
+  assert!(!code.contains("_setClassName"), "{code}");
+}
+
+// upstream: `groups native svg event bindings without changing other prop helpers`
+#[test]
+fn groups_native_svg_event_bindings_without_changing_other_prop_helpers() {
+  let code = transform(
+    "<svg><a onclick={click} onfocus={focus} href={url} class={cls} /></svg>",
+    None,
+  )
+  .code;
+  assert!(code.contains("_setDynamicProps(_n0, [{"), "{code}");
+  assert!(code.contains("onclick: click"), "{code}");
+  assert!(code.contains("onfocus: focus"), "{code}");
+  assert!(
+    code.contains("], [\"onclick\", \"onfocus\"], true"),
+    "{code}"
+  );
+  assert!(
+    code.contains("_setAttr(_n0, \"href\", url, true)"),
+    "{code}"
+  );
+  assert!(code.contains("_setClass(_n0, cls, true)"), "{code}");
 }
