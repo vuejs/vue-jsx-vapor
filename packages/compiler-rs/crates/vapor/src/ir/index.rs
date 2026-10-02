@@ -22,6 +22,13 @@ pub struct BlockIRNode<'a> {
   /// Whether the block's owner has only text/interpolation children (such a
   /// block cannot be a single root when hydrating).
   pub node_text_only: bool,
+  /// Elements carrying a built-in v-model (codegen): listeners on them are
+  /// deferred until after the model application. Blocks hold one or two, so
+  /// a linear-scan vec beats a hash set.
+  pub model_elements: Vec<i32>,
+  /// Listeners on model elements, emitted after the model application.
+  pub deferred_listener_operations: Vec<OperationNode<'a>>,
+  pub deferred_listener_effects: Vec<IREffect<'a>>,
 }
 impl<'a> BlockIRNode<'a> {
   pub fn new() -> Self {
@@ -35,6 +42,9 @@ impl<'a> BlockIRNode<'a> {
       props: None,
       root: false,
       node_text_only: false,
+      model_elements: Vec::new(),
+      deferred_listener_operations: Vec::new(),
+      deferred_listener_effects: Vec::new(),
     }
   }
 }

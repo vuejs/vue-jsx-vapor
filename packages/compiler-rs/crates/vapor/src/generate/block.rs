@@ -12,6 +12,7 @@ use oxc_span::SPAN;
 use crate::generate::CodegenContext;
 use crate::generate::directive::gen_custom_directives;
 use crate::generate::operation::gen_operations;
+use crate::generate::operation::is_v_model_listener;
 use crate::generate::template::gen_self;
 use crate::ir::index::{BlockIRNode, ForIRNode, IRDynamicInfo, IREffect, IfIRNode, OperationNode};
 use common::patch_flag::VaporSlotFlags;
@@ -66,6 +67,20 @@ pub fn gen_block_content<'a>(
   // selects the text, checkbox, or radio implementation from the DOM property.
   let model_operations = Rc::new(RefCell::new(Vec::new()));
   let deferred_model_operations = Rc::clone(&model_operations);
+  // Listeners on a v-model element are deferred until after the model
+  // application, so their handlers see the value the model already updated,
+  // as in vdom where the directive created hook runs before the props.
+  let block = unsafe { &mut *context_block };
+  block.model_elements = block
+    .operation
+    .iter()
+    .filter_map(|operation| match operation {
+      OperationNode::Directive(operation) if operation.builtin && operation.name == "model" => {
+        Some(operation.element)
+      }
+      _ => None,
+    })
+    .collect();
   let custom_directives = Rc::new(RefCell::new(IndexMap::new()));
   let deferred_custom_directives = Rc::clone(&custom_directives);
   let flush_before_dynamic = Rc::new(RefCell::new(Box::new(
@@ -149,6 +164,8 @@ pub fn gen_block_content<'a>(
   if let Some(gen_extra_frag) = gen_effects_extra_frag {
     gen_extra_frag(&mut statements, unsafe { &mut *context_block })
   }
+  // the deferred listeners emit without diverting again
+  unsafe { &mut *context_block }.model_elements.clear();
   gen_operations(
     &mut statements,
     mem::take(&mut model_operations.borrow_mut()),
@@ -157,6 +174,21 @@ pub fn gen_block_content<'a>(
     context,
     unsafe { &mut *context_block },
   );
+  gen_operations(
+    &mut statements,
+    mem::take(&mut unsafe { &mut *context_block }.deferred_listener_operations),
+    None,
+    None,
+    context,
+    unsafe { &mut *context_block },
+  );
+  if let Some(statement) = gen_effects(
+    mem::take(&mut unsafe { &mut *context_block }.deferred_listener_effects),
+    context,
+    context_block,
+  ) {
+    statements.push(statement);
+  }
   statements.extend(gen_custom_directives(
     mem::take(&mut custom_directives.borrow_mut()),
     context,
@@ -197,6 +229,20 @@ fn gen_effects<'a>(
   let mut operations_count = 0;
 
   for effect in effects {
+    // a fresh borrow per access - the &mut passed to gen_operations below
+    // lives for the block lifetime, so a held reference would conflict
+    let model_elements = unsafe { &(*context_block).model_elements };
+    if !model_elements.is_empty()
+      && !effect.operations.is_empty()
+      && effect
+        .operations
+        .iter()
+        .all(|operation| is_v_model_listener(operation, model_elements))
+    {
+      // deferred until after same-element v-model
+      unsafe { (*context_block).deferred_listener_effects.push(effect) };
+      continue;
+    }
     operations_count += effect.operations.len();
     gen_operations(
       &mut statements,
