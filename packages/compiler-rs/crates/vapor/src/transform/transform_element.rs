@@ -386,6 +386,9 @@ fn can_omit_end_tag<'a>(
       // form element itself, so an element inside a form whose end tag is
       // emitted has to close itself or it swallows the form's next sibling
       || template_close_tags.contains("form")
+      // `</li>` is ignored while a nested `<ul>` or `<ol>` is still open
+      // (list item scope), so the next `<li>` would land in the nested list
+      || (template_close_tags.contains("li") && matches!(tag, "ul" | "ol"))
       || is_always_close_tag(tag)
       || is_formatting_tag(tag)))
     || (template_close_blocks && is_block_tag(tag))

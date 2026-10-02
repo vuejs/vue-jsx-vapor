@@ -739,3 +739,31 @@ fn foreign_scope_boundary_elements() {
     );
   }
 }
+
+// upstream: `nested list end tag`. `</li>` is ignored while a nested `<ul>` or
+// `<ol>` is still open, so the next item would land in the nested list
+#[test]
+fn nested_list_end_tag() {
+  let code = transform("<ul><li>a<ul><li>b</li></ul></li><li>c</li></ul>", None).code;
+  assert!(
+    code.contains("_template(\"<ul><li>a<ul><li>b</li></ul></li><li>c\""),
+    "{code}"
+  );
+
+  let code = transform(
+    "<ol><li><div>a<ol><li>b</li></ol></div></li><li>c</li></ol>",
+    None,
+  )
+  .code;
+  assert!(
+    code.contains("_template(\"<ol><li><div>a<ol><li>b</li></ol></li><li>c\""),
+    "{code}"
+  );
+
+  // a list item on the rightmost path can still omit
+  let code = transform("<ul><li>a</li><li>b<ul><li>c</li></ul></li></ul>", None).code;
+  assert!(
+    code.contains("_template(\"<ul><li>a</li><li>b<ul><li>c\""),
+    "{code}"
+  );
+}
