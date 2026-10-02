@@ -12,7 +12,7 @@ use oxc_span::{SPAN, SourceType, Span};
 
 use crate::{
   check::{
-    is_custom_element, is_event_option_modifier, is_jsx_component, is_keyboard_event,
+    is_custom_element, is_event, is_event_option_modifier, is_jsx_component, is_keyboard_event,
     is_non_key_modifier, is_simple_identifier, maybe_key_modifier,
   },
   expression::{jsx_attribute_value_to_expression, parse_expression},
@@ -244,6 +244,9 @@ pub struct Directives<'a> {
   pub is_template: bool,
   /// a `v-bind` with a dynamic key or a spread may carry a `type`
   pub has_dynamic_key_v_bind: bool,
+  /// listener keys may collide with a spread or a `v-on` object, so listeners
+  /// are emitted as props for the codegen to merge them (vapor only)
+  pub merges_listeners: bool,
   pub v_if: Option<&'a mut JSXAttribute<'a>>,
   pub v_else_if: Option<&'a mut JSXAttribute<'a>>,
   pub v_else: Option<&'a mut JSXAttribute<'a>>,
@@ -267,8 +270,24 @@ impl<'a> Directives<'a> {
       has_dynamic_key_v_bind: false,
       ..Default::default()
     };
+    let mut has_v_on_object = false;
+    let mut has_static_listener = false;
     for dir in node.opening_element.attributes.iter_mut() {
       if let JSXAttributeItem::Attribute(dir) = dir {
+        if !has_static_listener && let JSXAttributeName::Identifier(name) = &dir.name {
+          let name = name.name.as_str();
+          if name == "v-on" {
+            if dir.value.is_some() {
+              has_v_on_object = true;
+            }
+          } else if is_event(name)
+            // a delegated listener never joins the props merge, so it cannot
+            // collide; `is_event` rules out a leading underscore`
+            && !name.split('_').skip(1).any(|modifier| modifier == "delegate")
+          {
+            has_static_listener = true;
+          }
+        }
         let dir_name = match &dir.name {
           JSXAttributeName::Identifier(name) => name.name,
           JSXAttributeName::NamespacedName(name) => name.namespace.name,
@@ -292,6 +311,8 @@ impl<'a> Directives<'a> {
         directives.has_dynamic_key_v_bind = true;
       }
     }
+    directives.merges_listeners =
+      directives.has_dynamic_key_v_bind || (has_v_on_object && has_static_listener);
     if directives.tag_name == "template"
       && (directives.v_if.is_some()
         || directives.v_else_if.is_some()

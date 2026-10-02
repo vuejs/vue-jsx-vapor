@@ -1233,3 +1233,106 @@ fn props_the_template_string_cannot_carry() {
     );
   }
 }
+
+// upstream: `static listeners join the dynamic props of a native element`.
+// A listener whose key may collide with a spread or a `v-on` object is emitted
+// inside the props merge, where the runtime keeps one invoker per key, so every
+// handler of a key has to be listed together like mergeProps.
+#[test]
+fn static_listeners_join_the_dynamic_props_of_a_native_element() {
+  let code = transform(
+    "<div onClick={a} v-on={obj} {...bind} onClick_stop={b} onKeyup_enter_once={c} onMyEvent={d} />",
+    None,
+  )
+  .code;
+  assert!(code.contains("_setDynamicProps(_n0, ["), "{code}");
+  assert!(code.contains("_toHandlers(obj, true)"), "{code}");
+  assert!(
+    code.contains("onClick: _withModifiers(b, [\"stop\"])"),
+    "{code}"
+  );
+  assert!(
+    code.contains("onKeyupOnce: _withKeys(c, [\"enter\"])"),
+    "{code}"
+  );
+  assert!(code.contains("\"on:myEvent\": d"), "{code}");
+  // nothing is attached outside the merge
+  assert!(!code.contains("_on(_n0"), "{code}");
+  assert!(!code.contains("_setDynamicEvents"), "{code}");
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template, toHandlers as _toHandlers, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [
+  		{ onClick: a },
+  		_toHandlers(obj, true),
+  		bind,
+  		{
+  			onClick: _withModifiers(b, ["stop"]),
+  			onKeyupOnce: _withKeys(c, ["enter"]),
+  			"on:myEvent": d
+  		}
+  	]));
+  	return _n0;
+  })();
+  "#);
+}
+
+// upstream: `v-on="obj" merges into the dynamic props of a native element`.
+#[test]
+fn v_on_object_merges_into_the_dynamic_props_of_a_native_element() {
+  let code = transform("<div id={a} v-on={obj} {...bind} />", None).code;
+  assert!(code.contains("_setDynamicProps(_n0, ["), "{code}");
+  assert!(code.contains("_toHandlers(obj, true)"), "{code}");
+  assert!(!code.contains("_setDynamicEvents"), "{code}");
+}
+
+// upstream: `a listener bound twice in one merge arg keeps both handlers`.
+// `@click.stop` and `@click` share the key `onClick`, so they take one entry
+// instead of producing a duplicated object key.
+#[test]
+fn a_listener_bound_twice_in_one_merge_arg_keeps_both_handlers() {
+  let code = transform("<div onClick_stop={a} onClick={b} {...bind} />", None).code;
+  assert!(
+    code.contains("{ onClick: [_withModifiers(a, [\"stop\"]), b] }"),
+    "{code}"
+  );
+}
+
+// upstream: `a merged camelCase listener keeps its case and its option
+// modifier`. An element keeps the case of its event name, like vdom.
+#[test]
+fn a_merged_camel_case_listener_keeps_its_case_and_option_modifier() {
+  let code = transform(
+    "<div onClick={a} {...bind} onMyEvent_capture_once={b} />",
+    None,
+  )
+  .code;
+  assert!(code.contains("\"on:myEventCaptureOnce\": b"), "{code}");
+}
+
+// upstream: `a delegated listener stays out of the merge`.
+#[test]
+fn a_delegated_listener_stays_out_of_the_merge() {
+  let code = transform("<div onClick_delegate={a} v-on={obj} />", None).code;
+  assert!(code.contains("_delegate(_n0, \"click\", a)"), "{code}");
+  assert!(code.contains("_setDynamicEvents(_n0, obj)"), "{code}");
+  assert!(!code.contains("_toHandlers"), "{code}");
+}
+
+// a `v-on` object alone has no key to collide with
+#[test]
+fn a_v_on_object_alone_keeps_the_dynamic_events_path() {
+  let code = transform("<div v-on={obj} />", None).code;
+  assert!(code.contains("_setDynamicEvents(_n0, obj)"), "{code}");
+  assert!(!code.contains("_toHandlers"), "{code}");
+}
+
+// a listener that cannot collide keeps the plain `on` path
+#[test]
+fn a_listener_that_cannot_collide_keeps_the_static_path() {
+  let code = transform("<div onClick={a} />", None).code;
+  assert!(code.contains("_on(_n0, \"click\", a)"), "{code}");
+  assert!(!code.contains("_setDynamicProps"), "{code}");
+}

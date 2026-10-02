@@ -525,7 +525,7 @@ pub fn build_props<'a>(
           if let Some(prop_value) = &mut prop.value
             && let Some(value) = jsx_attribute_value_to_expression(prop_value, context.ast)
           {
-            if is_component {
+            if is_component || directives.merges_listeners {
               if !results.is_empty() {
                 dynamic_args.push(Either3::A(dedupe_properties(results)));
                 results = vec![];
