@@ -1754,3 +1754,24 @@ fn dynamic_slot_functions_get_distinct_names() {
   assert!(code.contains("fn: _s || (_s = () =>"), "{code}");
   assert!(code.contains("fn: _s1 || (_s1 = () =>"), "{code}");
 }
+
+// upstream: `v-if / v-for slots override unconditional ones like vdom` - the
+// runtime resolves the `$` array from the end, so conditional slots must be
+// emitted last and statics stay the lowest-priority fallback
+#[test]
+fn conditional_and_dynamic_slots_override_unconditional_ones() {
+  let code = transform(
+    "<Comp><template v-for={n in names} v-slot:$n$>forwarded {n}</template><template v-slot:a>own a</template><template v-if={ok} v-slot:b>own b</template><template v-slot:$name$>computed</template></Comp>",
+    None,
+  )
+  .code;
+  let static_fallback = code.find("a: () => {").expect("{code}");
+  let slots_array = code.find("$: [").expect("{code}");
+  let loop_slot = code.find("_createForSlots(() => names").expect("{code}");
+  let dynamic_arg = code.find("fn: _s ||").expect("{code}");
+  let conditional = code.find("() => ok ? {").expect("{code}");
+  assert!(static_fallback < slots_array, "{code}");
+  assert!(slots_array < loop_slot, "{code}");
+  assert!(loop_slot < dynamic_arg, "{code}");
+  assert!(dynamic_arg < conditional, "{code}");
+}

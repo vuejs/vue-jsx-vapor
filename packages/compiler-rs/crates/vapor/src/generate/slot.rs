@@ -50,6 +50,14 @@ pub fn gen_raw_slots<'a>(
   if slots.is_empty() {
     return None;
   }
+  // like vdom's `createSlots()`, v-if / v-for slots override unconditional
+  // ones whatever the source order, so they go last (dynamic slots resolve
+  // from the end)
+  slots.sort_by_key(|slot| match slot {
+    Either4::A(_) => 0,
+    Either4::C(_) => 2,
+    _ => 1,
+  });
   if let Either4::A(_) = &slots[0] {
     let mut static_slots = slots.remove(0);
     if let Either4::A(static_slots) = &mut static_slots
