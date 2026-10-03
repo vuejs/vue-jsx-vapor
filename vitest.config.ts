@@ -27,6 +27,11 @@ export default defineConfig({
     conditions: ['jsx-vapor-dev'],
     alias: { vue: vueVapor },
   },
+  ssr: {
+    resolve: {
+      conditions: ['jsx-vapor-dev'],
+    },
+  },
   test: {
     include: ['./packages/**/*.spec.ts'],
   },
