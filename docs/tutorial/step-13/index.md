@@ -8,17 +8,17 @@ next: false
 
 <script setup>
 import appCode from './app.tsx?raw'
-import appSolvedCode from './app-solved.tsx?raw'
-import appInteropCode from './app-interop.tsx?raw'
+import appVaporCode from './app-vapor.tsx?raw'
+import appVaporSolvedCode from './app-vapor-solved.tsx?raw'
 import { getDefaultFiles } from '../template'
 import { ref } from 'vue'
 
 const files = ref(getDefaultFiles())
 const apps = {
   app: { 'src/App.tsx': appCode },
-  solved: { 'src/App.tsx': appSolvedCode },
-  interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropCode },
+  solved: { 'src/App.tsx': appCode },
+  vapor: { 'src/App.tsx': appVaporCode },
+  vaporSolved: { 'src/App.tsx': appVaporSolvedCode },
 }
 </script>
 

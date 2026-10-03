@@ -1,7 +1,7 @@
 {
   "name": "ecosystem-ci",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "test": "node index.ts"
   },

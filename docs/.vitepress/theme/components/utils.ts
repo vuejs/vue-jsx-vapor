@@ -10,11 +10,7 @@ export function useRouteQuery<T extends string | boolean>(
   const value = ref(data || localStorage.getItem(name) || defaultValue)
   return computed({
     get() {
-      return value.value === 'true'
-        ? true
-        : value.value === 'false'
-          ? false
-          : value.value
+      return value.value === 'true' ? true : value.value === 'false' ? false : value.value
     },
     set(v) {
       const searchParams = new URLSearchParams(location.search)

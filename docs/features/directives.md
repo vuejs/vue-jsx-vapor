@@ -1,6 +1,12 @@
 # Directives
 
-Vue JSX Vapor provides full support for Vue's built-in directives within JSX syntax.
+Vue JSX provides full support for Vue's built-in directives within JSX syntax.
+
+## Type Support
+
+Directive transforms work at compile time without additional editor tooling. To
+get directive type support in the editor or during command-line type checking,
+see [Volar Plugin](../typescript/volar).
 
 |           Directive           |        Vue         |       Volar        |
 | :---------------------------: | :----------------: | :----------------: |

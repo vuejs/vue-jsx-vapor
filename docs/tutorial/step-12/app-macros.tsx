@@ -1,21 +1,21 @@
-import { ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 
-const Comp = (props: { modelValue: string }) => {
+const Comp = defineComponent((props: { modelValue: string }) => {
   const model = defineModel<string>()
-  return (
+  return () => (
     <input
       value={model.value}
-      onInput={(e) => (model.value = e.currentTarget.value)}
+      onInput={(e) => (model.value = (e.target as HTMLInputElement).value)}
     />
   )
-}
+})
 
-export default () => {
+export default defineComponent(() => {
   const msg = ref('Hello')
-  return (
+  return () => (
     <>
-      <Comp modelValue={msg.value} onUpdate:modelValue={(v) => (msg.value = v)} />
+      <Comp modelValue={msg.value} onUpdate:modelValue={(v: string) => (msg.value = v)} />
       <p>{msg.value}</p>
     </>
   )
-}
+})

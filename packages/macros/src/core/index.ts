@@ -14,13 +14,7 @@ import {
 } from './utils'
 import type { OptionsResolved } from '../options'
 import type { parse } from '@babel/parser'
-import type {
-  CallExpression,
-  LVal,
-  Node,
-  Program,
-  VoidPattern,
-} from '@babel/types'
+import type { CallExpression, LVal, Node, Program, VoidPattern } from '@babel/types'
 
 interface CodeTransform {
   code: string
@@ -91,14 +85,7 @@ export async function transformJsxMacros(
   let defineStyleIndex = 0
   for (const [root, macros] of rootMap) {
     macros.defineStyle?.forEach((defineStyle) => {
-      transformDefineStyle(
-        defineStyle,
-        defineStyleIndex++,
-        root,
-        s,
-        importMap,
-        macros,
-      )
+      transformDefineStyle(defineStyle, defineStyleIndex++, root, s, importMap, macros)
     })
 
     if (root === undefined) continue
@@ -121,10 +108,7 @@ export async function transformJsxMacros(
               ? (root.params[0].extra?.trailingComma as number) + 1
               : lastProp?.end || root.params[0].end! - 1,
             `${
-              !root.params[0].extra?.trailingComma &&
-              root.params[0].properties.length
-                ? ','
-                : ''
+              !root.params[0].extra?.trailingComma && root.params[0].properties.length ? ',' : ''
             } ...${HELPER_PREFIX}props`,
           )
         }
@@ -225,10 +209,7 @@ function getRootMap(ast: Program, s: MagicString, options: OptionsResolved) {
         } else if (options.defineSlots.alias.includes(macroName)) {
           rootMap.get(root)!.defineSlots = {
             expression: macroExpression,
-            id:
-              node.type === 'VariableDeclaration'
-                ? node.declarations[0].id
-                : undefined,
+            id: node.type === 'VariableDeclaration' ? node.declarations[0].id : undefined,
           }
         } else if (options.defineExpose.alias.includes(macroName)) {
           rootMap.get(root)!.defineExpose = macroExpression

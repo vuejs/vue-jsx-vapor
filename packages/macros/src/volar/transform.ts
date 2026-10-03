@@ -2,10 +2,7 @@ import { transformDefineStyle } from './define-style'
 import { transformSlot } from './slot'
 import type { RootMap, TransformOptions } from '.'
 
-export function transformJsxMacros(
-  rootMap: RootMap,
-  options: TransformOptions,
-): void {
+export function transformJsxMacros(rootMap: RootMap, options: TransformOptions): void {
   const { ts, codes, ast } = options
 
   let defineStyleIndex = 0
@@ -29,9 +26,7 @@ export function transformJsxMacros(
     const result =
       '({}) as typeof __ctx.render & { __ctx?: { props: typeof __ctx.props } & typeof __ctx.context }'
 
-    const propsType = root.parameters[0]?.type
-      ? root.parameters[0].type.getText(ast)
-      : '{}'
+    const propsType = root.parameters[0]?.type ? root.parameters[0].type.getText(ast) : '{}'
     codes.replaceRange(
       root.parameters.pos,
       root.parameters.pos,
@@ -71,8 +66,7 @@ export function transformJsxMacros(
             : []
         for (const element of elements) {
           if (ts.isIdentifier(element.name)) {
-            const isRequired =
-              element.initializer && ts.isNonNullExpression(element.initializer)
+            const isRequired = element.initializer && ts.isNonNullExpression(element.initializer)
             props.push(
               `${element.name.escapedText}${
                 isRequired ? ':' : '?:'
@@ -89,13 +83,8 @@ export function transformJsxMacros(
         codes.replaceRange(
           node.getStart(ast),
           node.expression.getStart(ast),
-          'const ',
-          [`__rndr`, node.getStart(ast), { verification: true }],
-          isDefineComponent
-            ? macros.slots
-              ? ' = ('
-              : ': () => JSX.Element = '
-            : ' = ',
+          'const __render = ',
+          isDefineComponent && macros.slots ? '(' : '',
         )
         codes.replaceRange(
           node.expression.end,
@@ -104,14 +93,12 @@ export function transformJsxMacros(
           `
 return {} as {
   props: {${props.join(', ')}},
-  context: ${
-    root.parameters[1]?.type ? `${root.parameters[1].type.getText(ast)} & ` : ''
-  }{
+  context: ${root.parameters[1]?.type ? `${root.parameters[1].type.getText(ast)} & ` : ''}{
     slots: ${macros.defineSlots ?? '{}'},
     expose: (exposed: import('vue').ShallowUnwrapRef<${macros.defineExpose ?? 'Record<string, any>'}>) => void,
     attrs: Record<string, any>
   },
-  render: ${isDefineComponent ? `ReturnType<` : ''}typeof __rndr${isDefineComponent ? '>' : ''}
+  render: ${isDefineComponent ? `ReturnType<` : ''}typeof __render${isDefineComponent ? '>' : ''}
 }`,
         )
       }

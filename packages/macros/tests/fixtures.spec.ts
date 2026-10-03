@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test } from 'vite-plus/test'
 import { transformJsxMacros } from '../src/core'
 
 const options = {
@@ -13,7 +13,8 @@ describe('fixtures', () => {
   for (const [id, code] of Object.entries(
     import.meta.glob('./fixtures/**/*.tsx', {
       eager: true,
-      as: 'raw',
+      query: '?raw',
+      import: 'default',
     }),
   )) {
     test(id, async () => {

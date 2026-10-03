@@ -1,24 +1,14 @@
-import { transform } from '@vue-jsx-vapor/compiler-rs'
+import { transform, type CompilerOptions } from '@vue-jsx/compiler'
 import type { Options } from '../options'
 
 export type { Options }
 
-export function transformVueJsxVapor(
-  code: string,
-  id: string,
-  options?: Options,
-  needSourceMap = false,
-  needHMR = false,
-  ssr = false,
-) {
+export function transformVueJsxVapor(code: string, id: string, options: CompilerOptions = {}) {
   const params = new URLSearchParams(id)
-  const vapor = params.get('vapor')
+  const vapor = params.has('vapor')
   return transform(code, {
     filename: id,
-    sourceMap: needSourceMap,
-    interop: vapor ? false : options?.interop,
-    hmr: needHMR,
-    ssr,
-    ...options?.compiler,
+    ...options,
+    vapor: vapor || (options.vapor ?? true),
   })
 }

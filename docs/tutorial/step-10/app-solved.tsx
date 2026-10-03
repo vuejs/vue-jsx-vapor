@@ -1,7 +1,9 @@
-const Comp = (props, { slots }) => {
-  return <slots.default foo="from child" />
-}
+import { defineComponent } from 'vue'
 
-export default () => {
-  return <Comp>{(slotProps) => <div>{slotProps.foo}</div>}</Comp>
-}
+const Comp = defineComponent((props, { slots }) => {
+  return () => <slots.default foo="from child" />
+})
+
+export default defineComponent(() => {
+  return () => <Comp>{(slotProps) => <div>{slotProps.foo}</div>}</Comp>
+})

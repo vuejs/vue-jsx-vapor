@@ -1,11 +1,11 @@
 // @ts-nocheck
-import vueJsxVapor from 'vue-jsx-vapor/volar.js'
+import vueJsx from 'vue-jsx/volar.js'
 
 export default {
   plugins: [
-    vueJsxVapor({
+    vueJsx({
       macros: false,
-      interop: false,
+      vapor: false,
     }),
   ],
 }

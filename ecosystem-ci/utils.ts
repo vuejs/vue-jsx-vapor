@@ -21,9 +21,7 @@ export function cd(dir: string) {
 
 export async function $(cmd: string, args: string[] = [], env = {}) {
   if (isGitHubActions) {
-    console.log(
-      `\u001B[1;34m::group::${cwd} $> ${cmd} ${args.join(' ')}\u001B[0m`,
-    )
+    console.log(`\u001B[1;34m::group::${cwd} $> ${cmd} ${args.join(' ')}\u001B[0m`)
   } else {
     console.log(`\u001B[1;34m${cwd} $> ${cmd} ${args.join(' ')}\u001B[0m`)
   }
@@ -54,11 +52,7 @@ export async function setupRepo(options: RepoOptions) {
     const _cwd = cwd
     cd(dir)
     try {
-      const remoteUrl = await $output(
-        'git',
-        ['ls-remote', '--get-url'],
-        options.env,
-      )
+      const remoteUrl = await $output('git', ['ls-remote', '--get-url'], options.env)
       if (remoteUrl === repoUrl) needClone = false
       else fs.rmSync(dir, { recursive: true, force: true })
     } catch {
@@ -98,12 +92,7 @@ export async function setupRepo(options: RepoOptions) {
   )
   await $(
     'git',
-    [
-      '-c',
-      'advice.detachedHead=false',
-      'checkout',
-      tag ? `tags/${tag}` : (commit ?? branch),
-    ],
+    ['-c', 'advice.detachedHead=false', 'checkout', tag ? `tags/${tag}` : (commit ?? branch)],
     options.env,
   )
 }
@@ -121,9 +110,7 @@ export function applyOverrides(dir: string) {
   }
 
   const workspacePath = path.join(dir, 'pnpm-workspace.yaml')
-  let content = fs.existsSync(workspacePath)
-    ? fs.readFileSync(workspacePath, 'utf8')
-    : ''
+  let content = fs.existsSync(workspacePath) ? fs.readFileSync(workspacePath, 'utf8') : ''
   const suffix = content.includes('dangerouslyAllowAllBuilds')
     ? ''
     : '\ndangerouslyAllowAllBuilds: true\n'
@@ -144,10 +131,7 @@ export function applyOverrides(dir: string) {
 
 // ─── run helpers ─────────────────────────────────────────────────────────────
 
-async function runTasks(
-  tasks: string | string[],
-  scripts: Record<string, string>,
-) {
+async function runTasks(tasks: string | string[], scripts: Record<string, string>) {
   const list = Array.isArray(tasks) ? tasks : [tasks]
   for (const task of list) {
     if (scripts[task] == null) {
@@ -160,17 +144,7 @@ async function runTasks(
 }
 
 export async function runInRepo(options: SuiteOptions) {
-  const {
-    repo,
-    branch,
-    tag,
-    commit,
-    skipGit = false,
-    build,
-    test,
-    env,
-    install,
-  } = options
+  const { repo, branch, tag, commit, skipGit = false, build, test, env, install } = options
 
   const dir = path.resolve(workspace, options.dir ?? repo.split('/').at(-1)!)
 

@@ -1,9 +1,6 @@
 import type { RootMap, TransformOptions } from '.'
 
-export function getGlobalTypes(
-  rootMap: RootMap,
-  options: TransformOptions,
-): string {
+export function getGlobalTypes(rootMap: RootMap, options: TransformOptions): string {
   let defineStyle = ''
   if (options.defineSlots.alias) {
     defineStyle = options.defineStyle.alias

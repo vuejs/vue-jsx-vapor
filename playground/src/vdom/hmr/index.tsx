@@ -12,10 +12,7 @@ export default defineComponent(() => {
   return () => (
     <div>
       <h3>vdom / interop: function component HMR</h3>
-      <p>
-        edit vchild-v1 to vchild-v2 in child.tsx and save - does the text update
-        at all?
-      </p>
+      <p>edit vchild-v1 to vchild-v2 in child.tsx and save - does the text update at all?</p>
       <button id="toggle" onClick={() => (show.value = !show.value)}>
         toggle
       </button>
