@@ -1,3 +1,61 @@
+# [3.3.0-rc.3](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.26...v3.3.0-rc.3) (2026-10-03)
+
+- feat(runtime)!: default inheritAttrs to false and use attrs as props for defineComponent ([40fb25b](https://github.com/vuejs/vue-jsx-vapor/commit/40fb25b8a3687a45349a86a10eea6c40a99ca3f9))
+
+### Bug Fixes
+
+- **compiler-vapor:** preserve special boolean values with .attr ([2a5914f](https://github.com/vuejs/vue-jsx-vapor/commit/2a5914fd0cbc625642b7bcd1b1fbc922daeff051))
+- **compiler/vapor:** update insert function to use context helper for consistency ([79415dc](https://github.com/vuejs/vue-jsx-vapor/commit/79415dcd6608761854b76682b5918d7c126226c9))
+- **runtime:** drop the template placeholder when setNodes inserts before the anchor ([e9178f6](https://github.com/vuejs/vue-jsx-vapor/commit/e9178f6018acdab2d236ec654a20f267cfd1539b))
+
+### BREAKING CHANGES
+
+- components relying on automatic attribute fallthrough must
+  spread attrs themselves. Import the two helpers from vue-jsx or
+  @vue-jsx/runtime; Vue's own defineComponent and defineVaporComponent
+  are unchanged.
+
+# [3.3.0-rc.2](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.25...v3.3.0-rc.2) (2026-09-19)
+
+### Bug Fixes
+
+- **compiler-vapor:** keep raw values on v-model value props ([abb1a28](https://github.com/vuejs/vue-jsx-vapor/commit/abb1a286e31700bb734454e8d4e2d93d03786aa0))
+- **compiler-vapor:** preserve raw checkbox values with .attr ([640833a](https://github.com/vuejs/vue-jsx-vapor/commit/640833a73a4b677a17ab8db3fe45eccf796fecec))
+- **compiler-vapor:** stabilize dynamic slot function references ([edebf7c](https://github.com/vuejs/vue-jsx-vapor/commit/edebf7cc233926c52e68d9663579eaeba02d8eca))
+- **compiler/vapor:** hydrate missing text among element children ([fb6762f](https://github.com/vuejs/vue-jsx-vapor/commit/fb6762fedd9c3725afe427e76773ba91be533d81))
+- **compiler/vapor:** ignore key on <template> slots ([8603db5](https://github.com/vuejs/vue-jsx-vapor/commit/8603db5658de822e8421d8e1c526b4715ed5e0eb))
+- **compiler/vapor:** keep number literals on slot outlet props ([7ab23be](https://github.com/vuejs/vue-jsx-vapor/commit/7ab23be69e6b5bcfd2a05ee2b5afeab5eab99f82))
+- **compiler/vapor:** keep the leading newline of pre and textarea ([8e0ac6a](https://github.com/vuejs/vue-jsx-vapor/commit/8e0ac6aa5eb60ae04c9306f6df5cb41a4c8eb50d))
+- **compiler/vapor:** pass custom directive arguments as getters ([0c9e435](https://github.com/vuejs/vue-jsx-vapor/commit/0c9e435f96cee766a121217352026784d55dc3ff))
+- **compiler/vapor:** preserve fragment ownership when hydrating empty ([1bf5416](https://github.com/vuejs/vue-jsx-vapor/commit/1bf5416429a6f2ba13f70fe104bbe636967b3677))
+- **compiler/vapor:** process v-for callback parameter defaults ([85c1283](https://github.com/vuejs/vue-jsx-vapor/commit/85c128364316b477a54e3cecbfb94648921f22f2))
+- **compiler/vapor:** resolve v-for aliases through their ast ([56b0109](https://github.com/vuejs/vue-jsx-vapor/commit/56b0109e6810ea4dc76de33dafe6d9f68f0ec8ff))
+- **compiler/vapor:** set element text for textContent bindings ([92f6698](https://github.com/vuejs/vue-jsx-vapor/commit/92f66980efcb72f698b86cd5e04eba2b82e46ab0))
+- **types:** correct infer slots for vue generate component ([23c626b](https://github.com/vuejs/vue-jsx-vapor/commit/23c626b851d2487d72e0ca957f2accc6a638bd71)), closes [#72](https://github.com/vuejs/vue-jsx-vapor/issues/72)
+
+# [3.3.0-rc.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.24...v3.3.0-rc.1) (2026-09-13)
+
+### Bug Fixes
+
+- **compiler-vapor:** emit createElement-backed children nested in a ([e25739e](https://github.com/vuejs/vue-jsx-vapor/commit/e25739e7e34ef452c9f2f09c250b23752918ad01))
+- **compiler/vapor:** create dynamic component element fallbacks in the ([46db99c](https://github.com/vuejs/vue-jsx-vapor/commit/46db99c8af5587d4893a4384c134f99e19571012))
+- **compiler/vdom:** remove root Fragment text optimization ([b50d8a4](https://github.com/vuejs/vue-jsx-vapor/commit/b50d8a46a77ca6f06953b8ca63ea854786102dc9))
+- **compiler:** declare package as ESM ([24cf4c8](https://github.com/vuejs/vue-jsx-vapor/commit/24cf4c8a4640016f77529f33b377807645c118bd))
+- **types:** use any instead of Props for functional component ([06eaedd](https://github.com/vuejs/vue-jsx-vapor/commit/06eaedd5dc330acbdf815bdecf657ca96adc42dc)), closes [#70](https://github.com/vuejs/vue-jsx-vapor/issues/70)
+- **types/eslint:** use FlatConfig instead of ClassicConfig ([48bed78](https://github.com/vuejs/vue-jsx-vapor/commit/48bed78a6a0127bfc3ecca696d260b06e288d966))
+- **types:** correct native element ref and slot types ([3e61d81](https://github.com/vuejs/vue-jsx-vapor/commit/3e61d81d7d3ee181ff47585abd2ec8b41a337247))
+- **types:** infer Vapor block type via conditional type ([40c6e8f](https://github.com/vuejs/vue-jsx-vapor/commit/40c6e8f30569df510d956b2c32ced699df83df96))
+- **types:** preserve union component props ([2571d88](https://github.com/vuejs/vue-jsx-vapor/commit/2571d88f6cb7b9410d41d17895a5c62252a31024))
+- **types:** use NodeChild instead of RenderResult for defineComponent ([819a48c](https://github.com/vuejs/vue-jsx-vapor/commit/819a48c95552f51a36f09b5530ab1f6bf8689075))
+- **vapor:** correct v-once handling for components, slots and directives ([4d640b1](https://github.com/vuejs/vue-jsx-vapor/commit/4d640b11aa4b6e04d53b70bde2355b7f9537aa74))
+
+# [3.3.0-beta.1](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.22...v3.3.0-beta.1) (2026-08-25)
+
+### Features
+
+- add vue-jsx package ([2b0cc1f](https://github.com/vuejs/vue-jsx-vapor/commit/2b0cc1ff18d2efb4e59a423d44e6abf677787d10))
+- expose vue-jsx/vapor ([89322ee](https://github.com/vuejs/vue-jsx-vapor/commit/89322ee4ad91f03b24b0893e9032bf35cdf78ef0))
+
 ## [3.2.26](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.25...v3.2.26) (2026-10-03)
 
 ### Bug Fixes
