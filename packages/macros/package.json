@@ -85,7 +85,7 @@
     "rolldown": "*",
     "rollup": "^3",
     "vite": ">=3",
-    "vue": ">=3",
+    "vue": "^3.6.0-rc.10",
     "webpack": "^4 || ^5"
   },
   "peerDependenciesMeta": {

@@ -268,6 +268,7 @@ fn gen_static_props<'a>(
         prop.modifier,
         prop.handler,
         options,
+        false,
         context,
       );
       let has_modifiers = !keys.is_empty() || !non_keys.is_empty();
@@ -492,6 +493,7 @@ fn gen_prop<'a>(
     prop.modifier,
     handler,
     options,
+    false,
     context,
   );
   let computed = key.is_expression();

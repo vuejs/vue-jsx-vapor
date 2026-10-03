@@ -391,6 +391,35 @@ fn template_v_if_with_v_for_inside() {
 }
 
 #[test]
+fn v_if_with_key() {
+  let code = transform(
+    r#"<div v-if={arr.length > 0} key={index}>item: { item }</div>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
+  import { createIf as _createIf, createKeyedFragment as _createKeyedFragment, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ", 1);
+  (() => {
+  	const _n0 = _createIf(() => arr.length > 0, () => {
+  		const _n2 = _createKeyedFragment(() => index, () => {
+  			const _n4 = _t0();
+  			const _x4 = _txt(_n4);
+  			_setNodes(_x4, "item: ", () => item);
+  			return _n4;
+  		});
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
 fn template_v_if_with_key() {
   let code = transform(
     r#"<template v-if={arr.length > 0} key={index}>
@@ -406,7 +435,6 @@ fn template_v_if_with_key() {
   import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { createIf as _createIf, createKeyedFragment as _createKeyedFragment, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div> ");
-  const _t1 = _template("<template>");
   (() => {
   	const _n0 = _createIf(() => arr.length > 0, () => {
   		const _n2 = _createKeyedFragment(() => index, () => {
@@ -819,4 +847,65 @@ fn error_on_v_if_no_expression() {
   assert_eq!(*error.borrow(), Some(ErrorCodes::VIfNoExpression));
 }
 
-// TODO codegen
+// upstream: `empty template branch keeps the following sibling` - SSR renders
+// an empty branch as a fragment, so hydration needs a range for it
+#[test]
+fn empty_template_branch_hydrates_as_a_fragment() {
+  let code = transform(
+    "<div><template v-if={price > 0}>{price}</template><template v-else /><span>after</span></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createNodes as _createNodes } from "/vue-jsx/vapor";
+  import { child as _child, createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<div><!><span>after", 1);
+  (() => {
+  	const _n5 = _t0();
+  	const _n4 = _child(_n5);
+  	_setInsertionState(_n5, _n4);
+  	const _n0 = _createIf(() => price > 0, () => {
+  		const _n2 = _createNodes(() => price);
+  		return _n2;
+  	}, () => {
+  		return [];
+  	}, 266);
+  	return _n5;
+  })();
+  "#);
+}
+
+// upstream: `template branch with a lone nested v-if` - SSR renders the nested
+// v-if with if anchors, so the branch owns a fragment range too
+#[test]
+fn template_branch_with_a_lone_nested_v_if_hydrates_as_a_fragment() {
+  let code = transform(
+    "<div><template v-if={outer}><Comp v-if={inner} /></template><span>after</span></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  import { child as _child, createIf as _createIf, setInsertionState as _setInsertionState, template as _template } from "vue";
+  const _t0 = _template("<div><!><span>after", 1);
+  (() => {
+  	const _n6 = _t0();
+  	const _n5 = _child(_n6);
+  	_setInsertionState(_n6, _n5);
+  	const _n0 = _createIf(() => outer, () => {
+  		const _n2 = _createIf(() => inner, () => {
+  			const _n4 = _createComponent(Comp);
+  			return _n4;
+  		});
+  		return _n2;
+  	}, null, 2);
+  	return _n6;
+  })();
+  "#);
+}

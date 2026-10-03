@@ -12,7 +12,7 @@ export default defineNuxtModule<ModuleOptions>({
     configKey: 'vueJsxMacros',
   },
   setup(options) {
-    addVitePlugin(() => vite(options))
+    addVitePlugin(() => vite(options) as any)
     addWebpackPlugin(() => webpack(options))
 
     // ...

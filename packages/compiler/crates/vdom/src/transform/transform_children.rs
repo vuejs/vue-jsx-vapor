@@ -2,7 +2,7 @@ use oxc_ast::ast::JSXChild;
 
 use crate::transform::TransformContext;
 
-use common::{check::is_fragment_node, directive::Directives, text::is_empty_text};
+use common::{directive::Directives, text::is_empty_text};
 
 /// # SAFETY
 pub unsafe fn transform_children<'a>(
@@ -11,7 +11,8 @@ pub unsafe fn transform_children<'a>(
   context: &TransformContext<'a>,
 ) {
   unsafe {
-    let is_fragment_or_component = is_fragment_node(node) || directives.is_component;
+    let is_fragment_or_component =
+      matches!(node, JSXChild::Fragment(_)) || directives.is_template || directives.is_component;
 
     if !matches!(&node, JSXChild::Element(_)) && !is_fragment_or_component {
       return;

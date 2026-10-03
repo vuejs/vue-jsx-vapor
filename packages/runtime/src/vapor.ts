@@ -47,6 +47,36 @@ export function defineVaporSSRComponent(
   return comp
 }
 
+/**
+ * Wraps a function component so that it can be hot updated in place.
+ *
+ * Vue patches an update only through `render` (`rerender` replaces it, `reload`
+ * copies properties), while a mount calls the component itself, so the wrapper
+ * has to stay a forwarder reading `render.__hmrImpl` — the one property both
+ * update paths replace. `impl` alone would keep running the old body.
+ *
+ * Vapor calls `render(state, props)` but mounts the component as
+ * `(props, instance)`, so the render adapter rebuilds the mount signature,
+ * reading the instance from `currentInstance`.
+ *
+ * The component declares exactly two named parameters — Vue passes `null`
+ * instead of the context when a function component declares fewer than two
+ * (`render.length > 1`) — plus a rest tail, because the compiler wraps by name
+ * convention and a wrapped binding may be an ordinary function (e.g. a hook)
+ * called with more arguments than a component's `(props, instance)`.
+ */
+/*@__NO_SIDE_EFFECTS__*/
+export function defineVaporHmrComponent(impl: (...args: any[]) => any) {
+  const component: any = (props: any, instance: any, ...rest: any[]) =>
+    component.render.__hmrImpl(props, instance, ...rest)
+  component.render = (_state: any, props: any) =>
+    // @ts-ignore `currentInstance` is not part of vue's public types, runtime
+    // vapor keeps the instance being rendered on it
+    component(props, Vue.currentInstance)
+  component.render.__hmrImpl = impl
+  return component
+}
+
 type Tail<T extends any[]> = T extends [any, ...infer R] ? R : never
 
 export const createComponent = (

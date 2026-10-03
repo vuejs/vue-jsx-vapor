@@ -1,8 +1,10 @@
 use oxc_ast::NONE;
-use oxc_ast::ast::{Argument, NumberBase, Statement};
+use oxc_ast::ast::{Argument, Expression, NumberBase, Statement};
 use oxc_span::SPAN;
 
 use indexmap::IndexMap;
+
+use common::check::is_native_on;
 
 use crate::generate::CodegenContext;
 use crate::generate::component::gen_create_component;
@@ -25,6 +27,30 @@ use crate::generate::v_if::gen_if;
 use crate::ir::index::BlockIRNode;
 use crate::ir::index::DirectiveIRNode;
 use crate::ir::index::OperationNode;
+
+/// Listeners on a v-model element are deferred until after the model
+/// application, so their handlers see the value the model already updated, as
+/// in vdom where the directive `created` hook runs before the props.
+pub fn is_v_model_listener<'a>(operation: &OperationNode<'a>, model_elements: &[i32]) -> bool {
+  if model_elements.is_empty() {
+    return false;
+  }
+  match operation {
+    OperationNode::SetEvent(operation) => model_elements.contains(&operation.element),
+    OperationNode::SetDynamicEvents(operation) => model_elements.contains(&operation.element),
+    OperationNode::SetProp(operation) => {
+      // this dialect's v_bind props carry lowercase native event names
+      // (`onclick`), so any of them can collide with the model event
+      model_elements.contains(&operation.element)
+        && operation.prop.modifier.is_none()
+        && matches!(
+          &operation.prop.key,
+          Expression::StringLiteral(key) if is_native_on(&key.value)
+        )
+    }
+    _ => false,
+  }
+}
 
 pub fn gen_operations<'a>(
   statements: &mut oxc_allocator::Vec<'a, Statement<'a>>,
@@ -55,6 +81,12 @@ pub fn gen_operations<'a>(
           .as_deref_mut()
           .unwrap()
           .push(OperationNode::Directive(operation));
+      }
+      operation
+        if !context_block.model_elements.is_empty()
+          && is_v_model_listener(&operation, &context_block.model_elements) =>
+      {
+        context_block.deferred_listener_operations.push(operation);
       }
       operation => gen_operation_with_insertion_state(statements, operation, context, unsafe {
         &mut *_context_block

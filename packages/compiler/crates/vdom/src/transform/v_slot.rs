@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 use common::{
-  check::{is_simple_identifier, is_template},
-  directive::{Directives, find_prop, resolve_directive},
+  check::is_simple_identifier,
+  directive::{Directives, resolve_directive},
   error::ErrorCodes,
   expression::gen_getter,
   options::SlotScope,
@@ -51,7 +51,7 @@ pub unsafe fn track_slot_scopes<'a>(
       return None;
     };
     let is_component = directives.is_component;
-    if is_component || is_template(node) {
+    if is_component || directives.is_template {
       // We are only checking non-empty v-slot here
       // since we only care about slots that introduce scope variables.
       if let Some(v_slot) = directives.v_slot.as_ref() {
@@ -178,7 +178,7 @@ pub fn build_slots<'a>(
     };
     let slot_element_ptr = slot_element as *mut oxc_allocator::Box<JSXElement>;
     let mut slot_directives = Directives::new(unsafe { &mut *slot_element_ptr }, context.options);
-    if if is_template(slot_element) {
+    if if slot_directives.is_template {
       slot_dir = slot_directives
         .v_slot
         .map(|node| resolve_directive(node, ast));
@@ -286,13 +286,11 @@ pub fn build_slots<'a>(
         None
       };
       if let Some(JSXChild::Element(prev)) = prev
-        && is_template(prev)
-        && find_prop(
-          prev,
-          vec!["v-if", "v-else-if"],
-        )
-        .is_some()
-        // attach this slot to previous conditional
+        && {
+          let prev_directives = Directives::new(prev, context.options);
+          prev_directives.is_template
+            && (prev_directives.v_if.is_some() || prev_directives.v_else_if.is_some())
+        }
         && let Some(ArrayExpressionElement::ConditionalExpression(conditional)) =
           dynamic_slots.last_mut()
       {

@@ -18,12 +18,10 @@ use crate::{
 
 use common::{
   ast::RootNode,
-  check::{is_constant_node, is_custom_element, is_fragment_node, is_jsx_component, is_template},
+  check::is_constant_node,
   directive::Directives,
   patch_flag::VaporBlockShape,
-  text::{
-    escape_html, get_tag_name, get_text_like_value, is_empty_text, is_text_like, resolve_jsx_text,
-  },
+  text::{escape_html, get_text_like_value, is_empty_text, is_text_like, resolve_jsx_text},
 };
 
 /// # SAFETY
@@ -45,10 +43,9 @@ pub unsafe fn transform_text<'a>(
 
   match node {
     JSXChild::Element(node) if !directives.is_component => {
-      let is_template = is_template(node);
       let children = &mut node.children.iter_mut().collect() as *mut _;
       process_children(
-        is_template,
+        directives.is_template,
         unsafe { &mut *children },
         context,
         context_block,
@@ -96,14 +93,24 @@ pub unsafe fn transform_text<'a>(
       // Check if this is a root-level text node (parent is ROOT or fragment)
       // Root-level text nodes go through createNode() which doesn't need escaping
       // Element children go through innerHTML which needs escaping
+      let parent_directives = &context.parent_directives.borrow();
       let is_root_text = RootNode::is_root(parent_node)
-        || if let JSXChild::Element(parent_node) = parent_node {
-          is_jsx_component(parent_node)
-            || is_custom_element(parent_node)
-            || get_tag_name(parent_node, context.options) == "template"
-        } else {
-          false
-        };
+        || parent_directives.is_component
+        || parent_directives.is_custom_element
+        || parent_directives.is_template;
+      // Unescaped text becomes a template of its own, and the runtime only turns
+      // such a template into a text node when it does not start with "<" (see
+      // `template()` in runtime-vapor). Text that does start with "<" has to be
+      // materialized imperatively, or it would be parsed as html instead.
+      if is_root_text && resolve_jsx_text(node).starts_with('<') {
+        register_create_nodes(
+          &mut vec![unsafe { &mut *context_node }],
+          context,
+          context_block,
+          seen,
+        );
+        return None;
+      }
       let value = if is_root_text {
         resolve_jsx_text(node)
       } else {
@@ -152,17 +159,6 @@ fn process_children<'a>(
     // all text like with interpolation
     if !is_fragment && is_all_text_like && has_interp {
       process_text_container(children, context, context_block, seen)
-    } else if has_interp {
-      // check if there's any text before interpolation, it needs to be merged
-      for (i, child) in children.iter().enumerate() {
-        let prev = if i > 0 { children.get(i - 1) } else { None };
-        if let JSXChild::ExpressionContainer(_) = child
-          && let Some(JSXChild::Text(_)) = prev
-        {
-          // mark leading text node for skipping
-          mark_non_template(prev.unwrap(), seen);
-        }
-      }
     }
   }
 }
@@ -177,6 +173,19 @@ fn process_interpolation<'a>(
   let Some(mut nodes) = collect_adjacent_text(context_node, parent_node as *mut _, context) else {
     return;
   };
+  // Fragment-like parents have no template string to insert the text run into,
+  // so it becomes a node of its own; anywhere else it fills a template slot.
+  let parent_directives = &context.parent_directives.borrow();
+  let is_fragment_like = RootNode::is_root(parent_node)
+    || matches!(parent_node, JSXChild::Fragment(_))
+    || parent_directives.is_template
+    || parent_directives.is_component
+    || parent_directives.is_custom_element;
+  if is_fragment_like {
+    register_create_nodes(&mut nodes, context, context_block, seen);
+    return;
+  }
+
   let values = process_text_like_expressions(&mut nodes, context, seen);
   if values.is_empty() {
     return;
@@ -184,42 +193,20 @@ fn process_interpolation<'a>(
 
   let id = context.reference(&mut context_block.dynamic);
   let once = *context.in_v_once.borrow();
-  if if RootNode::is_root(parent_node) {
-    true
-  } else {
-    is_fragment_node(parent_node)
-      || if let JSXChild::Element(parent_node) = parent_node {
-        is_jsx_component(parent_node) || is_custom_element(parent_node)
-      } else {
-        false
-      }
-  } {
-    context.register_operation(
-      context_block,
-      OperationNode::CreateNodes(CreateNodesIRNode {
-        create_nodes: true,
-        id,
-        once,
-        values,
-      }),
-      None,
-    );
-  } else {
-    context_block.dynamic.is_text = true;
-    let mut template = context.template.borrow_mut();
-    *template = format!("{} ", template);
-    context.register_operation(
-      context_block,
-      OperationNode::SetNodes(SetNodesIRNode {
-        set_nodes: true,
-        element: id,
-        once,
-        values,
-        generated: false,
-      }),
-      None,
-    );
-  };
+  context_block.dynamic.is_text = true;
+  let mut template = context.template.borrow_mut();
+  *template = format!("{} ", template);
+  context.register_operation(
+    context_block,
+    OperationNode::SetNodes(SetNodesIRNode {
+      set_nodes: true,
+      element: id,
+      once,
+      values,
+      generated: false,
+    }),
+    None,
+  );
 }
 
 fn collect_adjacent_text<'a>(
@@ -265,8 +252,32 @@ fn collect_adjacent_text<'a>(
   if nodes.is_empty() { None } else { Some(nodes) }
 }
 
-fn mark_non_template(node: &JSXChild, seen: &mut HashSet<u32>) {
+pub fn mark_non_template(node: &JSXChild, seen: &mut HashSet<u32>) {
   seen.insert(node.span().start);
+}
+
+fn register_create_nodes<'a>(
+  nodes: &mut Vec<&'a mut JSXChild<'a>>,
+  context: &'a TransformContext<'a>,
+  context_block: &'a mut BlockIRNode<'a>,
+  seen: &mut HashSet<u32>,
+) {
+  let values = process_text_like_expressions(nodes, context, seen);
+  if values.is_empty() {
+    return;
+  }
+  let id = context.reference(&mut context_block.dynamic);
+  let once = *context.in_v_once.borrow();
+  context.register_operation(
+    context_block,
+    OperationNode::CreateNodes(CreateNodesIRNode {
+      create_nodes: true,
+      id,
+      once,
+      values,
+    }),
+    None,
+  );
 }
 
 fn process_text_container<'a>(
@@ -371,7 +382,7 @@ pub fn process_conditional_expression<'a>(
 
   let is_const_test = is_constant_node(test);
   let test = test.take_in(context.allocator);
-  let force_multi_root = should_force_multi_root(parent_node);
+  let force_multi_root = should_force_multi_root(context);
   let allow_no_scope = context_block.root;
   Box::new(move || {
     let block = exit_block();
@@ -413,7 +424,7 @@ fn set_negative<'a>(
   parent_node: &'a mut JSXChild<'a>,
 ) {
   let node = node.without_parentheses_mut().get_inner_expression_mut();
-  let force_multi_root = should_force_multi_root(parent_node);
+  let force_multi_root = should_force_multi_root(context);
   let allow_no_scope = context_block.root;
   if let Expression::ConditionalExpression(node) = node {
     let node = node as *mut oxc_allocator::Box<ConditionalExpression>;

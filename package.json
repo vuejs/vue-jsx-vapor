@@ -49,6 +49,7 @@
     "@types/node": "^25.6.0",
     "bumpp": "^11.0.1",
     "conventional-changelog-cli": "^5.0.0",
+    "happy-dom": "^20.14.5",
     "typescript": "^7.0.2",
     "unplugin-raw": "^0.8.0",
     "vite": "catalog:",

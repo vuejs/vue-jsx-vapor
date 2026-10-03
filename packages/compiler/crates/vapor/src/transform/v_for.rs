@@ -6,11 +6,11 @@ use oxc_span::SPAN;
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, ForIRNode, IRFor, OperationNode},
-  transform::{TransformContext, transform_element::is_transition},
+  transform::{TransformContext, transform_element::is_transition_tag},
 };
 use common::{
   ast::RootNode,
-  check::{is_constant_node, is_custom_element, is_fragment_node, is_jsx_component, is_template},
+  check::{is_constant_node, is_custom_element, is_jsx_component},
   directive::Directives,
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
@@ -29,9 +29,6 @@ pub unsafe fn transform_v_for<'a>(
     return None;
   };
   let node_ptr = node as *mut oxc_allocator::Box<JSXElement>;
-  if is_template(node) && directives.v_slot.is_some() {
-    return None;
-  }
 
   let dir = directives.v_for.as_mut()?;
   let seen = &mut context.seen.borrow_mut();
@@ -62,9 +59,14 @@ pub unsafe fn transform_v_for<'a>(
     None
   };
 
-  let is_component = directives.is_component || is_template_with_single_component(node);
-  let wrapped_rows = is_fragment_node(unsafe { &*context_node })
-    && !matches!(parent_node, JSXChild::Element(parent) if is_transition(parent.opening_element.name.get_identifier_name().as_deref().unwrap_or_default()))
+  let is_component =
+    directives.is_component || (directives.is_template && is_template_with_single_component(node));
+  // mirrors compiler-ssr: a template row that is not a single element renders
+  // as a fragment, except under a Transition, whose children render without
+  // nested fragment markers. A v-if or v-for on the child turns it into an
+  // if/for node by the time the runtime decides, so it counts.
+  let wrapped_rows = directives.is_template
+    && !matches!(parent_node, JSXChild::Element(parent) if is_transition_tag(parent.opening_element.name.get_identifier_name().as_deref().unwrap_or_default()))
     && (node.children.len() != 1
       || !matches!(&node.children[0], JSXChild::Element(child)
         if !has_row_fragment_directive(child)));
@@ -86,9 +88,10 @@ pub unsafe fn transform_v_for<'a>(
   // if v-for is the only child of a parent element, it can go the fast path
   // when the entire list is emptied
   let mut only_child = false;
+  let parent_directives = &context.parent_directives.borrow();
   if let JSXChild::Element(parent_node) = parent_node
-    && !(is_jsx_component(parent_node) || is_custom_element(parent_node))
-    && !is_template(parent_node)
+    && !(parent_directives.is_component || parent_directives.is_custom_element)
+    && !parent_directives.is_template
   {
     let index = *context.index.borrow() as usize;
     for (i, child) in parent_node.children.iter().enumerate() {
@@ -206,9 +209,6 @@ pub fn get_for_parse_result<'a>(
 }
 
 fn is_template_with_single_component<'a>(node: &'a JSXElement<'a>) -> bool {
-  if !is_template(node) {
-    return false;
-  }
   let non_comment_children = node
     .children
     .iter()

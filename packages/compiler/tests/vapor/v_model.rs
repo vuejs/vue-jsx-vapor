@@ -722,3 +722,85 @@ fn array_args_with_arg() {
   })();
   "#);
 }
+
+// upstream: same-element listeners are registered after v-model, so their
+// handlers see the value the model already updated, as in vdom where the
+// directive created hook runs before the props
+#[test]
+fn registers_same_element_listeners_after_v_model() {
+  let code = transform(
+    "<input v-model={model} onInput={onInput} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  let model = code.find("_applyTextModel(").expect("{code}");
+  let listener = code.find("_on(").expect("{code}");
+  assert!(model < listener, "{code}");
+}
+
+#[test]
+fn registers_same_element_listeners_after_v_model_regardless_of_attribute_order() {
+  let code = transform(
+    "<input onInput={onInput} v-model={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  let model = code.find("_applyTextModel(").expect("{code}");
+  let listener = code.find("_on(").expect("{code}");
+  assert!(model < listener, "{code}");
+}
+
+// a dynamic listener handler keeps its own renderEffect after the model
+#[test]
+fn same_element_dynamic_listeners_defer_their_effect_after_v_model() {
+  let code = transform(
+    "<input v-model={model} onInput={() => onInput()} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  let model = code.find("_applyTextModel(").expect("{code}");
+  let listener = code.find("_on(").expect("{code}");
+  assert!(model < listener, "{code}");
+}
+
+// a delegated listener defers too
+#[test]
+fn same_element_delegated_listeners_defer_after_v_model() {
+  let code = transform(
+    "<input v-model={model} onInput_delegate={onInput} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  let model = code.find("_applyTextModel(").expect("{code}");
+  let listener = code.find("_delegate(").expect("{code}");
+  assert!(model < listener, "{code}");
+}
+
+// lowercase native event names are value-set props that can still collide
+// with the model event (e.g. `oninput` on a text input), so they defer too
+#[test]
+fn same_element_lowercase_native_events_defer_after_v_model() {
+  let code = transform(
+    "<input oninput={onInput} v-model={model} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  let model = code.find("_applyTextModel(").expect("{code}");
+  let listener = code.find("_setProp(").expect("{code}");
+  assert!(model < listener, "{code}");
+}

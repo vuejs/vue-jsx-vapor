@@ -4,7 +4,7 @@ use oxc_ast::{
   NONE,
   ast::{
     AssignmentOperator, AssignmentTarget, BinaryExpression, BinaryOperator, Expression,
-    FormalParameterKind, FormalParameters, JSXAttribute, JSXAttributeValue, JSXChild, JSXElement,
+    FormalParameterKind, FormalParameters, JSXAttribute, JSXAttributeValue, JSXChild,
     LogicalOperator, NumberBase, PropertyKind, Statement, VariableDeclarationKind,
   },
 };
@@ -18,7 +18,7 @@ use crate::{
     utils::inject_prop,
   },
 };
-use common::{check::is_template, error::ErrorCodes, patch_flag::PatchFlags};
+use common::{error::ErrorCodes, patch_flag::PatchFlags};
 
 /// # SAFETY
 pub unsafe fn transform_v_for<'a>(
@@ -29,11 +29,7 @@ pub unsafe fn transform_v_for<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  let node_ptr = node as *mut oxc_allocator::Box<JSXElement>;
-  let is_template = is_template(unsafe { &*node_ptr });
-  if is_template && directives.v_slot.is_some() {
-    return None;
-  }
+  let is_template = directives.is_template;
 
   let dir = directives.v_for.as_mut()?;
   let seen = &mut context.seen.borrow_mut();

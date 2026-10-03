@@ -19,12 +19,15 @@ use oxc_ast::ast::Statement;
 use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
+use crate::generate::event::gen_event_handler;
 use crate::generate::expression::gen_expression;
 use crate::ir::component::IRProp;
 use crate::ir::index::SetDynamicPropsIRNode;
 use crate::ir::index::SetPropIRNode;
+use common::check::is_constant_node;
 use common::check::is_simple_identifier;
-use common::check::is_svg_tag;
+use indexmap::IndexMap;
+use indexmap::map::Entry;
 
 pub struct HelperConfig<'a> {
   name: &'a str,
@@ -99,6 +102,7 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
       ..
     },
     tag,
+    is_svg,
     ..
   } = oper;
 
@@ -113,7 +117,7 @@ pub fn gen_set_prop<'a>(oper: SetPropIRNode<'a>, context: &'a CodegenContext<'a>
   } else {
     ""
   };
-  let resolved_helper = get_runtime_helper(tag, key_value, modifier);
+  let resolved_helper = get_runtime_helper(tag, is_svg, key_value, modifier);
   if key_value == "class"
     && !resolved_helper.is_svg
     && resolved_helper.name == "_setClass"
@@ -440,31 +444,33 @@ fn append_class<'a>(base: Cow<'a, str>, value: Cow<'a, str>) -> Cow<'a, str> {
   }
 }
 
-fn get_runtime_helper<'a>(tag: &str, key: &str, modifier: Option<&str>) -> HelperConfig<'a> {
+fn get_runtime_helper<'a>(
+  tag: &str,
+  is_svg: bool,
+  key: &str,
+  modifier: Option<&str>,
+) -> HelperConfig<'a> {
   let tag_name = tag.to_uppercase();
   if let Some(modifier) = modifier {
     return if modifier.eq(".") {
-      if let Some(result) = get_special_helper(key, &tag_name) {
+      if let Some(result) = get_special_helper(key, &tag_name, is_svg) {
         result
       } else {
         helpers("setDOMProp", false)
       }
+    } else if is_svg {
+      helpers("setAttr", true)
     } else {
       helpers("setAttr", false)
     };
   }
 
-  // 1. SVG: always attribute
-  if is_svg_tag(tag) {
-    return helpers("setAttr", true);
-  }
-
-  // 2. special handling for value / style / class / textContent /  innerHTML
-  if let Some(helper) = get_special_helper(key, &tag_name) {
+  // 1. special handling for value / style / class / textContent /  innerHTML
+  if let Some(helper) = get_special_helper(key, &tag_name, is_svg) {
     return helper;
   };
 
-  // 3. Aria DOM properties shared between all Elements in
+  // 2. Aria DOM properties shared between all Elements in
   //    https://developer.mozilla.org/en-US/docs/Web/API/Element
   if key.starts_with("aria")
     && key
@@ -474,6 +480,11 @@ fn get_runtime_helper<'a>(tag: &str, key: &str, modifier: Option<&str>) -> Helpe
       .unwrap_or(false)
   {
     return helpers("setDOMProp", false);
+  }
+
+  // 3. SVG: always attribute
+  if is_svg {
+    return helpers("setAttr", true);
   }
 
   // 4. respect shouldSetAsAttr used in vdom and setDynamicProp for consistency
@@ -525,16 +536,62 @@ fn can_set_value_directly(tag_name: &str) -> bool {
     !tag_name.contains("-")
 }
 
-fn get_special_helper<'a>(key_name: &str, tag_name: &str) -> Option<HelperConfig<'a>> {
+fn get_special_helper<'a>(
+  key_name: &str,
+  tag_name: &str,
+  is_svg: bool,
+) -> Option<HelperConfig<'a>> {
   // special case for 'value' property
   match key_name {
     "value" if can_set_value_directly(tag_name) => Some(helpers("setValue", false)),
-    "class" => Some(helpers("setClass", false)),
+    // for svg, class should be set as attribute
+    "class" => Some(helpers("setClass", is_svg)),
     "style" => Some(helpers("setStyle", false)),
     "innerHTML" => Some(helpers("setHtml", false)),
     "textContent" => Some(helpers("setElementText", false)),
     _ => None,
   }
+}
+
+// the key a static prop ends up under, which is also the key it is merged under
+fn get_static_prop_key_name(
+  key: &str,
+  modifier: Option<&str>,
+  handler: bool,
+  handler_modifier_postfix: &str,
+  // like vdom, an element keeps the case of its event name
+  preserve_case: bool,
+) -> String {
+  if handler {
+    if preserve_case && key.chars().any(|c| c.is_ascii_uppercase()) {
+      format!("on:{}{}", key, handler_modifier_postfix)
+    } else {
+      format!(
+        "on{}{}{}",
+        key[0..1].to_uppercase(),
+        &key[1..],
+        handler_modifier_postfix
+      )
+    }
+  } else {
+    format!(
+      "{}{}{}",
+      modifier.unwrap_or(""),
+      key,
+      handler_modifier_postfix
+    )
+  }
+}
+
+fn get_handler_modifier_postfix<'a>(options: &[Cow<'a, str>]) -> String {
+  if options.is_empty() {
+    return String::new();
+  }
+  options
+    .iter()
+    .map(|option| capitalize(option.clone()))
+    .collect::<Vec<_>>()
+    .join("")
 }
 
 // dynamic key props and {...obj} will reach here
@@ -543,12 +600,35 @@ pub fn gen_dynamic_props<'a>(
   context: &'a CodegenContext<'a>,
 ) -> Statement<'a> {
   let ast = &context.ast;
-  let is_svg = is_svg_tag(oper.tag);
+  let dynamic_prop_names = get_dynamic_prop_names(&oper);
+  let is_svg = oper.is_svg;
   let values = oper.props.into_iter().map(|props| {
     match props {
       Either3::A(props) => gen_literal_object_props(props, context).into(),
       Either3::B(prop) => gen_literal_object_props(vec![prop], context).into(),
-      Either3::C(props) => gen_expression(props.value, context, None, false).into(), // {...obj}
+      // {...obj} / v-on={obj}
+      Either3::C(props) => {
+        let value = gen_expression(props.value, context, None, false);
+        if props.handler {
+          // a `v-on` object merged into the other props: the runtime reads the
+          // `on*` keys of the merged object, so the raw keys are mapped first
+          // like vdom's toHandlers
+          ast
+            .expression_call(
+              SPAN,
+              ast.expression_identifier(SPAN, ast.str(context.options.helper("_toHandlers"))),
+              NONE,
+              ast.vec_from_array([
+                value.into(),
+                ast.expression_boolean_literal(SPAN, true).into(),
+              ]),
+              false,
+            )
+            .into()
+        } else {
+          value.into()
+        }
+      }
     }
   });
 
@@ -559,6 +639,23 @@ pub fn gen_dynamic_props<'a>(
       .into(),
   );
   arguments.push(ast.expression_array(SPAN, ast.vec_from_iter(values)).into());
+  // keep the flag in its own position
+  if let Some(names) = &dynamic_prop_names {
+    arguments.push(
+      ast
+        .expression_array(
+          SPAN,
+          ast.vec_from_iter(names.iter().map(|name| {
+            ast
+              .expression_string_literal(SPAN, ast.str(name), None)
+              .into()
+          })),
+        )
+        .into(),
+    );
+  } else if is_svg {
+    arguments.push(ast.expression_null_literal(SPAN).into());
+  }
   if is_svg {
     arguments.push(ast.expression_boolean_literal(SPAN, true).into());
   }
@@ -574,35 +671,158 @@ pub fn gen_dynamic_props<'a>(
   )
 }
 
+// vdom writes every static key with a dynamic value during hydration
+// (`dynamicProps`); once such a key is merged with a spread the runtime can no
+// longer tell it apart, so the list has to be passed along. upstream hoists it
+// next to the templates - the runtime only reads it and the call rebuilds its
+// arguments on every effect run anyway, so it is inlined here.
+fn get_dynamic_prop_names<'a>(oper: &SetDynamicPropsIRNode<'a>) -> Option<Vec<String>> {
+  let mut names: Vec<String> = vec![];
+  for props in &oper.props {
+    let Either3::A(props) = props else {
+      continue;
+    };
+    for prop in props {
+      let Expression::StringLiteral(key) = &prop.key else {
+        continue;
+      };
+      // only to keep the list short: the runtime ignores the flag for class /
+      // style / handlers and `.prop` forces itself
+      if prop.modifier == Some(".")
+        || prop.handler
+        || key.value == "class"
+        || key.value == "style"
+        || !prop.values.iter().any(|value| !is_constant_node(value))
+      {
+        continue;
+      }
+      names.push(get_static_prop_key_name(
+        &key.value,
+        prop.modifier,
+        prop.handler,
+        &get_handler_modifier_postfix(
+          &prop
+            .handler_modifiers
+            .as_ref()
+            .map(|modifiers| modifiers.options.clone())
+            .unwrap_or_default(),
+        ),
+        false,
+      ));
+    }
+  }
+  if names.is_empty() {
+    return None;
+  }
+  Some(names)
+}
+
 fn gen_literal_object_props<'a>(
   props: Vec<IRProp<'a>>,
   context: &'a CodegenContext<'a>,
 ) -> Expression<'a> {
   let ast = context.ast;
-  ast.expression_object(
-    SPAN,
-    ast.vec_from_iter(props.into_iter().map(|prop| {
-      ast.object_property_kind_object_property(
+  let mut entries: Vec<Option<ObjectPropertyKind<'a>>> = vec![];
+  // props sharing a listener key, e.g. `onClick_stop` and `onClick`, take one
+  // entry listing every handler like mergeProps: the first occurrence reserves
+  // the entry, the loop after fills it
+  let mut groups: IndexMap<String, (PropertyKey<'a>, Vec<Expression<'a>>, usize)> = IndexMap::new();
+
+  for prop in props {
+    let IRProp {
+      key,
+      values,
+      modifier,
+      handler,
+      handler_modifiers,
+      runtime_camelize,
+      ..
+    } = prop;
+    let options = handler_modifiers
+      .as_ref()
+      .map(|modifiers| modifiers.options.clone())
+      .unwrap_or_default();
+
+    let value = if handler {
+      let (keys, non_keys) = handler_modifiers
+        .map(|modifiers| (modifiers.keys, modifiers.non_keys))
+        .unwrap_or_default();
+      gen_event_handler(context, values, &keys, &non_keys, false)
+    } else {
+      gen_prop_value(values, context)
+    };
+
+    if handler && let Expression::StringLiteral(key) = key {
+      let key_name = get_static_prop_key_name(
+        &key.value,
+        modifier,
+        handler,
+        &get_handler_modifier_postfix(&options),
+        true,
+      );
+      match groups.entry(key_name) {
+        Entry::Occupied(mut entry) => entry.get_mut().1.push(value),
+        Entry::Vacant(entry) => {
+          let index = entries.len();
+          entries.push(None);
+          entry.insert((
+            gen_prop_key(
+              Expression::StringLiteral(key),
+              runtime_camelize,
+              modifier,
+              handler,
+              options,
+              true,
+              context,
+            ),
+            vec![value],
+            index,
+          ));
+        }
+      }
+      continue;
+    }
+
+    entries.push(Some(ast.object_property_kind_object_property(
+      SPAN,
+      PropertyKind::Init,
+      gen_prop_key(
+        key,
+        runtime_camelize,
+        modifier,
+        handler,
+        options,
+        false,
+        context,
+      ),
+      value,
+      false,
+      false,
+      false,
+    )));
+  }
+
+  for (_, (key_frag, mut handlers, index)) in groups {
+    let value = if handlers.len() > 1 {
+      ast.expression_array(
         SPAN,
-        PropertyKind::Init,
-        gen_prop_key(
-          prop.key,
-          prop.runtime_camelize,
-          prop.modifier,
-          prop.handler,
-          prop
-            .handler_modifiers
-            .map(|i| i.options)
-            .unwrap_or_default(),
-          context,
-        ),
-        gen_prop_value(prop.values, context),
-        false,
-        false,
-        false,
+        ast.vec_from_iter(handlers.into_iter().map(|handler| handler.into())),
       )
-    })),
-  )
+    } else {
+      handlers.remove(0)
+    };
+    entries[index] = Some(ast.object_property_kind_object_property(
+      SPAN,
+      PropertyKind::Init,
+      key_frag,
+      value,
+      false,
+      false,
+      false,
+    ));
+  }
+
+  ast.expression_object(SPAN, ast.vec_from_iter(entries.into_iter().flatten()))
 }
 
 pub fn gen_prop_key<'a>(
@@ -611,32 +831,22 @@ pub fn gen_prop_key<'a>(
   modifier: Option<&str>,
   handler: bool,
   options: Vec<Cow<'a, str>>,
+  preserve_case: bool,
   context: &'a CodegenContext<'a>,
 ) -> PropertyKey<'a> {
   let ast = &context.ast;
 
-  let handler_modifier_postfix = if !options.is_empty() {
-    options
-      .into_iter()
-      .map(capitalize)
-      .collect::<Vec<_>>()
-      .join("")
-  } else {
-    String::new()
-  };
+  let handler_modifier_postfix = get_handler_modifier_postfix(&options);
   // static arg was transformed by v-bind transformer
   if let Expression::StringLiteral(node) = node {
     // only quote keys if necessary
-    let key_name = if handler {
-      format!(
-        "on{}{}{}",
-        node.value[0..1].to_uppercase(),
-        &node.value[1..],
-        &handler_modifier_postfix
-      )
-    } else {
-      format!("{}{}", node.value, &handler_modifier_postfix)
-    };
+    let key_name = get_static_prop_key_name(
+      &node.value,
+      modifier,
+      handler,
+      &handler_modifier_postfix,
+      preserve_case,
+    );
     let key_name = if is_simple_identifier(&key_name) {
       &key_name
     } else {

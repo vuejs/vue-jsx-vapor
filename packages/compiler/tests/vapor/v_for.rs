@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use common::error::ErrorCodes;
+use common::{error::ErrorCodes, patch_flag::VaporVForFlags};
 use compiler::{TransformOptions, transform};
 use insta::assert_snapshot;
 
@@ -737,17 +737,33 @@ fn v_for_on_template_with_nested_v_for_child_marks_fragment_block() {
 }
 
 #[test]
-fn v_for_on_template_under_transition_group_has_no_wrapped_rows() {
+// mirrors compiler-ssr for a vapor component: only Transition still renders
+// its children without nested fragment markers
+fn v_for_on_template_under_a_transition_group_has_wrapped_rows() {
+  let rows = "<template v-for={item in items}><li>{item}</li><li>b</li></template>";
+  let slot_root = VaporVForFlags::SlotRoot as i32;
+  let wrapped_rows = slot_root | VaporVForFlags::WrappedRows as i32;
+
   let code = transform(
-    "<TransitionGroup tag=\"ul\"><template v-for={item in items}><li>{item}</li><li>b</li></template></TransitionGroup>",
+    &format!("<TransitionGroup tag=\"ul\">{rows}</TransitionGroup>"),
     Some(TransformOptions {
       vapor: true,
       ..Default::default()
     }),
   )
   .code;
-  assert!(!code.contains("void 0, 80"));
-  assert!(!code.contains("WRAPPED_ROWS"));
+  assert!(code.contains(&format!("void 0, {wrapped_rows}")), "{code}");
+
+  let code = transform(
+    &format!("<Transition>{rows}</Transition>"),
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains(&format!("void 0, {slot_root}")), "{code}");
+  assert!(!code.contains(&format!("void 0, {wrapped_rows}")), "{code}");
 }
 
 #[test]
@@ -1103,7 +1119,14 @@ fn v_for_object_destructured_index_alias_with_default() {
 // an expression, and oxc rejects a shorthand assignment in an object literal.
 #[test]
 fn v_for_object_destructured_alias_shorthand_is_not_supported() {
-  let code = transform("<div v-for={({ foo = 1 }) in items}>{{ foo }}</div>", None).code;
+  let code = transform(
+    "<div v-for={({ foo = 1 }) in items}>{{ foo }}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert!(!code.contains("_getDefaultValue"), "{code}");
 }
 

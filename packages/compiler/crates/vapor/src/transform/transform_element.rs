@@ -1,12 +1,12 @@
 use std::{borrow::Cow, cell::RefCell, collections::HashSet, mem, rc::Rc};
 
 use napi::{Either, bindgen_prelude::Either3};
-use oxc_allocator::TakeIn;
+use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::ast::{
   Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild,
   JSXElement, JSXElementName, JSXExpression,
 };
-use oxc_span::{GetSpan, Span};
+use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ir::{
@@ -27,14 +27,14 @@ use crate::{
 use common::{
   check::{
     get_directive_name, get_namespace, is_always_close_tag, is_block_tag, is_built_in_directive,
-    is_formatting_tag, is_html_annotation_xml, is_ignore_newline_tag, is_inline_tag, is_template,
+    is_formatting_tag, is_html_annotation_xml, is_ignore_newline_tag, is_inline_tag, is_native_on,
     is_void_tag,
   },
   directive::{Directives, resolve_directive, resolve_prop_name},
   dom::is_valid_html_nesting,
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
-  text::{camelize, get_tag_name},
+  text::{camelize, escape_attr_value, get_tag_name},
 };
 
 /// # SAFETY
@@ -48,15 +48,6 @@ pub unsafe fn transform_element<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  if is_template(node)
-    && (directives.v_if.is_some()
-      || directives.v_else_if.is_some()
-      || directives.v_else.is_some()
-      || directives.v_for.is_some()
-      || directives.v_slot.is_some())
-  {
-    return None;
-  }
   let mut effect_index = context_block.effect.len() as i32;
   let get_effect_index = Rc::new(RefCell::new(Box::new(move || {
     let current = effect_index;
@@ -83,7 +74,7 @@ pub unsafe fn transform_element<'a>(
         get_operation_index,
       )
     };
-  } else if is_transition(tag) {
+  } else if is_transition_host(tag) {
     transform_transition(node, context);
   }
   // treat custom elements as components because the template helper cannot
@@ -105,6 +96,7 @@ pub unsafe fn transform_element<'a>(
   *context.ns.borrow_mut() = NsContext {
     tag: Some(tag),
     ns,
+    parent_ns: parent.ns,
     is_html_annotation_xml: is_html_annotation_xml(node),
   };
 
@@ -169,13 +161,25 @@ pub unsafe fn transform_element<'a>(
 }
 
 // keys cannot be a part of the template and need to be set dynamically
-static DYNAMIC_KEYS: [&str; 1] = ["indeterminate"];
+static DYNAMIC_KEYS: [&str; 5] = [
+  "indeterminate",
+  // media element playback state
+  "volume",
+  "playbackRate",
+  "defaultPlaybackRate",
+  "currentTime",
+];
 
 // Props the template string cannot carry, so they have to be applied by a
-// runtime prop setter instead: `<textarea>` / `<select>` ignore a `value`
-// content attribute, the value only takes effect as a dom property.
+// runtime prop setter instead:
+// - `innerHTML` / `textContent` are dom properties that set the element's
+//   content; as a content attribute they would only sit on the element and
+//   the content would never be written
+// - `<textarea>` / `<select>` ignore a `value` content attribute, the value
+//   only takes effect as a dom property.
 fn is_runtime_only_prop(tag: &str, key: &str) -> bool {
-  key == "value" && (tag == "textarea" || tag == "select")
+  matches!(key, "innerHTML" | "textContent")
+    || (key == "value" && (tag == "textarea" || tag == "select"))
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -191,6 +195,9 @@ pub fn transform_native_element<'a>(
   get_effect_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
   get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
 ) {
+  // SVG-ness comes from the namespace, not the tag name: elements like `<a>`
+  // exist in both namespaces and take different prop helpers per namespace.
+  let is_svg = ns == 1;
   let mut template = format!("<{tag}");
 
   match props_result.props {
@@ -204,17 +211,25 @@ pub fn transform_native_element<'a>(
           set_dynamic_props: true,
           props,
           element,
-          tag,
+          is_svg,
         }),
         Some(get_effect_index),
         Some(Rc::clone(&get_operation_index)),
       )
     }
     Either::B(props) => {
+      // Native event bindings on svg elements need the runtime value to choose
+      // prop vs attr, and one call per element keeps the dynamic prop cache
+      // shared by these keys.
+      let mut native_on_props = vec![];
       for prop in props {
         let values = &prop.values;
         if let Expression::StringLiteral(key) = &prop.key
           && values.len() == 1
+          // `.prop` forces a dom property, which a content attribute in the
+          // template string is not; `.attr` (`^`) does mean the attribute and
+          // can still be folded
+          && prop.modifier != Some(".")
           && let Some(Expression::StringLiteral(first_value)) = values.first()
           && !DYNAMIC_KEYS.contains(&key.value.as_str())
           && !is_runtime_only_prop(tag, &key.value)
@@ -230,12 +245,20 @@ pub fn transform_native_element<'a>(
             let needs_quotes = value.contains(|c: char| {
               c.is_whitespace() || matches!(c, '"' | '\'' | '`' | '=' | '<' | '>')
             });
+            // The template is parsed as HTML again at runtime, so a decoded
+            // value has to be escaped back to survive that round trip.
+            let value = escape_attr_value(&value);
             template += &if needs_quotes {
-              format!(r#"="{}""#, value.replace("\"", "&quot;"))
+              format!(r#"="{}""#, value)
             } else {
               format!("={}", value)
             };
           }
+        } else if is_svg
+          && prop.modifier.is_none()
+          && matches!(&prop.key, Expression::StringLiteral(key) if is_native_on(&key.value))
+        {
+          native_on_props.push(prop);
         } else {
           let element = context.reference(&mut context_block.dynamic);
           context.register_effect(
@@ -246,11 +269,32 @@ pub fn transform_native_element<'a>(
               prop,
               element,
               tag,
+              is_svg,
             }),
             Some(Rc::clone(&get_effect_index)),
             Some(Rc::clone(&get_operation_index)),
           );
         }
+      }
+
+      if !native_on_props.is_empty() {
+        let values = native_on_props
+          .iter()
+          .flat_map(|prop| prop.values.iter())
+          .collect::<Vec<_>>();
+        let element = context.reference(&mut context_block.dynamic);
+        context.register_effect(
+          context_block,
+          context.is_operation(values),
+          OperationNode::SetDynamicProps(SetDynamicPropsIRNode {
+            set_dynamic_props: true,
+            props: vec![Either3::A(native_on_props)],
+            element,
+            is_svg,
+          }),
+          Some(get_effect_index),
+          Some(Rc::clone(&get_operation_index)),
+        );
       }
     }
   }
@@ -337,7 +381,16 @@ fn can_omit_end_tag<'a>(
   let template_close_tags = context.template_close_tags.borrow();
   let template_close_blocks = *context.template_close_blocks.borrow();
   if (!template_close_tags.is_empty()
-    && (template_close_tags.contains(tag) || is_always_close_tag(tag) || is_formatting_tag(tag)))
+    && (template_close_tags.contains(tag)
+      // `</form>` goes through the form element pointer and removes only the
+      // form element itself, so an element inside a form whose end tag is
+      // emitted has to close itself or it swallows the form's next sibling
+      || template_close_tags.contains("form")
+      // `</li>` is ignored while a nested `<ul>` or `<ol>` is still open
+      // (list item scope), so the next `<li>` would land in the nested list
+      || (template_close_tags.contains("li") && matches!(tag, "ul" | "ol"))
+      || is_always_close_tag(tag)
+      || is_formatting_tag(tag)))
     || (template_close_blocks && is_block_tag(tag))
   {
     return false;
@@ -353,9 +406,13 @@ fn can_omit_end_tag<'a>(
   // unless on the rightmost path of the tree:
   // - Formatting tags: https://html.spec.whatwg.org/multipage/parsing.html#reconstruct-the-active-formatting-elements
   // - Same-name tags: parent's close tag would incorrectly close the child
+  // - Children of a foreign parent in another namespace (e.g. HTML inside
+  //   `<foreignObject>`): parent's close tag would not close the child
   if is_formatting_tag(tag)
     || if let JSXChild::Element(parent_node) = parent_node {
+      let ns = *context.ns.borrow();
       get_tag_name(parent_node, context.options) == tag
+        || (ns.parent_ns != 0 && ns.ns != ns.parent_ns)
     } else {
       false
     }
@@ -382,16 +439,43 @@ pub fn transform_component_element<'a>(
   let dynamic = &mut context_block.dynamic;
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
   let id = context.reference(dynamic);
+
+  let mut props = match props_result.props {
+    Either::A(props) => props,
+    Either::B(props) => vec![Either3::A(props)],
+  };
+
+  // KeepAlive needs the explicit key before the component is created.
+  if let Some(static_key) = &static_key
+    && !is_custom_element
+  {
+    let key_prop = IRProp {
+      key: context
+        .ast
+        .expression_string_literal(SPAN, context.ast.str("key"), None),
+      to_display_string: false,
+      modifier: None,
+      runtime_camelize: false,
+      handler: false,
+      handler_modifiers: None,
+      model: false,
+      model_modifiers: None,
+      values: vec![static_key.clone_in(context.ast.allocator)],
+      dynamic: false,
+    };
+    match props.first_mut() {
+      Some(Either3::A(static_props)) => static_props.push(key_prop),
+      _ => props.insert(0, Either3::A(vec![key_prop])),
+    }
+  }
+
   dynamic.operation = Some(Box::new(OperationNode::CreateComponent(
     CreateComponentIRNode {
       create_component: true,
       id,
       tag,
       tag_span,
-      props: match props_result.props {
-        Either::A(props) => props,
-        Either::B(props) => vec![Either3::A(props)],
-      },
+      props,
       asset: false,
       root: single_root,
       slots: mem::take(&mut context_block.slots),
@@ -406,7 +490,9 @@ pub fn transform_component_element<'a>(
     },
   )));
 
-  if let Some(static_key) = static_key {
+  if let Some(static_key) = static_key
+    && is_custom_element
+  {
     context.register_operation(
       context_block,
       OperationNode::SetBlockKey(SetBlockKeyIRNode {
@@ -476,7 +562,7 @@ pub fn build_props<'a>(
           if let Some(prop_value) = &mut prop.value
             && let Some(value) = jsx_attribute_value_to_expression(prop_value, context.ast)
           {
-            if is_component {
+            if is_component || directives.merges_listeners {
               if !results.is_empty() {
                 dynamic_args.push(Either3::A(dedupe_properties(results)));
                 results = vec![];
@@ -698,9 +784,19 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
   deduped
 }
 
-pub fn is_transition(tag: &str) -> bool {
-  matches!(
-    tag,
-    "Transition" | "VaporTransition" | "TransitionGroup" | "VaporTransitionGroup"
-  )
+/// Only a Transition renders its children without nested fragment markers; a
+/// TransitionGroup keeps them (mirrors compiler-ssr for a vapor component).
+pub fn is_transition_tag(tag: &str) -> bool {
+  matches!(tag, "Transition" | "VaporTransition")
+}
+
+/// KeepAlive or VaporKeepAlive: a host that renders its single child in place,
+/// so the child is the root of the component (`isKeepAliveTag` upstream).
+pub fn is_keep_alive_tag(tag: &str) -> bool {
+  matches!(tag, "KeepAlive" | "VaporKeepAlive")
+}
+
+/// Transition or TransitionGroup: hosts whose children render specially.
+pub fn is_transition_host(tag: &str) -> bool {
+  is_transition_tag(tag) || matches!(tag, "TransitionGroup" | "VaporTransitionGroup")
 }

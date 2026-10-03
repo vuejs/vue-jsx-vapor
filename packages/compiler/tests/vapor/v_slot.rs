@@ -150,7 +150,7 @@ fn on_component_dynamically_named_slot() {
 fn nested_component_should_not_inherit_parent_slots() {
   let code = transform(
     "<Comp>
-      <template v-slot:header></template>
+      <template v-slot:header key={foo}></template>
       <Bar />
     </Comp>",
     Some(TransformOptions {
@@ -1190,7 +1190,6 @@ fn keyed_slot_block_with_stable_sibling_does_not_track_slot_boundary() {
   import { createComponent as _createComponent } from "/vue-jsx/vapor";
   import { createKeyedFragment as _createKeyedFragment, createSlot as _createSlot, template as _template } from "vue";
   const _t0 = _template("<span>", 2);
-  const _t1 = _template("<template>");
   (() => {
   	const _n4 = _createComponent(Comp, null, () => {
   		const _n0 = _createKeyedFragment(() => key, () => {
@@ -2066,4 +2065,28 @@ fn dynamic_slot_functions_get_distinct_names() {
   assert!(code.contains("let _s1;"), "{code}");
   assert!(code.contains("fn: _s || (_s = () =>"), "{code}");
   assert!(code.contains("fn: _s1 || (_s1 = () =>"), "{code}");
+}
+
+// upstream: `v-if / v-for slots override unconditional ones like vdom` - the
+// runtime resolves the `$` array from the end, so conditional slots must be
+// emitted last and statics stay the lowest-priority fallback
+#[test]
+fn conditional_and_dynamic_slots_override_unconditional_ones() {
+  let code = transform(
+    "<Comp><template v-for={n in names} v-slot:$n$>forwarded {n}</template><template v-slot:a>own a</template><template v-if={ok} v-slot:b>own b</template><template v-slot:$name$>computed</template></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  let static_fallback = code.find("a: () => {").expect("{code}");
+  let slots_array = code.find("$: [").expect("{code}");
+  let loop_slot = code.find("_createForSlots(() => names").expect("{code}");
+  let dynamic_arg = code.find("fn: _s ||").expect("{code}");
+  let conditional = code.find("() => ok ? {").expect("{code}");
+  assert!(static_fallback < slots_array, "{code}");
+  assert!(slots_array < loop_slot, "{code}");
+  assert!(loop_slot < dynamic_arg, "{code}");
+  assert!(dynamic_arg < conditional, "{code}");
 }

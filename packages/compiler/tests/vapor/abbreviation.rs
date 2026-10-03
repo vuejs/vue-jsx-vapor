@@ -911,3 +911,165 @@ fn inline_block_ancestor_relationships6() {
   })();
   "#);
 }
+
+// upstream: `form end tag`. `</form>` removes only the form element, so a
+// descendant left open would swallow the form's next sibling
+#[test]
+fn form_end_tag() {
+  let code = transform(
+    "<div><form><div>x</div></form><p>y</p></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_template(\"<div><form><div>x</div></form><p>y\""),
+    "{code}"
+  );
+
+  let code = transform(
+    "<div><form><div><b>x</b></div></form><p>y</p></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_template(\"<div><form><div><b>x</b></div></form><p>y\""),
+    "{code}"
+  );
+
+  // a form closed by its parent's end tag leaves the form element pointer set,
+  // so the next `<form>` start tag is ignored
+  let code = transform(
+    "<div><div><form><input /></form></div><div><form><input /></form></div></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_template(\"<div><div><form><input></form></div><div><form><input>\""),
+    "{code}"
+  );
+
+  // a form on the rightmost path can still omit
+  let code = transform(
+    "<div><p>y</p><form><div>x</div></form></div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_template(\"<div><p>y</p><form><div>x\""),
+    "{code}"
+  );
+}
+
+// upstream: `foreign scope boundary elements`. The end tag of a foreign parent
+// does not close a child in another namespace, and an ancestor's end tag does
+// not close a foreign scope boundary element, so both have to close themselves.
+#[test]
+fn foreign_scope_boundary_elements() {
+  for (source, template) in [
+    (
+      "<svg><foreignObject><div>text</div></foreignObject><rect /></svg>",
+      "<svg><foreignObject><div>text</div></foreignObject><rect>",
+    ),
+    (
+      "<svg><g><foreignObject><div><p>text</p></div></foreignObject></g><rect /></svg>",
+      "<svg><g><foreignObject><div><p>text</div></foreignObject></g><rect>",
+    ),
+    (
+      "<math><mi><span>x</span></mi><mo>+</mo></math>",
+      "<math><mi><span>x</span></mi><mo>+",
+    ),
+    (
+      "<svg><g><desc><div>text</div></desc></g><rect /></svg>",
+      "<svg><g><desc><div>text</div></desc></g><rect>",
+    ),
+    (
+      "<svg><foreignObject><math><mi>x</mi></math></foreignObject><rect /></svg>",
+      "<svg><foreignObject><math><mi>x</mi></math></foreignObject><rect>",
+    ),
+    // an ancestor's end tag does not close a foreign scope boundary element
+    (
+      "<div><p><math><mi>x</mi></math></p><p>next</p></div>",
+      "<div><p><math><mi>x</mi></p><p>next",
+    ),
+    (
+      "<div><div><svg><foreignObject>text</foreignObject></svg></div><p>next</p></div>",
+      "<div><div><svg><foreignObject>text</foreignObject></div><p>next",
+    ),
+    // rightmost path can still omit
+    (
+      "<svg><foreignObject><div>text</div></foreignObject></svg>",
+      "<svg><foreignObject><div>text",
+    ),
+    ("<p><math><mi>x</mi></math></p>", "<p><math><mi>x"),
+  ] {
+    let code = transform(
+      source,
+      Some(TransformOptions {
+        vapor: true,
+        ..Default::default()
+      }),
+    )
+    .code;
+    assert!(
+      code.contains(&format!("_template(\"{template}\"")),
+      "{source}\n{code}"
+    );
+  }
+}
+
+// upstream: `nested list end tag`. `</li>` is ignored while a nested `<ul>` or
+// `<ol>` is still open, so the next item would land in the nested list
+#[test]
+fn nested_list_end_tag() {
+  let code = transform(
+    "<ul><li>a<ul><li>b</li></ul></li><li>c</li></ul>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_template(\"<ul><li>a<ul><li>b</li></ul></li><li>c\""),
+    "{code}"
+  );
+
+  let code = transform(
+    "<ol><li><div>a<ol><li>b</li></ol></div></li><li>c</li></ol>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_template(\"<ol><li><div>a<ol><li>b</li></ol></li><li>c\""),
+    "{code}"
+  );
+
+  // a list item on the rightmost path can still omit
+  let code = transform(
+    "<ul><li>a</li><li>b<ul><li>c</li></ul></li></ul>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_template(\"<ul><li>a</li><li>b<ul><li>c\""),
+    "{code}"
+  );
+}

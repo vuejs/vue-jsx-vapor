@@ -28,6 +28,7 @@ pub mod v_slots;
 pub mod v_text;
 
 use crate::generate::CodegenContext;
+use crate::transform::transform_element::{is_keep_alive_tag, is_transition_tag};
 use crate::transform::transform_key::transform_key;
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, OperationNode, RootIRNode},
@@ -39,7 +40,7 @@ use crate::{
   },
 };
 
-use common::check::{is_constant_node, is_math_ml_tag, is_native_tag, is_svg_tag, is_template};
+use common::check::{is_constant_node, is_math_ml_tag, is_native_tag, is_svg_tag};
 
 /// A text/interpolation-only owner renders nothing when empty, so a block it
 /// owns cannot be a single root when hydrating.
@@ -96,6 +97,9 @@ pub struct NsContext<'a> {
   pub tag: Option<&'a str>,
   /// The element's own namespace (0 = HTML, 1 = SVG, 2 = MathML).
   pub ns: i32,
+  /// The namespace of the enclosing element, i.e. the `ns` this one was
+  /// resolved from (mirrors `parent.node.ns` in `compiler-vapor`).
+  pub parent_ns: i32,
   /// Whether the element is `<annotation-xml>` with an HTML `encoding`.
   pub is_html_annotation_xml: bool,
 }
@@ -153,6 +157,8 @@ pub struct TransformContext<'a> {
 
   pub parent_dynamic: RefCell<IRDynamicInfo<'a>>,
   pub grandparent_node_span: RefCell<Span>,
+
+  pub parent_directives: RefCell<Directives<'a>>,
 }
 
 impl<'a> TransformContext<'a> {
@@ -186,6 +192,7 @@ impl<'a> TransformContext<'a> {
       grandparent_node_span: RefCell::new(SPAN),
       ir: Rc::new(RefCell::new(RootIRNode::default())),
       block: RefCell::new(BlockIRNode::new()),
+      parent_directives: RefCell::new(Directives::default()),
       ast,
       options,
     }
@@ -412,7 +419,7 @@ impl<'a> TransformContext<'a> {
         .opening_element
         .name
         .get_identifier_name()
-        .is_some_and(|name| matches!(name.as_str(), "VaporTransition"))
+        .is_some_and(|name| is_transition_tag(&name) || is_keep_alive_tag(&name))
     {
       RootNode::is_single_root(*self.grandparent_node_span.borrow())
     } else {
@@ -429,7 +436,11 @@ impl<'a> TransformContext<'a> {
     if let Expression::JSXFragment(node) = node {
       JSXChild::Fragment(node)
     } else if let Expression::JSXElement(node) = &mut node
-      && is_template(node)
+      && node
+        .opening_element
+        .name
+        .get_identifier_name()
+        .is_some_and(|name| name == "template")
     {
       let node_ptr = node.as_mut() as *mut JSXElement;
       let mut directives = Directives::new(unsafe { &mut *node_ptr }, self.options);
@@ -480,7 +491,7 @@ impl<'a> TransformContext<'a> {
             .opening_element
             .name
             .get_identifier_name()
-            .is_some_and(|name| matches!(name.as_str(), "VaporTransition"))
+            .is_some_and(|name| is_transition_tag(&name) || is_keep_alive_tag(&name))
         {
           *self.grandparent_node_span.borrow()
         } else if RootNode::is_root(parent_node) {
@@ -596,6 +607,7 @@ impl<'a> TransformContext<'a> {
           if (directives.v_if.is_some()
             || directives.v_else_if.is_some()
             || directives.v_else.is_some())
+            && !(directives.is_template && directives.v_slot.is_some())
             && let Some(on_exit) = transform_v_if(
               &mut *directives_ptr,
               node,
@@ -608,6 +620,7 @@ impl<'a> TransformContext<'a> {
           };
 
           if directives.v_for.is_some()
+            && !(directives.is_template && directives.v_slot.is_some())
             && let Some(on_exit) = transform_v_for(
               &mut *directives_ptr,
               node,
@@ -632,22 +645,29 @@ impl<'a> TransformContext<'a> {
           };
 
           if directives._ref.is_some()
+            && !matches!(&*node, JSXChild::Fragment(_))
+            && !directives.is_template
+            && !(directives.tag_name == "template" && directives.key.is_some())
             && let Some(on_exit) =
-              transform_template_ref(&mut *directives_ptr, node, &*context, &mut *block)
+              transform_template_ref(&mut *directives_ptr, &*context, &mut *block)
           {
+            exit_fns.push(on_exit);
+          }
+        }
+
+        if !directives.is_template
+          && !(directives.tag_name == "template" && directives.key.is_some())
+        {
+          if let Some(on_exit) = transform_element(
+            &mut directives,
+            node,
+            &*context,
+            &mut *block,
+            &mut *parent_node,
+          ) {
             exit_fns.push(on_exit);
           };
         }
-
-        if let Some(on_exit) = transform_element(
-          &mut directives,
-          node,
-          &*context,
-          &mut *block,
-          &mut *parent_node,
-        ) {
-          exit_fns.push(on_exit);
-        };
 
         if let Some(on_exit) =
           transform_text(&directives, node, &*context, &mut *block, &mut *parent_node)
@@ -675,7 +695,7 @@ impl<'a> TransformContext<'a> {
 
       let node = &mut self.node.borrow_mut().take_in(self.allocator);
       transform_children(
-        &directives,
+        directives,
         node,
         self,
         &mut *block,

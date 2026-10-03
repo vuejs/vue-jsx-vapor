@@ -88,11 +88,9 @@ fn key_with_template_v_if() {
   assert_snapshot!(code, @r#"
   import { createIf as _createIf, createKeyedFragment as _createKeyedFragment, setInsertionState as _setInsertionState, template as _template } from "vue";
   const _t0 = _template("<div>", 2);
-  const _t1 = _template("<template></template>");
-  const _t2 = _template("<template>");
-  const _t3 = _template("<div>", 1);
+  const _t1 = _template("<div>", 1);
   (() => {
-  	const _n13 = _t3();
+  	const _n13 = _t1();
   	_setInsertionState(_n13);
   	const _n0 = _createIf(() => ok, () => {
   		const _n2 = _createKeyedFragment(() => a, () => {
@@ -202,6 +200,30 @@ fn key_in_component() {
   "#);
 }
 
+// KeepAlive resolves a cached component by its explicit key before the
+// component is created, so a static key has to be part of the props object.
+#[test]
+fn component_key_with_spread_props() {
+  let code = transform(
+    r#"<Foo {...props} key="a" />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  (() => {
+  	const _n0 = _createComponent(Foo, {
+  		key: "a",
+  		$: [() => props]
+  	}, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
 #[test]
 fn static_key() {
   let code = transform(
@@ -222,8 +244,7 @@ fn static_key() {
   (() => {
   	const _n0 = _t0();
   	_setBlockKey(_n0, 1);
-  	const _n1 = _createComponent(Comp);
-  	_setBlockKey(_n1, 1);
+  	const _n1 = _createComponent(Comp, { key: 1 });
   	return [_n0, _n1];
   })();
   "#);
@@ -249,8 +270,7 @@ fn boolean_static_expression_key() {
   (() => {
   	const _n0 = _t0();
   	_setBlockKey(_n0, true);
-  	const _n1 = _createComponent(Comp);
-  	_setBlockKey(_n1, true);
+  	const _n1 = _createComponent(Comp, { key: true });
   	return [_n0, _n1];
   })();
   "#);
@@ -276,8 +296,7 @@ fn null_static_expression_key() {
   (() => {
   	const _n0 = _t0();
   	_setBlockKey(_n0, null);
-  	const _n1 = _createComponent(Comp);
-  	_setBlockKey(_n1, null);
+  	const _n1 = _createComponent(Comp, { key: null });
   	return [_n0, _n1];
   })();
   "#);
@@ -303,8 +322,7 @@ fn v_once_with_static_key() {
   (() => {
   	const _n0 = _t0();
   	_setBlockKey(_n0, "foo");
-  	const _n1 = _createComponent(Comp, null, null, null, true);
-  	_setBlockKey(_n1, "foo");
+  	const _n1 = _createComponent(Comp, { key: "foo" }, null, null, true);
   	return [_n0, _n1];
   })();
   "#);
@@ -330,8 +348,7 @@ fn key_without_value() {
   (() => {
   	const _n0 = _t0();
   	_setBlockKey(_n0, true);
-  	const _n1 = _createComponent(Comp);
-  	_setBlockKey(_n1, true);
+  	const _n1 = _createComponent(Comp, { key: true });
   	return [_n0, _n1];
   })();
   "#);

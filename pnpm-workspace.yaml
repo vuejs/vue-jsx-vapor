@@ -19,10 +19,10 @@ catalog:
   hash-sum: ^2.0.0
   unplugin: ^3.0.0
   unplugin-utils: ^0.3.1
-  vue: 3.6.0-rc.9
-  vite-plus: 0.3.1
-  vite: npm:@voidzero-dev/vite-plus-core@0.3.1
-  vitest: 4.1.11
+  vue: 3.6.0-rc.10
+  vite-plus: 1.0.0
+  vite: npm:@voidzero-dev/vite-plus-core@1.0.0
+  vitest: 5.0.3
 
 allowBuilds:
   esbuild: true

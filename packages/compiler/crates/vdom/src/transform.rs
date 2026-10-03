@@ -1,6 +1,7 @@
 use common::ast::RootNode;
 use common::directive::Directives;
 pub use common::options::TransformOptions;
+use common::text::decode_attr_value;
 use common::walk::WalkIdentifiers;
 use common::walk_mut::WalkIdentifiersMut;
 use indexmap::IndexSet;
@@ -43,8 +44,6 @@ use crate::transform::{
   transform_text::transform_text, v_for::transform_v_for, v_if::transform_v_if,
   v_once::transform_v_once, v_slots::transform_v_slots,
 };
-
-use common::check::is_template;
 
 pub struct DirectiveTransformResult<'a> {
   pub props: Vec<ObjectPropertyKind<'a>>,
@@ -374,7 +373,11 @@ impl<'a> TransformContext<'a> {
     if let Expression::JSXFragment(node) = node {
       JSXChild::Fragment(node)
     } else if let Expression::JSXElement(node) = &mut node
-      && is_template(node)
+      && node
+        .opening_element
+        .name
+        .get_identifier_name()
+        .is_some_and(|name| name == "template")
     {
       let name =
         ast.jsx_element_name_identifier(node.span, ast.str(self.options.helper("_Fragment")));
@@ -420,11 +423,13 @@ impl<'a> TransformContext<'a> {
     match value {
       JSXAttributeValue::Element(value) => Expression::JSXElement(value.clone_in(self.allocator)),
       JSXAttributeValue::Fragment(value) => Expression::JSXFragment(value.clone_in(self.allocator)),
-      JSXAttributeValue::StringLiteral(value) => {
+      JSXAttributeValue::StringLiteral(node) => self.ast.expression_string_literal(
+        node.span,
         self
           .ast
-          .expression_string_literal(value.span, value.value, value.raw)
-      }
+          .str_from_cow(&decode_attr_value(node.value.as_str())),
+        None,
+      ),
       JSXAttributeValue::ExpressionContainer(value) => {
         self
           .process_expression(value.expression.to_expression_mut())
@@ -528,6 +533,7 @@ impl<'a> TransformContext<'a> {
           if (directives.v_if.is_some()
             || directives.v_else_if.is_some()
             || directives.v_else.is_some())
+            && !(directives.is_template && directives.v_slot.is_some())
             && let Some(on_exit) =
               transform_v_if(&mut directives, node, &*context, &mut *parent_node)
           {
@@ -547,6 +553,7 @@ impl<'a> TransformContext<'a> {
           };
 
           if directives.v_for.is_some()
+            && !(directives.is_template && directives.v_slot.is_some())
             && let Some(on_exit) = transform_v_for(&mut directives, node, &*context)
           {
             exit_fns.push(on_exit);
@@ -559,11 +566,13 @@ impl<'a> TransformContext<'a> {
           };
         }
 
-        if let Some(on_exit) =
-          transform_element(&mut directives, node, &*context, &mut *parent_node)
-        {
-          exit_fns.push(on_exit);
-        };
+        if !directives.is_template {
+          if let Some(on_exit) =
+            transform_element(&mut directives, node, &*context, &mut *parent_node)
+          {
+            exit_fns.push(on_exit);
+          };
+        }
 
         if let Some(on_exit) = track_slot_scopes(&mut directives, node, &*parent_node, &*context) {
           exit_fns.push(on_exit);

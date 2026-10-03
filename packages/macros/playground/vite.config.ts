@@ -4,5 +4,5 @@ import Inspect from 'vite-plugin-inspect'
 import VueJsx from 'vue-jsx/vite'
 
 export default defineConfig({
-  plugins: [Vue(), VueJsx({ vapor: true }), Inspect()],
+  plugins: [Vue(), VueJsx({ vapor: true }) as any, Inspect()],
 })

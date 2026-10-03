@@ -2,21 +2,13 @@ use oxc_ast::{
   AstKind,
   ast::{
     ArrayExpressionElement, Expression, IdentifierReference, JSXAttributeItem, JSXAttributeName,
-    JSXAttributeValue, JSXChild, JSXElement, JSXElementName, ObjectPropertyKind,
+    JSXAttributeValue, JSXElement, JSXElementName, ObjectPropertyKind,
   },
 };
 use oxc_span::GetSpan;
 use phf::phf_set;
 
 use crate::expression::is_globally_allowed;
-
-pub fn is_template<'a>(node: &'a JSXElement<'a>) -> bool {
-  if let JSXElementName::Identifier(name) = &node.opening_element.name {
-    name.name.eq("template")
-  } else {
-    false
-  }
-}
 
 pub fn is_constant_node(node: &Expression) -> bool {
   match node.without_parentheses().get_inner_expression() {
@@ -214,14 +206,6 @@ pub fn is_native_tag(tag: &str) -> bool {
       .is_some_and(|c| !(c.is_ascii_uppercase() || !c.is_ascii() || c == '_' || c == '$'))
 }
 
-pub fn is_fragment_node(node: &JSXChild) -> bool {
-  match node {
-    JSXChild::Fragment(_) => true,
-    JSXChild::Element(node) => is_template(node),
-    _ => false,
-  }
-}
-
 static VOID_TAGS: phf::Set<&'static str> = phf_set! {
   "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source",
   "track", "wbr",
@@ -246,7 +230,8 @@ pub fn is_formatting_tag(tag_name: &str) -> bool {
 // - Scope boundary elements
 static ALWAYS_CLOSE_TAGS: phf::Set<&'static str> = phf_set! {
   "title", "style", "script", "noscript", "template", // raw text / special parsing
-  "object", "table", "button", "textarea", "select", "iframe", "fieldset", // scope boundary / form elements
+  "object", "table", "button", "textarea", "select", "iframe", "fieldset", "form", // scope boundary / form elements
+  "foreignObject", "desc", "mi", "mo", "mn", "ms", "mtext", "annotation-xml", // foreign scope boundary
 };
 pub fn is_always_close_tag(tag_name: &str) -> bool {
   ALWAYS_CLOSE_TAGS.contains(tag_name)
@@ -388,6 +373,18 @@ pub fn is_event(mut s: &str) -> bool {
       .chars()
       .nth(2)
       .map(|c| c.is_ascii_uppercase())
+      .unwrap_or(false)
+}
+
+// vdom's `isNativeOn` (`/^on[a-z]/`): native event properties like `onclick`
+// that are set by value (dom property or attribute) rather than through
+// `addEventListener`.
+pub fn is_native_on(s: &str) -> bool {
+  s.starts_with("on")
+    && s
+      .as_bytes()
+      .get(2)
+      .map(|c| c.is_ascii_lowercase())
       .unwrap_or(false)
 }
 

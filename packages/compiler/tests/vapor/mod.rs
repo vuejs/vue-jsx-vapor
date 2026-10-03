@@ -3,6 +3,7 @@ mod custom_directive;
 mod placeholder_alignment;
 mod transform_children;
 mod transform_element;
+mod transform_keep_alive;
 mod transform_key;
 mod transform_slot_outlet;
 mod transform_template_ref;

@@ -158,7 +158,10 @@ pub fn transform_v_on<'a>(
       .collect::<Vec<_>>(),
   };
 
-  if is_component {
+  // a native listener whose key may collide with a spread or a `v-on` object is
+  // emitted as a prop too, so codegen can merge every handler of a key into one
+  // entry like mergeProps instead of attaching a second native listener
+  if is_component || directives.merges_listeners {
     return Some(DirectiveTransformResult {
       key: Expression::StringLiteral(arg),
       value: exp,

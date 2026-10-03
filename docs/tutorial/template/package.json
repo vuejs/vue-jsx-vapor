@@ -1,7 +1,7 @@
 {
   "name": "vue-jsx",
   "dependencies": {
-    "vue": "3.6.0-rc.9",
-    "vue-jsx": "3.3.0-rc.2?deps=vue@3.6.0-rc.9"
+    "vue": "3.6.0-rc.10",
+    "vue-jsx": "3.3.0-rc.2?deps=vue@3.6.0-rc.10"
   }
 }

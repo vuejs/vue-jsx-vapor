@@ -34,7 +34,10 @@
     "release": "bumpp && npm publish",
     "test": "vp test"
   },
-  "peerDependencies": {
+  "devDependencies": {
     "vue": "catalog:"
+  },
+  "peerDependencies": {
+    "vue": "^3.6.0-rc.10"
   }
 }

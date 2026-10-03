@@ -233,6 +233,374 @@ fn attr_modifier_with_no_expression() {
   "#);
 }
 
+// A constant value only folds into the template string when the string can
+// carry it: `innerHTML` / `textContent` write the element's content and
+// `.prop` forces a dom property, so both have to reach a runtime setter.
+#[test]
+fn inner_html_with_constant_value() {
+  let code = transform(
+    "<div innerHTML={'<b>x</b>'} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setHtml as _setHtml, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_setHtml(_n0, "<b>x</b>");
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn text_content_with_constant_value() {
+  let code = transform(
+    "<div textContent={'hi'} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setElementText as _setElementText, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_setElementText(_n0, "hi");
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn prop_modifier_with_constant_expression_value() {
+  let code = transform(
+    "<div foo_prop={'bar'} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setDOMProp as _setDOMProp, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_setDOMProp(_n0, "foo", "bar");
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn prop_modifier_with_static_attribute_value() {
+  let code = transform(
+    "<div foo_prop=\"bar\" />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setDOMProp as _setDOMProp, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_setDOMProp(_n0, "foo", "bar");
+  	return _n0;
+  })();
+  "#);
+}
+
+// a number stays a number, it never passes through the template string
+#[test]
+fn prop_modifier_keeps_number_value() {
+  let code = transform(
+    "<div scrollTop_prop={10} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setDOMProp as _setDOMProp, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_setDOMProp(_n0, "scrollTop", 10);
+  	return _n0;
+  })();
+  "#);
+}
+
+// `.attr` does mean the content attribute and still folds
+#[test]
+fn attr_modifier_with_constant_value_still_folds() {
+  let code = transform(
+    "<div foo_attr={'bar'} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div foo=bar>", 3);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn attr_modifier_with_number_still_folds() {
+  let code = transform(
+    "<div foo_attr={1} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div foo=1>", 3);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+// `.prop` / `.attr` are applied by the runtime from the `.` / `^` key prefix,
+// so the prefix has to survive into the generated props object - component
+// props and props merged with `{...obj}` are only resolved at runtime.
+#[test]
+fn prop_modifier_on_component_props() {
+  let code = transform(
+    "<Comp fooBar_prop={id} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, { ".fooBar": () => id }, null, true);
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains(r#"".fooBar": () => id"#));
+}
+
+#[test]
+fn attr_modifier_on_component_props() {
+  let code = transform(
+    "<Comp fooBar_attr={id} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, { "^fooBar": () => id }, null, true);
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains(r#""^fooBar": () => id"#));
+}
+
+#[test]
+fn prop_modifier_merged_with_v_bind_object() {
+  let code = transform(
+    "<div fooBar_prop={id} {...obj} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [{ ".fooBar": id }, obj]));
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains(r#"_setDynamicProps(_n0, [{ ".fooBar": id }, obj])"#));
+}
+
+#[test]
+fn attr_modifier_merged_with_v_bind_object() {
+  let code = transform(
+    "<div fooBar_attr={id} {...obj} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [{ "^fooBar": id }, obj], ["^fooBar"]));
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains(r#"_setDynamicProps(_n0, [{ "^fooBar": id }, obj], ["^fooBar"])"#));
+}
+
+// a kebab-case key must reach the runtime verbatim - camelizing it while
+// prefixing would silently rename the attribute.
+#[test]
+fn attr_modifier_merged_with_v_bind_object_kebab_case_key() {
+  let code = transform(
+    "<div data-x_attr={id} {...obj} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [{ "^data-x": id }, obj], ["^data-x"]));
+  	return _n0;
+  })();
+  "#);
+  assert!(code.contains(r#"_setDynamicProps(_n0, [{ "^data-x": id }, obj], ["^data-x"])"#));
+}
+
+// vdom writes the static keys of dynamic props during hydration (`dynamicProps`),
+// so they have to survive the merge with `{...obj}`. upstream hoists the list next
+// to the templates, it is inlined here instead.
+#[test]
+fn static_key_list_merged_with_v_bind_object() {
+  let code = transform(
+    "<>
+      <div id={id} {...obj} />
+      <div {...obj} id={id} title={title} />
+      <div id={a} {...o} />
+      <div id={b} {...p} />
+      <div title={c} {...q} />
+      <svg viewBox={v} {...obj} />
+    </>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains(r#"_setDynamicProps(_n0, [{ id }, obj], ["id"])"#),
+    "{code}"
+  );
+  assert!(
+    code.contains(r#"_setDynamicProps(_n2, [{ id: a }, o], ["id"])"#),
+    "{code}"
+  );
+  assert!(
+    code.contains(r#"_setDynamicProps(_n3, [{ id: b }, p], ["id"])"#),
+    "{code}"
+  );
+  assert!(
+    code.contains(r#"_setDynamicProps(_n4, [{ title: c }, q], ["title"])"#),
+    "{code}"
+  );
+  assert!(
+    code.contains(r#"_setDynamicProps(_n5, [{ viewBox: v }, obj], ["viewBox"], true)"#),
+    "{code}"
+  );
+  assert!(code.contains("_setDynamicProps(_n1, [obj, {"), "{code}");
+  assert!(code.contains(r#"}], ["id", "title"]);"#), "{code}");
+}
+
+// a constant value is not a dynamic binding in vdom either, `class` / `style` are
+// never part of its `dynamicProps` and `.prop` / a computed key write on their own
+#[test]
+fn static_key_list_is_omitted_for_constant_props() {
+  for (source, expected) in [
+    (
+      r#"<div id="foo" {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ id: "foo" }, obj])"#,
+    ),
+    (
+      r#"<div id={'foo'} {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ id: "foo" }, obj])"#,
+    ),
+    (
+      r#"<div id={1 + 1} {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ id: 1 + 1 }, obj])"#,
+    ),
+    (
+      r#"<div id={undefined} {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ id: undefined }, obj])"#,
+    ),
+    (
+      r#"<div class={cls} {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ class: cls }, obj])"#,
+    ),
+    (
+      r#"<div foo_prop={id} {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ ".foo": id }, obj])"#,
+    ),
+    (
+      r#"<div {...{[key]: id}} {...obj} />"#,
+      r#"_setDynamicProps(_n0, [{ [key]: id }, obj])"#,
+    ),
+  ] {
+    let code = transform(
+      source,
+      Some(TransformOptions {
+        vapor: true,
+        ..Default::default()
+      }),
+    )
+    .code;
+    assert!(code.contains(expected), "{source}\n{code}");
+  }
+
+  // upstream also skips a key bound to a `SETUP_CONST` / `LITERAL_CONST` binding;
+  // without binding metadata a `const` identifier is indistinguishable from a
+  // reactive one, so the key is kept - a longer list is harmless, the runtime only
+  // writes the key twice
+  let code = transform(
+    r#"<div id={FOO} {...obj} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains(r#"_setDynamicProps(_n0, [{ id: FOO }, obj], ["id"])"#),
+    "{code}"
+  );
+}
+
 #[test]
 fn with_constant_value() {
   let code = transform(
@@ -322,11 +690,11 @@ fn class_with_svg_elements() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { renderEffect as _renderEffect, setAttr as _setAttr, template as _template } from "vue";
+  import { renderEffect as _renderEffect, setClass as _setClass, template as _template } from "vue";
   const _t0 = _template("<svg>", 1, 1);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setAttr(_n0, "class", cls, true));
+  	_renderEffect(() => _setClass(_n0, cls, true));
   	return _n0;
   })();
   "#);
@@ -347,7 +715,7 @@ fn bind_with_svg_elements() {
   const _t0 = _template("<svg>", 1, 1);
   (() => {
   	const _n0 = _t0();
-  	_renderEffect(() => _setDynamicProps(_n0, [obj], true));
+  	_renderEffect(() => _setDynamicProps(_n0, [obj], null, true));
   	return _n0;
   })();
   "#);
@@ -960,19 +1328,40 @@ fn custom_element_number_literals() {
 fn custom_element_number_literals_with_dynamic_key() {
   // jsx cannot express a dynamic attribute name, so the equivalent of upstream
   // `:[key]="0"` is a computed key inside a spread.
-  let code = transform("<number-probe {...{[key]: 0}} />", None).code;
+  let code = transform(
+    "<number-probe {...{[key]: 0}} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert!(code.contains("[key]: 0"), "{code}");
 }
 
 #[test]
 fn custom_element_number_literals_with_spread_props() {
-  let code = transform("<number-probe {...props} count={0} />", None).code;
+  let code = transform(
+    "<number-probe {...props} count={0} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert!(code.contains("{ count: 0 }"), "{code}");
 }
 
 #[test]
 fn custom_element_number_literals_with_v_bind_object() {
-  let code = transform("<number-probe {...{count: 0}} />", None).code;
+  let code = transform(
+    "<number-probe {...{count: 0}} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
   assert!(code.contains("{ count: 0 }"), "{code}");
 }
 
@@ -1118,4 +1507,175 @@ fn number_literals_with_dynamic_key() {
   )
   .code;
   assert!(code.contains("[key]: 0"), "{code}");
+}
+
+// upstream: `constant props with no content attribute behind them` - these
+// properties have no content attribute and require a runtime setter.
+#[test]
+fn constant_props_without_a_content_attribute() {
+  for (source, template, setter) in [
+    (
+      r#"<video volume={0.5} />"#,
+      r#"_template("<video>""#,
+      r#"_setProp(_n0, "volume", "0.5")"#,
+    ),
+    (
+      r#"<video volume="0.5" />"#,
+      r#"_template("<video>""#,
+      r#"_setProp(_n0, "volume", "0.5")"#,
+    ),
+    (
+      r#"<video playbackRate={2} />"#,
+      r#"_template("<video>""#,
+      r#"_setProp(_n0, "playbackRate", "2")"#,
+    ),
+    (
+      r#"<video defaultPlaybackRate={2} />"#,
+      r#"_template("<video>""#,
+      r#"_setProp(_n0, "defaultPlaybackRate", "2")"#,
+    ),
+    (
+      r#"<video currentTime={3} />"#,
+      r#"_template("<video>""#,
+      r#"_setProp(_n0, "currentTime", "3")"#,
+    ),
+  ] {
+    let code = transform(
+      source,
+      Some(TransformOptions {
+        vapor: true,
+        ..Default::default()
+      }),
+    )
+    .code;
+    assert!(code.contains(template), "{source}\n{code}");
+    assert!(code.contains(setter), "{source}\n{code}");
+  }
+}
+
+// upstream: `constant props with no content attribute behind them: .attr` -
+// these keys skip folding even with `.attr`, which selects `setAttr` at runtime.
+#[test]
+fn constant_props_without_a_content_attribute_forced_through_set_attr() {
+  let code = transform(
+    r#"<video volume_attr={0.5} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains(r#"_template("<video>""#), "{code}");
+  assert!(code.contains(r#"_setAttr(_n0, "volume", "0.5")"#), "{code}");
+}
+
+// upstream: `constant props the template string does carry` - content attributes
+// keep folding. jsx spells a boolean attribute without a value, `{true}` is an
+// expression and is never folded, a pre-existing difference.
+#[test]
+fn constant_props_the_template_string_carries() {
+  for (source, expected) in [
+    (r#"<input value={'a'} />"#, r#"_template("<input value=a>""#),
+    (r#"<input checked />"#, r#"_template("<input checked>""#),
+    (r#"<video muted />"#, r#"_template("<video muted>""#),
+    (r#"<div hidden />"#, r#"_template("<div hidden>""#),
+  ] {
+    let code = transform(
+      source,
+      Some(TransformOptions {
+        vapor: true,
+        ..Default::default()
+      }),
+    )
+    .code;
+    assert!(code.contains(expected), "{source}\n{code}");
+    assert!(!code.contains("_setProp"), "{source}\n{code}");
+  }
+}
+
+// upstream: `svg namespace elements that share a tag name with html` - svg-ness
+// comes from the namespace, not the tag name
+#[test]
+fn svg_namespace_elements_that_share_a_tag_name_with_html() {
+  let code = transform(
+    "<svg><a href={url} class={cls} /></svg>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_setAttr(_n0, \"href\", url, true)"),
+    "{code}"
+  );
+  assert!(code.contains("_setClass(_n0, cls, true)"), "{code}");
+
+  let code = transform(
+    "<svg><a {...obj} /></svg>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_setDynamicProps(_n0, [obj], null, true)"),
+    "{code}"
+  );
+
+  // back to html inside <foreignObject>
+  let code = transform(
+    "<svg><foreignObject><a href={url} class={cls} /></foreignObject></svg>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("_setProp(_n0, \"href\", url)"), "{code}");
+  assert!(code.contains("_setClass(_n0, cls)"), "{code}");
+}
+
+// upstream: `uses the svg class helper for object class bindings on svg anchors`
+#[test]
+fn uses_the_svg_class_helper_for_object_class_bindings_on_svg_anchors() {
+  let code = transform(
+    "<svg><a class={{ active: flag }} /></svg>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_setClass(_n0, { active: flag }, true)"),
+    "{code}"
+  );
+  assert!(!code.contains("_setClassName"), "{code}");
+}
+
+// upstream: `groups native svg event bindings without changing other prop helpers`
+#[test]
+fn groups_native_svg_event_bindings_without_changing_other_prop_helpers() {
+  let code = transform(
+    "<svg><a onclick={click} onfocus={focus} href={url} class={cls} /></svg>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("_setDynamicProps(_n0, [{"), "{code}");
+  assert!(code.contains("onclick: click"), "{code}");
+  assert!(code.contains("onfocus: focus"), "{code}");
+  assert!(
+    code.contains("], [\"onclick\", \"onfocus\"], true"),
+    "{code}"
+  );
+  assert!(
+    code.contains("_setAttr(_n0, \"href\", url, true)"),
+    "{code}"
+  );
+  assert!(code.contains("_setClass(_n0, cls, true)"), "{code}");
 }

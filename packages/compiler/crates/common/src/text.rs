@@ -212,6 +212,25 @@ pub fn escape_html<'a>(s: Cow<'a, str>) -> Cow<'a, str> {
   Cow::Owned(html)
 }
 
+/// JSX attribute string literals resolve HTML character references once, just
+/// like JSX text does. Expression containers keep their own JavaScript
+/// semantics and are not decoded.
+pub fn decode_attr_value<'a>(value: &'a str) -> Cow<'a, str> {
+  decode_html_entities(value)
+}
+
+/// A static attribute value is written back into a template string, which the
+/// runtime parses as HTML again. `&` would start a second round of decoding
+/// there (`&amp;lt;` becoming `<`), so it is escaped together with `"`. The
+/// remaining characters need no escaping: any value containing them is quoted
+/// and stands for itself inside the quotes.
+pub fn escape_attr_value<'a>(s: &'a str) -> Cow<'a, str> {
+  if !s.contains(['&', '"']) {
+    return Cow::Borrowed(s);
+  }
+  Cow::Owned(s.replace('&', "&amp;").replace('"', "&quot;"))
+}
+
 pub fn hash_string(s: &str) -> String {
   let mut hasher = DefaultHasher::new();
   s.hash(&mut hasher);

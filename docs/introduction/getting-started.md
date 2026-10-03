@@ -18,7 +18,7 @@ This guide assumes familiarity with Vue and Vite.
 pnpm add vue-jsx
 
 # Runtime
-pnpm add vue@3.6.0-rc.9
+pnpm add vue@3.6.0-rc.10
 ```
 
 ## Vite Configuration
