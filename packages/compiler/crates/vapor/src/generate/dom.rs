@@ -54,7 +54,7 @@ pub fn gen_insert_node<'a>(oper: InsertNodeIRNode, context: &CodegenContext<'a>)
     SPAN,
     ast.expression_call(
       SPAN,
-      ast.expression_identifier(SPAN, ast.str("insert")),
+      ast.expression_identifier(SPAN, ast.str(context.options.helper("_insert"))),
       NONE,
       arguments,
       false,
