@@ -250,12 +250,23 @@ fn find_returned_dynamic<'a>(block: &'a BlockIRNode, id: i32) -> Option<&'a IRDy
 }
 
 fn get_block_shape(block: &BlockIRNode) -> i32 {
+  // SSR renders a branch as a fragment unless its only child is an element,
+  // so an empty `<template>` branch owns a fragment range instead
   if block.returns.is_empty() {
-    return VaporBlockShape::Empty as i32;
+    return VaporBlockShape::MultiRoot as i32;
   }
   if block.returns.len() == 1 && !block.node_text_only {
-    VaporBlockShape::SingleRoot as i32
-  } else {
-    VaporBlockShape::MultiRoot as i32
+    // a branch whose only child is a nested `v-if` owns a fragment range too:
+    // SSR renders it with `<!--if-->` anchors, not as a single element
+    if let Some(returned) = find_returned_dynamic(block, block.returns[0])
+      && returned
+        .operation
+        .as_deref()
+        .is_some_and(|operation| matches!(operation, OperationNode::If(_)))
+    {
+      return VaporBlockShape::MultiRoot as i32;
+    }
+    return VaporBlockShape::SingleRoot as i32;
   }
+  VaporBlockShape::MultiRoot as i32
 }
