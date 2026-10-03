@@ -1,3 +1,33 @@
+## [3.2.26](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.25...v3.2.26) (2026-10-03)
+
+
+### Bug Fixes
+
+* **compiler-vapor:** do not fold a constant prop the template string ([194347b](https://github.com/vuejs/vue-jsx-vapor/commit/194347b3762bbce7fbb7e40078af051421924948))
+* **compiler/vapor:** detect svg elements by namespace in prop codegen ([ab98914](https://github.com/vuejs/vue-jsx-vapor/commit/ab9891486b7a2e03118509a19b4c4fc893984bd3))
+* **compiler/vapor:** do not decode static attribute values and comments ([232bcae](https://github.com/vuejs/vue-jsx-vapor/commit/232bcae6bdff3cf2aa71fc7179f91083bb595fc2))
+* **compiler/vapor:** do not fold a constant prop with no content ([589ed71](https://github.com/vuejs/vue-jsx-vapor/commit/589ed71bf3353218ab50724ac664a3522a1385a1))
+* **compiler/vapor:** hydrate empty and lone nested v-if template ([f223544](https://github.com/vuejs/vue-jsx-vapor/commit/f2235441343833fc79522cf4d7c4b1314ae6c511))
+* **compiler/vapor:** keep end tags at foreign scope boundaries ([7ec7bd8](https://github.com/vuejs/vue-jsx-vapor/commit/7ec7bd8ecdd784c072130377a06fc86510d58c15))
+* **compiler/vapor:** keep end tags inside and around form elements- ([5e92834](https://github.com/vuejs/vue-jsx-vapor/commit/5e92834819d32617944f8f81eede5503e461b014))
+* **compiler/vapor:** keep end tags of lists nested in list items ([413afcb](https://github.com/vuejs/vue-jsx-vapor/commit/413afcb8b7fea14114100103a3314f6dada17ef5))
+* **compiler/vapor:** keep the .prop and .attr modifier on static prop ([a8553c9](https://github.com/vuejs/vue-jsx-vapor/commit/a8553c9fb5080f3c87e60da8591c60f79fd1cca6))
+* **compiler/vapor:** let v-if and v-for slots override unconditional ([5e7a61c](https://github.com/vuejs/vue-jsx-vapor/commit/5e7a61cb53d7d77400b686c0a9bccd4ff52100b3))
+* **compiler/vapor:** merge a root's own listeners with the fallthrough ([adfa7ce](https://github.com/vuejs/vue-jsx-vapor/commit/adfa7ce49b5a5bd779a3b70102fa7cc0c62d664e))
+* **compiler/vapor:** propagate component root through KeepAlive ([2e88a21](https://github.com/vuejs/vue-jsx-vapor/commit/2e88a211674e1c3c0e6195d44e76e5d4f67fb496))
+* **compiler/vapor:** register same-element listeners after v-model ([4356f25](https://github.com/vuejs/vue-jsx-vapor/commit/4356f25141b9283d55ea8e8a05b3866963436f75))
+* **compiler/vapor:** restore KeepAlive components by explicit key ([a2a0147](https://github.com/vuejs/vue-jsx-vapor/commit/a2a0147e6ef0038006413cc1ae9faf6e9fca17f7))
+* **compiler/vapor:** write static key bindings during hydration like ([dbfba6f](https://github.com/vuejs/vue-jsx-vapor/commit/dbfba6f700a9e9f10d6afa0e96f9607a83086fab))
+* **macros/volar:** remove defineComponent alias ([cce33e0](https://github.com/vuejs/vue-jsx-vapor/commit/cce33e0e10c98e229101dd01be67207cfd271b42)), closes [#76](https://github.com/vuejs/vue-jsx-vapor/issues/76)
+* **runtime:** prevent HMR registration outside Vue ([d9d1610](https://github.com/vuejs/vue-jsx-vapor/commit/d9d16108b23d2a99b18f39fabef6f191e1caf510)), closes [#77](https://github.com/vuejs/vue-jsx-vapor/issues/77)
+
+
+### Features
+
+* **runtime/hmr:** support HMR for plain function components ([b949ff5](https://github.com/vuejs/vue-jsx-vapor/commit/b949ff5e1f57f71979c697a9a79afa03c2aec829))
+
+
+
 ## [3.2.25](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.24...v3.2.25) (2026-09-19)
 
 
