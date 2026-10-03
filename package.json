@@ -50,6 +50,7 @@
     "bumpp": "^11.0.1",
     "conventional-changelog-cli": "^5.0.0",
     "eslint": "^10.3.0",
+    "happy-dom": "^20.14.5",
     "tsdown": "^0.20.3",
     "typescript": "^6.0.3",
     "unplugin-raw": "^0.7.0",

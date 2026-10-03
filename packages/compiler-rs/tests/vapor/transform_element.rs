@@ -718,7 +718,7 @@ fn invalid_table_nesting_with_dynamic_child() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx/vapor";
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
   import { child as _child, insert as _insert, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<tr><td> ");
   const _t1 = _template("<table>", 1);

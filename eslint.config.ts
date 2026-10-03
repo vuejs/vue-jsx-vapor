@@ -24,6 +24,7 @@ export default [
       'vue/no-dupe-keys',
       '@typescript-eslint/no-namespace',
       'unused-imports/no-unused-vars',
+      'unicorn/prefer-at',
     )
     .append([
       {
