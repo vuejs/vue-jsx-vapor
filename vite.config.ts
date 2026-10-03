@@ -580,6 +580,15 @@ export default defineConfig({
           'import/first': 'off',
         },
       },
+      {
+        // `@vue-jsx/runtime` ships to browsers and nothing in the build polyfills
+        // ES2022 built-ins — `Array.prototype.at` reaches `dist` verbatim and throws
+        // on Safari < 15.4 / Chrome < 92. Index in shipped code instead.
+        files: ['packages/runtime/src/**/*.ts'],
+        rules: {
+          'unicorn/prefer-at': 'off',
+        },
+      },
     ],
   },
 })

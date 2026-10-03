@@ -228,6 +228,8 @@ function resolveValues(values: any[] = [], _anchor?: Node, processFunction = fal
   const nodes: Block[] = []
   const scopes: EffectScope[] = []
   for (const [index, value] of values.entries()) {
+    // The anchor is a write target for the last value only — `setNodes` reads it back
+    // from the last result.
     const anchor = index === values.length - 1 ? _anchor : undefined
     if (typeof value === 'function') {
       Vue.renderEffect(() => {
@@ -246,6 +248,12 @@ function resolveValues(values: any[] = [], _anchor?: Node, processFunction = fal
 
 export function setNodes(anchor: Node, ...values: any[]) {
   const resolvedValues = resolveValues(values, anchor)
+  // The anchor is the template's blank text node. When the last value is text,
+  // `normalizeBlock` reuses it as the write target and it comes back already holding the
+  // content; otherwise the values are inserted *before* it and the placeholder would
+  // survive as a stray space. Reading the last result rather than searching assumes
+  // `resolveValues` hands the anchor to the last value only — the two move together.
+  if (resolvedValues[resolvedValues.length - 1] !== anchor) anchor.textContent = ''
   if (anchor.parentNode) Vue.insert(resolvedValues, anchor.parentNode, anchor)
 }
 
