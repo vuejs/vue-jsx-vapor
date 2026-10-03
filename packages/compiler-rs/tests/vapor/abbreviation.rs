@@ -229,7 +229,7 @@ fn same_name_boundary_does_not_cross_invalid_nesting_templates() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { child as _child, template as _template } from "vue";
+  import { child as _child, insert as _insert, template as _template } from "vue";
   const _t0 = _template("<div>x");
   const _t1 = _template("<main><div><p></div><section>after", 1);
   (() => {
@@ -237,7 +237,7 @@ fn same_name_boundary_does_not_cross_invalid_nesting_templates() {
   	let _p0 = _child(_n2);
   	const _n1 = _child(_p0);
   	const _n0 = _t0();
-  	insert(_n0, _n1);
+  	_insert(_n0, _n1);
   	return _n2;
   })();
   "#);

@@ -690,17 +690,17 @@ fn invalid_html_nesting() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { template as _template } from "vue";
+  import { insert as _insert, template as _template } from "vue";
   const _t0 = _template("<div>123");
   const _t1 = _template("<p>");
   const _t2 = _template("<form>");
   (() => {
   	const _n1 = _t1();
   	const _n0 = _t0();
-  	insert(_n0, _n1);
+  	_insert(_n0, _n1);
   	const _n3 = _t2();
   	const _n2 = _t2();
-  	insert(_n2, _n3);
+  	_insert(_n2, _n3);
   	return [_n1, _n3];
   })();
   "#);
@@ -718,14 +718,14 @@ fn invalid_table_nesting_with_dynamic_child() {
   )
   .code;
   assert_snapshot!(code, @r#"
-  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
-  import { child as _child, template as _template, txt as _txt } from "vue";
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
+  import { child as _child, insert as _insert, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<tr><td> ");
   const _t1 = _template("<table>", 1);
   (() => {
   	const _n2 = _t1();
   	const _n1 = _t0();
-  	insert(_n1, _n2);
+  	_insert(_n1, _n2);
   	const _n0 = _child(_n1);
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, () => msg);
