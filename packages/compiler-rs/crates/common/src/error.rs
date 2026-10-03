@@ -150,7 +150,10 @@ pub fn create_compiler_diagnostic<'a>(
 ) -> Result<Object<'a>> {
   let mut error = env.create_error(Error::from_reason(diagnostic.message.as_ref()))?;
   if let Some(label) = diagnostic.labels.as_ref().and_then(|labels| labels.first()) {
-    error.set("loc", (label.offset() as u32, (label.offset() + label.len()) as u32))?;
+    error.set(
+      "loc",
+      (label.offset() as u32, (label.offset() + label.len()) as u32),
+    )?;
   }
   Ok(error)
 }

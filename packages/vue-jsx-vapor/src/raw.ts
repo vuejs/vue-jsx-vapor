@@ -89,11 +89,16 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
             needHMR,
             opt?.ssr,
           )
+          const byteColumns =
+            this.getNativeBuildContext?.().framework === 'esbuild'
           for (const warning of result.warnings) {
-            this.warn(toMessage(warning, id, code))
+            this.warn(toMessage(warning, id, code, byteColumns))
           }
           if (result.errors.length) {
-            this.error(toMessage(result.errors[0], id, code))
+            for (const error of result.errors) {
+              this.error(toMessage(error, id, code, byteColumns))
+            }
+            return
           }
           if (result.code) {
             return {
@@ -110,6 +115,7 @@ function toMessage(
   error: CompilerDiagnostic,
   id: string,
   code: string,
+  byteColumns = false,
 ): UnpluginMessage {
   const start = error.loc?.[0]
   let line = 0
@@ -120,13 +126,14 @@ function toMessage(
     for (const char of code) {
       if (byteOffset >= start) break
       const point = char.codePointAt(0)!
-      byteOffset +=
+      const byteLength =
         point < 0x80 ? 1 : point < 0x800 ? 2 : point < 0x10000 ? 3 : 4
+      byteOffset += byteLength
       if (char === '\n') {
         line++
         column = 0
       } else {
-        column += char.length
+        column += byteColumns ? byteLength : char.length
       }
     }
   }

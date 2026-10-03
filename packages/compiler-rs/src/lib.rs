@@ -109,10 +109,10 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       } else {
         Box::new(|_: &str, _: Span| {}) as Box<dyn Fn(&str, Span)>
       },
-      on_diagnostic: if let Some(on_diagnostic) = on_error {
+      on_diagnostic: if let Some(on_error) = on_error {
         Box::new(move |diagnostic: &OxcDiagnostic| {
           let compiler_error = create_compiler_diagnostic(&env, diagnostic).unwrap();
-          on_diagnostic.call(compiler_error).unwrap();
+          on_error.call(compiler_error).unwrap();
         }) as Box<dyn Fn(&OxcDiagnostic)>
       } else {
         Box::new(|_: &OxcDiagnostic| {}) as Box<dyn Fn(&OxcDiagnostic)>
@@ -151,15 +151,17 @@ pub fn transform<'a>(source: &'a str, options: Option<TransformOptions<'a>>) -> 
     options.on_diagnostic.as_ref()(error);
   }
   let mut program = parser_return.program;
-  let program_ptr = &program as *const _;
-  let semantic_return = SemanticBuilder::new()
-    .with_check_syntax_error(true)
-    .build(unsafe { &*program_ptr });
-  for error in &semantic_return.errors {
-    options.on_diagnostic.as_ref()(error);
+  if !parser_return.panicked {
+    let program_ptr = &program as *const _;
+    let semantic_return = SemanticBuilder::new()
+      .with_check_syntax_error(true)
+      .build(unsafe { &*program_ptr });
+    for error in &semantic_return.errors {
+      options.on_diagnostic.as_ref()(error);
+    }
+    *options.semantic.borrow_mut() = semantic_return.semantic;
+    Transform::new(unsafe { &*(&options as *const _) }).visit(&mut program);
   }
-  *options.semantic.borrow_mut() = semantic_return.semantic;
-  Transform::new(unsafe { &*(&options as *const _) }).visit(&mut program);
   Codegen::new()
     .with_options(CodegenOptions {
       source_map_path: if options.source_map {
