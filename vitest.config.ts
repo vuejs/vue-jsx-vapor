@@ -4,6 +4,11 @@ export default defineConfig({
   resolve: {
     conditions: ['jsx-vapor-dev'],
   },
+  ssr: {
+    resolve: {
+      conditions: ['jsx-vapor-dev'],
+    },
+  },
   test: {
     include: ['./packages/**/*.spec.ts'],
   },

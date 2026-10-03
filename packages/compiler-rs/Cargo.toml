@@ -26,6 +26,7 @@ oxc_ast_visit = "0.128.0"
 oxc_semantic = "0.128.0"
 oxc_codegen = "0.128.0"
 oxc_span = "0.128.0"
+oxc_diagnostics = "0.128.0"
 phf = "0.13.1"
 indexmap = "2.14.0"
 html-escape = "0.2.13"
@@ -45,6 +46,7 @@ oxc_allocator = { workspace = true }
 oxc_semantic = { workspace = true }
 oxc_span = { workspace = true }
 oxc_codegen = { workspace = true }
+oxc_diagnostics = { workspace = true }
 
 common = { workspace = true }
 vapor = { workspace = true }

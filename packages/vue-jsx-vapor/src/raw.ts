@@ -11,8 +11,12 @@ import {
 } from '@vue-jsx-vapor/runtime/raw'
 import { relative } from 'pathe'
 import { normalizePath } from 'unplugin-utils'
-import { transformVueJsxVapor, type Options } from './core'
-import type { UnpluginOptions } from 'unplugin'
+import {
+  transformVueJsxVapor,
+  type CompilerDiagnostic,
+  type Options,
+} from './core'
+import type { UnpluginMessage, UnpluginOptions } from 'unplugin'
 
 const plugin = (options: Options = {}): UnpluginOptions[] => {
   let root = ''
@@ -85,7 +89,13 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
             needHMR,
             opt?.ssr,
           )
-          if (result?.code) {
+          for (const warning of result.warnings) {
+            this.warn(toMessage(warning, id, code))
+          }
+          if (result.errors.length) {
+            this.error(toMessage(result.errors[0], id, code))
+          }
+          if (result.code) {
             return {
               code: result.code,
               map: result.map ? JSON.parse(result.map) : null,
@@ -95,5 +105,35 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
       },
     },
   ]
+}
+function toMessage(
+  error: CompilerDiagnostic,
+  id: string,
+  code: string,
+): UnpluginMessage {
+  const start = error.loc?.[0]
+  let line = 0
+  let column = 0
+  if (start != null) {
+    line = 1
+    let byteOffset = 0
+    for (const char of code) {
+      if (byteOffset >= start) break
+      const point = char.codePointAt(0)!
+      byteOffset +=
+        point < 0x80 ? 1 : point < 0x800 ? 2 : point < 0x10000 ? 3 : 4
+      if (char === '\n') {
+        line++
+        column = 0
+      } else {
+        column += char.length
+      }
+    }
+  }
+  return {
+    message: error.message,
+    id,
+    loc: start == null ? undefined : { file: id, line, column },
+  }
 }
 export default plugin
