@@ -118,7 +118,7 @@ defineComponent(
 
 - Destructured props are automatically restructured to preserve reactivity.
 - Append `!` to a prop's default value to mark it as required.
-- Rest parameters in props are converted to `useAttrs()`, and `inheritAttrs` defaults to `false`.
+- Rest parameters in props are converted to `useAttrs()`, and the emitted options set `inheritAttrs: false`.
 
 ```tsx twoslash
 // @errors: 2322

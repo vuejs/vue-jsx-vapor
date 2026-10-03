@@ -111,7 +111,7 @@ defineComponent(
 
 - 解构的 props 将被自动重构。
 - 如果 prop 的默认值以 `!` 结尾，则该 prop 将被推断为必需的。
-- 如果定义了 rest prop，它将被转换为 `useAttrs()`，并且 `inheritAttrs` 选项将默认为 `false`。
+- 如果定义了 rest prop，它将被转换为 `useAttrs()`，生成的选项中会带上 `inheritAttrs: false`。
 
 ```tsx twoslash
 // @errors: 2322

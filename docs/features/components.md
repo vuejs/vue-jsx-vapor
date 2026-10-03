@@ -30,6 +30,81 @@ Use an uppercase identifier or a member expression for Vue components. This
 keeps component resolution deterministic and avoids changing the meaning of an
 existing component when HTML adds a new native element in the future.
 
+## Defining a Component
+
+`defineComponent` defines a Virtual DOM component and `defineVaporComponent`
+defines a Vapor one. Both take a setup function, or an options object with
+`setup`:
+
+```tsx
+import { defineComponent, defineVaporComponent } from 'vue-jsx'
+
+// Virtual DOM: the setup returns a render function.
+const Counter = defineComponent((props: { count: number }) => {
+  return () => <button>{props.count}</button>
+})
+
+// Vapor: the setup returns the block itself.
+const VaporCounter = defineVaporComponent((props: { count: number }) => (
+  <button>{props.count}</button>
+))
+```
+
+```tsx
+// The options object form works too, for either entry point.
+const Counter = defineComponent({
+  props: { count: Number },
+  setup(props) {
+    return () => <button>{props.count}</button>
+  },
+})
+```
+
+### Import source
+
+`vue-jsx` exports both functions. Unlike `vue`, they default `inheritAttrs` to
+`false` and use attrs as props, so you do not have to declare props up front:
+
+```ts
+import { defineComponent, defineVaporComponent } from 'vue-jsx'
+```
+
+### `inheritAttrs` defaults to `false`
+
+Attrs are not applied to the root element automatically. They stay in `attrs`, and
+the component decides which element to spread them on:
+
+```tsx
+import { defineVaporComponent } from 'vue-jsx'
+
+const Button = defineVaporComponent(() => <button>Click</button>)
+
+// Renders `<button>Click</button>`; `data-test` is not applied to the root.
+export default () => <Button data-test="submit" />
+```
+
+Fallthrough becomes explicit. A component that renders several elements no longer
+depends on Vue guessing which one is the root, and a wrapper component cannot
+leak attributes onto an element it did not intend.
+
+### Attributes stand in for props
+
+When a component declares no `props` option, the attributes are passed to `setup`
+as its first argument. It is the same object `useAttrs()` returns, so reading
+`props.title` works even though no `props` option declares `title`:
+
+```tsx
+import { defineVaporComponent } from 'vue-jsx'
+
+const Card = defineVaporComponent((props: { title: string }) => (
+  <section>
+    <h2>{props.title}</h2>
+  </section>
+))
+
+export default () => <Card title="Hello" />
+```
+
 ## `For`
 
 Vue JSX provides `For` for Virtual DOM and `VaporFor` for Vapor Mode. Both components preserve the item and index types inferred from `in`, without requiring directive-specific language tooling.

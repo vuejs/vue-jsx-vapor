@@ -1,5 +1,4 @@
 import {
-  defineComponent as __defineComponent,
   normalizeClass as _normalizeClass,
   cloneVNode,
   Comment,
@@ -13,6 +12,7 @@ import {
   openBlock,
   renderList,
   Text,
+  useAttrs,
   withCtx,
   type Component,
   type ComponentInjectOptions,
@@ -152,7 +152,7 @@ export type DefineSetupFnComponent<
 
 // overload 1: direct setup function
 // (uses user defined props interface)
-declare function _defineComponent<
+export function defineComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
@@ -181,7 +181,7 @@ declare function _defineComponent<
   Slots extends SlotsType ? Slots : SlotsType<Slots>,
   Exposed
 >
-declare function _defineComponent<
+export function defineComponent<
   Props extends Record<string, any>,
   Emits extends EmitsOptions = {},
   RuntimeEmitsKeys extends string = string,
@@ -212,7 +212,7 @@ declare function _defineComponent<
 >
 
 // overload 2: defineComponent with options object, infer props from options
-declare function _defineComponent<
+export function defineComponent<
   // props
   TypeProps,
   RuntimePropsOptions extends ComponentObjectPropsOptions = ComponentObjectPropsOptions,
@@ -314,7 +314,21 @@ declare function _defineComponent<
   unknown extends TypeProps ? true : false
 >
 
-export const defineComponent = __defineComponent as typeof _defineComponent
+/*@__NO_SIDE_EFFECTS__*/
+export function defineComponent(options: any, extraOptions?: any) {
+  const comp =
+    typeof options === 'function'
+      ? Object.assign({ name: options.name }, extraOptions, { setup: options })
+      : options
+  if (comp) {
+    if (!('inheritAttrs' in comp)) comp.inheritAttrs = false
+    if (comp.setup && !comp.props) {
+      const setup = comp.setup
+      comp.setup = (_props: any, ctx: any) => setup(ctx ? ctx.attrs : useAttrs(), ctx)
+    }
+  }
+  return comp
+}
 
 // components
 

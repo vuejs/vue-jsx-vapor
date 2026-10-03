@@ -2,6 +2,7 @@ import {
   EffectScope,
   Fragment,
   getCurrentInstance,
+  useAttrs,
   type Block,
   type ComponentObjectPropsOptions,
   type ComponentTypeEmits,
@@ -403,14 +404,19 @@ export function defineVaporComponent<
 >
 
 /*@__NO_SIDE_EFFECTS__*/
-export function defineVaporComponent(comp: any, extraOptions?: any) {
-  if (typeof comp === 'function') {
-    return Object.assign({ name: comp.name }, extraOptions, {
-      setup: comp,
-      __vapor: true,
-    })
+export function defineVaporComponent(options: any, extraOptions?: any) {
+  const comp =
+    typeof options === 'function'
+      ? Object.assign({ name: options.name }, extraOptions, { setup: options })
+      : options
+  if (comp) {
+    if (!('inheritAttrs' in comp)) comp.inheritAttrs = false
+    if (comp.setup && !comp.props) {
+      const setup = comp.setup
+      comp.setup = (_props: any, ctx: any) => setup(ctx ? ctx.attrs : useAttrs(), ctx)
+    }
+    comp.__vapor = true
   }
-  comp.__vapor = true
   return comp
 }
 
