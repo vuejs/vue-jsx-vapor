@@ -109,6 +109,8 @@ Modifiers are special postfixes denoted by `_` that indicate a directive should 
 </form>
 ```
 
+Event modifiers can also be written as camelCase suffixes, e.g. `onClickCapture` is equivalent to `onClick_capture`, `onKeyupEnter` to `onKeyup_enter`. Aliases only apply to recognized native DOM events — component listeners keep their names verbatim, so `<Comp onKeyupEnter>` is not equivalent to `onKeyup_enter`.
+
 ## Dynamic Arguments
 
 Variables can be used as directive argument by passing it as the second element of the array value. The third element of the array is used for directive modifiers.

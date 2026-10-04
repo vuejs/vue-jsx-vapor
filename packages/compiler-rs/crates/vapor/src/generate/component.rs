@@ -1,11 +1,9 @@
-use std::borrow::Cow;
 use std::mem;
 
 use common::check::is_constant_node;
 use common::directive::Modifiers;
 use common::directive::get_modifier_prop_name;
 use common::expression::gen_getter;
-use common::text::capitalize;
 use indexmap::IndexMap;
 use napi::bindgen_prelude::Either3;
 use oxc_allocator::CloneIn;
@@ -27,6 +25,8 @@ use crate::generate::event::gen_event_handler;
 use crate::generate::expression::gen_expression;
 use crate::generate::prop::gen_prop_key;
 use crate::generate::prop::gen_prop_value;
+use crate::generate::prop::get_handler_modifier_postfix;
+use crate::generate::prop::get_static_prop_key_name;
 use crate::generate::slot::gen_raw_slots;
 use crate::generate::v_model::gen_model_handler;
 use crate::ir::component::IRProp;
@@ -238,29 +238,32 @@ fn gen_static_props<'a>(
 
   for mut prop in props {
     if prop.handler {
-      let key_name = format!(
-        "\"on{}\"",
-        capitalize(if let Expression::StringLiteral(key) = &prop.key {
-          Cow::Borrowed(key.value.as_str())
-        } else {
-          unreachable!()
-        })
-      );
-      if key_name.is_empty() {
-        // dynamic key handlers are emitted as-is
-        gen_prop(&mut properties, prop, context, true);
-        continue;
-      }
-
       let Modifiers {
         keys,
         non_keys,
         options,
-      } = prop.handler_modifiers.unwrap_or(Modifiers {
+      } = prop.handler_modifiers.clone().unwrap_or(Modifiers {
         keys: vec![],
         non_keys: vec![],
         options: vec![],
       });
+
+      // group under the same key the prop is emitted with — event options
+      // like `Capture` are part of the emitted name (`onClickCapture`)
+      let key_name = format!(
+        "\"{}\"",
+        get_static_prop_key_name(
+          if let Expression::StringLiteral(key) = &prop.key {
+            key.value.as_str()
+          } else {
+            unreachable!()
+          },
+          prop.modifier,
+          prop.handler,
+          &get_handler_modifier_postfix(&options),
+          false,
+        )
+      );
 
       let key_frag = gen_prop_key(
         prop.key,
