@@ -110,7 +110,6 @@ type Booleanish = boolean | 'true' | 'false'
 type Numberish = number | string
 
 interface HTMLWebViewElement extends HTMLElement {}
-interface StyleMedia {}
 
 /**
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/crossorigin MDN}
@@ -309,8 +308,8 @@ export interface DelHTMLAttributes<T> extends HTMLAttributes<T> {
 }
 
 export interface DialogHTMLAttributes<T> extends HTMLAttributes<T> {
-  onCancel?: EventHandler<SyntheticEvent<T>> | undefined
-  onClose?: EventHandler<SyntheticEvent<T>> | undefined
+  onCancel?: BaseEventHandler<T> | undefined
+  onClose?: BaseEventHandler<T> | undefined
   open?: boolean | undefined
 }
 
@@ -1252,10 +1251,10 @@ export interface Events<T = Element> {
 
   // form events
   onChange: ChangeEventHandler<T>
-  onBeforeinput: FormEventHandler<T>
-  onInput: FormEventHandler<T>
+  onBeforeinput: InputEventHandler<T>
+  onInput: InputEventHandler<T>
   onReset: FormEventHandler<T>
-  onSubmit: FormEventHandler<T>
+  onSubmit: SubmitEventHandler<T>
   onInvalid: FormEventHandler<T>
 
   // image events
@@ -1265,7 +1264,7 @@ export interface Events<T = Element> {
   // keyboard events
   onKeydown: KeyboardEventHandler<T>
   onKeypress: KeyboardEventHandler<T>
-  onKeyup: KeyboardEventHandler
+  onKeyup: KeyboardEventHandler<T>
 
   // mouse events
   onAuxclick: MouseEventHandler<T>
@@ -1312,20 +1311,20 @@ export interface Events<T = Element> {
   onScrollend: UIEventHandler<T>
 
   // touch events
-  onTouchcancel: TouchEvent
-  onTouchend: TouchEvent
-  onTouchmove: TouchEvent
-  onTouchstart: TouchEvent
+  onTouchcancel: TouchEventHandler<T>
+  onTouchend: TouchEventHandler<T>
+  onTouchmove: TouchEventHandler<T>
+  onTouchstart: TouchEventHandler<T>
 
   // pointer events
-  onPointerdown: PointerEvent
-  onPointermove: PointerEvent
-  onPointerup: PointerEvent
-  onPointercancel: PointerEvent
-  onPointerenter: PointerEvent
-  onPointerleave: PointerEvent
-  onPointerover: PointerEvent
-  onPointerout: PointerEvent
+  onPointerdown: PointerEventHandler<T>
+  onPointermove: PointerEventHandler<T>
+  onPointerup: PointerEventHandler<T>
+  onPointercancel: PointerEventHandler<T>
+  onPointerenter: PointerEventHandler<T>
+  onPointerleave: PointerEventHandler<T>
+  onPointerover: PointerEventHandler<T>
+  onPointerout: PointerEventHandler<T>
 
   // wheel events
   onWheel: WheelEventHandler<T>
@@ -1357,173 +1356,113 @@ export type NativeElements = {
     }
 }
 
-export interface BaseSyntheticEvent<E = object, C = unknown, T = unknown> {
-  nativeEvent: E
-  currentTarget: C
-  target: T
-  bubbles: boolean
-  cancelable: boolean
-  defaultPrevented: boolean
-  eventPhase: number
-  isTrusted: boolean
-  preventDefault: () => void
-  isDefaultPrevented: () => boolean
-  stopPropagation: () => void
-  isPropagationStopped: () => boolean
-  persist: () => void
-  timeStamp: number
-  type: string
-}
-
 /**
- * currentTarget - a reference to the element on which the event listener is registered.
+ * Event handlers are handed to Vue core unchanged and registered with
+ * `addEventListener`, so a handler always receives the **native DOM event**
+ * (`globalThis.MouseEvent`, `globalThis.Event`, ...) — exactly like Vue
+ * templates and `@vue/babel-plugin-jsx`. There is no React-style synthetic
+ * event object: `nativeEvent`, `persist()`, `isDefaultPrevented()`, ... do
+ * not exist, and these types deliberately reject them.
  *
- * target - a reference to the element from which the event was originally dispatched.
- * This might be a child element to the element on which the event listener is registered.
- * If you thought this should be `EventTarget & T`, see https://github.com/DefinitelyTyped/DefinitelyTyped/issues/11508#issuecomment-256045682
+ * What these types add on top of the DOM lib is React's element-generic
+ * narrowing: `currentTarget` is always the element the listener is attached
+ * to, so it is narrowed to the JSX element type `T` — `e.currentTarget.value`
+ * on `<input onChange>` needs no cast. `target` is narrowed to `T` only on
+ * `ChangeEvent`, `InputEvent` and `FocusEvent`, where the handler is in
+ * practice declared on the element that fires the event; on bubbling events
+ * like `click` the event may originate from a child element, so `target`
+ * stays `EventTarget | null` there.
  */
-export interface SyntheticEvent<T = Element, E = Event> extends BaseSyntheticEvent<
-  E,
-  EventTarget & T,
-  EventTarget
-> {}
-
-export type EventHandler<E extends SyntheticEvent<any>> = {
+export type EventHandler<E> = {
   bivarianceHack: (event: E) => void
 }['bivarianceHack']
 
-export type BaseEventHandler<T = Element> = EventHandler<SyntheticEvent<T>>
+export interface Event<T = Element> extends globalThis.Event {
+  currentTarget: EventTarget & T
+}
+export type BaseEventHandler<T = Element> = EventHandler<Event<T>>
 
-export interface ClipboardEvent<T = Element> extends SyntheticEvent<T, globalThis.ClipboardEvent> {
-  clipboardData: DataTransfer
+export interface ClipboardEvent<T = Element> extends globalThis.ClipboardEvent {
+  currentTarget: EventTarget & T
 }
 export type ClipboardEventHandler<T = Element> = EventHandler<ClipboardEvent<T>>
 
-export interface CompositionEvent<T = Element> extends SyntheticEvent<
-  T,
-  globalThis.CompositionEvent
-> {
-  data: string
+export interface CompositionEvent<T = Element> extends globalThis.CompositionEvent {
+  currentTarget: EventTarget & T
 }
 export type CompositionEventHandler<T = Element> = EventHandler<CompositionEvent<T>>
 
-export interface DragEvent<T = Element> extends MouseEvent<T, globalThis.DragEvent> {
-  dataTransfer: DataTransfer
+export interface DragEvent<T = Element> extends globalThis.DragEvent {
+  currentTarget: EventTarget & T
 }
 export type DragEventHandler<T = Element> = EventHandler<DragEvent<T>>
 
-export interface FocusEvent<Target = Element, RelatedTarget = Element> extends SyntheticEvent<
-  Target,
-  globalThis.FocusEvent
-> {
+export interface FocusEvent<Target = Element, RelatedTarget = Element>
+  extends globalThis.FocusEvent {
+  currentTarget: EventTarget & Target
   relatedTarget: (EventTarget & RelatedTarget) | null
   target: EventTarget & Target
 }
 export type FocusEventHandler<T = Element> = EventHandler<FocusEvent<T>>
 
-export interface FormEvent<T = Element> extends SyntheticEvent<T> {}
+export interface FormEvent<T = Element> extends globalThis.Event {
+  currentTarget: EventTarget & T
+}
 export type FormEventHandler<T = Element> = EventHandler<FormEvent<T>>
 
-export interface ChangeEvent<T = Element> extends SyntheticEvent<T> {
+export interface ChangeEvent<T = Element> extends globalThis.Event {
+  currentTarget: EventTarget & T
   target: EventTarget & T
 }
 export type ChangeEventHandler<T = Element> = EventHandler<ChangeEvent<T>>
 
-export interface KeyboardEvent<T = Element> extends UIEvent<T, globalThis.KeyboardEvent> {
-  altKey: boolean
-  /** @deprecated */
-  charCode: number
-  ctrlKey: boolean
-  code: string
-  /**
-   * See [DOM Level 3 Events spec](https://www.w3.org/TR/uievents-key/#keys-modifier). for a list of valid (case-sensitive) arguments to this method.
-   */
-  getModifierState: (key: ModifierKey) => boolean
-  /**
-   * See the [DOM Level 3 Events spec](https://www.w3.org/TR/uievents-key/#named-key-attribute-values). for possible values
-   */
-  key: string
-  /** @deprecated */
-  keyCode: number
-  locale: string
-  location: number
-  metaKey: boolean
-  repeat: boolean
-  shiftKey: boolean
-  /** @deprecated */
-  which: number
+export interface InputEvent<T = Element> extends globalThis.InputEvent {
+  currentTarget: EventTarget & T
+  target: EventTarget & T
+}
+export type InputEventHandler<T = Element> = EventHandler<InputEvent<T>>
+
+export interface SubmitEvent<T = Element> extends globalThis.SubmitEvent {
+  currentTarget: EventTarget & T
+}
+export type SubmitEventHandler<T = Element> = EventHandler<SubmitEvent<T>>
+
+export interface KeyboardEvent<T = Element> extends globalThis.KeyboardEvent {
+  currentTarget: EventTarget & T
 }
 export type KeyboardEventHandler<T = Element> = EventHandler<KeyboardEvent<T>>
 
-export type ModifierKey =
-  | 'Alt'
-  | 'AltGraph'
-  | 'CapsLock'
-  | 'Control'
-  | 'Fn'
-  | 'FnLock'
-  | 'Hyper'
-  | 'Meta'
-  | 'NumLock'
-  | 'ScrollLock'
-  | 'Shift'
-  | 'Super'
-  | 'Symbol'
-  | 'SymbolLock'
-export interface MouseEvent<T = Element, E = globalThis.MouseEvent> extends UIEvent<T, E> {
-  altKey: boolean
-  button: number
-  buttons: number
-  clientX: number
-  clientY: number
-  ctrlKey: boolean
-  /**
-   * See [DOM Level 3 Events spec](https://www.w3.org/TR/uievents-key/#keys-modifier). for a list of valid (case-sensitive) arguments to this method.
-   */
-  getModifierState: (key: ModifierKey) => boolean
-  metaKey: boolean
-  movementX: number
-  movementY: number
-  pageX: number
-  pageY: number
-  relatedTarget: EventTarget | null
-  screenX: number
-  screenY: number
-  shiftKey: boolean
+export interface MouseEvent<T = Element> extends globalThis.MouseEvent {
+  currentTarget: EventTarget & T
 }
 export type MouseEventHandler<T = Element> = EventHandler<MouseEvent<T>>
 
-export interface AbstractView {
-  styleMedia: StyleMedia
-  document: Document
+export interface TouchEvent<T = Element> extends globalThis.TouchEvent {
+  currentTarget: EventTarget & T
 }
-export interface UIEvent<T = Element, E = globalThis.UIEvent> extends SyntheticEvent<T, E> {
-  detail: number
-  view: AbstractView
+export type TouchEventHandler<T = Element> = EventHandler<TouchEvent<T>>
+
+export interface PointerEvent<T = Element> extends globalThis.PointerEvent {
+  currentTarget: EventTarget & T
+}
+export type PointerEventHandler<T = Element> = EventHandler<PointerEvent<T>>
+
+export interface UIEvent<T = Element> extends globalThis.UIEvent {
+  currentTarget: EventTarget & T
 }
 export type UIEventHandler<T = Element> = EventHandler<UIEvent<T>>
 
-export interface WheelEvent<T = Element> extends MouseEvent<T, globalThis.WheelEvent> {
-  deltaMode: number
-  deltaX: number
-  deltaY: number
-  deltaZ: number
+export interface WheelEvent<T = Element> extends globalThis.WheelEvent {
+  currentTarget: EventTarget & T
 }
 export type WheelEventHandler<T = Element> = EventHandler<WheelEvent<T>>
 
-export interface AnimationEvent<T = Element> extends SyntheticEvent<T, globalThis.AnimationEvent> {
-  animationName: string
-  elapsedTime: number
-  pseudoElement: string
+export interface AnimationEvent<T = Element> extends globalThis.AnimationEvent {
+  currentTarget: EventTarget & T
 }
 export type AnimationEventHandler<T = Element> = EventHandler<AnimationEvent<T>>
 
-export interface TransitionEvent<T = Element> extends SyntheticEvent<
-  T,
-  globalThis.TransitionEvent
-> {
-  elapsedTime: number
-  propertyName: string
-  pseudoElement: string
+export interface TransitionEvent<T = Element> extends globalThis.TransitionEvent {
+  currentTarget: EventTarget & T
 }
 export type TransitionEventHandler<T = Element> = EventHandler<TransitionEvent<T>>
