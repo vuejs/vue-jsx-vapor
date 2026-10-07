@@ -9,6 +9,7 @@ import {
   getParamsStart,
   getRequire,
   HELPER_PREFIX,
+  importHelperFn,
   isFunctionalNode,
   type FunctionalNode,
 } from './utils'
@@ -118,7 +119,21 @@ export async function transformJsxMacros(
     }
 
     if (macros.defineComponent) {
-      transformDefineComponent(root, propsName, macros, s)
+      transformDefineComponent(
+        root,
+        propsName,
+        macros,
+        s,
+        options.defineComponent.resolveType
+          ? {
+              filename: id.split('?')[0],
+              source: s.original,
+              body: ast.body,
+              isProduction: options.isProduction,
+              helper: (name) => importHelperFn(s, name),
+            }
+          : undefined,
+      )
     }
     if (macros.defineModel?.length) {
       macros.defineModel.forEach(({ expression }) => {

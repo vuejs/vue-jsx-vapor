@@ -9,6 +9,7 @@ import {
   type FunctionalNode,
 } from '../utils'
 import { transformAwait } from './await'
+import { resolveTypes, type TypeContext } from './resolve-type'
 import type { Macros } from '..'
 import type { Node } from '@babel/types'
 import type MagicString from 'magic-string'
@@ -18,6 +19,8 @@ export function transformDefineComponent(
   propsName: string,
   macros: Macros,
   s: MagicString,
+  /** set when `resolveType` is on */
+  typeContext?: TypeContext,
 ): void {
   if (!macros.defineComponent) return
 
@@ -77,24 +80,36 @@ export function transformDefineComponent(
 
       restructure(s, root, {
         skipDefaultProps: true,
-        generateRestProps: (restPropsName, index, list) => {
-          if (index === list.length - 1) {
-            hasRestProp = true
-            const useAttrs = importHelperFn(s, 'useAttrs')
-            return `const ${restPropsName} = ${useAttrs}()`
-          }
-        },
+        // with resolveType, a rest element keeps the default: the props not destructured
+        generateRestProps: typeContext
+          ? undefined
+          : (restPropsName, index, list) => {
+              if (index === list.length - 1) {
+                hasRestProp = true
+                const useAttrs = importHelperFn(s, 'useAttrs')
+                return `const ${restPropsName} = ${useAttrs}()`
+              }
+            },
       })
     }
   }
 
+  const keysBeforeModels = new Set(Object.keys(props))
   transformDefineModel(s, macros.defineModel, props)
 
-  const propsString = Object.entries(props)
-    .map(([key, value]) => `'${key}': ${value}`)
-    .join(', \n')
-  if (propsString || hasRestProp) {
-    const resolvedPropsString = `${hasRestProp ? 'inheritAttrs: false, ' : ''}${propsString ? `props: {\n${propsString}\n}, ` : ''}`
+  const types = typeContext ? resolveTypes(root, macros.defineComponent, typeContext) : undefined
+  const propsString = [
+    ...(types?.props ? [`...${types.props}`] : []),
+    // after the spread, so a defineModel's own options win over the type
+    ...Object.entries(props)
+      .filter(([key]) => !types?.propKeys.has(key) || !keysBeforeModels.has(key))
+      .map(([key, value]) => `'${key}': ${value}`),
+  ].join(', \n')
+  const emitsString = types?.emits?.length ? `emits: ${JSON.stringify(types.emits)}, ` : ''
+  // first, so a `name` in the options still wins
+  const nameString = types?.name ? `name: ${JSON.stringify(types.name)}, ` : ''
+  if (nameString || propsString || emitsString || hasRestProp) {
+    const resolvedPropsString = `${nameString}${hasRestProp ? 'inheritAttrs: false, ' : ''}${propsString ? `props: {\n${propsString}\n}, ` : ''}${emitsString}`
     const compOptions = macros.defineComponent.arguments[1]
     if (compOptions) {
       s.appendLeft(compOptions.start!, `{ ${resolvedPropsString}...`)

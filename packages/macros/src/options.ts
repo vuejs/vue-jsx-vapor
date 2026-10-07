@@ -11,7 +11,19 @@ const REGEX_NODE_MODULES: RegExp = /node_modules/
 const REGEX_SRC_FILE: RegExp = /\.[cm]?[jt]sx?$/
 const REGEX_SETUP_SFC: RegExp = /\.setup\.[cm]?[jt]sx?$/
 
-type DefineComponentOptions = { alias?: string[] }
+type DefineComponentOptions = {
+  alias?: string[]
+  /**
+   * Declare `props` from the type of the setup function's first parameter, and `emits`
+   * from `SetupContext<E>` or `{ emit: EmitFn<E> }` on its second, as `defineProps<T>()`
+   * and `defineEmits<T>()` do in `<script setup>`. A rest element in the props parameter
+   * then holds the props that are not destructured, instead of the attrs. As with
+   * `@vitejs/plugin-vue-jsx`'s `resolveType`, type arguments win over the annotations and
+   * the component is named after the variable it is assigned to.
+   * @default false
+   */
+  resolveType?: boolean
+}
 type DefineModelOptions = { alias?: string[] }
 type DefineExposeOptions = { alias?: string[] }
 type DefineSlotsOptions = { alias?: string[] }

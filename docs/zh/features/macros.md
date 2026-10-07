@@ -55,6 +55,12 @@ vueJsx({
      * 可以通过把 alias 设为空数组来禁用 defineComponent 宏.
      */
     alias: [],
+    /**
+     * @default false
+     *
+     * 根据 setup 函数参数的类型生成 props 和 emits。
+     */
+    resolveType: true,
   },
 })
 ```
@@ -144,6 +150,100 @@ defineVaporComponent(
     )
   },
   { props: { foo: null, bar: { required: true } }, inheritAttrs: false },
+)
+```
+
+:::
+
+### 基于类型的 Props 和 Emits
+
+开启 `resolveType: true` 后，会根据 setup 函数第一个参数的类型生成 `props` 选项，根据第二个参数上的 `SetupContext<E>` 或 `{ emit: EmitFn<E> }` 生成 `emits`，使用与 `<script setup>` 中 `defineProps<T>()` 和 `defineEmits<T>()` 相同的类型解析。类型中的每个键都会成为 prop，包括函数中没有使用到的；导入的类型也会被解析。
+
+与 `@vitejs/plugin-vue-jsx` 的 `resolveType` 一致：类型参数（`defineComponent<Props, Emits>(...)`）优先于参数上的类型注解；props 参数的默认值（`(props: Props = defaults) => ...`）会作为 props 的默认值；`const Foo = defineComponent(...)` 会被命名为 `Foo`，除非选项中已经设置了 name。
+
+```tsx twoslash
+import { defineComponent, nextTick, Suspense, type HTMLAttributes, type SetupContext } from 'vue'
+
+const Comp = defineComponent(
+  async (
+    props: { foo?: string } & /* @vue-ignore */ HTMLAttributes,
+    // ^ `@vue-ignore` 会让该类型作为 fallthrough attribute，与 `<script setup>` 一致。
+    { attrs, emit }: SetupContext<{ change: [value: string] }>,
+  ) => {
+    await nextTick()
+    return () => (
+      <span {...attrs} onClick={() => emit('change', 'foo')}>
+        {props.foo}
+      </span>
+    )
+  },
+)
+
+export default () => (
+  <Suspense>
+    <Comp foo="foo" title="title" />
+  </Suspense>
+)
+```
+
+::: details 编译后代码
+
+```tsx
+import { defineComponent, withAsyncContext } from 'vue'
+defineComponent(
+  async (props, { attrs, emit }) => {
+    let __temp, __restore
+    ;(([__temp, __restore] = withAsyncContext(() => nextTick())), await __temp, __restore())
+    return () => (
+      <span {...attrs} onClick={() => emit('change', 'foo')}>
+        {props.foo}
+      </span>
+    )
+  },
+  { props: { foo: { type: String, required: false } }, emits: ['change'] },
+)
+```
+
+:::
+
+此时 props 参数中的 rest 元素收集未被解构的 props，与 `<script setup>` 中的 props 解构一致，而不是 fallthrough attribute。fallthrough attribute 可以通过 setup 上下文的 `attrs` 获取。
+
+```tsx twoslash
+import { defineVaporComponent } from 'vue'
+
+const Comp = defineVaporComponent(
+  ({ foo = 'foo', bar = ''!, ...rest }: { foo?: string; bar: string; baz?: string }) => {
+    return (
+      <div>
+        <span {...rest}>{foo}</span>
+      </div>
+    )
+  },
+)
+
+export default () => <Comp bar="bar" baz="baz" />
+```
+
+::: details 编译后代码
+
+```tsx
+import { createPropsRestProxy, defineVaporComponent } from 'vue'
+defineVaporComponent(
+  (__props) => {
+    const rest = createPropsRestProxy(__props, ['foo', 'bar'])
+    return (
+      <div>
+        <span {...rest}>{__props.foo}</span>
+      </div>
+    )
+  },
+  {
+    props: {
+      foo: { type: String, required: false, default: 'foo' },
+      bar: { type: String, required: true, default: '' },
+      baz: { type: String, required: false },
+    },
+  },
 )
 ```
 

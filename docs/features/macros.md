@@ -58,6 +58,12 @@ vueJsx({
      * Set alias to an empty array to disable the defineComponent macro.
      */
     alias: [],
+    /**
+     * @default false
+     *
+     * Declare props and emits from the setup function's parameter types.
+     */
+    resolveType: true,
   },
 })
 ```
@@ -151,6 +157,100 @@ defineVaporComponent(
     )
   },
   { props: { foo: null, bar: { required: true } }, inheritAttrs: false },
+)
+```
+
+:::
+
+### Type-based Props and Emits
+
+With `resolveType: true`, the `props` option is declared from the type of the setup function's first parameter, and `emits` from `SetupContext<E>` or `{ emit: EmitFn<E> }` on its second, with the same resolver as `defineProps<T>()` and `defineEmits<T>()` in `<script setup>`. Every key of the type becomes a prop, including the ones the function never reads; imported types are resolved too.
+
+As with `@vitejs/plugin-vue-jsx`'s `resolveType`, type arguments (`defineComponent<Props, Emits>(...)`) take precedence over the parameter annotations, a default value on the props parameter (`(props: Props = defaults) => ...`) becomes the props' defaults, and `const Foo = defineComponent(...)` is given the name `Foo` unless its options set one.
+
+```tsx twoslash
+import { defineComponent, nextTick, Suspense, type HTMLAttributes, type SetupContext } from 'vue'
+
+const Comp = defineComponent(
+  async (
+    props: { foo?: string } & /* @vue-ignore */ HTMLAttributes,
+    // ^ `@vue-ignore` leaves a type to the fallthrough attributes, as in `<script setup>`.
+    { attrs, emit }: SetupContext<{ change: [value: string] }>,
+  ) => {
+    await nextTick()
+    return () => (
+      <span {...attrs} onClick={() => emit('change', 'foo')}>
+        {props.foo}
+      </span>
+    )
+  },
+)
+
+export default () => (
+  <Suspense>
+    <Comp foo="foo" title="title" />
+  </Suspense>
+)
+```
+
+::: details Compiled Code
+
+```tsx
+import { defineComponent, withAsyncContext } from 'vue'
+defineComponent(
+  async (props, { attrs, emit }) => {
+    let __temp, __restore
+    ;(([__temp, __restore] = withAsyncContext(() => nextTick())), await __temp, __restore())
+    return () => (
+      <span {...attrs} onClick={() => emit('change', 'foo')}>
+        {props.foo}
+      </span>
+    )
+  },
+  { props: { foo: { type: String, required: false } }, emits: ['change'] },
+)
+```
+
+:::
+
+A rest element in the props parameter then holds the props that are not destructured, as props destructure does in `<script setup>`, rather than the fallthrough attributes. Those are on the setup context's `attrs`.
+
+```tsx twoslash
+import { defineVaporComponent } from 'vue'
+
+const Comp = defineVaporComponent(
+  ({ foo = 'foo', bar = ''!, ...rest }: { foo?: string; bar: string; baz?: string }) => {
+    return (
+      <div>
+        <span {...rest}>{foo}</span>
+      </div>
+    )
+  },
+)
+
+export default () => <Comp bar="bar" baz="baz" />
+```
+
+::: details Compiled Code
+
+```tsx
+import { createPropsRestProxy, defineVaporComponent } from 'vue'
+defineVaporComponent(
+  (__props) => {
+    const rest = createPropsRestProxy(__props, ['foo', 'bar'])
+    return (
+      <div>
+        <span {...rest}>{__props.foo}</span>
+      </div>
+    )
+  },
+  {
+    props: {
+      foo: { type: String, required: false, default: 'foo' },
+      bar: { type: String, required: true, default: '' },
+      baz: { type: String, required: false },
+    },
+  },
 )
 ```
 
