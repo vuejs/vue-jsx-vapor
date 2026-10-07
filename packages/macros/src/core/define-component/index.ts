@@ -182,7 +182,7 @@ function transformDefineModel(
 }
 
 function getTypeAndValue(s: MagicString, node: Node) {
-  let value = ''
+  let value: string
   let type = ''
   let skipFactory = false
   switch (node.type) {
@@ -229,6 +229,9 @@ function getTypeAndValue(s: MagicString, node: Node) {
         }
       } else if (node.type === 'NullLiteral') {
         value = 'null'
+      } else {
+        // evaluated per instance, as props destructure in <script setup> does
+        value = `() => (${s.slice(node.start!, node.end!)})`
       }
   }
   return { value, type, skipFactory }

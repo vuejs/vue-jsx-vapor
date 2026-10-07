@@ -194,3 +194,6 @@ Temporary Items
 *.icloud
 
 flamegraph.svg
+
+# compiled components imported by packages/macros/tests/define-component-runtime.spec.ts
+packages/macros/tests/.temp
