@@ -604,6 +604,13 @@ impl<'a> TransformContext<'a> {
             *(&*context).in_v_once.borrow_mut() = true;
           };
 
+          if let Some(memo) = &directives.v_memo {
+            (&*context).options.on_warn.as_ref()(
+              "v-memo is not supported in Vapor mode and will be ignored.".to_string(),
+              memo.span,
+            );
+          }
+
           if (directives.v_if.is_some()
             || directives.v_else_if.is_some()
             || directives.v_else.is_some())
