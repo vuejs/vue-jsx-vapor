@@ -1,10 +1,6 @@
 import { transform } from '@vue-jsx-vapor/compiler-rs'
 import type { Options } from '../options'
-
-export interface CompilerError extends SyntaxError {
-  id?: string
-  loc?: { file: string; line: number; column: number }
-}
+import type { UnpluginMessage } from 'unplugin'
 
 export type { Options }
 
@@ -18,8 +14,8 @@ export function transformVueJsxVapor(
 ) {
   const params = new URLSearchParams(id)
   const vapor = params.get('vapor')
-  const errors: CompilerError[] = []
-  const warnings: CompilerError[] = []
+  const errors: UnpluginMessage[] = []
+  const warnings: UnpluginMessage[] = []
   const { onError, onWarn, ...compiler } = options?.compiler || {}
   const result = transform(code, {
     filename: id,
@@ -29,11 +25,11 @@ export function transformVueJsxVapor(
     ssr,
     ...compiler,
     onError: (error) => {
-      errors.push(error as CompilerError)
+      errors.push(error as UnpluginMessage)
       onError?.(error)
     },
     onWarn: (warning) => {
-      warnings.push(warning as CompilerError)
+      warnings.push(warning as UnpluginMessage)
       onWarn?.(warning)
     },
   })

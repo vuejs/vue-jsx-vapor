@@ -128,38 +128,36 @@ impl ErrorCodes {
   }
 }
 
-pub fn create_compiler_error<'a>(
+pub fn create_compiler_message<'a>(
   env: &'a Env,
   message: String,
   id: &str,
-  line_column: Option<(u32, u32)>,
-) -> Result<Object<'a>> {
-  create_compiler_message(env, message, id, line_column)
-}
-
-pub fn create_compiler_warning<'a>(
-  env: &'a Env,
-  message: String,
-  id: &str,
-  line_column: Option<(u32, u32)>,
-) -> Result<Object<'a>> {
-  create_compiler_message(env, message, id, line_column)
-}
-
-fn create_compiler_message<'a>(
-  env: &'a Env,
-  message: String,
-  id: &str,
-  line_column: Option<(u32, u32)>,
+  source: &'a str,
+  offset: u32,
 ) -> Result<Object<'a>> {
   let mut js_error = env.create_error(Error::from_reason(&message))?;
   js_error.set("id", id)?;
-  if let Some((line, column)) = line_column {
-    let mut loc = Object::new(env)?;
-    loc.set("file", id)?;
-    loc.set("line", line)?;
-    loc.set("column", column)?;
-    js_error.set("loc", loc)?;
+
+  // convert a byte offset into a 1-based line and a 0-based UTF-16 column,
+  // which is what bundlers expect in error locations
+  let mut offset = offset as usize;
+  while offset > 0 && !source.is_char_boundary(offset) {
+    offset -= 1;
   }
+  let prefix = &source[..offset];
+  let line = prefix.matches('\n').count() as u32 + 1;
+  let column: u32 = match prefix.rfind('\n') {
+    Some(i) => &prefix[i + 1..],
+    None => prefix,
+  }
+  .chars()
+  .map(|c| c.len_utf16() as u32)
+  .sum();
+
+  let mut loc = Object::new(env)?;
+  loc.set("file", id)?;
+  loc.set("line", line)?;
+  loc.set("column", column)?;
+  js_error.set("loc", loc)?;
   Ok(js_error)
 }
