@@ -14,7 +14,6 @@ oxc_allocator = { workspace = true }
 oxc_semantic = { workspace = true }
 oxc_parser = { workspace = true }
 oxc_ast_visit = { workspace = true }
-oxc_diagnostics = { workspace = true }
 
 napi-derive = { workspace = true }
 napi = { workspace = true }
