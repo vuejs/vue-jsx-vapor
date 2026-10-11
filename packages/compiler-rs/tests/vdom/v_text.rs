@@ -45,14 +45,15 @@ fn should_raise_error_if_has_children() {
     r#"<div v-text={test}>hello</div>"#,
     Some(TransformOptions {
       interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   )
   .code;
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VTextWithChildren));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VTextWithChildren.message())
+  );
 }
 
 #[test]
@@ -62,12 +63,13 @@ fn should_raise_error_if_has_no_expression() {
     r#"<div v-text></div>"#,
     Some(TransformOptions {
       interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   )
   .code;
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VTextNoExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VTextNoExpression.message())
+  );
 }

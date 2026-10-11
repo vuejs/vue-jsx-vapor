@@ -46,7 +46,7 @@ pub unsafe fn transform_v_if<'a>(
     .as_mut()
     .and_then(|value| jsx_attribute_value_to_expression(value, context.ast));
   if dir_name != "v-else" && dir_exp.is_none() {
-    context.options.on_error.as_ref()(ErrorCodes::VIfNoExpression, dir.span);
+    context.options.on_error.as_ref()(ErrorCodes::VIfNoExpression.message(), dir.span);
     return None;
   }
 
@@ -109,7 +109,10 @@ pub unsafe fn transform_v_if<'a>(
 
   // check if IfNode is the last operation and get the root IfNode
   let Some(mut last_if_node) = last_if_node else {
-    context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, unsafe { &*node }.span);
+    context.options.on_error.as_ref()(
+      ErrorCodes::VElseNoAdjacentIf.message(),
+      unsafe { &*node }.span,
+    );
     return None;
   };
 
@@ -123,7 +126,7 @@ pub unsafe fn transform_v_if<'a>(
 
   // Check if v-else was followed by v-else-if
   if dir_name == "v-else-if" && last_if_node.negative.is_some() {
-    context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, dir.span);
+    context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf.message(), dir.span);
   };
 
   let exit_block = context.create_block(

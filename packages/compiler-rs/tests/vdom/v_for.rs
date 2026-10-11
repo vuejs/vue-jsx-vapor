@@ -632,14 +632,15 @@ mod error {
       r#"<span v-for />"#,
       Some(TransformOptions {
         interop: true,
-        on_error: Box::new(|e, _| {
-          *error.borrow_mut() = Some(e);
-        }),
+        on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
         ..Default::default()
       }),
     )
     .code;
-    assert_eq!(*error.borrow(), Some(ErrorCodes::VForNoExpression));
+    assert_eq!(
+      *error.borrow(),
+      Some(ErrorCodes::VForNoExpression.message())
+    );
   }
 
   #[test]
@@ -649,14 +650,15 @@ mod error {
       r#"<span v-for="" />"#,
       Some(TransformOptions {
         interop: true,
-        on_error: Box::new(|e, _| {
-          *error.borrow_mut() = Some(e);
-        }),
+        on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
         ..Default::default()
       }),
     )
     .code;
-    assert_eq!(*error.borrow(), Some(ErrorCodes::VForMalformedExpression));
+    assert_eq!(
+      *error.borrow(),
+      Some(ErrorCodes::VForMalformedExpression.message())
+    );
   }
 
   #[test]
@@ -666,13 +668,14 @@ mod error {
       r#"<span v-for={items} />"#,
       Some(TransformOptions {
         interop: true,
-        on_error: Box::new(|e, _| {
-          *error.borrow_mut() = Some(e);
-        }),
+        on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
         ..Default::default()
       }),
     )
     .code;
-    assert_eq!(*error.borrow(), Some(ErrorCodes::VForMalformedExpression));
+    assert_eq!(
+      *error.borrow(),
+      Some(ErrorCodes::VForMalformedExpression.message())
+    );
   }
 }

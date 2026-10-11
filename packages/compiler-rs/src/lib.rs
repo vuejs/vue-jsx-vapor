@@ -5,15 +5,13 @@ use napi::{
 };
 use napi_derive::napi;
 use oxc_codegen::{Codegen, CodegenReturn};
+use oxc_diagnostics::OxcDiagnostic;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::{SourceType, Span};
 use std::path::{Path, PathBuf};
 
-use common::{
-  error::{ErrorCodes, create_compiler_error, create_compiler_warning},
-  options::Hmr,
-};
+use common::{error::create_compiler_message, options::Hmr};
 
 use crate::transform::Transform;
 
@@ -77,9 +75,10 @@ pub struct TransformReturn {
 pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) -> TransformReturn {
   let options = options.unwrap_or_default();
   let filename = &options.filename.unwrap_or("index.jsx".to_string());
+  let source = source.as_str();
   let ssr = options.ssr.unwrap_or(false);
   let CodegenReturn { code, map, .. } = transform(
-    &source,
+    source,
     Some(TransformOptions {
       filename,
       source_map: options.source_map.unwrap_or(false),
@@ -90,20 +89,22 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       runtime_module_name: options.runtime_module_name,
       merge_props: options.merge_props.unwrap_or(true),
       on_error: if let Some(on_error) = options.on_error {
-        Box::new(move |code: ErrorCodes, span: Span| {
-          let compiler_error = create_compiler_error(&env, code, span).unwrap();
+        Box::new(move |message: String, span: Span| {
+          let compiler_error =
+            create_compiler_message(&env, message, filename, source, span.start).unwrap();
           on_error.call(compiler_error).unwrap();
-        }) as Box<dyn Fn(ErrorCodes, Span)>
+        }) as Box<dyn Fn(String, Span)>
       } else {
-        Box::new(|_: ErrorCodes, _: Span| {}) as Box<dyn Fn(ErrorCodes, Span)>
+        Box::new(|_: String, _: Span| {}) as Box<dyn Fn(String, Span)>
       },
       on_warn: if let Some(on_warn) = options.on_warn {
-        Box::new(move |message: &str, span: Span| {
-          let warning = create_compiler_warning(&env, message, span).unwrap();
+        Box::new(move |message: String, span: Span| {
+          let warning =
+            create_compiler_message(&env, message, filename, source, span.start).unwrap();
           on_warn.call(warning).unwrap();
-        }) as Box<dyn Fn(&str, Span)>
+        }) as Box<dyn Fn(String, Span)>
       } else {
-        Box::new(|_: &str, _: Span| {}) as Box<dyn Fn(&str, Span)>
+        Box::new(|_: String, _: Span| {}) as Box<dyn Fn(String, Span)>
       },
       ..Default::default()
     }),
@@ -129,18 +130,27 @@ pub fn transform<'a>(source: &'a str, options: Option<TransformOptions<'a>>) -> 
       SourceType::from_path(options.filename).unwrap()
     }
   };
-  let mut program = Parser::new(
+  let parser_return = Parser::new(
     unsafe { &*(&options.allocator as *const _) },
     source,
     *options.source_type.borrow(),
   )
-  .parse()
-  .program;
-  let program_ptr = &program as *const _;
-  *options.semantic.borrow_mut() = SemanticBuilder::new()
-    .build(unsafe { &*program_ptr })
-    .semantic;
-  Transform::new(unsafe { &*(&options as *const _) }).visit(&mut program);
+  .parse();
+  for error in &parser_return.errors {
+    options.on_error.as_ref()(error.message.to_string(), diagnostic_span(error));
+  }
+  let mut program = parser_return.program;
+  if !parser_return.panicked {
+    let program_ptr = &program as *const _;
+    let semantic_return = SemanticBuilder::new()
+      .with_check_syntax_error(true)
+      .build(unsafe { &*program_ptr });
+    for error in &semantic_return.errors {
+      options.on_error.as_ref()(error.message.to_string(), diagnostic_span(error));
+    }
+    *options.semantic.borrow_mut() = semantic_return.semantic;
+    Transform::new(unsafe { &*(&options as *const _) }).visit(&mut program);
+  }
   Codegen::new()
     .with_options(CodegenOptions {
       source_map_path: if options.source_map {
@@ -151,4 +161,13 @@ pub fn transform<'a>(source: &'a str, options: Option<TransformOptions<'a>>) -> 
       ..CodegenOptions::default()
     })
     .build(&program)
+}
+
+fn diagnostic_span(diagnostic: &OxcDiagnostic) -> Span {
+  diagnostic
+    .labels
+    .as_ref()
+    .and_then(|labels| labels.first())
+    .map(|label| Span::new(label.offset() as u32, (label.offset() + label.len()) as u32))
+    .unwrap_or_default()
 }

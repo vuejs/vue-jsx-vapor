@@ -183,13 +183,14 @@ fn error_on_v_else_missing_adjacent_v_if() {
     r#"<div v-else/>"#,
     Some(TransformOptions {
       interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VElseNoAdjacentIf));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VElseNoAdjacentIf.message())
+  );
 }
 
 #[test]
@@ -199,13 +200,14 @@ fn error_on_v_else_if_missing_adjacent_v_if_or_v_else_if() {
     r#"<div v-else-if={foo}/>"#,
     Some(TransformOptions {
       interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VElseNoAdjacentIf));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VElseNoAdjacentIf.message())
+  );
 }
 
 #[test]
@@ -215,13 +217,14 @@ fn error_on_adjacent_v_else() {
     r#"<><div v-if={false}/><div v-else/><div v-else/></>"#,
     Some(TransformOptions {
       interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VElseNoAdjacentIf));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VElseNoAdjacentIf.message())
+  );
 }
 
 #[test]

@@ -586,7 +586,7 @@ pub fn build_props<'a>(
               );
             }
           } else {
-            context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, span);
+            context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression.message(), span);
           }
           continue;
         } else if collect_name && prop_name == "name" {
@@ -682,7 +682,7 @@ pub fn transform_prop<'a>(
   if !is_built_in_directive(dir_name_raw) {
     if get_tag_name(node, context.options) == "slot" {
       context.options.on_error.as_ref()(
-        ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet,
+        ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet.message(),
         prop.span,
       );
       return None;

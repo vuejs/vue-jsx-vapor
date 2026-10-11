@@ -129,13 +129,11 @@ fn should_error_if_no_expression_and_no_modifier() {
     r#"<input onClick />"#,
     Some(TransformOptions {
       interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VOnNoExpression));
+  assert_eq!(*error.borrow(), Some(ErrorCodes::VOnNoExpression.message()));
 }
 
 #[test]

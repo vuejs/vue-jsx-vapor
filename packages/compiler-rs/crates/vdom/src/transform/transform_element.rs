@@ -138,7 +138,7 @@ pub unsafe fn transform_element<'a>(
         patch_flag |= PatchFlags::DynamicSlots as i32;
         if children.len() > 1 {
           context.options.on_error.as_ref()(
-            ErrorCodes::KeepAliveInvalidChildren,
+            ErrorCodes::KeepAliveInvalidChildren.message(),
             Span::new(
               children.first().unwrap().span().start,
               children.last().unwrap().span().end,
@@ -416,7 +416,7 @@ pub fn build_props<'a>(
         // skip v-slot - it is handled by its dedicated transform.
         if dir_name == "slot" {
           if !is_component {
-            context.options.on_error.as_ref()(ErrorCodes::VSlotMisplaced, prop.span);
+            context.options.on_error.as_ref()(ErrorCodes::VSlotMisplaced.message(), prop.span);
           }
           continue;
         }
@@ -451,7 +451,7 @@ pub fn build_props<'a>(
                 false,
               ));
             } else {
-              context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, prop.span);
+              context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression.message(), prop.span);
             }
             continue;
           }

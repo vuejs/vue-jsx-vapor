@@ -27,12 +27,12 @@ pub fn transform_v_text<'a>(
       context.jsx_attribute_value_to_expression(value)
     }
   } else {
-    context.options.on_error.as_ref()(ErrorCodes::VTextNoExpression, dir.span);
+    context.options.on_error.as_ref()(ErrorCodes::VTextNoExpression.message(), dir.span);
     return None;
   };
 
   if node.children.iter().any(|c| !is_empty_text(c)) {
-    context.options.on_error.as_ref()(ErrorCodes::VTextWithChildren, node.span);
+    context.options.on_error.as_ref()(ErrorCodes::VTextWithChildren.message(), node.span);
     return None;
   };
 

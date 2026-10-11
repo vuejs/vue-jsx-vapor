@@ -85,7 +85,16 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
             needHMR,
             opt?.ssr,
           )
-          if (result?.code) {
+          for (const warning of result.warnings) {
+            this.warn(warning)
+          }
+          if (result.errors.length) {
+            for (const error of result.errors) {
+              this.error(error)
+            }
+            return
+          }
+          if (result.code) {
             return {
               code: result.code,
               map: result.map ? JSON.parse(result.map) : null,

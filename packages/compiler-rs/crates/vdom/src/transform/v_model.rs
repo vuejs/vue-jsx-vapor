@@ -26,7 +26,7 @@ pub fn transform_v_model<'a>(
   let ast = &context.ast;
   let dir_ref = _dir as *mut JSXAttribute;
   let Some(exp) = &mut unsafe { &mut *dir_ref }.value else {
-    context.options.on_error.as_ref()(ErrorCodes::VModelNoExpression, _dir.span);
+    context.options.on_error.as_ref()(ErrorCodes::VModelNoExpression.message(), _dir.span);
     return None;
   };
   let mut dir = resolve_directive(_dir, context.ast);
@@ -39,7 +39,7 @@ pub fn transform_v_model<'a>(
   {
     (exp, has_scope_ref)
   } else {
-    context.options.on_error.as_ref()(ErrorCodes::VModelMalformedExpression, exp.span());
+    context.options.on_error.as_ref()(ErrorCodes::VModelMalformedExpression.message(), exp.span());
     return None;
   };
 
@@ -229,7 +229,7 @@ pub fn transform_v_model<'a>(
   }
 
   if arg_is_some {
-    context.options.on_error.as_ref()(ErrorCodes::VModelArgOnElement, dir.span);
+    context.options.on_error.as_ref()(ErrorCodes::VModelArgOnElement.message(), dir.span);
   }
 
   let mut runtime_name = None;
@@ -248,7 +248,10 @@ pub fn transform_v_model<'a>(
             "checkbox" => directive_to_use = "_vModelCheckbox",
             "file" => {
               is_invalid_type = true;
-              context.options.on_error.as_ref()(ErrorCodes::VModelOnFileInputElement, node.span);
+              context.options.on_error.as_ref()(
+                ErrorCodes::VModelOnFileInputElement.message(),
+                node.span,
+              );
             }
             // text type
             _ => check_duplicated_value(directives, context),
@@ -274,7 +277,7 @@ pub fn transform_v_model<'a>(
       runtime_name = Some(context.options.helper(directive_to_use));
     }
   } else if !is_custom_element {
-    context.options.on_error.as_ref()(ErrorCodes::VModelOnInvalidElement, node.span)
+    context.options.on_error.as_ref()(ErrorCodes::VModelOnInvalidElement.message(), node.span)
   }
 
   // native vmodel doesn't need the `modelValue` props since they are also
@@ -306,6 +309,6 @@ fn check_duplicated_value(directives: &Directives, context: &TransformContext) {
   if let Some(value) = directives.value.as_ref()
     && !matches!(value.value, Some(JSXAttributeValue::StringLiteral(_)))
   {
-    context.options.on_error.as_ref()(ErrorCodes::VModelUnnecessaryValue, value.span);
+    context.options.on_error.as_ref()(ErrorCodes::VModelUnnecessaryValue.message(), value.span);
   }
 }
