@@ -285,8 +285,9 @@ fn component_props_merging_style() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { normalizeStyle as _normalizeStyle } from "vue";
   (() => {
-  	const _n0 = _createComponent(Foo, { style: () => ["color: green", { color: "red" }] }, null, true);
+  	const _n0 = _createComponent(Foo, { style: () => [_normalizeStyle(["color: green"]), { color: "red" }] }, null, true);
   	return _n0;
   })();
   "#);
@@ -299,6 +300,52 @@ fn component_props_merging_class() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, { class: () => ["foo", { bar: isBar }] }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn component_static_style_is_normalized() {
+  let code = transform("<Foo style=\"width: 200px; color: red\" />", None).code;
+  // The raw CSS goes to `normalizeStyle`, which parses the strings of a style
+  // array into an object at runtime (vdom parity), so the compiler does not
+  // have to carry a CSS parser of its own.
+  assert!(code.contains(r#"_normalizeStyle(["width: 200px; color: red"])"#));
+  assert!(code.contains("normalizeStyle as _normalizeStyle"));
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { normalizeStyle as _normalizeStyle } from "vue";
+  (() => {
+  	const _n0 = _createComponent(Foo, { style: () => _normalizeStyle(["width: 200px; color: red"]) }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_style_on_plain_element_stays_a_string() {
+  let code = transform("<div style=\"width: 200px; color: red\" />", None).code;
+  // baked into the template as a plain attribute
+  assert!(code.contains(r#"style=\"width: 200px; color: red\""#));
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div style=\"width: 200px; color: red\">", 3);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_style_on_custom_element_stays_a_string() {
+  let code = transform("<my-el style=\"width: 200px; color: red\" />", None).code;
+  assert!(code.contains(r#"style: "width: 200px; color: red""#));
+  assert_snapshot!(code, @r#"
+  import { createPlainElement as _createPlainElement } from "vue";
+  (() => {
+  	const _n0 = _createPlainElement("my-el", { style: "width: 200px; color: red" }, null, true);
   	return _n0;
   })();
   "#);
