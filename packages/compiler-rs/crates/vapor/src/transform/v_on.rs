@@ -57,22 +57,30 @@ pub fn transform_v_on<'a>(
     context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression.message(), dir.span);
   }
 
-  let mut arg = ast.alloc_string_literal(
-    name_loc,
-    if let Some(name) = name_string.strip_prefix("vue:") {
-      let mut s = String::with_capacity(5 + name.len());
-      s.push_str("vnode");
-      let mut chars = name.chars();
-      if let Some(c) = chars.next() {
-        s.push(c.to_ascii_uppercase());
-      }
-      s.push_str(chars.as_str());
-      ast.str(&s)
-    } else {
-      ast.str(name_string)
-    },
-    None,
-  );
+  let arg_value = if let Some(name) = name_string.strip_prefix("vue:") {
+    let mut s = String::with_capacity(5 + name.len());
+    s.push_str("vnode");
+    let mut chars = name.chars();
+    if let Some(c) = chars.next() {
+      s.push(c.to_ascii_uppercase());
+    }
+    s.push_str(chars.as_str());
+    s
+  } else {
+    name_string.to_string()
+  };
+
+  let is_element = !is_component && !directives.is_template && directives.tag_name != "slot";
+  if is_element && (name_string.starts_with("vue:") || is_vnode_hook(&arg_value)) {
+    context.options.on_warn.as_ref()(
+      "onVue:xxx / onVnodeXxx per-element lifecycle events are not supported in Vapor mode and will be ignored."
+        .to_string(),
+      name_loc,
+    );
+    return None;
+  }
+
+  let mut arg = ast.alloc_string_literal(name_loc, ast.str(&arg_value), None);
 
   let exp = value
     .as_mut()
@@ -191,6 +199,18 @@ pub fn transform_v_on<'a>(
     None,
   );
   None
+}
+
+fn is_vnode_hook(name: &str) -> bool {
+  matches!(
+    name,
+    "vnodeBeforeMount"
+      | "vnodeMounted"
+      | "vnodeBeforeUpdate"
+      | "vnodeUpdated"
+      | "vnodeBeforeUnmount"
+      | "vnodeUnmounted"
+  )
 }
 
 fn has_stop_handler_for_static_event(node: &JSXElement, event_name: &str) -> bool {
