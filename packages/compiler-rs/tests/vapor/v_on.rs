@@ -453,3 +453,146 @@ fn should_prioritize_right_over_middle_for_click_event_normalization() {
   })();
   "#);
 }
+
+#[test]
+fn camel_case_event_modifiers() {
+  let code = transform(
+    "<><div onClickCapture={a} onClickOnce={b} onScrollPassive={c} onClickStopPrevent={d} onClickRight={e}/><a onClickStop={f}/></>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>");
+  const _t1 = _template("<a>");
+  (() => {
+  	const _n0 = _t0();
+  	const _n1 = _t1();
+  	_on(_n0, "click", a, { capture: true });
+  	_on(_n0, "click", b, { once: true });
+  	_on(_n0, "scroll", c, { passive: true });
+  	_on(_n0, "click", _withModifiers(d, ["stop", "prevent"]));
+  	_on(_n0, "contextmenu", _withModifiers(e, ["right"]));
+  	_on(_n1, "click", _withModifiers(f, ["stop"]));
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn component_events_keep_option_suffixes_in_prop_names() {
+  let code = transform(
+    "<><Comp onClick={a} onClickCapture={b} /><Comp onClick_capture={c} onClick={d} /></>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, {
+  		onClickCapture: () => b,
+  		onClick: () => a
+  	});
+  	const _n1 = _createComponent(Comp, {
+  		onClick: () => d,
+  		onClickCapture: () => c
+  	});
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn component_events_keep_custom_camel_case_names() {
+  let code = transform("<Comp onMoveLeft={handler} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, { onMoveLeft: () => handler }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn camel_case_modifiers_are_ignored_for_unknown_event_names() {
+  let code = transform("<div onMoveLeft={handler} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "moveLeft", handler);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn should_not_delegate_normalized_camel_event_when_sibling_uses_stop() {
+  let code = transform(
+    r#"<div onContextmenu_delegate={a} onClickRightStop={b} />"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "contextmenu", a);
+  	_on(_n0, "contextmenu", _withModifiers(b, ["right", "stop"]));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn camel_case_event_modifiers_normalize_middle() {
+  let code = transform("<div onClickMiddleStop={handler} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "mouseup", _withModifiers(handler, ["middle", "stop"]));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn camel_case_event_modifiers_apply_to_dragexit_and_key_aliases() {
+  let code = transform("<div onDragexitStop={a} onKeyupEnter={b} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "dragexit", _withModifiers(a, ["stop"]));
+  	_on(_n0, "keyup", _withKeys(b, ["enter"]));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn camel_case_key_names_only_alias_on_keyboard_events() {
+  let code = transform(
+    "<div onDragEnter={a} onDropDown={b} onKeyupEnter={c} onKeydownUp={d} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withKeys as _withKeys } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "dragEnter", a);
+  	_on(_n0, "dropDown", b);
+  	_on(_n0, "keyup", _withKeys(c, ["enter"]));
+  	_on(_n0, "keydown", _withKeys(d, ["up"]));
+  	return _n0;
+  })();
+  "#);
+}

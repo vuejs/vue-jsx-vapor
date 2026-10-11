@@ -1370,10 +1370,48 @@ export interface Events<T = Element> {
   onTransitionstart: TransitionEventHandler<T>
 }
 
+// camelCase modifier aliases the compiler supports on `on*` props — mirrors
+// CAMEL_EVENT_MODIFIERS in the Rust compiler
+type NonKeyEventModifier =
+  | 'capture'
+  | 'once'
+  | 'passive'
+  | 'prevent'
+  | 'stop'
+  | 'self'
+  | 'ctrl'
+  | 'shift'
+  | 'alt'
+  | 'meta'
+  | 'exact'
+  | 'middle'
+  | 'left'
+  | 'right'
+
+// key names only alias on keyboard events — `onDragEnter` stays `dragEnter`
+type EventModifier =
+  | NonKeyEventModifier
+  | 'enter'
+  | 'tab'
+  | 'delete'
+  | 'esc'
+  | 'space'
+  | 'up'
+  | 'down'
+
 export type EventHandlers<E> = {
-  [K in keyof E]?: E[K] extends (...args: any) => any
-    ? E[K]
-    : (payload: E[K]) => void
+  // `_` modifiers accept any suffix; camelCase aliases resolve to the base
+  // event's payload type. Multi-modifier camel chains (`onClickRightStop`)
+  // are supported by the compiler but not modeled here — use the `_`
+  // spelling (`onClick_right_stop`).
+  [K in keyof E as
+    | K
+    | `${K & string}_${string}`
+    | `${K & string}${Capitalize<
+        K extends 'onKeydown' | 'onKeypress' | 'onKeyup'
+          ? EventModifier
+          : NonKeyEventModifier
+      >}`]?: E[K] extends (...args: any) => any ? E[K] : (payload: E[K]) => void
 }
 
 type IntrinsicElement<K> = K extends keyof HTMLElementTagNameMap

@@ -486,7 +486,7 @@ pub fn build_props<'a>(
               should_use_block = true;
               is_block_required = true;
             }
-            transform_v_on(prop, context)
+            transform_v_on(prop, context, is_component)
           }
           "model" => transform_v_model(directives, prop, node, context),
           "show" => transform_v_show(prop, context),

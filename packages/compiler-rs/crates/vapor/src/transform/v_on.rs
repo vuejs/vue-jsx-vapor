@@ -1,7 +1,9 @@
 use std::borrow::Cow;
 
 use common::{
-  check::{is_delegated_event, is_keyboard_event},
+  check::{
+    is_delegated_event, is_event, is_keyboard_event, normalized_event_name, split_event_name,
+  },
   directive::{Directives, Modifiers, resolve_modifiers},
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
@@ -36,7 +38,7 @@ pub fn transform_v_on<'a>(
     }
   };
   let replaced = format!("{}{}", name[2..3].to_lowercase(), &name[3..]);
-  let splited = replaced.split("_").collect::<Vec<_>>();
+  let splited = split_event_name(&replaced, is_component);
   let name_string = splited[0];
   let has_modifier = splited.len() > 1;
   let mut delegate_modifier = false;
@@ -106,18 +108,9 @@ pub fn transform_v_on<'a>(
     );
   }
 
-  let is_static_click = arg.value == "click";
-
   // normalize click.right and click.middle since they don't actually fire
-  if non_key_modifiers.iter().any(|modifier| modifier == "right") && is_static_click {
-    arg.value = ast.str("contextmenu");
-  } else if non_key_modifiers
-    .iter()
-    .any(|modifier| modifier == "middle")
-    && is_static_click
-  {
-    arg.value = ast.str("mouseup");
-  }
+  let event_name = normalized_event_name(&arg.value, &non_key_modifiers).to_string();
+  arg.value = ast.str(&event_name);
 
   // don't gen keys guard for non-keyboard events
   // if event name is dynamic, always wrap with keys guard
@@ -199,13 +192,12 @@ fn has_stop_handler_for_static_event(node: &JSXElement, event_name: &str) -> boo
       return false;
     };
     let name = prop.name.get_identifier().name.as_str();
-    if !name.starts_with("on") || !name.split('_').any(|modifier| modifier == "stop") {
+    if !is_event(name) {
       return false;
     }
-    name.starts_with(&format!(
-      "on{}{}",
-      event_name[..1].to_uppercase(),
-      &event_name[1..]
-    ))
+    let replaced = format!("{}{}", name[2..3].to_lowercase(), &name[3..]);
+    let splited = split_event_name(&replaced, false);
+    splited[1..].iter().any(|modifier| *modifier == "stop")
+      && normalized_event_name(splited[0], &splited[1..]) == event_name
   })
 }
