@@ -693,3 +693,50 @@ fn array_args_with_arg() {
   })();
   "#);
 }
+
+// A TypeScript wrapper around the target is unwrapped for the setter, because
+// `form.a as string = $event` is not valid TS and the codegen does not
+// parenthesise an assignment target. The directive keeps the annotation, where
+// it still means something.
+#[test]
+fn a_typescript_wrapper_around_the_target_is_unwrapped() {
+  let code = transform(
+    "<input v-model={form.a as string} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx-vapor/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("221f1d3576224d12");
+  	return _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => form.a = $event) }, null, 512)), [[_vModelText, form.a as string]]);
+  })();
+  "#);
+
+  // a non-null assertion on the target itself, and a redundant pair of parens
+  let code = transform(
+    "<input v-model={form.a!} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("($event) => form.a = $event"), "{code}");
+  let code = transform(
+    "<input v-model={(form.a)} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("($event) => form.a = $event"), "{code}");
+}

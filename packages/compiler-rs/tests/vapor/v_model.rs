@@ -608,3 +608,89 @@ fn same_element_lowercase_native_events_defer_after_v_model() {
   let listener = code.find("_setProp(").expect("{code}");
   assert!(model < listener, "{code}");
 }
+
+// A TypeScript wrapper around the target is unwrapped instead of rejected: the
+// setter assigns to the member inside it, because `form.a as string = v` is not
+// valid TS and the codegen does not parenthesise an assignment target. The
+// getter keeps the annotation, where it still means something.
+#[test]
+fn a_typescript_wrapper_around_the_target_is_unwrapped() {
+  let code = transform(
+    "<input v-model={form.a as string} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { applyTextModel as _applyTextModel, template as _template } from "vue";
+  const _t0 = _template("<input>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_applyTextModel(_n0, () => form.a as string, (_value) => form.a = _value);
+  	return _n0;
+  })();
+  "#);
+
+  // a non-null assertion on the target itself, rather than on its object
+  let code = transform(
+    "<input v-model={form.a!} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { applyTextModel as _applyTextModel, template as _template } from "vue";
+  const _t0 = _template("<input>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_applyTextModel(_n0, () => form.a!, (_value) => form.a = _value);
+  	return _n0;
+  })();
+  "#);
+
+  // a wrapper around a computed member, and a redundant pair of parens
+  let code = transform(
+    "<input v-model={form![key] as string} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("(_value) => form![key] = _value"), "{code}");
+  let code = transform(
+    "<input v-model={(form.a)} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("(_value) => form.a = _value"), "{code}");
+}
+
+#[test]
+fn a_typescript_wrapper_on_a_component_target_is_unwrapped() {
+  let code = transform(
+    "<Comp v-model={form.b satisfies string} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, {
+  		modelValue: () => form.b satisfies string,
+  		"onUpdate:modelValue": () => (_value) => form.b = _value
+  	}, null, true);
+  	return _n0;
+  })();
+  "#);
+}

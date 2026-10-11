@@ -27,7 +27,8 @@ pub fn transform_v_model<'a>(
     return None;
   };
 
-  if !(exp.is_identifier_reference() || exp.is_member_expression()) {
+  let target = exp.get_inner_expression();
+  if !(target.is_identifier_reference() || target.is_member_expression()) {
     context.options.on_error.as_ref()(ErrorCodes::VModelMalformedExpression.message(), exp.span());
     return None;
   }

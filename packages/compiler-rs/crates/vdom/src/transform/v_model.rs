@@ -35,7 +35,8 @@ pub fn transform_v_model<'a>(
   // (not artificially created by a transform)
   let (exp, has_scope_ref) = if let Some(exp) = dir.exp.as_mut()
     && let (exp, has_scope_ref, ..) = context.process_expression(exp)
-    && (exp.is_identifier_reference() || exp.is_member_expression())
+    && (exp.get_inner_expression().is_identifier_reference()
+      || exp.get_inner_expression().is_member_expression())
   {
     (exp, has_scope_ref)
   } else {
@@ -160,7 +161,7 @@ pub fn transform_v_model<'a>(
         ast.expression_assignment(
           SPAN,
           AssignmentOperator::Assign,
-          match &exp {
+          match exp.get_inner_expression() {
             Expression::Identifier(exp) => AssignmentTarget::AssignmentTargetIdentifier(
               ast.alloc_identifier_reference(exp.span, exp.name),
             ),

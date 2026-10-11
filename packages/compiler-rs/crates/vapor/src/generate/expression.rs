@@ -47,7 +47,7 @@ pub fn gen_expression<'a>(
     expression = context.ast.expression_assignment(
       span,
       AssignmentOperator::Assign,
-      match expression {
+      match expression.into_inner_expression() {
         Expression::Identifier(id) => AssignmentTarget::AssignmentTargetIdentifier(id),
         Expression::StaticMemberExpression(id) => AssignmentTarget::StaticMemberExpression(id),
         Expression::ComputedMemberExpression(id) => AssignmentTarget::ComputedMemberExpression(id),
