@@ -2,7 +2,6 @@ use std::{collections::HashMap, sync::LazyLock};
 
 use napi::{Env, Error, Result, bindgen_prelude::Object};
 use napi_derive::napi;
-use oxc_span::Span;
 
 #[cfg_attr(feature = "napi", napi)]
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -129,14 +128,38 @@ impl ErrorCodes {
   }
 }
 
-pub fn create_compiler_error<'a>(env: &'a Env, message: String, loc: Span) -> Result<Object<'a>> {
-  let mut error = env.create_error(Error::from_reason(message))?;
-  error.set("loc", (loc.start, loc.end))?;
-  Ok(error)
+pub fn create_compiler_error<'a>(
+  env: &'a Env,
+  message: String,
+  id: &str,
+  line_column: Option<(u32, u32)>,
+) -> Result<Object<'a>> {
+  create_compiler_message(env, message, id, line_column)
 }
 
-pub fn create_compiler_warning<'a>(env: &'a Env, message: String, loc: Span) -> Result<Object<'a>> {
-  let mut warning = env.create_error(Error::from_reason(message))?;
-  warning.set("loc", (loc.start, loc.end))?;
-  Ok(warning)
+pub fn create_compiler_warning<'a>(
+  env: &'a Env,
+  message: String,
+  id: &str,
+  line_column: Option<(u32, u32)>,
+) -> Result<Object<'a>> {
+  create_compiler_message(env, message, id, line_column)
+}
+
+fn create_compiler_message<'a>(
+  env: &'a Env,
+  message: String,
+  id: &str,
+  line_column: Option<(u32, u32)>,
+) -> Result<Object<'a>> {
+  let mut js_error = env.create_error(Error::from_reason(&message))?;
+  js_error.set("id", id)?;
+  if let Some((line, column)) = line_column {
+    let mut loc = Object::new(env)?;
+    loc.set("file", id)?;
+    loc.set("line", line)?;
+    loc.set("column", column)?;
+    js_error.set("loc", loc)?;
+  }
+  Ok(js_error)
 }

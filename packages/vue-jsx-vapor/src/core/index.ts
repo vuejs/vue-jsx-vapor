@@ -2,7 +2,8 @@ import { transform } from '@vue-jsx-vapor/compiler-rs'
 import type { Options } from '../options'
 
 export interface CompilerError extends SyntaxError {
-  loc?: [number, number]
+  id?: string
+  loc?: { file: string; line: number; column: number }
 }
 
 export type { Options }

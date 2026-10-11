@@ -11,8 +11,8 @@ import {
 } from '@vue-jsx-vapor/runtime/raw'
 import { relative } from 'pathe'
 import { normalizePath } from 'unplugin-utils'
-import { transformVueJsxVapor, type CompilerError, type Options } from './core'
-import type { UnpluginMessage, UnpluginOptions } from 'unplugin'
+import { transformVueJsxVapor, type Options } from './core'
+import type { UnpluginOptions } from 'unplugin'
 
 const plugin = (options: Options = {}): UnpluginOptions[] => {
   let root = ''
@@ -85,14 +85,12 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
             needHMR,
             opt?.ssr,
           )
-          const byteColumns =
-            this.getNativeBuildContext?.().framework === 'esbuild'
           for (const warning of result.warnings) {
-            this.warn(toMessage(warning, id, code, byteColumns))
+            this.warn(warning)
           }
           if (result.errors.length) {
             for (const error of result.errors) {
-              this.error(toMessage(error, id, code, byteColumns))
+              this.error(error)
             }
             return
           }
@@ -106,37 +104,5 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
       },
     },
   ]
-}
-function toMessage(
-  error: CompilerError,
-  id: string,
-  code: string,
-  byteColumns = false,
-): UnpluginMessage {
-  const start = error.loc?.[0]
-  let line = 0
-  let column = 0
-  if (start != null) {
-    line = 1
-    let byteOffset = 0
-    for (const char of code) {
-      if (byteOffset >= start) break
-      const point = char.codePointAt(0)!
-      const byteLength =
-        point < 0x80 ? 1 : point < 0x800 ? 2 : point < 0x10000 ? 3 : 4
-      byteOffset += byteLength
-      if (char === '\n') {
-        line++
-        column = 0
-      } else {
-        column += byteColumns ? byteLength : char.length
-      }
-    }
-  }
-  return {
-    message: error.message,
-    id,
-    loc: start == null ? undefined : { file: id, line, column },
-  }
 }
 export default plugin

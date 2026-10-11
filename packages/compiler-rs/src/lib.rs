@@ -78,9 +78,10 @@ pub struct TransformReturn {
 pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) -> TransformReturn {
   let options = options.unwrap_or_default();
   let filename = &options.filename.unwrap_or("index.jsx".to_string());
+  let source = source.as_str();
   let ssr = options.ssr.unwrap_or(false);
   let CodegenReturn { code, map, .. } = transform(
-    &source,
+    source,
     Some(TransformOptions {
       filename,
       source_map: options.source_map.unwrap_or(false),
@@ -92,7 +93,13 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       merge_props: options.merge_props.unwrap_or(true),
       on_error: if let Some(on_error) = options.on_error {
         Box::new(move |message: String, span: Span| {
-          let compiler_error = create_compiler_error(&env, message, span).unwrap();
+          let compiler_error = create_compiler_error(
+            &env,
+            message,
+            filename,
+            Some(line_column(source, span.start)),
+          )
+          .unwrap();
           on_error.call(compiler_error).unwrap();
         }) as Box<dyn Fn(String, Span)>
       } else {
@@ -100,7 +107,13 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       },
       on_warn: if let Some(on_warn) = options.on_warn {
         Box::new(move |message: String, span: Span| {
-          let warning = create_compiler_warning(&env, message, span).unwrap();
+          let warning = create_compiler_warning(
+            &env,
+            message,
+            filename,
+            Some(line_column(source, span.start)),
+          )
+          .unwrap();
           on_warn.call(warning).unwrap();
         }) as Box<dyn Fn(String, Span)>
       } else {
@@ -161,6 +174,25 @@ pub fn transform<'a>(source: &'a str, options: Option<TransformOptions<'a>>) -> 
       ..CodegenOptions::default()
     })
     .build(&program)
+}
+
+/// convert a byte offset into a 1-based line and a 0-based UTF-16 column,
+/// which is what bundlers expect in error locations
+fn line_column(source: &str, offset: u32) -> (u32, u32) {
+  let mut offset = offset as usize;
+  while offset > 0 && !source.is_char_boundary(offset) {
+    offset -= 1;
+  }
+  let prefix = &source[..offset];
+  let line = prefix.matches('\n').count() as u32 + 1;
+  let column = match prefix.rfind('\n') {
+    Some(i) => &prefix[i + 1..],
+    None => prefix,
+  }
+  .chars()
+  .map(|c| c.len_utf16() as u32)
+  .sum();
+  (line, column)
 }
 
 fn diagnostic_span(diagnostic: &OxcDiagnostic) -> Span {
