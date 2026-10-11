@@ -1,5 +1,6 @@
 mod abbreviation;
 mod custom_directive;
+mod map;
 mod placeholder_alignment;
 mod transform_children;
 mod transform_element;

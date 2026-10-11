@@ -291,6 +291,82 @@ export function createNodes(...values: any[]) {
   return resolveValues(values)
 }
 
+// Dense native arrays can use keyed reconciliation. Other map implementations
+// and sparse arrays must keep their callback and hole-skipping semantics.
+export function createMappedFor(
+  source: () => any,
+  render: Parameters<typeof Vue.createFor>[1],
+  getKey: NonNullable<Parameters<typeof Vue.createFor>[2]>,
+  flags = 0,
+) {
+  // Preserve invalidations even when the source returns the same array.
+  const evaluated = Vue.computed(() => ({ value: source() }))
+  const once = !!(flags & 4)
+  const resets: (() => void)[] = []
+  let list: ReturnType<typeof Vue.createFor> | undefined
+  const block = Vue.createIf(
+    () => {
+      const array = evaluated.value.value
+      const raw = Vue.toRaw(array)
+      if (
+        !Array.isArray(array) ||
+        Object.getPrototypeOf(raw) !== Array.prototype ||
+        !('map' in array) ||
+        Object.prototype.hasOwnProperty.call(raw, 'map') ||
+        raw.map !== Array.prototype.map
+      )
+        return false
+      for (let i = 0; i < array.length; i++) {
+        if (!(i in array) || Vue.isRef(array[i])) return false
+      }
+      return true
+    },
+    () => {
+      // The enclosing conditional owns another anchor in the parent, so the
+      // list cannot clear the entire parent with FAST_REMOVE.
+      list = Vue.createFor(
+        () => evaluated.value.value,
+        render,
+        getKey,
+        flags & ~1,
+      )
+      for (const reset of resets) list.onReset(reset)
+      return list
+    },
+    () => {
+      list = undefined
+      const wrap = (value: any) => {
+        const alias = Vue.shallowRef()
+        alias.value = value
+        return alias
+      }
+      const map = () => {
+        const result = evaluated.value.value.map((item: any, index: any) =>
+          Vue.createKeyedFragment(
+            () => getKey(item, index),
+            () => render(wrap(item), wrap(index), Vue.shallowRef()),
+          ),
+        )
+        if (!Array.isArray(result)) return result
+        const nodes = []
+        for (let i = 0; i < result.length; i++) {
+          if (i in result) nodes.push(result[i])
+        }
+        return nodes
+      }
+      return createNodes(once ? map() : map)
+    },
+    // Both branches return fragments; propagate ONCE and SLOT_ROOT to the guard.
+    2 | (2 << 2) | (once ? 16 : 0) | (flags & 32 ? 128 : 0),
+  )
+  return Object.assign(block, {
+    onReset(reset: () => void) {
+      resets.push(reset)
+      list?.onReset(reset)
+    },
+  })
+}
+
 export function normalizeVaporSlots(slots: any) {
   if (typeof slots === 'function') {
     return { name: 'default', fn: slots }
