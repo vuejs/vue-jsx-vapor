@@ -54,7 +54,7 @@ pub fn transform_v_on<'a>(
 
   let value = &mut dir.value;
   if value.is_none() && !has_modifier {
-    context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, dir.span);
+    context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression.message(), dir.span);
   }
 
   let mut arg = ast.alloc_string_literal(
@@ -100,7 +100,8 @@ pub fn transform_v_on<'a>(
 
   if delegate_modifier && is_component {
     context.options.on_warn.as_ref()(
-      ".delegate modifier is only supported on native DOM elements. The modifier will be ignored.",
+      ".delegate modifier is only supported on native DOM elements. The modifier will be ignored."
+        .to_string(),
       name_loc,
     );
   }
@@ -132,7 +133,7 @@ pub fn transform_v_on<'a>(
     false
   } else if !is_delegated_event(&arg.value) {
     context.options.on_warn.as_ref()(
-      &format!(
+      format!(
         ".delegate modifier is not supported on the \"{}\" event. The listener will be attached directly.",
         arg.value
       ),

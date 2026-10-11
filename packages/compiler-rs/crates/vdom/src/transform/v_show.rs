@@ -10,7 +10,7 @@ pub fn transform_v_show<'a>(
   context: &'a TransformContext<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   if dir.value.is_none() {
-    context.options.on_error.as_ref()(ErrorCodes::VShowNoExpression, dir.span);
+    context.options.on_error.as_ref()(ErrorCodes::VShowNoExpression.message(), dir.span);
     return None;
   };
 

@@ -66,14 +66,15 @@ fn should_raise_error_and_ignore_children_when_v_text_is_present() {
   let code = transform(
     "<Comp v-text={test}>hello</Comp>",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   )
   .code;
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VTextWithChildren));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VTextWithChildren.message())
+  );
   assert!(code.contains("textContent"));
   assert!(!code.contains("hello"));
 }
@@ -84,11 +85,12 @@ fn should_raise_error_if_has_no_expression() {
   transform(
     "<div v-text></div>",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VTextNoExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VTextNoExpression.message())
+  );
 }

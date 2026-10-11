@@ -48,7 +48,7 @@ pub unsafe fn transform_v_for<'a>(
   } = get_for_parse_result(dir, context)?;
 
   let Some(source) = source else {
-    context.options.on_error.as_ref()(ErrorCodes::VForMalformedExpression, span);
+    context.options.on_error.as_ref()(ErrorCodes::VForMalformedExpression.message(), span);
     return None;
   };
 
@@ -388,7 +388,7 @@ pub fn get_for_parse_result<'a>(
       source = Some(unsafe { &mut *expression }.right.take_in(context.allocator));
     }
   } else {
-    context.options.on_error.as_ref()(ErrorCodes::VForNoExpression, dir.span);
+    context.options.on_error.as_ref()(ErrorCodes::VForNoExpression.message(), dir.span);
     return None;
   }
   // scope management

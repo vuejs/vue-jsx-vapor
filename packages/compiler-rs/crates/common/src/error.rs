@@ -2,7 +2,6 @@ use std::{collections::HashMap, sync::LazyLock};
 
 use napi::{Env, Error, Result, bindgen_prelude::Object};
 use napi_derive::napi;
-use oxc_diagnostics::OxcDiagnostic;
 use oxc_span::Span;
 
 #[cfg_attr(feature = "napi", napi)]
@@ -124,36 +123,20 @@ pub static ERROR_MESSAGES: LazyLock<HashMap<ErrorCodes, &str>> = LazyLock::new(|
   ])
 });
 
-#[napi(object, js_name = "CompilerError extends SyntaxError")]
-pub struct CompilerError {
-  pub code: i32,
-  pub loc: Option<(u32, u32)>,
+impl ErrorCodes {
+  pub fn message(self) -> String {
+    ERROR_MESSAGES[&self].to_string()
+  }
 }
 
-pub fn create_compiler_error<'a>(env: &'a Env, code: ErrorCodes, loc: Span) -> Result<Object<'a>> {
-  let msg = ERROR_MESSAGES.get(&code).unwrap().to_string();
-  let mut error = env.create_error(Error::from_reason(&msg))?;
-  error.set("code", code as i32)?;
+pub fn create_compiler_error<'a>(env: &'a Env, message: String, loc: Span) -> Result<Object<'a>> {
+  let mut error = env.create_error(Error::from_reason(message))?;
   error.set("loc", (loc.start, loc.end))?;
   Ok(error)
 }
 
-pub fn create_compiler_warning<'a>(env: &'a Env, message: &str, loc: Span) -> Result<Object<'a>> {
+pub fn create_compiler_warning<'a>(env: &'a Env, message: String, loc: Span) -> Result<Object<'a>> {
   let mut warning = env.create_error(Error::from_reason(message))?;
   warning.set("loc", (loc.start, loc.end))?;
   Ok(warning)
-}
-
-pub fn create_compiler_diagnostic<'a>(
-  env: &'a Env,
-  diagnostic: &OxcDiagnostic,
-) -> Result<Object<'a>> {
-  let mut error = env.create_error(Error::from_reason(diagnostic.message.as_ref()))?;
-  if let Some(label) = diagnostic.labels.as_ref().and_then(|labels| labels.first()) {
-    error.set(
-      "loc",
-      (label.offset() as u32, (label.offset() + label.len()) as u32),
-    )?;
-  }
-  Ok(error)
 }

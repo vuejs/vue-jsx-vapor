@@ -16,13 +16,16 @@ it('reports parse errors with locations', () => {
   expect(warnings).toHaveLength(0)
 })
 
-it('reports compiler validation errors with code and loc', () => {
+it('reports compiler validation errors with loc', () => {
   const { errors } = transformVueJsxVapor(
     'const _c = () => <input v-model={a+b} />',
     'test.jsx',
   )
   expect(errors.length).toBeGreaterThan(0)
-  expect(errors[0].code).toBe(42)
+  expect(errors[0].message).toMatchInlineSnapshot(
+    `"v-model value must be a valid JavaScript member expression."`,
+  )
+  expect(errors[0].loc).toBeDefined()
 })
 
 it('forwards errors to a user-provided onError', () => {

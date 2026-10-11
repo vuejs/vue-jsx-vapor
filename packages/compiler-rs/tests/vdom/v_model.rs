@@ -488,13 +488,14 @@ fn should_raise_error_if_plain_elements_with_argument() {
     r#"<input v-model:value={model} />"#,
     Some(TransformOptions {
       interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelArgOnElement));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelArgOnElement.message())
+  );
 }
 
 #[test]
@@ -504,13 +505,14 @@ fn should_raise_error_if_invalid_element() {
     r#"<span v-model={model} />"#,
     Some(TransformOptions {
       interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelOnInvalidElement));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelOnInvalidElement.message())
+  );
 }
 
 #[test]
@@ -520,13 +522,14 @@ fn should_raise_error_if_used_file_input_element() {
     r#"<input type="file" v-model={test}/>"#,
     Some(TransformOptions {
       interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelOnFileInputElement));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelOnFileInputElement.message())
+  );
 }
 
 #[test]
@@ -536,13 +539,14 @@ fn should_error_on_dynamic_value_binding_alongside_v_model() {
     r#"<input v-model={test} value={test}/>"#,
     Some(TransformOptions {
       interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelUnnecessaryValue));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelUnnecessaryValue.message())
+  );
 }
 
 #[test]
@@ -599,13 +603,14 @@ fn should_error_if_mal_formed_expression() {
     r#"<input v-model={a + b} />"#,
     Some(TransformOptions {
       interop: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelMalformedExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelMalformedExpression.message())
+  );
 }
 
 #[test]

@@ -9,10 +9,7 @@ use std::{
 use indexmap::IndexMap;
 use napi::Either;
 use oxc_ast::ast::Expression;
-use oxc_diagnostics::OxcDiagnostic;
 use oxc_span::{SourceType, Span};
-
-use crate::error::ErrorCodes;
 
 pub struct RootJsx<'a> {
   pub node_ptr: *mut Expression<'a>,
@@ -56,9 +53,8 @@ pub struct TransformOptions<'a> {
   pub helpers: RefCell<BTreeSet<&'a str>>,
   pub delegates: RefCell<BTreeSet<&'a str>>,
   pub hoists: RefCell<Vec<Expression<'a>>>,
-  pub on_error: Box<dyn Fn(ErrorCodes, Span) + 'a>,
-  pub on_warn: Box<dyn Fn(&str, Span) + 'a>,
-  pub on_diagnostic: Box<dyn Fn(&OxcDiagnostic) + 'a>,
+  pub on_error: Box<dyn Fn(String, Span) + 'a>,
+  pub on_warn: Box<dyn Fn(String, Span) + 'a>,
   pub create_root_jsx: RefCell<Option<CreateRootJSX<'a>>>,
   pub on_enter_expression: RefCell<Option<OnEnterExpression<'a>>>,
   pub on_leave_expression: RefCell<Option<OnLeaveExpression<'a>>>,
@@ -98,7 +94,6 @@ impl<'a> Default for TransformOptions<'a> {
       source_map: false,
       on_error: Box::new(|_, _| {}),
       on_warn: Box::new(|_, _| {}),
-      on_diagnostic: Box::new(|_| {}),
       interop: false,
       hmr: Either::A(false),
       ssr: false,

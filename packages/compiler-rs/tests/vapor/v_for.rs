@@ -815,13 +815,14 @@ fn should_raise_error_if_has_no_expression() {
   transform(
     "<div v-for />",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VForNoExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VForNoExpression.message())
+  );
 }
 
 #[test]
@@ -830,13 +831,14 @@ fn should_raise_error_if_malformed_expression() {
   transform(
     "<div v-for={foo} />",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VForMalformedExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VForMalformedExpression.message())
+  );
 }
 
 // aliases are parsed as expressions here, so a default value or a destructuring

@@ -46,7 +46,7 @@ pub unsafe fn transform_v_if<'a>(
 
   let dir_name = dir.name.get_identifier().name;
   if dir_name != "v-else" && dir.value.is_none() {
-    context.options.on_error.as_ref()(ErrorCodes::VIfNoExpression, dir.span);
+    context.options.on_error.as_ref()(ErrorCodes::VIfNoExpression.message(), dir.span);
     dir.value = Some(ast.jsx_attribute_value_expression_container(
       SPAN,
       ast.expression_boolean_literal(SPAN, true).into(),
@@ -129,7 +129,10 @@ pub unsafe fn transform_v_if<'a>(
       .unwrap();
       branchs.push(branch);
     } else {
-      context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, unsafe { &*node }.span);
+      context.options.on_error.as_ref()(
+        ErrorCodes::VElseNoAdjacentIf.message(),
+        unsafe { &*node }.span,
+      );
       return None;
     }
   }

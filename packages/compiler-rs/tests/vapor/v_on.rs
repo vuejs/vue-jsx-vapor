@@ -133,13 +133,11 @@ fn should_error_if_no_expression_and_no_modifier() {
   transform(
     "<div onClick />",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VOnNoExpression));
+  assert_eq!(*error.borrow(), Some(ErrorCodes::VOnNoExpression.message()));
 }
 
 #[test]
@@ -148,9 +146,7 @@ fn should_not_error_if_no_expression_but_has_modifier() {
   let code = transform(
     "<div onClick_prevent />",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   )
@@ -297,9 +293,7 @@ fn should_delegate_empty_handler() {
   transform(
     "<div onClick_delegate />",
     Some(TransformOptions {
-      on_error: Box::new(|code, _| {
-        *error.borrow_mut() = Some(code);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   )
@@ -334,7 +328,7 @@ fn should_fallback_to_direct_listener_for_unsupported_event() {
     "<div onScroll_delegate={test} />",
     Some(TransformOptions {
       on_warn: Box::new(|message, _| {
-        *warning.borrow_mut() = Some(message.to_string());
+        *warning.borrow_mut() = Some(message);
       }),
       ..Default::default()
     }),
@@ -357,7 +351,7 @@ fn should_ignore_delegate_modifier_on_component_event() {
     "<Comp onClick_delegate={test} />",
     Some(TransformOptions {
       on_warn: Box::new(|message, _| {
-        *warning.borrow_mut() = Some(message.to_string());
+        *warning.borrow_mut() = Some(message);
       }),
       ..Default::default()
     }),

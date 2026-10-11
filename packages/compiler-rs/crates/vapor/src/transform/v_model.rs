@@ -23,12 +23,12 @@ pub fn transform_v_model<'a>(
   let dir = resolve_directive(_dir, context.ast);
 
   let Some(exp) = &dir.exp else {
-    context.options.on_error.as_ref()(ErrorCodes::VModelNoExpression, dir.span);
+    context.options.on_error.as_ref()(ErrorCodes::VModelNoExpression.message(), dir.span);
     return None;
   };
 
   if !(exp.is_identifier_reference() || exp.is_member_expression()) {
-    context.options.on_error.as_ref()(ErrorCodes::VModelMalformedExpression, exp.span());
+    context.options.on_error.as_ref()(ErrorCodes::VModelMalformedExpression.message(), exp.span());
     return None;
   }
 
@@ -52,7 +52,7 @@ pub fn transform_v_model<'a>(
   }
 
   if dir.arg.is_some() {
-    context.options.on_error.as_ref()(ErrorCodes::VModelArgOnElement, dir.span);
+    context.options.on_error.as_ref()(ErrorCodes::VModelArgOnElement.message(), dir.span);
   }
 
   let tag = directives.tag_name;
@@ -71,7 +71,10 @@ pub fn transform_v_model<'a>(
             "checkbox" => model_type = "checkbox",
             "file" => {
               model_type = "";
-              context.options.on_error.as_ref()(ErrorCodes::VModelOnFileInputElement, node.span);
+              context.options.on_error.as_ref()(
+                ErrorCodes::VModelOnFileInputElement.message(),
+                node.span,
+              );
             }
             // text type
             _ => check_duplicated_value(directives, context),
@@ -91,7 +94,7 @@ pub fn transform_v_model<'a>(
       check_duplicated_value(directives, context)
     }
   } else if !is_custom_element {
-    context.options.on_error.as_ref()(ErrorCodes::VModelOnInvalidElement, node.span)
+    context.options.on_error.as_ref()(ErrorCodes::VModelOnInvalidElement.message(), node.span)
   }
 
   if !model_type.is_empty() {
@@ -119,6 +122,6 @@ fn check_duplicated_value(directives: &Directives, context: &TransformContext) {
   if let Some(value) = directives.value.as_ref()
     && !matches!(value.value, Some(JSXAttributeValue::StringLiteral(_)))
   {
-    context.options.on_error.as_ref()(ErrorCodes::VModelUnnecessaryValue, value.span);
+    context.options.on_error.as_ref()(ErrorCodes::VModelUnnecessaryValue.message(), value.span);
   }
 }

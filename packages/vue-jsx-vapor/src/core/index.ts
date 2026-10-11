@@ -1,11 +1,11 @@
-import { transform, type CompilerError } from '@vue-jsx-vapor/compiler-rs'
+import { transform } from '@vue-jsx-vapor/compiler-rs'
 import type { Options } from '../options'
 
-export type { Options }
-
-export type CompilerDiagnostic = Omit<CompilerError, 'code'> & {
-  code?: number
+export interface CompilerError extends SyntaxError {
+  loc?: [number, number]
 }
+
+export type { Options }
 
 export function transformVueJsxVapor(
   code: string,
@@ -17,8 +17,8 @@ export function transformVueJsxVapor(
 ) {
   const params = new URLSearchParams(id)
   const vapor = params.get('vapor')
-  const errors: CompilerDiagnostic[] = []
-  const warnings: CompilerDiagnostic[] = []
+  const errors: CompilerError[] = []
+  const warnings: CompilerError[] = []
   const { onError, onWarn, ...compiler } = options?.compiler || {}
   const result = transform(code, {
     filename: id,
@@ -28,11 +28,11 @@ export function transformVueJsxVapor(
     ssr,
     ...compiler,
     onError: (error) => {
-      errors.push(error as CompilerDiagnostic)
+      errors.push(error as CompilerError)
       onError?.(error)
     },
     onWarn: (warning) => {
-      warnings.push(warning as CompilerDiagnostic)
+      warnings.push(warning as CompilerError)
       onWarn?.(warning)
     },
   })

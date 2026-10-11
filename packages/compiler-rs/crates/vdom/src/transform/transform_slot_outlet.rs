@@ -155,7 +155,7 @@ fn process_slot_outlet<'a>(
       && !directives.elements.is_empty()
     {
       context.options.on_error.as_ref()(
-        ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet,
+        ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet.message(),
         directives.elements.first().unwrap().span(),
       );
     }

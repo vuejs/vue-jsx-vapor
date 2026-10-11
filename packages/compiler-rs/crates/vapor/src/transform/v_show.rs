@@ -15,7 +15,7 @@ pub fn transform_v_show<'a>(
 ) -> Option<DirectiveTransformResult<'a>> {
   let dir = resolve_directive(_dir, context.ast);
   if dir.exp.is_none() {
-    context.options.on_error.as_ref()(ErrorCodes::VShowNoExpression, dir.span);
+    context.options.on_error.as_ref()(ErrorCodes::VShowNoExpression.message(), dir.span);
     return None;
   }
 

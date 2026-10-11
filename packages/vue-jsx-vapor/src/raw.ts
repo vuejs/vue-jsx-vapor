@@ -11,11 +11,7 @@ import {
 } from '@vue-jsx-vapor/runtime/raw'
 import { relative } from 'pathe'
 import { normalizePath } from 'unplugin-utils'
-import {
-  transformVueJsxVapor,
-  type CompilerDiagnostic,
-  type Options,
-} from './core'
+import { transformVueJsxVapor, type CompilerError, type Options } from './core'
 import type { UnpluginMessage, UnpluginOptions } from 'unplugin'
 
 const plugin = (options: Options = {}): UnpluginOptions[] => {
@@ -112,7 +108,7 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
   ]
 }
 function toMessage(
-  error: CompilerDiagnostic,
+  error: CompilerError,
   id: string,
   code: string,
   byteColumns = false,

@@ -216,13 +216,14 @@ fn errors_invalid_element() {
   transform(
     "<span v-model={model} />",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelOnInvalidElement));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelOnInvalidElement.message())
+  );
 }
 
 #[test]
@@ -231,13 +232,14 @@ fn errors_plain_elements_with_argument() {
   transform(
     "<input v-model:value={model} />",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelArgOnElement));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelArgOnElement.message())
+  );
 }
 
 #[test]
@@ -246,9 +248,7 @@ fn errors_allow_usage_on_custom_element() {
   transform(
     "<my-input v-model={model} />",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
@@ -261,13 +261,14 @@ fn errors_if_used_file_input_element() {
   transform(
     "<input type=\"file\" v-model={test} />",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelOnFileInputElement));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelOnFileInputElement.message())
+  );
 }
 
 #[test]
@@ -276,13 +277,14 @@ fn errors_on_dynamic_value_binding_alongside_v_model() {
   transform(
     "<input v-model={test} value={test} />",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelUnnecessaryValue));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelUnnecessaryValue.message())
+  );
 }
 
 #[test]
@@ -291,9 +293,7 @@ fn errors_should_not_error_on_static_value_binding_alongside_v_model() {
   transform(
     "<input v-model={test} value=\"test\" />",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
@@ -306,13 +306,14 @@ fn errors_empty_expression() {
   transform(
     "<span v-model=\"\" />",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelMalformedExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelMalformedExpression.message())
+  );
 }
 
 #[test]
@@ -321,13 +322,14 @@ fn errors_mal_formed_expression() {
   transform(
     "<span v-model={a + b} />",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelMalformedExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelMalformedExpression.message())
+  );
 }
 
 #[test]

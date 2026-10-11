@@ -193,7 +193,10 @@ pub fn build_slots<'a>(
 
     if let Some(on_component_slot_span) = on_component_slot_span {
       // already has on-component slot - this is incorrect usage.
-      context.options.on_error.as_ref()(ErrorCodes::VSlotMixedSlotUsage, on_component_slot_span);
+      context.options.on_error.as_ref()(
+        ErrorCodes::VSlotMixedSlotUsage.message(),
+        on_component_slot_span,
+      );
       break;
     }
 
@@ -318,7 +321,7 @@ pub fn build_slots<'a>(
           )
         };
       } else {
-        context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, v_else.span);
+        context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf.message(), v_else.span);
       }
     } else if let Some(v_for) = slot_directives.v_for.as_mut() {
       has_dynamic_slots = true;
@@ -369,7 +372,7 @@ pub fn build_slots<'a>(
       // check duplicate static names
       if let Some(static_slot_name) = static_slot_name {
         if seen_slot_names.contains(static_slot_name) {
-          context.options.on_error.as_ref()(ErrorCodes::VSlotDuplicateSlotNames, dir_loc);
+          context.options.on_error.as_ref()(ErrorCodes::VSlotDuplicateSlotNames.message(), dir_loc);
           continue;
         }
         seen_slot_names.insert(static_slot_name);
@@ -492,7 +495,7 @@ pub fn build_slots<'a>(
     // implicit default slot (mixed with named slots)
     if has_named_default_slot {
       context.options.on_error.as_ref()(
-        ErrorCodes::VSlotExtraneousDefaultSlotChildren,
+        ErrorCodes::VSlotExtraneousDefaultSlotChildren.message(),
         implicit_default_children[0].span(),
       )
     } else {
