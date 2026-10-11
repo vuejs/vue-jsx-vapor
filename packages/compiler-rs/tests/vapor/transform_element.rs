@@ -1383,3 +1383,84 @@ fn a_listener_that_cannot_collide_keeps_the_static_path() {
   assert!(code.contains("_on(_n0, \"click\", a)"), "{code}");
   assert!(!code.contains("_setDynamicProps"), "{code}");
 }
+
+// The props keep the order they were written in - the compiler does not move
+// `value` to the end. Writing it before the bound it is clamped by is the
+// author's call.
+#[test]
+fn an_input_value_keeps_the_order_it_was_written_in() {
+  let code = transform(r#"<input type="range" value={v} max={max} />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setProp as _setProp, setValue as _setValue, template as _template } from "vue";
+  const _t0 = _template("<input type=range>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => {
+  		_setValue(_n0, v);
+  		_setProp(_n0, "max", max);
+  	});
+  	return _n0;
+  })();
+  "#);
+
+  let code = transform(r#"<input type="range" value="500" max="1000" />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<input type=range value=500 max=1000>", 3);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+// A constant `value` written after a dynamic bound cannot fold into the
+// template: folding applies it during the parse, before the bound, so the
+// clamp would stick.
+#[test]
+fn a_constant_input_value_joins_the_effect_that_orders_it() {
+  let code = transform(r#"<input type="range" max={max} value="500" />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setProp as _setProp, setValue as _setValue, template as _template } from "vue";
+  const _t0 = _template("<input type=range>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => {
+  		_setProp(_n0, "max", max);
+  		_setValue(_n0, "500");
+  	});
+  	return _n0;
+  })();
+  "#);
+
+  let code = transform(r#"<input type="range" max={max} value={500} />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setProp as _setProp, setValue as _setValue, template as _template } from "vue";
+  const _t0 = _template("<input type=range>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => {
+  		_setProp(_n0, "max", max);
+  		_setValue(_n0, 500);
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+// Only the props a value is actually clamped by force it into the effect: an
+// unrelated dynamic prop must leave a constant `value` folded, or the effect
+// would rewrite the input and discard what the user typed.
+#[test]
+fn an_unrelated_dynamic_prop_leaves_a_constant_input_value_folded() {
+  let code = transform(r#"<input value="500" disabled={d} />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
+  const _t0 = _template("<input value=500>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setProp(_n0, "disabled", d));
+  	return _n0;
+  })();
+  "#);
+}

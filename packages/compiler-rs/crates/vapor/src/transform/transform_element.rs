@@ -170,6 +170,8 @@ static DYNAMIC_KEYS: [&str; 5] = [
   "currentTime",
 ];
 
+static INPUT_VALUE_DEP_KEYS: [&str; 4] = ["type", "min", "max", "step"];
+
 // Props the template string cannot carry, so they have to be applied by a
 // runtime prop setter instead:
 // - `innerHTML` / `textContent` are dom properties that set the element's
@@ -222,8 +224,15 @@ pub fn transform_native_element<'a>(
       // prop vs attr, and one call per element keeps the dynamic prop cache
       // shared by these keys.
       let mut native_on_props = vec![];
+      let mut has_effect = false;
+      let mut has_value_dep = false;
       for prop in props {
         let values = &prop.values;
+        // like vdom, set value after the other props since it can depend on
+        // them, e.g. min/max of a range input (#2325, #4024)
+        let is_value_prop = tag == "input"
+          && prop.modifier.is_none()
+          && matches!(&prop.key, Expression::StringLiteral(key) if key.value == "value");
         if let Expression::StringLiteral(key) = &prop.key
           && values.len() == 1
           // `.prop` forces a dom property, which a content attribute in the
@@ -233,6 +242,7 @@ pub fn transform_native_element<'a>(
           && let Some(Expression::StringLiteral(first_value)) = values.first()
           && !DYNAMIC_KEYS.contains(&key.value.as_str())
           && !is_runtime_only_prop(tag, &key.value)
+          && !(is_value_prop && has_value_dep)
         {
           template += " ";
           let value = first_value.value;
@@ -260,10 +270,18 @@ pub fn transform_native_element<'a>(
         {
           native_on_props.push(prop);
         } else {
+          if tag == "input"
+            && let Expression::StringLiteral(key) = &prop.key
+            && INPUT_VALUE_DEP_KEYS.contains(&key.value.as_str())
+          {
+            has_value_dep = true;
+          }
           let element = context.reference(&mut context_block.dynamic);
+          let is_effect =
+            !context.is_operation(values.iter().collect()) || (is_value_prop && has_effect);
           context.register_effect(
             context_block,
-            context.is_operation(values.iter().collect()),
+            !is_effect,
             OperationNode::SetProp(SetPropIRNode {
               set_prop: true,
               prop,
@@ -274,6 +292,7 @@ pub fn transform_native_element<'a>(
             Some(Rc::clone(&get_effect_index)),
             Some(Rc::clone(&get_operation_index)),
           );
+          has_effect = has_effect || is_effect;
         }
       }
 
