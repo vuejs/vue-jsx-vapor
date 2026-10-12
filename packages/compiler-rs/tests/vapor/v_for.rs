@@ -1062,3 +1062,24 @@ fn self_referencing_callback_default_does_not_recurse() {
     "{code}"
   );
 }
+
+// a computed key resolves identifiers the pattern binds, like upstream
+#[test]
+fn v_for_object_destructured_alias_computed_key_resolves_declared_alias() {
+  let code = transform(
+    "<div v-for={({ [label]: extra, label }) in items}>{{ extra }}</div>",
+    None,
+  )
+  .code;
+  assert!(
+    code.contains("_for_item0.value[_for_item0.value.label]"),
+    "{code}"
+  );
+}
+
+// a string-literal key is emitted as a string, not a bare identifier
+#[test]
+fn v_for_object_destructured_alias_string_literal_key() {
+  let code = transform("<div v-for={({ \"a-b\": v }) in items}>{{ v }}</div>", None).code;
+  assert!(code.contains("_for_item0.value[\"a-b\"]"), "{code}");
+}

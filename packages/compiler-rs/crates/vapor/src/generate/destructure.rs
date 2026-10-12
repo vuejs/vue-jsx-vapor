@@ -1,6 +1,6 @@
 use std::{borrow::Cow, cell::RefCell, collections::HashMap, rc::Rc};
 
-use common::{expression::gen_getter, walk::WalkIdentifiers, walk_mut::WalkIdentifiersMut};
+use common::{expression::gen_getter, walk::WalkIdentifiers};
 use oxc_allocator::{CloneIn, Vec};
 use oxc_ast::{
   AstKind, NONE,
@@ -124,23 +124,14 @@ impl<'a> CodegenContext<'a> {
                 .member_expression_computed(
                   SPAN,
                   path,
-                  ast.expression_identifier(SPAN, key.value),
+                  ast.expression_string_literal(SPAN, key.value, None),
                   false,
                 )
                 .into();
             } else if parent.computed
               && let Some(key) = parent.key.as_expression()
             {
-              let mut key = key.clone_in(ast.allocator);
-              // use empty SPAN to prevent infinite loop
-              WalkIdentifiersMut::new(
-                Box::new(|id, _| {
-                  id.span = SPAN;
-                  None
-                }),
-                self.options,
-              )
-              .visit(&mut key);
+              let key = key.clone_in(ast.allocator);
               path = ast
                 .member_expression_computed(SPAN, path, key, false)
                 .into();
