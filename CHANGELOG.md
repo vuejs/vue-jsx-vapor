@@ -1,3 +1,23 @@
+## [3.2.27](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.26...v3.2.27) (2026-10-13)
+
+
+### Bug Fixes
+
+* **compiler-vapor:** set the value of an input after its other props ([15f4264](https://github.com/vuejs/vue-jsx-vapor/commit/15f4264d2a6154e24bf51675b2d970055103abbc))
+* **compiler/vapor:** assign to the member target when v-model object has ([1cb46b1](https://github.com/vuejs/vue-jsx-vapor/commit/1cb46b191b6771c6bdecc84315d3b62f14a1f76a))
+* **compiler/vapor:** emit string literals for computed destructure keys ([587dad7](https://github.com/vuejs/vue-jsx-vapor/commit/587dad75982d482be544829e0e030f8c0657c5c6))
+* **compiler/vapor:** keep dynamic slots beside static ones ([75e8d2d](https://github.com/vuejs/vue-jsx-vapor/commit/75e8d2dda0541a804bfdfcbd74b033fd6ef4cec5))
+* **compiler/vapor:** pass a static style to components as an object like vdom ([97221a1](https://github.com/vuejs/vue-jsx-vapor/commit/97221a137787a7fbbabc1430ee5c7d3adf8e4eab))
+* **compiler/vapor:** route string native on* bindings of html elements ([2ad8803](https://github.com/vuejs/vue-jsx-vapor/commit/2ad8803e544851cf82ae02487ea3cb565281bfa8))
+* **compiler/vapor:** sync select values after option updates ([1dc48f4](https://github.com/vuejs/vue-jsx-vapor/commit/1dc48f4359d8160e91af5f9db8aa156ab33fd452))
+* **compiler/vapor:** update insert function to use context helper for consistency ([5ca074b](https://github.com/vuejs/vue-jsx-vapor/commit/5ca074b7e59af0a818e51e058d384debcf84f17d))
+* **compiler/vapor:** warn when onVue:* hooks on elements are ignored ([c263fd9](https://github.com/vuejs/vue-jsx-vapor/commit/c263fd9b0a8c434ce9256661b96543c6eab9619e))
+* **compiler/vapor:** warn when v-memo is ignored ([eac10d2](https://github.com/vuejs/vue-jsx-vapor/commit/eac10d282abea43a058fd0989e102163a87a4016))
+* **compiler:** report parser and semantic diagnostics instead of returning empty output ([#79](https://github.com/vuejs/vue-jsx-vapor/issues/79)) ([93e076b](https://github.com/vuejs/vue-jsx-vapor/commit/93e076b41bc6373afe5450cf414e216a7e3eb326))
+* **runtime:** drop the template placeholder when setNodes inserts before the anchor ([4713909](https://github.com/vuejs/vue-jsx-vapor/commit/471390951bd96df31c719b5450d78b1c554912ee))
+
+
+
 ## [3.2.26](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.25...v3.2.26) (2026-10-03)
 
 
