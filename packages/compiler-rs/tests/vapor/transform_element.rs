@@ -1482,3 +1482,41 @@ fn a_string_native_on_binding_of_an_html_element_goes_through_dynamic_props() {
   })();
   "#);
 }
+
+// A select's value binding is applied after its children: the value is a
+// no-op while the options it selects among are still missing (#1318).
+#[test]
+fn a_select_value_binding_is_applied_after_its_children() {
+  let code = transform(
+    r#"<select value={sel}>{loaded ? items.map(o => <option value={o}>{o}</option>) : null}</select>"#,
+    None,
+  )
+  .code;
+  let create_if = code.find("_createIf(").expect("{code}");
+  let value = code.rfind("_setValue(").expect("{code}");
+  assert!(value > create_if, "{code}");
+}
+
+#[test]
+fn a_select_constant_value_is_applied_after_its_children() {
+  let code = transform(
+    r#"<select value="a">{loaded ? <option value="a">A</option> : null}</select>"#,
+    None,
+  )
+  .code;
+  let create_if = code.find("_createIf(").expect("{code}");
+  let value = code.rfind("_setValue(").expect("{code}");
+  assert!(value > create_if, "{code}");
+}
+
+#[test]
+fn a_select_spread_value_binding_is_applied_after_its_children() {
+  let code = transform(
+    r#"<select {...{ value: sel }}>{loaded ? <option value="a">A</option> : null}</select>"#,
+    None,
+  )
+  .code;
+  let create_if = code.find("_createIf(").expect("{code}");
+  let value = code.rfind("_setDynamicProps(").expect("{code}");
+  assert!(value > create_if, "{code}");
+}

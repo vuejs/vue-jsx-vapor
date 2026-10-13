@@ -26,9 +26,16 @@ pub struct BlockIRNode<'a> {
   /// deferred until after the model application. Blocks hold one or two, so
   /// a linear-scan vec beats a hash set.
   pub model_elements: Vec<i32>,
-  /// Listeners on model elements, emitted after the model application.
-  pub deferred_listener_operations: Vec<OperationNode<'a>>,
-  pub deferred_listener_effects: Vec<IREffect<'a>>,
+  /// Elements carrying a `<select>` value binding: their value ops/effects
+  /// are diverted after the children at codegen, since a select's value only
+  /// takes effect once its options exist (#1318).
+  pub select_value_elements: Vec<i32>,
+  /// Operations and effects diverted out of the main emission order because
+  /// they depend on state established later in the block: listeners on model
+  /// elements must run after the model application, and a select's value only
+  /// takes effect once its options exist. Emitted at the end of the block.
+  pub deferred_operations: Vec<OperationNode<'a>>,
+  pub deferred_effects: Vec<IREffect<'a>>,
 }
 impl<'a> BlockIRNode<'a> {
   pub fn new() -> Self {
@@ -43,8 +50,9 @@ impl<'a> BlockIRNode<'a> {
       root: false,
       node_text_only: false,
       model_elements: Vec::new(),
-      deferred_listener_operations: Vec::new(),
-      deferred_listener_effects: Vec::new(),
+      select_value_elements: Vec::new(),
+      deferred_operations: Vec::new(),
+      deferred_effects: Vec::new(),
     }
   }
 }

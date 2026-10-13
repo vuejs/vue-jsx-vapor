@@ -184,6 +184,24 @@ fn is_runtime_only_prop(tag: &str, key: &str) -> bool {
     || (key == "value" && (tag == "textarea" || tag == "select"))
 }
 
+// A select's value only takes effect once its options exist, so unlike an
+// input's it is applied after the children are rendered (#1318).
+fn is_select_value_key(key: &Expression, modifier: Option<&str>) -> bool {
+  matches!(key, Expression::StringLiteral(key) if key.value == "value")
+    && (modifier.is_none() || modifier == Some("."))
+}
+
+fn props_may_contain_select_value(props: &[IRProps]) -> bool {
+  props.iter().any(|props| match props {
+    Either3::A(props) => props
+      .iter()
+      .any(|p| is_select_value_key(&p.key, p.modifier)),
+    Either3::B(prop) => is_select_value_key(&prop.key, prop.modifier),
+    // a spread's keys are unknown at compile time
+    Either3::C(_) => true,
+  })
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn transform_native_element<'a>(
   tag: &'a str,
@@ -206,6 +224,9 @@ pub fn transform_native_element<'a>(
     Either::A(props) => {
       let element = context.reference(&mut context_block.dynamic);
       /* dynamic props */
+      if tag == "select" && props_may_contain_select_value(&props) {
+        context_block.select_value_elements.push(element);
+      }
       context.register_effect(
         context_block,
         false,
@@ -276,6 +297,9 @@ pub fn transform_native_element<'a>(
             has_value_dep = true;
           }
           let element = context.reference(&mut context_block.dynamic);
+          if tag == "select" && is_select_value_key(&prop.key, prop.modifier) {
+            context_block.select_value_elements.push(element);
+          }
           let is_effect =
             !context.is_operation(values.iter().collect()) || (is_value_prop && has_effect);
           context.register_effect(
