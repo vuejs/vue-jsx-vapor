@@ -1464,3 +1464,21 @@ fn an_unrelated_dynamic_prop_leaves_a_constant_input_value_folded() {
   })();
   "#);
 }
+
+// A string-valued native on* binding of a plain HTML element routes through
+// the dynamic-props path so the runtime can set it as an attribute, like vdom
+// does - `_setProp` would assign the string to the event handler IDL
+// attribute and silently drop it.
+#[test]
+fn a_string_native_on_binding_of_an_html_element_goes_through_dynamic_props() {
+  let code = transform(r#"<img onerror={msg} />"#, None).code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
+  const _t0 = _template("<img>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [{ onerror: msg }], ["onerror"]));
+  	return _n0;
+  })();
+  "#);
+}

@@ -1,8 +1,8 @@
+use indexmap::IndexMap;
+use napi::bindgen_prelude::Either3;
 use oxc_ast::NONE;
 use oxc_ast::ast::{Argument, Expression, NumberBase, Statement};
 use oxc_span::SPAN;
-
-use indexmap::IndexMap;
 
 use common::check::is_native_on;
 
@@ -24,9 +24,18 @@ use crate::generate::text::gen_set_nodes;
 use crate::generate::text::gen_set_text;
 use crate::generate::v_for::gen_for;
 use crate::generate::v_if::gen_if;
+use crate::ir::component::IRProp;
 use crate::ir::index::BlockIRNode;
 use crate::ir::index::DirectiveIRNode;
 use crate::ir::index::OperationNode;
+
+fn is_native_on_prop(prop: &IRProp<'_>) -> bool {
+  prop.modifier.is_none()
+    && matches!(
+      &prop.key,
+      Expression::StringLiteral(key) if is_native_on(&key.value)
+    )
+}
 
 /// Listeners on a v-model element are deferred until after the model
 /// application, so their handlers see the value the model already updated, as
@@ -47,6 +56,16 @@ pub fn is_v_model_listener<'a>(operation: &OperationNode<'a>, model_elements: &[
           &operation.prop.key,
           Expression::StringLiteral(key) if is_native_on(&key.value)
         )
+    }
+    OperationNode::SetDynamicProps(operation) => {
+      model_elements.contains(&operation.element)
+        && operation.props.iter().any(|props| match props {
+          Either3::A(props) => props.iter().any(is_native_on_prop),
+          Either3::B(prop) => is_native_on_prop(prop),
+          // a spread's keys are unknown - upstream resolves those by
+          // listener merging rather than deferral
+          Either3::C(_) => false,
+        })
     }
     _ => false,
   }

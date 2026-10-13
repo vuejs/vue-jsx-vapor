@@ -600,12 +600,13 @@ fn same_element_delegated_listeners_defer_after_v_model() {
 }
 
 // lowercase native event names are value-set props that can still collide
-// with the model event (e.g. `oninput` on a text input), so they defer too
+// with the model event (e.g. `oninput` on a text input), so they defer too;
+// they route through the dynamic-props path, which defers as a whole
 #[test]
 fn same_element_lowercase_native_events_defer_after_v_model() {
   let code = transform("<input oninput={onInput} v-model={model} />", None).code;
   let model = code.find("_applyTextModel(").expect("{code}");
-  let listener = code.find("_setProp(").expect("{code}");
+  let listener = code.find("_setDynamicProps(").expect("{code}");
   assert!(model < listener, "{code}");
 }
 

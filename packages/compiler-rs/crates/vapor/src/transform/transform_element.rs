@@ -264,8 +264,7 @@ pub fn transform_native_element<'a>(
               format!("={}", value)
             };
           }
-        } else if is_svg
-          && prop.modifier.is_none()
+        } else if prop.modifier.is_none()
           && matches!(&prop.key, Expression::StringLiteral(key) if is_native_on(&key.value))
         {
           native_on_props.push(prop);
