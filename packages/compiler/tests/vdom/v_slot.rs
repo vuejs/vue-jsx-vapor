@@ -531,15 +531,13 @@ fn error_on_extraneous_children_with_named_default_slot() {
   transform(
     "<Comp><template v-slot:default>foo</template>bar</Comp>",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
   assert_eq!(
     *error.borrow(),
-    Some(ErrorCodes::VSlotExtraneousDefaultSlotChildren)
+    Some(ErrorCodes::VSlotExtraneousDefaultSlotChildren.message())
   );
 }
 
@@ -549,13 +547,14 @@ fn error_on_duplicated_slot_names() {
   transform(
     "<Comp><template v-slot:foo></template><template v-slot:foo></template></Comp>",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotDuplicateSlotNames));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VSlotDuplicateSlotNames.message())
+  );
 }
 
 #[test]
@@ -564,13 +563,14 @@ fn error_on_invalid_mixed_slot_usage() {
   transform(
     "<Comp v-slot={foo}><template v-slot:foo></template></Comp>",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMixedSlotUsage));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VSlotMixedSlotUsage.message())
+  );
 }
 
 #[test]
@@ -579,13 +579,11 @@ fn error_on_v_slot_usage_on_plain_elements() {
   transform(
     "<div v-slot/>",
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMisplaced));
+  assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMisplaced.message()));
 }
 
 #[test]

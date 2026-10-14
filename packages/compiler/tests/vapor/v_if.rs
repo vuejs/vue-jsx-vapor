@@ -806,13 +806,14 @@ fn error_on_v_else_missing_adjacent_v_if() {
     "<div v-else/>",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VElseNoAdjacentIf));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VElseNoAdjacentIf.message())
+  );
 }
 
 #[test]
@@ -822,13 +823,14 @@ fn error_on_v_else_if_missing_adjacent_v_if_or_v_else_if() {
     "<div v-else-if={foo}/>",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VElseNoAdjacentIf));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VElseNoAdjacentIf.message())
+  );
 }
 
 #[test]
@@ -838,13 +840,11 @@ fn error_on_v_if_no_expression() {
     "<div v-if/>",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VIfNoExpression));
+  assert_eq!(*error.borrow(), Some(ErrorCodes::VIfNoExpression.message()));
 }
 
 // upstream: `empty template branch keeps the following sibling` - SSR renders

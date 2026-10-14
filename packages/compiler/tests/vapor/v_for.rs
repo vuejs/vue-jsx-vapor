@@ -921,13 +921,14 @@ fn should_raise_error_if_has_no_expression() {
     "<div v-for />",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VForNoExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VForNoExpression.message())
+  );
 }
 
 #[test]
@@ -937,13 +938,14 @@ fn should_raise_error_if_malformed_expression() {
     "<div v-for={foo} />",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VForMalformedExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VForMalformedExpression.message())
+  );
 }
 
 // aliases are parsed as expressions here, so a default value or a destructuring
@@ -1215,4 +1217,35 @@ fn self_referencing_callback_default_does_not_recurse() {
     code.contains("_setNodes(_x2, () => _getDefaultValue(_for_item0.value, () => item.fallback))"),
     "{code}"
   );
+}
+
+// a computed key resolves identifiers the pattern binds, like upstream
+#[test]
+fn v_for_object_destructured_alias_computed_key_resolves_declared_alias() {
+  let code = transform(
+    "<div v-for={({ [label]: extra, label }) in items}>{{ extra }}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_for_item0.value[_for_item0.value.label]"),
+    "{code}"
+  );
+}
+
+// a string-literal key is emitted as a string, not a bare identifier
+#[test]
+fn v_for_object_destructured_alias_string_literal_key() {
+  let code = transform(
+    "<div v-for={({ \"a-b\": v }) in items}>{{ v }}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("_for_item0.value[\"a-b\"]"), "{code}");
 }

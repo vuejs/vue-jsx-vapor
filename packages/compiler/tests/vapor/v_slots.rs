@@ -254,13 +254,11 @@ fn should_raise_error_if_not_component() {
     "<div v-slots={obj}></div>",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMisplaced));
+  assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMisplaced.message()));
 }
 
 #[test]
@@ -337,11 +335,12 @@ fn should_raise_error_if_has_no_expression() {
     "<Comp v-slots></Comp>",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotsNoExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VSlotsNoExpression.message())
+  );
 }

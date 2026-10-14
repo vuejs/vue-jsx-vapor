@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite-plus'
 
@@ -25,6 +26,11 @@ export default defineConfig({
   resolve: {
     conditions: ['jsx-vapor-dev'],
     alias: { vue: vueVapor },
+  },
+  ssr: {
+    resolve: {
+      conditions: ['jsx-vapor-dev'],
+    },
   },
   test: {
     include: ['./packages/**/*.spec.ts'],

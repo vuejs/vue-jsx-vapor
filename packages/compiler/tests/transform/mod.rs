@@ -1,3 +1,4 @@
+mod diagnostics;
 mod hmr;
 mod interop;
 mod optimize;

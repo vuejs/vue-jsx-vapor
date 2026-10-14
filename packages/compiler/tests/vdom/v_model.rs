@@ -352,13 +352,14 @@ fn should_raise_error_if_plain_elements_with_argument() {
   transform(
     r#"<input v-model:value={model} />"#,
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelArgOnElement));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelArgOnElement.message())
+  );
 }
 
 #[test]
@@ -367,13 +368,14 @@ fn should_raise_error_if_invalid_element() {
   transform(
     r#"<span v-model={model} />"#,
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelOnInvalidElement));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelOnInvalidElement.message())
+  );
 }
 
 #[test]
@@ -382,13 +384,14 @@ fn should_raise_error_if_used_file_input_element() {
   transform(
     r#"<input type="file" v-model={test}/>"#,
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelOnFileInputElement));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelOnFileInputElement.message())
+  );
 }
 
 #[test]
@@ -397,13 +400,14 @@ fn should_error_on_dynamic_value_binding_alongside_v_model() {
   transform(
     r#"<input v-model={test} value={test}/>"#,
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelUnnecessaryValue));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelUnnecessaryValue.message())
+  );
 }
 
 #[test]
@@ -445,13 +449,14 @@ fn should_error_if_mal_formed_expression() {
   transform(
     r#"<input v-model={a + b} />"#,
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelMalformedExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelMalformedExpression.message())
+  );
 }
 
 #[test]
@@ -520,4 +525,48 @@ fn array_args_with_arg() {
   	}, null, 8, ["foo"]);
   })();
   "#);
+}
+
+// A TypeScript wrapper around the target is unwrapped for the setter, because
+// `form.a as string = $event` is not valid TS and the codegen does not
+// parenthesise an assignment target. The directive keeps the annotation, where
+// it still means something.
+#[test]
+fn a_typescript_wrapper_around_the_target_is_unwrapped() {
+  let code = transform(
+    "<input v-model={form.a as string} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createVNodeCache as _createVNodeCache } from "/vue-jsx/vdom";
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, vModelText as _vModelText, withDirectives as _withDirectives } from "vue";
+  (() => {
+  	const _cache = _createVNodeCache("76224d12");
+  	return _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => form.a = $event) }, null, 512)), [[_vModelText, form.a as string]]);
+  })();
+  "#);
+
+  // a non-null assertion on the target itself, and a redundant pair of parens
+  let code = transform(
+    "<input v-model={form.a!} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("($event) => form.a = $event"), "{code}");
+  let code = transform(
+    "<input v-model={(form.a)} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("($event) => form.a = $event"), "{code}");
 }

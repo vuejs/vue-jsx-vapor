@@ -75,7 +75,10 @@ pub unsafe fn transform_v_slots<'a>(
 
   if let Some(dir) = directives.v_slots.as_mut() {
     if !is_component {
-      context.options.on_error.as_ref()(ErrorCodes::VSlotMisplaced, unsafe { &*node_ptr }.span);
+      context.options.on_error.as_ref()(
+        ErrorCodes::VSlotMisplaced.message(),
+        unsafe { &*node_ptr }.span,
+      );
       return None;
     }
 
@@ -126,7 +129,7 @@ pub unsafe fn transform_v_slots<'a>(
         })];
       }))
     } else {
-      context.options.on_error.as_ref()(ErrorCodes::VSlotsNoExpression, dir.span);
+      context.options.on_error.as_ref()(ErrorCodes::VSlotsNoExpression.message(), dir.span);
       None
     }
   } else {

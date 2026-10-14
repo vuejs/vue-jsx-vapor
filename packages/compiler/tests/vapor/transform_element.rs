@@ -388,8 +388,9 @@ fn component_props_merging_style() {
   .code;
   assert_snapshot!(code, @r#"
   import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  import { normalizeStyle as _normalizeStyle } from "vue";
   (() => {
-  	const _n0 = _createComponent(Foo, { style: () => ["color: green", { color: "red" }] }, null, true);
+  	const _n0 = _createComponent(Foo, { style: () => [_normalizeStyle(["color: green"]), { color: "red" }] }, null, true);
   	return _n0;
   })();
   "#);
@@ -409,6 +410,73 @@ fn component_props_merging_class() {
   import { createComponent as _createComponent } from "/vue-jsx/vapor";
   (() => {
   	const _n0 = _createComponent(Foo, { class: () => ["foo", { bar: isBar }] }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn component_static_style_is_normalized() {
+  let code = transform(
+    "<Foo style=\"width: 200px; color: red\" />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  // The raw CSS goes to `normalizeStyle`, which parses the strings of a style
+  // array into an object at runtime (vdom parity), so the compiler does not
+  // have to carry a CSS parser of its own.
+  assert!(code.contains(r#"_normalizeStyle(["width: 200px; color: red"])"#));
+  assert!(code.contains("normalizeStyle as _normalizeStyle"));
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  import { normalizeStyle as _normalizeStyle } from "vue";
+  (() => {
+  	const _n0 = _createComponent(Foo, { style: () => _normalizeStyle(["width: 200px; color: red"]) }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_style_on_plain_element_stays_a_string() {
+  let code = transform(
+    "<div style=\"width: 200px; color: red\" />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  // baked into the template as a plain attribute
+  assert!(code.contains(r#"style=\"width: 200px; color: red\""#));
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<div style=\"width: 200px; color: red\">", 3);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_style_on_custom_element_stays_a_string() {
+  let code = transform(
+    "<my-el style=\"width: 200px; color: red\" />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains(r#"style: "width: 200px; color: red""#));
+  assert_snapshot!(code, @r#"
+  import { createPlainElement as _createPlainElement } from "vue";
+  (() => {
+  	const _n0 = _createPlainElement("my-el", { style: "width: 200px; color: red" }, null, true);
   	return _n0;
   })();
   "#);
@@ -1833,4 +1901,192 @@ fn a_listener_that_cannot_collide_keeps_the_static_path() {
   .code;
   assert!(code.contains("_on(_n0, \"click\", a)"), "{code}");
   assert!(!code.contains("_setDynamicProps"), "{code}");
+}
+
+// The props keep the order they were written in - the compiler does not move
+// `value` to the end. Writing it before the bound it is clamped by is the
+// author's call.
+#[test]
+fn an_input_value_keeps_the_order_it_was_written_in() {
+  let code = transform(
+    r#"<input type="range" value={v} max={max} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setProp as _setProp, setValue as _setValue, template as _template } from "vue";
+  const _t0 = _template("<input type=range>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => {
+  		_setValue(_n0, v);
+  		_setProp(_n0, "max", max);
+  	});
+  	return _n0;
+  })();
+  "#);
+
+  let code = transform(
+    r#"<input type="range" value="500" max="1000" />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { template as _template } from "vue";
+  const _t0 = _template("<input type=range value=500 max=1000>", 3);
+  (() => {
+  	const _n0 = _t0();
+  	return _n0;
+  })();
+  "#);
+}
+
+// A constant `value` written after a dynamic bound cannot fold into the
+// template: folding applies it during the parse, before the bound, so the
+// clamp would stick.
+#[test]
+fn a_constant_input_value_joins_the_effect_that_orders_it() {
+  let code = transform(
+    r#"<input type="range" max={max} value="500" />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setProp as _setProp, setValue as _setValue, template as _template } from "vue";
+  const _t0 = _template("<input type=range>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => {
+  		_setProp(_n0, "max", max);
+  		_setValue(_n0, "500");
+  	});
+  	return _n0;
+  })();
+  "#);
+
+  let code = transform(
+    r#"<input type="range" max={max} value={500} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setProp as _setProp, setValue as _setValue, template as _template } from "vue";
+  const _t0 = _template("<input type=range>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => {
+  		_setProp(_n0, "max", max);
+  		_setValue(_n0, 500);
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+// Only the props a value is actually clamped by force it into the effect: an
+// unrelated dynamic prop must leave a constant `value` folded, or the effect
+// would rewrite the input and discard what the user typed.
+#[test]
+fn an_unrelated_dynamic_prop_leaves_a_constant_input_value_folded() {
+  let code = transform(
+    r#"<input value="500" disabled={d} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setProp as _setProp, template as _template } from "vue";
+  const _t0 = _template("<input value=500>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setProp(_n0, "disabled", d));
+  	return _n0;
+  })();
+  "#);
+}
+
+// A string-valued native on* binding of a plain HTML element routes through
+// the dynamic-props path so the runtime can set it as an attribute, like vdom
+// does - `_setProp` would assign the string to the event handler IDL
+// attribute and silently drop it.
+#[test]
+fn a_string_native_on_binding_of_an_html_element_goes_through_dynamic_props() {
+  let code = transform(
+    r#"<img onerror={msg} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from "vue";
+  const _t0 = _template("<img>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_renderEffect(() => _setDynamicProps(_n0, [{ onerror: msg }], ["onerror"]));
+  	return _n0;
+  })();
+  "#);
+}
+
+// A select's value binding is applied after its children: the value is a
+// no-op while the options it selects among are still missing (#1318).
+#[test]
+fn a_select_value_binding_is_applied_after_its_children() {
+  let code = transform(
+    r#"<select value={sel}>{loaded ? items.map(o => <option value={o}>{o}</option>) : null}</select>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  let create_if = code.find("_createIf(").expect("{code}");
+  let value = code.rfind("_setValue(").expect("{code}");
+  assert!(value > create_if, "{code}");
+}
+
+#[test]
+fn a_select_constant_value_is_applied_after_its_children() {
+  let code = transform(
+    r#"<select value="a">{loaded ? <option value="a">A</option> : null}</select>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  let create_if = code.find("_createIf(").expect("{code}");
+  let value = code.rfind("_setValue(").expect("{code}");
+  assert!(value > create_if, "{code}");
+}
+
+#[test]
+fn a_select_spread_value_binding_is_applied_after_its_children() {
+  let code = transform(
+    r#"<select {...{ value: sel }}>{loaded ? <option value="a">A</option> : null}</select>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  let create_if = code.find("_createIf(").expect("{code}");
+  let value = code.rfind("_setDynamicProps(").expect("{code}");
+  assert!(value > create_if, "{code}");
 }

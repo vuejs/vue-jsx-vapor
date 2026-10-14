@@ -34,14 +34,15 @@ fn should_raise_error_if_has_children() {
   transform(
     r#"<div v-html={test}> </div>"#,
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   )
   .code;
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VHtmlWithChildren));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VHtmlWithChildren.message())
+  );
 }
 
 #[test]
@@ -50,12 +51,13 @@ fn should_raise_error_if_has_no_expression() {
   transform(
     r#"<div v-html></div>"#,
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   )
   .code;
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VHtmlNoExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VHtmlNoExpression.message())
+  );
 }

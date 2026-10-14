@@ -170,6 +170,8 @@ static DYNAMIC_KEYS: [&str; 5] = [
   "currentTime",
 ];
 
+static INPUT_VALUE_DEP_KEYS: [&str; 4] = ["type", "min", "max", "step"];
+
 // Props the template string cannot carry, so they have to be applied by a
 // runtime prop setter instead:
 // - `innerHTML` / `textContent` are dom properties that set the element's
@@ -180,6 +182,24 @@ static DYNAMIC_KEYS: [&str; 5] = [
 fn is_runtime_only_prop(tag: &str, key: &str) -> bool {
   matches!(key, "innerHTML" | "textContent")
     || (key == "value" && (tag == "textarea" || tag == "select"))
+}
+
+// A select's value only takes effect once its options exist, so unlike an
+// input's it is applied after the children are rendered (#1318).
+fn is_select_value_key(key: &Expression, modifier: Option<&str>) -> bool {
+  matches!(key, Expression::StringLiteral(key) if key.value == "value")
+    && (modifier.is_none() || modifier == Some("."))
+}
+
+fn props_may_contain_select_value(props: &[IRProps]) -> bool {
+  props.iter().any(|props| match props {
+    Either3::A(props) => props
+      .iter()
+      .any(|p| is_select_value_key(&p.key, p.modifier)),
+    Either3::B(prop) => is_select_value_key(&prop.key, prop.modifier),
+    // a spread's keys are unknown at compile time
+    Either3::C(_) => true,
+  })
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -204,6 +224,9 @@ pub fn transform_native_element<'a>(
     Either::A(props) => {
       let element = context.reference(&mut context_block.dynamic);
       /* dynamic props */
+      if tag == "select" && props_may_contain_select_value(&props) {
+        context_block.select_value_elements.push(element);
+      }
       context.register_effect(
         context_block,
         false,
@@ -222,8 +245,15 @@ pub fn transform_native_element<'a>(
       // prop vs attr, and one call per element keeps the dynamic prop cache
       // shared by these keys.
       let mut native_on_props = vec![];
+      let mut has_effect = false;
+      let mut has_value_dep = false;
       for prop in props {
         let values = &prop.values;
+        // like vdom, set value after the other props since it can depend on
+        // them, e.g. min/max of a range input (#2325, #4024)
+        let is_value_prop = tag == "input"
+          && prop.modifier.is_none()
+          && matches!(&prop.key, Expression::StringLiteral(key) if key.value == "value");
         if let Expression::StringLiteral(key) = &prop.key
           && values.len() == 1
           // `.prop` forces a dom property, which a content attribute in the
@@ -233,6 +263,7 @@ pub fn transform_native_element<'a>(
           && let Some(Expression::StringLiteral(first_value)) = values.first()
           && !DYNAMIC_KEYS.contains(&key.value.as_str())
           && !is_runtime_only_prop(tag, &key.value)
+          && !(is_value_prop && has_value_dep)
         {
           template += " ";
           let value = first_value.value;
@@ -254,16 +285,26 @@ pub fn transform_native_element<'a>(
               format!("={}", value)
             };
           }
-        } else if is_svg
-          && prop.modifier.is_none()
+        } else if prop.modifier.is_none()
           && matches!(&prop.key, Expression::StringLiteral(key) if is_native_on(&key.value))
         {
           native_on_props.push(prop);
         } else {
+          if tag == "input"
+            && let Expression::StringLiteral(key) = &prop.key
+            && INPUT_VALUE_DEP_KEYS.contains(&key.value.as_str())
+          {
+            has_value_dep = true;
+          }
           let element = context.reference(&mut context_block.dynamic);
+          if tag == "select" && is_select_value_key(&prop.key, prop.modifier) {
+            context_block.select_value_elements.push(element);
+          }
+          let is_effect =
+            !context.is_operation(values.iter().collect()) || (is_value_prop && has_effect);
           context.register_effect(
             context_block,
-            context.is_operation(values.iter().collect()),
+            !is_effect,
             OperationNode::SetProp(SetPropIRNode {
               set_prop: true,
               prop,
@@ -274,6 +315,7 @@ pub fn transform_native_element<'a>(
             Some(Rc::clone(&get_effect_index)),
             Some(Rc::clone(&get_operation_index)),
           );
+          has_effect = has_effect || is_effect;
         }
       }
 
@@ -586,7 +628,7 @@ pub fn build_props<'a>(
               );
             }
           } else {
-            context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, span);
+            context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression.message(), span);
           }
           continue;
         } else if collect_name && prop_name == "name" {
@@ -682,7 +724,7 @@ pub fn transform_prop<'a>(
   if !is_built_in_directive(dir_name_raw) {
     if get_tag_name(node, context.options) == "slot" {
       context.options.on_error.as_ref()(
-        ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet,
+        ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet.message(),
         prop.span,
       );
       return None;

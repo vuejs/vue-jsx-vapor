@@ -36,7 +36,7 @@ pub fn transform_v_on<'a>(
 
   let value = &mut dir.value;
   if value.is_none() && modifiers.is_empty() {
-    context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression, dir.span);
+    context.options.on_error.as_ref()(ErrorCodes::VOnNoExpression.message(), dir.span);
   }
 
   if event_name.starts_with("vue:") {

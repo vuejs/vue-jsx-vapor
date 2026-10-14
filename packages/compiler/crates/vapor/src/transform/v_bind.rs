@@ -5,10 +5,34 @@ use common::{
   text::{camelize, decode_attr_value, get_text_like_value},
 };
 use oxc_allocator::TakeIn;
-use oxc_ast::ast::{BigintBase, Expression, JSXAttribute, JSXAttributeName, JSXAttributeValue};
+use oxc_ast::NONE;
+use oxc_ast::ast::{
+  Argument, ArrayExpressionElement, BigintBase, Expression, JSXAttribute, JSXAttributeName,
+  JSXAttributeValue,
+};
 use oxc_span::SPAN;
 
 use crate::transform::{DirectiveTransformResult, TransformContext};
+
+// Components receive a static style as an object, like the vdom compiler's
+// transformStyle. `normalizeStyle` parses the strings of a style array, so the
+// raw CSS is handed to the runtime instead of being parsed by the compiler:
+// `style="color: red"` -> `_normalizeStyle(["color: red"])`.
+fn gen_normalize_style<'a>(css: &str, context: &'a TransformContext<'a>) -> Expression<'a> {
+  let ast = context.ast;
+  ast.expression_call(
+    SPAN,
+    ast.expression_identifier(SPAN, ast.str(context.options.helper("_normalizeStyle"))),
+    NONE,
+    ast.vec_from_array([Argument::ArrayExpression(ast.alloc_array_expression(
+      SPAN,
+      ast.vec_from_array([ArrayExpressionElement::StringLiteral(
+        ast.alloc_string_literal(SPAN, ast.str(css), None),
+      )]),
+    ))]),
+    false,
+  )
+}
 
 // `true-value` / `false-value` are only read back by `v-model` on a checkbox,
 // and a dynamic `type` can still make the element a checkbox at runtime.
@@ -103,11 +127,16 @@ pub fn transform_v_bind<'a>(
             .map(|value| ast.expression_string_literal(SPAN, ast.str(value.as_ref()), None))
         }
       }
-      JSXAttributeValue::StringLiteral(value) => Some(ast.expression_string_literal(
-        SPAN,
-        ast.str_from_cow(&decode_attr_value(value.value.as_str())),
-        None,
-      )),
+      JSXAttributeValue::StringLiteral(value) => {
+        let content = decode_attr_value(value.value.as_str());
+        // Only components: a plain element's static style keeps its string and
+        // stays baked into the template.
+        if name_string == "style" && directives.is_component && !directives.is_custom_element {
+          Some(gen_normalize_style(&content, context))
+        } else {
+          Some(ast.expression_string_literal(SPAN, ast.str_from_cow(&content), None))
+        }
+      }
       _ => None,
     } {
       return Some(DirectiveTransformResult::new(

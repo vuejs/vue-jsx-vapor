@@ -51,14 +51,15 @@ fn should_raise_error_and_ignore_children_when_v_html_is_present() {
     "<Comp v-html={test.value}>hello</Comp>",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   )
   .code;
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VHtmlWithChildren));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VHtmlWithChildren.message())
+  );
   assert!(code.contains("innerHTML"));
   assert!(!code.contains("hello"));
 }
@@ -70,11 +71,12 @@ fn should_raise_error_if_has_no_expression() {
     "<div v-html></div>",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VHtmlNoExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VHtmlNoExpression.message())
+  );
 }

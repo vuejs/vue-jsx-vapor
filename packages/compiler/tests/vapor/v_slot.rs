@@ -1778,15 +1778,13 @@ fn error_on_extraneous_children_with_named_default_slot() {
     </Comp>",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
   assert_eq!(
     *error.borrow(),
-    Some(ErrorCodes::VSlotExtraneousDefaultSlotChildren)
+    Some(ErrorCodes::VSlotExtraneousDefaultSlotChildren.message())
   );
 }
 
@@ -1800,13 +1798,14 @@ fn error_on_duplicated_slot_names() {
     </Comp>",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotDuplicateSlotNames));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VSlotDuplicateSlotNames.message())
+  );
 }
 
 #[test]
@@ -1818,13 +1817,14 @@ fn error_on_invalid_mixed_slot_usage() {
     </Comp>",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMixedSlotUsage));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VSlotMixedSlotUsage.message())
+  );
 }
 
 #[test]
@@ -1834,13 +1834,11 @@ fn error_on_v_slot_usage_on_plain_elements() {
     "<div v-slot/>",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMisplaced));
+  assert_eq!(*error.borrow(), Some(ErrorCodes::VSlotMisplaced.message()));
 }
 
 #[test]
@@ -1853,13 +1851,14 @@ fn slot_v_else_missing_adjacent_v_if_should_report_compiler_error() {
     </>",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VElseNoAdjacentIf));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VElseNoAdjacentIf.message())
+  );
 }
 
 #[test]
@@ -2089,4 +2088,149 @@ fn conditional_and_dynamic_slots_override_unconditional_ones() {
   assert!(slots_array < loop_slot, "{code}");
   assert!(loop_slot < dynamic_arg, "{code}");
   assert!(dynamic_arg < conditional, "{code}");
+}
+
+// upstream `genRawSlots` passes the remaining groups on with
+// `slots.length > 1 ? slots.slice(1) : undefined` and only takes the single
+// `{ default }` fast path when `slots.length === 1` - both counts are read
+// *before* the static group is sliced off. This port read them after removing
+// the group, so a lone dynamic slot was thrown away whenever a static slot
+// existed: the slot's block was built, its `_tN` template emitted, and nothing
+// ever referenced it.
+#[test]
+fn conditional_slot_beside_a_static_slot() {
+  let code = transform(
+    "<Comp><template v-if={ok} v-slot:a>x</template><template v-slot:b>y</template></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  import { template as _template } from "vue";
+  const _t0 = _template("x", 2);
+  const _t1 = _template("y", 2);
+  (() => {
+  	let _s;
+  	const _n4 = _createComponent(Comp, null, {
+  		b: () => {
+  			const _n2 = _t1();
+  			return _n2;
+  		},
+  		$: [() => ok ? {
+  			name: "a",
+  			fn: _s || (_s = () => {
+  				const _n0 = _t0();
+  				return _n0;
+  			})
+  		} : undefined]
+  	}, true);
+  	return _n4;
+  })();
+  "#);
+}
+
+#[test]
+fn static_slot_before_a_conditional_slot() {
+  let code = transform(
+    "<Comp><template v-slot:b>y</template><template v-if={ok} v-slot:a>x</template></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  import { template as _template } from "vue";
+  const _t0 = _template("y", 2);
+  const _t1 = _template("x", 2);
+  (() => {
+  	let _s;
+  	const _n4 = _createComponent(Comp, null, {
+  		b: () => {
+  			const _n0 = _t0();
+  			return _n0;
+  		},
+  		$: [() => ok ? {
+  			name: "a",
+  			fn: _s || (_s = () => {
+  				const _n2 = _t1();
+  				return _n2;
+  			})
+  		} : undefined]
+  	}, true);
+  	return _n4;
+  })();
+  "#);
+}
+
+#[test]
+fn loop_slot_beside_a_static_slot() {
+  let code = transform(
+    "<Comp><template v-for={n in names} v-slot:$n$>f</template><template v-slot:a>own a</template></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  import { createForSlots as _createForSlots, template as _template } from "vue";
+  const _t0 = _template("f", 2);
+  const _t1 = _template("own a", 2);
+  (() => {
+  	const _n4 = _createComponent(Comp, null, {
+  		a: () => {
+  			const _n2 = _t1();
+  			return _n2;
+  		},
+  		$: [_createForSlots(() => names, (_for_item0) => () => {
+  			const _n0 = _t0();
+  			return _n0;
+  		}, (_for_raw_item0) => _for_raw_item0)]
+  	}, true);
+  	return _n4;
+  })();
+  "#);
+}
+
+// the same guard as a single `{ default }` static slot: a plain `<template>`
+// compiles to exactly that shape, so it used to swallow the dynamic slot too
+#[test]
+fn conditional_slot_beside_a_plain_template() {
+  let code = transform(
+    "<Comp><template v-if={ok} v-slot:a>x</template><template>y</template></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  import { template as _template } from "vue";
+  const _t0 = _template("x", 2);
+  const _t1 = _template("<template>y");
+  (() => {
+  	let _s;
+  	const _n3 = _createComponent(Comp, null, {
+  		default: () => {
+  			const _n2 = _t1();
+  			return _n2;
+  		},
+  		$: [() => ok ? {
+  			name: "a",
+  			fn: _s || (_s = () => {
+  				const _n0 = _t0();
+  				return _n0;
+  			})
+  		} : undefined]
+  	}, true);
+  	return _n3;
+  })();
+  "#);
 }

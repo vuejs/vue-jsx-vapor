@@ -308,13 +308,14 @@ fn errors_invalid_element() {
     "<span v-model={model} />",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelOnInvalidElement));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelOnInvalidElement.message())
+  );
 }
 
 #[test]
@@ -324,13 +325,14 @@ fn errors_plain_elements_with_argument() {
     "<input v-model:value={model} />",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelArgOnElement));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelArgOnElement.message())
+  );
 }
 
 #[test]
@@ -340,9 +342,7 @@ fn errors_allow_usage_on_custom_element() {
     "<my-input v-model={model} />",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
@@ -356,13 +356,14 @@ fn errors_if_used_file_input_element() {
     "<input type=\"file\" v-model={test} />",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelOnFileInputElement));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelOnFileInputElement.message())
+  );
 }
 
 #[test]
@@ -372,13 +373,14 @@ fn errors_on_dynamic_value_binding_alongside_v_model() {
     "<input v-model={test} value={test} />",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelUnnecessaryValue));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelUnnecessaryValue.message())
+  );
 }
 
 #[test]
@@ -388,9 +390,7 @@ fn errors_should_not_error_on_static_value_binding_alongside_v_model() {
     "<input v-model={test} value=\"test\" />",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
@@ -404,13 +404,14 @@ fn errors_empty_expression() {
     "<span v-model=\"\" />",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelMalformedExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelMalformedExpression.message())
+  );
 }
 
 #[test]
@@ -420,13 +421,14 @@ fn errors_mal_formed_expression() {
     "<span v-model={a + b} />",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VModelMalformedExpression));
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VModelMalformedExpression.message())
+  );
 }
 
 #[test]
@@ -789,7 +791,8 @@ fn same_element_delegated_listeners_defer_after_v_model() {
 }
 
 // lowercase native event names are value-set props that can still collide
-// with the model event (e.g. `oninput` on a text input), so they defer too
+// with the model event (e.g. `oninput` on a text input), so they defer too;
+// they route through the dynamic-props path, which defers as a whole
 #[test]
 fn same_element_lowercase_native_events_defer_after_v_model() {
   let code = transform(
@@ -801,6 +804,97 @@ fn same_element_lowercase_native_events_defer_after_v_model() {
   )
   .code;
   let model = code.find("_applyTextModel(").expect("{code}");
-  let listener = code.find("_setProp(").expect("{code}");
+  let listener = code.find("_setDynamicProps(").expect("{code}");
   assert!(model < listener, "{code}");
+}
+
+// A TypeScript wrapper around the target is unwrapped instead of rejected: the
+// setter assigns to the member inside it, because `form.a as string = v` is not
+// valid TS and the codegen does not parenthesise an assignment target. The
+// getter keeps the annotation, where it still means something.
+#[test]
+fn a_typescript_wrapper_around_the_target_is_unwrapped() {
+  let code = transform(
+    "<input v-model={form.a as string} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { applyTextModel as _applyTextModel, template as _template } from "vue";
+  const _t0 = _template("<input>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_applyTextModel(_n0, () => form.a as string, (_value) => form.a = _value);
+  	return _n0;
+  })();
+  "#);
+
+  // a non-null assertion on the target itself, rather than on its object
+  let code = transform(
+    "<input v-model={form.a!} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { applyTextModel as _applyTextModel, template as _template } from "vue";
+  const _t0 = _template("<input>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_applyTextModel(_n0, () => form.a!, (_value) => form.a = _value);
+  	return _n0;
+  })();
+  "#);
+
+  // a wrapper around a computed member, and a redundant pair of parens
+  let code = transform(
+    "<input v-model={form![key] as string} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("(_value) => form![key] = _value"), "{code}");
+  let code = transform(
+    "<input v-model={(form.a)} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("(_value) => form.a = _value"), "{code}");
+}
+
+#[test]
+fn a_typescript_wrapper_on_a_component_target_is_unwrapped() {
+  let code = transform(
+    "<Comp v-model={form.b satisfies string} />",
+    Some(TransformOptions {
+      filename: "index.tsx",
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, {
+  		modelValue: () => form.b satisfies string,
+  		"onUpdate:modelValue": () => (_value) => form.b = _value
+  	}, null, true);
+  	return _n0;
+  })();
+  "#);
 }

@@ -81,6 +81,15 @@ const plugin = (options: Options = {}): UnpluginOptions[] => {
             ssr: opt?.ssr,
             ...options.compiler,
           })
+          for (const warning of result.warnings) {
+            this.warn(warning)
+          }
+          if (result.errors.length) {
+            for (const error of result.errors) {
+              this.error(error)
+            }
+            return
+          }
           if (result?.code) {
             return {
               code: result.code,

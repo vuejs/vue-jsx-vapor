@@ -187,16 +187,14 @@ fn error_on_unexpected_cunstom_directive_on_slot() {
   transform(
     r#"<slot v-foo />"#,
     Some(TransformOptions {
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   )
   .code;
   assert_eq!(
     *error.borrow(),
-    Some(ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet)
+    Some(ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet.message())
   );
 }
 

@@ -2,7 +2,6 @@ use std::{collections::HashMap, sync::LazyLock};
 
 use napi::{Env, Error, Result, bindgen_prelude::Object};
 use napi_derive::napi;
-use oxc_span::Span;
 
 #[cfg_attr(feature = "napi", napi)]
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -123,22 +122,42 @@ pub static ERROR_MESSAGES: LazyLock<HashMap<ErrorCodes, &str>> = LazyLock::new(|
   ])
 });
 
-#[napi(object, js_name = "CompilerError extends SyntaxError")]
-pub struct CompilerError {
-  pub code: i32,
-  pub loc: Option<(u32, u32)>,
+impl ErrorCodes {
+  pub fn message(self) -> String {
+    ERROR_MESSAGES[&self].to_string()
+  }
 }
 
-pub fn create_compiler_error<'a>(env: &'a Env, code: ErrorCodes, loc: Span) -> Result<Object<'a>> {
-  let msg = ERROR_MESSAGES.get(&code).unwrap().to_string();
-  let mut error = env.create_error(Error::from_reason(&msg))?;
-  error.set("code", code as i32)?;
-  error.set("loc", (loc.start, loc.end))?;
-  Ok(error)
-}
+pub fn create_compiler_message<'a>(
+  env: &'a Env,
+  message: String,
+  id: &str,
+  source: &'a str,
+  offset: u32,
+) -> Result<Object<'a>> {
+  let mut js_error = env.create_error(Error::from_reason(&message))?;
+  js_error.set("id", id)?;
 
-pub fn create_compiler_warning<'a>(env: &'a Env, message: &str, loc: Span) -> Result<Object<'a>> {
-  let mut warning = env.create_error(Error::from_reason(message))?;
-  warning.set("loc", (loc.start, loc.end))?;
-  Ok(warning)
+  // convert a byte offset into a 1-based line and a 0-based UTF-16 column,
+  // which is what bundlers expect in error locations
+  let mut offset = offset as usize;
+  while offset > 0 && !source.is_char_boundary(offset) {
+    offset -= 1;
+  }
+  let prefix = &source[..offset];
+  let line = prefix.matches('\n').count() as u32 + 1;
+  let column: u32 = match prefix.rfind('\n') {
+    Some(i) => &prefix[i + 1..],
+    None => prefix,
+  }
+  .chars()
+  .map(|c| c.len_utf16() as u32)
+  .sum();
+
+  let mut loc = Object::new(env)?;
+  loc.set("file", id)?;
+  loc.set("line", line)?;
+  loc.set("column", column)?;
+  js_error.set("loc", loc)?;
+  Ok(js_error)
 }

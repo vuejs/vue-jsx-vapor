@@ -13,6 +13,7 @@ mod v_bind;
 mod v_for;
 mod v_html;
 mod v_if;
+mod v_memo;
 mod v_model;
 mod v_on;
 mod v_once;

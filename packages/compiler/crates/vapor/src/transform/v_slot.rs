@@ -62,7 +62,7 @@ pub unsafe fn transform_v_slot<'a>(
       context_block,
     ));
   } else if !is_component && dir.is_some() {
-    context.options.on_error.as_ref()(ErrorCodes::VSlotMisplaced, unsafe { &*node }.span);
+    context.options.on_error.as_ref()(ErrorCodes::VSlotMisplaced.message(), unsafe { &*node }.span);
   }
   None
 }
@@ -105,14 +105,14 @@ fn transform_component_slot<'a>(
     let has_other_slots = !slots.is_empty();
     if has_dir && has_other_slots {
       // already has on-component slot - this is incorrect usage.
-      context.options.on_error.as_ref()(ErrorCodes::VSlotMixedSlotUsage, node.span);
+      context.options.on_error.as_ref()(ErrorCodes::VSlotMixedSlotUsage.message(), node.span);
       return;
     }
 
     if non_slot_template_children_len > 0 {
       if has_static_slot(&slots, "default") {
         context.options.on_error.as_ref()(
-          ErrorCodes::VSlotExtraneousDefaultSlotChildren,
+          ErrorCodes::VSlotExtraneousDefaultSlotChildren.message(),
           node.span,
         );
       } else {
@@ -175,7 +175,7 @@ fn transform_template_slot<'a>(
         "default"
       };
       if !slot_name.is_empty() && has_static_slot(slots, slot_name) {
-        context.options.on_error.as_ref()(ErrorCodes::VSlotDuplicateSlotNames, dir.span)
+        context.options.on_error.as_ref()(ErrorCodes::VSlotDuplicateSlotNames.message(), dir.span)
       } else {
         register_slot(slots, Some(name), block, context);
       }
@@ -215,7 +215,7 @@ fn transform_template_slot<'a>(
         };
         set_slot(v_if_slot, negative);
       } else {
-        context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf, v_else_dir.span)
+        context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf.message(), v_else_dir.span)
       }
     } else if let Some(for_parse_result) = for_parse_result
       && for_parse_result.source.is_some()

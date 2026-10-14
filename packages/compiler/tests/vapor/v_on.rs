@@ -144,13 +144,11 @@ fn should_error_if_no_expression_and_no_modifier() {
     "<div onClick />",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   );
-  assert_eq!(*error.borrow(), Some(ErrorCodes::VOnNoExpression));
+  assert_eq!(*error.borrow(), Some(ErrorCodes::VOnNoExpression.message()));
 }
 
 #[test]
@@ -160,9 +158,7 @@ fn should_not_error_if_no_expression_but_has_modifier() {
     "<div onClick_prevent />",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|e, _| {
-        *error.borrow_mut() = Some(e);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   )
@@ -373,9 +369,7 @@ fn should_delegate_empty_handler() {
     "<div onClick_delegate />",
     Some(TransformOptions {
       vapor: true,
-      on_error: Box::new(|code, _| {
-        *error.borrow_mut() = Some(code);
-      }),
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),
   )
@@ -421,7 +415,7 @@ fn should_fallback_to_direct_listener_for_unsupported_event() {
     Some(TransformOptions {
       vapor: true,
       on_warn: Box::new(|message, _| {
-        *warning.borrow_mut() = Some(message.to_string());
+        *warning.borrow_mut() = Some(message);
       }),
       ..Default::default()
     }),
@@ -445,7 +439,7 @@ fn should_ignore_delegate_modifier_on_component_event() {
     Some(TransformOptions {
       vapor: true,
       on_warn: Box::new(|message, _| {
-        *warning.borrow_mut() = Some(message.to_string());
+        *warning.borrow_mut() = Some(message);
       }),
       ..Default::default()
     }),
@@ -580,4 +574,87 @@ fn should_prioritize_right_over_middle_for_click_event_normalization() {
   	return [_n0, _n1];
   })();
   "#);
+}
+
+// vapor has no per-element vnode hooks, so a hook on a plain element can only
+// register a listener that never fires. upstream (#15807) drops `@vue:*` there
+// and warns; the port does the same, and also warns for `onVnodeXxx`, which
+// resolves to the same event without the `vue:` prefix.
+//
+// upstream's guard is `tagType === ElementTypes.ELEMENT`, i.e. the tag is a
+// known HTML/SVG tag. `!is_component` is the port's closest equivalent, so a
+// component, a custom element (`<my-el>`, routed to the component path by
+// `transform.rs`), a `<slot>`, and a `<template>` with structural directives
+// are all left alone, while `<div>`/`<svg>`/`<input>` warn.
+const VNODE_HOOK_MESSAGE: &str = "onVue:xxx / onVnodeXxx per-element lifecycle events are not supported in Vapor mode and will be ignored.";
+
+fn vue_hook_warning(source: &str) -> Option<(String, usize)> {
+  let warning: RefCell<Option<(String, usize)>> = RefCell::new(None);
+  transform(
+    source,
+    Some(TransformOptions {
+      vapor: true,
+      on_warn: Box::new(|message, span| {
+        *warning.borrow_mut() = Some((message, span.start as usize));
+      }),
+      ..Default::default()
+    }),
+  );
+  warning.into_inner()
+}
+
+#[test]
+fn warns_and_drops_vue_hooks_on_elements() {
+  let cases = [
+    "<div onVue:mounted={onMounted}>{bar}</div>",
+    "<input onVue:beforeUnmount={onMounted} v-model={foo} />",
+    "<svg v-for={item in items} onVue:updated={onMounted} />",
+    "<textarea onVnodeUpdated={onMounted} />",
+    // `onVnodeXxx` reaches the same event without the `vue:` prefix
+    "<div onVnodeMounted={onMounted} />",
+    // any `vue:` arg names a hook the element cannot host
+    "<div onVue:whatever={onMounted} />",
+  ];
+
+  for source in cases {
+    let (message, start) =
+      vue_hook_warning(source).unwrap_or_else(|| panic!("no warning for {source}"));
+    assert_eq!(message, VNODE_HOOK_MESSAGE, "{source}");
+    // the span points at the attribute, not at the whole element
+    assert!(
+      source[start..].starts_with("onVue:") || source[start..].starts_with("onVnode"),
+      "{source} @ {start}"
+    );
+  }
+}
+
+#[test]
+fn keeps_vue_hooks_where_a_vnode_exists() {
+  for source in [
+    "<Comp onVue:mounted={onMounted} />",
+    "<Comp onVnodeMounted={onMounted} />",
+    "<slot onVue:mounted={onMounted} />",
+    // custom elements go through the component path, like upstream's
+    // `_createAssetComponent`, so they are not warned about either
+    "<my-el onVue:mounted={onMounted} />",
+    "<template v-if={ok} onVue:mounted={onMounted}><div /></template>",
+  ] {
+    assert!(vue_hook_warning(source).is_none(), "{source}");
+  }
+}
+
+// dropping the listener is the only effect
+#[test]
+fn a_vue_hook_on_an_element_leaves_no_listener() {
+  let code = transform(
+    "<div onVue:mounted={onMounted}>{bar}</div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(!code.contains("_on("));
+  assert!(!code.contains("vnodeMounted"));
+  assert!(!code.contains("onVnodeMounted"));
 }

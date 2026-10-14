@@ -62,6 +62,7 @@ pub fn gen_raw_slots<'a>(
     let mut static_slots = slots.remove(0);
     if let Either4::A(static_slots) = &mut static_slots
       && static_slots.slots.len() == 1
+      && slots.is_empty()
       && let Some(default_slot) = static_slots.slots.shift_remove("default")
     {
       return Some(gen_slot_block_with_props(
@@ -77,7 +78,7 @@ pub fn gen_raw_slots<'a>(
         static_slots.slots,
         context,
         context_block,
-        if slots.len() > 1 { Some(slots) } else { None },
+        if !slots.is_empty() { Some(slots) } else { None },
         slot_declarations,
       ))
     } else {
