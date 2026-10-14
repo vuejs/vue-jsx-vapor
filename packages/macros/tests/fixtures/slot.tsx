@@ -1,31 +1,37 @@
-import { defineComponent, defineVaporComponent } from 'vue';
+import { defineComponent, defineVaporComponent } from 'vue'
 
-const Comp = defineComponent((props: {text?: string}) => {
+const Comp = defineComponent((props: { text?: string }) => {
   const computedText = () => {
-   return props.text
+    return props.text
   }
-  return () => <div><slot foo="" /></div>
+  return () => (
+    <div>
+      <slot foo="" />
+    </div>
+  )
 })
-;<Comp>
-  {{ default: (props) => [props.foo === ''] }}
-</Comp>
+;<Comp>{{ default: (props) => [props.foo === ''] }}</Comp>
 
-const Comp1 = defineVaporComponent((props: {text?: string}) => {
+const Comp1 = defineVaporComponent((props: { text?: string }) => {
   const computedText = () => {
-   return props.text
+    return props.text
   }
-  return <div><slot foo="" /></div>
-}) 
-;<Comp1>
-  {{ default: (props) => [props.foo === ''] }}
-</Comp1>
+  return (
+    <div>
+      <slot foo="" />
+    </div>
+  )
+})
+;<Comp1>{{ default: (props) => [props.foo === ''] }}</Comp1>
 
-const Comp2 = (props: {text?: string}) => {
+const Comp2 = (props: { text?: string }) => {
   const computedText = () => {
-   return props.text
+    return props.text
   }
-  return <div><slot foo="" /></div>
+  return (
+    <div>
+      <slot foo="" />
+    </div>
+  )
 }
-;<Comp2>
-  {{ default: (props) => [props.foo === ''] }}
-</Comp2>
+;<Comp2>{{ default: (props) => [props.foo === ''] }}</Comp2>

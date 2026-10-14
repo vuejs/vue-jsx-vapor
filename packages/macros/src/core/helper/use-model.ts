@@ -14,11 +14,7 @@ export function useModel<
   K extends keyof T,
   G = T[K],
   S = T[K],
->(
-  props: T,
-  name: K,
-  options?: DefineModelOptions<T[K]>,
-): ModelRef<T[K], M, G, S>
+>(props: T, name: K, options?: DefineModelOptions<T[K]>): ModelRef<T[K], M, G, S>
 export function useModel(
   props: Record<string, any>,
   name: string,

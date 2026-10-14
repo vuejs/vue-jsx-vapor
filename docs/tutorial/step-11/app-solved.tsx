@@ -1,23 +1,24 @@
-import { computed, shallowRef, type Ref, type UnwrapRef } from 'vue'
+import { computed, defineComponent, shallowRef } from 'vue'
 
-const Comp = (
-  props: { count: number },
-  { expose }: { expose: (exposed: { double: Ref<number> }) => any },
-) => {
-  const double = computed(() => props.count * 2)
-  expose({
-    double,
-  })
-  return <span>{props.count} x 2 = </span>
-}
+const Comp = defineComponent({
+  props: ['count'],
+  setup: (props: { count: number }) => {
+    const double = computed(() => props.count * 2)
+    return {
+      double,
+    }
+  },
+  render() {
+    return <span>{this.count} x 2 = </span>
+  },
+})
 
-export default () => {
-  const compRef =
-    shallowRef<UnwrapRef<Parameters<Parameters<typeof Comp>[1]['expose']>[0]>>()
-  return (
+export default defineComponent(() => {
+  const compRef = shallowRef<InstanceType<typeof Comp>>()
+  return () => (
     <>
       <Comp ref={compRef} count={1} />
       {compRef.value?.double}
     </>
   )
-}
+})

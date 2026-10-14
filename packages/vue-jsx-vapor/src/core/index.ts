@@ -1,36 +1,25 @@
-import { transform } from '@vue-jsx-vapor/compiler-rs'
+import { transform, type CompilerOptions } from '@vue-jsx/compiler'
 import type { Options } from '../options'
 import type { UnpluginMessage } from 'unplugin'
 
 export type { Options }
 
-export function transformVueJsxVapor(
-  code: string,
-  id: string,
-  options?: Options,
-  needSourceMap = false,
-  needHMR = false,
-  ssr = false,
-) {
+export function transformVueJsxVapor(code: string, id: string, options: CompilerOptions = {}) {
   const params = new URLSearchParams(id)
-  const vapor = params.get('vapor')
+  const vapor = params.has('vapor')
   const errors: UnpluginMessage[] = []
   const warnings: UnpluginMessage[] = []
-  const { onError, onWarn, ...compiler } = options?.compiler || {}
   const result = transform(code, {
     filename: id,
-    sourceMap: needSourceMap,
-    interop: vapor ? false : options?.interop,
-    hmr: needHMR,
-    ssr,
-    ...compiler,
+    ...options,
+    vapor: vapor || (options.vapor ?? true),
     onError: (error) => {
       errors.push(error as UnpluginMessage)
-      onError?.(error)
+      options.onError?.(error)
     },
     onWarn: (warning) => {
       warnings.push(warning as UnpluginMessage)
-      onWarn?.(warning)
+      options.onWarn?.(warning)
     },
   })
   return { ...result, errors, warnings }

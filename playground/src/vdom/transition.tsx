@@ -5,34 +5,7 @@ export default defineComponent(() => {
   return () => (
     <>
       <button onClick={() => (show.value = !show.value)}>Toggle</button>
-      <Transition
-        appear
-        onBeforeEnter={() => {
-          console.error('should not trigger')
-        }}
-      >
-        <div v-show={show.value}>1</div>
-      </Transition>
-      <Transition
-        appear
-        onBeforeEnter={() => {
-          console.info('should trigger')
-        }}
-      >
-        <div v-show={!show.value}>2</div>
-      </Transition>
+      <Transition appear>{show.value ? <div>visible</div> : null}</Transition>
     </>
   )
 })
-
-defineStyle(`
-  .v-enter-active,
-  .v-leave-active {
-    transition: opacity 0.5s ease;
-  }
-  
-  .v-enter-from,
-  .v-leave-to {
-    opacity: 0;
-  }
-`)

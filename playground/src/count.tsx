@@ -1,8 +1,9 @@
-import { computed, defineVaporComponent } from 'vue'
+import { computed, type Ref } from 'vue'
 
-export default defineVaporComponent(({ value = '' }) => {
-  defineExpose({
-    double: computed(() => +value * 2),
-  })
-  return <div>{value}</div>
-})
+export default (
+  props: { value: string },
+  { expose }: { expose: (value: { double: Ref<number> }) => void },
+) => {
+  expose({ double: computed(() => +props.value * 2) })
+  return <div>{props.value}</div>
+}

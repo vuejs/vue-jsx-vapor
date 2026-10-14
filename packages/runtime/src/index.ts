@@ -6,4 +6,17 @@ export * from './vdom'
 export { shallowRef as useRef } from 'vue'
 
 export type * from './jsx'
-export type * from './types'
+
+export type {
+  DirectiveArgs,
+  EmitFnToEmits,
+  EmitFnToProps,
+  ExposedToProps,
+  ExtractExposed,
+  NodeArrayChildren,
+  NodeChild,
+  NodeRef,
+  RenderResult,
+  SetupContextToProps,
+  SlotsToProps,
+} from './types'
