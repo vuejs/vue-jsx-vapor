@@ -1,3 +1,5 @@
+#[cfg(feature = "napi")]
+use common::error::{CompilerDiagnostic, create_compiler_diagnostic};
 pub use common::options::TransformOptions;
 use napi::{
   Either, Env,
@@ -9,9 +11,11 @@ use oxc_diagnostics::OxcDiagnostic;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::{SourceType, Span};
+use std::cell::RefCell;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 
-use common::{error::create_compiler_message, options::Hmr};
+use common::options::Hmr;
 
 use crate::transform::Transform;
 
@@ -70,6 +74,8 @@ pub struct CompilerOptions {
 pub struct TransformReturn {
   pub code: String,
   pub map: Option<String>,
+  pub errors: Vec<CompilerDiagnostic>,
+  pub warnings: Vec<CompilerDiagnostic>,
 }
 
 #[cfg(feature = "napi")]
@@ -89,6 +95,8 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
   } else {
     filename
   };
+  let errors: Rc<RefCell<Vec<CompilerDiagnostic>>> = Rc::new(RefCell::new(Vec::new()));
+  let warnings: Rc<RefCell<Vec<CompilerDiagnostic>>> = Rc::new(RefCell::new(Vec::new()));
   let CodegenReturn { code, map, .. } = transform(
     &source,
     Some(TransformOptions {
@@ -100,23 +108,33 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
       optimize: options.optimize.unwrap_or(true),
       runtime_module_name: options.runtime_module_name,
       merge_props: options.merge_props.unwrap_or(true),
-      on_error: if let Some(on_error) = options.on_error {
+      on_error: {
+        let errors = Rc::clone(&errors);
+        let user_on_error = options.on_error;
         Box::new(move |message: String, span: Span| {
-          let compiler_error =
-            create_compiler_message(&env, message, filename, source, span.start).unwrap();
-          on_error.call(compiler_error).unwrap();
+          errors.borrow_mut().push(CompilerDiagnostic::new(
+            &message, filename, source, span.start,
+          ));
+          if let Some(on_error) = &user_on_error {
+            let compiler_error =
+              create_compiler_diagnostic(&env, message, filename, source, span.start).unwrap();
+            on_error.call(compiler_error).unwrap();
+          }
         }) as Box<dyn Fn(String, Span)>
-      } else {
-        Box::new(|_: String, _: Span| {}) as Box<dyn Fn(String, Span)>
       },
-      on_warn: if let Some(on_warn) = options.on_warn {
+      on_warn: {
+        let warnings = Rc::clone(&warnings);
+        let user_on_warn = options.on_warn;
         Box::new(move |message: String, span: Span| {
-          let warning =
-            create_compiler_message(&env, message, filename, source, span.start).unwrap();
-          on_warn.call(warning).unwrap();
+          warnings.borrow_mut().push(CompilerDiagnostic::new(
+            &message, filename, source, span.start,
+          ));
+          if let Some(on_warn) = &user_on_warn {
+            let warning =
+              create_compiler_diagnostic(&env, message, filename, source, span.start).unwrap();
+            on_warn.call(warning).unwrap();
+          }
         }) as Box<dyn Fn(String, Span)>
-      } else {
-        Box::new(|_: String, _: Span| {}) as Box<dyn Fn(String, Span)>
       },
       ..Default::default()
     }),
@@ -124,6 +142,8 @@ pub fn _transform(env: Env, source: String, options: Option<CompilerOptions>) ->
   TransformReturn {
     code,
     map: map.map(|m| m.to_json_string()),
+    errors: errors.borrow().clone(),
+    warnings: warnings.borrow().clone(),
   }
 }
 

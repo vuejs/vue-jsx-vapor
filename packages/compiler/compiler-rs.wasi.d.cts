@@ -102,7 +102,19 @@ export declare function transform(
   options?: CompilerOptions | undefined | null,
 ): TransformReturn
 
+export interface CompilerDiagnosticLoc {
+  file: string
+  line: number
+  column: number
+}
+export interface CompilerDiagnostic {
+  message: string
+  id: string
+  loc: CompilerDiagnosticLoc
+}
 export interface TransformReturn {
   code: string
   map?: string
+  errors: Array<CompilerDiagnostic>
+  warnings: Array<CompilerDiagnostic>
 }

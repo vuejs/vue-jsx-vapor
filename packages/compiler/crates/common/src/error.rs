@@ -128,18 +128,42 @@ impl ErrorCodes {
   }
 }
 
-pub fn create_compiler_message<'a>(
-  env: &'a Env,
-  message: String,
-  id: &str,
-  source: &'a str,
-  offset: u32,
-) -> Result<Object<'a>> {
-  let mut js_error = env.create_error(Error::from_reason(&message))?;
-  js_error.set("id", id)?;
+#[cfg(feature = "napi")]
+#[napi(object)]
+#[derive(Clone)]
+pub struct CompilerDiagnosticLoc {
+  pub file: String,
+  pub line: u32,
+  pub column: u32,
+}
 
-  // convert a byte offset into a 1-based line and a 0-based UTF-16 column,
-  // which is what bundlers expect in error locations
+#[cfg(feature = "napi")]
+#[napi(object)]
+#[derive(Clone)]
+pub struct CompilerDiagnostic {
+  pub message: String,
+  pub id: String,
+  pub loc: CompilerDiagnosticLoc,
+}
+
+impl CompilerDiagnostic {
+  pub fn new(message: &str, id: &str, source: &str, offset: u32) -> Self {
+    let (line, column) = offset_to_line_column(source, offset);
+    Self {
+      message: message.to_string(),
+      id: id.to_string(),
+      loc: CompilerDiagnosticLoc {
+        file: id.to_string(),
+        line,
+        column,
+      },
+    }
+  }
+}
+
+// convert a byte offset into a 1-based line and a 0-based UTF-16 column,
+// which is what bundlers expect in error locations
+fn offset_to_line_column(source: &str, offset: u32) -> (u32, u32) {
   let mut offset = offset as usize;
   while offset > 0 && !source.is_char_boundary(offset) {
     offset -= 1;
@@ -153,6 +177,19 @@ pub fn create_compiler_message<'a>(
   .chars()
   .map(|c| c.len_utf16() as u32)
   .sum();
+  (line, column)
+}
+
+pub fn create_compiler_diagnostic<'a>(
+  env: &'a Env,
+  message: String,
+  id: &str,
+  source: &'a str,
+  offset: u32,
+) -> Result<Object<'a>> {
+  let mut js_error = env.create_error(Error::from_reason(&message))?;
+  js_error.set("id", id)?;
+  let (line, column) = offset_to_line_column(source, offset);
 
   let mut loc = Object::new(env)?;
   loc.set("file", id)?;
