@@ -571,6 +571,19 @@ fn gen_slot_block_with_props<'a>(
         props_name = Cow::Owned(format!("_slotProps{}", scope.0));
         exit_scope = Some(scope.1);
       }
+      // `v-slot="{ a } = { a: 1 }"`: the props pattern carries its own default,
+      // so it destructures like an object expression does
+      Expression::AssignmentExpression(assign)
+        if matches!(
+          &assign.left,
+          AssignmentTarget::ObjectAssignmentTarget(_) | AssignmentTarget::ArrayAssignmentTarget(_)
+        ) =>
+      {
+        props_ast = Some(props);
+        let scope = context.enter_scope();
+        props_name = Cow::Owned(format!("_slotProps{}", scope.0));
+        exit_scope = Some(scope.1);
+      }
       Expression::Identifier(props) => {
         props_name = Cow::Borrowed(props.name.as_str());
       }

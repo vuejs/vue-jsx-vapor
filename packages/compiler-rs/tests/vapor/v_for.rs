@@ -1083,3 +1083,62 @@ fn v_for_object_destructured_alias_string_literal_key() {
   let code = transform("<div v-for={({ \"a-b\": v }) in items}>{{ v }}</div>", None).code;
   assert!(code.contains("_for_item0.value[\"a-b\"]"), "{code}");
 }
+
+// upstream: `applies nested destructure defaults at their own level`. A default
+// on an outer level used to wrap the whole leaf path, and an id bound by a
+// pattern on the left of `=` was not reported at all.
+#[test]
+fn v_for_nested_destructure_defaults_apply_at_their_own_level() {
+  let code = transform(
+    "<div v-for={({ b: { c } = { c: 1 }, d: [x = 2] = [] }) in items}>{{ c }}{{ x }}</div>",
+    None,
+  )
+  .code;
+  assert!(
+    code.contains("_getDefaultValue(_for_item0.value.b, () => ({ c: 1 })).c"),
+    "{code}"
+  );
+  assert!(
+    code.contains("_getDefaultValue(_getDefaultValue(_for_item0.value.d, () => [])[0], () => 2)"),
+    "{code}"
+  );
+}
+
+// upstream: `applies a default of a destructured alias`
+#[test]
+fn v_for_destructured_alias_default_applies_to_the_alias() {
+  let code = transform(
+    "<div v-for={({ a } = { a: 1 }) in items}>{{ a }}</div>",
+    None,
+  )
+  .code;
+  assert!(
+    code.contains("_getDefaultValue(_for_item0.value, () => ({ a: 1 })).a"),
+    "{code}"
+  );
+
+  let code = transform(
+    "<div v-for={([x, y] = [1, 2]) in items}>{{ x }}{{ y }}</div>",
+    None,
+  )
+  .code;
+  assert!(
+    code.contains("_getDefaultValue(_for_item0.value, () => [1, 2])[0]"),
+    "{code}"
+  );
+}
+
+// a rest element under a default still excludes the keys bound beside it
+#[test]
+fn v_for_rest_under_a_default_excludes_the_sibling_keys() {
+  let code = transform(
+    "<div v-for={({ b: { c, ...r } = { c: 1, d: 2 } }) in items}>{c}{r.d}</div>",
+    None,
+  )
+  .code;
+  assert!(
+    code.contains("_getRestElement(_getDefaultValue(_for_item0.value.b, () => ({"),
+    "{code}"
+  );
+  assert!(code.contains(r#", ["c"])"#), "{code}");
+}

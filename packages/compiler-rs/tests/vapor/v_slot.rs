@@ -1650,9 +1650,9 @@ fn array_args_with_arg() {
   "#);
 }
 
-// the slot props pattern is parsed as an expression too, so a default only
-// survives when the property is renamed (`foo: bar = 1`); the shorthand form
-// (`foo = 1`) is rejected by the parser.
+// the slot props pattern is parsed as an expression too, so a default survives
+// on a renamed property (`foo: bar = 1`) and on a nested pattern, while the
+// shorthand form (`foo = 1`) is rejected by the parser.
 #[test]
 fn slot_prop_destructuring_with_default_value() {
   let code = transform(
@@ -1906,4 +1906,29 @@ fn conditional_slot_beside_a_plain_template() {
   	return _n3;
   })();
   "#);
+}
+
+// the props pattern is parsed as an expression too, so a default on an outer
+// level - or on the pattern itself - reaches the walk like it does for v-for
+#[test]
+fn slot_prop_destructuring_defaults_apply_at_their_own_level() {
+  let code = transform(
+    r#"<Comp><template v-slot:default={{ b: { c } = { c: 1 } }}>{ c }</template></Comp>"#,
+    None,
+  )
+  .code;
+  assert!(
+    code.contains("_getDefaultValue(_slotProps0.b, () => ({ c: 1 })).c"),
+    "{code}"
+  );
+
+  let code = transform(
+    r#"<Comp><template v-slot:default={({ a } = { a: 1 })}>{ a }</template></Comp>"#,
+    None,
+  )
+  .code;
+  assert!(
+    code.contains("_getDefaultValue(_slotProps0, () => ({ a: 1 })).a"),
+    "{code}"
+  );
 }
