@@ -206,6 +206,7 @@ impl<'a> Transform<'a> {
       let vapor_helpers = vec![
         "setNodes",
         "createNodes",
+        "createMappedFor",
         "createComponent",
         "normalizeVaporSlots",
         "defineVaporSSRComponent",
