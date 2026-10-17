@@ -292,16 +292,10 @@ fn gen_effects<'a>(
   }
 }
 
-pub fn mark_slot_root_operations<'a>(
-  block: &mut BlockIRNode<'a>,
-  context: &CodegenContext<'a>,
-  mut shared_fallback: bool,
-) {
+pub fn mark_slot_root_operations<'a>(block: &mut BlockIRNode<'a>, context: &CodegenContext<'a>) {
   if has_stable_slot_root(block, context) {
     return;
   }
-
-  shared_fallback = shared_fallback || has_multiple_dynamic_slot_roots(block);
 
   let block_ptr = block as *mut _;
   for returned in block.returns.iter() {
@@ -313,39 +307,32 @@ pub fn mark_slot_root_operations<'a>(
     };
 
     match operation.as_mut() {
-      OperationNode::If(operation) => mark_slot_root_if(operation, context, shared_fallback),
+      OperationNode::If(operation) => mark_slot_root_if(operation, context),
       OperationNode::For(operation) => mark_slot_root_for(operation, context),
       OperationNode::Key(operation) => {
         operation.slot_root = true;
-        mark_slot_root_operations(&mut operation.block, context, shared_fallback);
+        mark_slot_root_operations(&mut operation.block, context);
       }
       OperationNode::SlotOutlet(operation) => {
         operation.flags |= VaporSlotFlags::Forwarded as i32;
-        if shared_fallback {
-          operation.flags |= VaporSlotFlags::SharedFallback as i32;
-        }
       }
       _ => {}
     }
   }
 }
 
-fn mark_slot_root_if<'a>(
-  operation: &mut IfIRNode<'a>,
-  context: &CodegenContext<'a>,
-  shared_fallback: bool,
-) {
+fn mark_slot_root_if<'a>(operation: &mut IfIRNode<'a>, context: &CodegenContext<'a>) {
   if !operation.once {
     operation.slot_root = true;
   }
-  mark_slot_root_operations(&mut operation.positive, context, shared_fallback);
+  mark_slot_root_operations(&mut operation.positive, context);
 
   let Some(negative) = operation.negative.as_mut() else {
     return;
   };
   match negative.as_mut() {
-    Either::A(negative) => mark_slot_root_operations(negative, context, shared_fallback),
-    Either::B(negative) => mark_slot_root_if(negative, context, shared_fallback),
+    Either::A(negative) => mark_slot_root_operations(negative, context),
+    Either::B(negative) => mark_slot_root_if(negative, context),
   }
 }
 
@@ -353,24 +340,7 @@ fn mark_slot_root_for<'a>(operation: &mut ForIRNode<'a>, context: &CodegenContex
   if !operation.once {
     operation.slot_root = true;
   }
-  mark_slot_root_operations(&mut operation.render, context, true);
-}
-
-fn has_multiple_dynamic_slot_roots<'a>(block: &mut BlockIRNode<'a>) -> bool {
-  let mut count = 0;
-  let block_ptr = block as *mut BlockIRNode;
-  for id in block.returns.iter() {
-    let Some(child) = find_returned_dynamic(unsafe { &mut *block_ptr }, *id) else {
-      continue;
-    };
-    if child.operation.is_some() {
-      count += 1;
-      if count > 1 {
-        return true;
-      }
-    }
-  }
-  false
+  mark_slot_root_operations(&mut operation.render, context);
 }
 
 pub fn find_returned_dynamic<'a>(

@@ -853,30 +853,30 @@ fn slot_tag_only() {
 }
 
 #[test]
-fn multiple_dynamic_slot_roots_share_fallback_decision() {
+fn multiple_dynamic_slot_roots_do_not_share_fallback() {
   let code = transform(r#"<Comp><slot name="a"/><slot name="b"/></Comp>"#, None).code;
 
-  assert_eq!(code.matches("null, null, 12").count(), 2);
+  assert_eq!(code.matches("null, null, 4").count(), 2);
 }
 
 #[test]
-fn slot_root_shares_fallback_with_dynamic_sibling() {
+fn slot_root_does_not_inherit_fallback_from_a_dynamic_sibling() {
   let code = transform(r#"<Comp><slot/><span v-if={ok}/></Comp>"#, None).code;
 
-  assert!(code.contains("null, null, 12"));
+  assert!(code.contains("null, null, 4"));
 }
 
 #[test]
-fn v_once_forwarded_slot_root_shares_fallback() {
+fn v_once_forwarded_slot_root_keeps_its_once_flag() {
   let code = transform(
     r#"<Comp><slot v-once name="a"/><slot name="b"/></Comp>"#,
     None,
   )
   .code;
 
-  assert!(code.contains("null, null, 14"));
-  assert!(code.contains("null, null, 12"));
-  assert!(!code.contains("null, null, 6"));
+  assert!(code.contains("null, null, 6"));
+  assert!(code.contains("null, null, 4"));
+  assert!(!code.contains("null, null, 14"));
 }
 
 #[test]
@@ -1025,7 +1025,7 @@ fn slot_tag_with_v_for() {
   (() => {
   	const _n3 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createFor(() => b, (_for_item0) => {
-  			const _n2 = _createSlot("default", null, null, 12);
+  			const _n2 = _createSlot("default", null, null, 4);
   			return _n2;
   		}, void 0, 48);
   		return _n0;
