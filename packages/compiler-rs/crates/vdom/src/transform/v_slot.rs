@@ -630,7 +630,7 @@ fn build_dynamic_slot<'a>(
       SPAN,
       PropertyKind::Init,
       ast.property_key_static_identifier(SPAN, "key"),
-      ast.expression_numeric_literal(SPAN, index as f64, None, NumberBase::Decimal),
+      ast.expression_string_literal(SPAN, ast.str(&index.to_string()), None),
       false,
       false,
       false,

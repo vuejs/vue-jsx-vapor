@@ -422,7 +422,7 @@ fn named_slot_with_v_if() {
   	return _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [ok ? {
   		name: "one",
   		fn: () => [_cache[0] || (_cache[0] = _normalizeVNode("hello", -1))],
-  		key: 0
+  		key: "0"
   	} : undefined]), 1024);
   })();
   "#);
@@ -446,7 +446,7 @@ fn named_slot_with_v_if2() {
   _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [ok ? {
   	name: "one",
   	fn: () => [_normalizeVNode(() => props)],
-  	key: 0
+  	key: "0"
   } : undefined]), 1024);
   "#);
 }
@@ -473,15 +473,15 @@ fn named_slot_with_v_if_v_else_if_v_else() {
   	return _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [ok ? {
   		name: "one",
   		fn: () => [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))],
-  		key: 0
+  		key: "0"
   	} : orNot ? {
   		name: "two",
   		fn: (props) => [_cache[1] || (_cache[1] = _normalizeVNode("bar", -1))],
-  		key: 1
+  		key: "1"
   	} : {
   		name: "one",
   		fn: () => [_cache[2] || (_cache[2] = _normalizeVNode("baz", -1))],
-  		key: 2
+  		key: "2"
   	}]), 1024);
   })();
   "#);
@@ -792,11 +792,11 @@ fn named_slot_with_v_if_v_else() {
   	return _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [ok ? {
   		name: "one",
   		fn: () => [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))],
-  		key: 0
+  		key: "0"
   	} : {
   		name: "two",
   		fn: () => [_cache[1] || (_cache[1] = _normalizeVNode("baz", -1))],
-  		key: 1
+  		key: "1"
   	}]), 1024);
   })();
   "#);
@@ -826,11 +826,11 @@ fn named_slot_with_v_if_v_else_and_comments() {
   	return _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [ok ? {
   		name: "one",
   		fn: () => [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))],
-  		key: 0
+  		key: "0"
   	} : {
   		name: "two",
   		fn: () => [_cache[1] || (_cache[1] = _normalizeVNode("baz", -1))],
-  		key: 1
+  		key: "1"
   	}]), 1024);
   })();
   "#);
