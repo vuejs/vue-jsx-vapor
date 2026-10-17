@@ -1,17 +1,12 @@
 // Typecheck-only regression test for event modifier props. Exercised by
 // `pnpm typecheck` (tsmc --noEmit); @ts-expect-error lines must keep erroring.
 
-// `_` modifiers and camelCase aliases resolve to the base event's payload
-// type at any chain depth.
+// camelCase aliases resolve to the base event's payload type.
 const handlers = (
   <>
     <div onClick={(e) => e.preventDefault()} />
-    <div onClick_capture={(e) => e.preventDefault()} />
     <div onClickCapture={(e) => e.clientX} />
     <div onClickStop={(e) => e.stopPropagation()} />
-    <div onClick_stop_prevent={(e) => e.clientX} />
-    <div onClick_right_stop={(e) => e.clientX} />
-    <div onKeyup_ctrl={(e) => e.key} />
     <div onKeyupShift={(e) => e.key} />
     <div onKeyupEnter={(e) => e.key} />
     <div onKeydownUp={(e) => e.key} />
@@ -29,11 +24,6 @@ const typed = (
       const s: string = e.clientX
       return s
     }}
-    onKeyup_ctrl={(e) => {
-      // @ts-expect-error - key is a string
-      const n: number = e.key
-      return n
-    }}
   />
 )
 
@@ -49,7 +39,7 @@ const unsupported = <div onClickBanana={(e) => e.preventDefault()} />
 // @ts-expect-error - key names only alias on keyboard events
 const keyOnMouse = <div onDragEnter={(e) => e.preventDefault()} />
 
-// @ts-expect-error - camel chains aren't modeled; use `onClick_right_stop`
+// @ts-expect-error - multi-modifier camel chains aren't modeled
 const camelChain = <div onClickRightStop={(e) => e.preventDefault()} />
 
 export { bogus, camelChain, custom, handlers, keyOnMouse, typed, unsupported }

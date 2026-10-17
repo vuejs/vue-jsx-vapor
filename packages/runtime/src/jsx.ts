@@ -1400,13 +1400,11 @@ type EventModifier =
   | 'down'
 
 export type EventHandlers<E> = {
-  // `_` modifiers accept any suffix; camelCase aliases resolve to the base
-  // event's payload type. Multi-modifier camel chains (`onClickRightStop`)
-  // are supported by the compiler but not modeled here — use the `_`
-  // spelling (`onClick_right_stop`).
+  // camelCase aliases resolve to the base event's payload type.
+  // Multi-modifier camel chains (`onClickRightStop`) are supported by the
+  // compiler.
   [K in keyof E as
     | K
-    | `${K & string}_${string}`
     | `${K & string}${Capitalize<
         K extends 'onKeydown' | 'onKeypress' | 'onKeyup'
           ? EventModifier
