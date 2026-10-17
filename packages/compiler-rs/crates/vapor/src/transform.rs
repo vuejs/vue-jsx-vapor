@@ -604,7 +604,9 @@ impl<'a> TransformContext<'a> {
             *(&*context).in_v_once.borrow_mut() = true;
           };
 
-          if let Some(memo) = &directives.v_memo {
+          if let Some(memo) = &directives.v_memo
+            && (&*context).seen.borrow_mut().insert(memo.span.start)
+          {
             (&*context).options.on_warn.as_ref()(
               "v-memo is not supported in Vapor mode and will be ignored.".to_string(),
               memo.span,

@@ -146,8 +146,9 @@ fn process_slot_outlet<'a>(
     if let Some(name_prop) = &mut name_prop
       && let Some(value) = &mut name_prop.value
       && !is_slots
+      && let Some(expression) = context.jsx_attribute_value_to_expression(value)
     {
-      slot_name = context.jsx_attribute_value_to_expression(value);
+      slot_name = expression;
     }
     slot_props = props;
 

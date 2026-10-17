@@ -263,13 +263,10 @@ pub fn get_constant_type<'a>(
                 let name = &p.name.get_identifier().name;
                 if get_directive_name(name) == "bind"
                   && let Some(JSXAttributeValue::ExpressionContainer(value)) = p.value.as_ref()
+                  && let Some(expression) = value.expression.as_expression()
                   && value.expression.span() != SPAN
                 {
-                  let exp_type = get_constant_type(
-                    Either::B(value.expression.to_expression()),
-                    context,
-                    codegen_map,
-                  );
+                  let exp_type = get_constant_type(Either::B(expression), context, codegen_map);
                   if matches!(exp_type, ConstantTypes::NotConstant) {
                     context
                       .constant_cache

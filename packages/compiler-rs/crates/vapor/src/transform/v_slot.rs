@@ -168,7 +168,10 @@ fn transform_template_slot<'a>(
     let slots = &mut unsafe { &mut *_context_block }.slots;
     let block = exit_block();
     let name = arg.unwrap_or(ast.expression_string_literal(SPAN, "default", None));
-    if v_if_dir.is_none() && v_else_dir.is_none() && for_parse_result.is_none() {
+    if v_if_dir.as_ref().is_none_or(|v_if| v_if.exp.is_none())
+      && v_else_dir.is_none()
+      && for_parse_result.is_none()
+    {
       let slot_name = if let Expression::StringLiteral(arg) = &name {
         arg.value.as_str()
       } else {
@@ -179,10 +182,12 @@ fn transform_template_slot<'a>(
       } else {
         register_slot(slots, Some(name), block, context);
       }
-    } else if let Some(v_if_dir) = v_if_dir {
+    } else if let Some(v_if_dir) = v_if_dir
+      && let Some(condition) = v_if_dir.exp
+    {
       slots.push(Either4::C(IRSlotDynamicConditional {
         slot_type: IRSlotType::CONDITIONAL,
-        condition: v_if_dir.exp.unwrap(),
+        condition,
         negative: None,
         positive: IRSlotDynamicBasic {
           slot_type: IRSlotType::DYNAMIC,

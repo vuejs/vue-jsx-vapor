@@ -26,6 +26,7 @@ pub unsafe fn transform_v_memo<'a>(
     }
     seen.insert(dir.span.start);
     let mut value = dir.value.take()?;
+    let memo = context.jsx_attribute_value_to_expression(&mut value)?;
     let is_component = directives.is_component;
     return Some(Box::new(move || {
       let codegen_map = &mut context.codegen_map.borrow_mut();
@@ -41,7 +42,7 @@ pub unsafe fn transform_v_memo<'a>(
             ast.expression_identifier(SPAN, ast.str(context.options.helper("_withMemo"))),
             NONE,
             ast.vec_from_array([
-              context.jsx_attribute_value_to_expression(&mut value).into(),
+              memo.into(),
               gen_getter(context.gen_vnode_call(codegen, codegen_map), ast).into(),
               ast.expression_identifier(SPAN, "_cache").into(),
               ast

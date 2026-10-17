@@ -433,13 +433,15 @@ pub fn build_props<'a>(
 
           if prop.name.get_identifier().name == "v-on" {
             has_dynamic_keys = true;
-            if let Some(value) = &mut prop.value {
+            if let Some(value) = &mut prop.value
+              && let Some(expression) = context.jsx_attribute_value_to_expression(value)
+            {
               // v-on={obj} -> toHandlers(obj)
               if !properties.is_empty() {
                 merge_args
                   .push(ast.expression_object(node.span, dedupe_properties(properties, ast)));
               }
-              let mut args = ast.vec1(context.jsx_attribute_value_to_expression(value).into());
+              let mut args = ast.vec1(expression.into());
               if !is_component {
                 args.push(ast.expression_boolean_literal(SPAN, true).into())
               }

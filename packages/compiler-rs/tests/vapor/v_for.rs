@@ -841,6 +841,25 @@ fn should_raise_error_if_malformed_expression() {
   );
 }
 
+// `v-for={}` is a JSX empty expression container, which holds no expression at
+// all; resolving it used to abort the compiler.
+#[test]
+fn should_raise_error_if_expression_is_an_empty_container() {
+  let errors = RefCell::new(Vec::new());
+  transform(
+    "<div v-for={} />",
+    Some(TransformOptions {
+      on_error: Box::new(|e, _| errors.borrow_mut().push(e)),
+      ..Default::default()
+    }),
+  );
+  assert!(
+    errors
+      .borrow()
+      .contains(&ErrorCodes::VForMalformedExpression.message())
+  );
+}
+
 // aliases are parsed as expressions here, so a default value or a destructuring
 // pattern is part of the alias source and the bound name has to come off the ast.
 // Upstream also covers ts type annotations, which this parser cannot express.

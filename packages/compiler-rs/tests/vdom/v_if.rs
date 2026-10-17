@@ -193,6 +193,26 @@ fn error_on_v_else_missing_adjacent_v_if() {
   );
 }
 
+// `v-if={}` is a JSX empty expression container, which holds no expression at
+// all; resolving it used to abort the compiler.
+#[test]
+fn error_on_v_if_with_an_empty_expression_container() {
+  let errors = RefCell::new(Vec::new());
+  transform(
+    r#"<div v-if={}/>"#,
+    Some(TransformOptions {
+      interop: true,
+      on_error: Box::new(|e, _| errors.borrow_mut().push(e)),
+      ..Default::default()
+    }),
+  );
+  assert!(
+    errors
+      .borrow()
+      .contains(&ErrorCodes::VIfNoExpression.message())
+  );
+}
+
 #[test]
 fn error_on_v_else_if_missing_adjacent_v_if_or_v_else_if() {
   let error = RefCell::new(None);

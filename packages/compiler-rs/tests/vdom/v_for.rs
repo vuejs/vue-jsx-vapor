@@ -678,4 +678,56 @@ mod error {
       Some(ErrorCodes::VForMalformedExpression.message())
     );
   }
+
+  // `v-for={}` is a JSX empty expression container, which holds no expression
+  // at all; resolving it used to abort the compiler.
+  #[test]
+  fn empty_expression_container() {
+    let errors = RefCell::new(Vec::new());
+    transform(
+      r#"<span v-for={} />"#,
+      Some(TransformOptions {
+        interop: true,
+        on_error: Box::new(|e, _| errors.borrow_mut().push(e)),
+        ..Default::default()
+      }),
+    );
+    assert!(
+      errors
+        .borrow()
+        .contains(&ErrorCodes::VForMalformedExpression.message())
+    );
+  }
+}
+
+// an empty expression container carries no expression at all, so it has to be
+// treated as absent rather than resolved to `null`
+#[test]
+fn v_memo_with_an_empty_expression_container_is_ignored() {
+  let memo = |memo: &str| {
+    transform(
+      &format!("<div v-for={{i in list}}{memo} />"),
+      Some(TransformOptions {
+        interop: true,
+        ..Default::default()
+      }),
+    )
+    .code
+  };
+  assert_eq!(memo(" v-memo={}"), memo(""));
+}
+
+#[test]
+fn key_with_an_empty_expression_container_is_ignored() {
+  let key = |key: &str| {
+    transform(
+      &format!("<div v-for={{i in list}}{key} />"),
+      Some(TransformOptions {
+        interop: true,
+        ..Default::default()
+      }),
+    )
+    .code
+  };
+  assert_eq!(key(" key={}"), key(""));
 }
