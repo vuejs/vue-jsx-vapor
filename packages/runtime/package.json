@@ -46,7 +46,7 @@
     "test": "vitest"
   },
   "peerDependencies": {
-    "vue": "^3.6.0-rc.11"
+    "vue": "^3.6.0-rc.12"
   },
   "devDependencies": {
     "vue": "catalog:"
