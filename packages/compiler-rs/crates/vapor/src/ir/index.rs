@@ -113,6 +113,7 @@ pub struct IRFor<'a> {
 
 #[derive(Debug)]
 pub struct ForIRNode<'a> {
+  pub mapped: bool,
   pub source: Expression<'a>,
   pub value: Option<Expression<'a>>,
   pub key: Option<Expression<'a>>,

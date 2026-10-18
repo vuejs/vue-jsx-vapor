@@ -1,7 +1,9 @@
 use oxc_allocator::TakeIn;
 use oxc_ast::ast::{
-  BinaryExpression, Expression, JSXAttribute, JSXAttributeValue, JSXChild, JSXElement,
+  Argument, BinaryExpression, BinaryOperator, BindingPattern, Expression, JSXAttribute,
+  JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement, Statement,
 };
+use oxc_ast_visit::{Visit, walk};
 use oxc_span::SPAN;
 
 use crate::{
@@ -16,6 +18,133 @@ use common::{
   expression::jsx_attribute_value_to_expression,
   text::is_empty_text,
 };
+
+/// Lower direct keyed JSX maps before text runs are collected, so they use the
+/// same reconciliation, insertion and alias handling as a `v-for` directive.
+pub fn transform_map_children<'a>(node: &mut JSXChild<'a>, context: &TransformContext<'a>) {
+  let children = match node {
+    JSXChild::Element(node) => &mut node.children,
+    JSXChild::Fragment(node) => &mut node.children,
+    _ => return,
+  };
+  for child in children {
+    lower_map_child(child, context);
+  }
+}
+
+fn lower_map_child<'a>(child: &mut JSXChild<'a>, context: &TransformContext<'a>) -> Option<()> {
+  let JSXChild::ExpressionContainer(container) = child else {
+    return None;
+  };
+  let span = container.span;
+  let Expression::CallExpression(call) = container
+    .expression
+    .as_expression_mut()?
+    .get_inner_expression_mut()
+  else {
+    return None;
+  };
+  let call = call.as_mut();
+  let Expression::StaticMemberExpression(member) = &mut call.callee else {
+    return None;
+  };
+  if call.optional || member.optional || member.property.name != "map" || call.arguments.len() != 1
+  {
+    return None;
+  }
+  let Argument::ArrowFunctionExpression(callback) = &mut call.arguments[0] else {
+    return None;
+  };
+  let callback = callback.as_mut();
+  let semantic = context.options.semantic.borrow();
+  // The third map argument is the source array, not v-for's ordinal index.
+  // Mutated aliases and complex callbacks need ordinary JS evaluation.
+  if callback.r#async
+    || callback.params.rest.is_some()
+    || !(1..=2).contains(&callback.params.items.len())
+    || !callback.params.items.iter().all(|param| {
+      let BindingPattern::BindingIdentifier(id) = &param.pattern else {
+        return false;
+      };
+      param.initializer.is_none()
+        && id
+          .symbol_id
+          .get()
+          .is_some_and(|symbol| !semantic.scoping().symbol_is_mutated(symbol))
+    })
+    || !callback.body.directives.is_empty()
+    || callback.body.statements.len() != 1
+  {
+    return None;
+  }
+  let row = match &mut callback.body.statements[0] {
+    Statement::ExpressionStatement(statement) if callback.expression => &mut statement.expression,
+    Statement::ReturnStatement(statement) if !callback.expression => statement.argument.as_mut()?,
+    _ => return None,
+  };
+  let Expression::JSXElement(row) = row.get_inner_expression_mut() else {
+    return None;
+  };
+  // A structural directive on the row has its own scope/precedence. Keep that
+  // expression on the existing path rather than changing its meaning.
+  if row.opening_element.attributes.iter().any(|attribute| {
+    attribute.as_attribute().is_some_and(|attribute| {
+      matches!(&attribute.name, JSXAttributeName::Identifier(name)
+        if matches!(name.name.as_str(), "v-if" | "v-else-if" | "v-else" | "v-for" | "v-slot" | "v-slots"))
+        || matches!(&attribute.name, JSXAttributeName::NamespacedName(name) if name.namespace.name == "v-slot")
+    })
+  }) || !row.opening_element.attributes.iter().any(|attribute| {
+    attribute.as_attribute().is_some_and(|attribute| attribute.is_key() && attribute.value.is_some())
+  }) {
+    return None;
+  }
+
+  let mut refs = TemplateRefVisitor(false);
+  refs.visit_jsx_element(row);
+  if refs.0 {
+    return None;
+  }
+
+  let ast = context.ast;
+  let aliases = ast.vec_from_iter(callback.params.items.iter().map(|param| {
+    let BindingPattern::BindingIdentifier(id) = &param.pattern else {
+      unreachable!();
+    };
+    ast.expression_identifier(id.span, id.name)
+  }));
+  let alias = if aliases.len() == 1 {
+    aliases.into_iter().next().unwrap()
+  } else {
+    ast.expression_sequence(callback.params.span, aliases)
+  };
+  let source = member.object.take_in(context.allocator);
+  row.opening_element.attributes.push(
+    ast.jsx_attribute_item_attribute(
+      span,
+      ast.jsx_attribute_name_identifier(span, "v-for"),
+      Some(
+        ast.jsx_attribute_value_expression_container(
+          span,
+          ast
+            .expression_binary(span, alias, BinaryOperator::In, source)
+            .into(),
+        ),
+      ),
+    ),
+  );
+  *child = JSXChild::Element(row.take_in_box(context.allocator));
+  context.mapped_for_spans.borrow_mut().insert(span.start);
+  Some(())
+}
+
+struct TemplateRefVisitor(bool);
+
+impl<'a> Visit<'a> for TemplateRefVisitor {
+  fn visit_jsx_attribute(&mut self, attribute: &JSXAttribute<'a>) {
+    self.0 |= matches!(&attribute.name, JSXAttributeName::Identifier(name) if name.name == "ref");
+    walk::walk_jsx_attribute(self, attribute);
+  }
+}
 
 /// # SAFETY
 pub unsafe fn transform_v_for<'a>(
@@ -118,6 +247,7 @@ pub unsafe fn transform_v_for<'a>(
     let block = exit_block();
 
     context_block.dynamic.operation = Some(Box::new(OperationNode::For(ForIRNode {
+      mapped: context.mapped_for_spans.borrow().contains(&span.start),
       id,
       value,
       key,
