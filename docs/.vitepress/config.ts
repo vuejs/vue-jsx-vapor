@@ -2,11 +2,44 @@ import { defineConfig } from 'vitepress'
 import { createTwoslasher, transformerTwoslash } from '../../packages/macros/twoslash'
 import vueJsx from '../../packages/vue-jsx/src/volar'
 
+// Temporary workaround: @emnapi 2.0.0-alpha.6 (released 2026-10-05) breaks
+// napi-rs wasm modules ("Check exception status failed" panic), crashing the
+// oxc-based vue-jsx compiler loaded from esm.sh by the playground. This
+// override pins its dependencies back to the last working versions. Remove
+// once upstream fixes the regression (then also drop the deps pin).
+const emnapiImportMap = {
+  imports: {
+    'https://esm.sh/@vue-jsx/compiler-wasm32-wasi?target=es2022':
+      'https://esm.sh/@vue-jsx/compiler-wasm32-wasi?deps=@emnapi/core@2.0.0-alpha.4,@emnapi/runtime@2.0.0-alpha.4&target=es2022',
+  },
+}
+
+// The import map must be registered before the first module script, so it is
+// injected right after <head> rather than listed in `head`.
+const emnapiImportMapTag = `<script type="importmap">${JSON.stringify(emnapiImportMap)}</script>`
+
+const emnapiImportMapPlugin = {
+  name: 'vue-jsx:emnapi-import-map',
+  transformIndexHtml: {
+    order: 'pre' as const,
+    handler: () => [
+      {
+        tag: 'script',
+        attrs: { type: 'importmap' },
+        children: JSON.stringify(emnapiImportMap),
+        injectTo: 'head-prepend' as const,
+      },
+    ],
+  },
+}
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: 'Vue JSX',
   description: 'High-performance Vue JSX compiler powered by Oxc',
   head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }]],
+  vite: { plugins: [emnapiImportMapPlugin] },
+  transformHtml: (html) => html.replace('<head>', `<head>${emnapiImportMapTag}`),
   locales: {
     root: {
       label: 'English',
