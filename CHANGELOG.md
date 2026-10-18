@@ -1,3 +1,19 @@
+## [3.2.28](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.27...v3.2.28) (2026-10-18)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** apply destructure defaults at their own level ([b08b8cf](https://github.com/vuejs/vue-jsx-vapor/commit/b08b8cf2229cabbe777522db2b00c40377996f03))
+* **compiler/vdom:** emit string literals for dynamic slot keys ([4a674bc](https://github.com/vuejs/vue-jsx-vapor/commit/4a674bcb0c69473b572cdfa7803540217a87e644))
+* **compiler:** ignore directives that have no expression ([f1d0609](https://github.com/vuejs/vue-jsx-vapor/commit/f1d060996126fe5e6acaf7e93147e970cfa755f0))
+
+
+### Features
+
+* **compiler:** return errors and warnings from transform ([854a2f0](https://github.com/vuejs/vue-jsx-vapor/commit/854a2f01dad5b3c60dd31b8e4d92e9c38d1eeecf))
+
+
+
 ## [3.2.27](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.26...v3.2.27) (2026-10-13)
 
 
