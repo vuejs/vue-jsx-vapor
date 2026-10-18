@@ -487,3 +487,14 @@ fn clone_hoisted_array_children_in_v_for_hmr_mode() {
   })();
   "#);
 }
+
+// resolving the constant type of a hoisted subtree used to abort on an empty
+// expression container in one of its nested attributes
+#[test]
+fn should_not_abort_on_an_empty_expression_container_in_a_nested_attribute() {
+  let code = transform(r#"<div><span class={} /></div>"#, None).code;
+  assert!(
+    code.contains(r#"_createElementVNode("span", null, null, -1)"#),
+    "{code}"
+  );
+}

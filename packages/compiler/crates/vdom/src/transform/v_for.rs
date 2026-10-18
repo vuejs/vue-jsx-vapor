@@ -60,18 +60,20 @@ pub unsafe fn transform_v_for<'a>(
   let memo = if let Some(memo_prop) = directives.v_memo.as_mut()
     && let Some(value) = &mut memo_prop.value
   {
-    Some(context.jsx_attribute_value_to_expression(value))
+    context.jsx_attribute_value_to_expression(value)
   } else {
     None
   };
   let key_property = if let Some(key_prop) = directives.key.as_mut()
     && let Some(value) = &mut key_prop.value
+    && let Some(expression) =
+      context.jsx_attribute_value_to_expression(&mut value.clone_in(context.allocator))
   {
     Some(ast.object_property(
       SPAN,
       PropertyKind::Init,
       ast.property_key_static_identifier(SPAN, ast.str("key")),
-      context.jsx_attribute_value_to_expression(&mut value.clone_in(context.allocator)),
+      expression,
       false,
       false,
       false,
@@ -353,13 +355,11 @@ pub fn get_for_parse_result<'a>(
   let mut source = None;
   if let Some(dir_value) = &mut dir.value {
     let expression = if let JSXAttributeValue::ExpressionContainer(dir_value) = dir_value {
-      Some(
-        dir_value
-          .expression
-          .to_expression_mut()
+      dir_value.expression.as_expression_mut().map(|expression| {
+        expression
           .without_parentheses_mut()
-          .get_inner_expression_mut(),
-      )
+          .get_inner_expression_mut()
+      })
     } else {
       None
     };

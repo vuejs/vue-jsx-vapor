@@ -194,3 +194,11 @@ fn on_template_v_for_with_compound_key_expression() {
   })();
   "#)
 }
+
+// an empty expression container carries no expression, so `v-memo={}` has to be
+// ignored entirely instead of being wrapped in `_withMemo(true, …)`
+#[test]
+fn empty_expression_container_is_ignored() {
+  let code = transform(r#"<div v-memo={}>x</div>"#, None).code;
+  assert!(!code.contains("_withMemo"), "{code}");
+}

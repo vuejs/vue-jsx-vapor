@@ -162,13 +162,11 @@ pub fn get_for_parse_result<'a>(
   let mut source: Option<Expression> = None;
   if let Some(dir_value) = &mut dir.value {
     let expression = if let JSXAttributeValue::ExpressionContainer(dir_value) = dir_value {
-      Some(
-        dir_value
-          .expression
-          .to_expression_mut()
+      dir_value.expression.as_expression_mut().map(|expression| {
+        expression
           .without_parentheses_mut()
-          .get_inner_expression_mut(),
-      )
+          .get_inner_expression_mut()
+      })
     } else {
       None
     };

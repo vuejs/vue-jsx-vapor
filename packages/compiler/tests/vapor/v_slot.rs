@@ -1005,7 +1005,7 @@ fn slot_tag_only() {
 }
 
 #[test]
-fn multiple_dynamic_slot_roots_share_fallback_decision() {
+fn multiple_dynamic_slot_roots_do_not_share_fallback() {
   let code = transform(
     r#"<Comp><slot name="a"/><slot name="b"/></Comp>"#,
     Some(TransformOptions {
@@ -1015,11 +1015,11 @@ fn multiple_dynamic_slot_roots_share_fallback_decision() {
   )
   .code;
 
-  assert_eq!(code.matches("null, null, 12").count(), 2);
+  assert_eq!(code.matches("null, null, 4").count(), 2);
 }
 
 #[test]
-fn slot_root_shares_fallback_with_dynamic_sibling() {
+fn slot_root_does_not_inherit_fallback_from_a_dynamic_sibling() {
   let code = transform(
     r#"<Comp><slot/><span v-if={ok}/></Comp>"#,
     Some(TransformOptions {
@@ -1029,11 +1029,11 @@ fn slot_root_shares_fallback_with_dynamic_sibling() {
   )
   .code;
 
-  assert!(code.contains("null, null, 12"));
+  assert!(code.contains("null, null, 4"));
 }
 
 #[test]
-fn v_once_forwarded_slot_root_shares_fallback() {
+fn v_once_forwarded_slot_root_keeps_its_once_flag() {
   let code = transform(
     r#"<Comp><slot v-once name="a"/><slot name="b"/></Comp>"#,
     Some(TransformOptions {
@@ -1043,9 +1043,9 @@ fn v_once_forwarded_slot_root_shares_fallback() {
   )
   .code;
 
-  assert!(code.contains("null, null, 14"));
-  assert!(code.contains("null, null, 12"));
-  assert!(!code.contains("null, null, 6"));
+  assert!(code.contains("null, null, 6"));
+  assert!(code.contains("null, null, 4"));
+  assert!(!code.contains("null, null, 14"));
 }
 
 #[test]
@@ -1246,7 +1246,7 @@ fn slot_tag_with_v_for() {
   (() => {
   	const _n3 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createFor(() => b, (_for_item0) => {
-  			const _n2 = _createSlot("default", null, null, 12);
+  			const _n2 = _createSlot("default", null, null, 4);
   			return _n2;
   		}, void 0, 48);
   		return _n0;
@@ -1944,9 +1944,9 @@ fn array_args_with_arg() {
   "#);
 }
 
-// the slot props pattern is parsed as an expression too, so a default only
-// survives when the property is renamed (`foo: bar = 1`); the shorthand form
-// (`foo = 1`) is rejected by the parser.
+// the slot props pattern is parsed as an expression too, so a default survives
+// on a renamed property (`foo: bar = 1`) and on a nested pattern, while the
+// shorthand form (`foo = 1`) is rejected by the parser.
 #[test]
 fn slot_prop_destructuring_with_default_value() {
   let code = transform(
@@ -2233,4 +2233,35 @@ fn conditional_slot_beside_a_plain_template() {
   	return _n3;
   })();
   "#);
+}
+
+// the props pattern is parsed as an expression too, so a default on an outer
+// level - or on the pattern itself - reaches the walk like it does for v-for
+#[test]
+fn slot_prop_destructuring_defaults_apply_at_their_own_level() {
+  let code = transform(
+    r#"<Comp><template v-slot:default={{ b: { c } = { c: 1 } }}>{ c }</template></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_getDefaultValue(_slotProps0.b, () => ({ c: 1 })).c"),
+    "{code}"
+  );
+
+  let code = transform(
+    r#"<Comp><template v-slot:default={({ a } = { a: 1 })}>{ a }</template></Comp>"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(
+    code.contains("_getDefaultValue(_slotProps0, () => ({ a: 1 })).a"),
+    "{code}"
+  );
 }

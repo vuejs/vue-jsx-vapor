@@ -5,8 +5,8 @@ use oxc_allocator::{CloneIn, Vec};
 use oxc_ast::{
   AstKind, NONE,
   ast::{
-    Argument, AssignmentOperator, AssignmentTarget, BindingPattern, Expression, FormalParameter,
-    NumberBase, ObjectPropertyKind, PropertyKey,
+    Argument, AssignmentOperator, AssignmentTarget, AssignmentTargetProperty, BindingPattern,
+    Expression, FormalParameter, NumberBase, ObjectPropertyKind, PropertyKey,
   },
 };
 use oxc_span::{GetSpan, SPAN};
@@ -25,6 +25,12 @@ fn is_binding_pattern_id<'a>(
     Some(AstKind::ObjectProperty(parent)) => parent.value.span().eq(&id.span),
     Some(AstKind::ArrayExpression(_)) => true,
     Some(AstKind::SpreadElement(_)) => true,
+    // a pattern on the left of `=`: oxc keeps the ids inside it as references,
+    // but they are only reached through `visit_identifier_reference`
+    Some(AstKind::AssignmentTargetPropertyIdentifier(parent)) => parent.binding.span().eq(&id.span),
+    Some(AstKind::ArrayAssignmentTarget(_)) => true,
+    Some(AstKind::AssignmentTargetWithDefault(_)) => true,
+    Some(AstKind::AssignmentTargetRest(_)) => true,
     _ => false,
   }
 }
@@ -108,12 +114,14 @@ impl<'a> CodegenContext<'a> {
           return;
         }
         let mut path = path.clone_in(ast.allocator);
-        let mut default_value: Option<Expression> = None;
         for i in 0..parent_stack.len() {
           let parent = parent_stack[i];
           let child = parent_stack.get(i + 1);
           let child_is_spread = if let Some(child) = child {
-            matches!(child, AstKind::SpreadElement(_))
+            matches!(
+              child,
+              AstKind::SpreadElement(_) | AstKind::AssignmentTargetRest(_)
+            )
           } else {
             false
           };
@@ -215,25 +223,156 @@ impl<'a> CodegenContext<'a> {
               ]),
               false,
             );
-          } else if let AstKind::AssignmentExpression(parent) = &parent
-            && parent.left.span().eq(&id.span)
-          {
-            // default value, either inside a pattern (`[a = 1]`) or on the
-            // alias itself (`(item, index = 0)`) - both parse as assignment
-            // expressions here, as aliases are parsed as expressions.
-            default_value = Some(parent.right.clone_in(ast.allocator));
-          }
-        }
-        if let Some(default_value) = default_value {
-          path = ast
-            .expression_call(
+          } else if let AstKind::ObjectAssignmentTarget(parent) = &parent {
+            // the pattern side of an assignment target; its ids reach the walk
+            // only through `visit_identifier_reference`
+            if child_is_spread {
+              let properties = &parent.properties;
+              path = ast.expression_call(
+                SPAN,
+                ast.expression_identifier(SPAN, ast.str(self.options.helper("_getRestElement"))),
+                NONE,
+                ast.vec_from_array([
+                  path.into(),
+                  ast
+                    .expression_array(
+                      SPAN,
+                      ast.vec_from_iter(properties.iter().map(|p| {
+                        match p {
+                          AssignmentTargetProperty::AssignmentTargetPropertyProperty(p) => {
+                            if let PropertyKey::StringLiteral(key) = &p.name {
+                              ast.expression_string_literal(SPAN, key.value, None).into()
+                            } else if let Some(key) = p.name.as_expression() {
+                              key.clone_in(ast.allocator).into()
+                            } else {
+                              ast
+                                .expression_string_literal(
+                                  SPAN,
+                                  ast.str(&p.name.name().unwrap_or(Cow::from(""))),
+                                  None,
+                                )
+                                .into()
+                            }
+                          }
+                          // `{ c, ...r }`: a shorthand property binds its own name
+                          AssignmentTargetProperty::AssignmentTargetPropertyIdentifier(p) => ast
+                            .expression_string_literal(SPAN, p.binding.name, None)
+                            .into(),
+                        }
+                      })),
+                    )
+                    .into(),
+                ]),
+                false,
+              );
+            } else if let Some(AstKind::AssignmentTargetPropertyProperty(prop)) = child {
+              if let PropertyKey::StringLiteral(key) = &prop.name {
+                path = ast
+                  .member_expression_computed(
+                    SPAN,
+                    path,
+                    ast.expression_string_literal(SPAN, key.value, None),
+                    false,
+                  )
+                  .into();
+              } else if let Some(key) = prop.name.as_expression() {
+                let key = key.clone_in(ast.allocator);
+                path = ast
+                  .member_expression_computed(SPAN, path, key, false)
+                  .into();
+              } else if let PropertyKey::StaticIdentifier(key) = &prop.name {
+                path = ast
+                  .member_expression_static(SPAN, path, ast.identifier_name(SPAN, key.name), false)
+                  .into()
+              }
+            } else if let Some(AstKind::AssignmentTargetPropertyIdentifier(prop)) = child {
+              path = ast
+                .member_expression_static(
+                  SPAN,
+                  path,
+                  ast.identifier_name(SPAN, prop.binding.name),
+                  false,
+                )
+                .into()
+            }
+          } else if let AstKind::ArrayAssignmentTarget(parent) = &parent {
+            let index = parent
+              .elements
+              .iter()
+              .position(|element| {
+                if let Some(child) = child {
+                  element
+                    .as_ref()
+                    .map(|e| e.span().eq(&child.span()))
+                    .unwrap_or(false)
+                } else {
+                  element
+                    .as_ref()
+                    .map(|e| e.span().eq(&id.span))
+                    .unwrap_or(false)
+                }
+              })
+              .unwrap();
+            if child_is_spread {
+              path = ast.expression_call(
+                SPAN,
+                ast
+                  .member_expression_static(SPAN, path, ast.identifier_name(SPAN, "slice"), false)
+                  .into(),
+                NONE,
+                ast.vec1(Argument::NumericLiteral(ast.alloc_numeric_literal(
+                  SPAN,
+                  index as f64,
+                  None,
+                  NumberBase::Decimal,
+                ))),
+                false,
+              );
+            } else {
+              path = ast
+                .member_expression_computed(
+                  SPAN,
+                  path,
+                  ast.expression_numeric_literal(SPAN, index as f64, None, NumberBase::Decimal),
+                  false,
+                )
+                .into();
+            }
+          } else if let AstKind::AssignmentTargetWithDefault(parent) = &parent {
+            // `[x = 2]`: the default applies where it was written
+            path = ast.expression_call(
               SPAN,
               ast.expression_identifier(SPAN, ast.str(self.options.helper("_getDefaultValue"))),
               NONE,
-              ast.vec_from_array([path.into(), gen_getter(default_value, ast).into()]),
+              ast.vec_from_array([
+                path.into(),
+                gen_getter(parent.init.clone_in(ast.allocator), ast).into(),
+              ]),
               false,
-            )
-            .into();
+            );
+          } else if let AstKind::AssignmentExpression(parent) = &parent
+            && (parent.left.span().eq(&id.span)
+              || matches!(
+                child,
+                Some(AstKind::ObjectAssignmentTarget(_) | AstKind::ArrayAssignmentTarget(_))
+              ))
+          {
+            // default value, either inside a pattern (`[a = 1]`) or on the alias
+            // itself (`(item, index = 0)`, `({ a } = {})`) - both parse as
+            // assignment expressions here, as aliases are parsed as expressions.
+            // Applied where it is written, so a default on an outer level wraps
+            // only the accessor built so far.
+            path = ast.expression_call(
+              SPAN,
+              ast.expression_identifier(SPAN, ast.str(self.options.helper("_getDefaultValue"))),
+              NONE,
+              ast.vec_from_array([
+                path.into(),
+                gen_getter(parent.right.clone_in(ast.allocator), ast).into(),
+              ]),
+              false,
+            );
+          }
         }
         id_map_clone
           .borrow_mut()

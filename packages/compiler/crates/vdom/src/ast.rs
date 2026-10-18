@@ -53,7 +53,7 @@ impl<'a> IfBranchNode<'a> {
         dir
           .value
           .as_mut()
-          .map(|value| context.jsx_attribute_value_to_expression(value))
+          .and_then(|value| context.jsx_attribute_value_to_expression(value))
       },
       node,
     }

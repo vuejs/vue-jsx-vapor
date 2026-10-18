@@ -4,7 +4,10 @@ use napi::bindgen_prelude::Either3;
 use oxc_allocator::TakeIn;
 use oxc_ast::{
   NONE,
-  ast::{ConditionalExpression, Expression, JSXChild, JSXElement, NumberBase, PropertyKind},
+  ast::{
+    ConditionalExpression, Expression, JSXAttributeValue, JSXChild, JSXElement, NumberBase,
+    PropertyKind,
+  },
 };
 use oxc_span::{GetSpan, SPAN, Span};
 
@@ -45,7 +48,14 @@ pub unsafe fn transform_v_if<'a>(
   let ast = &context.ast;
 
   let dir_name = dir.name.get_identifier().name;
-  if dir_name != "v-else" && dir.value.is_none() {
+  let missing_expression = dir.value.as_ref().is_none_or(|value| {
+    matches!(
+      value,
+      JSXAttributeValue::ExpressionContainer(container)
+        if container.expression.as_expression().is_none()
+    )
+  });
+  if dir_name != "v-else" && missing_expression {
     context.options.on_error.as_ref()(ErrorCodes::VIfNoExpression.message(), dir.span);
     dir.value = Some(ast.jsx_attribute_value_expression_container(
       SPAN,

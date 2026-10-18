@@ -56,8 +56,10 @@ pub unsafe fn track_slot_scopes<'a>(
       // since we only care about slots that introduce scope variables.
       if let Some(v_slot) = directives.v_slot.as_ref() {
         let mut identifiers = vec![];
-        if let Some(JSXAttributeValue::ExpressionContainer(slot_props)) = v_slot.value.as_ref() {
-          identifiers = context.add_identifiers(&Some(slot_props.expression.to_expression()));
+        if let Some(JSXAttributeValue::ExpressionContainer(slot_props)) = v_slot.value.as_ref()
+          && let Some(expression) = slot_props.expression.as_expression()
+        {
+          identifiers = context.add_identifiers(&Some(expression));
         }
         if is_component {
           context.options.slot_scopes.borrow_mut().insert(
@@ -204,19 +206,16 @@ pub fn build_slots<'a>(
     // check if name is dynamic.
     let mut static_slot_name = None;
     let slot_dir = slot_dir.unwrap();
-    let slot_name = if let Some(mut slot_name) = slot_dir.arg {
+    let slot_name = if let Some(slot_name) = slot_dir.arg {
       if let Expression::StringLiteral(name) = &slot_name {
         static_slot_name = Some(name.value.as_str());
-        if is_simple_identifier(name.value.as_str()) {
-          slot_name = ast.expression_identifier(SPAN, name.value);
-        };
       } else {
         has_dynamic_slots = true;
       }
       slot_name
     } else {
       static_slot_name = Some("default");
-      ast.expression_identifier(SPAN, "default")
+      ast.expression_string_literal(SPAN, "default", None)
     };
     let slot_props = if let Some(expression) = &slot_dir.exp {
       let span = expression.span();
@@ -256,17 +255,18 @@ pub fn build_slots<'a>(
     );
 
     // check if this slot is conditional (v-if/v-for)
-    if let Some(v_if) = slot_directives.v_if.as_mut() {
+    if let Some(condition) = slot_directives
+      .v_if
+      .as_mut()
+      .and_then(|v_if| v_if.value.as_mut())
+      .and_then(|value| context.jsx_attribute_value_to_expression(value))
+    {
       has_dynamic_slots = true;
       dynamic_slots.push(
         ast
           .expression_conditional(
             SPAN,
-            if let Some(value) = v_if.value.as_mut() {
-              context.jsx_attribute_value_to_expression(value)
-            } else {
-              ast.expression_null_literal(SPAN)
-            },
+            condition,
             build_dynamic_slot(
               slot_name,
               slot_function,
@@ -300,10 +300,12 @@ pub fn build_slots<'a>(
         let ret = get_parent_condition(&mut conditional.alternate)
           .unwrap_or(conditional as *mut oxc_allocator::Box<ConditionalExpression>);
         conditional_branch_index += 1;
-        unsafe { &mut *ret }.alternate = if let Some(value) = &mut v_else.value {
+        unsafe { &mut *ret }.alternate = if let Some(value) = &mut v_else.value
+          && let Some(condition) = context.jsx_attribute_value_to_expression(value)
+        {
           ast.expression_conditional(
             SPAN,
-            context.jsx_attribute_value_to_expression(value),
+            condition,
             build_dynamic_slot(
               slot_name,
               slot_function,
@@ -384,7 +386,10 @@ pub fn build_slots<'a>(
       slots_properties.push(ast.object_property_kind_object_property(
         SPAN,
         PropertyKind::Init,
-        slot_name.into(),
+        match static_slot_name {
+          Some(name) if is_simple_identifier(name) => ast.expression_identifier(SPAN, name).into(),
+          _ => slot_name.into(),
+        },
         ast.expression_call(
           SPAN,
           ast.expression_identifier(
@@ -625,7 +630,7 @@ fn build_dynamic_slot<'a>(
       SPAN,
       PropertyKind::Init,
       ast.property_key_static_identifier(SPAN, "key"),
-      ast.expression_numeric_literal(SPAN, index as f64, None, NumberBase::Decimal),
+      ast.expression_string_literal(SPAN, ast.str(&index.to_string()), None),
       false,
       false,
       false,

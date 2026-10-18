@@ -364,9 +364,9 @@ fn named_slot_with_v_if() {
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [ok ? {
-  		name: one,
+  		name: "one",
   		fn: () => [_cache[0] || (_cache[0] = _normalizeVNode("hello", -1))],
-  		key: 0
+  		key: "0"
   	} : undefined]), 1024);
   })();
   "#);
@@ -385,9 +385,9 @@ fn named_slot_with_v_if2() {
   import { normalizeVNode as _normalizeVNode } from "/vue-jsx/vdom";
   import { createBlock as _createBlock, createSlots as _createSlots, openBlock as _openBlock } from "vue";
   _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [ok ? {
-  	name: one,
+  	name: "one",
   	fn: () => [_normalizeVNode(() => props)],
-  	key: 0
+  	key: "0"
   } : undefined]), 1024);
   "#);
 }
@@ -409,17 +409,17 @@ fn named_slot_with_v_if_v_else_if_v_else() {
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [ok ? {
-  		name: one,
+  		name: "one",
   		fn: () => [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))],
-  		key: 0
+  		key: "0"
   	} : orNot ? {
-  		name: two,
+  		name: "two",
   		fn: (props) => [_cache[1] || (_cache[1] = _normalizeVNode("bar", -1))],
-  		key: 1
+  		key: "1"
   	} : {
-  		name: one,
+  		name: "one",
   		fn: () => [_cache[2] || (_cache[2] = _normalizeVNode("baz", -1))],
-  		key: 2
+  		key: "2"
   	}]), 1024);
   })();
   "#);
@@ -674,13 +674,13 @@ fn named_slot_with_v_if_v_else() {
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [ok ? {
-  		name: one,
+  		name: "one",
   		fn: () => [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))],
-  		key: 0
+  		key: "0"
   	} : {
-  		name: two,
+  		name: "two",
   		fn: () => [_cache[1] || (_cache[1] = _normalizeVNode("baz", -1))],
-  		key: 1
+  		key: "1"
   	}]), 1024);
   })();
   "#);
@@ -705,13 +705,13 @@ fn named_slot_with_v_if_v_else_and_comments() {
   (() => {
   	const _cache = _createVNodeCache("c2c8427c");
   	return _openBlock(), _createBlock(Comp, null, _createSlots({ _: 2 }, [ok ? {
-  		name: one,
+  		name: "one",
   		fn: () => [_cache[0] || (_cache[0] = _normalizeVNode("foo", -1))],
-  		key: 0
+  		key: "0"
   	} : {
-  		name: two,
+  		name: "two",
   		fn: () => [_cache[1] || (_cache[1] = _normalizeVNode("baz", -1))],
-  		key: 1
+  		key: "1"
   	}]), 1024);
   })();
   "#);
@@ -862,4 +862,19 @@ fn array_args_with_arg() {
   	_: 1
   });
   "#);
+}
+
+// `v-slot={}` is an empty expression container, which introduces no scope
+// variables; collecting them used to abort the compiler.
+#[test]
+fn v_slot_with_an_empty_expression_container() {
+  let code = transform(
+    r#"<Comp v-slot={} />"#,
+    Some(TransformOptions {
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert!(code.contains("_createBlock(Comp)"), "{code}");
+  assert!(!code.contains("_withCtx"), "{code}");
 }

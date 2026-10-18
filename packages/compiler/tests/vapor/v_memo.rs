@@ -7,19 +7,19 @@ use compiler::transform;
 // warns about it, so the same warning is emitted here.
 const MESSAGE: &str = "v-memo is not supported in Vapor mode and will be ignored.";
 
-fn warning_for(source: &str) -> Option<(String, usize)> {
-  let warning: RefCell<Option<(String, usize)>> = RefCell::new(None);
+fn warnings_for(source: &str) -> Vec<(String, usize)> {
+  let warnings: RefCell<Vec<(String, usize)>> = RefCell::new(vec![]);
   transform(
     source,
     Some(TransformOptions {
       vapor: true,
       on_warn: Box::new(|message, span| {
-        *warning.borrow_mut() = Some((message, span.start as usize));
+        warnings.borrow_mut().push((message, span.start as usize));
       }),
       ..Default::default()
     }),
   );
-  warning.into_inner()
+  warnings.into_inner()
 }
 
 #[test]
@@ -34,10 +34,14 @@ fn warns_wherever_v_memo_appears() {
   ];
 
   for source in cases {
-    let (message, start) = warning_for(source).unwrap_or_else(|| panic!("no warning for {source}"));
+    let warnings = warnings_for(source);
+    // a structural directive makes the element visit twice, so the warning
+    // must still be deduped by directive
+    assert_eq!(warnings.len(), 1, "{source}: {warnings:?}");
+    let (message, start) = &warnings[0];
     assert_eq!(message, MESSAGE, "{source}");
     // the span points at the directive, not the whole element
-    assert!(source[start..].starts_with("v-memo"), "{source} @ {start}");
+    assert!(source[*start..].starts_with("v-memo"), "{source} @ {start}");
   }
 }
 
@@ -74,6 +78,6 @@ fn v_memo_does_not_change_the_generated_code() {
 
 #[test]
 fn stays_quiet_without_v_memo() {
-  assert!(warning_for("<div>{bar}</div>").is_none());
-  assert!(warning_for("<Comp value={bar} />").is_none());
+  assert!(warnings_for("<div>{bar}</div>").is_empty());
+  assert!(warnings_for("<Comp value={bar} />").is_empty());
 }

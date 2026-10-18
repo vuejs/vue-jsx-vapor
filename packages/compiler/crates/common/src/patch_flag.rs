@@ -249,15 +249,10 @@ pub enum TemplateFlags {
 pub enum VaporSlotFlags {
   NoSlotted = 1,
   Once = 1 << 1,
-  // The outlet is a dynamic root on a forwarded slot chain. It exposes its
-  // content validity to the enclosing boundary (unless ONCE) and, without
-  // SHARED_FALLBACK, may resolve an enclosing fallback after its own local
-  // fallback is exhausted.
+  // The outlet is a dynamic root of slot content. It exposes its validity to
+  // the enclosing boundary (unless ONCE), which renders its own fallback once
+  // every root is invalid.
   Forwarded = 1 << 2,
-  // Implies FORWARDED: multiple independently invalid roots share one
-  // enclosing fallback decision instead of resolving that fallback from each
-  // root.
-  SharedFallback = 1 << 3,
 }
 
 /**

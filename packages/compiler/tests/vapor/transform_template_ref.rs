@@ -81,6 +81,44 @@ fn function_ref() {
   "#);
 }
 
+// a nested pattern as an assignment target property binding: `property.binding`
+// is not always an identifier, and assuming that it was aborted the compiler.
+#[test]
+fn function_ref_nested_pattern_in_assignment_target() {
+  let code = transform(
+    "<Comp v-slot={{baz}}>
+      <div ref={bar => {
+        foo.value = bar
+        ;({ baz: { qux } } = bar)
+        console.log(foo.value, qux)
+      }} />
+  </Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  import { createTemplateRefSetter as _createTemplateRefSetter, renderEffect as _renderEffect, template as _template } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _setTemplateRef = _createTemplateRefSetter();
+  	const _n1 = _createComponent(Comp, null, (_slotProps0) => {
+  		const _n0 = _t0();
+  		_renderEffect(() => _setTemplateRef(_n0, (bar) => {
+  			foo.value = bar;
+  			({baz: {qux: qux}} = bar);
+  			console.log(foo.value, qux);
+  		}));
+  		return _n0;
+  	}, true);
+  	return _n1;
+  })();
+  "#);
+}
+
 #[test]
 fn ref_v_if() {
   let code = transform(

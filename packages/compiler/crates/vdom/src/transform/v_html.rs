@@ -16,11 +16,15 @@ pub fn transform_v_html<'a>(
     {
       let result = context.process_expression(value);
       has_jsx = result.3;
-      result.0
+      Some(result.0)
     } else {
       context.jsx_attribute_value_to_expression(value)
     }
   } else {
+    None
+  };
+
+  let Some(exp) = exp else {
     context.options.on_error.as_ref()(ErrorCodes::VHtmlNoExpression.message(), dir.span);
     return None;
   };

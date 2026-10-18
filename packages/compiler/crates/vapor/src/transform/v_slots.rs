@@ -83,8 +83,9 @@ pub unsafe fn transform_v_slots<'a>(
     }
 
     let mut dynamic = false;
-    if let Some(JSXAttributeValue::ExpressionContainer(value)) = &mut dir.value {
-      let expression = value.expression.to_expression_mut();
+    if let Some(JSXAttributeValue::ExpressionContainer(value)) = &mut dir.value
+      && let Some(expression) = value.expression.as_expression_mut()
+    {
       if expression.is_function() {
         *expression = ast.expression_object(
           SPAN,

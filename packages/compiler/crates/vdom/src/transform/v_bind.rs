@@ -47,13 +47,13 @@ pub fn transform_v_bind<'a>(
     {
       let result = context.process_expression(value);
       has_jsx = result.3;
-      result.0
+      Some(result.0)
     } else {
       context.jsx_attribute_value_to_expression(value)
     }
   } else {
-    ast.expression_boolean_literal(SPAN, true)
-  };
+    Some(ast.expression_boolean_literal(SPAN, true))
+  }?;
 
   Some(DirectiveTransformResult {
     props: vec![ast.object_property_kind_object_property(

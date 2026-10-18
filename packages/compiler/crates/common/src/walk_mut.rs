@@ -163,57 +163,38 @@ impl<'a> VisitMut<'a> for WalkIdentifiersMut<'a> {
   }
 
   fn visit_assignment_target_property(&mut self, node: &mut AssignmentTargetProperty<'a>) {
-    match node {
-      // ;({ baz } = bar)
-      AssignmentTargetProperty::AssignmentTargetPropertyIdentifier(id) => {
-        if let Some(replacer) = self.on_identifier_reference(&mut id.binding) {
-          *node =
-            AssignmentTargetProperty::AssignmentTargetPropertyProperty(oxc_allocator::Box::new_in(
-              AssignmentTargetPropertyProperty {
+    // ;({ baz } = bar) - only the shorthand has to be rebuilt here, since it
+    // has no value slot to hold the replacement. The `baz: baz` form is
+    // rewritten by `visit_simple_assignment_target` on the way down.
+    if let AssignmentTargetProperty::AssignmentTargetPropertyIdentifier(id) = node
+      && let Some(replacer) = self.on_identifier_reference(&mut id.binding)
+    {
+      *node =
+        AssignmentTargetProperty::AssignmentTargetPropertyProperty(oxc_allocator::Box::new_in(
+          AssignmentTargetPropertyProperty {
+            node_id: Cell::new(NodeId::DUMMY),
+            span: SPAN,
+            name: PropertyKey::StaticIdentifier(oxc_allocator::Box::from_in(
+              IdentifierName {
                 node_id: Cell::new(NodeId::DUMMY),
-                span: SPAN,
-                name: PropertyKey::StaticIdentifier(oxc_allocator::Box::from_in(
-                  IdentifierName {
-                    node_id: Cell::new(NodeId::DUMMY),
-                    span: id.binding.span,
-                    name: id.binding.name,
-                  },
-                  &self.options.allocator,
-                )),
-                binding: match replacer {
-                  Expression::Identifier(replacer) => {
-                    AssignmentTargetMaybeDefault::AssignmentTargetIdentifier(replacer)
-                  }
-                  Expression::StaticMemberExpression(replacer) => {
-                    AssignmentTargetMaybeDefault::StaticMemberExpression(replacer)
-                  }
-                  _ => unimplemented!(),
-                },
-                computed: false,
+                span: id.binding.span,
+                name: id.binding.name,
               },
               &self.options.allocator,
-            ));
-        };
-      }
-      // ;({ baz: baz } = bar)
-      AssignmentTargetProperty::AssignmentTargetPropertyProperty(property) => {
-        match &mut property.binding {
-          AssignmentTargetMaybeDefault::AssignmentTargetIdentifier(id) => {
-            if let Some(replacer) = self.on_identifier_reference(id) {
-              property.binding = match replacer {
-                Expression::Identifier(replacer) => {
-                  AssignmentTargetMaybeDefault::AssignmentTargetIdentifier(replacer)
-                }
-                Expression::StaticMemberExpression(replacer) => {
-                  AssignmentTargetMaybeDefault::StaticMemberExpression(replacer)
-                }
-                _ => unimplemented!(),
-              };
-            }
-          }
-          _ => unreachable!(),
-        };
-      }
+            )),
+            binding: match replacer {
+              Expression::Identifier(replacer) => {
+                AssignmentTargetMaybeDefault::AssignmentTargetIdentifier(replacer)
+              }
+              Expression::StaticMemberExpression(replacer) => {
+                AssignmentTargetMaybeDefault::StaticMemberExpression(replacer)
+              }
+              _ => unimplemented!(),
+            },
+            computed: false,
+          },
+          &self.options.allocator,
+        ));
     }
     walk_mut::walk_assignment_target_property(self, node);
   }

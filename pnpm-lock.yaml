@@ -121,7 +121,7 @@ importers:
         version: link:../packages/macros
       '@vue/theme':
         specifier: ^2.4.0
-        version: 2.4.0(@algolia/client-search@5.48.0)(search-insights@2.17.3)(vitepress@2.0.0-alpha.16(@types/node@25.6.0)(change-case@5.4.4)(esbuild@0.27.2)(jiti@2.7.0)(oxc-minify@0.148.0)(postcss@8.5.28)(terser@5.39.0)(typescript@7.0.2)(yaml@2.9.0))(vue@3.6.0-rc.10(typescript@7.0.2))
+        version: 2.4.0(@algolia/client-search@5.48.0)(search-insights@2.17.3)(vitepress@2.0.0-alpha.16(@types/node@25.6.0)(change-case@5.4.4)(esbuild@0.27.2)(jiti@2.7.0)(oxc-minify@0.148.0)(postcss@8.5.30)(terser@5.39.0)(typescript@7.0.2)(yaml@2.9.0))(vue@3.6.0-rc.10(typescript@7.0.2))
       chart.js:
         specifier: latest
         version: 4.5.1
@@ -146,7 +146,7 @@ importers:
         version: 0.148.0
       vitepress:
         specifier: 2.0.0-alpha.16
-        version: 2.0.0-alpha.16(@types/node@25.6.0)(change-case@5.4.4)(esbuild@0.27.2)(jiti@2.7.0)(oxc-minify@0.148.0)(postcss@8.5.28)(terser@5.39.0)(typescript@7.0.2)(yaml@2.9.0)
+        version: 2.0.0-alpha.16(@types/node@25.6.0)(change-case@5.4.4)(esbuild@0.27.2)(jiti@2.7.0)(oxc-minify@0.148.0)(postcss@8.5.30)(terser@5.39.0)(typescript@7.0.2)(yaml@2.9.0)
 
   ecosystem-ci:
     dependencies:
@@ -536,6 +536,11 @@ packages:
 
   '@babel/parser@7.29.8':
     resolution: {integrity: sha512-E8lTAYNB1KW+FH+VGJuZM1ioAx2E6oVlvQFRrf5P8ZZmsiJXYAD9vTFV7yyEURNzgh1dFqMZuO6tUwcARbqFCA==}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
+  '@babel/parser@7.29.9':
+    resolution: {integrity: sha512-CjXrNHTnvqBVqHgdBysY3vk2T8tpJHb5/RMeHJBTyVa9xgugCB0CJTx/3oO8RV2QRQP391RWpB7D6hLjm8V9uA==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -4302,8 +4307,8 @@ packages:
     resolution: {integrity: sha512-dkEJPVvun4FryqBmZ5KhDo0K9iDXAwn08tMLDinNdRBNPcYEDiWYysLcc6k3mjTMlbP9KyylvRpd4wFtwrT9rw==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
-  nanoid@3.3.18:
-    resolution: {integrity: sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w==}
+  nanoid@3.3.20:
+    resolution: {integrity: sha512-uKdg2G3GNCKQn9byYOpxbGqrT2fGO5KRt5J/8b3pok8rT6qxGWF6hxMyJiEYtAf+FVyYuD9hRaDqX5uPFYJ4ZQ==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
@@ -4450,8 +4455,8 @@ packages:
     resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
     engines: {node: '>=14.19.0'}
 
-  postcss@8.5.28:
-    resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
+  postcss@8.5.30:
+    resolution: {integrity: sha512-zkd+e9S1AQHhmaBKye9zlFHWjOwVgqXl1q3ECYy8561K7qxR2cREf/STLskulBFd78k6AOFeA+ff1TtEzk9bAA==}
     engines: {node: ^10 || ^12 || >=14}
 
   preact@10.28.3:
@@ -4618,6 +4623,10 @@ packages:
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
+    engines: {node: '>=0.10.0'}
+
+  source-map-js@1.2.2:
+    resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
     engines: {node: '>=0.10.0'}
 
   source-map-support@0.5.21:
@@ -5369,6 +5378,10 @@ snapshots:
       '@babel/types': 7.29.0
 
   '@babel/parser@7.29.8':
+    dependencies:
+      '@babel/types': 7.29.8
+
+  '@babel/parser@7.29.9':
     dependencies:
       '@babel/types': 7.29.8
 
@@ -6855,7 +6868,7 @@ snapshots:
     dependencies:
       '@volar/language-core': 2.4.27
       '@volar/typescript': 2.4.23(typescript@6.0.3)
-      jiti: 2.6.1
+      jiti: 2.7.0
       rollup-utils: 0.0.5(rollup@3.29.5)
       ts-macro: 0.3.7(typescript@6.0.3)
       vscode-uri: 3.1.0
@@ -7214,7 +7227,7 @@ snapshots:
       '@oxc-project/runtime': 0.151.0
       '@oxc-project/types': 0.151.0
       lightningcss: 1.33.0
-      postcss: 8.5.28
+      postcss: 8.5.30
       yuku-codegen: 0.9.4
       yuku-parser: 0.9.4
     optionalDependencies:
@@ -7239,7 +7252,7 @@ snapshots:
       '@oxc-project/runtime': 0.151.0
       '@oxc-project/types': 0.151.0
       lightningcss: 1.33.0
-      postcss: 8.5.28
+      postcss: 8.5.30
       yuku-codegen: 0.9.4
       yuku-parser: 0.9.4
     optionalDependencies:
@@ -7461,19 +7474,19 @@ snapshots:
 
   '@vue/compiler-core@3.5.33':
     dependencies:
-      '@babel/parser': 7.29.8
+      '@babel/parser': 7.29.9
       '@vue/shared': 3.5.33
       entities: 7.0.1
       estree-walker: 2.0.2
-      source-map-js: 1.2.1
+      source-map-js: 1.2.2
 
   '@vue/compiler-core@3.6.0-rc.10':
     dependencies:
-      '@babel/parser': 7.29.8
+      '@babel/parser': 7.29.9
       '@vue/shared': 3.6.0-rc.10
       entities: 7.0.1
       estree-walker: 2.0.2
-      source-map-js: 1.2.1
+      source-map-js: 1.2.2
 
   '@vue/compiler-dom@3.5.33':
     dependencies:
@@ -7494,12 +7507,12 @@ snapshots:
       '@vue/shared': 3.5.33
       estree-walker: 2.0.2
       magic-string: 0.30.21
-      postcss: 8.5.28
+      postcss: 8.5.30
       source-map-js: 1.2.1
 
   '@vue/compiler-sfc@3.6.0-rc.10':
     dependencies:
-      '@babel/parser': 7.29.8
+      '@babel/parser': 7.29.9
       '@vue/compiler-core': 3.6.0-rc.10
       '@vue/compiler-dom': 3.6.0-rc.10
       '@vue/compiler-ssr': 3.6.0-rc.10
@@ -7507,8 +7520,8 @@ snapshots:
       '@vue/shared': 3.6.0-rc.10
       estree-walker: 2.0.2
       magic-string: 0.30.21
-      postcss: 8.5.28
-      source-map-js: 1.2.1
+      postcss: 8.5.30
+      source-map-js: 1.2.2
 
   '@vue/compiler-ssr@3.5.33':
     dependencies:
@@ -7522,11 +7535,11 @@ snapshots:
 
   '@vue/compiler-vapor@3.6.0-rc.10':
     dependencies:
-      '@babel/parser': 7.29.8
+      '@babel/parser': 7.29.9
       '@vue/compiler-dom': 3.6.0-rc.10
       '@vue/shared': 3.6.0-rc.10
       estree-walker: 2.0.2
-      source-map-js: 1.2.1
+      source-map-js: 1.2.2
 
   '@vue/compiler-vue2@2.7.16':
     dependencies:
@@ -7653,7 +7666,7 @@ snapshots:
 
   '@vue/shared@3.6.0-rc.10': {}
 
-  '@vue/theme@2.4.0(@algolia/client-search@5.48.0)(search-insights@2.17.3)(vitepress@2.0.0-alpha.16(@types/node@25.6.0)(change-case@5.4.4)(esbuild@0.27.2)(jiti@2.7.0)(oxc-minify@0.148.0)(postcss@8.5.28)(terser@5.39.0)(typescript@7.0.2)(yaml@2.9.0))(vue@3.6.0-rc.10(typescript@7.0.2))':
+  '@vue/theme@2.4.0(@algolia/client-search@5.48.0)(search-insights@2.17.3)(vitepress@2.0.0-alpha.16(@types/node@25.6.0)(change-case@5.4.4)(esbuild@0.27.2)(jiti@2.7.0)(oxc-minify@0.148.0)(postcss@8.5.30)(terser@5.39.0)(typescript@7.0.2)(yaml@2.9.0))(vue@3.6.0-rc.10(typescript@7.0.2))':
     dependencies:
       '@docsearch/css': 3.9.0
       '@docsearch/js': 3.9.0(@algolia/client-search@5.48.0)(search-insights@2.17.3)
@@ -7661,7 +7674,7 @@ snapshots:
       body-scroll-lock: 4.0.0-beta.0
       normalize.css: 8.0.1
       tiny-decode: 0.1.3
-      vitepress: 2.0.0-alpha.16(@types/node@25.6.0)(change-case@5.4.4)(esbuild@0.27.2)(jiti@2.7.0)(oxc-minify@0.148.0)(postcss@8.5.28)(terser@5.39.0)(typescript@7.0.2)(yaml@2.9.0)
+      vitepress: 2.0.0-alpha.16(@types/node@25.6.0)(change-case@5.4.4)(esbuild@0.27.2)(jiti@2.7.0)(oxc-minify@0.148.0)(postcss@8.5.30)(terser@5.39.0)(typescript@7.0.2)(yaml@2.9.0)
     transitivePeerDependencies:
       - '@algolia/client-search'
       - '@types/react'
@@ -9002,7 +9015,7 @@ snapshots:
 
   mute-stream@3.0.0: {}
 
-  nanoid@3.3.18: {}
+  nanoid@3.3.20: {}
 
   natural-compare@1.4.0: {}
 
@@ -9206,11 +9219,11 @@ snapshots:
 
   pngjs@7.0.0: {}
 
-  postcss@8.5.28:
+  postcss@8.5.30:
     dependencies:
-      nanoid: 3.3.18
+      nanoid: 3.3.20
       picocolors: 1.1.1
-      source-map-js: 1.2.1
+      source-map-js: 1.2.2
 
   preact@10.28.3: {}
 
@@ -9416,6 +9429,8 @@ snapshots:
       totalist: 3.0.1
 
   source-map-js@1.2.1: {}
+
+  source-map-js@1.2.2: {}
 
   source-map-support@0.5.21:
     dependencies:
@@ -9890,7 +9905,7 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  vitepress@2.0.0-alpha.16(@types/node@25.6.0)(change-case@5.4.4)(esbuild@0.27.2)(jiti@2.7.0)(oxc-minify@0.148.0)(postcss@8.5.28)(terser@5.39.0)(typescript@7.0.2)(yaml@2.9.0):
+  vitepress@2.0.0-alpha.16(@types/node@25.6.0)(change-case@5.4.4)(esbuild@0.27.2)(jiti@2.7.0)(oxc-minify@0.148.0)(postcss@8.5.30)(terser@5.39.0)(typescript@7.0.2)(yaml@2.9.0):
     dependencies:
       '@docsearch/css': 4.5.4
       '@docsearch/js': 4.5.4
@@ -9913,7 +9928,7 @@ snapshots:
       vue: 3.5.33(typescript@7.0.2)
     optionalDependencies:
       oxc-minify: 0.148.0
-      postcss: 8.5.28
+      postcss: 8.5.30
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
       - '@types/node'
