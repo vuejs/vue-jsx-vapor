@@ -1,4 +1,4 @@
 [[rewrites]]
-  from = "/*"
-  to = "/:path.html"
-  status = 200
+from = "/*"
+to = "/:path.html"
+status = 200

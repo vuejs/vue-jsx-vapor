@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { setNodes } from '../src/vapor'
 
 // The compiler pairs every expression container with a blank text node in the template
@@ -25,10 +25,7 @@ test('setNodes drops the placeholder when it inserts a node', () => {
 test('setNodes drops the placeholder for an array value', () => {
   const parent = document.createElement('div')
 
-  setNodes(anchorIn(parent), [
-    document.createElement('span'),
-    document.createElement('b'),
-  ])
+  setNodes(anchorIn(parent), [document.createElement('span'), document.createElement('b')])
 
   expect(parent.innerHTML).toBe('<span></span><b></b>')
 })

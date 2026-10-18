@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vite-plus'
 
 // The vapor-only helpers (`insert`, `isFragment`, ...) live on the vapor build, so the
 // test env has to resolve `vue` to it. `vue` is a dependency of @vue-jsx/runtime — there

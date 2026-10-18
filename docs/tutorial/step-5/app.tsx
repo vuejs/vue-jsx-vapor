@@ -1,8 +1,8 @@
-import { ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 
-export default () => {
+export default defineComponent(() => {
   const toggle = ref(true)
-  return (
+  return () => (
     <>
       <button
         onClick={() => {
@@ -16,4 +16,4 @@ export default () => {
       <h1>false</h1>
     </>
   )
-}
+})

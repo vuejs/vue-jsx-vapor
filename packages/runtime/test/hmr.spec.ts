@@ -1,5 +1,5 @@
-// @vitest-environment jsdom
-import { expect, test, vi } from 'vitest'
+// @vitest-environment happy-dom
+import { expect, test, vi } from 'vite-plus/test'
 import { createApp, defineComponent, h, nextTick } from 'vue'
 import { defineVaporHmrComponent } from '../src/vapor'
 import { defineHmrComponent } from '../src/vdom'
@@ -92,19 +92,13 @@ test('defineHmrComponent forwards every argument to the implementation', () => {
 // function components. Calling the APIs directly, as below, does refresh.
 const hmr = () => (globalThis as any).__VUE_HMR_RUNTIME__
 
-function mountInterop(
-  id: string,
-  impl: any,
-  wrap: any = defineVaporHmrComponent,
-) {
+function mountInterop(id: string, impl: any, wrap: any = defineVaporHmrComponent) {
   const component: any = wrap(impl)
   component.__hmrId = id
   hmr().createRecord(id, component)
 
   const root = document.createElement('div')
-  createApp(defineComponent({ render: () => h(component, { n: 1 }) })).mount(
-    root,
-  )
+  createApp(defineComponent({ render: () => h(component, { n: 1 }) })).mount(root)
   return root
 }
 
