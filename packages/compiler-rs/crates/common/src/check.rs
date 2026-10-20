@@ -326,6 +326,147 @@ pub fn is_event_option_modifier(modifier: &str) -> bool {
   matches!(modifier, "passive" | "once" | "capture")
 }
 
+// React-style camelCase modifier suffixes on `on*` props, mapped to the
+// same modifiers the `_` syntax accepts, e.g. `onClickCapture` is
+// equivalent to `onClick_capture`.
+static CAMEL_EVENT_MODIFIERS: &[(&str, &str)] = &[
+  ("Capture", "capture"),
+  ("Once", "once"),
+  ("Passive", "passive"),
+  ("Prevent", "prevent"),
+  ("Stop", "stop"),
+  ("Self", "self"),
+  ("Ctrl", "ctrl"),
+  ("Shift", "shift"),
+  ("Alt", "alt"),
+  ("Meta", "meta"),
+  ("Exact", "exact"),
+  ("Middle", "middle"),
+  ("Left", "left"),
+  ("Right", "right"),
+  ("Enter", "enter"),
+  ("Tab", "tab"),
+  ("Delete", "delete"),
+  ("Esc", "esc"),
+  ("Space", "space"),
+  ("Up", "up"),
+  ("Down", "down"),
+];
+
+// key-name modifiers — only meaningful on keyboard events
+fn is_key_name(modifier: &str) -> bool {
+  matches!(
+    modifier,
+    "enter" | "tab" | "delete" | "esc" | "space" | "up" | "down"
+  )
+}
+
+// Splits trailing camelCase modifiers off an event name, e.g.
+// `clickCaptureOnce` -> (`click`, ["capture", "once"]).
+fn split_camel_event_modifiers(mut name: &str) -> (&str, Vec<&'static str>) {
+  let mut modifiers = vec![];
+  while let Some((stripped, modifier)) =
+    CAMEL_EVENT_MODIFIERS.iter().find_map(|(suffix, modifier)| {
+      name
+        .strip_suffix(suffix)
+        .filter(|stripped| !stripped.is_empty())
+        .map(|stripped| (stripped, *modifier))
+    })
+  {
+    name = stripped;
+    modifiers.push(modifier);
+  }
+  modifiers.reverse();
+  (name, modifiers)
+}
+
+// Standard DOM event names, used to recognize camelCase modifier aliases
+// (`onClickCapture`) without hijacking custom events (`onMoveLeft`).
+static DOM_EVENTS: phf::Set<&'static str> = phf_set! {
+  // mouse
+  "click", "contextmenu", "dblclick", "auxclick", "mousedown", "mouseenter",
+  "mouseleave", "mousemove", "mouseout", "mouseover", "mouseup",
+  // pointer
+  "pointerover", "pointerenter", "pointerdown", "pointermove", "pointerup",
+  "pointercancel", "pointerout", "pointerleave", "pointerrawupdate",
+  "gotpointercapture", "lostpointercapture",
+  // touch
+  "touchstart", "touchend", "touchmove", "touchcancel",
+  // keyboard
+  "keydown", "keypress", "keyup",
+  // input and form
+  "beforeinput", "input", "change", "invalid", "submit", "reset", "formdata",
+  "select", "selectstart", "selectionchange", "search", "beforematch",
+  // focus
+  "focus", "blur", "focusin", "focusout",
+  // drag
+  "drag", "dragend", "dragenter", "dragexit", "dragleave", "dragover", "dragstart", "drop",
+  // wheel and scroll
+  "wheel", "mousewheel", "scroll", "scrollend", "scrollsnapchange",
+  "scrollsnapchanging",
+  // clipboard
+  "copy", "cut", "paste",
+  // composition
+  "compositionstart", "compositionupdate", "compositionend",
+  // media
+  "abort", "canplay", "canplaythrough", "cuechange", "durationchange",
+  "emptied", "encrypted", "ended", "error", "loadeddata", "loadedmetadata",
+  "loadstart", "loadend", "pause", "play", "playing", "progress", "ratechange",
+  "seeked", "seeking", "stalled", "suspend", "timeupdate", "volumechange",
+  "waiting", "waitingforkey", "enterpictureinpicture", "leavepictureinpicture",
+  // animation and transition
+  "animationstart", "animationend", "animationiteration", "animationcancel",
+  "transitionstart", "transitionend", "transitionrun", "transitioncancel",
+  // document and window
+  "load", "unload", "beforeunload", "resize", "domcontentloaded",
+  "readystatechange", "visibilitychange", "hashchange", "popstate", "pageshow",
+  "pagehide", "online", "offline", "message", "messageerror", "storage",
+  "languagechange", "rejectionhandled", "unhandledrejection",
+  "prerenderingchange", "contextrestored",
+  // element lifecycle and misc
+  "toggle", "beforetoggle", "close", "cancel", "command", "slotchange",
+  "fullscreenchange", "fullscreenerror", "pointerlockchange",
+  "pointerlockerror", "securitypolicyviolation",
+  "contentvisibilityautostatechange", "devicemotion", "deviceorientation",
+  "deviceorientationabsolute", "gamepadconnected", "gamepaddisconnected",
+  "beforeinstallprompt", "appinstalled", "orientationchange",
+};
+fn is_dom_event(name: &str) -> bool {
+  DOM_EVENTS.contains(name)
+}
+
+// Splits an `on*` prop name into event name and `_`-separated modifiers.
+// CamelCase modifier aliases (`onClickCapture`) are normalized for native DOM
+// events only — components and custom events (`onMoveLeft`) keep their names
+// verbatim so emit() lookups still resolve. Key names only alias on keyboard
+// events, so `onDragEnter` stays `dragEnter` rather than `drag` + `enter`.
+pub fn split_event_name<'a>(replaced: &'a str, is_component: bool) -> Vec<&'a str> {
+  let mut splited = replaced.split("_").collect::<Vec<_>>();
+  if !is_component {
+    let (name, camel_modifiers) = split_camel_event_modifiers(splited[0]);
+    if !camel_modifiers.is_empty()
+      && is_dom_event(name)
+      && (is_keyboard_event(name) || camel_modifiers.iter().all(|m| !is_key_name(m)))
+    {
+      splited[0] = name;
+      splited.splice(1..1, camel_modifiers);
+    }
+  }
+  splited
+}
+
+// `click` listeners with `right`/`middle` modifiers fire `contextmenu` and
+// `mouseup` respectively — the click event itself never fires for them.
+pub fn normalized_event_name<'a>(name: &'a str, modifiers: &[impl AsRef<str>]) -> &'a str {
+  if name == "click" && modifiers.iter().any(|m| m.as_ref() == "right") {
+    "contextmenu"
+  } else if name == "click" && modifiers.iter().any(|m| m.as_ref() == "middle") {
+    "mouseup"
+  } else {
+    name
+  }
+}
+
 pub fn is_non_key_modifier(modifier: &str) -> bool {
   matches!(
     modifier,

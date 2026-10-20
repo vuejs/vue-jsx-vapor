@@ -489,3 +489,46 @@ fn should_not_have_props_patch_flag_for_constant_v_on_handlers_with_modifiers() 
   _openBlock(), _createElementBlock("div", { onKeydown: _withKeys(foo, ["up"]) }, null, 40, _hoisted_1);
   "#);
 }
+
+#[test]
+fn camel_case_event_modifiers() {
+  let code = transform(
+    r#"<div onClickStop={a} onClickCapture={b} onClickRight={c} onKeyupEnter={d} />"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createElementBlock as _createElementBlock, openBlock as _openBlock, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
+  const _hoisted_1 = [
+  	"onClick",
+  	"onClickCapture",
+  	"onContextmenu",
+  	"onKeyup"
+  ];
+  _openBlock(), _createElementBlock("div", {
+  	onClick: _withModifiers(a, ["stop"]),
+  	onClickCapture: b,
+  	onContextmenu: _withModifiers(c, ["right"]),
+  	onKeyup: _withKeys(d, ["enter"])
+  }, null, 40, _hoisted_1);
+  "#);
+}
+
+#[test]
+fn component_events_keep_custom_camel_case_names() {
+  let code = transform(
+    r#"<Comp onMoveLeft={handler} />"#,
+    Some(TransformOptions {
+      interop: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createBlock as _createBlock, openBlock as _openBlock } from "vue";
+  _openBlock(), _createBlock(Comp, { onMoveLeft: handler }, null, 8, ["onMoveLeft"]);
+  "#);
+}

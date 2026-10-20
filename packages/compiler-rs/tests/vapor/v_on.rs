@@ -527,4 +527,362 @@ fn a_vue_hook_on_an_element_leaves_no_listener() {
   assert!(!code.contains("_on("));
   assert!(!code.contains("vnodeMounted"));
   assert!(!code.contains("onVnodeMounted"));
+#[test]
+fn camel_case_event_modifiers() {
+  let code = transform(
+    "<><div onClickCapture={a} onClickOnce={b} onScrollPassive={c} onClickStopPrevent={d} onClickRight={e}/><a onClickStop={f}/></>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>");
+  const _t1 = _template("<a>");
+  (() => {
+  	const _n0 = _t0();
+  	const _n1 = _t1();
+  	_on(_n0, "click", a, { capture: true });
+  	_on(_n0, "click", b, { once: true });
+  	_on(_n0, "scroll", c, { passive: true });
+  	_on(_n0, "click", _withModifiers(d, ["stop", "prevent"]));
+  	_on(_n0, "contextmenu", _withModifiers(e, ["right"]));
+  	_on(_n1, "click", _withModifiers(f, ["stop"]));
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn component_events_keep_option_suffixes_in_prop_names() {
+  let code = transform(
+    "<><Comp onClick={a} onClickCapture={b} /><Comp onClick_capture={c} onClick={d} /></>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, {
+  		onClickCapture: () => b,
+  		onClick: () => a
+  	});
+  	const _n1 = _createComponent(Comp, {
+  		onClick: () => d,
+  		onClickCapture: () => c
+  	});
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn component_events_keep_custom_camel_case_names() {
+  let code = transform("<Comp onMoveLeft={handler} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, { onMoveLeft: () => handler }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn camel_case_modifiers_are_ignored_for_unknown_event_names() {
+  let code = transform("<div onMoveLeft={handler} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "moveLeft", handler);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn should_not_delegate_normalized_camel_event_when_sibling_uses_stop() {
+  let code = transform(
+    r#"<div onContextmenu_delegate={a} onClickRightStop={b} />"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "contextmenu", a);
+  	_on(_n0, "contextmenu", _withModifiers(b, ["right", "stop"]));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn camel_case_event_modifiers_normalize_middle() {
+  let code = transform("<div onClickMiddleStop={handler} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "mouseup", _withModifiers(handler, ["middle", "stop"]));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn camel_case_event_modifiers_apply_to_dragexit_and_key_aliases() {
+  let code = transform("<div onDragexitStop={a} onKeyupEnter={b} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "dragexit", _withModifiers(a, ["stop"]));
+  	_on(_n0, "keyup", _withKeys(b, ["enter"]));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn camel_case_key_names_only_alias_on_keyboard_events() {
+  let code = transform(
+    "<div onDragEnter={a} onDropDown={b} onKeyupEnter={c} onKeydownUp={d} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withKeys as _withKeys } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "dragEnter", a);
+  	_on(_n0, "dropDown", b);
+  	_on(_n0, "keyup", _withKeys(c, ["enter"]));
+  	_on(_n0, "keydown", _withKeys(d, ["up"]));
+  	return _n0;
+  })();
+  "#);
+
+// vapor has no per-element vnode hooks, so a hook on a plain element can only
+// register a listener that never fires. upstream (#15807) drops `@vue:*` there
+// and warns; the port does the same, and also warns for `onVnodeXxx`, which
+// resolves to the same event without the `vue:` prefix.
+//
+// upstream's guard is `tagType === ElementTypes.ELEMENT`, i.e. the tag is a
+// known HTML/SVG tag. `!is_component` is the port's closest equivalent, so a
+// component, a custom element (`<my-el>`, routed to the component path by
+// `transform.rs`), a `<slot>`, and a `<template>` with structural directives
+// are all left alone, while `<div>`/`<svg>`/`<input>` warn.
+const VNODE_HOOK_MESSAGE: &str = "onVue:xxx / onVnodeXxx per-element lifecycle events are not supported in Vapor mode and will be ignored.";
+
+fn vue_hook_warning(source: &str) -> Option<(String, usize)> {
+  let warning: RefCell<Option<(String, usize)>> = RefCell::new(None);
+  transform(
+    source,
+    Some(TransformOptions {
+      on_warn: Box::new(|message, span| {
+        *warning.borrow_mut() = Some((message, span.start as usize));
+      }),
+      ..Default::default()
+    }),
+  );
+  warning.into_inner()
+}
+
+#[test]
+fn warns_and_drops_vue_hooks_on_elements() {
+  let cases = [
+    "<div onVue:mounted={onMounted}>{bar}</div>",
+    "<input onVue:beforeUnmount={onMounted} v-model={foo} />",
+    "<svg v-for={item in items} onVue:updated={onMounted} />",
+    "<textarea onVnodeUpdated={onMounted} />",
+    // `onVnodeXxx` reaches the same event without the `vue:` prefix
+    "<div onVnodeMounted={onMounted} />",
+    // any `vue:` arg names a hook the element cannot host
+    "<div onVue:whatever={onMounted} />",
+  ];
+
+  for source in cases {
+    let (message, start) =
+      vue_hook_warning(source).unwrap_or_else(|| panic!("no warning for {source}"));
+    assert_eq!(message, VNODE_HOOK_MESSAGE, "{source}");
+    // the span points at the attribute, not at the whole element
+    assert!(
+      source[start..].starts_with("onVue:") || source[start..].starts_with("onVnode"),
+      "{source} @ {start}"
+    );
+  }
+}
+
+#[test]
+fn keeps_vue_hooks_where_a_vnode_exists() {
+  for source in [
+    "<Comp onVue:mounted={onMounted} />",
+    "<Comp onVnodeMounted={onMounted} />",
+    "<slot onVue:mounted={onMounted} />",
+    // custom elements go through the component path, like upstream's
+    // `_createAssetComponent`, so they are not warned about either
+    "<my-el onVue:mounted={onMounted} />",
+    "<template v-if={ok} onVue:mounted={onMounted}><div /></template>",
+  ] {
+    assert!(vue_hook_warning(source).is_none(), "{source}");
+  }
+}
+
+// dropping the listener is the only effect
+#[test]
+fn a_vue_hook_on_an_element_leaves_no_listener() {
+  let code = transform("<div onVue:mounted={onMounted}>{bar}</div>", None).code;
+  assert!(!code.contains("_on("));
+  assert!(!code.contains("vnodeMounted"));
+  assert!(!code.contains("onVnodeMounted"));
+}
+
+#[test]
+fn camel_case_event_modifiers() {
+  let code = transform(
+    "<><div onClickCapture={a} onClickOnce={b} onScrollPassive={c} onClickStopPrevent={d} onClickRight={e}/><a onClickStop={f}/></>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>");
+  const _t1 = _template("<a>");
+  (() => {
+  	const _n0 = _t0();
+  	const _n1 = _t1();
+  	_on(_n0, "click", a, { capture: true });
+  	_on(_n0, "click", b, { once: true });
+  	_on(_n0, "scroll", c, { passive: true });
+  	_on(_n0, "click", _withModifiers(d, ["stop", "prevent"]));
+  	_on(_n0, "contextmenu", _withModifiers(e, ["right"]));
+  	_on(_n1, "click", _withModifiers(f, ["stop"]));
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn component_events_keep_option_suffixes_in_prop_names() {
+  let code = transform(
+    "<><Comp onClick={a} onClickCapture={b} /><Comp onClick_capture={c} onClick={d} /></>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, {
+  		onClickCapture: () => b,
+  		onClick: () => a
+  	});
+  	const _n1 = _createComponent(Comp, {
+  		onClick: () => d,
+  		onClickCapture: () => c
+  	});
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn component_events_keep_custom_camel_case_names() {
+  let code = transform("<Comp onMoveLeft={handler} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, { onMoveLeft: () => handler }, null, true);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn camel_case_modifiers_are_ignored_for_unknown_event_names() {
+  let code = transform("<div onMoveLeft={handler} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "moveLeft", handler);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn should_not_delegate_normalized_camel_event_when_sibling_uses_stop() {
+  let code = transform(
+    r#"<div onContextmenu_delegate={a} onClickRightStop={b} />"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "contextmenu", a);
+  	_on(_n0, "contextmenu", _withModifiers(b, ["right", "stop"]));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn camel_case_event_modifiers_normalize_middle() {
+  let code = transform("<div onClickMiddleStop={handler} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "mouseup", _withModifiers(handler, ["middle", "stop"]));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn camel_case_event_modifiers_apply_to_dragexit_and_key_aliases() {
+  let code = transform("<div onDragexitStop={a} onKeyupEnter={b} />", None).code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withKeys as _withKeys, withModifiers as _withModifiers } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "dragexit", _withModifiers(a, ["stop"]));
+  	_on(_n0, "keyup", _withKeys(b, ["enter"]));
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn camel_case_key_names_only_alias_on_keyboard_events() {
+  let code = transform(
+    "<div onDragEnter={a} onDropDown={b} onKeyupEnter={c} onKeydownUp={d} />",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template, withKeys as _withKeys } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "dragEnter", a);
+  	_on(_n0, "dropDown", b);
+  	_on(_n0, "keyup", _withKeys(c, ["enter"]));
+  	_on(_n0, "keydown", _withKeys(d, ["up"]));
+  	return _n0;
+  })();
+  "#);
 }

@@ -106,6 +106,8 @@ export default () => (
 </form>
 ```
 
+事件修饰符也可以使用驼峰后缀，例如 `onClickCapture` 等同于 `onClick_capture`，`onKeyupEnter` 等同于 `onKeyup_enter`。别名仅对已识别的原生 DOM 事件生效；组件监听器保持名称不变，因此 `<Comp onKeyupEnter>` 并不等同于 `onKeyup_enter`。
+
 ## 动态参数
 
 动态参数可以通过变量的形式传递给数组值的第二个参数，第三个参数为指令的修饰符。
