@@ -25,7 +25,7 @@ This guide assumes familiarity with Vue fundamentals.
 pnpm add vue-jsx-vapor
 
 # Runtime
-pnpm add vue@3.6.0-rc.12
+pnpm add vue@3.6.0-rc.13
 ```
 
 ## Configuration
