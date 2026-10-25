@@ -1,8 +1,8 @@
 use std::{borrow::Cow, mem};
 
 use oxc_allocator::{CloneIn, TakeIn};
-use oxc_ast::ast::{Expression, JSXChild};
-use oxc_span::{GetSpan, SPAN};
+use oxc_ast::ast::{Expression, JSXAttributeItem, JSXChild};
+use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ir::index::{
@@ -10,7 +10,9 @@ use crate::{
     OperationNode::{self},
   },
   transform::{
-    TransformContext, transform_element::get_child_template_close_tags,
+    TransformContext,
+    transform_element::get_child_template_close_tags,
+    transform_element::{is_keep_alive_tag, is_transition_tag},
     transform_text::mark_non_template,
   },
 };
@@ -77,9 +79,20 @@ pub unsafe fn transform_children<'a>(
     .parent_dynamic
     .replace(mem::take(&mut context_block.dynamic));
   let grand_parent_directives = context.parent_directives.replace(directives);
-  let grandparent_node_span = context
-    .grandparent_node_span
-    .replace(parent_node.map_or(SPAN, |node| node.span()));
+  let grandparent_node_span = context.grandparent_node_span.replace(
+    // A Transition / KeepAlive parent swaps the span its children read for a
+    // single-root one: its child is a root template wherever the transition
+    // sits, provided it keeps a single child. Only such a parent pays for the
+    // scan, and a ternary child is one child to begin with - the scan only
+    // collapses a `v-if` / `v-else` directive chain into one.
+    if (is_transition_tag(parent_tag_name) || is_keep_alive_tag(parent_tag_name))
+      && has_single_root_child(children)
+    {
+      Span::new(3, 0)
+    } else {
+      parent_node.map_or(SPAN, |node| node.span())
+    },
+  );
   let _context_block = context_block as *mut BlockIRNode;
   let mut i = 0;
   if let Some(last) = children.last()
@@ -296,4 +309,47 @@ fn process_dynamic_children<'a>(
       unit_index += 1;
     }
   }
+}
+
+/// Upstream `hasSingleRootChild`: one meaningful child, or a complete
+/// `v-if` / `v-else-if` / `v-else` chain counting as one.
+pub(crate) fn has_single_root_child(children: &[JSXChild]) -> bool {
+  let mut non_comment_children = 0usize;
+  let mut has_encountered_if = false;
+  let mut is_single_if_block = true;
+  for child in children {
+    if is_empty_text(child) {
+      continue;
+    }
+    non_comment_children += 1;
+    let dir_name = if let JSXChild::Element(element) = child {
+      element.opening_element.attributes.iter().find_map(|attr| {
+        if let JSXAttributeItem::Attribute(attr) = attr
+          && let oxc_ast::ast::JSXAttributeName::Identifier(name) = &attr.name
+          && matches!(name.name.as_str(), "v-if" | "v-else-if" | "v-else")
+        {
+          Some(name.name.as_str())
+        } else {
+          None
+        }
+      })
+    } else {
+      None
+    };
+    if dir_name == Some("v-if") {
+      if has_encountered_if {
+        // a second `v-if` means two meaningful children already
+        return false;
+      }
+      has_encountered_if = true;
+    } else if !has_encountered_if || (dir_name != Some("v-else") && dir_name != Some("v-else-if")) {
+      // a lone child may still be the single root; a second one that does
+      // not close the chain never is
+      if non_comment_children > 1 {
+        return false;
+      }
+      is_single_if_block = false;
+    }
+  }
+  non_comment_children == 1 || is_single_if_block
 }
