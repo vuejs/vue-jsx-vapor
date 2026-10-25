@@ -31,7 +31,9 @@ use crate::generate::CodegenContext;
 use crate::transform::transform_element::{is_keep_alive_tag, is_transition_tag};
 use crate::transform::transform_key::transform_key;
 use crate::{
-  ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, OperationNode, RootIRNode},
+  ir::index::{
+    BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, IfIRNode, OperationNode, RootIRNode,
+  },
   transform::{
     transform_children::transform_children, transform_element::transform_element,
     transform_template_ref::transform_template_ref, transform_text::transform_text,
@@ -40,7 +42,8 @@ use crate::{
   },
 };
 
-use common::check::{is_constant_node, is_math_ml_tag, is_native_tag, is_svg_tag};
+use common::check::{get_namespace, is_constant_node, is_native_tag};
+use common::html_nesting::is_foreign_breakout_tag;
 
 /// A text/interpolation-only owner renders nothing when empty, so a block it
 /// owns cannot be a single root when hydrating.
@@ -135,9 +138,14 @@ pub struct TransformContext<'a> {
   // with matching tags must also close so the browser doesn't consume the
   // ancestor close tag for the descendant.
   pub template_close_tags: RefCell<HashSet<&'a str>>,
-  // Inline ancestors with explicit close tags also require block descendants
-  // in the same template to close explicitly.
+  // An ancestor with an explicit close tag that cannot pop an open special
+  // descendant (any other end tag, formatting elements) also requires special
+  // descendants in the same template to close explicitly.
   pub template_close_blocks: RefCell<bool>,
+  // Whether the element is written into its parent's template and what that
+  // template leaves open above it (`open_scope` bits); 0 when it starts a
+  // template of its own.
+  pub template_scope: RefCell<i32>,
 
   // Namespace (0 = HTML, 1 = SVG, 2 = MathML) context of the innermost element
   // currently being transformed. `transform_element` saves it, installs its own
@@ -151,12 +159,20 @@ pub struct TransformContext<'a> {
 
   global_id: RefCell<i32>,
   if_index: RefCell<i32>,
+  // every `v-if` head with whether it sits in `v-once`; chains that grow past
+  // IF_CHAIN_THRESHOLD get their key range reserved once the tree is done
+  pub if_heads: RefCell<Vec<(*mut IfIRNode<'a>, bool)>>,
 
   pub ir: Rc<RefCell<RootIRNode<'a>>>,
   pub node: RefCell<JSXChild<'a>>,
 
   pub parent_dynamic: RefCell<IRDynamicInfo<'a>>,
   pub grandparent_node_span: RefCell<Span>,
+  // whether the node currently being transformed is the single root of a slot
+  // body - the direct content of a component (its default slot body, built-ins
+  // aside) or of a slot template, or a v-if branch of either. Replaced when a
+  // parent's children transform starts, like `grandparent_node_span`
+  pub is_slot_root: RefCell<bool>,
 
   pub parent_directives: RefCell<Directives<'a>>,
 }
@@ -184,12 +200,15 @@ impl<'a> TransformContext<'a> {
       is_on_rightmost_path: RefCell::new(true),
       template_close_blocks: RefCell::new(false),
       template_close_tags: RefCell::new(HashSet::new()),
+      template_scope: RefCell::new(0),
       ns: RefCell::default(),
       global_id: RefCell::new(0),
       if_index: RefCell::new(0),
+      if_heads: RefCell::new(Vec::new()),
       node: RefCell::new(RootNode::from(ast, options, node, true, None)),
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
       grandparent_node_span: RefCell::new(SPAN),
+      is_slot_root: RefCell::new(false),
       ir: Rc::new(RefCell::new(RootIRNode::default())),
       block: RefCell::new(BlockIRNode::new()),
       parent_directives: RefCell::new(Directives::default()),
@@ -205,6 +224,7 @@ impl<'a> TransformContext<'a> {
     *self.block.borrow_mut() = block;
     *self.ir.borrow_mut() = ir;
     self.transform_node(None, None);
+    self.finalize_if_chains();
     CodegenContext::new(self).generate()
   }
 
@@ -224,10 +244,29 @@ impl<'a> TransformContext<'a> {
     id
   }
 
-  pub fn next_if_index(&self) -> i32 {
+  pub fn next_if_index(&self, count: i32) -> i32 {
     let if_index = *self.if_index.borrow();
-    *self.if_index.borrow_mut() += 1;
+    *self.if_index.borrow_mut() += count;
     if_index
+  }
+
+  // A long chain renders as one keyed fragment: its selection is frozen only by
+  // `v-once` on the head, and its branch keys are consecutive, so the range is
+  // reserved after every `v-else-if` has joined (indexes handed out in between
+  // to nested `v-if`s are left as gaps).
+  fn finalize_if_chains(&self) {
+    for (head, in_v_once) in self.if_heads.borrow().iter().copied() {
+      let head = unsafe { &mut *head };
+      if !v_if::is_long_if_chain(head) {
+        continue;
+      }
+      head.once = in_v_once;
+      if !in_v_once {
+        // one index covers two keys; the chain keys every branch plus the empty
+        // state past the last one
+        head.index = self.next_if_index((v_if::get_if_chain_length(head) + 2) / 2);
+      }
+    }
   }
 
   pub fn is_operation(&self, expressions: Vec<&Expression<'a>>) -> bool {
@@ -331,21 +370,12 @@ impl<'a> TransformContext<'a> {
     is_native_tag(tag)
   }
 
-  pub fn push_template(&self, content: String, tag: Option<&str>, _static: bool) -> i32 {
+  /// `ns` is the namespace the template's own element resolves to, which the
+  /// runtime parses the string in. It is not the tag's: inside `<svg>` even a
+  /// `tbody` is svg, and an html tag at an integration point is html.
+  pub fn push_template(&self, content: String, ns: i32, _static: bool) -> i32 {
     let len = self.options.templates.borrow().len();
     let root = *self.template_root.borrow();
-    // root_template_index.map(|i| i.eq(&len)).unwrap_or(false);
-    let ns = if let Some(tag) = tag {
-      if is_svg_tag(tag) {
-        1
-      } else if is_math_ml_tag(tag) {
-        2
-      } else {
-        0
-      }
-    } else {
-      0
-    };
     let existing = self.options.templates.borrow().iter().position(|i| {
       i.content.eq(&content) && i.root.eq(&root) && i._static.eq(&_static) && i.ns.eq(&ns)
     });
@@ -361,17 +391,12 @@ impl<'a> TransformContext<'a> {
     len as i32
   }
 
-  pub fn register_template(
-    &self,
-    block: &mut BlockIRNode<'a>,
-    tag: Option<&str>,
-    _static: bool,
-  ) -> i32 {
+  pub fn register_template(&self, block: &mut BlockIRNode<'a>, ns: i32, _static: bool) -> i32 {
     let template = self.template.borrow();
     if template.is_empty() {
       return -1;
     }
-    let id = self.push_template(template.clone(), tag, _static);
+    let id = self.push_template(template.clone(), ns, _static);
     block.dynamic.template = Some(id);
     id
   }
@@ -390,6 +415,14 @@ impl<'a> TransformContext<'a> {
     let operation_index = *self.operation_index.borrow();
     *self.operation_index.borrow_mut() = ir.operation.len();
     let children_template = mem::take(&mut *self.children_template.borrow_mut());
+    // a `v-for` row is never the single root of a slot body: upstream's
+    // structural transform wraps the host in a `<template v-for>` whose
+    // children read a cut chain, so cut here where the block content starts
+    let is_slot_root = if is_v_for {
+      self.is_slot_root.replace(false)
+    } else {
+      *self.is_slot_root.borrow()
+    };
 
     *context_block = ir;
     if is_v_for {
@@ -398,12 +431,13 @@ impl<'a> TransformContext<'a> {
 
     (Box::new(move || {
       // exit
-      self.register_template(context_block, None, false);
+      self.register_template(context_block, 0, false);
       let return_block = mem::take(context_block);
       *context_block = block;
       *self.template.borrow_mut() = template;
       *self.template_root.borrow_mut() = template_root;
       *self.children_template.borrow_mut() = children_template;
+      *self.is_slot_root.borrow_mut() = is_slot_root;
       if is_v_for {
         *self.in_v_for.borrow_mut() -= 1;
       }
@@ -552,6 +586,7 @@ impl<'a> TransformContext<'a> {
     let is_on_rightmost_path = self.is_on_rightmost_path.replace(is_on_rightmost_path);
     let template_close_blocks = self.template_close_blocks.take();
     let template_close_tags = self.template_close_tags.take();
+    let template_scope = self.template_scope.replace(0);
     self.children_template.take();
     mem::take(&mut block.dynamic);
     let effect_index = self.effect_index.replace(block.effect.len());
@@ -567,6 +602,7 @@ impl<'a> TransformContext<'a> {
       self.is_on_rightmost_path.replace(is_on_rightmost_path);
       self.template_close_blocks.replace(template_close_blocks);
       *self.template_close_tags.borrow_mut() = template_close_tags;
+      *self.template_scope.borrow_mut() = template_scope;
       *self.effect_index.borrow_mut() = effect_index;
       *self.operation_index.borrow_mut() = operation_index;
     }
@@ -597,9 +633,25 @@ impl<'a> TransformContext<'a> {
         let directives_ptr = &mut directives as *mut _;
         if let JSXChild::Element(element) = &mut *node {
           directives = Directives::new(element, self.options);
-          if directives.is_custom_element {
+          // A custom element, and an html element the parser would move out of
+          // foreign content, are created imperatively: the template helper
+          // parses its string in the html namespace, so it cannot give such an
+          // element the namespace it was written in, which vdom does.
+          let parent = *self.ns.borrow();
+          directives.use_create_element = directives.is_custom_element
+            || (is_foreign_breakout_tag(directives.tag_name)
+              && get_namespace(
+                directives.tag_name,
+                parent.tag,
+                parent.ns,
+                parent.is_html_annotation_xml,
+              ) != 0);
+          if directives.use_create_element {
             directives.is_component = true;
           }
+          // v-once reaching this node from an ancestor or the chain head; its own
+          // `v-once` is applied below and a chain branch may drop it again
+          let inherited_in_v_once = *(&*context).in_v_once.borrow();
           if directives.v_once.is_some() {
             *(&*context).in_v_once.borrow_mut() = true;
           };
@@ -623,6 +675,7 @@ impl<'a> TransformContext<'a> {
               &*context,
               &mut *block,
               &mut *parent_node,
+              inherited_in_v_once,
             )
           {
             exit_fns.push(on_exit);
@@ -719,7 +772,7 @@ impl<'a> TransformContext<'a> {
       }
 
       if is_root {
-        self.register_template(context_block, None, false);
+        self.register_template(context_block, 0, false);
       }
     }
   }

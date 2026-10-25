@@ -263,3 +263,12 @@ pub enum VaporSlotStability {
   // may be reachable and needs SlotFragment tracking.
   NonStable = 1,
 }
+
+/**
+ * `isSingleRoot` of a component creation call for the single root of a slot
+ * body (`1` / `true` marks the single root of a component template). See
+ * resolveFallthroughOwner in runtime-vapor.
+ */
+pub enum VaporSingleRoot {
+  SLOT = 2,
+}

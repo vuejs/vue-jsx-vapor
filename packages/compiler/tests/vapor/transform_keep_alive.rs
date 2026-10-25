@@ -49,8 +49,11 @@ fn propagates_component_root_into_keep_alive_if_branches() {
   assert!(code.contains(r#"_createComponent(B, null, null, true)"#));
 }
 
+// upstream: `should pass its attrs to the child of a non-root KeepAlive`. The
+// keep-alive's child layers fallthrough class / style like a component root,
+// so its template is a root one wherever the keep-alive sits.
 #[test]
-fn does_not_propagate_component_root_through_nested_keep_alive() {
+fn propagates_component_root_through_nested_keep_alive() {
   let code = transform(
     r#"<section>
       <VaporKeepAlive>
@@ -64,5 +67,5 @@ fn does_not_propagate_component_root_through_nested_keep_alive() {
   )
   .code;
 
-  assert!(code.contains(r#"const _t0 = _template("<div>child", 2);"#));
+  assert!(code.contains(r#"const _t0 = _template("<div>child", 3);"#));
 }

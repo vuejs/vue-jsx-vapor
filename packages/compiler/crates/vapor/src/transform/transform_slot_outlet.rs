@@ -61,11 +61,16 @@ pub unsafe fn transform_slot_outlet<'a>(
     }
   }
 
+  // the outlet is a fragment boundary: the component or slot root must not
+  // propagate into the fallback through the transparent `<template>` wrapper
+  // below
+  let parent_is_slot_root = context.is_slot_root.replace(false);
   let exit_block = create_fallback(node, context_node, context, unsafe {
     &mut *context_block_ptr
   });
 
   Some(Box::new(move || {
+    *context.is_slot_root.borrow_mut() = parent_is_slot_root;
     let fallback = exit_block.map(|exit_block| exit_block());
     let mut flags = 0;
     if *context.in_v_once.borrow() {

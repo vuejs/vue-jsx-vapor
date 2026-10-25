@@ -1724,7 +1724,8 @@ fn leading_newline_outside_the_html_namespace_is_untouched() {
     }),
   )
   .code;
-  assert!(code.contains(r#"_template("<pre>\n\nline")"#), "{code}");
+  assert!(code.contains(r#"_createPlainElement("pre""#), "{code}");
+  assert!(code.contains(r#""\n\nline""#), "{code}");
 }
 
 // upstream: `props the template string cannot carry`. `<textarea>` / `<select>`

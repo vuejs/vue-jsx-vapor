@@ -4,6 +4,7 @@ pub mod directive;
 pub mod dom;
 pub mod error;
 pub mod expression;
+pub mod html_nesting;
 pub mod options;
 pub mod patch_flag;
 pub mod text;

@@ -20,6 +20,7 @@ use common::{
   ast::RootNode,
   check::is_constant_node,
   directive::Directives,
+  html_nesting::is_foster_parenting_tag,
   patch_flag::VaporBlockShape,
   text::{escape_html, get_text_like_value, is_empty_text, is_text_like, resolve_jsx_text},
 };
@@ -111,6 +112,17 @@ pub unsafe fn transform_text<'a>(
         );
         return None;
       }
+      // The parser foster-parents text other than whitespace in front of the
+      // table, so it is written as a placeholder and filled from the runtime.
+      if !is_root_text
+        && foster_parents_text(context)
+        && !resolve_jsx_text(node).trim_ascii().is_empty()
+      {
+        let values =
+          process_text_like_expressions(&mut vec![unsafe { &mut *context_node }], context, seen);
+        register_text_placeholder(values, context, context_block);
+        return None;
+      }
       let value = if is_root_text {
         resolve_jsx_text(node)
       } else {
@@ -187,6 +199,17 @@ fn process_interpolation<'a>(
   }
 
   let values = process_text_like_expressions(&mut nodes, context, seen);
+  register_text_placeholder(values, context, context_block);
+}
+
+/// Write a whitespace placeholder into the parent's template and fill it from
+/// the runtime: the parser keeps whitespace in a table part, while text written
+/// into the string would be moved out of it.
+fn register_text_placeholder<'a>(
+  values: Vec<Expression<'a>>,
+  context: &'a TransformContext<'a>,
+  context_block: &'a mut BlockIRNode<'a>,
+) {
   if values.is_empty() {
     return;
   }
@@ -207,6 +230,13 @@ fn process_interpolation<'a>(
     }),
     None,
   );
+}
+
+/// Whether the parent is a table part, whose text other than ascii whitespace
+/// the parser foster-parents in front of the table.
+fn foster_parents_text(context: &TransformContext<'_>) -> bool {
+  let parent = *context.ns.borrow();
+  parent.ns == 0 && parent.tag.is_some_and(is_foster_parenting_tag)
 }
 
 fn collect_adjacent_text<'a>(
@@ -386,13 +416,14 @@ pub fn process_conditional_expression<'a>(
   let allow_no_scope = context_block.root;
   Box::new(move || {
     let block = exit_block();
+    let in_v_once = *context.in_v_once.borrow();
 
     let mut operation = IfIRNode {
       id,
       block_shape: encode_if_block_shape(&block, force_multi_root, None, allow_no_scope),
       positive: block,
-      index: context.next_if_index(),
-      once: *context.in_v_once.borrow() || is_const_test,
+      index: context.next_if_index(1),
+      once: in_v_once || is_const_test,
       condition: test,
       negative: None,
       parent: None,
@@ -412,6 +443,10 @@ pub fn process_conditional_expression<'a>(
       parent_node,
     );
     context_block.dynamic.operation = Some(Box::new(OperationNode::If(operation)));
+
+    if let Some(OperationNode::If(head)) = context_block.dynamic.operation.as_deref_mut() {
+      context.if_heads.borrow_mut().push((head, in_v_once));
+    };
   })
 }
 
@@ -449,7 +484,7 @@ fn set_negative<'a>(
       once: *context.in_v_once.borrow() || is_constant_node(test),
       condition: test.take_in(context.allocator),
       positive: block,
-      index: context.next_if_index(),
+      index: context.next_if_index(1),
       negative: None,
       anchor: None,
       append_index: None,

@@ -1,8 +1,8 @@
 use std::{borrow::Cow, mem};
 
 use oxc_allocator::{CloneIn, TakeIn};
-use oxc_ast::ast::{Expression, JSXChild};
-use oxc_span::{GetSpan, SPAN};
+use oxc_ast::ast::{Expression, JSXAttributeItem, JSXAttributeName, JSXChild};
+use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ir::index::{
@@ -11,14 +11,17 @@ use crate::{
   },
   transform::{
     TransformContext,
-    transform_element::{get_child_template_close_tags, is_in_same_template_as_parent},
+    transform_element::get_child_template_close_tags,
+    transform_element::{is_keep_alive_tag, is_transition_tag},
     transform_text::mark_non_template,
   },
 };
 
 use common::{
   ast::RootNode,
+  check::get_namespace,
   directive::Directives,
+  html_nesting::{enter_open_scope, keeps_in_template, open_scope},
   text::{get_tag_name, is_empty_text},
 };
 
@@ -42,11 +45,34 @@ pub unsafe fn transform_children<'a>(
 
   let _node = node as *mut _;
   let parent_tag_name = directives.tag_name;
-  let (child_template_close_tags, child_template_close_blocks) = if !is_fragment_or_component {
+  let parent_is_component = directives.is_component && !directives.use_create_element;
+  let parent_has_v_slot = directives.v_slot.is_some();
+  let parent_has_v_for = directives.v_for.is_some();
+  // a plain element writes its children into its template string; a `<template>`
+  // keeps them in `.content`, and a component or fragment registers each child
+  // as a template of its own
+  let hosts_template = !is_fragment_or_component && parent_tag_name != "template";
+  let (child_template_close_tags, child_template_close_blocks) = if hosts_template {
     get_child_template_close_tags(parent_tag_name, parent_node, context)
   } else {
     Default::default()
   };
+  // what this template leaves open above its children
+  let child_scope = if hosts_template {
+    let parent_ns = *context.ns.borrow();
+    enter_open_scope(
+      *context.template_scope.borrow(),
+      parent_tag_name,
+      parent_ns.ns,
+    )
+  } else {
+    0
+  };
+  // a fragment here is the transparent wrapper of a block (a v-if branch, a
+  // keyed fragment): it does not change what its content inherits. The
+  // `v-for` cut happens in `enter_block`, a slot outlet's fallback is cut in
+  // `transform_slot_outlet`
+  let is_block_wrapper_fragment = matches!(node, JSXChild::Fragment(_));
   let children = match node {
     JSXChild::Element(node) => &mut node.children,
     JSXChild::Fragment(node) => &mut node.children,
@@ -61,9 +87,40 @@ pub unsafe fn transform_children<'a>(
     .parent_dynamic
     .replace(mem::take(&mut context_block.dynamic));
   let grand_parent_directives = context.parent_directives.replace(directives);
-  let grandparent_node_span = context
-    .grandparent_node_span
-    .replace(parent_node.map_or(SPAN, |node| node.span()));
+  let grandparent_node_span = context.grandparent_node_span.replace(
+    // A Transition / KeepAlive parent swaps the span its children read for a
+    // single-root one: its child is a root template wherever the transition
+    // sits, provided it keeps a single child. Only such a parent pays for the
+    // scan, and a ternary child is one child to begin with - the scan only
+    // collapses a `v-if` / `v-else` directive chain into one.
+    if (is_transition_tag(parent_tag_name) || is_keep_alive_tag(parent_tag_name))
+      && has_single_root_child(children.iter())
+    {
+      Span::new(3, 0)
+    } else {
+      parent_node.map_or(SPAN, |node| node.span())
+    },
+  );
+  let parent_is_slot_root = *context.is_slot_root.borrow();
+  let new_is_slot_root = if is_block_wrapper_fragment {
+    parent_is_slot_root
+  } else {
+    slot_root_provider(
+      parent_tag_name,
+      parent_is_component,
+      parent_has_v_slot,
+      parent_has_v_for,
+      children,
+      parent_is_slot_root,
+    )
+  };
+  // most parents hand no slot root down and the cell already reads false:
+  // writing it would be a no-op, so skip both the write and the restore
+  let is_slot_root = if new_is_slot_root == parent_is_slot_root {
+    None
+  } else {
+    Some(context.is_slot_root.replace(new_is_slot_root))
+  };
   let _context_block = context_block as *mut BlockIRNode;
   let mut i = 0;
   if let Some(last) = children.last()
@@ -84,6 +141,7 @@ pub unsafe fn transform_children<'a>(
       continue;
     }
     let mut tag = "";
+    let mut child_ns = 0;
     let mut next_is_interpolation = false;
     let is_text_child = matches!(&child, JSXChild::Text(_));
     let exit_context = context.create(
@@ -101,6 +159,15 @@ pub unsafe fn transform_children<'a>(
       } else {
         if let JSXChild::Element(child) = child {
           tag = get_tag_name(child, context.options);
+          // the namespace the child resolves to, which decides whether the
+          // parser would keep it where it is written
+          let parent_ns = *context.ns.borrow();
+          child_ns = get_namespace(
+            tag,
+            parent_ns.tag,
+            parent_ns.ns,
+            parent_ns.is_html_annotation_xml,
+          );
         }
         child.take_in(context.allocator)
       },
@@ -120,13 +187,16 @@ pub unsafe fn transform_children<'a>(
     if next_is_interpolation {
       mark_non_template(child, &mut context.seen.borrow_mut());
     }
-    let is_same_template = is_in_same_template_as_parent(tag, parent_tag_name);
+    let is_same_template =
+      hosts_template && keeps_in_template(tag, child_ns, parent_tag_name, child_scope);
     if is_same_template {
       *context.template_close_tags.borrow_mut() = child_template_close_tags.clone();
       *context.template_close_blocks.borrow_mut() = child_template_close_blocks;
+      *context.template_scope.borrow_mut() = child_scope | open_scope::SHARED;
     } else {
       context.template_close_tags.borrow_mut().clear();
       *context.template_close_blocks.borrow_mut() = false;
+      *context.template_scope.borrow_mut() = 0;
     }
     context.transform_node(
       Some(unsafe { &mut *_context_block }),
@@ -139,7 +209,7 @@ pub unsafe fn transform_children<'a>(
       if !next_is_interpolation {
         context.register_template(
           context_block,
-          Some(tag),
+          child_ns,
           is_text_child || context.can_use_static_template(context_block, tag),
         );
         context.reference(&mut context_block.dynamic);
@@ -170,6 +240,9 @@ pub unsafe fn transform_children<'a>(
   }
   *context.children_template.borrow_mut() = parent_children_template;
   *context.grandparent_node_span.borrow_mut() = grandparent_node_span;
+  if let Some(is_slot_root) = is_slot_root {
+    *context.is_slot_root.borrow_mut() = is_slot_root;
+  }
   context_block.dynamic = context.parent_dynamic.replace(grand_parent_dynamic);
   *context.parent_directives.borrow_mut() = grand_parent_directives;
 
@@ -267,4 +340,103 @@ fn process_dynamic_children<'a>(
       unit_index += 1;
     }
   }
+}
+
+/// Upstream `isSlotRootChild`: whether this parent hands a slot root down to
+/// its children - the direct content of a component (its default slot body,
+/// built-ins aside) or of a slot template, or a v-if branch of either. A
+/// `v-for` wrapper makes rows, and a slot outlet's fallback does not count
+/// (see `transform_slot_outlet`). An element created imperatively by
+/// `_createPlainElement` is not a component host, so its children are plain
+/// children rather than a slot body.
+fn slot_root_provider(
+  tag_name: &str,
+  is_component: bool,
+  has_v_slot: bool,
+  has_v_for: bool,
+  children: &[JSXChild],
+  parent_is_slot_root: bool,
+) -> bool {
+  if is_component && !is_transition_tag(tag_name) && !is_keep_alive_tag(tag_name) {
+    return has_single_slot_root_child(children);
+  }
+  tag_name == "template"
+    && has_single_root_child(children)
+    && (has_v_slot || (parent_is_slot_root && !has_v_for))
+}
+
+/// Upstream `hasSingleSlotRootChild`: the component's default slot body - its
+/// children minus any slot templates - keeps a single root.
+fn has_single_slot_root_child(children: &[JSXChild]) -> bool {
+  if children.iter().any(is_slot_template_child) {
+    has_single_root_child(
+      children
+        .iter()
+        .filter(|child| !is_slot_template_child(child)),
+    )
+  } else {
+    has_single_root_child(children)
+  }
+}
+
+/// Upstream `isSlotTemplate`: a `<template v-slot>` - a slot body of its own,
+/// unlike a plain `<template>`.
+fn is_slot_template_child(child: &JSXChild) -> bool {
+  let JSXChild::Element(element) = child else {
+    return false;
+  };
+  matches!(&element.opening_element.name, oxc_ast::ast::JSXElementName::Identifier(name)
+    if name.name.as_str() == "template")
+    && element.opening_element.attributes.iter().any(|attr| {
+      matches!(attr, JSXAttributeItem::Attribute(attr)
+      if match &attr.name {
+        JSXAttributeName::Identifier(name) => name.name.as_str() == "v-slot",
+        JSXAttributeName::NamespacedName(name) => name.namespace.name.as_str() == "v-slot",
+      })
+    })
+}
+
+/// Upstream `hasSingleRootChild`: one meaningful child, or a complete
+/// `v-if` / `v-else-if` / `v-else` chain counting as one.
+pub(crate) fn has_single_root_child<'a>(
+  children: impl IntoIterator<Item = &'a JSXChild<'a>>,
+) -> bool {
+  let mut non_comment_children = 0usize;
+  let mut has_encountered_if = false;
+  let mut is_single_if_block = true;
+  for child in children {
+    if is_empty_text(child) {
+      continue;
+    }
+    non_comment_children += 1;
+    let dir_name = if let JSXChild::Element(element) = child {
+      element.opening_element.attributes.iter().find_map(|attr| {
+        if let JSXAttributeItem::Attribute(attr) = attr
+          && let oxc_ast::ast::JSXAttributeName::Identifier(name) = &attr.name
+          && matches!(name.name.as_str(), "v-if" | "v-else-if" | "v-else")
+        {
+          Some(name.name.as_str())
+        } else {
+          None
+        }
+      })
+    } else {
+      None
+    };
+    if dir_name == Some("v-if") {
+      if has_encountered_if {
+        // a second `v-if` means two meaningful children already
+        return false;
+      }
+      has_encountered_if = true;
+    } else if !has_encountered_if || (dir_name != Some("v-else") && dir_name != Some("v-else-if")) {
+      // a lone child may still be the single root; a second one that does
+      // not close the chain never is
+      if non_comment_children > 1 {
+        return false;
+      }
+      is_single_if_block = false;
+    }
+  }
+  non_comment_children == 1 || is_single_if_block
 }
