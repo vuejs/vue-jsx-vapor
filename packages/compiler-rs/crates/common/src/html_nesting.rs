@@ -3,13 +3,13 @@
 // https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inbody for
 // the native html tags the compiler knows. Complements
 // `dom::is_valid_html_nesting`, which only covers what the direct
-// parent itself can hold (table, row, select and raw-text content models, void
-// parents): `<p><span><div>` is valid at every step, yet the parser closes the
-// `<p>` at the `<div>`.
+// parent itself can hold (table, row, select and raw-text content models):
+// `<p><span><div>` is valid at every step, yet the parser closes the `<p>` at
+// the `<div>`.
 
 use phf::phf_set;
 
-use crate::dom::is_valid_html_nesting;
+use crate::{check::is_void_tag, dom::is_valid_html_nesting};
 
 // Start tags that close an open `<p>` in button scope.
 static P_CLOSING_TAGS: phf::Set<&'static str> = phf_set! {
@@ -27,16 +27,24 @@ static SCOPE_BOUNDARY_TAGS: phf::Set<&'static str> =
 static FORMATTING_MARKER_TAGS: phf::Set<&'static str> =
   phf_set! { "caption", "object", "td", "th" };
 
-// Special elements, which end the search for an open `<li>`, `<dd>` or `<dt>`
-// (the parser exempts address, div and p).
+// Special elements: they end the search for an open `<li>`, `<dd>` or `<dt>`
+// (the parser exempts address, div and p there), and an "any other end tag"
+// that reaches one while still open is ignored.
 static SPECIAL_TAGS: phf::Set<&'static str> = phf_set! {
-  "area", "article", "aside", "base", "blockquote", "body", "br", "button", "caption", "col",
-  "colgroup", "dd", "details", "dl", "dt", "embed", "fieldset", "figcaption", "figure", "footer",
-  "form", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", "iframe",
-  "img", "input", "li", "link", "main", "menu", "meta", "nav", "noscript", "object", "ol",
-  "param", "pre", "script", "section", "select", "source", "style", "summary", "table", "tbody",
-  "td", "template", "textarea", "tfoot", "th", "thead", "title", "tr", "track", "ul", "wbr",
+  "address", "area", "article", "aside", "base", "blockquote", "body", "br", "button", "caption",
+  "col", "colgroup", "dd", "details", "div", "dl", "dt", "embed", "fieldset", "figcaption",
+  "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr",
+  "html", "iframe", "img", "input", "li", "link", "main", "menu", "meta", "nav", "noscript",
+  "object", "ol", "p", "param", "pre", "script", "section", "select", "source", "style", "summary",
+  "table", "tbody", "td", "template", "textarea", "tfoot", "th", "thead", "title", "tr", "track",
+  "ul", "wbr",
 };
+
+/// Whether the html parser counts `tag` as special (`SPECIAL_TAGS`), which is
+/// what an "any other end tag" is ignored at.
+pub fn is_special_tag(tag: &str) -> bool {
+  SPECIAL_TAGS.contains(tag)
+}
 
 // Elements whose end tag the parser implies before an `<rt>` or `<rp>`.
 static IMPLIED_END_TAGS: phf::Set<&'static str> =
@@ -44,6 +52,23 @@ static IMPLIED_END_TAGS: phf::Set<&'static str> =
 
 fn ends_list_item_search(tag: &str) -> bool {
   SPECIAL_TAGS.contains(tag) && !matches!(tag, "address" | "div" | "p")
+}
+
+// End tags with handling of their own pop whatever is still open below them.
+// Any other end tag is ignored when it meets a special element on its way up
+// the stack, and a formatting end tag runs the adoption agency around one, so
+// under those an open special descendant has to close itself.
+static POPS_OPEN_DESCENDANTS_TAGS: phf::Set<&'static str> = phf_set! {
+  "address", "article", "aside", "blockquote", "button", "caption", "colgroup", "dd", "details",
+  "dialog", "div", "dl", "dt", "fieldset", "figcaption", "figure", "footer", "h1", "h2", "h3",
+  "h4", "h5", "h6", "header", "hgroup", "li", "main", "menu", "nav", "object", "ol", "p", "pre",
+  "section", "summary", "table", "tbody", "td", "tfoot", "th", "thead", "tr", "ul",
+};
+
+/// Whether the end tag of `tag` pops whatever is still open below it, so that a
+/// special descendant need not close itself.
+pub fn pops_open_descendants(tag: &str) -> bool {
+  POPS_OPEN_DESCENDANTS_TAGS.contains(tag)
 }
 
 // html elements sit under a foreign one only at an integration point, which is
@@ -112,13 +137,16 @@ pub fn enter_open_scope(scope: i32, tag: &str, ns: i32) -> i32 {
 }
 
 /// Whether the html parser places an element written under `parent` there, so
-/// that both can share a template string. Two layers: `is_valid_html_nesting`
-/// rejects what the parent itself cannot hold (table, row, select and raw-text
-/// content models, void parents), `closes_open_ancestor` the start tags that
-/// end an element still open above. The end-tag omission in `transform_element`
-/// assumes only elements passing both share a template.
+/// that both can share a template string. Three layers: a void parent holds no
+/// children at all, `is_valid_html_nesting` rejects what the parent itself
+/// cannot hold (table, row, select and raw-text content models), and
+/// `closes_open_ancestor` the start tags that end an element still open above.
+/// The end-tag omission in `transform_element` assumes only elements passing all
+/// three share a template.
 pub fn keeps_in_template(tag: &str, ns: i32, parent_tag: &str, scope: i32) -> bool {
-  is_valid_html_nesting(parent_tag, tag) && !closes_open_ancestor(tag, ns, parent_tag, scope)
+  !is_void_tag(parent_tag)
+    && is_valid_html_nesting(parent_tag, tag)
+    && !closes_open_ancestor(tag, ns, parent_tag, scope)
 }
 
 /// Whether the html parser, on the start tag of `tag`, closes an element that

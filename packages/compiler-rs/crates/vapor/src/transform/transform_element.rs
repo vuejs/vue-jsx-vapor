@@ -26,15 +26,14 @@ use crate::{
 
 use common::{
   check::{
-    get_directive_name, get_namespace, is_always_close_tag, is_block_tag, is_built_in_directive,
-    is_formatting_tag, is_html_annotation_xml, is_ignore_newline_tag, is_inline_tag, is_native_on,
-    is_void_tag,
+    get_directive_name, get_namespace, is_always_close_tag, is_built_in_directive,
+    is_formatting_tag, is_html_annotation_xml, is_ignore_newline_tag, is_native_on, is_void_tag,
   },
   directive::{Directives, resolve_directive, resolve_prop_name},
   dom::is_valid_html_nesting,
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
-  html_nesting::open_scope,
+  html_nesting::{is_special_tag, open_scope, pops_open_descendants},
   text::{camelize, escape_attr_value, get_tag_name},
 };
 
@@ -407,7 +406,9 @@ pub fn get_child_template_close_tags<'a>(
 
   let mut tags = inherited_tags;
   tags.insert(tag);
-  (tags, inherited_blocks || is_inline_tag(tag))
+  // an end tag that pops its open descendants closes everything an outer one
+  // could not, so the inherited state ends here
+  (tags, !pops_open_descendants(tag))
 }
 
 /// Whether the parent element cannot hold `tag` at all, regardless of what is
@@ -459,7 +460,7 @@ fn can_omit_end_tag<'a>(
       || (template_close_tags.contains("li") && matches!(tag, "ul" | "ol"))
       || is_always_close_tag(tag)
       || is_formatting_tag(tag)))
-    || (template_close_blocks && is_block_tag(tag))
+    || (template_close_blocks && is_special_tag(tag))
   {
     return false;
   }

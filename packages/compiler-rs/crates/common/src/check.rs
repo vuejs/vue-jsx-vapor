@@ -243,27 +243,6 @@ pub fn is_ignore_newline_tag(tag_name: &str) -> bool {
   matches!(tag_name, "pre" | "textarea")
 }
 
-// Inline elements
-static INLINE_TAGS: phf::Set<&'static str> = phf_set! {
-  "a", "abbr", "acronym", "b", "bdi", "bdo", "big", "br", "button" , "canvas", "cite", "code", "data", "datalist",
-  "del", "dfn", "em", "embed", "i", "iframe", "img", "input", "ins", "kbd", "label", "map", "mark", "meter",
-  "noscript", "object", "output", "picture", "progress", "q", "ruby", "s", "samp", "script", "select",
-  "small", "span", "strong", "sub", "sup", "svg", "textarea", "time", "u", "tt", "var", "video",
-};
-pub fn is_inline_tag(tag_name: &str) -> bool {
-  INLINE_TAGS.contains(tag_name)
-}
-
-// Block elements
-static BLOCK_TAGS: phf::Set<&'static str> = phf_set! {
-  "address", "article", "aside", "blockquote", "dd", "details", "dialog", "div", "dl" , "dt", "fieldset",
-  "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup", "hr", "li",
-  "main", "menu", "nav", "ol", "p", "pre", "section", "table", "ul",
-};
-pub fn is_block_tag(tag_name: &str) -> bool {
-  BLOCK_TAGS.contains(tag_name)
-}
-
 static BUILD_IN_DIRECTIVE: phf::Set<&'static str> = phf_set! {
   "bind", "cloak", "else-if", "else", "for", "html", "if", "model", "on", "once", "pre", "show",
   "slot", "slots", "text", "memo",

@@ -969,3 +969,99 @@ fn keeps_a_descendant_the_parser_would_not_move() {
     );
   }
 }
+
+// An end tag the parser cannot use to pop a special descendant ("any other end
+// tag" is ignored at one, a formatting end tag runs the adoption agency around
+// one) makes that descendant close itself, or the next sibling lands inside it.
+#[test]
+fn keeps_the_end_tag_of_a_special_child_its_parent_cannot_close() {
+  for (src, expected) in [
+    // "any other end tag" (legend, audio, rt, ...) walks the open elements and
+    // is ignored at a special one, so a special child has to close itself or
+    // the next sibling lands inside it
+    (
+      "<main><legend><div>x</div></legend><p>y</p></main>",
+      "<main><legend><div>x</div></legend><p>y",
+    ),
+    (
+      "<div><audio><p>a</p></audio><p>b</p></div>",
+      "<div><audio><p>a</p></audio><p>b",
+    ),
+    (
+      "<ruby><rt><div>x</div></rt><rt>y</rt></ruby>",
+      "<ruby><rt><div>x</div></rt><rt>y",
+    ),
+    // an end tag with handling of its own pops its open descendants
+    (
+      "<main><button><div>x</div></button><p>y</p></main>",
+      "<main><button><div>x</button><p>y",
+    ),
+    (
+      "<main><object><div>x</div></object><p>y</p></main>",
+      "<main><object><div>x</object><p>y",
+    ),
+    // a non-special child is closed along the way
+    (
+      "<main><legend><span>x</span></legend><p>y</p></main>",
+      "<main><legend><span>x</legend><p>y",
+    ),
+    // the special child's own end tag pops whatever is still open below it
+    (
+      "<main><span><div><p>x</p></div></span><i>y</i></main>",
+      "<main><span><div><p>x</div></span><i>y",
+    ),
+    // the requirement passes through a child that omits its own end tag
+    (
+      "<main><legend><span><div>x</div></span></legend><p>y</p></main>",
+      "<main><legend><span><div>x</div></legend><p>y",
+    ),
+  ] {
+    let code = transform(src, None).code;
+    assert_eq!(code.matches("_template(").count(), 1, "{src}\n{code}");
+    assert!(
+      code.contains(&format!("_template(\"{expected}\"")),
+      "{src}\n{code}"
+    );
+  }
+}
+
+// A void element holds no children: the browser's parser puts them after it,
+// while the compiler's tree has them inside. Each one therefore gets a template
+// of its own and is inserted into the element at runtime, which is where vdom
+// puts it too. `dom::is_valid_html_nesting` does not know about void parents.
+#[test]
+fn void_parent_holds_no_children() {
+  for (source, templates) in [
+    (
+      "<div><hr><div>x</div></hr><i>s</i></div>",
+      vec!["<div>x", "<div><hr><i>s"],
+    ),
+    (
+      "<div><input><b>x</b></input><i>s</i></div>",
+      vec!["<b>x</b>", "<div><input><i>s"],
+    ),
+    // a void root holds its children the same way, in order
+    (
+      "<hr><main>v</main><i>s</i></hr>",
+      vec!["<main>v</main>", "<i>s", "<hr>"],
+    ),
+    // the placeholder of the child's own template still receives its text
+    (
+      "<div><hr><div>{msg}</div></hr><i>s</i></div>",
+      vec!["<div> ", "<div><hr><i>s"],
+    ),
+  ] {
+    let code = transform(source, None).code;
+    assert_eq!(
+      code.matches("_template(").count(),
+      templates.len(),
+      "{source}\n{code}"
+    );
+    for template in templates {
+      assert!(
+        code.contains(&format!("_template(\"{template}\"")),
+        "{source}\n{code}"
+      );
+    }
+  }
+}
