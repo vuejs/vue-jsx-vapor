@@ -1,3 +1,18 @@
+## [3.2.29](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.28...v3.2.29) (2026-10-25)
+
+
+### Bug Fixes
+
+* **compiler-vapor:** align v-once on v-else-if chains with vdom ([2fd801d](https://github.com/vuejs/vue-jsx-vapor/commit/2fd801d7c06a8c4b9ec2a06b211152a2318a2ad7))
+* **compiler-vapor:** compile long v-else-if chains to a flat ([b8d650d](https://github.com/vuejs/vue-jsx-vapor/commit/b8d650dd82156dc9827b93c8a0cd9b63075e2939))
+* **compiler-vapor:** create breakout elements in foreign content and ([9564176](https://github.com/vuejs/vue-jsx-vapor/commit/956417638c8ff9c6011dd4598b734c2001867c44))
+* **compiler-vapor:** fall through cloneVNode extras to the vapor slot ([d7978d8](https://github.com/vuejs/vue-jsx-vapor/commit/d7978d85c0d37a58a4b66cbbff4ed7cbc06199f5))
+* **compiler-vapor:** give a template of its own to a descendant the ([abe3c7a](https://github.com/vuejs/vue-jsx-vapor/commit/abe3c7a05badd94c001c525ba86e840f686fe34b))
+* **compiler-vapor:** keep the end tag of a special element under a ([498d147](https://github.com/vuejs/vue-jsx-vapor/commit/498d1477271825356710836013ea8f3bc57b0e60))
+* **compiler-vapor:** mark the child of a non-root Transition / KeepAlive ([a26cf4c](https://github.com/vuejs/vue-jsx-vapor/commit/a26cf4ced3714946ab7604d3c91d53582d0a65e2))
+
+
+
 ## [3.2.28](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.27...v3.2.28) (2026-10-18)
 
 
