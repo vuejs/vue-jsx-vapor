@@ -168,6 +168,11 @@ pub struct TransformContext<'a> {
 
   pub parent_dynamic: RefCell<IRDynamicInfo<'a>>,
   pub grandparent_node_span: RefCell<Span>,
+  // whether the node currently being transformed is the single root of a slot
+  // body - the direct content of a component (its default slot body, built-ins
+  // aside) or of a slot template, or a v-if branch of either. Replaced when a
+  // parent's children transform starts, like `grandparent_node_span`
+  pub is_slot_root: RefCell<bool>,
 
   pub parent_directives: RefCell<Directives<'a>>,
 }
@@ -203,6 +208,7 @@ impl<'a> TransformContext<'a> {
       node: RefCell::new(RootNode::from(ast, options, node, true, None)),
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
       grandparent_node_span: RefCell::new(SPAN),
+      is_slot_root: RefCell::new(false),
       ir: Rc::new(RefCell::new(RootIRNode::default())),
       block: RefCell::new(BlockIRNode::new()),
       parent_directives: RefCell::new(Directives::default()),
@@ -409,6 +415,14 @@ impl<'a> TransformContext<'a> {
     let operation_index = *self.operation_index.borrow();
     *self.operation_index.borrow_mut() = ir.operation.len();
     let children_template = mem::take(&mut *self.children_template.borrow_mut());
+    // a `v-for` row is never the single root of a slot body: upstream's
+    // structural transform wraps the host in a `<template v-for>` whose
+    // children read a cut chain, so cut here where the block content starts
+    let is_slot_root = if is_v_for {
+      self.is_slot_root.replace(false)
+    } else {
+      *self.is_slot_root.borrow()
+    };
 
     *context_block = ir;
     if is_v_for {
@@ -423,6 +437,7 @@ impl<'a> TransformContext<'a> {
       *self.template.borrow_mut() = template;
       *self.template_root.borrow_mut() = template_root;
       *self.children_template.borrow_mut() = children_template;
+      *self.is_slot_root.borrow_mut() = is_slot_root;
       if is_v_for {
         *self.in_v_for.borrow_mut() -= 1;
       }

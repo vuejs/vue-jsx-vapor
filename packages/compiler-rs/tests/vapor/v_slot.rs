@@ -89,7 +89,7 @@ fn on_component_named_slot_multiple() {
   			const _n3 = _createComponent(Comp, null, { left: () => {
   				const _n2 = _t0();
   				return _n2;
-  			} });
+  			} }, 2);
   			return _n3;
   		}
   	}, true);
@@ -138,7 +138,7 @@ fn nested_component_should_not_inherit_parent_slots() {
   			return [];
   		}, { _: 1 }),
   		default: () => {
-  			const _n1 = _createComponent(Bar);
+  			const _n1 = _createComponent(Bar, null, null, 2);
   			return _n1;
   		}
   	}, true);
@@ -646,7 +646,7 @@ fn nested_component_slot() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
   	const _n1 = _createComponent(A, null, () => {
-  		const _n0 = _createComponent(B);
+  		const _n0 = _createComponent(B, null, null, 2);
   		return _n0;
   	}, true);
   	return _n1;
@@ -1062,7 +1062,7 @@ fn slot_tag_with_nested_component() {
   		const _n1 = _createComponent(Comp, null, _extend(() => {
   			const _n0 = _createSlot("default", null, null, 4);
   			return _n0;
-  		}, { _: 1 }));
+  		}, { _: 1 }), 2);
   		return _n1;
   	}, true);
   	return _n2;
@@ -1152,7 +1152,7 @@ fn slot_with_component_is_stable() {
   import { createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
   (() => {
   	const _n2 = _createComponent(Comp, null, () => {
-  		const _n0 = _createComponent(ChildComp);
+  		const _n0 = _createComponent(ChildComp, null, null, 2);
   		return _n0;
   	}, true);
   	return _n2;
@@ -1931,4 +1931,49 @@ fn slot_prop_destructuring_defaults_apply_at_their_own_level() {
     code.contains("_getDefaultValue(_slotProps0, () => ({ a: 1 })).a"),
     "{code}"
   );
+}
+
+// vuejs/core#15989
+#[test]
+fn marks_the_single_root_of_a_slot_body() {
+  let code = |src: &str| transform(src, None).code;
+  // a component's default slot body
+  assert!(code("<Comp><Foo /></Comp>").contains("_createComponent(Foo, null, null, 2)"));
+  // the body of a named slot template
+  assert!(
+    code("<Comp><template v-slot:a><Foo /></template></Comp>")
+      .contains("_createComponent(Foo, null, null, 2)")
+  );
+  // a complete v-if chain counts as one child
+  assert_eq!(
+    code("<Comp><Foo v-if={ok} /><Bar v-else /></Comp>")
+      .matches("null, null, 2)")
+      .count(),
+    2
+  );
+  // several children, a v-for row, a wrapped child and a slot outlet's
+  // fallback are not the single root of a slot body
+  for src in [
+    "<Comp><Foo /><Bar /></Comp>",
+    "<Comp><Foo v-for={i in l} /></Comp>",
+    "<Comp><div><Foo /></div></Comp>",
+    "<Comp><slot><Foo /></slot></Comp>",
+  ] {
+    assert!(!code(src).contains("null, null, 2)"), "{src}");
+  }
+  // Transition and KeepAlive pass the attrs they inherit on to their child,
+  // which stays the component template root (single root wins over SLOT)
+  for host in ["VaporTransition", "VaporKeepAlive"] {
+    let src = format!("<Comp><{host}><Foo /></{host}></Comp>");
+    let out = code(&src);
+    assert!(
+      out.contains(&format!("_createComponent({host}, null, () => {{")),
+      "{out}"
+    );
+    assert!(out.contains("}, 2)"), "{out}");
+    assert!(
+      out.contains("_createComponent(Foo, null, null, true)"),
+      "{out}"
+    );
+  }
 }

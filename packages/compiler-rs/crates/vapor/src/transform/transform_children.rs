@@ -1,7 +1,7 @@
 use std::{borrow::Cow, mem};
 
 use oxc_allocator::{CloneIn, TakeIn};
-use oxc_ast::ast::{Expression, JSXAttributeItem, JSXChild};
+use oxc_ast::ast::{Expression, JSXAttributeItem, JSXAttributeName, JSXChild};
 use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
@@ -45,6 +45,9 @@ pub unsafe fn transform_children<'a>(
 
   let _node = node as *mut _;
   let parent_tag_name = directives.tag_name;
+  let parent_is_component = directives.is_component && !directives.use_create_element;
+  let parent_has_v_slot = directives.v_slot.is_some();
+  let parent_has_v_for = directives.v_for.is_some();
   // a plain element writes its children into its template string; a `<template>`
   // keeps them in `.content`, and a component or fragment registers each child
   // as a template of its own
@@ -65,6 +68,11 @@ pub unsafe fn transform_children<'a>(
   } else {
     0
   };
+  // a fragment here is the transparent wrapper of a block (a v-if branch, a
+  // keyed fragment): it does not change what its content inherits. The
+  // `v-for` cut happens in `enter_block`, a slot outlet's fallback is cut in
+  // `transform_slot_outlet`
+  let is_block_wrapper_fragment = matches!(node, JSXChild::Fragment(_));
   let children = match node {
     JSXChild::Element(node) => &mut node.children,
     JSXChild::Fragment(node) => &mut node.children,
@@ -86,13 +94,33 @@ pub unsafe fn transform_children<'a>(
     // scan, and a ternary child is one child to begin with - the scan only
     // collapses a `v-if` / `v-else` directive chain into one.
     if (is_transition_tag(parent_tag_name) || is_keep_alive_tag(parent_tag_name))
-      && has_single_root_child(children)
+      && has_single_root_child(children.iter())
     {
       Span::new(3, 0)
     } else {
       parent_node.map_or(SPAN, |node| node.span())
     },
   );
+  let parent_is_slot_root = *context.is_slot_root.borrow();
+  let new_is_slot_root = if is_block_wrapper_fragment {
+    parent_is_slot_root
+  } else {
+    slot_root_provider(
+      parent_tag_name,
+      parent_is_component,
+      parent_has_v_slot,
+      parent_has_v_for,
+      children,
+      parent_is_slot_root,
+    )
+  };
+  // most parents hand no slot root down and the cell already reads false:
+  // writing it would be a no-op, so skip both the write and the restore
+  let is_slot_root = if new_is_slot_root == parent_is_slot_root {
+    None
+  } else {
+    Some(context.is_slot_root.replace(new_is_slot_root))
+  };
   let _context_block = context_block as *mut BlockIRNode;
   let mut i = 0;
   if let Some(last) = children.last()
@@ -212,6 +240,9 @@ pub unsafe fn transform_children<'a>(
   }
   *context.children_template.borrow_mut() = parent_children_template;
   *context.grandparent_node_span.borrow_mut() = grandparent_node_span;
+  if let Some(is_slot_root) = is_slot_root {
+    *context.is_slot_root.borrow_mut() = is_slot_root;
+  }
   context_block.dynamic = context.parent_dynamic.replace(grand_parent_dynamic);
   *context.parent_directives.borrow_mut() = grand_parent_directives;
 
@@ -311,9 +342,65 @@ fn process_dynamic_children<'a>(
   }
 }
 
+/// Upstream `isSlotRootChild`: whether this parent hands a slot root down to
+/// its children - the direct content of a component (its default slot body,
+/// built-ins aside) or of a slot template, or a v-if branch of either. A
+/// `v-for` wrapper makes rows, and a slot outlet's fallback does not count
+/// (see `transform_slot_outlet`). An element created imperatively by
+/// `_createPlainElement` is not a component host, so its children are plain
+/// children rather than a slot body.
+fn slot_root_provider(
+  tag_name: &str,
+  is_component: bool,
+  has_v_slot: bool,
+  has_v_for: bool,
+  children: &[JSXChild],
+  parent_is_slot_root: bool,
+) -> bool {
+  if is_component && !is_transition_tag(tag_name) && !is_keep_alive_tag(tag_name) {
+    return has_single_slot_root_child(children);
+  }
+  tag_name == "template"
+    && has_single_root_child(children)
+    && (has_v_slot || (parent_is_slot_root && !has_v_for))
+}
+
+/// Upstream `hasSingleSlotRootChild`: the component's default slot body - its
+/// children minus any slot templates - keeps a single root.
+fn has_single_slot_root_child(children: &[JSXChild]) -> bool {
+  if children.iter().any(is_slot_template_child) {
+    has_single_root_child(
+      children
+        .iter()
+        .filter(|child| !is_slot_template_child(child)),
+    )
+  } else {
+    has_single_root_child(children)
+  }
+}
+
+/// Upstream `isSlotTemplate`: a `<template v-slot>` - a slot body of its own,
+/// unlike a plain `<template>`.
+fn is_slot_template_child(child: &JSXChild) -> bool {
+  let JSXChild::Element(element) = child else {
+    return false;
+  };
+  matches!(&element.opening_element.name, oxc_ast::ast::JSXElementName::Identifier(name)
+    if name.name.as_str() == "template")
+    && element.opening_element.attributes.iter().any(|attr| {
+      matches!(attr, JSXAttributeItem::Attribute(attr)
+      if match &attr.name {
+        JSXAttributeName::Identifier(name) => name.name.as_str() == "v-slot",
+        JSXAttributeName::NamespacedName(name) => name.namespace.name.as_str() == "v-slot",
+      })
+    })
+}
+
 /// Upstream `hasSingleRootChild`: one meaningful child, or a complete
 /// `v-if` / `v-else-if` / `v-else` chain counting as one.
-pub(crate) fn has_single_root_child(children: &[JSXChild]) -> bool {
+pub(crate) fn has_single_root_child<'a>(
+  children: impl IntoIterator<Item = &'a JSXChild<'a>>,
+) -> bool {
   let mut non_comment_children = 0usize;
   let mut has_encountered_if = false;
   let mut is_single_if_block = true;

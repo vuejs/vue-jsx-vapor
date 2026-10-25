@@ -34,6 +34,7 @@ use common::{
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
   html_nesting::{is_special_tag, open_scope, pops_open_descendants},
+  patch_flag::VaporSingleRoot,
   text::{camelize, escape_attr_value, get_tag_name},
 };
 
@@ -126,12 +127,22 @@ pub unsafe fn transform_element<'a>(
 
   Some(Box::new(move || {
     if is_component {
+      // Upstream `singleRoot || (context.isSlotRoot && !useCreateElement &&
+      // VaporSingleRoot.SLOT)`: the single root of a slot body layers under
+      // the single root of a component template
+      let root = if single_root {
+        1
+      } else if *context.is_slot_root.borrow() && !use_create_element {
+        VaporSingleRoot::SLOT as i32
+      } else {
+        0
+      };
       transform_component_element(
         tag,
         tag_span,
         props_result,
         static_key,
-        single_root,
+        root,
         use_create_element,
         ns,
         context,
@@ -498,7 +509,8 @@ pub fn transform_component_element<'a>(
   tag_span: Span,
   props_result: PropsResult<'a>,
   static_key: Option<Expression<'a>>,
-  single_root: bool,
+  // 1 = the single root of a component template, 2 = `VaporSingleRoot::SLOT`
+  root: i32,
   use_create_element: bool,
   ns: i32,
   context: &'a TransformContext<'a>,
@@ -546,7 +558,7 @@ pub fn transform_component_element<'a>(
       tag_span,
       props,
       asset: false,
-      root: single_root,
+      root,
       slots: mem::take(&mut context_block.slots),
       once: *context.in_v_once.borrow(),
       use_create_element,

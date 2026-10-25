@@ -239,7 +239,9 @@ pub struct CreateComponentIRNode<'a> {
   pub props: Vec<IRProps<'a>>,
   pub slots: Vec<IRSlots<'a>>,
   pub asset: bool,
-  pub root: bool,
+  // `isSingleRoot` of the creation call: 1 = the single root of a component
+  // template, 2 = `VaporSingleRoot::SLOT`, the single root of a slot body
+  pub root: i32,
   pub once: bool,
   // created by `createPlainElement` rather than `createComponent`
   pub use_create_element: bool,

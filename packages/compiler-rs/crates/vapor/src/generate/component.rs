@@ -5,6 +5,7 @@ use common::check::is_constant_node;
 use common::directive::Modifiers;
 use common::directive::get_modifier_prop_name;
 use common::expression::gen_getter;
+use common::patch_flag::VaporSingleRoot;
 use common::text::capitalize;
 use indexmap::IndexMap;
 use napi::bindgen_prelude::Either3;
@@ -88,16 +89,23 @@ pub fn gen_create_component<'a>(
   let mut arguments = ast.vec1(tag);
   if let Some(raw_props) = raw_props {
     arguments.push(raw_props.into());
-  } else if root || once || raw_slots.is_some() {
+  } else if root != 0 || once || raw_slots.is_some() {
     arguments.push(ast.expression_null_literal(SPAN).into());
   }
   if let Some(raw_slots) = raw_slots {
     arguments.push(raw_slots.into());
-  } else if root || once {
+  } else if root != 0 || once {
     arguments.push(ast.expression_null_literal(SPAN).into());
   }
-  if root {
+  if root == 1 {
     arguments.push(ast.expression_boolean_literal(SPAN, true).into());
+  } else if root == VaporSingleRoot::SLOT as i32 {
+    // the single root of a slot body (`VaporSingleRoot.SLOT`)
+    arguments.push(
+      ast
+        .expression_numeric_literal(SPAN, root as f64, None, NumberBase::Decimal)
+        .into(),
+    );
   } else if once {
     arguments.push(ast.expression_null_literal(SPAN).into())
   }
