@@ -140,6 +140,10 @@ pub struct TransformContext<'a> {
   // Inline ancestors with explicit close tags also require block descendants
   // in the same template to close explicitly.
   pub template_close_blocks: RefCell<bool>,
+  // Whether the element is written into its parent's template and what that
+  // template leaves open above it (`open_scope` bits); 0 when it starts a
+  // template of its own.
+  pub template_scope: RefCell<i32>,
 
   // Namespace (0 = HTML, 1 = SVG, 2 = MathML) context of the innermost element
   // currently being transformed. `transform_element` saves it, installs its own
@@ -189,6 +193,7 @@ impl<'a> TransformContext<'a> {
       is_on_rightmost_path: RefCell::new(true),
       template_close_blocks: RefCell::new(false),
       template_close_tags: RefCell::new(HashSet::new()),
+      template_scope: RefCell::new(0),
       ns: RefCell::default(),
       global_id: RefCell::new(0),
       if_index: RefCell::new(0),
@@ -578,6 +583,7 @@ impl<'a> TransformContext<'a> {
     let is_on_rightmost_path = self.is_on_rightmost_path.replace(is_on_rightmost_path);
     let template_close_blocks = self.template_close_blocks.take();
     let template_close_tags = self.template_close_tags.take();
+    let template_scope = self.template_scope.replace(0);
     self.children_template.take();
     mem::take(&mut block.dynamic);
     let effect_index = self.effect_index.replace(block.effect.len());
@@ -593,6 +599,7 @@ impl<'a> TransformContext<'a> {
       self.is_on_rightmost_path.replace(is_on_rightmost_path);
       self.template_close_blocks.replace(template_close_blocks);
       *self.template_close_tags.borrow_mut() = template_close_tags;
+      *self.template_scope.borrow_mut() = template_scope;
       *self.effect_index.borrow_mut() = effect_index;
       *self.operation_index.borrow_mut() = operation_index;
     }

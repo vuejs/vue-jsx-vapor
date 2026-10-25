@@ -34,6 +34,7 @@ use common::{
   dom::is_valid_html_nesting,
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
+  html_nesting::open_scope,
   text::{camelize, escape_attr_value, get_tag_name},
 };
 
@@ -357,9 +358,16 @@ pub fn transform_native_element<'a>(
 
   *context.template_root.borrow_mut() = single_root;
 
-  if let JSXChild::Element(parent_node) = parent_node
-    && let JSXElementName::Identifier(name) = &parent_node.opening_element.name
-    && !is_valid_html_nesting(&name.name, tag)
+  // An element the parser would not place under its parent (`keeps_in_template`,
+  // decided by `transform_children`) gets a template of its own, so does one a
+  // component parent cannot hold: its parent registers it like any other child,
+  // but it must stay off the static path - the server renders it in place, and
+  // the browser's parser drops or moves it, so only the non-static hydration
+  // path can recreate it (`<my-el><td>`). The parent check runs again here on
+  // the tag the element's own transforms left behind.
+  let scope = *context.template_scope.borrow();
+  if parent_cannot_hold(parent_node, tag)
+    || (scope & open_scope::SHARED == 0 && parent_hosts_template(parent_node, context))
   {
     let dynamic = &mut context_block.dynamic;
     context.reference(dynamic);
@@ -402,11 +410,29 @@ pub fn get_child_template_close_tags<'a>(
   (tags, inherited_blocks || is_inline_tag(tag))
 }
 
-pub fn is_in_same_template_as_parent(tag: &str, parent_tag_name: &str) -> bool {
-  if parent_tag_name.is_empty() || matches!(parent_tag_name, "template") {
+/// Whether the parent element cannot hold `tag` at all, regardless of what is
+/// still open above it (`html_nesting::keeps_in_template`).
+fn parent_cannot_hold(parent_node: &JSXChild<'_>, tag: &str) -> bool {
+  if let JSXChild::Element(parent_node) = parent_node
+    && let JSXElementName::Identifier(name) = &parent_node.opening_element.name
+  {
+    return !is_valid_html_nesting(&name.name, tag);
+  }
+  false
+}
+
+/// Whether the parent writes its children into a template string, i.e. is a
+/// plain element rather than a component, custom element or `<template>`.
+/// `transform_children` restores the parent's directives before the exit
+/// callbacks run, so `parent_directives` holds them here; `parent_node` is what
+/// rules out the fragment a `v-if` or `v-for` wraps a branch in, which is
+/// re-transformed with its own directives still installed.
+fn parent_hosts_template(parent_node: &JSXChild<'_>, context: &TransformContext<'_>) -> bool {
+  if !matches!(parent_node, JSXChild::Element(_)) {
     return false;
   }
-  is_valid_html_nesting(parent_tag_name, tag)
+  let parent = &*context.parent_directives.borrow();
+  !parent.is_component && !parent.tag_name.is_empty() && parent.tag_name != "template"
 }
 
 fn can_omit_end_tag<'a>(

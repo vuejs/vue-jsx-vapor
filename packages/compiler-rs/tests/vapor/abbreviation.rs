@@ -767,3 +767,205 @@ fn nested_list_end_tag() {
     "{code}"
   );
 }
+
+// A start tag the parser answers by closing an element still open above it
+// cannot share that ancestor's template: the template string is parsed again
+// at runtime, so the descendant would land outside the element the compiler
+// expects and `parseTemplate`'s firstChild would drop the rest.
+#[test]
+fn descendant_closing_an_open_p() {
+  let code = transform("<p><span><div>x</div></span></p>", None).code;
+  assert_snapshot!(code, @r#"
+  import { child as _child, insert as _insert, template as _template } from "vue";
+  const _t0 = _template("<div>x");
+  const _t1 = _template("<p><span>", 1);
+  (() => {
+  	const _n2 = _t1();
+  	const _n1 = _child(_n2);
+  	const _n0 = _t0();
+  	_insert(_n0, _n1);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn descendant_closing_an_open_p_across_deeper_ancestors() {
+  let code = transform("<p><span><div><section>x</section></div></span></p>", None).code;
+  assert_snapshot!(code, @r#"
+  import { child as _child, insert as _insert, template as _template } from "vue";
+  const _t0 = _template("<div><section>x");
+  const _t1 = _template("<p><span>", 1);
+  (() => {
+  	const _n2 = _t1();
+  	const _n1 = _child(_n2);
+  	const _n0 = _t0();
+  	_insert(_n0, _n1);
+  	return _n2;
+  })();
+  "#);
+}
+
+// the dynamic child keeps the placeholder of its own template
+#[test]
+fn descendant_closing_an_open_p_with_dynamic_content() {
+  let code = transform("<p><span><div>{msg}</div></span></p>", None).code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { child as _child, insert as _insert, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  const _t1 = _template("<p><span>", 1);
+  (() => {
+  	const _n2 = _t1();
+  	const _n1 = _child(_n2);
+  	const _n0 = _t0();
+  	_insert(_n0, _n1);
+  	const _x0 = _txt(_n0);
+  	_setNodes(_x0, () => msg);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn descendant_closing_an_open_link() {
+  let code = transform(r##"<a href="#a"><div><a href="#b">x</a></div></a>"##, None).code;
+  assert_snapshot!(code, @r#"
+  import { child as _child, insert as _insert, template as _template } from "vue";
+  const _t0 = _template("<a href=#b>x");
+  const _t1 = _template("<a href=#a><div>", 1);
+  (() => {
+  	const _n2 = _t1();
+  	const _n1 = _child(_n2);
+  	const _n0 = _t0();
+  	_insert(_n0, _n1);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn descendant_closing_an_open_list_item() {
+  let code = transform("<ul><li><span><li>x</li></span></li></ul>", None).code;
+  assert_snapshot!(code, @r#"
+  import { child as _child, insert as _insert, template as _template } from "vue";
+  const _t0 = _template("<li>x");
+  const _t1 = _template("<ul><li><span>", 1);
+  (() => {
+  	const _n2 = _t1();
+  	const _n1 = _child(_child(_n2));
+  	const _n0 = _t0();
+  	_insert(_n0, _n1);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn descendant_closing_an_open_data_term() {
+  let code = transform("<dl><dt><div><dd>x</dd></div></dt></dl>", None).code;
+  assert_snapshot!(code, @r#"
+  import { child as _child, insert as _insert, template as _template } from "vue";
+  const _t0 = _template("<dd>x");
+  const _t1 = _template("<dl><dt><div>", 1);
+  (() => {
+  	const _n2 = _t1();
+  	const _n1 = _child(_child(_n2));
+  	const _n0 = _t0();
+  	_insert(_n0, _n1);
+  	return _n2;
+  })();
+  "#);
+}
+
+// the form element pointer is not a scope, so a `<table>` does not reset it
+#[test]
+fn descendant_closing_an_open_form_through_a_table() {
+  let code = transform(
+    "<form><table><tbody><tr><td><form>x</form></td></tr></tbody></table></form>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { child as _child, insert as _insert, template as _template } from "vue";
+  const _t0 = _template("<form>x");
+  const _t1 = _template("<form><table><tbody><tr><td>", 1);
+  (() => {
+  	const _n2 = _t1();
+  	const _n1 = _child(_child(_child(_child(_n2))));
+  	const _n0 = _t0();
+  	_insert(_n0, _n1);
+  	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn descendant_closing_an_open_ruby_text() {
+  let code = transform("<ruby><rt>a</rt><rt><rt>x</rt></rt></ruby>", None).code;
+  assert_snapshot!(code, @r#"
+  import { child as _child, insert as _insert, next as _next, template as _template } from "vue";
+  const _t0 = _template("<rt>x");
+  const _t1 = _template("<ruby><rt>a</rt><rt>", 1);
+  (() => {
+  	const _n2 = _t1();
+  	const _n1 = _next(_child(_n2));
+  	const _n0 = _t0();
+  	_insert(_n0, _n1);
+  	return _n2;
+  })();
+  "#);
+}
+
+// a link in an integration point closes the one in the html ancestor
+#[test]
+fn descendant_closing_an_open_link_inside_foreign_object() {
+  let code = transform(
+    "<a><svg><foreignObject><a>x</a></foreignObject></svg></a>",
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { child as _child, insert as _insert, template as _template } from "vue";
+  const _t0 = _template("<a>x");
+  const _t1 = _template("<a><svg><foreignObject>", 1);
+  (() => {
+  	const _n2 = _t1();
+  	const _n1 = _child(_child(_n2));
+  	const _n0 = _t0();
+  	_insert(_n0, _n1);
+  	return _n2;
+  })();
+  "#);
+}
+
+// `enter_open_scope` clears what the descendants can still reach: a `<button>`
+// ends the button scope of the `<p>`, a `<section>` ends the list item search,
+// and a foreign element ends every html scope.
+#[test]
+fn keeps_a_descendant_the_parser_would_not_move() {
+  for (src, expected) in [
+    ("<p><button><div>x</div></button></p>", "<p><button><div>x"),
+    (
+      "<ul><li><section><li>x</li></section></li></ul>",
+      "<ul><li><section><li>x",
+    ),
+    (
+      "<p><svg><foreignObject><div>x</div></foreignObject></svg></p>",
+      "<p><svg><foreignObject><div>x",
+    ),
+    ("<dl><dd><dl><dd>x</dd></dl></dd></dl>", "<dl><dd><dl><dd>x"),
+    (
+      "<a><table><tbody><tr><td><a>x</a></td></tr></tbody></table></a>",
+      "<a><table><tbody><tr><td><a>x",
+    ),
+    ("<ruby><span><rt>x</rt></span></ruby>", "<ruby><span><rt>x"),
+  ] {
+    let code = transform(src, None).code;
+    assert_eq!(code.matches("_template(").count(), 1, "{src}\n{code}");
+    assert!(
+      code.contains(&format!("_template(\"{expected}\"")),
+      "{src}\n{code}"
+    );
+  }
+}

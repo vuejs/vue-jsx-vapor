@@ -10,15 +10,16 @@ use crate::{
     OperationNode::{self},
   },
   transform::{
-    TransformContext,
-    transform_element::{get_child_template_close_tags, is_in_same_template_as_parent},
+    TransformContext, transform_element::get_child_template_close_tags,
     transform_text::mark_non_template,
   },
 };
 
 use common::{
   ast::RootNode,
+  check::get_namespace,
   directive::Directives,
+  html_nesting::{enter_open_scope, keeps_in_template, open_scope},
   text::{get_tag_name, is_empty_text},
 };
 
@@ -42,10 +43,25 @@ pub unsafe fn transform_children<'a>(
 
   let _node = node as *mut _;
   let parent_tag_name = directives.tag_name;
-  let (child_template_close_tags, child_template_close_blocks) = if !is_fragment_or_component {
+  // a plain element writes its children into its template string; a `<template>`
+  // keeps them in `.content`, and a component or fragment registers each child
+  // as a template of its own
+  let hosts_template = !is_fragment_or_component && parent_tag_name != "template";
+  let (child_template_close_tags, child_template_close_blocks) = if hosts_template {
     get_child_template_close_tags(parent_tag_name, parent_node, context)
   } else {
     Default::default()
+  };
+  // what this template leaves open above its children
+  let child_scope = if hosts_template {
+    let parent_ns = *context.ns.borrow();
+    enter_open_scope(
+      *context.template_scope.borrow(),
+      parent_tag_name,
+      parent_ns.ns,
+    )
+  } else {
+    0
   };
   let children = match node {
     JSXChild::Element(node) => &mut node.children,
@@ -84,6 +100,7 @@ pub unsafe fn transform_children<'a>(
       continue;
     }
     let mut tag = "";
+    let mut child_ns = 0;
     let mut next_is_interpolation = false;
     let is_text_child = matches!(&child, JSXChild::Text(_));
     let exit_context = context.create(
@@ -101,6 +118,15 @@ pub unsafe fn transform_children<'a>(
       } else {
         if let JSXChild::Element(child) = child {
           tag = get_tag_name(child, context.options);
+          // the namespace the child resolves to, which decides whether the
+          // parser would keep it where it is written
+          let parent_ns = *context.ns.borrow();
+          child_ns = get_namespace(
+            tag,
+            parent_ns.tag,
+            parent_ns.ns,
+            parent_ns.is_html_annotation_xml,
+          );
         }
         child.take_in(context.allocator)
       },
@@ -120,13 +146,16 @@ pub unsafe fn transform_children<'a>(
     if next_is_interpolation {
       mark_non_template(child, &mut context.seen.borrow_mut());
     }
-    let is_same_template = is_in_same_template_as_parent(tag, parent_tag_name);
+    let is_same_template =
+      hosts_template && keeps_in_template(tag, child_ns, parent_tag_name, child_scope);
     if is_same_template {
       *context.template_close_tags.borrow_mut() = child_template_close_tags.clone();
       *context.template_close_blocks.borrow_mut() = child_template_close_blocks;
+      *context.template_scope.borrow_mut() = child_scope | open_scope::SHARED;
     } else {
       context.template_close_tags.borrow_mut().clear();
       *context.template_close_blocks.borrow_mut() = false;
+      *context.template_scope.borrow_mut() = 0;
     }
     context.transform_node(
       Some(unsafe { &mut *_context_block }),
