@@ -1,6 +1,6 @@
 use napi::Either;
 use oxc_allocator::TakeIn;
-use oxc_ast::ast::{Expression, JSXChild, JSXElement};
+use oxc_ast::ast::{Expression, JSXAttributeItem, JSXAttributeName, JSXChild, JSXElement};
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, IfIRNode, OperationNode},
@@ -22,6 +22,7 @@ pub unsafe fn transform_v_if<'a>(
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   parent_node: &'a mut JSXChild<'a>,
+  inherited_in_v_once: bool,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
@@ -122,6 +123,7 @@ pub unsafe fn transform_v_if<'a>(
   };
 
   let mut last_if_node_ptr = last_if_node as *mut IfIRNode;
+  let head = last_if_node_ptr;
   while let Some(negative) = (unsafe { &mut *last_if_node_ptr }).negative.as_mut()
     && let Either::B(negative) = negative.as_mut()
   {
@@ -133,6 +135,28 @@ pub unsafe fn transform_v_if<'a>(
   if dir_name == "v-else-if" && last_if_node.negative.is_some() {
     context.options.on_error.as_ref()(ErrorCodes::VElseNoAdjacentIf.message(), dir.span);
   };
+
+  // vdom caches the whole conditional for `v-once` on its head and drops
+  // `v-once` on the other branches: this branch is in v-once only through an
+  // ancestor or the head
+  let in_v_once = inherited_in_v_once
+    || context
+      .if_heads
+      .borrow()
+      .iter()
+      .any(|(head_ptr, in_v_once)| *in_v_once && *head_ptr == head);
+  *context.in_v_once.borrow_mut() = in_v_once;
+  if !in_v_once {
+    // the branch element is transformed a second time when the block renders,
+    // so its own `v-once` has to go or that pass freezes the branch content
+    unsafe { &mut *node }
+      .opening_element
+      .attributes
+      .retain(|attr| {
+        !matches!(attr, JSXAttributeItem::Attribute(attr)
+          if matches!(&attr.name, JSXAttributeName::Identifier(name) if name.name.as_str() == "v-once"))
+      });
+  }
 
   let exit_block = context.create_block(
     unsafe { &mut *context_node },

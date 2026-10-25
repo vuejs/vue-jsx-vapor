@@ -626,6 +626,9 @@ impl<'a> TransformContext<'a> {
           if directives.is_custom_element {
             directives.is_component = true;
           }
+          // v-once reaching this node from an ancestor or the chain head; its own
+          // `v-once` is applied below and a chain branch may drop it again
+          let inherited_in_v_once = *(&*context).in_v_once.borrow();
           if directives.v_once.is_some() {
             *(&*context).in_v_once.borrow_mut() = true;
           };
@@ -649,6 +652,7 @@ impl<'a> TransformContext<'a> {
               &*context,
               &mut *block,
               &mut *parent_node,
+              inherited_in_v_once,
             )
           {
             exit_fns.push(on_exit);

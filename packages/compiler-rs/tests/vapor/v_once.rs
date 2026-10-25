@@ -158,6 +158,177 @@ fn with_v_if_else() {
 }
 
 #[test]
+fn drops_v_once_on_a_v_else_if_branch() {
+  let code = transform(
+    r#"<><div v-if={a}>{x}</div><div v-else-if={b} v-once>{y}</div></>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n0 = _createIf(() => a, () => {
+  		const _n2 = _t0();
+  		const _x2 = _txt(_n2);
+  		_setNodes(_x2, () => x);
+  		return _n2;
+  	}, () => _createIf(() => b, () => {
+  		const _n4 = _t0();
+  		const _x4 = _txt(_n4);
+  		_setNodes(_x4, () => y);
+  		return _n4;
+  	}), 261);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn drops_v_once_on_a_v_else_branch() {
+  let code = transform(
+    r#"<><div v-if={a}>{x}</div><div v-else v-once>{y}</div></>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n0 = _createIf(() => a, () => {
+  		const _n2 = _t0();
+  		const _x2 = _txt(_n2);
+  		_setNodes(_x2, () => x);
+  		return _n2;
+  	}, () => {
+  		const _n4 = _t0();
+  		const _x4 = _txt(_n4);
+  		_setNodes(_x4, () => y);
+  		return _n4;
+  	}, 261);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn keeps_v_once_on_the_head_for_every_branch() {
+  let code = transform(
+    r#"<><div v-if={a} v-once>{x}</div><div v-else-if={b}>{y}</div></>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n0 = _createIf(() => a, () => {
+  		const _n2 = _t0();
+  		const _x2 = _txt(_n2);
+  		_setNodes(_x2, x);
+  		return _n2;
+  	}, () => _createIf(() => b, () => {
+  		const _n4 = _t0();
+  		const _x4 = _txt(_n4);
+  		_setNodes(_x4, y);
+  		return _n4;
+  	}, null, 17), 21);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn keeps_an_inherited_v_once_for_every_branch() {
+  let code = transform(
+    r#"<section v-once><div v-if={a}>{x}</div><div v-else-if={b}>{y}</div></section>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, setInsertionState as _setInsertionState, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  const _t1 = _template("<section>", 1);
+  (() => {
+  	const _n5 = _t1();
+  	_setInsertionState(_n5);
+  	const _n0 = _createIf(() => a, () => {
+  		const _n2 = _t0();
+  		const _x2 = _txt(_n2);
+  		_setNodes(_x2, x);
+  		return _n2;
+  	}, () => _createIf(() => b, () => {
+  		const _n4 = _t0();
+  		const _x4 = _txt(_n4);
+  		_setNodes(_x4, y);
+  		return _n4;
+  	}, null, 17), 21);
+  	return _n5;
+  })();
+  "#);
+}
+
+#[test]
+fn does_not_inherit_v_once_through_a_component() {
+  let code = transform(
+    r#"<Comp v-once><div v-if={a}>{x}</div><div v-else-if={b}>{y}</div></Comp>"#,
+    None,
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx-vapor/vapor";
+  import { createIf as _createIf, extend as _extend, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div> ");
+  (() => {
+  	const _n6 = _createComponent(Comp, null, _extend(() => {
+  		const _n0 = _createIf(() => a, () => {
+  			const _n2 = _t0();
+  			const _x2 = _txt(_n2);
+  			_setNodes(_x2, () => x);
+  			return _n2;
+  		}, () => _createIf(() => b, () => {
+  			const _n4 = _t0();
+  			const _x4 = _txt(_n4);
+  			_setNodes(_x4, () => y);
+  			return _n4;
+  		}, null, 129), 389);
+  		return _n0;
+  	}, { _: 1 }), true, true);
+  	return _n6;
+  })();
+  "#);
+}
+
+#[test]
+fn long_chain_drops_v_once_on_a_branch() {
+  // a chain is frozen only by `v-once` on its head, like vdom: `v-once` on a
+  // branch is dropped, so that branch's content stays reactive
+  let chain = |once_pos: usize| {
+    let mut src = String::from("<>");
+    for i in 0..=11 {
+      let dir = if i == 0 { "v-if" } else { "v-else-if" };
+      let once = if i == once_pos { " v-once" } else { "" };
+      src.push_str(&format!("<p {dir}={{c{i}}}{once}>{{m}}</p>"));
+    }
+    src.push_str("</>");
+    src
+  };
+
+  let code = transform(&chain(5), None).code;
+  assert!(code.contains("_createIfChain("), "{code}");
+  assert_eq!(code.matches(", () => m)").count(), 12, "{code}");
+  assert!(!code.contains(", m)"), "{code}");
+
+  let code = transform(&chain(0), None).code;
+  assert_eq!(code.matches(", m)").count(), 12, "{code}");
+  assert!(code.contains("], null, 16)"), "{code}");
+}
+
+#[test]
 fn with_conditional_expression() {
   let code = transform(
     "<div v-once>{ok? <span>{msg}</span> : <div>fail</div> }</div>",
