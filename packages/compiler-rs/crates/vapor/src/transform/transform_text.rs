@@ -20,6 +20,7 @@ use common::{
   ast::RootNode,
   check::is_constant_node,
   directive::Directives,
+  html_nesting::is_foster_parenting_tag,
   patch_flag::VaporBlockShape,
   text::{escape_html, get_text_like_value, is_empty_text, is_text_like, resolve_jsx_text},
 };
@@ -111,6 +112,17 @@ pub unsafe fn transform_text<'a>(
         );
         return None;
       }
+      // The parser foster-parents text other than whitespace in front of the
+      // table, so it is written as a placeholder and filled from the runtime.
+      if !is_root_text
+        && foster_parents_text(context)
+        && !resolve_jsx_text(node).trim_ascii().is_empty()
+      {
+        let values =
+          process_text_like_expressions(&mut vec![unsafe { &mut *context_node }], context, seen);
+        register_text_placeholder(values, context, context_block);
+        return None;
+      }
       let value = if is_root_text {
         resolve_jsx_text(node)
       } else {
@@ -187,6 +199,17 @@ fn process_interpolation<'a>(
   }
 
   let values = process_text_like_expressions(&mut nodes, context, seen);
+  register_text_placeholder(values, context, context_block);
+}
+
+/// Write a whitespace placeholder into the parent's template and fill it from
+/// the runtime: the parser keeps whitespace in a table part, while text written
+/// into the string would be moved out of it.
+fn register_text_placeholder<'a>(
+  values: Vec<Expression<'a>>,
+  context: &'a TransformContext<'a>,
+  context_block: &'a mut BlockIRNode<'a>,
+) {
   if values.is_empty() {
     return;
   }
@@ -207,6 +230,13 @@ fn process_interpolation<'a>(
     }),
     None,
   );
+}
+
+/// Whether the parent is a table part, whose text other than ascii whitespace
+/// the parser foster-parents in front of the table.
+fn foster_parents_text(context: &TransformContext<'_>) -> bool {
+  let parent = *context.ns.borrow();
+  parent.ns == 0 && parent.tag.is_some_and(is_foster_parenting_tag)
 }
 
 fn collect_adjacent_text<'a>(

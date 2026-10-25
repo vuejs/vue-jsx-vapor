@@ -79,7 +79,7 @@ pub unsafe fn transform_element<'a>(
   }
   // treat custom elements as components because the template helper cannot
   // resolve them properly; they require creation via createElement
-  let is_custom_element = directives.is_custom_element;
+  let use_create_element = directives.use_create_element;
   let is_component = directives.is_component;
 
   // Resolve this element's namespace (0 = HTML, 1 = SVG, 2 = MathML) from the
@@ -132,7 +132,7 @@ pub unsafe fn transform_element<'a>(
         props_result,
         static_key,
         single_root,
-        is_custom_element,
+        use_create_element,
         ns,
         context,
         context_block,
@@ -370,7 +370,7 @@ pub fn transform_native_element<'a>(
   {
     let dynamic = &mut context_block.dynamic;
     context.reference(dynamic);
-    dynamic.template = Some(context.push_template(template, Some(tag), false));
+    dynamic.template = Some(context.push_template(template, ns, false));
     dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
   } else {
     *context.template.borrow_mut() = format!("{}{}", context.template.borrow(), template);
@@ -499,7 +499,7 @@ pub fn transform_component_element<'a>(
   props_result: PropsResult<'a>,
   static_key: Option<Expression<'a>>,
   single_root: bool,
-  is_custom_element: bool,
+  use_create_element: bool,
   ns: i32,
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
@@ -516,7 +516,7 @@ pub fn transform_component_element<'a>(
 
   // KeepAlive needs the explicit key before the component is created.
   if let Some(static_key) = &static_key
-    && !is_custom_element
+    && !use_create_element
   {
     let key_prop = IRProp {
       key: context
@@ -549,7 +549,7 @@ pub fn transform_component_element<'a>(
       root: single_root,
       slots: mem::take(&mut context_block.slots),
       once: *context.in_v_once.borrow(),
-      is_custom_element,
+      use_create_element,
       ns,
       parent: None,
       anchor: None,
@@ -560,7 +560,7 @@ pub fn transform_component_element<'a>(
   )));
 
   if let Some(static_key) = static_key
-    && is_custom_element
+    && use_create_element
   {
     context.register_operation(
       context_block,

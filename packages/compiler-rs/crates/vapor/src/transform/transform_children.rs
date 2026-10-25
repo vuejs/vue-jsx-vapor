@@ -168,7 +168,7 @@ pub unsafe fn transform_children<'a>(
       if !next_is_interpolation {
         context.register_template(
           context_block,
-          Some(tag),
+          child_ns,
           is_text_child || context.can_use_static_template(context_block, tag),
         );
         context.reference(&mut context_block.dynamic);

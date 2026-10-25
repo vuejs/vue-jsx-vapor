@@ -241,7 +241,8 @@ pub struct CreateComponentIRNode<'a> {
   pub asset: bool,
   pub root: bool,
   pub once: bool,
-  pub is_custom_element: bool,
+  // created by `createPlainElement` rather than `createComponent`
+  pub use_create_element: bool,
   // namespace of the surrounding template (0 = HTML, 1 = SVG, 2 = MathML),
   // used when the component falls back to a plain element at runtime
   pub ns: i32,

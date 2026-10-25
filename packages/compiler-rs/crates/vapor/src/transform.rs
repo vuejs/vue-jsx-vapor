@@ -42,7 +42,8 @@ use crate::{
   },
 };
 
-use common::check::{is_constant_node, is_math_ml_tag, is_native_tag, is_svg_tag};
+use common::check::{get_namespace, is_constant_node, is_native_tag};
+use common::html_nesting::is_foreign_breakout_tag;
 
 /// A text/interpolation-only owner renders nothing when empty, so a block it
 /// owns cannot be a single root when hydrating.
@@ -363,21 +364,12 @@ impl<'a> TransformContext<'a> {
     is_native_tag(tag)
   }
 
-  pub fn push_template(&self, content: String, tag: Option<&str>, _static: bool) -> i32 {
+  /// `ns` is the namespace the template's own element resolves to, which the
+  /// runtime parses the string in. It is not the tag's: inside `<svg>` even a
+  /// `tbody` is svg, and an html tag at an integration point is html.
+  pub fn push_template(&self, content: String, ns: i32, _static: bool) -> i32 {
     let len = self.options.templates.borrow().len();
     let root = *self.template_root.borrow();
-    // root_template_index.map(|i| i.eq(&len)).unwrap_or(false);
-    let ns = if let Some(tag) = tag {
-      if is_svg_tag(tag) {
-        1
-      } else if is_math_ml_tag(tag) {
-        2
-      } else {
-        0
-      }
-    } else {
-      0
-    };
     let existing = self.options.templates.borrow().iter().position(|i| {
       i.content.eq(&content) && i.root.eq(&root) && i._static.eq(&_static) && i.ns.eq(&ns)
     });
@@ -393,17 +385,12 @@ impl<'a> TransformContext<'a> {
     len as i32
   }
 
-  pub fn register_template(
-    &self,
-    block: &mut BlockIRNode<'a>,
-    tag: Option<&str>,
-    _static: bool,
-  ) -> i32 {
+  pub fn register_template(&self, block: &mut BlockIRNode<'a>, ns: i32, _static: bool) -> i32 {
     let template = self.template.borrow();
     if template.is_empty() {
       return -1;
     }
-    let id = self.push_template(template.clone(), tag, _static);
+    let id = self.push_template(template.clone(), ns, _static);
     block.dynamic.template = Some(id);
     id
   }
@@ -430,7 +417,7 @@ impl<'a> TransformContext<'a> {
 
     (Box::new(move || {
       // exit
-      self.register_template(context_block, None, false);
+      self.register_template(context_block, 0, false);
       let return_block = mem::take(context_block);
       *context_block = block;
       *self.template.borrow_mut() = template;
@@ -631,7 +618,20 @@ impl<'a> TransformContext<'a> {
         let directives_ptr = &mut directives as *mut _;
         if let JSXChild::Element(element) = &mut *node {
           directives = Directives::new(element, self.options);
-          if directives.is_custom_element {
+          // A custom element, and an html element the parser would move out of
+          // foreign content, are created imperatively: the template helper
+          // parses its string in the html namespace, so it cannot give such an
+          // element the namespace it was written in, which vdom does.
+          let parent = *self.ns.borrow();
+          directives.use_create_element = directives.is_custom_element
+            || (is_foreign_breakout_tag(directives.tag_name)
+              && get_namespace(
+                directives.tag_name,
+                parent.tag,
+                parent.ns,
+                parent.is_html_annotation_xml,
+              ) != 0);
+          if directives.use_create_element {
             directives.is_component = true;
           }
           // v-once reaching this node from an ancestor or the chain head; its own
@@ -757,7 +757,7 @@ impl<'a> TransformContext<'a> {
       }
 
       if is_root {
-        self.register_template(context_block, None, false);
+        self.register_template(context_block, 0, false);
       }
     }
   }

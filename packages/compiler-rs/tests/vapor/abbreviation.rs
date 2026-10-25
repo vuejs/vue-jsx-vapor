@@ -1065,3 +1065,87 @@ fn void_parent_holds_no_children() {
     }
   }
 }
+
+// upstream: `html breakout element in foreign content`. The parser moves an
+// html element out of an `<svg>`/`<math>` subtree, while vdom creates it in the
+// foreign namespace instead, so it is created imperatively there.
+#[test]
+fn html_breakout_element_in_foreign_content() {
+  for (source, templates, ns) in [
+    (
+      "<svg><g><div>x</div></g></svg>",
+      vec!["x", "<svg><g>"],
+      Some(1),
+    ),
+    (
+      "<math><mrow><div>x</div></mrow></math>",
+      vec!["x", "<math><mrow>"],
+      Some(2),
+    ),
+    // an html integration point takes html children as written
+    (
+      "<svg><foreignObject><div>x</div></foreignObject></svg>",
+      vec!["<svg><foreignObject><div>x"],
+      None,
+    ),
+  ] {
+    let code = transform(source, None).code;
+    assert_eq!(
+      code.matches("_template(").count(),
+      templates.len(),
+      "{source}\n{code}"
+    );
+    for template in templates {
+      assert!(
+        code.contains(&format!("_template(\"{template}\"")),
+        "{source}\n{code}"
+      );
+    }
+    match ns {
+      Some(ns) => {
+        assert!(
+          code.contains(r#"_createPlainElement("div""#),
+          "{source}\n{code}"
+        );
+        assert!(
+          code.contains(&format!(", null, null, {ns})")),
+          "{source}\n{code}"
+        );
+      }
+      None => assert!(!code.contains("_createPlainElement"), "{source}\n{code}"),
+    }
+  }
+}
+
+// upstream: `text in a table part`. The parser foster-parents text other than
+// whitespace out of a table part, so it is written as a placeholder and filled
+// from the runtime. Upstream creates the text node itself instead, which needs a
+// comment placeholder in the template.
+#[test]
+fn text_in_a_table_part() {
+  for (source, template, sets_text) in [
+    (
+      "<table><tbody>foo<tr><td>x</td></tr></tbody></table>",
+      "<table><tbody> <tr><td>x",
+      true,
+    ),
+    (
+      "<table><tbody><tr><td>x</td></tr>tail</tbody></table>",
+      "<table><tbody><tr><td>x</tr> ",
+      true,
+    ),
+    // whitespace stays where it is
+    (
+      "<table><tbody><tr><td>x</td></tr> <tr><td>y</td></tr></tbody></table>",
+      "<table><tbody><tr><td>x</tr> <tr><td>y",
+      false,
+    ),
+  ] {
+    let code = transform(source, None).code;
+    assert!(
+      code.contains(&format!("_template({template:?}")),
+      "`{source}` should compile to a template starting with {template:?}, got:\n{code}"
+    );
+    assert_eq!(code.contains("_setNodes("), sets_text, "{source}\n{code}");
+  }
+}

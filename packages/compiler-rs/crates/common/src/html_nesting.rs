@@ -71,6 +71,33 @@ pub fn pops_open_descendants(tag: &str) -> bool {
   POPS_OPEN_DESCENDANTS_TAGS.contains(tag)
 }
 
+// Html start tags that end foreign content: the parser pops the open svg or
+// mathml elements and inserts these in the html namespace, while vdom creates
+// them in the foreign namespace their ast node carries. Only at html
+// integration points (`foreignObject`, `mi`, ...) do html children stay.
+static FOREIGN_BREAKOUT_TAGS: phf::Set<&'static str> = phf_set! {
+  "b", "blockquote", "body", "br", "code", "dd", "div", "dl", "dt", "em", "embed", "h1", "h2",
+  "h3", "h4", "h5", "h6", "head", "hr", "i", "img", "li", "menu", "meta", "ol", "p", "pre", "ruby",
+  "s", "small", "span", "strong", "sub", "sup", "table", "u", "ul", "var",
+};
+
+/// Whether the html parser moves `tag` out of the foreign content it was
+/// written in, so that it cannot share a template string with its parent.
+pub fn is_foreign_breakout_tag(tag: &str) -> bool {
+  FOREIGN_BREAKOUT_TAGS.contains(tag)
+}
+
+// Table parts whose text content other than whitespace the parser
+// foster-parents in front of the table.
+static FOSTER_PARENTING_TAGS: phf::Set<&'static str> =
+  phf_set! { "colgroup", "table", "tbody", "tfoot", "thead", "tr" };
+
+/// Whether the html parser foster-parents the text of `tag` out of it, so that
+/// such text cannot be written into the same template string.
+pub fn is_foster_parenting_tag(tag: &str) -> bool {
+  FOSTER_PARENTING_TAGS.contains(tag)
+}
+
 // html elements sit under a foreign one only at an integration point, which is
 // in every scope list and special, but not a formatting marker
 fn is_foreign(ns: i32) -> bool {

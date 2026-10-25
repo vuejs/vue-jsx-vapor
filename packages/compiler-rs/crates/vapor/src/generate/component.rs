@@ -52,12 +52,12 @@ pub fn gen_create_component<'a>(
     once,
     id,
     asset,
-    is_custom_element,
+    use_create_element,
     ns,
     ..
   } = operation;
 
-  let tag = if is_custom_element {
+  let tag = if use_create_element {
     ast
       .expression_string_literal(SPAN, ast.str(tag), None)
       .into()
@@ -149,7 +149,7 @@ pub fn gen_create_component<'a>(
           SPAN,
           ast.expression_identifier(
             SPAN,
-            ast.str(context.options.helper(if is_custom_element {
+            ast.str(context.options.helper(if use_create_element {
               "_createPlainElement"
             } else {
               "_createComponent"
