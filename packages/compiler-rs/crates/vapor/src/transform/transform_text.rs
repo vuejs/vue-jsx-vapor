@@ -386,13 +386,14 @@ pub fn process_conditional_expression<'a>(
   let allow_no_scope = context_block.root;
   Box::new(move || {
     let block = exit_block();
+    let in_v_once = *context.in_v_once.borrow();
 
     let mut operation = IfIRNode {
       id,
       block_shape: encode_if_block_shape(&block, force_multi_root, None, allow_no_scope),
       positive: block,
-      index: context.next_if_index(),
-      once: *context.in_v_once.borrow() || is_const_test,
+      index: context.next_if_index(1),
+      once: in_v_once || is_const_test,
       condition: test,
       negative: None,
       parent: None,
@@ -412,6 +413,10 @@ pub fn process_conditional_expression<'a>(
       parent_node,
     );
     context_block.dynamic.operation = Some(Box::new(OperationNode::If(operation)));
+
+    if let Some(OperationNode::If(head)) = context_block.dynamic.operation.as_deref_mut() {
+      context.if_heads.borrow_mut().push((head, in_v_once));
+    };
   })
 }
 
@@ -449,7 +454,7 @@ fn set_negative<'a>(
       once: *context.in_v_once.borrow() || is_constant_node(test),
       condition: test.take_in(context.allocator),
       positive: block,
-      index: context.next_if_index(),
+      index: context.next_if_index(1),
       negative: None,
       anchor: None,
       append_index: None,

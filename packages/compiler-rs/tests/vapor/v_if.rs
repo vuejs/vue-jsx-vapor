@@ -765,3 +765,254 @@ fn template_branch_with_a_lone_nested_v_if_hydrates_as_a_fragment() {
   })();
   "#);
 }
+
+// `v-if` + `else_ifs` × `v-else-if` (+ `v-else`), one `<div>` per branch
+fn if_chain(else_ifs: usize, with_else: bool) -> String {
+  let mut src = String::from("<div v-if={c0}>0</div>");
+  for i in 1..=else_ifs {
+    src.push_str(&format!("<div v-else-if={{c{i}}}>{i}</div>"));
+  }
+  if with_else {
+    src.push_str(&format!("<div v-else>{}</div>", else_ifs + 1));
+  }
+  src
+}
+
+fn keyed_index(index: i32) -> i32 {
+  (index + 1) << VaporIfFlags::IndexShift as i32
+}
+
+#[test]
+fn long_if_chain_nests_up_to_the_threshold() {
+  // 10 `v-else-if` branches still compile to nested `createIf` calls
+  let code = transform(&format!("<>{}</>", if_chain(10, true)), None).code;
+
+  assert!(!code.contains("_createIfChain"), "{code}");
+  assert!(code.contains("() => _createIf("), "{code}");
+}
+
+#[test]
+fn long_if_chain_flattens_past_the_threshold() {
+  let code = transform(&format!("<>{}</>", if_chain(11, true)), None).code;
+
+  assert!(code.contains("_createIfChain("), "{code}");
+  assert!(!code.contains("_createIf("), "{code}");
+  assert!(code.contains("() => c0 ? 0 : c1 ? 1 :"), "{code}");
+  assert!(code.contains("c11 ? 11 : 12,"), "{code}");
+  assert_snapshot!(code, @r#"
+  import { createIfChain as _createIfChain, template as _template } from "vue";
+  const _t0 = _template("<div>0", 2);
+  const _t1 = _template("<div>1", 2);
+  const _t2 = _template("<div>2", 2);
+  const _t3 = _template("<div>3", 2);
+  const _t4 = _template("<div>4", 2);
+  const _t5 = _template("<div>5", 2);
+  const _t6 = _template("<div>6", 2);
+  const _t7 = _template("<div>7", 2);
+  const _t8 = _template("<div>8", 2);
+  const _t9 = _template("<div>9", 2);
+  const _t10 = _template("<div>10", 2);
+  const _t11 = _template("<div>11", 2);
+  const _t12 = _template("<div>12", 2);
+  (() => {
+  	const _n0 = _createIfChain(() => c0 ? 0 : c1 ? 1 : c2 ? 2 : c3 ? 3 : c4 ? 4 : c5 ? 5 : c6 ? 6 : c7 ? 7 : c8 ? 8 : c9 ? 9 : c10 ? 10 : c11 ? 11 : 12, [
+  		() => {
+  			const _n2 = _t0();
+  			return _n2;
+  		},
+  		() => {
+  			const _n4 = _t1();
+  			return _n4;
+  		},
+  		() => {
+  			const _n7 = _t2();
+  			return _n7;
+  		},
+  		() => {
+  			const _n10 = _t3();
+  			return _n10;
+  		},
+  		() => {
+  			const _n13 = _t4();
+  			return _n13;
+  		},
+  		() => {
+  			const _n16 = _t5();
+  			return _n16;
+  		},
+  		() => {
+  			const _n19 = _t6();
+  			return _n19;
+  		},
+  		() => {
+  			const _n22 = _t7();
+  			return _n22;
+  		},
+  		() => {
+  			const _n25 = _t8();
+  			return _n25;
+  		},
+  		() => {
+  			const _n28 = _t9();
+  			return _n28;
+  		},
+  		() => {
+  			const _n31 = _t10();
+  			return _n31;
+  		},
+  		() => {
+  			const _n34 = _t11();
+  			return _n34;
+  		},
+  		() => {
+  			const _n37 = _t12();
+  			return _n37;
+  		}
+  	], [
+  		33,
+  		33,
+  		33,
+  		33,
+  		33,
+  		33,
+  		33,
+  		33,
+  		33,
+  		33,
+  		33,
+  		33,
+  		33
+  	], 3328);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn long_if_chain_reserves_its_index_range() {
+  // 12 `v-if` nodes took indexes 0-11; the chain's 13 keys span 7 indexes
+  let code = transform(&format!("<>{}</>", if_chain(11, true)), None).code;
+
+  assert!(
+    code.contains(&format!("], {});", keyed_index(12))),
+    "{code}"
+  );
+}
+
+#[test]
+fn long_if_chain_keeps_the_numbering_of_the_chains_around_it() {
+  // the two short chains keep 0 and 13; the long one is reserved after both
+  let code = transform(
+    &format!(
+      "<><div v-if={{a}}>a</div><div v-else>b</div>{}<div v-if={{z}}>z</div><div v-else>y</div></>",
+      if_chain(11, true)
+    ),
+    None,
+  )
+  .code;
+
+  assert!(
+    code.contains(&format!("], {});", keyed_index(14))),
+    "{code}"
+  );
+  assert_eq!(code.matches("_createIfChain(").count(), 1, "{code}");
+}
+
+#[test]
+fn long_ternary_chain_flattens_past_the_threshold() {
+  // nested conditional expressions fold into the same IR shape as `v-else-if`,
+  // so they hit the same nested `createIf` depth
+  let mut expr = String::from("z");
+  for i in (0..=12).rev() {
+    expr = format!("c{i} ? <i>{i}</i> : {expr}");
+  }
+  let code = transform(&format!("<div>{{{expr}}}</div>"), None).code;
+
+  assert!(code.contains("_createIfChain("), "{code}");
+  assert!(!code.contains("_createIf("), "{code}");
+  assert!(code.contains("c12 ? 12 : 13,"), "{code}");
+}
+
+#[test]
+fn long_ternary_chain_with_a_static_head_stays_live() {
+  // a static test only decides the first branch; every later condition is still
+  // reactive, so the selection must not be frozen the way `v-once` would
+  let mut expr = String::from("z");
+  for i in (0..=12).rev() {
+    let test = if i == 0 {
+      "false".to_string()
+    } else {
+      format!("c{i}")
+    };
+    expr = format!("{test} ? <i>{i}</i> : {expr}");
+  }
+  let code = transform(&format!("<div>{{{expr}}}</div>"), None).code;
+
+  assert!(
+    !code.contains(&format!("], {});", VaporIfFlags::Once as i32)),
+    "{code}"
+  );
+}
+
+#[test]
+fn long_if_chain_selects_the_empty_state_without_v_else() {
+  let code = transform(&format!("<>{}</>", if_chain(11, false)), None).code;
+
+  // the selector lands on `blocks.length`, whose branch flags entry is EMPTY
+  assert!(code.contains("c11 ? 11 : 12,"), "{code}");
+  assert!(code.contains("\t\t0\n\t], "), "{code}");
+}
+
+#[test]
+fn long_if_chain_omits_default_branch_flags() {
+  // a `v-else` branch is described by the last entry too, so it also stays a
+  // scoped single root rather than the empty state
+  for with_else in [false, true] {
+    let mut src = String::from("<><div v-if={c0}>{m0}</div>");
+    for i in 1..=11 {
+      src.push_str(&format!("<div v-else-if={{c{i}}}>{{m{i}}}</div>"));
+    }
+    if with_else {
+      src.push_str("<div v-else>{mz}</div>");
+    }
+    src.push_str("</>");
+    let code = transform(&src, None).code;
+
+    assert!(code.contains("\n\t], null, "), "{code}");
+  }
+}
+
+#[test]
+fn long_if_chain_v_once_on_the_head_freezes_the_selection() {
+  let code = transform(
+    &format!(
+      "<><div v-if={{c0}} v-once>0</div>{}</>",
+      if_chain(11, true).trim_start_matches("<div v-if={c0}>0</div>")
+    ),
+    None,
+  )
+  .code;
+
+  assert!(
+    code.contains(&format!("], {});", VaporIfFlags::Once as i32)),
+    "{code}"
+  );
+}
+
+#[test]
+fn long_if_chain_static_condition_keeps_the_selector_live() {
+  let code = transform(
+    &format!(
+      "<><div v-if={{false}}>0</div>{}</>",
+      if_chain(11, true).trim_start_matches("<div v-if={c0}>0</div>")
+    ),
+    None,
+  )
+  .code;
+
+  assert!(code.contains("() => false ? 0"), "{code}");
+  assert!(
+    !code.contains(&format!("], {});", VaporIfFlags::Once as i32)),
+    "{code}"
+  );
+}

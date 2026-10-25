@@ -31,7 +31,9 @@ use crate::generate::CodegenContext;
 use crate::transform::transform_element::{is_keep_alive_tag, is_transition_tag};
 use crate::transform::transform_key::transform_key;
 use crate::{
-  ir::index::{BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, OperationNode, RootIRNode},
+  ir::index::{
+    BlockIRNode, DynamicFlag, IRDynamicInfo, IREffect, IfIRNode, OperationNode, RootIRNode,
+  },
   transform::{
     transform_children::transform_children, transform_element::transform_element,
     transform_template_ref::transform_template_ref, transform_text::transform_text,
@@ -151,6 +153,9 @@ pub struct TransformContext<'a> {
 
   global_id: RefCell<i32>,
   if_index: RefCell<i32>,
+  // every `v-if` head with whether it sits in `v-once`; chains that grow past
+  // IF_CHAIN_THRESHOLD get their key range reserved once the tree is done
+  pub if_heads: RefCell<Vec<(*mut IfIRNode<'a>, bool)>>,
 
   pub ir: Rc<RefCell<RootIRNode<'a>>>,
   pub node: RefCell<JSXChild<'a>>,
@@ -187,6 +192,7 @@ impl<'a> TransformContext<'a> {
       ns: RefCell::default(),
       global_id: RefCell::new(0),
       if_index: RefCell::new(0),
+      if_heads: RefCell::new(Vec::new()),
       node: RefCell::new(RootNode::from(ast, options, node, true, None)),
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
       grandparent_node_span: RefCell::new(SPAN),
@@ -205,6 +211,7 @@ impl<'a> TransformContext<'a> {
     *self.block.borrow_mut() = block;
     *self.ir.borrow_mut() = ir;
     self.transform_node(None, None);
+    self.finalize_if_chains();
     CodegenContext::new(self).generate()
   }
 
@@ -224,10 +231,29 @@ impl<'a> TransformContext<'a> {
     id
   }
 
-  pub fn next_if_index(&self) -> i32 {
+  pub fn next_if_index(&self, count: i32) -> i32 {
     let if_index = *self.if_index.borrow();
-    *self.if_index.borrow_mut() += 1;
+    *self.if_index.borrow_mut() += count;
     if_index
+  }
+
+  // A long chain renders as one keyed fragment: its selection is frozen only by
+  // `v-once` on the head, and its branch keys are consecutive, so the range is
+  // reserved after every `v-else-if` has joined (indexes handed out in between
+  // to nested `v-if`s are left as gaps).
+  fn finalize_if_chains(&self) {
+    for (head, in_v_once) in self.if_heads.borrow().iter().copied() {
+      let head = unsafe { &mut *head };
+      if !v_if::is_long_if_chain(head) {
+        continue;
+      }
+      head.once = in_v_once;
+      if !in_v_once {
+        // one index covers two keys; the chain keys every branch plus the empty
+        // state past the last one
+        head.index = self.next_if_index((v_if::get_if_chain_length(head) + 2) / 2);
+      }
+    }
   }
 
   pub fn is_operation(&self, expressions: Vec<&Expression<'a>>) -> bool {
