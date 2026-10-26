@@ -124,6 +124,7 @@ pub struct TransformContext<'a> {
   pub in_v_for: RefCell<i32>,
 
   pub seen: Rc<RefCell<HashSet<u32>>>,
+  pub mapped_for_spans: RefCell<HashSet<u32>>,
 
   pub effect_index: RefCell<usize>,
   pub operation_index: RefCell<usize>,
@@ -194,6 +195,7 @@ impl<'a> TransformContext<'a> {
       in_v_once: RefCell::new(*options.in_v_once.borrow()),
       in_v_for: RefCell::new(*options.in_v_for.borrow()),
       seen: Rc::new(RefCell::new(HashSet::new())),
+      mapped_for_spans: RefCell::new(HashSet::new()),
       effect_index: RefCell::new(0),
       operation_index: RefCell::new(0),
       is_last_effective_child: RefCell::new(true),
@@ -624,6 +626,7 @@ impl<'a> TransformContext<'a> {
       let block = context_block as *mut BlockIRNode;
       let mut exit_fns = vec![];
 
+      v_for::transform_map_children(&mut self.node.borrow_mut(), self);
       let mut directives = Directives::default();
       let is_root = RootNode::is_root(&self.node.borrow());
       if !is_root {
