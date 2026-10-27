@@ -10,7 +10,7 @@ import vueJsx from '../../packages/vue-jsx/src/volar'
 const emnapiImportMap = {
   imports: {
     'https://esm.sh/@vue-jsx/compiler-wasm32-wasi?target=es2022':
-      'https://esm.sh/@vue-jsx/compiler-wasm32-wasi?deps=@emnapi/core@2.0.0-alpha.4,@emnapi/runtime@2.0.0-alpha.4&target=es2022',
+      'https://esm.sh/@vue-jsx/compiler-wasm32-wasi?deps=@napi-rs/wasm-runtime@1.2.5,@emnapi/core@2.0.0-alpha.4,@emnapi/runtime@2.0.0-alpha.4&target=es2022',
   },
 }
 
