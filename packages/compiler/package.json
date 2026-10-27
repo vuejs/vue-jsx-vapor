@@ -42,11 +42,11 @@
     "flamegraph": "CARGO_PROFILE_RELEASE_STRIP=false CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --bench bench_vdom --no-default-features"
   },
   "devDependencies": {
-    "@emnapi/core": "2.0.0-alpha.4",
-    "@emnapi/runtime": "2.0.0-alpha.4",
+    "@emnapi/core": "2.0.0-beta.2",
+    "@emnapi/runtime": "2.0.0-beta.2",
     "@napi-rs/cli": "3.8.6",
     "@napi-rs/wasm-runtime": "1.2.3",
-    "emnapi": "2.0.0-alpha.4"
+    "emnapi": "2.0.0-beta.2"
   },
   "napi": {
     "binaryName": "compiler",
