@@ -57,6 +57,13 @@ jobs:
       - name: Package the WASI runtime in the preview tarball
         working-directory: ./packages/compiler
         run: |
+          # `@napi-rs/wasm-runtime` and `@emnapi/*` are an ABI-locked pair: the
+          # wasm binary is linked against the installed `emnapi`, and the runtime
+          # drives it through the matching `@emnapi/core`. Copy the devDeps
+          # instead of hardcoding them, otherwise the preview ships a runtime
+          # whose JS half does not match the wasm it was built with.
+          wasm_runtime_version=$(node -p "require('./package.json').devDependencies['@napi-rs/wasm-runtime']")
+          emnapi_version=$(node -p "require('./package.json').devDependencies['emnapi']")
           npm pkg set \
             'files[]=compiler.wasi.cjs' \
             'files[]=compiler.wasi-browser.js' \
@@ -65,9 +72,9 @@ jobs:
             'files[]=wasi-worker-browser.mjs'
           # compiled by compiler.wasi.cjs / compiler.wasi-browser.js at runtime
           npm pkg set \
-            'dependencies[@napi-rs/wasm-runtime]=1.2.3' \
-            'dependencies[@emnapi/core]=2.0.0-alpha.4' \
-            'dependencies[@emnapi/runtime]=2.0.0-alpha.4'
+            "dependencies[@napi-rs/wasm-runtime]=$wasm_runtime_version" \
+            "dependencies[@emnapi/core]=$emnapi_version" \
+            "dependencies[@emnapi/runtime]=$emnapi_version"
           npm pkg delete \
             'devDependencies[@napi-rs/wasm-runtime]' \
             'devDependencies[@emnapi/core]' \
