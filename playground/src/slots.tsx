@@ -1,5 +1,5 @@
 import { ref, type Ref, type SlotsType } from 'vue'
-import { defineComponent, defineVaporComponent, useRef } from 'vue-jsx-vapor'
+import { defineComponent, defineVaporComponent, useRef } from 'vue-jsx'
 
 const Comp = defineVaporComponent(
   (

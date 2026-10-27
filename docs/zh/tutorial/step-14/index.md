@@ -8,23 +8,23 @@ next: false
 
 <script setup>
 import appCode from '~/tutorial/step-14/app.tsx?raw'
-import appSolvedCode from '~/tutorial/step-14/app-solved.tsx?raw'
-import appInteropCode from '~/tutorial/step-14/app-interop.tsx?raw'
+import appVaporCode from '~/tutorial/step-14/app-vapor.tsx?raw'
+import appVaporSolvedCode from '~/tutorial/step-14/app-vapor-solved.tsx?raw'
 import { getDefaultFiles } from '~/tutorial/template'
 import { ref } from 'vue'
 
 const files = ref(getDefaultFiles())
 const apps = {
   app: { 'src/App.tsx': appCode },
-  solved: { 'src/App.tsx': appSolvedCode },
-  interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropCode },
+  solved: { 'src/App.tsx': appCode },
+  vapor: { 'src/App.tsx': appVaporCode },
+  vaporSolved: { 'src/App.tsx': appVaporSolvedCode },
 }
 </script>
 
-<jsx-repl :files :apps prev="/zh/tutorial/step-13/" next="/zh/tutorial/step-done/">
+<jsx-repl :files :apps prev="/zh/tutorial/step-13/" next="/zh/tutorial/step-15/">
 
-除了 JSX 之外，`vue-jsx-vapor` 还提供了 `h` 函数，可用于手动创建 Vapor 节点。这种写法通常被称为 HyperScript，适合在你想要更细粒度地控制节点创建时使用。
+除了 JSX 之外，`vue-jsx/vapor` 还提供了 `h` 函数，可用于手动创建 Vapor 节点。这种写法通常被称为 HyperScript，适合在你想要更细粒度地控制节点创建时使用。
 
 ## 基本用法
 
@@ -37,7 +37,7 @@ h(type, props?, children?)
 例如，下面的代码会创建一个简单的 `div`：
 
 ```tsx
-import { h } from 'vue-jsx-vapor'
+import { h } from 'vue-jsx/vapor'
 export default () => h('div', null, 'hello')
 ```
 

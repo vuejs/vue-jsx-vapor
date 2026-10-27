@@ -1,20 +1,19 @@
-import { computed } from 'vue'
-import { useRef } from 'vue-jsx-vapor'
+import { computed, defineComponent, shallowRef } from 'vue'
 
-const Comp = (props: { count: number }) => {
+const Comp = defineComponent((props: { count: number }) => {
   const double = computed(() => props.count * 2)
   defineExpose({
     double,
   })
-  return <span>{props.count} x 2 = </span>
-}
+  return () => <span>{props.count} x 2 = </span>
+})
 
-export default () => {
-  const compRef = useRef()
-  return (
+export default defineComponent(() => {
+  const compRef = shallowRef<InstanceType<typeof Comp>>()
+  return () => (
     <>
       <Comp count={1} />
       {compRef.value?.double}
     </>
   )
-}
+})

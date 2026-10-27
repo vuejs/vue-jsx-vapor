@@ -9,12 +9,12 @@ next: false
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
-import appInteropCode from './app-interop.tsx?raw'
-import appInteropSolvedCode from './app-interop-solved.tsx?raw'
+import appVaporCode from './app-vapor.tsx?raw'
+import appVaporSolvedCode from './app-vapor-solved.tsx?raw'
 import appMacrosCode from './app-macros.tsx?raw'
 import appMacrosSolvedCode from './app-macros-solved.tsx?raw'
-import appInteropMacrosCode from './app-interop-macros.tsx?raw'
-import appInteropMacrosSolvedCode from './app-interop-macros-solved.tsx?raw'
+import appVaporMacrosCode from './app-vapor-macros.tsx?raw'
+import appVaporMacrosSolvedCode from './app-vapor-macros-solved.tsx?raw'
 import { getDefaultFiles } from '../template'
 import { ref } from 'vue'
 
@@ -22,12 +22,12 @@ const files = ref(getDefaultFiles())
 const apps = {
   app: { 'src/App.tsx': appCode },
   solved: { 'src/App.tsx': appSolvedCode },
-  interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropSolvedCode },
+  vapor: { 'src/App.tsx': appVaporCode },
+  vaporSolved: { 'src/App.tsx': appVaporSolvedCode },
   macros: { 'src/App.tsx': appMacrosCode },
   macrosSolved: { 'src/App.tsx': appMacrosSolvedCode },
-  interopMacros: { 'src/App.tsx': appInteropMacrosCode },
-  interopMacrosSolved: { 'src/App.tsx': appInteropMacrosSolvedCode },
+  vaporMacros: { 'src/App.tsx': appVaporMacrosCode },
+  vaporMacrosSolved: { 'src/App.tsx': appVaporMacrosSolvedCode },
 }
 </script>
 
@@ -48,10 +48,7 @@ The child component receives `modelValue` as a prop and emits `onUpdate:modelVal
 ```jsx
 const Comp = (props) => {
   return (
-    <input
-      value={props.modelValue}
-      onInput={(e) => props['onUpdate:modelValue'](e.target.value)}
-    />
+    <input value={props.modelValue} onInput={(e) => props['onUpdate:modelValue'](e.target.value)} />
   )
 }
 ```
@@ -78,14 +75,8 @@ The child receives them as separate props:
 const Comp = (props) => {
   return (
     <>
-      <input
-        value={props.title}
-        onInput={(e) => props['onUpdate:title'](e.target.value)}
-      />
-      <input
-        value={props.content}
-        onInput={(e) => props['onUpdate:content'](e.target.value)}
-      />
+      <input value={props.title} onInput={(e) => props['onUpdate:title'](e.target.value)} />
+      <input value={props.content} onInput={(e) => props['onUpdate:content'](e.target.value)} />
     </>
   )
 }
@@ -98,12 +89,7 @@ When the macros option is enabled, you can use the `defineModel` macro inside th
 ```jsx
 const Comp = () => {
   const model = defineModel()
-  return (
-    <input
-      value={model.value}
-      onInput={(e) => (model.value = e.target.value)}
-    />
-  )
+  return <input value={model.value} onInput={(e) => (model.value = e.target.value)} />
 }
 ```
 
@@ -115,14 +101,8 @@ const Comp = () => {
   const content = defineModel('content')
   return (
     <>
-      <input
-        value={title.value}
-        onInput={(e) => (title.value = e.target.value)}
-      />
-      <input
-        value={content.value}
-        onInput={(e) => (content.value = e.target.value)}
-      />
+      <input value={title.value} onInput={(e) => (title.value = e.target.value)} />
+      <input value={content.value} onInput={(e) => (content.value = e.target.value)} />
     </>
   )
 }

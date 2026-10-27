@@ -18,9 +18,7 @@ export function transformDefineStyle(
       expression.arguments.pos - 1,
       expression.arguments.pos - 1,
       `<{`,
-      ...parseCssClassNames(
-        expression.arguments[0].getText(ast).slice(1, -1),
-      ).flatMap(
+      ...parseCssClassNames(expression.arguments[0].getText(ast).slice(1, -1)).flatMap(
         ({ text, offset }) =>
           [
             `\n`,
