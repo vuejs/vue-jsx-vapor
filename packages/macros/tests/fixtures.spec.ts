@@ -29,3 +29,16 @@ describe('fixtures', () => {
     })
   }
 })
+
+describe('defineComponent', () => {
+  test('rejects a computed props key', async () => {
+    await expect(
+      transformJsxMacros(
+        `const key = 'foo'\ndefineVaporComponent(({ [key]: foo }) => <div>{foo}</div>)`,
+        'computed-key.tsx',
+        new Map(),
+        { include: ['*.tsx'], version: 3.6, ...options },
+      ),
+    ).rejects.toThrow('Destructured props cannot use a computed key: [key]')
+  })
+})

@@ -137,6 +137,45 @@ function useComp(){
 useComp()"
 `;
 
+exports[`fixtures > ./fixtures/define-component-keys.tsx 1`] = `
+"
+import { createPropsDefaultProxy as __createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";import { defineVaporComponent } from 'vue'
+
+const key = 'b'
+
+const Comp = defineVaporComponent(
+  (__props) => {
+__props = __createPropsDefaultProxy(__props, {'.qux.a-b': 2});
+    return <>{[__props.fooBar, __props.baz, __props["0"], __props.other, __props.qux["a-b"], __props.qux[key]]}</>
+  }, { props: {
+'0': null, 
+'fooBar': { type: Number, default: 1 }, 
+'baz': null, 
+'other': null, 
+'qux': null
+}, },
+)
+
+const Comp1 = defineVaporComponent((__props) => {
+  return <>{__props.maxSize}</>
+}, { props: {
+'maxSize': null
+}, })
+
+const Comp2 = defineVaporComponent((__props) => {
+  return <>{__props.size}</>
+}, { props: {
+'size': { type: Number, default: 1 }
+}, })
+
+const Comp3 = defineVaporComponent((__props) => {
+  return <>{__props["0"]}</>
+}, { props: {
+'0': null
+}, })
+"
+`;
+
 exports[`fixtures > ./fixtures/define-expose.tsx 1`] = `
 "
 import { getCurrentInstance as __getCurrentInstance } from "/vue-jsx-vapor/props";export function Comp() {
