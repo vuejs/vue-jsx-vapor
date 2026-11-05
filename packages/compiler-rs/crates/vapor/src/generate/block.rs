@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::mem::{self};
 use std::rc::Rc;
 
@@ -292,14 +293,19 @@ fn gen_effects<'a>(
   }
 }
 
-pub fn mark_slot_root_operations<'a>(block: &mut BlockIRNode<'a>, context: &CodegenContext<'a>) {
-  if has_stable_slot_root(block, context) {
-    return;
+// Marks the root operations of a slot block that has no stable root, and
+// returns whether it has one (nothing is marked then).
+pub fn mark_slot_root_operations<'a>(
+  block: &mut BlockIRNode<'a>,
+  context: &CodegenContext<'a>,
+) -> bool {
+  let roots = get_returned_dynamic_indices(block);
+  if has_stable_slot_root(block, &roots, context) {
+    return true;
   }
 
-  let block_ptr = block as *mut _;
-  for returned in block.returns.iter() {
-    let Some(child) = find_returned_dynamic(unsafe { &mut *block_ptr }, *returned) else {
+  for root in roots {
+    let Some(child) = root.and_then(|index| block.dynamic.children.get_mut(index)) else {
       continue;
     };
     let Some(operation) = &mut child.operation else {
@@ -319,6 +325,7 @@ pub fn mark_slot_root_operations<'a>(block: &mut BlockIRNode<'a>, context: &Code
       _ => {}
     }
   }
+  false
 }
 
 fn mark_slot_root_if<'a>(operation: &mut IfIRNode<'a>, context: &CodegenContext<'a>) {
@@ -331,7 +338,9 @@ fn mark_slot_root_if<'a>(operation: &mut IfIRNode<'a>, context: &CodegenContext<
     return;
   };
   match negative.as_mut() {
-    Either::A(negative) => mark_slot_root_operations(negative, context),
+    Either::A(negative) => {
+      mark_slot_root_operations(negative, context);
+    }
     Either::B(negative) => mark_slot_root_if(negative, context),
   }
 }
@@ -354,37 +363,52 @@ pub fn find_returned_dynamic<'a>(
     .find(|child| child.id.is_some_and(|i| i == id))
 }
 
+// the dynamic info of each returned root, in `returns` order
+fn get_returned_dynamic_indices(block: &BlockIRNode) -> Vec<Option<usize>> {
+  let children = &block.dynamic.children;
+  let mut by_id: HashMap<i32, usize> = HashMap::with_capacity(children.len());
+  for (index, child) in children.iter().enumerate() {
+    if let Some(id) = child.id {
+      by_id.insert(id, index);
+    }
+  }
+  block
+    .returns
+    .iter()
+    .map(|id| by_id.get(id).copied())
+    .collect()
+}
+
 // A slot can skip fallback/boundary tracking when at least one root is stable.
 // Components count as valid even if their own render result is a comment.
-pub fn has_stable_slot_root<'a>(block: &mut BlockIRNode<'a>, context: &CodegenContext<'a>) -> bool {
-  let mut has_valid_root = false;
-  let block_ptr = block as *mut BlockIRNode;
-  for id in block.returns.iter() {
-    let Some(child) = find_returned_dynamic(unsafe { &mut *block_ptr }, *id) else {
+fn has_stable_slot_root<'a>(
+  block: &BlockIRNode<'a>,
+  roots: &[Option<usize>],
+  context: &CodegenContext<'a>,
+) -> bool {
+  for &root in roots {
+    let Some(child) = root.and_then(|index| block.dynamic.children.get(index)) else {
       continue;
     };
-    let Some(operation) = child.operation.as_mut() else {
+    let Some(operation) = &child.operation else {
       if is_stable_template_slot_root(child.template, context) {
-        has_valid_root = true
+        return true;
       }
       continue;
     };
 
-    match operation.as_mut() {
-      OperationNode::CreateComponent(_) => {
-        has_valid_root = true;
-        continue;
-      }
+    match operation.as_ref() {
+      OperationNode::CreateComponent(_) => return true,
       OperationNode::Key(operation) => {
-        if has_stable_slot_root(&mut operation.block, context) {
-          has_valid_root = true;
-          continue;
+        let nested = get_returned_dynamic_indices(&operation.block);
+        if has_stable_slot_root(&operation.block, &nested, context) {
+          return true;
         }
       }
       _ => {}
     }
   }
-  has_valid_root
+  false
 }
 
 fn is_stable_template_slot_root(template: Option<i32>, context: &CodegenContext) -> bool {
