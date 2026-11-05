@@ -554,7 +554,7 @@ fn get_special_helper<'a>(
 }
 
 // the key a static prop ends up under, which is also the key it is merged under
-pub(crate) fn get_static_prop_key_name(
+fn get_static_prop_key_name(
   key: &str,
   modifier: Option<&str>,
   handler: bool,

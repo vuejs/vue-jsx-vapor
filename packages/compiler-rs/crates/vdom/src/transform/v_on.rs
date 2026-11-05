@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use common::{
-  check::{is_keyboard_event, is_simple_identifier, normalized_event_name, split_event_name},
+  check::{is_keyboard_event, is_simple_identifier},
   directive::{Modifiers, resolve_modifiers},
   error::ErrorCodes,
   text::capitalize,
@@ -20,7 +20,6 @@ use crate::transform::{DirectiveTransformResult, TransformContext};
 pub fn transform_v_on<'a>(
   dir: &'a mut JSXAttribute<'a>,
   context: &'a TransformContext<'a>,
-  is_component: bool,
 ) -> Option<DirectiveTransformResult<'a>> {
   let ast = &context.ast;
 
@@ -31,7 +30,7 @@ pub fn transform_v_on<'a>(
     }
   };
   let replaced = format!("{}{}", name[2..3].to_lowercase(), &name[3..]);
-  let mut splited = split_event_name(&replaced, is_component);
+  let mut splited = replaced.split("_").collect::<Vec<_>>();
   let mut event_name = Cow::Borrowed(splited.remove(0));
   let modifiers = splited;
 
@@ -83,9 +82,18 @@ pub fn transform_v_on<'a>(
       options: event_option_modifiers,
     } = resolve_modifiers(&event_name, modifiers);
 
+    let is_static_click = event_name == "click";
+
     // normalize click.right and click.middle since they don't actually fire
-    if event_name == "click" {
-      event_name = Cow::Owned(normalized_event_name(&event_name, &non_key_modifiers).to_string());
+    if non_key_modifiers
+      .iter()
+      .any(|modifier| modifier == "middle")
+      && is_static_click
+    {
+      event_name = Cow::Borrowed("mouseup")
+    }
+    if non_key_modifiers.iter().any(|modifier| modifier == "right") && is_static_click {
+      event_name = Cow::Borrowed("contextmenu");
     }
 
     if !non_key_modifiers.is_empty() {

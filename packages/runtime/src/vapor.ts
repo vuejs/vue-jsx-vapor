@@ -592,7 +592,7 @@ export const VaporFor = defineVaporComponent(
           : []
       },
       props.getKey === undefined ? (item) => item : (props.getKey as any),
-    )
+    ) as Block
   },
   { props: ['in', 'getKey'] },
 )

@@ -1,9 +1,7 @@
 use std::borrow::Cow;
 
 use common::{
-  check::{
-    is_delegated_event, is_event, is_keyboard_event, normalized_event_name, split_event_name,
-  },
+  check::{is_delegated_event, is_keyboard_event},
   directive::{Directives, Modifiers, resolve_modifiers},
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
@@ -38,7 +36,16 @@ pub fn transform_v_on<'a>(
     }
   };
   let replaced = format!("{}{}", name[2..3].to_lowercase(), &name[3..]);
-  let splited = split_event_name(&replaced, is_component);
+  let mut splited = replaced.split("_").collect::<Vec<_>>();
+  if !is_component {
+    // `onClickCapture` — the trailing `AddEventListenerOptions` suffix is part
+    // of the prop name, so fold it back into the modifier list.
+    let (event, options) = split_camel_event_modifiers(splited[0]);
+    if !options.is_empty() {
+      splited[0] = event;
+      splited.splice(1..1, options);
+    }
+  }
   let name_string = splited[0];
   let has_modifier = splited.len() > 1;
   let mut delegate_modifier = false;
@@ -116,9 +123,18 @@ pub fn transform_v_on<'a>(
     );
   }
 
+  let is_static_click = arg.value == "click";
+
   // normalize click.right and click.middle since they don't actually fire
-  let event_name = normalized_event_name(&arg.value, &non_key_modifiers).to_string();
-  arg.value = ast.str(&event_name);
+  if non_key_modifiers.iter().any(|modifier| modifier == "right") && is_static_click {
+    arg.value = ast.str("contextmenu");
+  } else if non_key_modifiers
+    .iter()
+    .any(|modifier| modifier == "middle")
+    && is_static_click
+  {
+    arg.value = ast.str("mouseup");
+  }
 
   // don't gen keys guard for non-keyboard events
   // if event name is dynamic, always wrap with keys guard
@@ -212,12 +228,35 @@ fn has_stop_handler_for_static_event(node: &JSXElement, event_name: &str) -> boo
       return false;
     };
     let name = prop.name.get_identifier().name.as_str();
-    if !is_event(name) {
+    if !name.starts_with("on") || !name.split('_').any(|modifier| modifier == "stop") {
       return false;
     }
-    let replaced = format!("{}{}", name[2..3].to_lowercase(), &name[3..]);
-    let splited = split_event_name(&replaced, false);
-    splited[1..].iter().any(|modifier| *modifier == "stop")
-      && normalized_event_name(splited[0], &splited[1..]) == event_name
+    name.starts_with(&format!(
+      "on{}{}",
+      event_name[..1].to_uppercase(),
+      &event_name[1..]
+    ))
   })
+}
+
+// camelCase suffixes for the `AddEventListenerOptions` modifiers — they have to
+// live in the prop name, so `onClickCapture` is the JSX spelling of
+// `onClick_capture`. Handler-level modifiers (`stop`, `prevent`, key names, …)
+// stay `_`-only, since they wrap the handler instead of the registration.
+static CAMEL_EVENT_MODIFIERS: &[(&str, &str)] = &[
+  ("Capture", "capture"),
+  ("Once", "once"),
+  ("Passive", "passive"),
+];
+
+// `clickCaptureOnce` -> (`click`, ["capture", "once"])
+pub fn split_camel_event_modifiers(name: &str) -> (&str, Vec<&'static str>) {
+  for (suffix, modifier) in CAMEL_EVENT_MODIFIERS {
+    if let Some(rest) = name.strip_suffix(suffix).filter(|rest| !rest.is_empty()) {
+      let (name, mut modifiers) = split_camel_event_modifiers(rest);
+      modifiers.push(*modifier);
+      return (name, modifiers);
+    }
+  }
+  (name, vec![])
 }

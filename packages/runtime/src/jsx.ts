@@ -1370,46 +1370,22 @@ export interface Events<T = Element> {
   onTransitionstart: TransitionEventHandler<T>
 }
 
-// camelCase modifier aliases the compiler supports on `on*` props — mirrors
-// CAMEL_EVENT_MODIFIERS in the Rust compiler
-type NonKeyEventModifier =
-  | 'capture'
-  | 'once'
-  | 'passive'
-  | 'prevent'
-  | 'stop'
-  | 'self'
-  | 'ctrl'
-  | 'shift'
-  | 'alt'
-  | 'meta'
-  | 'exact'
-  | 'middle'
-  | 'left'
-  | 'right'
-
-// key names only alias on keyboard events — `onDragEnter` stays `dragEnter`
-type EventModifier =
-  | NonKeyEventModifier
-  | 'enter'
-  | 'tab'
-  | 'delete'
-  | 'esc'
-  | 'space'
-  | 'up'
-  | 'down'
+// `passive` is only meaningful where canceling the event blocks scrolling: the
+// browser may then scroll without waiting for the handler. Everywhere else it
+// is either a no-op (`scroll` is not cancelable) or harmful (`touchend`'s
+// preventDefault suppresses the synthesized click).
+type PassiveEvent = 'onWheel' | 'onTouchstart' | 'onTouchmove'
 
 export type EventHandlers<E> = {
   // camelCase aliases resolve to the base event's payload type.
-  // Multi-modifier camel chains (`onClickRightStop`) are supported by the
-  // compiler.
   [K in keyof E as
     | K
-    | `${K & string}${Capitalize<
-        K extends 'onKeydown' | 'onKeypress' | 'onKeyup'
-          ? EventModifier
-          : NonKeyEventModifier
-      >}`]?: E[K] extends (...args: any) => any ? E[K] : (payload: E[K]) => void
+    | `${K & string}${'Capture' | 'Once'}`
+    | (K extends PassiveEvent
+        ? `${K & string}Passive`
+        : never)]?: E[K] extends (...args: any) => any
+    ? E[K]
+    : (payload: E[K]) => void
 }
 
 type IntrinsicElement<K> = K extends keyof HTMLElementTagNameMap
