@@ -92,44 +92,26 @@ pub unsafe fn transform_v_if<'a>(
       })));
 
       if let Some(OperationNode::If(head)) = context_block.dynamic.operation.as_deref_mut() {
+        let head = head as *mut IfIRNode;
         context.if_heads.borrow_mut().push((head, in_v_once));
+        *context.if_head.borrow_mut() = Some((head, in_v_once));
+        *context.if_tail.borrow_mut() = Some(head);
       };
     }));
   }
 
-  let siblings = &mut context.parent_dynamic.borrow_mut().children;
-  let mut last_if_node = None;
-  if !siblings.is_empty() {
-    let mut i = siblings.len();
-    while i > 0 {
-      i -= 1;
-      let sibling = siblings.get_mut(i).unwrap() as *mut IRDynamicInfo;
-      if let Some(operation) = (unsafe { &mut *sibling }).operation.as_mut()
-        && let OperationNode::If(operation) = operation.as_mut()
-      {
-        last_if_node = Some(operation);
-        break;
-      }
-    }
-  }
-
-  // check if IfNode is the last operation and get the root IfNode
-  let Some(mut last_if_node) = last_if_node else {
+  // a following `v-else[-if]` attaches to the chain the latest `v-if` among
+  // this parent's children started; both ends are cached as the chain grows
+  let (Some((_head, head_in_v_once)), Some(tail)) =
+    (*context.if_head.borrow(), *context.if_tail.borrow())
+  else {
     context.options.on_error.as_ref()(
       ErrorCodes::VElseNoAdjacentIf.message(),
       unsafe { &*node }.span,
     );
     return None;
   };
-
-  let mut last_if_node_ptr = last_if_node as *mut IfIRNode;
-  let head = last_if_node_ptr;
-  while let Some(negative) = (unsafe { &mut *last_if_node_ptr }).negative.as_mut()
-    && let Either::B(negative) = negative.as_mut()
-  {
-    last_if_node_ptr = negative as *mut IfIRNode;
-  }
-  last_if_node = unsafe { &mut *last_if_node_ptr };
+  let last_if_node = unsafe { &mut *tail };
 
   // Check if v-else was followed by v-else-if
   if dir_name == "v-else-if" && last_if_node.negative.is_some() {
@@ -139,12 +121,7 @@ pub unsafe fn transform_v_if<'a>(
   // vdom caches the whole conditional for `v-once` on its head and drops
   // `v-once` on the other branches: this branch is in v-once only through an
   // ancestor or the head
-  let in_v_once = inherited_in_v_once
-    || context
-      .if_heads
-      .borrow()
-      .iter()
-      .any(|(head_ptr, in_v_once)| *in_v_once && *head_ptr == head);
+  let in_v_once = inherited_in_v_once || head_in_v_once;
   *context.in_v_once.borrow_mut() = in_v_once;
   if !in_v_once {
     // the branch element is transformed a second time when the block renders,
@@ -171,10 +148,10 @@ pub unsafe fn transform_v_if<'a>(
 
   Some(Box::new(move || {
     let block = exit_block();
-    if dir_name == "v-else" {
-      last_if_node.negative = Some(Box::new(Either::A(block)));
+    let mut negative: Box<Either<BlockIRNode, IfIRNode>> = Box::new(if dir_name == "v-else" {
+      Either::A(block)
     } else {
-      last_if_node.negative = Some(Box::new(Either::B(IfIRNode {
+      Either::B(IfIRNode {
         id: -1,
         block_shape: VaporBlockShape::Empty as i32,
         positive: block,
@@ -188,8 +165,13 @@ pub unsafe fn transform_v_if<'a>(
         operation_index: None,
         effect_index: None,
         slot_root: false,
-      })))
+      })
+    });
+    if let Either::B(if_node) = &mut *negative {
+      // a following `v-else[-if]` attaches to this branch
+      *context.if_tail.borrow_mut() = Some(if_node as *mut IfIRNode);
     }
+    last_if_node.negative = Some(negative);
 
     if let Some(negative) = last_if_node.negative.as_mut()
       && let Either::B(negative) = negative.as_mut()

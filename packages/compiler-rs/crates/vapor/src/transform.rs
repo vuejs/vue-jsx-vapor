@@ -162,6 +162,12 @@ pub struct TransformContext<'a> {
   // every `v-if` head with whether it sits in `v-once`; chains that grow past
   // IF_CHAIN_THRESHOLD get their key range reserved once the tree is done
   pub if_heads: RefCell<Vec<(*mut IfIRNode<'a>, bool)>>,
+  // the latest `v-if` chain among the current parent's children: its head (with
+  // whether it sits in `v-once`), and the `v-if` / `v-else-if` node a following
+  // `v-else[-if]` attaches to. Replaced when a parent's children transform
+  // starts, like `is_slot_root`
+  pub if_head: RefCell<Option<(*mut IfIRNode<'a>, bool)>>,
+  pub if_tail: RefCell<Option<*mut IfIRNode<'a>>>,
 
   pub ir: Rc<RefCell<RootIRNode<'a>>>,
   pub node: RefCell<JSXChild<'a>>,
@@ -205,6 +211,8 @@ impl<'a> TransformContext<'a> {
       global_id: RefCell::new(0),
       if_index: RefCell::new(0),
       if_heads: RefCell::new(Vec::new()),
+      if_head: RefCell::new(None),
+      if_tail: RefCell::new(None),
       node: RefCell::new(RootNode::from(ast, options, node, true, None)),
       parent_dynamic: RefCell::new(IRDynamicInfo::new()),
       grandparent_node_span: RefCell::new(SPAN),

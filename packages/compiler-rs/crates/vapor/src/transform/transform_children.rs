@@ -102,6 +102,10 @@ pub unsafe fn transform_children<'a>(
     },
   );
   let parent_is_slot_root = *context.is_slot_root.borrow();
+  // a `v-if` chain belongs to one parent's children: entering another parent's
+  // children starts with no chain
+  let grand_if_head = context.if_head.replace(None);
+  let grand_if_tail = context.if_tail.replace(None);
   let new_is_slot_root = if is_block_wrapper_fragment {
     parent_is_slot_root
   } else {
@@ -243,6 +247,8 @@ pub unsafe fn transform_children<'a>(
   if let Some(is_slot_root) = is_slot_root {
     *context.is_slot_root.borrow_mut() = is_slot_root;
   }
+  *context.if_head.borrow_mut() = grand_if_head;
+  *context.if_tail.borrow_mut() = grand_if_tail;
   context_block.dynamic = context.parent_dynamic.replace(grand_parent_dynamic);
   *context.parent_directives.borrow_mut() = grand_parent_directives;
 

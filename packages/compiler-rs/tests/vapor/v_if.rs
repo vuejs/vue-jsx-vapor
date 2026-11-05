@@ -696,6 +696,41 @@ fn error_on_v_else_if_missing_adjacent_v_if_or_v_else_if() {
   );
 }
 
+// the chain a parent caches must not outlive that parent's children
+#[test]
+fn error_on_v_else_after_a_closed_sibling_parent() {
+  let error = RefCell::new(None);
+  transform(
+    "<div><div><p v-if={foo}/></div><p v-else/></div>",
+    Some(TransformOptions {
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
+      ..Default::default()
+    }),
+  );
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VElseNoAdjacentIf.message())
+  );
+}
+
+// a ternary child lowers to an `If` operation of its own, but it is not a
+// `v-if` directive: a following `v-else` must not attach to it
+#[test]
+fn error_on_v_else_after_a_ternary_sibling() {
+  let error = RefCell::new(None);
+  transform(
+    "<div>{foo ? <i/> : <b/>}<p v-else/></div>",
+    Some(TransformOptions {
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
+      ..Default::default()
+    }),
+  );
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VElseNoAdjacentIf.message())
+  );
+}
+
 #[test]
 fn error_on_v_if_no_expression() {
   let error = RefCell::new(None);
