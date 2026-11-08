@@ -1,10 +1,7 @@
 use indexmap::IndexMap;
-use napi::bindgen_prelude::Either3;
 use oxc_ast::NONE;
-use oxc_ast::ast::{Argument, Expression, NumberBase, Statement};
+use oxc_ast::ast::{Argument, NumberBase, Statement};
 use oxc_span::SPAN;
-
-use common::check::is_native_on;
 
 use crate::generate::CodegenContext;
 use crate::generate::component::gen_create_component;
@@ -24,91 +21,13 @@ use crate::generate::text::gen_set_nodes;
 use crate::generate::text::gen_set_text;
 use crate::generate::v_for::gen_for;
 use crate::generate::v_if::gen_if;
-use crate::ir::component::IRProp;
 use crate::ir::index::BlockIRNode;
 use crate::ir::index::DirectiveIRNode;
 use crate::ir::index::OperationNode;
 
-fn is_native_on_prop(prop: &IRProp<'_>) -> bool {
-  prop.modifier.is_none()
-    && matches!(
-      &prop.key,
-      Expression::StringLiteral(key) if is_native_on(&key.value)
-    )
-}
-
-fn is_select_value_key(key: &Expression, modifier: Option<&str>) -> bool {
-  matches!(key, Expression::StringLiteral(key) if key.value == "value")
-    && (modifier.is_none() || modifier == Some("."))
-}
-
-/// A select's value binding is applied after the children: the value is a
-/// no-op while the options it selects among are still missing (#1318).
-pub fn is_select_value_operation<'a>(
-  operation: &OperationNode<'a>,
-  select_value_elements: &[i32],
-) -> bool {
-  if select_value_elements.is_empty() {
-    return false;
-  }
-  match operation {
-    OperationNode::SetProp(operation) => {
-      select_value_elements.contains(&operation.element)
-        && is_select_value_key(&operation.prop.key, operation.prop.modifier)
-    }
-    OperationNode::SetDynamicProps(operation) => {
-      select_value_elements.contains(&operation.element)
-        && operation.props.iter().any(|props| match props {
-          Either3::A(props) => props
-            .iter()
-            .any(|p| is_select_value_key(&p.key, p.modifier)),
-          Either3::B(prop) => is_select_value_key(&prop.key, prop.modifier),
-          // a spread's keys are unknown at compile time
-          Either3::C(_) => true,
-        })
-    }
-    _ => false,
-  }
-}
-
-/// Listeners on a v-model element are deferred until after the model
-/// application, so their handlers see the value the model already updated, as
-/// in vdom where the directive `created` hook runs before the props.
-pub fn is_v_model_listener<'a>(operation: &OperationNode<'a>, model_elements: &[i32]) -> bool {
-  if model_elements.is_empty() {
-    return false;
-  }
-  match operation {
-    OperationNode::SetEvent(operation) => model_elements.contains(&operation.element),
-    OperationNode::SetDynamicEvents(operation) => model_elements.contains(&operation.element),
-    OperationNode::SetProp(operation) => {
-      // this dialect's v_bind props carry lowercase native event names
-      // (`onclick`), so any of them can collide with the model event
-      model_elements.contains(&operation.element)
-        && operation.prop.modifier.is_none()
-        && matches!(
-          &operation.prop.key,
-          Expression::StringLiteral(key) if is_native_on(&key.value)
-        )
-    }
-    OperationNode::SetDynamicProps(operation) => {
-      model_elements.contains(&operation.element)
-        && operation.props.iter().any(|props| match props {
-          Either3::A(props) => props.iter().any(is_native_on_prop),
-          Either3::B(prop) => is_native_on_prop(prop),
-          // a spread's keys are unknown - upstream resolves those by
-          // listener merging rather than deferral
-          Either3::C(_) => false,
-        })
-    }
-    _ => false,
-  }
-}
-
 pub fn gen_operations<'a>(
   statements: &mut oxc_allocator::Vec<'a, Statement<'a>>,
   opers: Vec<OperationNode<'a>>,
-  mut post_opers: Option<&mut Vec<OperationNode<'a>>>,
   mut custom_directives: Option<&mut IndexMap<i32, Vec<DirectiveIRNode<'a>>>>,
   context: &'a CodegenContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
@@ -126,20 +45,6 @@ pub fn gen_operations<'a>(
             .or_default()
             .push(operation);
         }
-      }
-      OperationNode::Directive(operation)
-        if operation.builtin && operation.name == "model" && post_opers.is_some() =>
-      {
-        post_opers
-          .as_deref_mut()
-          .unwrap()
-          .push(OperationNode::Directive(operation));
-      }
-      operation
-        if is_v_model_listener(&operation, &context_block.model_elements)
-          || is_select_value_operation(&operation, &context_block.select_value_elements) =>
-      {
-        context_block.deferred_operations.push(operation);
       }
       operation => gen_operation_with_insertion_state(statements, operation, context, unsafe {
         &mut *_context_block

@@ -66,7 +66,7 @@ pub unsafe fn transform_key<'a>(
         append_index: None,
         parent: None,
         operation_index: Some(*context.operation_index.borrow()),
-        effect_index: Some(*context.effect_index.borrow()),
+        effect_index: Some(*context.order.borrow()),
       })))
   }))
 }

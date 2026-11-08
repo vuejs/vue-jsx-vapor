@@ -22,20 +22,16 @@ pub struct BlockIRNode<'a> {
   /// Whether the block's owner has only text/interpolation children (such a
   /// block cannot be a single root when hydrating).
   pub node_text_only: bool,
-  /// Elements carrying a built-in v-model (codegen): listeners on them are
-  /// deferred until after the model application. Blocks hold one or two, so
-  /// a linear-scan vec beats a hash set.
-  pub model_elements: Vec<i32>,
   /// Elements carrying a `<select>` value binding: their value ops/effects
-  /// are diverted after the children at codegen, since a select's value only
-  /// takes effect once its options exist (#1318).
+  /// are deferred after the children, since a select's value only takes
+  /// effect once its options exist (#1318). Filled while transforming, read
+  /// by `TransformContext::finalize_block`.
   pub select_value_elements: Vec<i32>,
-  /// Operations and effects diverted out of the main emission order because
-  /// they depend on state established later in the block: listeners on model
-  /// elements must run after the model application, and a select's value only
-  /// takes effect once its options exist. Emitted at the end of the block.
-  pub deferred_operations: Vec<OperationNode<'a>>,
-  pub deferred_effects: Vec<IREffect<'a>>,
+  /// The operations / effects from these indexes on run after every render
+  /// effect: the block's v-model directives and the listeners and select
+  /// values that depend on them, see `TransformContext::finalize_block`.
+  pub deferred_operation_index: usize,
+  pub deferred_effect_index: usize,
 }
 impl<'a> BlockIRNode<'a> {
   pub fn new() -> Self {
@@ -49,10 +45,9 @@ impl<'a> BlockIRNode<'a> {
       props: None,
       root: false,
       node_text_only: false,
-      model_elements: Vec::new(),
       select_value_elements: Vec::new(),
-      deferred_operations: Vec::new(),
-      deferred_effects: Vec::new(),
+      deferred_operation_index: 0,
+      deferred_effect_index: 0,
     }
   }
 }
@@ -85,7 +80,7 @@ pub struct IfIRNode<'a> {
   pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
-  pub effect_index: Option<usize>,
+  pub effect_index: Option<u64>,
 }
 
 #[derive(Debug)]
@@ -100,7 +95,7 @@ pub struct KeyIRNode<'a> {
   pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
-  pub effect_index: Option<usize>,
+  pub effect_index: Option<u64>,
 }
 
 #[derive(Debug)]
@@ -131,7 +126,7 @@ pub struct ForIRNode<'a> {
   pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
-  pub effect_index: Option<usize>,
+  pub effect_index: Option<u64>,
 }
 
 #[derive(Debug)]
@@ -254,7 +249,7 @@ pub struct CreateComponentIRNode<'a> {
   pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
-  pub effect_index: Option<usize>,
+  pub effect_index: Option<u64>,
 }
 
 #[derive(Debug)]
@@ -270,7 +265,7 @@ pub struct SlotOutletIRNode<'a> {
   pub append_index: Option<i32>,
 
   pub operation_index: Option<usize>,
-  pub effect_index: Option<usize>,
+  pub effect_index: Option<u64>,
 }
 
 #[derive(Debug)]
@@ -305,6 +300,33 @@ pub enum OperationNode<'a> {
   GetTextChild(GetTextChildIRNode),
   Key(KeyIRNode<'a>),
   SetBlockKey(SetBlockKeyIRNode<'a>),
+}
+
+impl<'a> OperationNode<'a> {
+  /// Where the operation's own block content starts among the operations and
+  /// effects of the enclosing block. Until `finalize_block` settles them, the
+  /// effect boundary is the registration order key of the operation's node
+  /// rather than an index.
+  pub fn block_boundary(&mut self) -> Option<(&mut Option<usize>, &mut Option<u64>)> {
+    match self {
+      OperationNode::If(operation) => {
+        Some((&mut operation.operation_index, &mut operation.effect_index))
+      }
+      OperationNode::For(operation) => {
+        Some((&mut operation.operation_index, &mut operation.effect_index))
+      }
+      OperationNode::Key(operation) => {
+        Some((&mut operation.operation_index, &mut operation.effect_index))
+      }
+      OperationNode::CreateComponent(operation) => {
+        Some((&mut operation.operation_index, &mut operation.effect_index))
+      }
+      OperationNode::SlotOutlet(operation) => {
+        Some((&mut operation.operation_index, &mut operation.effect_index))
+      }
+      _ => None,
+    }
+  }
 }
 
 pub enum DynamicFlag {
@@ -355,4 +377,7 @@ impl<'a> Default for IRDynamicInfo<'a> {
 #[derive(Debug, Default)]
 pub struct IREffect<'a> {
   pub operations: Vec<OperationNode<'a>>,
+  /// Registration order key, settled into the emitted order by
+  /// `TransformContext::finalize_block`.
+  pub order: u64,
 }
