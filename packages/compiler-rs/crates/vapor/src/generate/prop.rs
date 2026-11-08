@@ -604,8 +604,8 @@ pub fn gen_dynamic_props<'a>(
   let is_svg = oper.is_svg;
   let values = oper.props.into_iter().map(|props| {
     match props {
-      Either3::A(props) => gen_literal_object_props(props, context).into(),
-      Either3::B(prop) => gen_literal_object_props(vec![prop], context).into(),
+      Either3::A(props) => gen_literal_object_props(props, context, false).into(),
+      Either3::B(prop) => gen_literal_object_props(vec![prop], context, false).into(),
       // {...obj} / v-on={obj}
       Either3::C(props) => {
         let value = gen_expression(props.value, context, None, false);
@@ -717,9 +717,10 @@ fn get_dynamic_prop_names<'a>(oper: &SetDynamicPropsIRNode<'a>) -> Option<Vec<St
   Some(names)
 }
 
-fn gen_literal_object_props<'a>(
+pub fn gen_literal_object_props<'a>(
   props: Vec<IRProp<'a>>,
   context: &'a CodegenContext<'a>,
+  is_component: bool,
 ) -> Expression<'a> {
   let ast = context.ast;
   let mut entries: Vec<Option<ObjectPropertyKind<'a>>> = vec![];
@@ -758,7 +759,7 @@ fn gen_literal_object_props<'a>(
         modifier,
         handler,
         &get_handler_modifier_postfix(&options),
-        true,
+        !is_component,
       );
       match groups.entry(key_name) {
         Entry::Occupied(mut entry) => entry.get_mut().1.push(value),
@@ -772,7 +773,7 @@ fn gen_literal_object_props<'a>(
               modifier,
               handler,
               options,
-              true,
+              !is_component,
               context,
             ),
             vec![value],

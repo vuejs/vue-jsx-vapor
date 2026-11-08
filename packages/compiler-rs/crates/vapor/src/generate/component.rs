@@ -475,6 +475,22 @@ fn gen_prop<'a>(
     )
   } else {
     let mut values = gen_prop_value(values, context);
+    if let Some(normalize) = prop.normalize {
+      values = ast.expression_call(
+        SPAN,
+        ast.expression_identifier(
+          SPAN,
+          ast.str(
+            context
+              .options
+              .helper(if normalize == "class" { "_normalizeClass" } else { "_normalizeStyle" }),
+          ),
+        ),
+        NONE,
+        ast.vec1(values.into()),
+        false,
+      );
+    }
     if to_display_string {
       values = ast.expression_call(
         SPAN,

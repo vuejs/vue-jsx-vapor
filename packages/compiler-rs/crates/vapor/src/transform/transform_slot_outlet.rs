@@ -1,6 +1,6 @@
 use napi::{Either, bindgen_prelude::Either3};
 use oxc_allocator::TakeIn;
-use oxc_ast::ast::{JSXChild, JSXElement};
+use oxc_ast::ast::{Expression, JSXChild, JSXElement};
 use oxc_span::SPAN;
 
 use crate::{
@@ -38,7 +38,7 @@ pub unsafe fn transform_slot_outlet<'a>(
       unsafe { &mut *(node.as_mut() as *mut _) },
       context,
       unsafe { &mut *context_block_ptr },
-      false,
+      true,
       true,
       get_effect_order,
       get_operation_index,
@@ -47,7 +47,30 @@ pub unsafe fn transform_slot_outlet<'a>(
       Either::A(props) => {
         ir_props = props;
       }
-      Either::B(props) => {
+      Either::B(mut props) => {
+        for prop in &mut props {
+          let Expression::StringLiteral(key) = &prop.key else {
+            continue;
+          };
+          let normalize = match key.value.as_str() {
+            "class" => "class",
+            "style" => "style",
+            _ => continue,
+          };
+          if prop.handler || prop.modifier.is_some() {
+            continue;
+          }
+          if prop.values.len() == 1
+            && let Expression::StringLiteral(value) = &mut prop.values[0]
+          {
+            if normalize == "class" {
+              value.value = context.ast.str(value.value.trim());
+              value.raw = None;
+            }
+          } else {
+            prop.normalize = Some(normalize);
+          }
+        }
         ir_props = vec![Either3::A(props)];
       }
     }

@@ -70,7 +70,8 @@ pub fn transform_v_on<'a>(
     name_string.to_string()
   };
 
-  let is_element = !is_component && !directives.is_template && directives.tag_name != "slot";
+  let is_slot_outlet = directives.tag_name == "slot";
+  let is_element = !is_component && !directives.is_template && !is_slot_outlet;
   if is_element && (name_string.starts_with("vue:") || is_vnode_hook(&arg_value)) {
     context.options.on_warn.as_ref()(
       "onVue:xxx / onVnodeXxx per-element lifecycle events are not supported in Vapor mode and will be ignored."
@@ -106,7 +107,7 @@ pub fn transform_v_on<'a>(
     options: event_option_modifiers,
   } = resolve_modifiers(&arg.value, modifiers);
 
-  if delegate_modifier && is_component {
+  if delegate_modifier && (is_component || is_slot_outlet) {
     context.options.on_warn.as_ref()(
       ".delegate modifier is only supported on native DOM elements. The modifier will be ignored."
         .to_string(),
@@ -170,7 +171,7 @@ pub fn transform_v_on<'a>(
   // a native listener whose key may collide with a spread or a `v-on` object is
   // emitted as a prop too, so codegen can merge every handler of a key into one
   // entry like mergeProps instead of attaching a second native listener
-  if is_component || directives.merges_listeners {
+  if is_component || is_slot_outlet || directives.merges_listeners {
     return Some(DirectiveTransformResult {
       key: Expression::StringLiteral(arg),
       value: exp,

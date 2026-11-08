@@ -545,6 +545,7 @@ pub fn transform_component_element<'a>(
       model_modifiers: None,
       values: vec![static_key.clone_in(context.ast.allocator)],
       dynamic: false,
+      normalize: None,
     };
     match props.first_mut() {
       Some(Either3::A(static_props)) => static_props.push(key_prop),
@@ -703,6 +704,7 @@ pub fn build_props<'a>(
               model_modifiers: prop.model_modifiers,
               values: vec![prop.value],
               dynamic: true,
+              normalize: None,
             }));
           } else {
             // other static props
@@ -834,6 +836,7 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
       model_modifiers: result.model_modifiers,
       values: vec![result.value],
       dynamic: false,
+      normalize: None,
     };
     // dynamic keys are always allowed
     let Expression::StringLiteral(key) = &prop.key else {
