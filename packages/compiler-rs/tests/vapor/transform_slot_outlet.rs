@@ -313,8 +313,14 @@ fn normalizes_static_slot_keys_inside_their_own_getters() {
   )
   .code;
 
-  assert!(code.contains("class: () => _normalizeClass(classes())"), "{code}");
-  assert!(code.contains("style: () => _normalizeStyle(styles())"), "{code}");
+  assert!(
+    code.contains("class: () => _normalizeClass(classes())"),
+    "{code}"
+  );
+  assert!(
+    code.contains("style: () => _normalizeStyle(styles())"),
+    "{code}"
+  );
   assert!(code.contains("title: () => title()"), "{code}");
   assert!(!code.contains("_normalizeProps"), "{code}");
   assert!(!code.contains("_mergeProps"), "{code}");
@@ -342,7 +348,10 @@ fn trims_a_static_class_but_not_a_static_style() {
 fn merges_a_static_and_a_dynamic_class_into_one_normalized_prop() {
   let code = transform(r#"<slot class="a" class={c} />"#, None).code;
 
-  assert!(code.contains(r#"class: () => _normalizeClass(["a", c])"#), "{code}");
+  assert!(
+    code.contains(r#"class: () => _normalizeClass(["a", c])"#),
+    "{code}"
+  );
 }
 
 #[test]
@@ -364,7 +373,10 @@ fn preserves_the_normalization_boundary_of_a_spread() {
       r#"<slot {...(void 0)} />"#,
       "_normalizeProps(_guardReactiveProps(void 0))",
     ),
-    (r#"<slot {...obj} />"#, "_normalizeProps(_guardReactiveProps(obj))"),
+    (
+      r#"<slot {...obj} />"#,
+      "_normalizeProps(_guardReactiveProps(obj))",
+    ),
   ] {
     let code = transform(src, None).code;
     assert!(code.contains(expected), "{src}\n{code}");

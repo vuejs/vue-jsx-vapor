@@ -480,11 +480,11 @@ fn gen_prop<'a>(
         SPAN,
         ast.expression_identifier(
           SPAN,
-          ast.str(
-            context
-              .options
-              .helper(if normalize == "class" { "_normalizeClass" } else { "_normalizeStyle" }),
-          ),
+          ast.str(context.options.helper(if normalize == "class" {
+            "_normalizeClass"
+          } else {
+            "_normalizeStyle"
+          })),
         ),
         NONE,
         ast.vec1(values.into()),

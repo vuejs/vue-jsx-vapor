@@ -132,8 +132,8 @@ fn gen_slot_props<'a>(
       false,
     )
   };
-  let handler_only = props.len() == 1
-    && matches!(&props[0], Either3::C(dynamic) if dynamic.handler);
+  let handler_only =
+    props.len() == 1 && matches!(&props[0], Either3::C(dynamic) if dynamic.handler);
   let mut groups = Vec::with_capacity(props.len());
   for group in props {
     groups.push(match group {
