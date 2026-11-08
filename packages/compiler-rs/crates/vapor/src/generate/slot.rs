@@ -568,7 +568,7 @@ fn gen_slot_block_with_props<'a>(
       Expression::ObjectExpression(_) => {
         props_ast = Some(props);
         let scope = context.enter_scope();
-        props_name = Cow::Owned(format!("_slotProps{}", scope.0));
+        props_name = Cow::Owned(format!("_slotProps{}", context.next_slot_props_index()));
         exit_scope = Some(scope.1);
       }
       // `v-slot="{ a } = { a: 1 }"`: the props pattern carries its own default,
@@ -581,7 +581,7 @@ fn gen_slot_block_with_props<'a>(
       {
         props_ast = Some(props);
         let scope = context.enter_scope();
-        props_name = Cow::Owned(format!("_slotProps{}", scope.0));
+        props_name = Cow::Owned(format!("_slotProps{}", context.next_slot_props_index()));
         exit_scope = Some(scope.1);
       }
       Expression::Identifier(props) => {

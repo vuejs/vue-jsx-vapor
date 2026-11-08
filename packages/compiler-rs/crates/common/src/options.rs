@@ -95,6 +95,11 @@ pub struct TransformOptions<'a> {
   pub in_v_once: RefCell<bool>,
   pub in_vapor: RefCell<i32>,
   pub identifiers: RefCell<HashMap<&'a str, i32>>,
+  // shared by every context of one compile: a JSX element met inside an
+  // expression is compiled as a root of its own, and still has to resolve the
+  // names of the block that contains it
+  pub vapor_identifiers: RefCell<HashMap<&'a str, Vec<Option<Expression<'a>>>>>,
+  pub vapor_slot_props_index: RefCell<i32>,
   pub slot_scopes: RefCell<IndexMap<Span, SlotScope<'a>>>,
   pub cache_index: RefCell<i32>,
   pub key_index: RefCell<i32>,
@@ -130,6 +135,8 @@ impl<'a> Default for TransformOptions<'a> {
       in_v_once: RefCell::new(false),
       in_vapor: RefCell::new(0),
       identifiers: RefCell::new(HashMap::new()),
+      vapor_identifiers: RefCell::new(HashMap::new()),
+      vapor_slot_props_index: RefCell::new(0),
       slot_scopes: RefCell::new(IndexMap::new()),
       cache_index: RefCell::new(0),
       key_index: RefCell::new(0),
