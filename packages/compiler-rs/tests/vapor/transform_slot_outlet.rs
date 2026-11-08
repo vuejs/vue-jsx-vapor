@@ -250,3 +250,57 @@ fn error_on_unexpected_cunstom_directive_on_slot() {
     Some(ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet.message())
   );
 }
+
+#[test]
+fn slot_outlet_key_is_also_a_slot_prop() {
+  let code = transform(r#"<slot key={id} x={1} />"#, None).code;
+
+  // same as vdom: the outlet keeps its key as a prop and is keyed as well
+  assert_snapshot!(code, @r#"
+  import { createKeyedFragment as _createKeyedFragment, createSlot as _createSlot } from "vue";
+  (() => {
+  	const _n0 = _createKeyedFragment(() => id, () => {
+  		const _n2 = _createSlot("default", {
+  			key: () => id,
+  			x: 1
+  		});
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_slot_outlet_key_is_also_a_slot_prop() {
+  let code = transform(r#"<slot key="s" x={1} />"#, None).code;
+
+  assert_snapshot!(code, @r#"
+  import { createSlot as _createSlot } from "vue";
+  (() => {
+  	const _n0 = _createSlot("default", {
+  		key: "s",
+  		x: 1
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_slot_outlet_key_is_also_a_slot_prop() {
+  let code = transform(r#"<slot v-for={i in list} key={i} />"#, None).code;
+
+  // the loop keys the rows itself, so the outlet gets no keyed fragment
+  assert!(!code.contains("_createKeyedFragment"));
+  assert_snapshot!(code, @r#"
+  import { createFor as _createFor, createSlot as _createSlot } from "vue";
+  (() => {
+  	const _n0 = _createFor(() => list, (_for_item0) => {
+  		const _n2 = _createSlot("default", { key: () => _for_item0.value });
+  		return _n2;
+  	}, (i) => i, 16);
+  	return _n0;
+  })();
+  "#);
+}

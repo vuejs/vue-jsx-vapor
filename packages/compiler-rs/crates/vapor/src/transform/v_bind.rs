@@ -4,7 +4,7 @@ use common::{
   expression::jsx_attribute_value_to_expression,
   text::{camelize, decode_attr_value, get_text_like_value},
 };
-use oxc_allocator::TakeIn;
+use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::NONE;
 use oxc_ast::ast::{
   Argument, ArrayExpressionElement, BigintBase, Expression, JSXAttribute, JSXAttributeName,
@@ -72,7 +72,9 @@ pub fn transform_v_bind<'a>(
     JSXAttributeName::NamespacedName(name) => name.span.source_text(context.source_text),
   };
   let name_splited: Vec<&str> = resolve_prop_name(name_string);
-  if is_reserved_prop(name_splited[0]) {
+  // same as vdom: the key of a `<slot>` is also a slot prop
+  let slot_key = name_splited[0] == "key" && directives.tag_name == "slot";
+  if is_reserved_prop(name_splited[0]) && !slot_key {
     return None;
   }
   let modifiers = name_splited[1..].to_vec();
@@ -144,6 +146,12 @@ pub fn transform_v_bind<'a>(
         value,
         modifier,
       ));
+    } else if slot_key && let JSXAttributeValue::ExpressionContainer(container) = value {
+      // `transform_key` reads the same node afterwards, so it has to stay
+      container
+        .expression
+        .as_expression()
+        .map(|expression| expression.clone_in(ast.allocator))?
     } else {
       jsx_attribute_value_to_expression(value, ast)?
     }

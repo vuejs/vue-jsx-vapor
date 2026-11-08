@@ -949,7 +949,8 @@ fn root_slot_outlet_with_stable_sibling_in_forwarded_fallback_does_not_notify_pa
 fn root_slot_outlet_with_dynamic_key_tracks_keyed_fragment_and_outlet() {
   let code = transform(r#"<Comp><slot key={key} /></Comp>"#, None).code;
 
-  assert!(code.contains("_createSlot(\"default\", null, null, 4)"));
+  // the key is also a slot prop, like vdom
+  assert!(code.contains("_createSlot(\"default\", { key: () => key }, null, 4)"));
   assert!(code.contains("_createKeyedFragment(() => key"));
 
   assert_snapshot!(code, @r#"
@@ -958,7 +959,7 @@ fn root_slot_outlet_with_dynamic_key_tracks_keyed_fragment_and_outlet() {
   (() => {
   	const _n3 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createKeyedFragment(() => key, () => {
-  			const _n2 = _createSlot("default", null, null, 4);
+  			const _n2 = _createSlot("default", { key: () => key }, null, 4);
   			return _n2;
   		}, true);
   		return _n0;
