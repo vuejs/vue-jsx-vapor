@@ -343,6 +343,33 @@ pub enum DynamicFlag {
   // REFERENCED_AND_NON_TEMPLATE_AND_INSERT = 7,
 }
 
+/// How the parent reaches a child codegen holds on to. Decided once the
+/// parent's children are final (`plan_access`), printed by `gen_children`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DynamicAccess {
+  /// `const _n<id> = ...`
+  Reference,
+  /// `let _p<n> = ...`, a cursor later lookups may reassign
+  Placeholder,
+  /// `_p<n> = ...`, reassigning the previous cursor
+  Reuse,
+  /// no variable: written into the lookup of its only descendant access
+  Inline,
+  /// `(_p<n> = ...)` written inline, reassigning the previous cursor
+  InlineReuse,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct IRDynamicAccess {
+  pub kind: DynamicAccess,
+  /// position among the parent's rendered child nodes
+  pub index: i32,
+  /// reached with `_next()` from the previous access instead of the parent
+  pub adjacent: bool,
+  /// the located node, for `Reference`
+  pub id: Option<i32>,
+}
+
 #[derive(Debug)]
 pub struct IRDynamicInfo<'a> {
   pub id: Option<i32>,
@@ -353,6 +380,7 @@ pub struct IRDynamicInfo<'a> {
   pub is_text: bool,
   pub has_dynamic_child: bool,
   pub operation: Option<Box<OperationNode<'a>>>,
+  pub access: Option<IRDynamicAccess>,
 }
 impl<'a> IRDynamicInfo<'a> {
   pub fn new() -> Self {
@@ -365,6 +393,7 @@ impl<'a> IRDynamicInfo<'a> {
       operation: None,
       id: None,
       anchor: None,
+      access: None,
     }
   }
 }

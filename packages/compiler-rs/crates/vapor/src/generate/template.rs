@@ -18,7 +18,8 @@ use crate::generate::CodegenContext;
 use crate::generate::block::FlushBeforeDynamic;
 use crate::generate::operation::gen_operation_with_insertion_state;
 use crate::ir::index::BlockIRNode;
-use crate::ir::index::DynamicFlag;
+use crate::ir::index::DynamicAccess;
+use crate::ir::index::IRDynamicAccess;
 use crate::ir::index::IRDynamicInfo;
 
 pub fn gen_self<'a>(
@@ -95,29 +96,125 @@ fn gen_children<'a>(
   flush_before_dynamic: Rc<RefCell<FlushBeforeDynamic<'a>>>,
 ) -> usize {
   let ast = &context.ast;
-
-  let mut offset: i32 = 0;
-  // `reusable` means the previous access target is a p* cursor that can be
-  // reassigned by the next lookup. Referenced n* variables must stay stable.
-  let mut prev: Option<(String, i32, bool)> = None;
+  // the variable of the previous access: adjacent lookups chain off it and
+  // placeholders may reassign it
+  let mut prev: Option<String> = None;
 
   let _context_block = context_block as *mut BlockIRNode;
   let mut block_statement_count = 0;
-  let mut index = 0;
-  let mut iter = children.drain(..);
   let from = &from;
-  while let Some(mut child) = iter.next() {
-    let rest = iter.as_slice();
-    if child.flags & DynamicFlag::NonTemplate as i32 != 0 {
-      offset -= 1;
-    }
 
-    if child.flags & DynamicFlag::Insert as i32 != 0 && child.template.is_some() {
-      // template node due to invalid nesting; anchored inserts locate their
-      // `<!>` placeholder first so INSERT_NODE can insert before it
-      if let Some(anchor) = child.anchor {
-        let element_index = index + offset;
-        let variable = format!("_n{}", anchor);
+  for mut child in children.drain(..) {
+    let Some(access) = child.access else {
+      gen_self(
+        statements,
+        child,
+        context,
+        unsafe { &mut *_context_block },
+        Rc::clone(&flush_before_dynamic),
+      );
+      continue;
+    };
+
+    let access_path = gen_access_path(
+      context,
+      from.clone_in(ast.allocator),
+      &access,
+      prev.as_deref(),
+      child.is_text,
+    );
+
+    match access.kind {
+      // no variable: the lookup is written into the only descendant access
+      DynamicAccess::Inline => {
+        let inserted = gen_children(
+          statements,
+          mem::take(&mut child.children),
+          context,
+          unsafe { &mut *_context_block },
+          statement_index,
+          access_path,
+          Rc::clone(&flush_before_dynamic),
+        );
+        statement_index += inserted;
+        block_statement_count += inserted;
+        continue;
+      }
+      DynamicAccess::InlineReuse => {
+        let inserted = gen_children(
+          statements,
+          mem::take(&mut child.children),
+          context,
+          unsafe { &mut *_context_block },
+          statement_index,
+          ast.expression_parenthesized(
+            SPAN,
+            ast.expression_assignment(
+              SPAN,
+              AssignmentOperator::Assign,
+              ast
+                .simple_assignment_target_assignment_target_identifier(
+                  SPAN,
+                  ast.str(prev.as_deref().unwrap()),
+                )
+                .into(),
+              access_path,
+            ),
+          ),
+          Rc::clone(&flush_before_dynamic),
+        );
+        statement_index += inserted;
+        block_statement_count += inserted;
+        continue;
+      }
+      DynamicAccess::Reuse => {
+        let variable = prev.clone().unwrap();
+        statements.insert(
+          statement_index,
+          ast.statement_expression(
+            SPAN,
+            ast.expression_assignment(
+              SPAN,
+              AssignmentOperator::Assign,
+              ast
+                .simple_assignment_target_assignment_target_identifier(SPAN, ast.str(&variable))
+                .into(),
+              access_path,
+            ),
+          ),
+        );
+        statement_index += 1;
+        block_statement_count += 1;
+      }
+      DynamicAccess::Placeholder => {
+        // p for "placeholder" variables that are meant for possible reuse by
+        // other access paths
+        let temp_id = context_block.temp_id;
+        context_block.temp_id = temp_id + 1;
+        let variable = format!("_p{temp_id}");
+        prev = Some(variable.clone());
+        statements.insert(
+          statement_index,
+          VariableDeclaration(ast.alloc_variable_declaration(
+            SPAN,
+            VariableDeclarationKind::Let,
+            ast.vec1(ast.variable_declarator(
+              SPAN,
+              VariableDeclarationKind::Let,
+              ast.binding_pattern_binding_identifier(SPAN, ast.str(&variable)),
+              NONE,
+              Some(access_path),
+              false,
+            )),
+            false,
+          )),
+        );
+        statement_index += 1;
+        block_statement_count += 1;
+      }
+      DynamicAccess::Reference => {
+        let variable = format!("_n{}", access.id.unwrap());
+        prev = Some(variable.clone());
         statements.insert(
           statement_index,
           VariableDeclaration(ast.alloc_variable_declaration(
@@ -128,13 +225,7 @@ fn gen_children<'a>(
               VariableDeclarationKind::Const,
               ast.binding_pattern_binding_identifier(SPAN, ast.str(&variable)),
               NONE,
-              Some(gen_access_path(
-                context,
-                from.clone_in(ast.allocator),
-                element_index,
-                &prev,
-                false,
-              )),
+              Some(access_path),
               false,
             )),
             false,
@@ -142,35 +233,13 @@ fn gen_children<'a>(
         );
         statement_index += 1;
         block_statement_count += 1;
-        prev = Some((variable, element_index, false));
       }
-      gen_self(
-        statements,
-        child,
-        context,
-        unsafe { &mut *_context_block },
-        Rc::clone(&flush_before_dynamic),
-      );
-      index += 1;
-      continue;
     }
-
-    let id = if child.flags & DynamicFlag::Referenced as i32 != 0 {
-      if child.flags & DynamicFlag::Insert as i32 != 0 {
-        child.anchor
-      } else {
-        child.id
-      }
-    } else {
-      None
-    };
 
     // A child created by its own operation (component, block, createElement-
-    // backed element) owns its subtree through genSelf; only children that
+    // backed element) owns its subtree through gen_self; only children that
     // sit in the parent template are descended into from here.
-    let owns_subtree = child.operation.is_some();
-
-    if id.is_none() && (!child.has_dynamic_child || owns_subtree) {
+    if child.operation.is_some() {
       gen_self(
         statements,
         child,
@@ -178,221 +247,64 @@ fn gen_children<'a>(
         unsafe { &mut *_context_block },
         Rc::clone(&flush_before_dynamic),
       );
-      index += 1;
-      continue;
-    }
-
-    let element_index = index + offset;
-
-    let inline_placeholder = id.is_none()
-      && child.template.is_none()
-      && child.operation.is_none()
-      && child.flags & (DynamicFlag::Insert as i32 | DynamicFlag::NonTemplate as i32) == 0
-      && can_inline_placehoder(&child);
-    let access_path = gen_access_path(
-      context,
-      from.clone_in(ast.allocator),
-      element_index,
-      &prev,
-      child.is_text,
-    );
-
-    if inline_placeholder {
-      if let Some(prev) = &mut prev
-        && prev.2
-      {
-        let child_children = mem::take(&mut child.children);
-        let inserted = gen_children(
-          statements,
-          child_children,
-          context,
-          unsafe { &mut *_context_block },
-          statement_index,
-          ast.expression_parenthesized(
-            SPAN,
-            ast.expression_assignment(
-              SPAN,
-              AssignmentOperator::Assign,
-              ast
-                .simple_assignment_target_assignment_target_identifier(SPAN, ast.str(&prev.0))
-                .into(),
-              access_path,
-            ),
-          ),
-          Rc::clone(&flush_before_dynamic),
-        );
-        statement_index += inserted;
-        block_statement_count += inserted;
-        prev.1 = element_index;
-        prev.2 = true;
-        index += 1;
-        continue;
-      }
-
-      if !has_adjacent_following_access_child(rest, offset) {
-        let child_children = mem::take(&mut child.children);
-        let inserted = gen_children(
-          statements,
-          child_children,
-          context,
-          unsafe { &mut *_context_block },
-          statement_index,
-          access_path,
-          Rc::clone(&flush_before_dynamic),
-        );
-        statement_index += inserted;
-        block_statement_count += inserted;
-        index += 1;
-        continue;
-      }
-    }
-
-    let variable: String;
-    if id.is_none()
-      && let Some(prev) = &prev
-      && prev.2
-    {
-      variable = prev.0.clone();
-      statements.insert(
-        statement_index,
-        ast.statement_expression(
-          SPAN,
-          ast.expression_assignment(
-            SPAN,
-            AssignmentOperator::Assign,
-            ast
-              .simple_assignment_target_assignment_target_identifier(SPAN, ast.str(&variable))
-              .into(),
-            access_path,
-          ),
-        ),
-      );
-      statement_index += 1;
-      block_statement_count += 1;
-    } else {
-      // p for "placeholder" variables that are meant for possible reuse by
-      // other access paths
-      variable = if let Some(id) = id {
-        format!("_n{id}")
-      } else {
-        let temp_id = context_block.temp_id;
-        context_block.temp_id = temp_id + 1;
-        format!("_p{}", temp_id)
-      };
-      let kind = if id.is_none() {
-        VariableDeclarationKind::Let
-      } else {
-        VariableDeclarationKind::Const
-      };
-      statements.insert(
-        statement_index,
-        VariableDeclaration(ast.alloc_variable_declaration(
-          SPAN,
-          kind,
-          ast.vec1(ast.variable_declarator(
-            SPAN,
-            kind,
-            ast.binding_pattern_binding_identifier(SPAN, ast.str(&variable)),
-            NONE,
-            Some(access_path),
-            false,
-          )),
-          false,
-        )),
-      );
-      statement_index += 1;
-      block_statement_count += 1;
-    }
-
-    // gen_self owns operation-backed descendants. Keep children on `child` so
-    // it can traverse them from the newly-created node instead of the parent
-    // template access path.
-    let child_children = (!owns_subtree).then(|| mem::take(&mut child.children));
-    if id.eq(&child.anchor) && (!child.has_dynamic_child || owns_subtree) {
-      gen_self(
-        statements,
-        child,
-        context,
-        unsafe { &mut *_context_block },
-        Rc::clone(&flush_before_dynamic),
-      );
-    }
-
-    if let Some(child_children) = child_children {
+    } else if child.has_dynamic_child {
       let inserted = gen_children(
         statements,
-        child_children,
+        mem::take(&mut child.children),
         context,
         unsafe { &mut *_context_block },
         statement_index,
-        ast.expression_identifier(SPAN, ast.str(&variable)),
+        ast.expression_identifier(SPAN, ast.str(prev.as_deref().unwrap())),
         Rc::clone(&flush_before_dynamic),
       );
       statement_index += inserted;
       block_statement_count += inserted;
     }
-    prev = Some((variable, element_index, id.is_none()));
-    index += 1;
   }
 
   block_statement_count
 }
 
-// Build one DOM lookup path while preserving the fast sibling walk:
-// adjacent nodes use _next(prev), otherwise fall back to _nthChild(parent).
-// `is_text` appends a hint so a missing SSR text node is seeded in place.
+// Build one DOM lookup path: an adjacent sibling walks from the previous
+// access with `_next`, otherwise the lookup starts over from the parent with
+// `_child` or `_nthChild`. `is_text` appends a hint so a missing SSR text node
+// is seeded in place.
 fn gen_access_path<'a>(
   context: &CodegenContext<'a>,
   from: Expression<'a>,
-  element_index: i32,
-  prev: &Option<(String, i32, bool)>,
+  access: &IRDynamicAccess,
+  prev: Option<&str>,
   is_text: bool,
 ) -> Expression<'a> {
   let ast = context.ast;
-  if let Some(prev) = prev {
-    return if element_index - prev.1 == 1 {
-      gen_access_call(
-        context,
-        "_next",
-        vec![
-          context
-            .ast
-            .expression_identifier(SPAN, context.ast.str(&prev.0)),
-        ],
-        is_text,
-      )
-    } else {
-      gen_access_call(
-        context,
-        "_nthChild",
-        vec![
-          from,
-          ast.expression_numeric_literal(SPAN, element_index as f64, None, NumberBase::Decimal),
-        ],
-        is_text,
-      )
-    };
+  if access.adjacent {
+    return gen_access_call(
+      context,
+      "_next",
+      vec![ast.expression_identifier(SPAN, ast.str(prev.unwrap()))],
+      is_text,
+    );
   }
 
-  if element_index == 0 {
+  if access.index == 0 {
     return gen_access_call(context, "_child", vec![from], is_text);
   }
 
   // adjacent to the first child: chain off it instead of an indexed lookup
-  if element_index == 1 {
+  if access.index == 1 {
     let first_child = gen_access_call(context, "_child", vec![from], false);
-    gen_access_call(context, "_next", vec![first_child], is_text)
-  } else {
-    gen_access_call(
-      context,
-      "_nthChild",
-      vec![
-        from,
-        ast.expression_numeric_literal(SPAN, element_index as f64, None, NumberBase::Decimal),
-      ],
-      is_text,
-    )
+    return gen_access_call(context, "_next", vec![first_child], is_text);
   }
+
+  gen_access_call(
+    context,
+    "_nthChild",
+    vec![
+      from,
+      ast.expression_numeric_literal(SPAN, access.index as f64, None, NumberBase::Decimal),
+    ],
+    is_text,
+  )
 }
 
 fn gen_access_call<'a>(
@@ -416,109 +328,4 @@ fn gen_access_call<'a>(
     arguments,
     false,
   )
-}
-
-// Only inline a placeholder when materializing it would not save a parent
-// lookup. If its child tree needs the parent more than once, keep p* so the
-// generated code does not duplicate _child/_nthChild work.
-fn can_inline_placehoder(dynamic: &IRDynamicInfo) -> bool {
-  dynamic.has_dynamic_child && count_parent_access_usages(dynamic) == 1
-}
-
-// A following access can reuse the current placeholder cursor only when it is
-// the next DOM sibling. Gapped siblings need _nthChild(parent, index) instead.
-// Kept in lockstep with genChildren's traversal rules.
-fn has_adjacent_following_access_child(children: &[IRDynamicInfo], offset: i32) -> bool {
-  let mut future_offset = offset;
-  for (i, child) in children.iter().enumerate() {
-    if child.flags & DynamicFlag::NonTemplate as i32 > 0 {
-      future_offset -= 1;
-    }
-    // appends produce no access and occupy no element slot; anchored inserts
-    // locate their `<!>` placeholder and always carry REFERENCED
-    if child.flags & DynamicFlag::Insert as i32 > 0 && child.anchor.is_none() {
-      continue;
-    }
-    if child.flags & DynamicFlag::Referenced as i32 > 0 || child.has_dynamic_child {
-      return i as i32 + future_offset - offset == 0;
-    }
-  }
-
-  false
-}
-
-// Mirrors genChildren's traversal closely enough to count how many emitted
-// access paths would start from this placeholder's parent. This is the guard
-// that keeps inline placeholders from duplicating parent lookups.
-fn count_parent_access_usages(dynamic: &IRDynamicInfo) -> i32 {
-  let mut usages = 0;
-  let mut offset = 0;
-  let mut prev: Option<(i32, bool)> = None;
-
-  for (index, child) in dynamic.children.iter().enumerate() {
-    if child.flags & DynamicFlag::NonTemplate as i32 > 0 {
-      offset -= 1;
-    }
-
-    if child.flags & DynamicFlag::Insert as i32 > 0
-      && child.template.is_some()
-      && child.anchor.is_none()
-    {
-      // trailing template-inserts append without locating anything; anchored
-      // ones fall through to the generic path, which resolves their id to
-      // `child.anchor` exactly like genChildren does
-      continue;
-    }
-
-    let id = if child.flags & DynamicFlag::Referenced as i32 > 0 {
-      if child.flags & DynamicFlag::Insert as i32 > 0 {
-        child.anchor
-      } else {
-        child.id
-      }
-    } else {
-      None
-    };
-
-    if id.is_none() && !child.has_dynamic_child {
-      continue;
-    }
-
-    let element_index = index as i32 + offset;
-    let uses_parent = if let Some(prev) = prev {
-      (element_index - prev.0) != 1
-    } else {
-      true
-    };
-    let inline_placeholder = id.is_none()
-      && child.template.is_none()
-      && child.operation.is_none()
-      && child.flags & (DynamicFlag::Insert as i32 | DynamicFlag::NonTemplate as i32) == 0
-      && can_inline_placehoder(child);
-
-    if inline_placeholder {
-      if let Some(prev_state) = prev
-        && prev_state.1
-      {
-        if uses_parent {
-          usages += 1;
-        }
-        prev = Some((element_index, true));
-        continue;
-      }
-
-      if !has_adjacent_following_access_child(&dynamic.children[index + 1..], offset) {
-        if uses_parent {
-          usages += 1;
-        }
-        continue;
-      }
-    }
-
-    if uses_parent {
-      usages += 1;
-    }
-    prev = Some((element_index, id.is_none()));
-  }
-  usages
 }

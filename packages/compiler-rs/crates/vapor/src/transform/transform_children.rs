@@ -6,7 +6,7 @@ use oxc_span::{GetSpan, SPAN, Span};
 
 use crate::{
   ir::index::{
-    BlockIRNode, DynamicFlag, IRDynamicInfo, InsertNodeIRNode,
+    BlockIRNode, DynamicAccess, DynamicFlag, IRDynamicAccess, IRDynamicInfo, InsertNodeIRNode,
     OperationNode::{self},
   },
   transform::{
@@ -345,6 +345,86 @@ fn process_dynamic_children<'a>(
     } else if child.flags & DynamicFlag::NonTemplate as i32 == 0 {
       unit_index += 1;
     }
+  }
+
+  if context_block.dynamic.has_dynamic_child {
+    plan_access(unsafe { &mut *children });
+  }
+}
+
+/// Decide how codegen reaches each child it has to hold on to, now that the
+/// children's flags, anchors and own plans are final. Static, absent and
+/// appended children need no lookup; a child created by its own operation is
+/// reached through its anchor at most. Adjacent lookups chain off the previous
+/// one with `_next`; a placeholder gets a variable only when a lookup chains
+/// off it, otherwise it is written inline into its single descendant lookup.
+fn plan_access(children: &mut [IRDynamicInfo]) {
+  let mut index = 0;
+  let mut prev: Option<IRDynamicAccess> = None;
+  // a placeholder nothing has chained off yet: open until the next template
+  // sibling shows whether it needs a lookup
+  let mut pending: Option<usize> = None;
+
+  for i in 0..children.len() {
+    let child = &children[i];
+    if child.flags & DynamicFlag::NonTemplate as i32 != 0 {
+      continue;
+    }
+
+    let id = child.anchor.or(child.id);
+    // lookups the child's own children make from it rather than from a sibling
+    let mut uses = 0;
+    if id.is_none() && child.has_dynamic_child {
+      for child in &child.children {
+        if let Some(access) = child.access
+          && !access.adjacent
+        {
+          uses += 1;
+        }
+      }
+    }
+
+    if id.is_none() && uses == 0 {
+      // static: nothing will chain off a pending placeholder
+      pending = None;
+      index += 1;
+      continue;
+    }
+
+    if let Some(pending) = pending.take() {
+      // this lookup chains off the placeholder, so it is worth a variable
+      if let Some(access) = &mut children[pending].access {
+        access.kind = DynamicAccess::Placeholder;
+      }
+      prev = children[pending].access;
+    }
+    let reusable = prev.is_some_and(|prev| prev.kind != DynamicAccess::Reference);
+    let kind = if id.is_some() {
+      DynamicAccess::Reference
+    } else if uses > 1 {
+      if reusable {
+        DynamicAccess::Reuse
+      } else {
+        DynamicAccess::Placeholder
+      }
+    } else if reusable {
+      DynamicAccess::InlineReuse
+    } else {
+      DynamicAccess::Inline
+    };
+    let access = IRDynamicAccess {
+      kind,
+      index,
+      adjacent: prev.is_some_and(|prev| index == prev.index + 1),
+      id,
+    };
+    children[i].access = Some(access);
+    if kind == DynamicAccess::Inline {
+      pending = Some(i);
+    } else {
+      prev = Some(access);
+    }
+    index += 1;
   }
 }
 
