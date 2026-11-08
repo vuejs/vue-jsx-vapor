@@ -368,6 +368,7 @@ fn is_stable_template_slot_root(template: Option<i32>, context: &CodegenContext)
     .options
     .templates
     .borrow()
+    .entries
     .get(template as usize)
     .is_some_and(|entry| !entry.content.is_empty())
 }

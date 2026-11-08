@@ -1,7 +1,6 @@
 use common::ast::RootNode;
 use common::directive::{Directives, Modifiers};
 use common::expression::get_constant_expression_text;
-use common::options::Template;
 pub use common::options::TransformOptions;
 use napi::bindgen_prelude::Either3;
 use oxc_allocator::{Allocator, TakeIn};
@@ -450,21 +449,12 @@ impl<'a> TransformContext<'a> {
   /// runtime parses the string in. It is not the tag's: inside `<svg>` even a
   /// `tbody` is svg, and an html tag at an integration point is html.
   pub fn push_template(&self, content: String, ns: i32, _static: bool) -> i32 {
-    let len = self.options.templates.borrow().len();
     let root = *self.template_root.borrow();
-    let existing = self.options.templates.borrow().iter().position(|i| {
-      i.content.eq(&content) && i.root.eq(&root) && i._static.eq(&_static) && i.ns.eq(&ns)
-    });
-    if let Some(existing) = existing {
-      return existing as i32;
-    }
-    self.options.templates.borrow_mut().push(Template {
-      content,
-      root,
-      ns,
-      _static,
-    });
-    len as i32
+    self
+      .options
+      .templates
+      .borrow_mut()
+      .intern(content, ns, root, _static)
   }
 
   pub fn register_template(&self, block: &mut BlockIRNode<'a>, ns: i32, _static: bool) -> i32 {

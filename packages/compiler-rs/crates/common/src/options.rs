@@ -46,10 +46,35 @@ pub struct Template {
   pub _static: bool,
 }
 
+#[derive(Default)]
+pub struct TemplateRegistry {
+  pub entries: Vec<Template>,
+  indexes: HashMap<String, usize>,
+}
+
+impl TemplateRegistry {
+  pub fn intern(&mut self, content: String, ns: i32, root: bool, is_static: bool) -> i32 {
+    let key = format!("{ns}:{}{}{content}", root as i32, is_static as i32);
+    if let Some(existing) = self.indexes.get(&key) {
+      return *existing as i32;
+    }
+
+    let index = self.entries.len();
+    self.entries.push(Template {
+      content,
+      ns,
+      root,
+      _static: is_static,
+    });
+    self.indexes.insert(key, index);
+    index as i32
+  }
+}
+
 pub struct TransformOptions<'a> {
   pub allocator: Allocator,
   pub semantic: RefCell<Semantic<'a>>,
-  pub templates: RefCell<Vec<Template>>,
+  pub templates: RefCell<TemplateRegistry>,
   pub helpers: RefCell<BTreeSet<&'a str>>,
   pub delegates: RefCell<BTreeSet<&'a str>>,
   pub hoists: RefCell<Vec<Expression<'a>>>,
@@ -87,7 +112,7 @@ impl<'a> Default for TransformOptions<'a> {
       source_text: RefCell::new(""),
       filename: "index.jsx",
       source_type: RefCell::new(SourceType::jsx()),
-      templates: RefCell::new(vec![]),
+      templates: RefCell::new(TemplateRegistry::default()),
       helpers: RefCell::new(BTreeSet::new()),
       delegates: RefCell::new(BTreeSet::new()),
       hoists: RefCell::new(vec![]),

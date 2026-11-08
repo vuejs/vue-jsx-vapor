@@ -267,7 +267,7 @@ impl<'a> Transform<'a> {
       }
     }
 
-    let templates = self.options.templates.take();
+    let templates = self.options.templates.take().entries;
     let template_len = templates.len();
     if template_len > 0 {
       let template_statements = templates

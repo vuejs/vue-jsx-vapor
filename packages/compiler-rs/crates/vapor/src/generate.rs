@@ -225,7 +225,7 @@ impl<'a> CodegenContext<'a> {
     if !self.options.delegates.borrow().is_empty() {
       self.options.helper("_delegateEvents");
     }
-    if !&self.options.templates.borrow().is_empty() {
+    if !&self.options.templates.borrow().entries.is_empty() {
       self.options.helper("_template");
     }
 
