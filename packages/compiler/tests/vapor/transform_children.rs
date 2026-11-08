@@ -208,7 +208,7 @@ fn inline_placeholder_when_branching_access_paths_share_one_parent_access() {
 }
 
 #[test]
-fn reuse_cursor_assignment_for_non_adjacent_following_access_path() {
+fn inline_placeholders_nothing_chains_off() {
   let code = transform(
     "<div>
       <div><span>{{ first }}</span></div>
@@ -222,23 +222,64 @@ fn reuse_cursor_assignment_for_non_adjacent_following_access_path() {
   )
   .code;
 
-  assert!(code.contains("let _p0 = _child("));
-  assert!(code.contains("const _n0 = _child(_p0);"));
-  assert!(code.contains("const _n1 = _child(_p0 = _nthChild("));
+  // the static sibling means neither lookup can continue from a cursor
+  assert!(code.contains("const _n0 = _child(_child(_n2));"));
+  assert!(code.contains("const _n1 = _child(_nthChild(_n2, 2));"));
+  assert!(!code.contains("_p0"));
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx/vapor";
   import { child as _child, nthChild as _nthChild, template as _template, txt as _txt } from "vue";
   const _t0 = _template("<div><div><span> </div><i></i><div><span> ", 1);
   (() => {
   	const _n2 = _t0();
-  	let _p0 = _child(_n2);
-  	const _n0 = _child(_p0);
-  	const _n1 = _child(_p0 = _nthChild(_n2, 2));
+  	const _n0 = _child(_child(_n2));
+  	const _n1 = _child(_nthChild(_n2, 2));
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, () => ({ first }));
   	const _x1 = _txt(_n1);
   	_setNodes(_x1, () => ({ second }));
   	return _n2;
+  })();
+  "#);
+}
+
+#[test]
+fn reuse_cursor_assignment_for_non_adjacent_following_access_path() {
+  let code = transform(
+    "<div>
+      <div><span>{{ first }}</span></div>
+      <div><span>{{ second }}</span></div>
+      <i></i>
+      <div><span>{{ third }}</span></div>
+    </div>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+
+  assert!(code.contains("let _p0 = _child("));
+  assert!(code.contains("const _n0 = _child(_p0);"));
+  assert!(code.contains("const _n1 = _child(_p0 = _next(_p0));"));
+  assert!(code.contains("const _n2 = _child(_p0 = _nthChild(_n3, 3));"));
+  assert_snapshot!(code, @r#"
+  import { setNodes as _setNodes } from "/vue-jsx/vapor";
+  import { child as _child, next as _next, nthChild as _nthChild, template as _template, txt as _txt } from "vue";
+  const _t0 = _template("<div><div><span> </div><div><span> </div><i></i><div><span> ", 1);
+  (() => {
+  	const _n3 = _t0();
+  	let _p0 = _child(_n3);
+  	const _n0 = _child(_p0);
+  	const _n1 = _child(_p0 = _next(_p0));
+  	const _n2 = _child(_p0 = _nthChild(_n3, 3));
+  	const _x0 = _txt(_n0);
+  	_setNodes(_x0, () => ({ first }));
+  	const _x1 = _txt(_n1);
+  	_setNodes(_x1, () => ({ second }));
+  	const _x2 = _txt(_n2);
+  	_setNodes(_x2, () => ({ third }));
+  	return _n3;
   })();
   "#);
 }
@@ -261,9 +302,8 @@ fn materialize_placeholder_when_inline_would_duplicate_parent_access() {
   .code;
 
   assert!(code.contains("let _p0 = _child("));
-  assert!(code.contains("let _p1 = _child(_p0);"));
-  assert!(code.contains("const _n0 = _child(_p1);"));
-  assert!(code.contains("const _n1 = _child(_p1 = _nthChild(_p0, 2));"));
+  assert!(code.contains("const _n0 = _child(_child(_p0));"));
+  assert!(code.contains("const _n1 = _child(_nthChild(_p0, 2));"));
   assert!(!code.contains("_nthChild(_child("));
   assert_snapshot!(code, @r#"
   import { setNodes as _setNodes } from "/vue-jsx/vapor";
@@ -272,9 +312,8 @@ fn materialize_placeholder_when_inline_would_duplicate_parent_access() {
   (() => {
   	const _n2 = _t0();
   	let _p0 = _child(_n2);
-  	let _p1 = _child(_p0);
-  	const _n0 = _child(_p1);
-  	const _n1 = _child(_p1 = _nthChild(_p0, 2));
+  	const _n0 = _child(_child(_p0));
+  	const _n1 = _child(_nthChild(_p0, 2));
   	const _x0 = _txt(_n0);
   	_setNodes(_x0, () => ({ first }));
   	const _x1 = _txt(_n1);

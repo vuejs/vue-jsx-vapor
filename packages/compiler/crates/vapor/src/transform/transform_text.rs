@@ -430,7 +430,7 @@ pub fn process_conditional_expression<'a>(
       anchor: None,
       append_index: None,
       operation_index: Some(*context.operation_index.borrow()),
-      effect_index: Some(*context.effect_index.borrow()),
+      effect_index: Some(*context.order.borrow()),
       slot_root: false,
     };
     let _context_block = context_block as *mut BlockIRNode;

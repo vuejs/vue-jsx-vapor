@@ -110,7 +110,7 @@ fn key_with_template_v_if() {
   			return _n12;
   		});
   		return _n10;
-  	}, 517), 261);
+  	}, 517), 269);
   	return _n13;
   })();
   "#);

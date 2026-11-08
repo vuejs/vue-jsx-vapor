@@ -1,12 +1,15 @@
 use common::expression::gen_getter;
+use napi::bindgen_prelude::Either3;
 use oxc_ast::NONE;
-use oxc_ast::ast::{Expression, Statement, VariableDeclarationKind};
+use oxc_ast::ast::{Argument, Expression, PropertyKind, Statement, VariableDeclarationKind};
 use oxc_span::SPAN;
 
 use crate::generate::CodegenContext;
 use crate::generate::block::{gen_block, mark_slot_root_operations};
 use crate::generate::component::gen_raw_props;
 use crate::generate::expression::gen_expression;
+use crate::generate::prop::gen_literal_object_props;
+use crate::ir::component::IRProps;
 use crate::ir::index::{BlockIRNode, SlotOutletIRNode};
 
 pub fn gen_slot_outlet<'a>(
@@ -53,7 +56,7 @@ pub fn gen_slot_outlet<'a>(
                     Some(gen_getter(gen_expression(name, context, None, false), ast).into())
                   },
                   if !props.is_empty()
-                    && let Some(props) = gen_raw_props(props, context)
+                    && let Some(props) = gen_slot_props(props, context)
                   {
                     Some(props.into())
                   } else if fallback.is_some() || flags > 0 {
@@ -99,4 +102,74 @@ pub fn gen_slot_outlet<'a>(
       false,
     ),
   )
+}
+
+fn gen_slot_props<'a>(
+  props: Vec<IRProps<'a>>,
+  context: &'a CodegenContext<'a>,
+) -> Option<Expression<'a>> {
+  if props.is_empty() {
+    return None;
+  }
+  // one group of static keys keeps the plain object shape; every other grouping
+  // has to survive as its own merge argument
+  if props.len() == 1
+    && let Either3::A(group) = &props[0]
+    && group
+      .iter()
+      .all(|prop| matches!(&prop.key, Expression::StringLiteral(_)))
+  {
+    return gen_raw_props(props, context);
+  }
+
+  let ast = &context.ast;
+  let call = |name: &'a str, args: Vec<Argument<'a>>| {
+    ast.expression_call(
+      SPAN,
+      ast.expression_identifier(SPAN, ast.str(context.options.helper(name))),
+      NONE,
+      ast.vec_from_iter(args),
+      false,
+    )
+  };
+  let handler_only =
+    props.len() == 1 && matches!(&props[0], Either3::C(dynamic) if dynamic.handler);
+  let mut groups = Vec::with_capacity(props.len());
+  for group in props {
+    groups.push(match group {
+      Either3::A(group) => gen_literal_object_props(group, context, true),
+      Either3::B(prop) => gen_literal_object_props(vec![prop], context, true),
+      Either3::C(dynamic) => {
+        let value = gen_expression(dynamic.value, context, None, false);
+        if dynamic.handler {
+          call("_toHandlers", vec![value.into()])
+        } else {
+          value
+        }
+      }
+    });
+  }
+  let value = if groups.len() > 1 {
+    // mergeProps normalizes class and style itself
+    call("_mergeProps", groups.into_iter().map(Into::into).collect())
+  } else if handler_only {
+    groups.remove(0)
+  } else {
+    call(
+      "_normalizeProps",
+      vec![call("_guardReactiveProps", vec![groups.remove(0).into()]).into()],
+    )
+  };
+
+  let mut properties = ast.vec();
+  properties.push(ast.object_property_kind_object_property(
+    SPAN,
+    PropertyKind::Init,
+    ast.property_key_static_identifier(SPAN, ast.str("$")),
+    ast.expression_array(SPAN, ast.vec1(gen_getter(value, ast).into())),
+    false,
+    false,
+    false,
+  ));
+  Some(ast.expression_object(SPAN, properties))
 }

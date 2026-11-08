@@ -131,9 +131,9 @@ fn v_slot_with_v_slots() {
   		const _n0 = _createComponent(Comp, { bar: () => _slotProps0.bar }, { $: [() => _normalizeVaporSlots({
   			bar: _slotProps0.bar,
   			default: ({ foo }) => (() => {
-  				const _n0 = _createNodes(() => foo + bar, () => (() => {
-  					const _n2 = _createComponent(Comp, null, _extend((_slotProps0) => {
-  						const _n0 = _createNodes(() => bar, () => _slotProps0.baz);
+  				const _n0 = _createNodes(() => foo + _slotProps0.bar, () => (() => {
+  					const _n2 = _createComponent(Comp, null, _extend((_slotProps1) => {
+  						const _n0 = _createNodes(() => _slotProps0.bar, () => _slotProps1.baz);
   						return _n0;
   					}, { _: 1 }), true);
   					return _n2;

@@ -1,13 +1,11 @@
-use std::{cell::RefCell, rc::Rc};
-
 use napi::{Either, bindgen_prelude::Either3};
 use oxc_allocator::TakeIn;
-use oxc_ast::ast::{JSXChild, JSXElement};
+use oxc_ast::ast::{Expression, JSXChild, JSXElement};
 use oxc_span::SPAN;
 
 use crate::{
   ir::index::{BlockIRNode, DynamicFlag, OperationNode, SlotOutletIRNode},
-  transform::{TransformContext, transform_element::build_props},
+  transform::{GetIndex, GetOrder, TransformContext, transform_element::build_props},
 };
 use common::{
   directive::Directives, expression::jsx_attribute_value_to_expression, patch_flag::VaporSlotFlags,
@@ -20,8 +18,8 @@ pub unsafe fn transform_slot_outlet<'a>(
   context_node: *mut JSXChild<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  get_effect_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
-  get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
+  get_effect_order: GetOrder<'a>,
+  get_operation_index: GetIndex<'a>,
 ) -> Option<Box<dyn FnOnce() + 'a>> {
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     unreachable!()
@@ -40,16 +38,39 @@ pub unsafe fn transform_slot_outlet<'a>(
       unsafe { &mut *(node.as_mut() as *mut _) },
       context,
       unsafe { &mut *context_block_ptr },
-      false,
       true,
-      get_effect_index,
+      true,
+      get_effect_order,
       get_operation_index,
     );
     match props_result.props {
       Either::A(props) => {
         ir_props = props;
       }
-      Either::B(props) => {
+      Either::B(mut props) => {
+        for prop in &mut props {
+          let Expression::StringLiteral(key) = &prop.key else {
+            continue;
+          };
+          let normalize = match key.value.as_str() {
+            "class" => "class",
+            "style" => "style",
+            _ => continue,
+          };
+          if prop.handler || prop.modifier.is_some() {
+            continue;
+          }
+          if prop.values.len() == 1
+            && let Expression::StringLiteral(value) = &mut prop.values[0]
+          {
+            if normalize == "class" {
+              value.value = context.ast.str(value.value.trim());
+              value.raw = None;
+            }
+          } else {
+            prop.normalize = Some(normalize);
+          }
+        }
         ir_props = vec![Either3::A(props)];
       }
     }
@@ -86,7 +107,7 @@ pub unsafe fn transform_slot_outlet<'a>(
       anchor: None,
       append_index: None,
       operation_index: Some(*context.operation_index.borrow()),
-      effect_index: Some(*context.effect_index.borrow()),
+      effect_index: Some(*context.order.borrow()),
     })));
   }))
 }

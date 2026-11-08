@@ -46,10 +46,35 @@ pub struct Template {
   pub _static: bool,
 }
 
+#[derive(Default)]
+pub struct TemplateRegistry {
+  pub entries: Vec<Template>,
+  indexes: HashMap<String, usize>,
+}
+
+impl TemplateRegistry {
+  pub fn intern(&mut self, content: String, ns: i32, root: bool, is_static: bool) -> i32 {
+    let key = format!("{ns}:{}{}{content}", root as i32, is_static as i32);
+    if let Some(existing) = self.indexes.get(&key) {
+      return *existing as i32;
+    }
+
+    let index = self.entries.len();
+    self.entries.push(Template {
+      content,
+      ns,
+      root,
+      _static: is_static,
+    });
+    self.indexes.insert(key, index);
+    index as i32
+  }
+}
+
 pub struct TransformOptions<'a> {
   pub allocator: Allocator,
   pub semantic: RefCell<Semantic<'a>>,
-  pub templates: RefCell<Vec<Template>>,
+  pub templates: RefCell<TemplateRegistry>,
   pub helpers: RefCell<BTreeSet<&'a str>>,
   pub delegates: RefCell<BTreeSet<&'a str>>,
   pub hoists: RefCell<Vec<Expression<'a>>>,
@@ -70,6 +95,11 @@ pub struct TransformOptions<'a> {
   pub in_v_once: RefCell<bool>,
   pub in_vapor: RefCell<i32>,
   pub identifiers: RefCell<HashMap<&'a str, i32>>,
+  // shared by every context of one compile: a JSX element met inside an
+  // expression is compiled as a root of its own, and still has to resolve the
+  // names of the block that contains it
+  pub vapor_identifiers: RefCell<HashMap<&'a str, Vec<Option<Expression<'a>>>>>,
+  pub vapor_slot_props_index: RefCell<i32>,
   pub slot_scopes: RefCell<IndexMap<Span, SlotScope<'a>>>,
   pub cache_index: RefCell<i32>,
   pub key_index: RefCell<i32>,
@@ -87,7 +117,7 @@ impl<'a> Default for TransformOptions<'a> {
       source_text: RefCell::new(""),
       filename: "index.jsx",
       source_type: RefCell::new(SourceType::jsx()),
-      templates: RefCell::new(vec![]),
+      templates: RefCell::new(TemplateRegistry::default()),
       helpers: RefCell::new(BTreeSet::new()),
       delegates: RefCell::new(BTreeSet::new()),
       hoists: RefCell::new(vec![]),
@@ -105,6 +135,8 @@ impl<'a> Default for TransformOptions<'a> {
       in_v_once: RefCell::new(false),
       in_vapor: RefCell::new(0),
       identifiers: RefCell::new(HashMap::new()),
+      vapor_identifiers: RefCell::new(HashMap::new()),
+      vapor_slot_props_index: RefCell::new(0),
       slot_scopes: RefCell::new(IndexMap::new()),
       cache_index: RefCell::new(0),
       key_index: RefCell::new(0),

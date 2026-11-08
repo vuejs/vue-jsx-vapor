@@ -339,3 +339,233 @@ fn error_on_unexpected_cunstom_directive_on_slot() {
     Some(ErrorCodes::VSlotUnexpectedDirectiveOnSlotOutlet.message())
   );
 }
+
+#[test]
+fn slot_outlet_key_is_also_a_slot_prop() {
+  let code = transform(
+    r#"<slot key={id} x={1} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+
+  // same as vdom: the outlet keeps its key as a prop and is keyed as well
+  assert_snapshot!(code, @r#"
+  import { createKeyedFragment as _createKeyedFragment, createSlot as _createSlot } from "vue";
+  (() => {
+  	const _n0 = _createKeyedFragment(() => id, () => {
+  		const _n2 = _createSlot("default", {
+  			key: () => id,
+  			x: 1
+  		});
+  		return _n2;
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn static_slot_outlet_key_is_also_a_slot_prop() {
+  let code = transform(
+    r#"<slot key="s" x={1} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+
+  assert_snapshot!(code, @r#"
+  import { createSlot as _createSlot } from "vue";
+  (() => {
+  	const _n0 = _createSlot("default", {
+  		key: "s",
+  		x: 1
+  	});
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn v_for_slot_outlet_key_is_also_a_slot_prop() {
+  let code = transform(
+    r#"<slot v-for={i in list} key={i} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+
+  // the loop keys the rows itself, so the outlet gets no keyed fragment
+  assert!(!code.contains("_createKeyedFragment"));
+  assert_snapshot!(code, @r#"
+  import { createFor as _createFor, createSlot as _createSlot } from "vue";
+  (() => {
+  	const _n0 = _createFor(() => list, (_for_item0) => {
+  		const _n2 = _createSlot("default", { key: () => _for_item0.value });
+  		return _n2;
+  	}, (i) => i, 16);
+  	return _n0;
+  })();
+  "#);
+}
+
+#[test]
+fn normalizes_static_slot_keys_inside_their_own_getters() {
+  let code = transform(
+    r#"<slot class={classes()} style={styles()} title={title()} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+
+  assert!(
+    code.contains("class: () => _normalizeClass(classes())"),
+    "{code}"
+  );
+  assert!(
+    code.contains("style: () => _normalizeStyle(styles())"),
+    "{code}"
+  );
+  assert!(code.contains("title: () => title()"), "{code}");
+  assert!(!code.contains("_normalizeProps"), "{code}");
+  assert!(!code.contains("_mergeProps"), "{code}");
+}
+
+#[test]
+fn keeps_modified_class_and_style_keys_as_ordinary_props() {
+  let code = transform(
+    r#"<slot class_prop={classes} style_attr={styles} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+
+  assert!(code.contains(r#"".class": () => classes"#), "{code}");
+  assert!(code.contains(r#""^style": () => styles"#), "{code}");
+  assert!(!code.contains("_normalizeClass"), "{code}");
+  assert!(!code.contains("_normalizeStyle"), "{code}");
+}
+
+#[test]
+fn trims_a_static_class_but_not_a_static_style() {
+  let code = transform(
+    r#"<slot class=" a  b " style="color: red" />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+
+  assert!(code.contains(r#"class: "a  b""#), "{code}");
+  assert!(code.contains(r#"style: "color: red""#), "{code}");
+}
+
+#[test]
+fn merges_a_static_and_a_dynamic_class_into_one_normalized_prop() {
+  let code = transform(
+    r#"<slot class="a" class={c} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+
+  assert!(
+    code.contains(r#"class: () => _normalizeClass(["a", c])"#),
+    "{code}"
+  );
+}
+
+#[test]
+fn preserves_the_normalization_boundary_of_a_spread() {
+  for (src, expected) in [
+    (
+      r#"<slot style={s} {...{ title: 't' }} />"#,
+      r#"_mergeProps({ style: s }, { title: "t" })"#,
+    ),
+    (
+      r#"<slot {...{ title: 't' }} style={s} />"#,
+      r#"_mergeProps({ title: "t" }, { style: s })"#,
+    ),
+    (
+      r#"<slot {...{ class: c, style: s }} />"#,
+      "_normalizeProps(_guardReactiveProps({",
+    ),
+    (
+      r#"<slot {...(void 0)} />"#,
+      "_normalizeProps(_guardReactiveProps(void 0))",
+    ),
+    (
+      r#"<slot {...obj} />"#,
+      "_normalizeProps(_guardReactiveProps(obj))",
+    ),
+  ] {
+    let code = transform(
+      src,
+      Some(TransformOptions {
+        vapor: true,
+        ..Default::default()
+      }),
+    )
+    .code;
+    assert!(code.contains(expected), "{src}\n{code}");
+  }
+}
+
+#[test]
+fn slot_listeners_are_props() {
+  let code = transform(
+    r#"<slot onClick={foo} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+
+  assert!(code.contains("onClick: () => foo"), "{code}");
+  assert!(!code.contains("_on("), "{code}");
+}
+
+#[test]
+fn slot_v_on_object_is_a_props_group() {
+  let code = transform(
+    r#"<slot v-on={obj} />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+
+  assert!(code.contains("{ $: [() => _toHandlers(obj)] }"), "{code}");
+}
+
+#[test]
+fn merges_a_slot_listener_with_a_v_on_object() {
+  let code = transform(
+    r#"<slot onClick={foo} v-on={bar} baz="qux" />"#,
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+
+  assert!(
+    code.contains(r#"_mergeProps({ onClick: foo }, _toHandlers(bar), { baz: "qux" })"#),
+    "{code}"
+  );
+}

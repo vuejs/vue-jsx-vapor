@@ -1,4 +1,5 @@
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
+use std::collections::HashMap;
 use std::mem::{self};
 use std::rc::Rc;
 
@@ -12,8 +13,6 @@ use oxc_span::SPAN;
 use crate::generate::CodegenContext;
 use crate::generate::directive::gen_custom_directives;
 use crate::generate::operation::gen_operations;
-use crate::generate::operation::is_select_value_operation;
-use crate::generate::operation::is_v_model_listener;
 use crate::generate::template::gen_self;
 use crate::ir::index::{BlockIRNode, ForIRNode, IRDynamicInfo, IREffect, IfIRNode, OperationNode};
 use common::patch_flag::VaporSlotFlags;
@@ -61,77 +60,49 @@ pub fn gen_block_content<'a>(
     reset_block = Some(context.enter_block(block, unsafe { &mut *context_block }));
   }
 
-  let mut operation_index = 0;
-  let mut effect_index = 0;
-  // Built-in v-model needs to run after initial DOM props are applied. This is
-  // especially important for inputs with a dynamic type, since the runtime
-  // selects the text, checkbox, or radio implementation from the DOM property.
-  let model_operations = Rc::new(RefCell::new(Vec::new()));
-  let deferred_model_operations = Rc::clone(&model_operations);
-  // Listeners on a v-model element are deferred until after the model
-  // application, so their handlers see the value the model already updated,
-  // as in vdom where the directive created hook runs before the props.
-  let block = unsafe { &mut *context_block };
-  block.model_elements = block
-    .operation
-    .iter()
-    .filter_map(|operation| match operation {
-      OperationNode::Directive(operation) if operation.builtin && operation.name == "model" => {
-        Some(operation.element)
-      }
-      _ => None,
-    })
-    .collect();
+  // the flush closure below advances these, so they are shared with it
+  let operation_index = Rc::new(Cell::new(0));
+  let effect_index = Rc::new(Cell::new(0));
   let custom_directives = Rc::new(RefCell::new(IndexMap::new()));
   let deferred_custom_directives = Rc::clone(&custom_directives);
+  let flush_operation_index = Rc::clone(&operation_index);
+  let flush_effect_index = Rc::clone(&effect_index);
   let flush_before_dynamic = Rc::new(RefCell::new(Box::new(
     move |dynamic: &mut IRDynamicInfo<'a>,
           statements: &mut oxc_allocator::Vec<'a, Statement<'a>>| {
       if let Some(operation) = &mut dynamic.operation
-        && let Some((Some(operation_end), Some(effect_end))) = match operation.as_ref() {
-          OperationNode::If(operation) => Some((operation.operation_index, operation.effect_index)),
-          OperationNode::For(operation) => {
-            Some((operation.operation_index, operation.effect_index))
-          }
-          OperationNode::Key(operation) => {
-            Some((operation.operation_index, operation.effect_index))
-          }
-          OperationNode::CreateComponent(operation) => {
-            Some((operation.operation_index, operation.effect_index))
-          }
-          OperationNode::SlotOutlet(operation) => {
-            Some((operation.operation_index, operation.effect_index))
-          }
-          _ => None,
-        }
+        && let Some((operation_end, effect_end)) = operation.as_mut().block_boundary()
+        && let (Some(operation_end), Some(effect_end)) = (*operation_end, *effect_end)
       {
-        if operation_index < operation_end {
+        let effect_end = effect_end as usize;
+        let drained = flush_operation_index.get();
+        if drained < operation_end {
           gen_operations(
             statements,
             unsafe { &mut *context_block }
               .operation
-              .drain(0..operation_end - operation_index)
+              .drain(0..operation_end - drained)
               .collect::<Vec<_>>(),
-            Some(&mut deferred_model_operations.borrow_mut()),
             Some(&mut deferred_custom_directives.borrow_mut()),
             context,
             unsafe { &mut *context_block },
           );
-          operation_index = operation_end
+          flush_operation_index.set(operation_end)
         }
 
-        if effect_index < effect_end {
+        let drained = flush_effect_index.get();
+        if drained < effect_end {
           if let Some(statement) = gen_effects(
             unsafe { &mut *context_block }
               .effect
-              .drain(0..effect_end - effect_index)
+              .drain(0..effect_end - drained)
               .collect::<_>(),
             context,
             context_block,
           ) {
             statements.push(statement);
           };
-          effect_index = effect_end
+          flush_effect_index.set(effect_end)
         }
       };
     },
@@ -147,16 +118,25 @@ pub fn gen_block_content<'a>(
     );
   }
 
+  let (deferred_operation_index, deferred_effect_index) = {
+    let block = unsafe { &*context_block };
+    (block.deferred_operation_index, block.deferred_effect_index)
+  };
   gen_operations(
     &mut statements,
-    mem::take(&mut unsafe { &mut *context_block }.operation),
-    Some(&mut model_operations.borrow_mut()),
+    unsafe { &mut *context_block }
+      .operation
+      .drain(0..deferred_operation_index - operation_index.get())
+      .collect(),
     Some(&mut custom_directives.borrow_mut()),
     context,
     unsafe { &mut *context_block },
   );
   if let Some(statement) = gen_effects(
-    mem::take(&mut unsafe { &mut *context_block }.effect),
+    unsafe { &mut *context_block }
+      .effect
+      .drain(0..deferred_effect_index - effect_index.get())
+      .collect(),
     context,
     context_block,
   ) {
@@ -165,27 +145,17 @@ pub fn gen_block_content<'a>(
   if let Some(gen_extra_frag) = gen_effects_extra_frag {
     gen_extra_frag(&mut statements, unsafe { &mut *context_block })
   }
-  // the deferred operations emit without diverting again
-  unsafe { &mut *context_block }.model_elements.clear();
-  unsafe { &mut *context_block }.select_value_elements.clear();
+  // v-model directives and the listeners of their elements, see
+  // `TransformContext::finalize_block`
   gen_operations(
     &mut statements,
-    mem::take(&mut model_operations.borrow_mut()),
-    None,
-    None,
-    context,
-    unsafe { &mut *context_block },
-  );
-  gen_operations(
-    &mut statements,
-    mem::take(&mut unsafe { &mut *context_block }.deferred_operations),
-    None,
+    mem::take(&mut unsafe { &mut *context_block }.operation),
     None,
     context,
     unsafe { &mut *context_block },
   );
   if let Some(statement) = gen_effects(
-    mem::take(&mut unsafe { &mut *context_block }.deferred_effects),
+    mem::take(&mut unsafe { &mut *context_block }.effect),
     context,
     context_block,
   ) {
@@ -231,30 +201,10 @@ fn gen_effects<'a>(
   let mut operations_count = 0;
 
   for effect in effects {
-    // a fresh borrow per access - the &mut passed to gen_operations below
-    // lives for the block lifetime, so a held reference would conflict
-    let model_elements = unsafe { &(*context_block).model_elements };
-    let select_value_elements = unsafe { &(*context_block).select_value_elements };
-    if !effect.operations.is_empty()
-      && effect.operations.iter().all(|operation| {
-        is_v_model_listener(operation, model_elements)
-          || is_select_value_operation(operation, select_value_elements)
-      })
-    {
-      // deferred until the state they depend on is in place: the model
-      // application and the children (a select's options)
-      unsafe { (*context_block).deferred_effects.push(effect) };
-      continue;
-    }
     operations_count += effect.operations.len();
-    gen_operations(
-      &mut statements,
-      effect.operations,
-      None,
-      None,
-      context,
-      unsafe { &mut *context_block },
-    );
+    gen_operations(&mut statements, effect.operations, None, context, unsafe {
+      &mut *context_block
+    });
   }
 
   if operations_count > 0 {
@@ -292,14 +242,19 @@ fn gen_effects<'a>(
   }
 }
 
-pub fn mark_slot_root_operations<'a>(block: &mut BlockIRNode<'a>, context: &CodegenContext<'a>) {
-  if has_stable_slot_root(block, context) {
-    return;
+// Marks the root operations of a slot block that has no stable root, and
+// returns whether it has one (nothing is marked then).
+pub fn mark_slot_root_operations<'a>(
+  block: &mut BlockIRNode<'a>,
+  context: &CodegenContext<'a>,
+) -> bool {
+  let roots = get_returned_dynamic_indices(block);
+  if has_stable_slot_root(block, &roots, context) {
+    return true;
   }
 
-  let block_ptr = block as *mut _;
-  for returned in block.returns.iter() {
-    let Some(child) = find_returned_dynamic(unsafe { &mut *block_ptr }, *returned) else {
+  for root in roots {
+    let Some(child) = root.and_then(|index| block.dynamic.children.get_mut(index)) else {
       continue;
     };
     let Some(operation) = &mut child.operation else {
@@ -319,6 +274,7 @@ pub fn mark_slot_root_operations<'a>(block: &mut BlockIRNode<'a>, context: &Code
       _ => {}
     }
   }
+  false
 }
 
 fn mark_slot_root_if<'a>(operation: &mut IfIRNode<'a>, context: &CodegenContext<'a>) {
@@ -331,7 +287,9 @@ fn mark_slot_root_if<'a>(operation: &mut IfIRNode<'a>, context: &CodegenContext<
     return;
   };
   match negative.as_mut() {
-    Either::A(negative) => mark_slot_root_operations(negative, context),
+    Either::A(negative) => {
+      mark_slot_root_operations(negative, context);
+    }
     Either::B(negative) => mark_slot_root_if(negative, context),
   }
 }
@@ -354,37 +312,52 @@ pub fn find_returned_dynamic<'a>(
     .find(|child| child.id.is_some_and(|i| i == id))
 }
 
+// the dynamic info of each returned root, in `returns` order
+fn get_returned_dynamic_indices(block: &BlockIRNode) -> Vec<Option<usize>> {
+  let children = &block.dynamic.children;
+  let mut by_id: HashMap<i32, usize> = HashMap::with_capacity(children.len());
+  for (index, child) in children.iter().enumerate() {
+    if let Some(id) = child.id {
+      by_id.insert(id, index);
+    }
+  }
+  block
+    .returns
+    .iter()
+    .map(|id| by_id.get(id).copied())
+    .collect()
+}
+
 // A slot can skip fallback/boundary tracking when at least one root is stable.
 // Components count as valid even if their own render result is a comment.
-pub fn has_stable_slot_root<'a>(block: &mut BlockIRNode<'a>, context: &CodegenContext<'a>) -> bool {
-  let mut has_valid_root = false;
-  let block_ptr = block as *mut BlockIRNode;
-  for id in block.returns.iter() {
-    let Some(child) = find_returned_dynamic(unsafe { &mut *block_ptr }, *id) else {
+fn has_stable_slot_root<'a>(
+  block: &BlockIRNode<'a>,
+  roots: &[Option<usize>],
+  context: &CodegenContext<'a>,
+) -> bool {
+  for &root in roots {
+    let Some(child) = root.and_then(|index| block.dynamic.children.get(index)) else {
       continue;
     };
-    let Some(operation) = child.operation.as_mut() else {
+    let Some(operation) = &child.operation else {
       if is_stable_template_slot_root(child.template, context) {
-        has_valid_root = true
+        return true;
       }
       continue;
     };
 
-    match operation.as_mut() {
-      OperationNode::CreateComponent(_) => {
-        has_valid_root = true;
-        continue;
-      }
+    match operation.as_ref() {
+      OperationNode::CreateComponent(_) => return true,
       OperationNode::Key(operation) => {
-        if has_stable_slot_root(&mut operation.block, context) {
-          has_valid_root = true;
-          continue;
+        let nested = get_returned_dynamic_indices(&operation.block);
+        if has_stable_slot_root(&operation.block, &nested, context) {
+          return true;
         }
       }
       _ => {}
     }
   }
-  has_valid_root
+  false
 }
 
 fn is_stable_template_slot_root(template: Option<i32>, context: &CodegenContext) -> bool {
@@ -395,6 +368,7 @@ fn is_stable_template_slot_root(template: Option<i32>, context: &CodegenContext)
     .options
     .templates
     .borrow()
+    .entries
     .get(template as usize)
     .is_some_and(|entry| !entry.content.is_empty())
 }

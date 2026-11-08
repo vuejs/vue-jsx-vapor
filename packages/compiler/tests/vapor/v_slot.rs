@@ -486,11 +486,63 @@ fn dynamic_slots_name_with_v_for() {
 import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx/vapor";
 import { createForSlots as _createForSlots } from "vue";
 (() => {
-	const _n2 = _createComponent(Comp, null, { $: [_createForSlots(() => list, (_for_item0) => (_slotProps1) => {
-		const _n0 = _createNodes(() => _slotProps1.bar);
+	const _n2 = _createComponent(Comp, null, { $: [_createForSlots(() => list, (_for_item0) => (_slotProps0) => {
+		const _n0 = _createNodes(() => _slotProps0.bar);
 		return _n0;
 	}, (_for_raw_item0) => _for_raw_item0)] }, true);
 	return _n2;
+})();
+"#);
+}
+
+#[test]
+fn slot_props_resolve_inside_an_element_expression() {
+  let code = transform(
+    "<Comp v-slot={{ Foo }}>{<Foo />}</Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+import { createNodes as _createNodes, createComponent as _createComponent } from "/vue-jsx/vapor";
+import { extend as _extend } from "vue";
+(() => {
+	const _n1 = _createComponent(Comp, null, _extend((_slotProps0) => {
+		const _n0 = _createNodes(() => (() => {
+			const _n0 = _createComponent(_slotProps0.Foo, null, null, true);
+			return _n0;
+		})());
+		return _n0;
+	}, { _: 1 }), true);
+	return _n1;
+})();
+"#);
+
+  let code = transform(
+    "<Comp v-slot={{ Foo }}><div>{<Foo />}</div></Comp>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+import { setNodes as _setNodes, createComponent as _createComponent } from "/vue-jsx/vapor";
+import { template as _template, txt as _txt } from "vue";
+const _t0 = _template("<div> ");
+(() => {
+	const _n1 = _createComponent(Comp, null, (_slotProps0) => {
+		const _n0 = _t0();
+		const _x0 = _txt(_n0);
+		_setNodes(_x0, () => (() => {
+			const _n0 = _createComponent(_slotProps0.Foo, null, null, true);
+			return _n0;
+		})());
+		return _n0;
+	}, true);
+	return _n1;
 })();
 "#);
 }
@@ -1153,7 +1205,8 @@ fn root_slot_outlet_with_dynamic_key_tracks_keyed_fragment_and_outlet() {
   )
   .code;
 
-  assert!(code.contains("_createSlot(\"default\", null, null, 4)"));
+  // the key is also a slot prop, like vdom
+  assert!(code.contains("_createSlot(\"default\", { key: () => key }, null, 4)"));
   assert!(code.contains("_createKeyedFragment(() => key"));
 
   assert_snapshot!(code, @r#"
@@ -1162,7 +1215,7 @@ fn root_slot_outlet_with_dynamic_key_tracks_keyed_fragment_and_outlet() {
   (() => {
   	const _n3 = _createComponent(Comp, null, _extend(() => {
   		const _n0 = _createKeyedFragment(() => key, () => {
-  			const _n2 = _createSlot("default", null, null, 4);
+  			const _n2 = _createSlot("default", { key: () => key }, null, 4);
   			return _n2;
   		}, true);
   		return _n0;

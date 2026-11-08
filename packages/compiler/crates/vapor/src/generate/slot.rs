@@ -15,7 +15,7 @@ use oxc_span::{GetSpan, SPAN};
 use crate::{
   generate::{
     CodegenContext,
-    block::{gen_block, has_stable_slot_root, mark_slot_root_operations},
+    block::{gen_block, mark_slot_root_operations},
     expression::gen_expression,
   },
   ir::{
@@ -568,7 +568,7 @@ fn gen_slot_block_with_props<'a>(
       Expression::ObjectExpression(_) => {
         props_ast = Some(props);
         let scope = context.enter_scope();
-        props_name = Cow::Owned(format!("_slotProps{}", scope.0));
+        props_name = Cow::Owned(format!("_slotProps{}", context.next_slot_props_index()));
         exit_scope = Some(scope.1);
       }
       // `v-slot="{ a } = { a: 1 }"`: the props pattern carries its own default,
@@ -581,7 +581,7 @@ fn gen_slot_block_with_props<'a>(
       {
         props_ast = Some(props);
         let scope = context.enter_scope();
-        props_name = Cow::Owned(format!("_slotProps{}", scope.0));
+        props_name = Cow::Owned(format!("_slotProps{}", context.next_slot_props_index()));
         exit_scope = Some(scope.1);
       }
       Expression::Identifier(props) => {
@@ -600,10 +600,7 @@ fn gen_slot_block_with_props<'a>(
   );
 
   let ast = &context.ast;
-  let has_stable_root = has_stable_slot_root(&mut oper, context);
-  if !has_stable_root {
-    mark_slot_root_operations(&mut oper, context);
-  }
+  let has_stable_root = mark_slot_root_operations(&mut oper, context);
   let exit_slot_block = context.enter_slot_block();
   let mut block_fn = context.with_id(
     || {

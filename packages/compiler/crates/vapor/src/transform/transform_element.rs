@@ -17,10 +17,11 @@ use crate::{
     },
   },
   transform::{
-    DirectiveTransformResult, NsContext, TransformContext, transform_key::resolve_static_key,
-    transform_slot_outlet::transform_slot_outlet, transform_transition::transform_transition,
-    v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
-    v_on::transform_v_on, v_show::transform_v_show, v_text::transform_v_text,
+    DirectiveTransformResult, GetIndex, GetOrder, NsContext, TransformContext,
+    transform_key::resolve_static_key, transform_slot_outlet::transform_slot_outlet,
+    transform_transition::transform_transition, v_bind::transform_v_bind, v_html::transform_v_html,
+    v_model::transform_v_model, v_on::transform_v_on, v_show::transform_v_show,
+    v_text::transform_v_text,
   },
 };
 
@@ -49,12 +50,13 @@ pub unsafe fn transform_element<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  let mut effect_index = context_block.effect.len() as i32;
-  let get_effect_index = Rc::new(RefCell::new(Box::new(move || {
-    let current = effect_index;
-    effect_index += 1;
-    current
-  }) as Box<dyn FnMut() -> i32>));
+  // the element's effects are keyed right after its own node, ahead of its
+  // children's, however late they register (see `finalize_block`)
+  let mut effect_order = *context.order.borrow();
+  let get_effect_order = Rc::new(RefCell::new(Box::new(move || {
+    effect_order += 1;
+    effect_order
+  }) as Box<dyn FnMut() -> u64>));
   let mut operation_index = context_block.operation.len() as i32;
   let get_operation_index = Rc::new(RefCell::new(Box::new(move || {
     let current = operation_index;
@@ -71,7 +73,7 @@ pub unsafe fn transform_element<'a>(
         context_node,
         context,
         context_block,
-        get_effect_index,
+        get_effect_order,
         get_operation_index,
       )
     };
@@ -119,7 +121,7 @@ pub unsafe fn transform_element<'a>(
     unsafe { &mut *context_block_ptr },
     is_component,
     false,
-    Rc::clone(&get_effect_index),
+    Rc::clone(&get_effect_order),
     Rc::clone(&get_operation_index),
   );
 
@@ -159,7 +161,7 @@ pub unsafe fn transform_element<'a>(
         context,
         context_block,
         parent_node,
-        Rc::clone(&get_effect_index),
+        Rc::clone(&get_effect_order),
         Rc::clone(&get_operation_index),
       );
     }
@@ -197,12 +199,12 @@ fn is_runtime_only_prop(tag: &str, key: &str) -> bool {
 
 // A select's value only takes effect once its options exist, so unlike an
 // input's it is applied after the children are rendered (#1318).
-fn is_select_value_key(key: &Expression, modifier: Option<&str>) -> bool {
+pub(super) fn is_select_value_key(key: &Expression, modifier: Option<&str>) -> bool {
   matches!(key, Expression::StringLiteral(key) if key.value == "value")
     && (modifier.is_none() || modifier == Some("."))
 }
 
-fn props_may_contain_select_value(props: &[IRProps]) -> bool {
+pub(super) fn props_may_contain_select_value(props: &[IRProps]) -> bool {
   props.iter().any(|props| match props {
     Either3::A(props) => props
       .iter()
@@ -223,8 +225,8 @@ pub fn transform_native_element<'a>(
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   parent_node: &'a mut JSXChild<'a>,
-  get_effect_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
-  get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
+  get_effect_order: GetOrder<'a>,
+  get_operation_index: GetIndex<'a>,
 ) {
   // SVG-ness comes from the namespace, not the tag name: elements like `<a>`
   // exist in both namespaces and take different prop helpers per namespace.
@@ -247,7 +249,7 @@ pub fn transform_native_element<'a>(
           element,
           is_svg,
         }),
-        Some(get_effect_index),
+        Some(get_effect_order),
         Some(Rc::clone(&get_operation_index)),
       )
     }
@@ -323,7 +325,7 @@ pub fn transform_native_element<'a>(
               tag,
               is_svg,
             }),
-            Some(Rc::clone(&get_effect_index)),
+            Some(Rc::clone(&get_effect_order)),
             Some(Rc::clone(&get_operation_index)),
           );
           has_effect = has_effect || is_effect;
@@ -345,7 +347,7 @@ pub fn transform_native_element<'a>(
             element,
             is_svg,
           }),
-          Some(get_effect_index),
+          Some(get_effect_order),
           Some(Rc::clone(&get_operation_index)),
         );
       }
@@ -515,7 +517,7 @@ pub fn transform_component_element<'a>(
   ns: i32,
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
-  get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
+  get_operation_index: GetIndex<'a>,
 ) {
   let dynamic = &mut context_block.dynamic;
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
@@ -543,6 +545,7 @@ pub fn transform_component_element<'a>(
       model_modifiers: None,
       values: vec![static_key.clone_in(context.ast.allocator)],
       dynamic: false,
+      normalize: None,
     };
     match props.first_mut() {
       Some(Either3::A(static_props)) => static_props.push(key_prop),
@@ -567,7 +570,7 @@ pub fn transform_component_element<'a>(
       anchor: None,
       append_index: None,
       operation_index: Some(*context.operation_index.borrow()),
-      effect_index: Some(*context.effect_index.borrow()),
+      effect_index: Some(*context.order.borrow()),
     },
   )));
 
@@ -599,8 +602,8 @@ pub fn build_props<'a>(
   context_block: &'a mut BlockIRNode<'a>,
   is_component: bool,
   collect_name: bool,
-  get_effect_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
-  get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
+  get_effect_order: GetOrder<'a>,
+  get_operation_index: GetIndex<'a>,
 ) -> PropsResult<'a> {
   let node = node as *mut JSXElement;
   let props = &mut (unsafe { &mut *node }).opening_element.attributes;
@@ -662,7 +665,7 @@ pub fn build_props<'a>(
                   element,
                   value,
                 }),
-                Some(Rc::clone(&get_effect_index)),
+                Some(Rc::clone(&get_effect_order)),
                 Some(Rc::clone(&get_operation_index)),
               );
             }
@@ -701,6 +704,7 @@ pub fn build_props<'a>(
               model_modifiers: prop.model_modifiers,
               values: vec![prop.value],
               dynamic: true,
+              normalize: None,
             }));
           } else {
             // other static props
@@ -742,7 +746,7 @@ pub fn transform_prop<'a>(
   node: &'a mut JSXElement<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
+  get_operation_index: GetIndex<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let name = resolve_prop_name(match &prop.name {
     JSXAttributeName::Identifier(name) => name.name.as_str(),
@@ -832,6 +836,7 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
       model_modifiers: result.model_modifiers,
       values: vec![result.value],
       dynamic: false,
+      normalize: None,
     };
     // dynamic keys are always allowed
     let Expression::StringLiteral(key) = &prop.key else {

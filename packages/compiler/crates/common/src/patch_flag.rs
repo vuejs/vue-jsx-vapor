@@ -184,6 +184,9 @@ pub enum VaporBlockShape {
   Empty = 0,
   SingleRoot = 1,
   MultiRoot = 2,
+  /// A `createIf` false branch that is the `v-else-if` rest of the chain: a
+  /// nested `createIf` that renders the chain's later branches.
+  ElseIf = 3,
 }
 
 /**

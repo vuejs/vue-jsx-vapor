@@ -155,7 +155,7 @@ fn work_with_v_if_v_else() {
   		}, () => {
   			const _n7 = _t2();
   			return _n7;
-  		}, 645), 389);
+  		}, 645), 397);
   		return _n0;
   	}, { _: 1 }), true);
   	return _n9;
@@ -196,7 +196,7 @@ fn work_with_condition_expression() {
   		}, () => {
   			const _n6 = _t2();
   			return _n6;
-  		}, 641), 389);
+  		}, 641), 397);
   		return _n0;
   	}, { _: 1 }), true);
   	return _n7;

@@ -255,7 +255,7 @@ fn v_if_and_extra_at_root() {
   	}, () => _createIf(() => bar, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, null, 33), 293);
+  	}, null, 33), 301);
   	const _n6 = _t2();
   	return [_n0, _n6];
   })();
@@ -592,7 +592,7 @@ fn v_if_v_if_else() {
   	}, () => _createIf(() => orNot, () => {
   		const _n4 = _t1();
   		return _n4;
-  	}, null, 33), 293);
+  	}, null, 33), 301);
   	return _n0;
   })();
   "#);
@@ -626,7 +626,7 @@ fn v_if_v_else_if_v_else() {
   	}, () => {
   		const _n10 = _t2();
   		return _n10;
-  	}, 121), 549), 293);
+  	}, 121), 557), 301);
   	return _n0;
   })();
   "#);
@@ -705,7 +705,7 @@ fn comment_between_branches() {
   	}, () => {
   		const _n7 = _t2();
   		return _n7;
-  	}, 613), 293);
+  	}, 613), 301);
   	const _n9 = _t3();
   	return [_n0, _n9];
   })();
@@ -823,6 +823,41 @@ fn error_on_v_else_if_missing_adjacent_v_if_or_v_else_if() {
     "<div v-else-if={foo}/>",
     Some(TransformOptions {
       vapor: true,
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
+      ..Default::default()
+    }),
+  );
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VElseNoAdjacentIf.message())
+  );
+}
+
+// the chain a parent caches must not outlive that parent's children
+#[test]
+fn error_on_v_else_after_a_closed_sibling_parent() {
+  let error = RefCell::new(None);
+  transform(
+    "<div><div><p v-if={foo}/></div><p v-else/></div>",
+    Some(TransformOptions {
+      on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
+      ..Default::default()
+    }),
+  );
+  assert_eq!(
+    *error.borrow(),
+    Some(ErrorCodes::VElseNoAdjacentIf.message())
+  );
+}
+
+// a ternary child lowers to an `If` operation of its own, but it is not a
+// `v-if` directive: a following `v-else` must not attach to it
+#[test]
+fn error_on_v_else_after_a_ternary_sibling() {
+  let error = RefCell::new(None);
+  transform(
+    "<div>{foo ? <i/> : <b/>}<p v-else/></div>",
+    Some(TransformOptions {
       on_error: Box::new(|e, _| *error.borrow_mut() = Some(e)),
       ..Default::default()
     }),

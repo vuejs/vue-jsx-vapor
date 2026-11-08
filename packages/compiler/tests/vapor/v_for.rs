@@ -613,7 +613,7 @@ fn v_for_on_slot_outlet_marks_fragment_block() {
   import { createFor as _createFor, createSlot as _createSlot } from "vue";
   (() => {
   	const _n0 = _createFor(() => list, (_for_item0) => {
-  		const _n2 = _createSlot(() => _for_item0.value.name);
+  		const _n2 = _createSlot(() => _for_item0.value.name, { key: () => _for_item0.value.id });
   		return _n2;
   	}, (item) => item.id, 16);
   	return _n0;
