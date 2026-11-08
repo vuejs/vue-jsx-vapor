@@ -179,7 +179,7 @@ fn drops_v_once_on_a_v_else_if_branch() {
   		const _x4 = _txt(_n4);
   		_setNodes(_x4, () => y);
   		return _n4;
-  	}), 261);
+  	}), 269);
   	return _n0;
   })();
   "#);
@@ -235,7 +235,7 @@ fn keeps_v_once_on_the_head_for_every_branch() {
   		const _x4 = _txt(_n4);
   		_setNodes(_x4, y);
   		return _n4;
-  	}, null, 17), 21);
+  	}, null, 17), 29);
   	return _n0;
   })();
   "#);
@@ -266,7 +266,7 @@ fn keeps_an_inherited_v_once_for_every_branch() {
   		const _x4 = _txt(_n4);
   		_setNodes(_x4, y);
   		return _n4;
-  	}, null, 17), 21);
+  	}, null, 17), 29);
   	return _n5;
   })();
   "#);
@@ -295,7 +295,7 @@ fn does_not_inherit_v_once_through_a_component() {
   			const _x4 = _txt(_n4);
   			_setNodes(_x4, () => y);
   			return _n4;
-  		}, null, 129), 389);
+  		}, null, 129), 397);
   		return _n0;
   	}, { _: 1 }), true, true);
   	return _n6;

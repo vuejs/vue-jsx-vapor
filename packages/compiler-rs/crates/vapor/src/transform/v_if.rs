@@ -220,7 +220,13 @@ pub fn encode_if_block_shape(
   // Pack the true/false branch shapes into one integer so runtime `createIf()`
   // can decode the selected branch with a single bit-mask operation.
   let mut flags = if force_multi_root {
-    VaporBlockShape::MultiRoot as i32 | (VaporBlockShape::MultiRoot as i32) << 2
+    // the false branch is the rest of the chain, which renders its own branches
+    let negative_shape = if negative.is_some_and(|negative| matches!(negative, Either::B(_))) {
+      VaporBlockShape::ElseIf
+    } else {
+      VaporBlockShape::MultiRoot
+    };
+    VaporBlockShape::MultiRoot as i32 | (negative_shape as i32) << 2
   } else {
     get_block_shape(positive) | (get_negative_block_shape(negative) << 2)
   };
@@ -251,7 +257,9 @@ fn get_negative_block_shape(negative: Option<&Either<BlockIRNode, IfIRNode>>) ->
   if let Some(negative) = negative {
     match negative {
       Either::A(block) => get_block_shape(block),
-      Either::B(_) => VaporBlockShape::SingleRoot as i32,
+      // the rest of the chain renders its own branches, so the runtime has to
+      // descend into it instead of claiming this branch's range
+      Either::B(_) => VaporBlockShape::ElseIf as i32,
     }
   } else {
     VaporBlockShape::Empty as i32
