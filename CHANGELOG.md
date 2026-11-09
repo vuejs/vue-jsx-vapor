@@ -1,3 +1,18 @@
+# [3.3.0-rc.6](https://github.com/vuejs/vue-jsx-vapor/compare/v3.3.0-rc.5...v3.3.0-rc.6) (2026-11-09)
+
+### Bug Fixes
+
+- **compiler/vapor:** hydrate a v-if chain by the branch the server ([c15e801](https://github.com/vuejs/vue-jsx-vapor/commit/c15e801ec97a5aeaec3e3f14c8f1c03ed6e514f9))
+- **compiler/vapor:** normalize slot props at compile time ([4787d2c](https://github.com/vuejs/vue-jsx-vapor/commit/4787d2c573e0372c8e7b203e4d16b3ad691f90aa))
+- **compiler/vapor:** pass the key of <slot> as a slot prop like vdom ([906752b](https://github.com/vuejs/vue-jsx-vapor/commit/906752bf533cb4329c93b66497edae6b22b26bbb))
+- **compiler/vapor:** resolve slot props inside an element expression ([098093a](https://github.com/vuejs/vue-jsx-vapor/commit/098093af308de9f31f5a13cca48ec1339ecef1ed))
+- **compiler:** bump [@emnapi](https://github.com/emnapi) to 2.0.0-beta.2 ([43c25dd](https://github.com/vuejs/vue-jsx-vapor/commit/43c25ddfad1afb4ffb3f3c7262f999c40e1f74db))
+
+### Performance Improvements
+
+- **compiler-vapor:** index returned roots per block ([b417a30](https://github.com/vuejs/vue-jsx-vapor/commit/b417a30335773352fe8603cc6fbf136a3cd35e1a))
+- **compiler/vapor:** cache the v-if chain head and tail while ([3b6f2cc](https://github.com/vuejs/vue-jsx-vapor/commit/3b6f2cc8b3a6c17b37c269f265246c245e87b81b))
+
 # [3.3.0-rc.5](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.29...v3.3.0-rc.5) (2026-10-25)
 
 # [3.3.0-rc.4](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.28...v3.3.0-rc.4) (2026-10-18)
