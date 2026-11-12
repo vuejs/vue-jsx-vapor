@@ -5,7 +5,8 @@ exports[`fixtures > ./fixtures/define-component.tsx 1`] = `
 import { useAttrs as __useAttrs } from "vue";
 import { useModel as __useModel } from "/vue-jsx-vapor/macros/use-model";
 import { useFullProps as __useFullProps } from "/vue-jsx-vapor/props";
-import { withAsyncContext as __withAsyncContext } from "vue";import { defineComponent, defineVaporComponent, nextTick, unref } from 'vue'
+import { withAsyncContext as __withAsyncContext } from "vue";
+import { createPropsDefaultProxy as __createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";import { defineComponent, defineVaporComponent, nextTick, unref } from 'vue'
 
 const $ = unref
 
@@ -134,16 +135,11 @@ function useComp(){
 }, })
     return <Comp foo={1} />
 }
-useComp()"
-`;
-
-exports[`fixtures > ./fixtures/define-component-keys.tsx 1`] = `
-"
-import { createPropsDefaultProxy as __createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";import { defineVaporComponent } from 'vue'
+useComp()
 
 const key = 'b'
 
-const Comp = defineVaporComponent(
+const Comp7 = defineVaporComponent(
   (__props) => {
 __props = __createPropsDefaultProxy(__props, {'.qux.a-b': 2});
     return <>{[__props.fooBar, __props.baz, __props["0"], __props.other, __props.qux["a-b"], __props.qux[key]]}</>
@@ -156,24 +152,23 @@ __props = __createPropsDefaultProxy(__props, {'.qux.a-b': 2});
 }, },
 )
 
-const Comp1 = defineVaporComponent((__props) => {
+const Comp8 = defineVaporComponent((__props) => {
   return <>{__props.maxSize}</>
 }, { props: {
 'max-size': null
 }, })
 
-const Comp2 = defineVaporComponent((__props) => {
+const Comp9 = defineVaporComponent((__props) => {
   return <>{__props.size}</>
 }, { props: {
 'size': { type: Number, default: 1 }
 }, })
 
-const Comp3 = defineVaporComponent((__props) => {
+const Comp10 = defineVaporComponent((__props) => {
   return <>{__props["0"]}</>
 }, { props: {
 '0': null
-}, })
-"
+}, })"
 `;
 
 exports[`fixtures > ./fixtures/define-expose.tsx 1`] = `
