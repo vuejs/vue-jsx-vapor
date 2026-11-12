@@ -41,4 +41,16 @@ describe('defineComponent', () => {
       ),
     ).rejects.toThrow('Destructured props cannot use a computed key: [key]')
   })
+
+  test('declares a props member only by a literal key', async () => {
+    const code = (await transformJsxMacros(
+      `const key = 'foo'\ndefineVaporComponent((props) => <div>{props[key]}{props[0]}{props.bar}</div>)`,
+      'computed-member.tsx',
+      new Map(),
+      { include: ['*.tsx'], version: 3.6, ...options },
+    ))!.code
+    expect(code).toContain(`'0': null`)
+    expect(code).toContain(`'bar': null`)
+    expect(code).not.toContain(`'key': null`)
+  })
 })

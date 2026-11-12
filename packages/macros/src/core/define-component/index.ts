@@ -124,20 +124,19 @@ function getWalkedIds(root: FunctionalNode, propsName: string) {
   const walkedIds = new Set<string>()
   walkIdentifiers(root.body, (id, parent) => {
     if (
-      id.name === propsName &&
-      (parent?.type === 'MemberExpression' ||
-        parent?.type === 'JSXMemberExpression' ||
-        parent?.type === 'OptionalMemberExpression')
+      id.name !== propsName ||
+      (parent?.type !== 'MemberExpression' &&
+        parent?.type !== 'JSXMemberExpression' &&
+        parent?.type !== 'OptionalMemberExpression')
     ) {
-      const prop =
-        parent.property.type === 'Identifier' ||
-        parent.property.type === 'JSXIdentifier'
-          ? parent.property.name
-          : parent.property.type === 'StringLiteral'
-            ? parent.property.value
-            : ''
-      if (prop) walkedIds.add(prop)
+      return
     }
+    // A computed key only names a prop when it is a literal.
+    const prop =
+      parent.type === 'JSXMemberExpression'
+        ? parent.property.name
+        : resolveObjectKey(parent.property, parent.computed)
+    if (prop) walkedIds.add(prop)
   })
   return walkedIds
 }
