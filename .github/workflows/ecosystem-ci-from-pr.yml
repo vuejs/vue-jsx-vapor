@@ -50,7 +50,7 @@ jobs:
             return comment.id
 
   execute-selected:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     needs: init
     if: inputs.suite != '-'
@@ -74,7 +74,7 @@ jobs:
           TZ: Asia/Shanghai
 
   execute-all:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     needs: init
     if: inputs.suite == '-'
