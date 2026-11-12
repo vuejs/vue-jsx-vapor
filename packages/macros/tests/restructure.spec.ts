@@ -60,6 +60,15 @@ describe('transform', () => {
     expect(code).toMatchSnapshot()
   })
 
+  test('reconstruct non-identifier keys', () => {
+    const code = transformRestructure(
+      `function App({'foo-bar': foo = 1, ['bar']: bar, 0: baz, [key]: qux, nested: {'a-b': ab = 2, [key]: dyn = 3}, ...rest}){
+        return <>{[foo, bar, baz, qux, ab, dyn, rest]}</>
+      }`,
+    )!
+    expect(code).toMatchSnapshot()
+  })
+
   test('reconstruct AssignmentPattern', () => {
     const code = transformRestructure(
       `function App({foo: {foo = 1} = ({} as any)!, bar: [bar = 2] = []}){

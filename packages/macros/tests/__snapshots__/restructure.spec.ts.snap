@@ -34,6 +34,16 @@ __props1 = __createPropsDefaultProxy(__props1, {'[0]': 'foo'});
       }"
 `;
 
+exports[`transform > reconstruct non-identifier keys 1`] = `
+"
+import { createPropsRestProxy as __createPropsRestProxy } from "vue";
+import { createPropsDefaultProxy as __createPropsDefaultProxy } from "/vue-jsx-vapor/macros/with-defaults";function App(__props){
+const rest = __createPropsRestProxy(__props, ['foo-bar', 'bar', '0', String(key), 'nested']);
+__props = __createPropsDefaultProxy(__props, {'.foo-bar': 1, '.nested.a-b': 2, [\`.nested.\${key}\`]: 3});
+        return <>{[__props["foo-bar"], __props.bar, __props["0"], __props[key], __props.nested["a-b"], __props.nested[key], rest]}</>
+      }"
+`;
+
 exports[`transform > reconstruct rest-prop 1`] = `
 "
 import { createPropsRestProxy as __createPropsRestProxy } from "vue";
