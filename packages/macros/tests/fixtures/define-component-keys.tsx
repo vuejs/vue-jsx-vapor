@@ -4,13 +4,13 @@ const key = 'b'
 
 const Comp = defineVaporComponent(
   ({
-    'foo-bar': fooBar = 1,
+    'foo-bar': bar = 1,
     ['baz']: baz,
     0: zero,
     other,
     qux: { 'a-b': ab = 2, [key]: dynamic },
   }: any) => {
-    return <>{[fooBar, baz, zero, other, ab, dynamic]}</>
+    return <>{[bar, baz, zero, other, ab, dynamic]}</>
   },
 )
 

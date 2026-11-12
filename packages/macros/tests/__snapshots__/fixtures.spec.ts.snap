@@ -149,7 +149,7 @@ __props = __createPropsDefaultProxy(__props, {'.qux.a-b': 2});
     return <>{[__props.fooBar, __props.baz, __props["0"], __props.other, __props.qux["a-b"], __props.qux[key]]}</>
   }, { props: {
 '0': null, 
-'fooBar': { type: Number, default: 1 }, 
+'foo-bar': { type: Number, default: 1 }, 
 'baz': null, 
 'other': null, 
 'qux': null
@@ -159,7 +159,7 @@ __props = __createPropsDefaultProxy(__props, {'.qux.a-b': 2});
 const Comp1 = defineVaporComponent((__props) => {
   return <>{__props.maxSize}</>
 }, { props: {
-'maxSize': null
+'max-size': null
 }, })
 
 const Comp2 = defineVaporComponent((__props) => {

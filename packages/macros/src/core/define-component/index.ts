@@ -1,7 +1,6 @@
 import { walkIdentifiers } from 'ast-kit'
 import { restructure } from '../restructure'
 import {
-  camelize,
   getDefaultValue,
   HELPER_PREFIX,
   importHelperFn,
@@ -52,13 +51,12 @@ export function transformDefineComponent(
       const restructuredProps = root.params[0]
       for (const prop of restructuredProps.properties) {
         if (prop.type !== 'ObjectProperty') continue
-        const key = resolveObjectKey(prop.key, prop.computed)
-        if (key === undefined) {
+        const propName = resolveObjectKey(prop.key, prop.computed)
+        if (propName === undefined) {
           throw new SyntaxError(
             `[vue-jsx-vapor] Destructured props cannot use a computed key: [${s.slice(prop.key.start!, prop.key.end!)}]`,
           )
         }
-        const propName = camelize(key)
         if (prop.value.type !== 'AssignmentPattern') {
           props[propName] = null
           continue
