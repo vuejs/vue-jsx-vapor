@@ -28,7 +28,8 @@ use crate::{
 use common::{
   check::{
     get_directive_name, get_namespace, is_always_close_tag, is_built_in_directive,
-    is_formatting_tag, is_html_annotation_xml, is_ignore_newline_tag, is_native_on, is_void_tag,
+    is_formatting_tag, is_html_annotation_xml, is_ignore_newline_tag, is_known_html_attr,
+    is_native_on, is_void_tag,
   },
   directive::{Directives, resolve_directive, resolve_prop_name},
   dom::is_valid_html_nesting,
@@ -191,10 +192,17 @@ static INPUT_VALUE_DEP_KEYS: [&str; 4] = ["type", "min", "max", "step"];
 //   content; as a content attribute they would only sit on the element and
 //   the content would never be written
 // - `<textarea>` / `<select>` ignore a `value` content attribute, the value
-//   only takes effect as a dom property.
-fn is_runtime_only_prop(tag: &str, key: &str) -> bool {
+//   only takes effect as a dom property
+// - camelCase dom properties like `defaultValue`, which the parser would
+//   lowercase into a dead attribute outside svg (but not `tabIndex`)
+pub(super) fn is_runtime_only_prop(tag: &str, key: &str, ns: i32) -> bool {
   matches!(key, "innerHTML" | "textContent")
     || (key == "value" && (tag == "textarea" || tag == "select"))
+    || (ns != 1
+      && key
+        .find(|c: char| !c.is_ascii_lowercase())
+        .is_some_and(|index| index > 0 && key.as_bytes()[index].is_ascii_uppercase())
+      && !is_known_html_attr(&key.to_ascii_lowercase()))
 }
 
 // A select's value only takes effect once its options exist, so unlike an
@@ -275,7 +283,7 @@ pub fn transform_native_element<'a>(
           && prop.modifier != Some(".")
           && let Some(Expression::StringLiteral(first_value)) = values.first()
           && !DYNAMIC_KEYS.contains(&key.value.as_str())
-          && !is_runtime_only_prop(tag, &key.value)
+          && !is_runtime_only_prop(tag, &key.value, ns)
           && !(is_value_prop && has_value_dep)
         {
           template += " ";
