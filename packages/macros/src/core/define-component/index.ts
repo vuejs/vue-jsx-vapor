@@ -6,6 +6,8 @@ import {
   importHelperFn,
   isFunctionalNode,
   prependFunctionalNode,
+  resolveObjectKey,
+  toStringLiteral,
   type FunctionalNode,
 } from '../utils'
 import { transformAwait } from './await'
@@ -48,9 +50,13 @@ export function transformDefineComponent(
     } else if (root.params[0].type === 'ObjectPattern') {
       const restructuredProps = root.params[0]
       for (const prop of restructuredProps.properties) {
-        if (prop.type !== 'ObjectProperty' || prop.key.type !== 'Identifier')
-          continue
-        const propName = prop.key.name
+        if (prop.type !== 'ObjectProperty') continue
+        const propName = resolveObjectKey(prop.key, prop.computed)
+        if (propName === undefined) {
+          throw new SyntaxError(
+            `[vue-jsx-vapor] Destructured props cannot use a computed key: [${s.slice(prop.key.start!, prop.key.end!)}]`,
+          )
+        }
         if (prop.value.type !== 'AssignmentPattern') {
           props[propName] = null
           continue
@@ -83,6 +89,7 @@ export function transformDefineComponent(
 
       restructure(s, root, {
         skipDefaultProps: true,
+        camelizeKeys: true,
         generateRestProps: (restPropsName, index, list) => {
           if (index === list.length - 1) {
             hasRestProp = true
@@ -97,7 +104,7 @@ export function transformDefineComponent(
   transformDefineModel(s, macros.defineModel, props)
 
   const propsString = Object.entries(props)
-    .map(([key, value]) => `'${key}': ${value}`)
+    .map(([key, value]) => `${toStringLiteral(key)}: ${value}`)
     .join(', \n')
   if (propsString || hasRestProp) {
     const resolvedPropsString = `${hasRestProp ? 'inheritAttrs: false, ' : ''}${propsString ? `props: {\n${propsString}\n}, ` : ''}`
@@ -117,20 +124,19 @@ function getWalkedIds(root: FunctionalNode, propsName: string) {
   const walkedIds = new Set<string>()
   walkIdentifiers(root.body, (id, parent) => {
     if (
-      id.name === propsName &&
-      (parent?.type === 'MemberExpression' ||
-        parent?.type === 'JSXMemberExpression' ||
-        parent?.type === 'OptionalMemberExpression')
+      id.name !== propsName ||
+      (parent?.type !== 'MemberExpression' &&
+        parent?.type !== 'JSXMemberExpression' &&
+        parent?.type !== 'OptionalMemberExpression')
     ) {
-      const prop =
-        parent.property.type === 'Identifier' ||
-        parent.property.type === 'JSXIdentifier'
-          ? parent.property.name
-          : parent.property.type === 'StringLiteral'
-            ? parent.property.value
-            : ''
-      if (prop) walkedIds.add(prop)
+      return
     }
+    // A computed key only names a prop when it is a literal.
+    const prop =
+      parent.type === 'JSXMemberExpression'
+        ? parent.property.name
+        : resolveObjectKey(parent.property, parent.computed)
+    if (prop) walkedIds.add(prop)
   })
   return walkedIds
 }

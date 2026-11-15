@@ -17,23 +17,26 @@ use crate::{
     },
   },
   transform::{
-    DirectiveTransformResult, NsContext, TransformContext, transform_key::resolve_static_key,
-    transform_slot_outlet::transform_slot_outlet, transform_transition::transform_transition,
-    v_bind::transform_v_bind, v_html::transform_v_html, v_model::transform_v_model,
-    v_on::transform_v_on, v_show::transform_v_show, v_text::transform_v_text,
+    DirectiveTransformResult, GetIndex, GetOrder, NsContext, TransformContext,
+    transform_key::resolve_static_key, transform_slot_outlet::transform_slot_outlet,
+    transform_transition::transform_transition, v_bind::transform_v_bind, v_html::transform_v_html,
+    v_model::transform_v_model, v_on::transform_v_on, v_show::transform_v_show,
+    v_text::transform_v_text,
   },
 };
 
 use common::{
   check::{
-    get_directive_name, get_namespace, is_always_close_tag, is_block_tag, is_built_in_directive,
-    is_formatting_tag, is_html_annotation_xml, is_ignore_newline_tag, is_inline_tag, is_native_on,
-    is_void_tag,
+    get_directive_name, get_namespace, is_always_close_tag, is_built_in_directive,
+    is_formatting_tag, is_html_annotation_xml, is_ignore_newline_tag, is_known_html_attr,
+    is_native_on, is_void_tag,
   },
   directive::{Directives, resolve_directive, resolve_prop_name},
   dom::is_valid_html_nesting,
   error::ErrorCodes,
   expression::jsx_attribute_value_to_expression,
+  html_nesting::{is_special_tag, open_scope, pops_open_descendants},
+  patch_flag::VaporSingleRoot,
   text::{camelize, escape_attr_value, get_tag_name},
 };
 
@@ -48,12 +51,13 @@ pub unsafe fn transform_element<'a>(
   let JSXChild::Element(node) = (unsafe { &mut *context_node }) else {
     return None;
   };
-  let mut effect_index = context_block.effect.len() as i32;
-  let get_effect_index = Rc::new(RefCell::new(Box::new(move || {
-    let current = effect_index;
-    effect_index += 1;
-    current
-  }) as Box<dyn FnMut() -> i32>));
+  // the element's effects are keyed right after its own node, ahead of its
+  // children's, however late they register (see `finalize_block`)
+  let mut effect_order = *context.order.borrow();
+  let get_effect_order = Rc::new(RefCell::new(Box::new(move || {
+    effect_order += 1;
+    effect_order
+  }) as Box<dyn FnMut() -> u64>));
   let mut operation_index = context_block.operation.len() as i32;
   let get_operation_index = Rc::new(RefCell::new(Box::new(move || {
     let current = operation_index;
@@ -70,7 +74,7 @@ pub unsafe fn transform_element<'a>(
         context_node,
         context,
         context_block,
-        get_effect_index,
+        get_effect_order,
         get_operation_index,
       )
     };
@@ -79,7 +83,7 @@ pub unsafe fn transform_element<'a>(
   }
   // treat custom elements as components because the template helper cannot
   // resolve them properly; they require creation via createElement
-  let is_custom_element = directives.is_custom_element;
+  let use_create_element = directives.use_create_element;
   let is_component = directives.is_component;
 
   // Resolve this element's namespace (0 = HTML, 1 = SVG, 2 = MathML) from the
@@ -118,7 +122,7 @@ pub unsafe fn transform_element<'a>(
     unsafe { &mut *context_block_ptr },
     is_component,
     false,
-    Rc::clone(&get_effect_index),
+    Rc::clone(&get_effect_order),
     Rc::clone(&get_operation_index),
   );
 
@@ -126,13 +130,23 @@ pub unsafe fn transform_element<'a>(
 
   Some(Box::new(move || {
     if is_component {
+      // Upstream `singleRoot || (context.isSlotRoot && !useCreateElement &&
+      // VaporSingleRoot.SLOT)`: the single root of a slot body layers under
+      // the single root of a component template
+      let root = if single_root {
+        1
+      } else if *context.is_slot_root.borrow() && !use_create_element {
+        VaporSingleRoot::SLOT as i32
+      } else {
+        0
+      };
       transform_component_element(
         tag,
         tag_span,
         props_result,
         static_key,
-        single_root,
-        is_custom_element,
+        root,
+        use_create_element,
         ns,
         context,
         context_block,
@@ -148,7 +162,7 @@ pub unsafe fn transform_element<'a>(
         context,
         context_block,
         parent_node,
-        Rc::clone(&get_effect_index),
+        Rc::clone(&get_effect_order),
         Rc::clone(&get_operation_index),
       );
     }
@@ -178,20 +192,27 @@ static INPUT_VALUE_DEP_KEYS: [&str; 4] = ["type", "min", "max", "step"];
 //   content; as a content attribute they would only sit on the element and
 //   the content would never be written
 // - `<textarea>` / `<select>` ignore a `value` content attribute, the value
-//   only takes effect as a dom property.
-fn is_runtime_only_prop(tag: &str, key: &str) -> bool {
+//   only takes effect as a dom property
+// - camelCase dom properties like `defaultValue`, which the parser would
+//   lowercase into a dead attribute outside svg (but not `tabIndex`)
+pub(super) fn is_runtime_only_prop(tag: &str, key: &str, ns: i32) -> bool {
   matches!(key, "innerHTML" | "textContent")
     || (key == "value" && (tag == "textarea" || tag == "select"))
+    || (ns != 1
+      && key
+        .find(|c: char| !c.is_ascii_lowercase())
+        .is_some_and(|index| index > 0 && key.as_bytes()[index].is_ascii_uppercase())
+      && !is_known_html_attr(&key.to_ascii_lowercase()))
 }
 
 // A select's value only takes effect once its options exist, so unlike an
 // input's it is applied after the children are rendered (#1318).
-fn is_select_value_key(key: &Expression, modifier: Option<&str>) -> bool {
+pub(super) fn is_select_value_key(key: &Expression, modifier: Option<&str>) -> bool {
   matches!(key, Expression::StringLiteral(key) if key.value == "value")
     && (modifier.is_none() || modifier == Some("."))
 }
 
-fn props_may_contain_select_value(props: &[IRProps]) -> bool {
+pub(super) fn props_may_contain_select_value(props: &[IRProps]) -> bool {
   props.iter().any(|props| match props {
     Either3::A(props) => props
       .iter()
@@ -212,8 +233,8 @@ pub fn transform_native_element<'a>(
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
   parent_node: &'a mut JSXChild<'a>,
-  get_effect_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
-  get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
+  get_effect_order: GetOrder<'a>,
+  get_operation_index: GetIndex<'a>,
 ) {
   // SVG-ness comes from the namespace, not the tag name: elements like `<a>`
   // exist in both namespaces and take different prop helpers per namespace.
@@ -236,7 +257,7 @@ pub fn transform_native_element<'a>(
           element,
           is_svg,
         }),
-        Some(get_effect_index),
+        Some(get_effect_order),
         Some(Rc::clone(&get_operation_index)),
       )
     }
@@ -262,7 +283,7 @@ pub fn transform_native_element<'a>(
           && prop.modifier != Some(".")
           && let Some(Expression::StringLiteral(first_value)) = values.first()
           && !DYNAMIC_KEYS.contains(&key.value.as_str())
-          && !is_runtime_only_prop(tag, &key.value)
+          && !is_runtime_only_prop(tag, &key.value, ns)
           && !(is_value_prop && has_value_dep)
         {
           template += " ";
@@ -312,7 +333,7 @@ pub fn transform_native_element<'a>(
               tag,
               is_svg,
             }),
-            Some(Rc::clone(&get_effect_index)),
+            Some(Rc::clone(&get_effect_order)),
             Some(Rc::clone(&get_operation_index)),
           );
           has_effect = has_effect || is_effect;
@@ -334,7 +355,7 @@ pub fn transform_native_element<'a>(
             element,
             is_svg,
           }),
-          Some(get_effect_index),
+          Some(get_effect_order),
           Some(Rc::clone(&get_operation_index)),
         );
       }
@@ -357,13 +378,20 @@ pub fn transform_native_element<'a>(
 
   *context.template_root.borrow_mut() = single_root;
 
-  if let JSXChild::Element(parent_node) = parent_node
-    && let JSXElementName::Identifier(name) = &parent_node.opening_element.name
-    && !is_valid_html_nesting(&name.name, tag)
+  // An element the parser would not place under its parent (`keeps_in_template`,
+  // decided by `transform_children`) gets a template of its own, so does one a
+  // component parent cannot hold: its parent registers it like any other child,
+  // but it must stay off the static path - the server renders it in place, and
+  // the browser's parser drops or moves it, so only the non-static hydration
+  // path can recreate it (`<my-el><td>`). The parent check runs again here on
+  // the tag the element's own transforms left behind.
+  let scope = *context.template_scope.borrow();
+  if parent_cannot_hold(parent_node, tag)
+    || (scope & open_scope::SHARED == 0 && parent_hosts_template(parent_node, context))
   {
     let dynamic = &mut context_block.dynamic;
     context.reference(dynamic);
-    dynamic.template = Some(context.push_template(template, Some(tag), false));
+    dynamic.template = Some(context.push_template(template, ns, false));
     dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
   } else {
     *context.template.borrow_mut() = format!("{}{}", context.template.borrow(), template);
@@ -399,14 +427,34 @@ pub fn get_child_template_close_tags<'a>(
 
   let mut tags = inherited_tags;
   tags.insert(tag);
-  (tags, inherited_blocks || is_inline_tag(tag))
+  // an end tag that pops its open descendants closes everything an outer one
+  // could not, so the inherited state ends here
+  (tags, !pops_open_descendants(tag))
 }
 
-pub fn is_in_same_template_as_parent(tag: &str, parent_tag_name: &str) -> bool {
-  if parent_tag_name.is_empty() || matches!(parent_tag_name, "template") {
+/// Whether the parent element cannot hold `tag` at all, regardless of what is
+/// still open above it (`html_nesting::keeps_in_template`).
+fn parent_cannot_hold(parent_node: &JSXChild<'_>, tag: &str) -> bool {
+  if let JSXChild::Element(parent_node) = parent_node
+    && let JSXElementName::Identifier(name) = &parent_node.opening_element.name
+  {
+    return !is_valid_html_nesting(&name.name, tag);
+  }
+  false
+}
+
+/// Whether the parent writes its children into a template string, i.e. is a
+/// plain element rather than a component, custom element or `<template>`.
+/// `transform_children` restores the parent's directives before the exit
+/// callbacks run, so `parent_directives` holds them here; `parent_node` is what
+/// rules out the fragment a `v-if` or `v-for` wraps a branch in, which is
+/// re-transformed with its own directives still installed.
+fn parent_hosts_template(parent_node: &JSXChild<'_>, context: &TransformContext<'_>) -> bool {
+  if !matches!(parent_node, JSXChild::Element(_)) {
     return false;
   }
-  is_valid_html_nesting(parent_tag_name, tag)
+  let parent = &*context.parent_directives.borrow();
+  !parent.is_component && !parent.tag_name.is_empty() && parent.tag_name != "template"
 }
 
 fn can_omit_end_tag<'a>(
@@ -433,7 +481,7 @@ fn can_omit_end_tag<'a>(
       || (template_close_tags.contains("li") && matches!(tag, "ul" | "ol"))
       || is_always_close_tag(tag)
       || is_formatting_tag(tag)))
-    || (template_close_blocks && is_block_tag(tag))
+    || (template_close_blocks && is_special_tag(tag))
   {
     return false;
   }
@@ -471,12 +519,13 @@ pub fn transform_component_element<'a>(
   tag_span: Span,
   props_result: PropsResult<'a>,
   static_key: Option<Expression<'a>>,
-  single_root: bool,
-  is_custom_element: bool,
+  // 1 = the single root of a component template, 2 = `VaporSingleRoot::SLOT`
+  root: i32,
+  use_create_element: bool,
   ns: i32,
   context: &'a TransformContext<'a>,
   context_block: &mut BlockIRNode<'a>,
-  get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
+  get_operation_index: GetIndex<'a>,
 ) {
   let dynamic = &mut context_block.dynamic;
   dynamic.flags = dynamic.flags | DynamicFlag::NonTemplate as i32 | DynamicFlag::Insert as i32;
@@ -489,7 +538,7 @@ pub fn transform_component_element<'a>(
 
   // KeepAlive needs the explicit key before the component is created.
   if let Some(static_key) = &static_key
-    && !is_custom_element
+    && !use_create_element
   {
     let key_prop = IRProp {
       key: context
@@ -504,6 +553,7 @@ pub fn transform_component_element<'a>(
       model_modifiers: None,
       values: vec![static_key.clone_in(context.ast.allocator)],
       dynamic: false,
+      normalize: None,
     };
     match props.first_mut() {
       Some(Either3::A(static_props)) => static_props.push(key_prop),
@@ -519,21 +569,21 @@ pub fn transform_component_element<'a>(
       tag_span,
       props,
       asset: false,
-      root: single_root,
+      root,
       slots: mem::take(&mut context_block.slots),
       once: *context.in_v_once.borrow(),
-      is_custom_element,
+      use_create_element,
       ns,
       parent: None,
       anchor: None,
       append_index: None,
       operation_index: Some(*context.operation_index.borrow()),
-      effect_index: Some(*context.effect_index.borrow()),
+      effect_index: Some(*context.order.borrow()),
     },
   )));
 
   if let Some(static_key) = static_key
-    && is_custom_element
+    && use_create_element
   {
     context.register_operation(
       context_block,
@@ -560,8 +610,8 @@ pub fn build_props<'a>(
   context_block: &'a mut BlockIRNode<'a>,
   is_component: bool,
   collect_name: bool,
-  get_effect_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
-  get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
+  get_effect_order: GetOrder<'a>,
+  get_operation_index: GetIndex<'a>,
 ) -> PropsResult<'a> {
   let node = node as *mut JSXElement;
   let props = &mut (unsafe { &mut *node }).opening_element.attributes;
@@ -623,7 +673,7 @@ pub fn build_props<'a>(
                   element,
                   value,
                 }),
-                Some(Rc::clone(&get_effect_index)),
+                Some(Rc::clone(&get_effect_order)),
                 Some(Rc::clone(&get_operation_index)),
               );
             }
@@ -662,6 +712,7 @@ pub fn build_props<'a>(
               model_modifiers: prop.model_modifiers,
               values: vec![prop.value],
               dynamic: true,
+              normalize: None,
             }));
           } else {
             // other static props
@@ -703,7 +754,7 @@ pub fn transform_prop<'a>(
   node: &'a mut JSXElement<'a>,
   context: &'a TransformContext<'a>,
   context_block: &'a mut BlockIRNode<'a>,
-  get_operation_index: Rc<RefCell<Box<dyn FnMut() -> i32 + 'a>>>,
+  get_operation_index: GetIndex<'a>,
 ) -> Option<DirectiveTransformResult<'a>> {
   let name = resolve_prop_name(match &prop.name {
     JSXAttributeName::Identifier(name) => name.name.as_str(),
@@ -793,6 +844,7 @@ pub fn dedupe_properties(results: Vec<DirectiveTransformResult>) -> Vec<IRProp> 
       model_modifiers: result.model_modifiers,
       values: vec![result.value],
       dynamic: false,
+      normalize: None,
     };
     // dynamic keys are always allowed
     let Expression::StringLiteral(key) = &prop.key else {

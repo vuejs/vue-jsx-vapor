@@ -4,7 +4,7 @@ use common::{
   expression::jsx_attribute_value_to_expression,
   text::{camelize, decode_attr_value, get_text_like_value},
 };
-use oxc_allocator::TakeIn;
+use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::NONE;
 use oxc_ast::ast::{
   Argument, ArrayExpressionElement, BigintBase, Expression, JSXAttribute, JSXAttributeName,
@@ -12,7 +12,9 @@ use oxc_ast::ast::{
 };
 use oxc_span::SPAN;
 
-use crate::transform::{DirectiveTransformResult, TransformContext};
+use crate::transform::{
+  DirectiveTransformResult, TransformContext, transform_element::is_runtime_only_prop,
+};
 
 // Components receive a static style as an object, like the vdom compiler's
 // transformStyle. `normalizeStyle` parses the strings of a style array, so the
@@ -72,7 +74,9 @@ pub fn transform_v_bind<'a>(
     JSXAttributeName::NamespacedName(name) => name.span.source_text(context.source_text),
   };
   let name_splited: Vec<&str> = resolve_prop_name(name_string);
-  if is_reserved_prop(name_splited[0]) {
+  // same as vdom: the key of a `<slot>` is also a slot prop
+  let slot_key = name_splited[0] == "key" && directives.tag_name == "slot";
+  if is_reserved_prop(name_splited[0]) && !slot_key {
     return None;
   }
   let modifiers = name_splited[1..].to_vec();
@@ -97,16 +101,19 @@ pub fn transform_v_bind<'a>(
         // the template, so hold it back wherever the value is consumed as a
         // raw value: component, slot outlet and custom element props, a
         // `.prop` binding sets a dom property from the raw value, boolean
-        // attributes are folded from the type of the value itself, and v-model
-        // reads its value props back off the element. With `.attr`, `setAttr`
-        // still checks special boolean attributes and stores raw checkbox
-        // true/false values before calling `setAttribute`.
+        // attributes are folded from the type of the value itself, v-model
+        // reads its value props back off the element, and runtime-only props
+        // never reach the template. With `.attr`, `setAttr` still checks
+        // special boolean attributes and stores raw checkbox true/false values
+        // before calling `setAttribute`.
         let exclude_number = (directives.is_component || directives.tag_name == "slot")
           || modifiers.contains(&"prop")
           || is_special_boolean_attr(&arg.value)
           || is_checkbox_value_prop(directives, &arg.value)
           || (!modifiers.contains(&"attr")
-            && (is_boolean_attr(&arg.value) || is_model_value_prop(directives, &arg.value)));
+            && (is_boolean_attr(&arg.value)
+              || is_model_value_prop(directives, &arg.value)
+              || is_runtime_only_prop(directives.tag_name, &arg.value, context.ns.borrow().ns)));
         if exclude_number && expression.is_number_literal() {
           if let Expression::NumericLiteral(_) = expression {
             Some(expression.take_in(ast.allocator))
@@ -144,6 +151,12 @@ pub fn transform_v_bind<'a>(
         value,
         modifier,
       ));
+    } else if slot_key && let JSXAttributeValue::ExpressionContainer(container) = value {
+      // `transform_key` reads the same node afterwards, so it has to stay
+      container
+        .expression
+        .as_expression()
+        .map(|expression| expression.clone_in(ast.allocator))?
     } else {
       jsx_attribute_value_to_expression(value, ast)?
     }

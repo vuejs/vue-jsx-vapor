@@ -1250,10 +1250,14 @@ fn keep_the_leading_newline_of_pre_and_textarea() {
   }
 }
 
+// upstream: `not applied outside the html namespace`. An svg `<pre>` is created
+// in the svg namespace, with its text inserted rather than written into a
+// template of its own, so the newline rule never sees it.
 #[test]
 fn leading_newline_outside_the_html_namespace_is_untouched() {
   let code = transform("<svg><pre>{'\\n\\nline'}</pre></svg>", None).code;
-  assert!(code.contains(r#"_template("<pre>\n\nline")"#), "{code}");
+  assert!(code.contains(r#"_createPlainElement("pre""#), "{code}");
+  assert!(code.contains(r#""\n\nline""#), "{code}");
 }
 
 // upstream: `props the template string cannot carry`. `<textarea>` / `<select>`

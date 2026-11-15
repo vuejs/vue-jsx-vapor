@@ -241,6 +241,10 @@ pub struct Directives<'a> {
   pub tag_name: &'a str,
   pub is_component: bool,
   pub is_custom_element: bool,
+  /// created imperatively by `_createPlainElement` instead of from its parent's
+  /// template string: a custom element, or an html element the parser would
+  /// move out of foreign content
+  pub use_create_element: bool,
   pub is_template: bool,
   /// a `v-bind` with a dynamic key or a spread may carry a `type`
   pub has_dynamic_key_v_bind: bool,

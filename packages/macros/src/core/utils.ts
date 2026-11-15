@@ -49,6 +49,37 @@ export function getParamsStart(node: FunctionalNode, code: string): number {
         1
 }
 
+/**
+ * The static name of an object key, resolved like `resolveObjectKey` in
+ * `@vue/compiler-sfc`: `foo`, `'foo'`, `['foo']` and `0` have one, `[foo]`
+ * has none.
+ */
+export function resolveObjectKey(
+  node: Node,
+  computed: boolean,
+): string | undefined {
+  switch (node.type) {
+    case 'StringLiteral':
+    case 'NumericLiteral':
+      return String(node.value)
+    case 'Identifier':
+      if (!computed) return node.name
+  }
+}
+
+// Same as `camelize` in `@vue/shared`, which Vue normalizes prop names with.
+export function camelize(str: string): string {
+  return str.replaceAll(/-(\w)/g, (_, c: string) => c.toUpperCase())
+}
+
+export function getPropertyAccess(key: string): string {
+  return /^[A-Z_$][\w$]*$/i.test(key) ? `.${key}` : `[${JSON.stringify(key)}]`
+}
+
+export function toStringLiteral(str: string): string {
+  return /[\\'\n\r\u2028\u2029]/.test(str) ? JSON.stringify(str) : `'${str}'`
+}
+
 export function getDefaultValue(node: Node): Node {
   if (node.type === 'TSNonNullExpression') {
     return getDefaultValue(node.expression)

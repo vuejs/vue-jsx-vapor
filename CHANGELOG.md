@@ -1,3 +1,52 @@
+## [3.2.30](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.29...v3.2.30) (2026-11-08)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** hydrate a v-if chain by the branch the server ([c15e801](https://github.com/vuejs/vue-jsx-vapor/commit/c15e801ec97a5aeaec3e3f14c8f1c03ed6e514f9))
+* **compiler/vapor:** normalize slot props at compile time ([4787d2c](https://github.com/vuejs/vue-jsx-vapor/commit/4787d2c573e0372c8e7b203e4d16b3ad691f90aa))
+* **compiler/vapor:** pass the key of <slot> as a slot prop like vdom ([906752b](https://github.com/vuejs/vue-jsx-vapor/commit/906752bf533cb4329c93b66497edae6b22b26bbb))
+* **compiler/vapor:** resolve slot props inside an element expression ([098093a](https://github.com/vuejs/vue-jsx-vapor/commit/098093af308de9f31f5a13cca48ec1339ecef1ed))
+
+
+### Performance Improvements
+
+* **compiler-vapor:** index returned roots per block ([b417a30](https://github.com/vuejs/vue-jsx-vapor/commit/b417a30335773352fe8603cc6fbf136a3cd35e1a))
+* **compiler/vapor:** cache the v-if chain head and tail while ([3b6f2cc](https://github.com/vuejs/vue-jsx-vapor/commit/3b6f2cc8b3a6c17b37c269f265246c245e87b81b))
+
+
+
+## [3.2.29](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.28...v3.2.29) (2026-10-25)
+
+
+### Bug Fixes
+
+* **compiler-vapor:** align v-once on v-else-if chains with vdom ([2fd801d](https://github.com/vuejs/vue-jsx-vapor/commit/2fd801d7c06a8c4b9ec2a06b211152a2318a2ad7))
+* **compiler-vapor:** compile long v-else-if chains to a flat ([b8d650d](https://github.com/vuejs/vue-jsx-vapor/commit/b8d650dd82156dc9827b93c8a0cd9b63075e2939))
+* **compiler-vapor:** create breakout elements in foreign content and ([9564176](https://github.com/vuejs/vue-jsx-vapor/commit/956417638c8ff9c6011dd4598b734c2001867c44))
+* **compiler-vapor:** fall through cloneVNode extras to the vapor slot ([d7978d8](https://github.com/vuejs/vue-jsx-vapor/commit/d7978d85c0d37a58a4b66cbbff4ed7cbc06199f5))
+* **compiler-vapor:** give a template of its own to a descendant the ([abe3c7a](https://github.com/vuejs/vue-jsx-vapor/commit/abe3c7a05badd94c001c525ba86e840f686fe34b))
+* **compiler-vapor:** keep the end tag of a special element under a ([498d147](https://github.com/vuejs/vue-jsx-vapor/commit/498d1477271825356710836013ea8f3bc57b0e60))
+* **compiler-vapor:** mark the child of a non-root Transition / KeepAlive ([a26cf4c](https://github.com/vuejs/vue-jsx-vapor/commit/a26cf4ced3714946ab7604d3c91d53582d0a65e2))
+
+
+
+## [3.2.28](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.27...v3.2.28) (2026-10-18)
+
+
+### Bug Fixes
+
+* **compiler/vapor:** apply destructure defaults at their own level ([b08b8cf](https://github.com/vuejs/vue-jsx-vapor/commit/b08b8cf2229cabbe777522db2b00c40377996f03))
+* **compiler/vdom:** emit string literals for dynamic slot keys ([4a674bc](https://github.com/vuejs/vue-jsx-vapor/commit/4a674bcb0c69473b572cdfa7803540217a87e644))
+* **compiler:** ignore directives that have no expression ([f1d0609](https://github.com/vuejs/vue-jsx-vapor/commit/f1d060996126fe5e6acaf7e93147e970cfa755f0))
+
+
+### Features
+
+* **compiler:** return errors and warnings from transform ([854a2f0](https://github.com/vuejs/vue-jsx-vapor/commit/854a2f01dad5b3c60dd31b8e4d92e9c38d1eeecf))
+
+
+
 ## [3.2.27](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.26...v3.2.27) (2026-10-13)
 
 

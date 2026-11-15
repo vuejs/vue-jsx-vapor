@@ -137,7 +137,7 @@ fn work_with_v_if_v_else() {
   		}, () => {
   			const _n7 = _t2();
   			return _n7;
-  		}, 645), 389);
+  		}, 645), 397);
   		return _n0;
   	}, { _: 1 }), true);
   	return _n9;
@@ -175,7 +175,7 @@ fn work_with_condition_expression() {
   		}, () => {
   			const _n6 = _t2();
   			return _n6;
-  		}, 641), 389);
+  		}, 641), 397);
   		return _n0;
   	}, { _: 1 }), true);
   	return _n7;
@@ -234,4 +234,39 @@ fn does_not_inject_persisted_when_v_if_owns_a_v_show_child() {
   	return _n3;
   })();
   "#);
+}
+
+// upstream: `child of a non-root transition is a root template`. The child
+// inherits the transition's fallthrough attrs, so its template is a root one
+// (class / style layered, not overwritten).
+#[test]
+fn child_of_a_non_root_transition_is_a_root_template() {
+  let code = transform(
+    "<div><Transition><p class=\"y\">z</p></Transition></div>",
+    None,
+  )
+  .code;
+
+  assert!(code.contains(r#"const _t0 = _template("<p class=y>z", 3);"#));
+  assert!(code.contains(r#"const _t1 = _template("<div>", 1);"#));
+}
+
+// upstream: `child of a transition under a v-for is a root template`. A v-for
+// only cuts the chain between a host and its root; the transition's
+// fallthrough reaches its child wherever the transition sits.
+#[test]
+fn child_of_a_transition_under_a_v_for_is_a_root_template() {
+  let code = transform(
+    "<div v-for={i in l}>\
+      <Transition>\
+        <p v-if={ok} class=\"y\">y</p>\
+        <p v-else class=\"n\">n</p>\
+      </Transition>\
+    </div>",
+    None,
+  )
+  .code;
+
+  assert!(code.contains(r#"const _t0 = _template("<p class=y>y", 1);"#));
+  assert!(code.contains(r#"const _t1 = _template("<p class=n>n", 1);"#));
 }

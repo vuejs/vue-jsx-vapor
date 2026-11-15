@@ -184,6 +184,9 @@ pub enum VaporBlockShape {
   Empty = 0,
   SingleRoot = 1,
   MultiRoot = 2,
+  /// A `createIf` false branch that is the `v-else-if` rest of the chain: a
+  /// nested `createIf` that renders the chain's later branches.
+  ElseIf = 3,
 }
 
 /**
@@ -262,4 +265,13 @@ pub enum VaporSlotStability {
   // The slot content root can start invalid or become invalid, so fallback
   // may be reachable and needs SlotFragment tracking.
   NonStable = 1,
+}
+
+/**
+ * `isSingleRoot` of a component creation call for the single root of a slot
+ * body (`1` / `true` marks the single root of a component template). See
+ * resolveFallthroughOwner in runtime-vapor.
+ */
+pub enum VaporSingleRoot {
+  SLOT = 2,
 }

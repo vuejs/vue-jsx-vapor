@@ -243,27 +243,6 @@ pub fn is_ignore_newline_tag(tag_name: &str) -> bool {
   matches!(tag_name, "pre" | "textarea")
 }
 
-// Inline elements
-static INLINE_TAGS: phf::Set<&'static str> = phf_set! {
-  "a", "abbr", "acronym", "b", "bdi", "bdo", "big", "br", "button" , "canvas", "cite", "code", "data", "datalist",
-  "del", "dfn", "em", "embed", "i", "iframe", "img", "input", "ins", "kbd", "label", "map", "mark", "meter",
-  "noscript", "object", "output", "picture", "progress", "q", "ruby", "s", "samp", "script", "select",
-  "small", "span", "strong", "sub", "sup", "svg", "textarea", "time", "u", "tt", "var", "video",
-};
-pub fn is_inline_tag(tag_name: &str) -> bool {
-  INLINE_TAGS.contains(tag_name)
-}
-
-// Block elements
-static BLOCK_TAGS: phf::Set<&'static str> = phf_set! {
-  "address", "article", "aside", "blockquote", "dd", "details", "dialog", "div", "dl" , "dt", "fieldset",
-  "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup", "hr", "li",
-  "main", "menu", "nav", "ol", "p", "pre", "section", "table", "ul",
-};
-pub fn is_block_tag(tag_name: &str) -> bool {
-  BLOCK_TAGS.contains(tag_name)
-}
-
 static BUILD_IN_DIRECTIVE: phf::Set<&'static str> = phf_set! {
   "bind", "cloak", "else-if", "else", "for", "html", "if", "model", "on", "once", "pre", "show",
   "slot", "slots", "text", "memo",
@@ -289,6 +268,33 @@ static SPECIAL_BOOLEAN_ATTRS: phf::Set<&'static str> = phf_set! {
 };
 pub fn is_special_boolean_attr(prop_name: &str) -> bool {
   SPECIAL_BOOLEAN_ATTRS.contains(prop_name)
+}
+
+// `isKnownHtmlAttr` upstream, generated from
+// https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes. The parser
+// lowercases a name in the template string, so a camelCase spelling of one of
+// these still lands on the real attribute (`tabIndex` -> `tabindex`).
+static KNOWN_HTML_ATTRS: phf::Set<&'static str> = phf_set! {
+  "accept", "accept-charset", "accesskey", "action", "align", "allow", "alt", "async",
+  "autocapitalize", "autocomplete", "autofocus", "autoplay", "background", "bgcolor",
+  "border", "buffered", "capture", "challenge", "charset", "checked", "cite", "class",
+  "code", "codebase", "color", "cols", "colspan", "content", "contenteditable",
+  "contextmenu", "controls", "coords", "crossorigin", "csp", "data", "datetime", "decoding",
+  "default", "defer", "dir", "dirname", "disabled", "download", "draggable", "dropzone",
+  "enctype", "enterkeyhint", "for", "form", "formaction", "formenctype", "formmethod",
+  "formnovalidate", "formtarget", "headers", "height", "hidden", "high", "href", "hreflang",
+  "http-equiv", "icon", "id", "importance", "inert", "integrity", "ismap", "itemprop",
+  "keytype", "kind", "label", "lang", "language", "loading", "list", "loop", "low",
+  "manifest", "max", "maxlength", "minlength", "media", "min", "multiple", "muted", "name",
+  "novalidate", "open", "optimum", "pattern", "ping", "placeholder", "poster", "preload",
+  "radiogroup", "readonly", "referrerpolicy", "rel", "required", "reversed", "rows",
+  "rowspan", "sandbox", "scope", "scoped", "selected", "shape", "size", "sizes", "slot",
+  "span", "spellcheck", "src", "srcdoc", "srclang", "srcset", "start", "step", "style",
+  "summary", "tabindex", "target", "title", "translate", "type", "usemap", "value", "width",
+  "wrap"
+};
+pub fn is_known_html_attr(prop_name: &str) -> bool {
+  KNOWN_HTML_ATTRS.contains(prop_name)
 }
 
 pub fn is_simple_identifier(s: &str) -> bool {

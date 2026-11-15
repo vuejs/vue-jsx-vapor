@@ -37,7 +37,7 @@ use crate::{
 pub struct CodegenContext<'a> {
   pub source_text: &'a str,
   pub options: &'a TransformOptions<'a>,
-  pub identifiers: RefCell<HashMap<&'a str, Vec<Option<Expression<'a>>>>>,
+  pub identifiers: &'a RefCell<HashMap<&'a str, Vec<Option<Expression<'a>>>>>,
   pub ir: RootIRNode<'a>,
   pub block: RefCell<BlockIRNode<'a>>,
   pub scope_level: RefCell<i32>,
@@ -55,7 +55,7 @@ impl<'a> CodegenContext<'a> {
     CodegenContext {
       source_text: context.source_text,
       options: context.options,
-      identifiers: RefCell::new(HashMap::new()),
+      identifiers: &context.options.vapor_identifiers,
       block: RefCell::new(block),
       scope_level: RefCell::new(0),
       in_slot_block: RefCell::new(false),
@@ -118,6 +118,15 @@ impl<'a> CodegenContext<'a> {
     let current = *scope_level;
     *scope_level += 1;
     (current, || *self.scope_level.borrow_mut() -= 1)
+  }
+
+  // a slot block emitted after the block that contains it would reuse the
+  // level of its enclosing slot and shadow its props
+  pub fn next_slot_props_index(&self) -> i32 {
+    let mut index = self.options.vapor_slot_props_index.borrow_mut();
+    let current = *index;
+    *index += 1;
+    current
   }
 
   // IR -> JS codegen
@@ -225,7 +234,7 @@ impl<'a> CodegenContext<'a> {
     if !self.options.delegates.borrow().is_empty() {
       self.options.helper("_delegateEvents");
     }
-    if !&self.options.templates.borrow().is_empty() {
+    if !&self.options.templates.borrow().entries.is_empty() {
       self.options.helper("_template");
     }
 

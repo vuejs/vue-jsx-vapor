@@ -1,4 +1,4 @@
-use oxc_allocator::TakeIn;
+use oxc_allocator::{CloneIn, TakeIn};
 use oxc_ast::ast::{
   BinaryExpression, Expression, JSXAttribute, JSXAttributeValue, JSXChild, JSXElement,
 };
@@ -54,7 +54,17 @@ pub unsafe fn transform_v_for<'a>(
     && let Some(value) = &mut key_prop.value
   {
     seen.insert(key_prop.span.start);
-    jsx_attribute_value_to_expression(value, context.ast)
+    if directives.tag_name == "slot"
+      && let JSXAttributeValue::ExpressionContainer(container) = value
+    {
+      // the key of a `<slot>` is also a slot prop, so it has to stay in place
+      container
+        .expression
+        .as_expression()
+        .map(|expression| expression.clone_in(context.allocator))
+    } else {
+      jsx_attribute_value_to_expression(value, context.ast)
+    }
   } else {
     None
   };
@@ -133,7 +143,7 @@ pub unsafe fn transform_v_for<'a>(
       anchor: None,
       append_index: None,
       operation_index: Some(*context.operation_index.borrow()),
-      effect_index: Some(*context.effect_index.borrow()),
+      effect_index: Some(*context.order.borrow()),
       slot_root: false,
     })));
   }))

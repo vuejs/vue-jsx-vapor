@@ -1178,17 +1178,17 @@ fn constant_props_without_a_content_attribute() {
     (
       r#"<video playbackRate={2} />"#,
       r#"_template("<video>""#,
-      r#"_setProp(_n0, "playbackRate", "2")"#,
+      r#"_setProp(_n0, "playbackRate", 2)"#,
     ),
     (
       r#"<video defaultPlaybackRate={2} />"#,
       r#"_template("<video>""#,
-      r#"_setProp(_n0, "defaultPlaybackRate", "2")"#,
+      r#"_setProp(_n0, "defaultPlaybackRate", 2)"#,
     ),
     (
       r#"<video currentTime={3} />"#,
       r#"_template("<video>""#,
-      r#"_setProp(_n0, "currentTime", "3")"#,
+      r#"_setProp(_n0, "currentTime", 3)"#,
     ),
   ] {
     let code = transform(source, None).code;
@@ -1281,4 +1281,86 @@ fn groups_native_svg_event_bindings_without_changing_other_prop_helpers() {
     "{code}"
   );
   assert!(code.contains("_setClass(_n0, cls, true)"), "{code}");
+}
+
+// The parser lowercases attribute names on html elements, so a camelCase dom
+// property would only leave a dead `defaultvalue` attribute behind.
+#[test]
+fn camel_case_dom_props_are_not_baked_into_the_template() {
+  let code = transform(r#"<textarea defaultValue="hi" />"#, None).code;
+  assert!(code.contains(r#"_template("<textarea>""#), "{code}");
+  assert!(
+    code.contains(r#"_setProp(_n0, "defaultValue", "hi")"#),
+    "{code}"
+  );
+
+  let code = transform(r#"<div className="foo" />"#, None).code;
+  assert!(code.contains(r#"_template("<div>""#), "{code}");
+  assert!(
+    code.contains(r#"_setProp(_n0, "className", "foo")"#),
+    "{code}"
+  );
+
+  let code = transform(r#"<div ariaLabel="x" />"#, None).code;
+  assert!(code.contains(r#"_template("<div>""#), "{code}");
+  assert!(
+    code.contains(r#"_setDOMProp(_n0, "ariaLabel", "x")"#),
+    "{code}"
+  );
+}
+
+// A lowercased name that is the attribute behind the property, hyphenated names
+// and foreign elements, where the parser keeps or adjusts the case.
+#[test]
+fn camel_case_attributes_the_template_string_carries() {
+  let code = transform(r#"<div tabIndex="0" />"#, None).code;
+  assert!(code.contains(r#"_template("<div tabIndex=0>""#), "{code}");
+  assert!(!code.contains("_setProp"), "{code}");
+
+  let code = transform(r#"<div data-fooBar="x" />"#, None).code;
+  assert!(
+    code.contains(r#"_template("<div data-fooBar=x>""#),
+    "{code}"
+  );
+  assert!(!code.contains("_setProp"), "{code}");
+
+  let code = transform(r#"<svg viewBox="0 0 1 1" />"#, None).code;
+  assert!(
+    code.contains(r#"_template("<svg viewBox=\"0 0 1 1\">""#),
+    "{code}"
+  );
+  assert!(!code.contains("_setProp"), "{code}");
+}
+
+// A camelCase dom property only reaches a runtime setter, so a number has to
+// keep its type: `"0"` would turn a boolean property on.
+#[test]
+fn camel_case_dom_prop_number_literals_keep_their_type() {
+  let code = transform(r#"<input type="checkbox" defaultChecked={0} />"#, None).code;
+  assert!(
+    code.contains(r#"_setProp(_n0, "defaultChecked", 0)"#),
+    "{code}"
+  );
+
+  let code = transform(
+    r#"<input type="checkbox" default-checked_camel={0} />"#,
+    None,
+  )
+  .code;
+  assert!(
+    code.contains(r#"_setProp(_n0, "defaultChecked", 0)"#),
+    "{code}"
+  );
+
+  let code = transform("<option defaultSelected={0}></option>", None).code;
+  assert!(
+    code.contains(r#"_setProp(_n0, "defaultSelected", 0)"#),
+    "{code}"
+  );
+
+  let code = transform("<option default-selected_camel={0}></option>", None).code;
+  assert!(
+    code.contains(r#"_setProp(_n0, "defaultSelected", 0)"#),
+    "{code}"
+  );
 }

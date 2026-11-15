@@ -105,3 +105,29 @@ function useComp(){
     return <Comp foo={1} />
 }
 useComp()
+
+const key = 'b'
+
+const Comp7 = defineVaporComponent(
+  ({
+    'foo-bar': bar = 1,
+    ['baz']: baz,
+    0: zero,
+    other,
+    qux: { 'a-b': ab = 2, [key]: dynamic },
+  }: any) => {
+    return <>{[bar, baz, zero, other, ab, dynamic]}</>
+  },
+)
+
+const Comp8 = defineVaporComponent(({ 'max-size': maxSize }: any) => {
+  return <>{maxSize}</>
+})
+
+const Comp9 = defineVaporComponent(({ ['size']: size = 1 }: any) => {
+  return <>{size}</>
+})
+
+const Comp10 = defineVaporComponent(({ 0: zero }: any) => {
+  return <>{zero}</>
+})

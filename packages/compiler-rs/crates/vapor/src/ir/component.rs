@@ -21,6 +21,7 @@ pub struct IRProp<'a> {
 
   pub values: Vec<Expression<'a>>,
   pub dynamic: bool,
+  pub normalize: Option<&'a str>,
 }
 
 pub type IRPropsStatic<'a> = Vec<IRProp<'a>>;

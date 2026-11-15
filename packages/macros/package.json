@@ -1,7 +1,7 @@
 {
   "name": "@vue-jsx-vapor/macros",
   "type": "module",
-  "version": "3.2.27",
+  "version": "3.2.30",
   "description": "Macros for Vue JSX Vapor",
   "license": "MIT",
   "homepage": "https://github.com/vuejs/vue-jsx-vapor#readme",
@@ -124,7 +124,7 @@
     "esbuild": "*",
     "rollup": "^3",
     "vite": ">=3",
-    "vue": "^3.6.0-rc.12",
+    "vue": "^3.6.0-rc.14",
     "webpack": "^4 || ^5"
   },
   "peerDependenciesMeta": {

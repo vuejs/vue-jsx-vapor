@@ -11,7 +11,7 @@ use oxc_ast::{
     PropertyKind,
   },
 };
-use oxc_span::{GetSpan, SPAN, Span};
+use oxc_span::{GetSpan, SPAN};
 
 use crate::{
   ast::{NodeTypes, VNodeCall},
@@ -136,15 +136,6 @@ pub unsafe fn transform_element<'a>(
         should_use_block = true;
         // 2. Force keep-alive to always be updated, since it uses raw children.
         patch_flag |= PatchFlags::DynamicSlots as i32;
-        if children.len() > 1 {
-          context.options.on_error.as_ref()(
-            ErrorCodes::KeepAliveInvalidChildren.message(),
-            Span::new(
-              children.first().unwrap().span().start,
-              children.last().unwrap().span().end,
-            ),
-          );
-        }
       }
 
       let should_build_as_slots = is_component
