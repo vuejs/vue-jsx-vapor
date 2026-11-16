@@ -18,7 +18,6 @@ pub enum ErrorCodes {
   VSlotMisplaced = 40,
   VModelNoExpression = 41,
   VModelMalformedExpression = 42,
-  KeepAliveInvalidChildren = 46,
   VHtmlNoExpression = 53,
   VHtmlWithChildren = 54,
   VTextNoExpression = 55,
@@ -114,10 +113,6 @@ pub static ERROR_MESSAGES: LazyLock<HashMap<ErrorCodes, &str>> = LazyLock::new(|
     (
       ErrorCodes::VShowNoExpression,
       "v-show is missing expression.",
-    ),
-    (
-      ErrorCodes::KeepAliveInvalidChildren,
-      "<KeepAlive> expects exactly one child component.",
     ),
   ])
 });

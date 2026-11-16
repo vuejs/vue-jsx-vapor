@@ -1,5 +1,6 @@
 import * as Vue from 'vue'
 import { createComponent, createProxyComponent, normalizeNode } from './vapor'
+import type { EventHandlers } from './jsx'
 import type {
   EmitFnToProps,
   ExposedToProps,
@@ -18,9 +19,9 @@ import type {
   VaporTeleport,
 } from 'vue'
 
-type HTMLElementEventHandler = {
-  [K in keyof HTMLElementEventMap as `on${Capitalize<K>}`]?: (ev: HTMLElementEventMap[K]) => any
-}
+type HTMLElementEventHandler = EventHandlers<{
+  [K in keyof HTMLElementEventMap as `on${Capitalize<K>}`]: HTMLElementEventMap[K]
+}>
 
 type ReservedProps = { key?: () => PropertyKey }
 type RawProps = Record<string, any> & ReservedProps

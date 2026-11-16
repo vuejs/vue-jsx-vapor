@@ -36,7 +36,16 @@ pub fn transform_v_on<'a>(
     }
   };
   let replaced = format!("{}{}", name[2..3].to_lowercase(), &name[3..]);
-  let splited = replaced.split("_").collect::<Vec<_>>();
+  let mut splited = replaced.split("_").collect::<Vec<_>>();
+  if !is_component {
+    // `onClickCapture` — the trailing `AddEventListenerOptions` suffix is part
+    // of the prop name, so fold it back into the modifier list.
+    let (event, options) = split_camel_event_modifiers(splited[0]);
+    if !options.is_empty() {
+      splited[0] = event;
+      splited.splice(1..1, options);
+    }
+  }
   let name_string = splited[0];
   let has_modifier = splited.len() > 1;
   let mut delegate_modifier = false;
@@ -229,4 +238,26 @@ fn has_stop_handler_for_static_event(node: &JSXElement, event_name: &str) -> boo
       &event_name[1..]
     ))
   })
+}
+
+// camelCase suffixes for the `AddEventListenerOptions` modifiers — they have to
+// live in the prop name, so `onClickCapture` is the JSX spelling of
+// `onClick_capture`. Handler-level modifiers (`stop`, `prevent`, key names, …)
+// stay `_`-only, since they wrap the handler instead of the registration.
+static CAMEL_EVENT_MODIFIERS: &[(&str, &str)] = &[
+  ("Capture", "capture"),
+  ("Once", "once"),
+  ("Passive", "passive"),
+];
+
+// `clickCaptureOnce` -> (`click`, ["capture", "once"])
+pub fn split_camel_event_modifiers(name: &str) -> (&str, Vec<&'static str>) {
+  for (suffix, modifier) in CAMEL_EVENT_MODIFIERS {
+    if let Some(rest) = name.strip_suffix(suffix).filter(|rest| !rest.is_empty()) {
+      let (name, mut modifiers) = split_camel_event_modifiers(rest);
+      modifiers.push(*modifier);
+      return (name, modifiers);
+    }
+  }
+  (name, vec![])
 }

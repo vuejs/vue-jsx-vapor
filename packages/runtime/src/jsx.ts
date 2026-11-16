@@ -1339,8 +1339,20 @@ export interface Events<T = Element> {
   onTransitionstart: TransitionEventHandler<T>
 }
 
+// `passive` is only meaningful where canceling the event blocks scrolling: the
+// browser may then scroll without waiting for the handler. Everywhere else it
+// is either a no-op (`scroll` is not cancelable) or harmful (`touchend`'s
+// preventDefault suppresses the synthesized click).
+type PassiveEvent = 'onWheel' | 'onTouchstart' | 'onTouchmove'
+
 export type EventHandlers<E> = {
-  [K in keyof E]?: E[K] extends (...args: any) => any ? E[K] : (payload: E[K]) => void
+  // camelCase aliases resolve to the base event's payload type.
+  [
+    K in keyof E as
+      | K
+      | `${K & string}${'Capture' | 'Once'}`
+      | (K extends PassiveEvent ? `${K & string}Passive` : never)
+  ]?: E[K] extends (...args: any) => any ? E[K] : (payload: E[K]) => void
 }
 
 type IntrinsicElement<K> = K extends keyof HTMLElementTagNameMap

@@ -583,7 +583,7 @@ fn get_static_prop_key_name(
   }
 }
 
-fn get_handler_modifier_postfix<'a>(options: &[Cow<'a, str>]) -> String {
+pub(crate) fn get_handler_modifier_postfix<'a>(options: &[Cow<'a, str>]) -> String {
   if options.is_empty() {
     return String::new();
   }

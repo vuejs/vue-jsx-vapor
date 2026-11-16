@@ -658,3 +658,107 @@ fn a_vue_hook_on_an_element_leaves_no_listener() {
   assert!(!code.contains("vnodeMounted"));
   assert!(!code.contains("onVnodeMounted"));
 }
+
+#[test]
+fn camel_case_event_modifiers() {
+  let code = transform(
+    "<><div onClickCapture={a} onClickOnce={b} onScrollPassive={c} onClickCaptureOnce={d}/><a onKeyupCapture={e}/></>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template } from "vue";
+  const _t0 = _template("<div>");
+  const _t1 = _template("<a>");
+  (() => {
+  	const _n0 = _t0();
+  	const _n1 = _t1();
+  	_on(_n0, "click", a, { capture: true });
+  	_on(_n0, "click", b, { once: true });
+  	_on(_n0, "scroll", c, { passive: true });
+  	_on(_n0, "click", d, {
+  		capture: true,
+  		once: true
+  	});
+  	_on(_n1, "keyup", e, { capture: true });
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn component_events_keep_option_suffixes_in_prop_names() {
+  let code = transform(
+    "<><Comp onClick={a} onClickCapture={b} /><Comp onClick_capture={c} onClick={d} /></>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  (() => {
+  	const _n0 = _createComponent(Comp, {
+  		onClickCapture: () => b,
+  		onClick: () => a
+  	});
+  	const _n1 = _createComponent(Comp, {
+  		onClick: () => d,
+  		onClickCapture: () => c
+  	});
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+// only the three `AddEventListenerOptions` suffixes are aliased; everything
+// else keeps its name verbatim
+#[test]
+fn non_option_suffixes_are_not_aliased() {
+  let code = transform(
+    "<><Comp onMoveLeft={handler} /><div onClickStop={a} onKeyupEnter={b} onDragEnter={c} /></>",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { createComponent as _createComponent } from "/vue-jsx/vapor";
+  import { on as _on, template as _template } from "vue";
+  const _t0 = _template("<div>");
+  (() => {
+  	const _n0 = _createComponent(Comp, { onMoveLeft: () => handler });
+  	const _n1 = _t0();
+  	_on(_n1, "clickStop", a);
+  	_on(_n1, "keyupEnter", b);
+  	_on(_n1, "dragEnter", c);
+  	return [_n0, _n1];
+  })();
+  "#);
+}
+
+#[test]
+fn custom_event_names_ending_in_an_option_suffix_are_split() {
+  let code = transform(
+    "<div onCustomCapture={handler} />",
+    Some(TransformOptions {
+      vapor: true,
+      ..Default::default()
+    }),
+  )
+  .code;
+  assert_snapshot!(code, @r#"
+  import { on as _on, template as _template } from "vue";
+  const _t0 = _template("<div>", 1);
+  (() => {
+  	const _n0 = _t0();
+  	_on(_n0, "custom", handler, { capture: true });
+  	return _n0;
+  })();
+  "#);
+}

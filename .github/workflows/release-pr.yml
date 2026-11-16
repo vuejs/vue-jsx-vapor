@@ -49,6 +49,15 @@ jobs:
         working-directory: ./packages/compiler
         run: pnpm exec napi build --platform --release --esm --target wasm32-wasip1-threads --dts compiler.wasi.d.cts
 
+      # The generated browser artifact eagerly spins up the reused pthread
+      # worker pool, which dies in real browsers (a reused worker fails to
+      # instantiate the wasm module, with or without COOP/COEP). The compiler
+      # never needs the pool, so strip the line — same patch the release
+      # workflow applies to the npm/ artifact via `napi artifacts`.
+      - name: Patch the browser artifact for REPL running
+        working-directory: ./packages/compiler
+        run: node ./scripts/patch-wasi-browser.mjs
+
       # packages/compiler/package.json lists neither the *.node, the WASI runtime
       # files nor the WASI runtime dependencies, because the release workflow
       # runs `napi artifacts` first and would then ship every platform binding in

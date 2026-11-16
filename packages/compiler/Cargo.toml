@@ -65,7 +65,7 @@ name = "bench_vapor"
 harness = false
 
 [build-dependencies]
-napi-build = "2.4.1"
+napi-build = "2.6.0"
 
 [profile.release]
 lto = true

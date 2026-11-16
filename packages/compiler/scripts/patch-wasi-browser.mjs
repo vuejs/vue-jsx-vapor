@@ -3,7 +3,13 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const currentDir = dirname(fileURLToPath(import.meta.url))
-const targetFiles = [resolve(currentDir, '../npm/wasm32-wasi/compiler.wasi-browser.js')]
+// The in-package artifact is what bundlers resolve through the `browser` field
+// (and what pkg-pr-new previews ship); the npm/ one is what `napi artifacts`
+// stages for the published wasm32-wasi subpackage. Both carry the same line.
+const targetFiles = [
+  resolve(currentDir, '../compiler.wasi-browser.js'),
+  resolve(currentDir, '../npm/wasm32-wasi/compiler.wasi-browser.js'),
+]
 // Remove it to fix bugs for REPL.
 const targetLine = 'reuseWorker: { size: __asyncWorkPoolSize + __workerPoolSize },'
 
