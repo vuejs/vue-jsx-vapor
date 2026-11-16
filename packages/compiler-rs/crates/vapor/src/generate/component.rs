@@ -28,6 +28,7 @@ use crate::generate::event::gen_event_handler;
 use crate::generate::expression::gen_expression;
 use crate::generate::prop::gen_prop_key;
 use crate::generate::prop::gen_prop_value;
+use crate::generate::prop::get_handler_modifier_postfix;
 use crate::generate::slot::gen_raw_slots;
 use crate::generate::v_model::gen_model_handler;
 use crate::ir::component::IRProp;
@@ -246,20 +247,6 @@ fn gen_static_props<'a>(
 
   for mut prop in props {
     if prop.handler {
-      let key_name = format!(
-        "\"on{}\"",
-        capitalize(if let Expression::StringLiteral(key) = &prop.key {
-          Cow::Borrowed(key.value.as_str())
-        } else {
-          unreachable!()
-        })
-      );
-      if key_name.is_empty() {
-        // dynamic key handlers are emitted as-is
-        gen_prop(&mut properties, prop, context, true);
-        continue;
-      }
-
       let Modifiers {
         keys,
         non_keys,
@@ -269,6 +256,18 @@ fn gen_static_props<'a>(
         non_keys: vec![],
         options: vec![],
       });
+
+      // group under the same key the prop is emitted with — event options
+      // like `Capture` are part of the emitted name (`onClickCapture`)
+      let key_name = format!(
+        "\"on{}{}\"",
+        capitalize(if let Expression::StringLiteral(key) = &prop.key {
+          Cow::Borrowed(key.value.as_str())
+        } else {
+          unreachable!()
+        }),
+        get_handler_modifier_postfix(&options)
+      );
 
       let key_frag = gen_prop_key(
         prop.key,
