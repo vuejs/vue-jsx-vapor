@@ -1,3 +1,13 @@
+## [3.2.31](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.30...v3.2.31) (2026-11-16)
+
+
+### Bug Fixes
+
+* **compiler-vapor:** keep static camelCase dom props out of the template ([84109d7](https://github.com/vuejs/vue-jsx-vapor/commit/84109d7aafe577d4d80d4d29d9e361224416f2e1))
+* **macros:** resolve string, numeric and computed keys in destructured props ([#87](https://github.com/vuejs/vue-jsx-vapor/issues/87)) ([6d2b665](https://github.com/vuejs/vue-jsx-vapor/commit/6d2b6659b1e41068a01729847e1ecbe8825a9a3a)), closes [#86](https://github.com/vuejs/vue-jsx-vapor/issues/86)
+
+
+
 ## [3.2.30](https://github.com/vuejs/vue-jsx-vapor/compare/v3.2.29...v3.2.30) (2026-11-08)
 
 
