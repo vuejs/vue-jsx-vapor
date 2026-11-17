@@ -1,12 +1,12 @@
-import { defineVaporComponent, ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 
-const Comp = defineVaporComponent(({ foo }) => {
-  return <div>{foo}</div>
+const Comp = defineComponent(({ foo }) => {
+  return () => <div>{foo}</div>
 })
 
-export default defineVaporComponent(() => {
+export default defineComponent(() => {
   const foo = ref(1)
-  return (
+  return () => (
     <>
       <button onClick={() => foo.value++}>+</button>
       <Comp foo={foo.value} />

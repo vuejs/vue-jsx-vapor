@@ -1,6 +1,6 @@
 import { babelParse, walkAST } from 'ast-kit'
 import MagicString from 'magic-string'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test } from 'vite-plus/test'
 import { restructure } from '../src/api'
 
 const transformRestructure = (code: string): string => {

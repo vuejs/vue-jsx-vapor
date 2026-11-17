@@ -5,15 +5,14 @@ next: false
 ---
 
 # Props
-  
+
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
-import appInteropCode from './app-interop.tsx?raw'
-import appInteropSolvedCode from './app-interop-solved.tsx?raw'
+import appVaporCode from './app-vapor.tsx?raw'
+import appVaporSolvedCode from './app-vapor-solved.tsx?raw'
 import appMacrosSolvedCode from './app-macros-solved.tsx?raw'
-import appInteropMacrosCode from './app-interop-macros.tsx?raw'
-import appInteropMacrosSolvedCode from './app-interop-macros-solved.tsx?raw'
+import appVaporMacrosSolvedCode from './app-vapor-macros-solved.tsx?raw'
 import { getDefaultFiles } from '../template'
 import { ref } from 'vue'
 
@@ -21,12 +20,12 @@ const files = ref(getDefaultFiles())
 const apps = {
   app: { 'src/App.tsx': appCode },
   solved: { 'src/App.tsx': appSolvedCode },
-  interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropSolvedCode },
+  vapor: { 'src/App.tsx': appVaporCode },
+  vaporSolved: { 'src/App.tsx': appVaporSolvedCode },
   macros: { 'src/App.tsx': appCode },
   macrosSolved: { 'src/App.tsx': appMacrosSolvedCode },
-  interopMacros: { 'src/App.tsx': appInteropMacrosCode },
-  interopMacrosSolved: { 'src/App.tsx': appInteropMacrosSolvedCode },
+  vaporMacros: { 'src/App.tsx': appVaporCode },
+  vaporMacrosSolved: { 'src/App.tsx': appVaporMacrosSolvedCode },
 }
 </script>
 
@@ -35,9 +34,7 @@ const apps = {
 The props are provided in the first parameter of the functional component.
 
 ```jsx
-const Comp = (props) => (
-  <div>{props.foo}</div>
-)
+const Comp = (props) => <div>{props.foo}</div>
 ```
 
 ## Deconstruct Props
@@ -47,16 +44,13 @@ Unlike other JSX frameworks, props lose reactivity when you deconstruct them:
 :::
 
 ```jsx
-const Comp = ({ foo }) => (
-  <div>
-    {foo} this will no longer update
-  </div>
-)
-````
+const Comp = ({ foo }) => <div>{foo} this will no longer update</div>
+```
 
 We have two solutions:
 
 1. Pass a reactive ref object as a prop directly:
+
 ```jsx
 function Comp({ foo }) {
   return <div>{foo.value}</div>
@@ -77,12 +71,15 @@ const Comp = defineVaporComponent(({ foo }) => {
   return <div>{foo}</div>
 })
 ```
+
 Will be converted to:
+
 ```jsx
 const Comp = defineVaporComponent((__props) => {
   return <div>{__props.foo}</div>
 })
 ```
+
 Then the `foo` prop will regain reactivity.\
 [More details](/features/macros.html#definecomponent-definevaporcomponent)
 

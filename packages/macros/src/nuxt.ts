@@ -8,11 +8,11 @@ export interface ModuleOptions extends Options {}
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
-    name: 'nuxt-vue-jsx-vapor-macros',
-    configKey: 'unpluginStarter',
+    name: '@vue-jsx/macros',
+    configKey: 'vueJsxMacros',
   },
   setup(options) {
-    addVitePlugin(() => vite(options))
+    addVitePlugin(() => vite(options) as any)
     addWebpackPlugin(() => webpack(options))
 
     // ...

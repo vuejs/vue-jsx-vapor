@@ -10,9 +10,9 @@
 // `event-modifiers.test-d.tsx`). These tests pin the runtime contract those
 // types rely on.
 
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { createVaporApp } from 'vue'
-import { h } from '../src/h'
+import { vaporH as h } from '../src/h'
 
 type ListenerCall = { type: string; options?: AddEventListenerOptions }
 
@@ -20,9 +20,7 @@ function mount(props: Record<string, any>): {
   el: HTMLElement
   listeners: ListenerCall[]
 } {
-  const calls: Array<
-    ListenerCall & { target: Element; options?: AddEventListenerOptions }
-  > = []
+  const calls: Array<ListenerCall & { target: Element; options?: AddEventListenerOptions }> = []
   const original = Element.prototype.addEventListener
   Element.prototype.addEventListener = function (
     this: Element,
@@ -46,9 +44,7 @@ function mount(props: Record<string, any>): {
   const el = root.firstElementChild as HTMLElement
   return {
     el,
-    listeners: calls
-      .filter((c) => c.target === el)
-      .map(({ type, options }) => ({ type, options })),
+    listeners: calls.filter((c) => c.target === el).map(({ type, options }) => ({ type, options })),
   }
 }
 
@@ -134,16 +130,12 @@ test('a plain wheel listener can cancel the event', () => {
 
 test('onClickCaptureOnce splits into capture + once', () => {
   const { listeners } = mount({ onClickCaptureOnce: () => {} })
-  expect(listeners).toEqual([
-    { type: 'click', options: { once: true, capture: true } },
-  ])
+  expect(listeners).toEqual([{ type: 'click', options: { once: true, capture: true } }])
 })
 
 test('onWheelPassiveCapture splits into passive + capture', () => {
   const { listeners } = mount({ onWheelPassiveCapture: () => {} })
-  expect(listeners).toEqual([
-    { type: 'wheel', options: { capture: true, passive: true } },
-  ])
+  expect(listeners).toEqual([{ type: 'wheel', options: { capture: true, passive: true } }])
 })
 
 test('onClickCaptureOnce fires once in capture phase', () => {

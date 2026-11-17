@@ -2,15 +2,8 @@
   "compilerOptions": {
     "target": "ESNext",
     "jsx": "preserve",
-    "jsxImportSource": "vue-jsx-vapor",
+    "jsxImportSource": "vue-jsx",
     "module": "ESNext",
-    "moduleResolution": "bundler",
-    "types": ["vite/client"],
-    "allowJs": true,
-    "checkJs": true,
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "noEmit": true,
-    "skipLibCheck": true
+    "moduleResolution": "bundler"
   }
 }

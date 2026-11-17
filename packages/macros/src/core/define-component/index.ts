@@ -31,12 +31,7 @@ export function transformDefineComponent(
       prependFunctionalNode(
         root,
         s,
-        `const ${propsName} = ${importHelperFn(
-          s,
-          'useFullProps',
-          undefined,
-          '/vue-jsx-vapor/props',
-        )}()`,
+        `const ${propsName} = ${importHelperFn(s, 'useFullProps', undefined, '/vue-jsx/props')}()`,
       )
       s.overwrite(
         root.params[0].start!,
@@ -54,7 +49,7 @@ export function transformDefineComponent(
         const propName = resolveObjectKey(prop.key, prop.computed)
         if (propName === undefined) {
           throw new SyntaxError(
-            `[vue-jsx-vapor] Destructured props cannot use a computed key: [${s.slice(prop.key.start!, prop.key.end!)}]`,
+            `[@vue-jsx/macros] Destructured props cannot use a computed key: [${s.slice(prop.key.start!, prop.key.end!)}]`,
           )
         }
         if (prop.value.type !== 'AssignmentPattern') {

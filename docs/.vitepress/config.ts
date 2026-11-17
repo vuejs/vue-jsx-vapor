@@ -1,13 +1,45 @@
-import { transformerTwoslash } from '@shikijs/vitepress-twoslash'
-import { createTwoslasher } from '@ts-macro/twoslash'
 import { defineConfig } from 'vitepress'
-import vueJsxVapor from '../../packages/vue-jsx-vapor/src/volar'
+import { createTwoslasher, transformerTwoslash } from '../../packages/macros/twoslash'
+import vueJsx from '../../packages/vue-jsx/src/volar'
+
+// Temporary workaround: @emnapi 2.0.0-alpha.6 (released 2026-10-05) breaks
+// napi-rs wasm modules ("Check exception status failed" panic), crashing the
+// oxc-based vue-jsx compiler loaded from esm.sh by the playground. This
+// override pins its dependencies back to the last working versions. Remove
+// once upstream fixes the regression (then also drop the deps pin).
+const emnapiImportMap = {
+  imports: {
+    'https://esm.sh/@vue-jsx/compiler-wasm32-wasi?target=es2022':
+      'https://esm.sh/@vue-jsx/compiler-wasm32-wasi?deps=@napi-rs/wasm-runtime@1.2.5,@emnapi/core@2.0.0-alpha.4,@emnapi/runtime@2.0.0-alpha.4&target=es2022',
+  },
+}
+
+// The import map must be registered before the first module script, so it is
+// injected right after <head> rather than listed in `head`.
+const emnapiImportMapTag = `<script type="importmap">${JSON.stringify(emnapiImportMap)}</script>`
+
+const emnapiImportMapPlugin = {
+  name: 'vue-jsx:emnapi-import-map',
+  transformIndexHtml: {
+    order: 'pre' as const,
+    handler: () => [
+      {
+        tag: 'script',
+        attrs: { type: 'importmap' },
+        children: JSON.stringify(emnapiImportMap),
+        injectTo: 'head-prepend' as const,
+      },
+    ],
+  },
+}
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'Vue JSX Vapor',
-  description: 'Vue JSX Vapor',
+  title: 'Vue JSX',
+  description: 'High-performance Vue JSX compiler powered by Oxc',
   head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }]],
+  vite: { plugins: [emnapiImportMapPlugin] },
+  transformHtml: (html) => html.replace('<head>', `<head>${emnapiImportMapTag}`),
   locales: {
     root: {
       label: 'English',
@@ -20,18 +52,38 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: '首页', link: '/zh/' },
-          { text: '特性', link: '/zh/features/directives' },
+          { text: '特性', link: '/zh/features/components' },
           {
             text: '教程',
             link: '/zh/tutorial/step-1',
             activeMatch: 'tutorial',
           },
+          { text: '博客', link: '/zh/blog/', activeMatch: '/zh/blog/' },
           {
             text: 'Playground',
-            link: 'https://repl.zmjs.dev/vuejs/vue-jsx-vapor',
+            link: 'https://repl.vuejsx.dev/',
           },
         ],
         sidebar: {
+          '/zh/blog/': [
+            {
+              text: 'Vue JSX 3.3',
+              items: [
+                {
+                  text: 'Virtual DOM 篇',
+                  link: '/zh/blog/vdom',
+                },
+                {
+                  text: 'Vapor 模式篇',
+                  link: '/zh/blog/vapor',
+                },
+                {
+                  text: '类型推断篇',
+                  link: '/zh/blog/type-inference',
+                },
+              ],
+            },
+          ],
           '/zh/': [
             {
               text: '介绍',
@@ -41,7 +93,11 @@ export default defineConfig({
                   link: `/zh/introduction/getting-started`,
                 },
                 {
-                  text: '互操作性',
+                  text: '选项',
+                  link: `/zh/introduction/options`,
+                },
+                {
+                  text: 'Vapor 模式',
                   link: `/zh/introduction/interop`,
                 },
                 {
@@ -55,8 +111,29 @@ export default defineConfig({
               ],
             },
             {
+              text: 'TypeScript',
+              items: [
+                {
+                  text: '配置',
+                  link: `/zh/typescript/configuration`,
+                },
+                {
+                  text: '组件类型',
+                  link: `/zh/typescript/component-types`,
+                },
+                {
+                  text: 'Volar 插件',
+                  link: `/zh/typescript/volar`,
+                },
+              ],
+            },
+            {
               text: '特性',
               items: [
+                {
+                  text: '组件',
+                  link: '/zh/features/components',
+                },
                 {
                   text: '指令',
                   link: '/zh/features/directives',
@@ -66,8 +143,8 @@ export default defineConfig({
                   link: '/zh/features/macros',
                 },
                 {
-                  text: 'useRef',
-                  link: '/zh/features/use-ref',
+                  text: 'Custom Element',
+                  link: '/zh/features/custom-elements',
                 },
               ],
             },
@@ -95,9 +172,10 @@ export default defineConfig({
                 { text: '12. 双向绑定', link: '/zh/tutorial/step-12/' },
                 { text: '13. 动态组件', link: '/zh/tutorial/step-13/' },
                 { text: '14. HyperScript', link: '/zh/tutorial/step-14/' },
+                { text: '15. Custom Element', link: '/zh/tutorial/step-15/' },
               ],
             },
-            { text: '恭喜完成!', link: '/zh/tutorial/step-done/' },
+            { text: '恭喜完成!', link: '/zh/tutorial/done/' },
           ],
         },
       },
@@ -110,14 +188,34 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       {
         text: 'Features',
-        link: '/features/directives',
+        link: '/features/components',
         activeMatch: 'features',
       },
       { text: 'Tutorial', link: '/tutorial/step-1', activeMatch: 'tutorial' },
-      { text: 'Playground', link: 'https://repl.zmjs.dev/vuejs/vue-jsx-vapor' },
+      { text: 'Blog', link: '/blog/', activeMatch: '/blog/' },
+      { text: 'Playground', link: 'https://repl.vuejsx.dev/' },
     ],
 
     sidebar: {
+      '/blog/': [
+        {
+          text: 'Vue JSX 3.3',
+          items: [
+            {
+              text: 'Virtual DOM',
+              link: '/blog/vdom',
+            },
+            {
+              text: 'Vapor Mode',
+              link: '/blog/vapor',
+            },
+            {
+              text: 'Type Inference',
+              link: '/blog/type-inference',
+            },
+          ],
+        },
+      ],
       '/': [
         {
           text: 'Introduction',
@@ -127,7 +225,11 @@ export default defineConfig({
               link: '/introduction/getting-started',
             },
             {
-              text: 'Interop',
+              text: 'Options',
+              link: '/introduction/options',
+            },
+            {
+              text: 'Vapor Mode',
               link: '/introduction/interop',
             },
             {
@@ -141,8 +243,29 @@ export default defineConfig({
           ],
         },
         {
+          text: 'TypeScript',
+          items: [
+            {
+              text: 'Configuration',
+              link: '/typescript/configuration',
+            },
+            {
+              text: 'Component Types',
+              link: '/typescript/component-types',
+            },
+            {
+              text: 'Volar Plugin',
+              link: '/typescript/volar',
+            },
+          ],
+        },
+        {
           text: 'Features',
           items: [
+            {
+              text: 'Components',
+              link: '/features/components',
+            },
             {
               text: 'Directives',
               link: '/features/directives',
@@ -152,8 +275,8 @@ export default defineConfig({
               link: '/features/macros',
             },
             {
-              text: 'useRef',
-              link: '/features/use-ref',
+              text: 'Custom Elements',
+              link: '/features/custom-elements',
             },
           ],
         },
@@ -181,6 +304,7 @@ export default defineConfig({
             { text: '12. Two-way Binding', link: '/tutorial/step-12/' },
             { text: '13. Dynamic Component', link: '/tutorial/step-13/' },
             { text: '14. HyperScript', link: '/tutorial/step-14/' },
+            { text: '15. Custom Elements', link: '/tutorial/step-15/' },
           ],
         },
         { text: 'You Did it!', link: '/tutorial/step-done/' },
@@ -199,12 +323,11 @@ export default defineConfig({
         twoslasher: createTwoslasher({
           compilerOptions: {
             jsx: 1,
-            jsxImportSource: 'vue-jsx-vapor',
+            jsxImportSource: 'vue-jsx',
             baseUrl: undefined,
-            customConditions: ['jsx-vapor-dev'],
           },
           tsmCompilerOptions: {
-            plugins: [vueJsxVapor({ macros: true })],
+            plugins: [vueJsx({ macros: true })],
           },
         }),
       }) as any,

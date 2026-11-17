@@ -5,12 +5,12 @@ next: false
 ---
 
 # Event Bindings
-  
+
 <script setup>
 import appCode from './app.tsx?raw'
 import appSolvedCode from './app-solved.tsx?raw'
-import appInteropCode from './app-interop.tsx?raw'
-import appInteropSolvedCode from './app-interop-solved.tsx?raw'
+import appVaporCode from './app-vapor.tsx?raw'
+import appVaporSolvedCode from './app-vapor-solved.tsx?raw'
 import { getDefaultFiles } from '../template'
 import { ref } from 'vue'
 
@@ -18,8 +18,8 @@ const files = ref(getDefaultFiles())
 const apps  = {
   app: { 'src/App.tsx': appCode },
   solved: { 'src/App.tsx': appSolvedCode },
-  interop: { 'src/App.tsx': appInteropCode },
-  interopSolved: { 'src/App.tsx': appInteropSolvedCode }
+  vapor: { 'src/App.tsx': appVaporCode },
+  vaporSolved: { 'src/App.tsx': appVaporSolvedCode }
 }
 </script>
 
@@ -36,6 +36,7 @@ In JSX, event handlers are usually written as `on` followed by a capitalized let
 ```
 
 We also support [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#event-modifiers) that start with `_`:
+
 ```tsx
 <form onSubmit_prevent>
   <input onKeyup_enter={submit} />

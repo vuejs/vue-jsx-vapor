@@ -4,7 +4,7 @@
 // Exercised by `pnpm typecheck` (tsmc --noEmit); `@ts-expect-error` lines
 // must keep erroring.
 
-import { h } from '../src/h'
+import { vaporH as h } from '../src/h'
 
 // ---------------------------------------------------------------------------
 // JSX-side type assertions

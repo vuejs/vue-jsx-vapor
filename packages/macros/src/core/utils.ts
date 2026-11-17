@@ -7,16 +7,9 @@ import type {
 } from '@babel/types'
 import type MagicString from 'magic-string'
 
-export type FunctionalNode =
-  | FunctionDeclaration
-  | FunctionExpression
-  | ArrowFunctionExpression
+export type FunctionalNode = FunctionDeclaration | FunctionExpression | ArrowFunctionExpression
 
-export function prependFunctionalNode(
-  node: FunctionalNode,
-  s: MagicString,
-  result: string,
-): void {
+export function prependFunctionalNode(node: FunctionalNode, s: MagicString, result: string): void {
   const isBlockStatement = node.body.type === 'BlockStatement'
   const start = node.body.extra?.parenthesized
     ? (node.body.extra.parenStart as number)
@@ -43,10 +36,7 @@ export function isFunctionalNode(node?: Node | null): node is FunctionalNode {
 export function getParamsStart(node: FunctionalNode, code: string): number {
   return node.params[0]
     ? node.params[0].start!
-    : node.start! +
-        (code.slice(node.start!, node.body.start!).match(/\(\s*\)/)?.index ||
-          0) +
-        1
+    : node.start! + (code.slice(node.start!, node.body.start!).match(/\(\s*\)/)?.index || 0) + 1
 }
 
 /**
@@ -54,10 +44,7 @@ export function getParamsStart(node: FunctionalNode, code: string): number {
  * `@vue/compiler-sfc`: `foo`, `'foo'`, `['foo']` and `0` have one, `[foo]`
  * has none.
  */
-export function resolveObjectKey(
-  node: Node,
-  computed: boolean,
-): string | undefined {
+export function resolveObjectKey(node: Node, computed: boolean): string | undefined {
   switch (node.type) {
     case 'StringLiteral':
     case 'NumericLiteral':

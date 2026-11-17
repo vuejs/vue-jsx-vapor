@@ -1,21 +1,17 @@
-import { defineComponent, defineCustomElement, ref, useAttrs } from 'vue'
+import { defineComponent, defineCustomElement } from 'vue'
 
-const Comp = defineCustomElement(() => {
-  return () => (
-    <div>
-      <slot name="name">default</slot>
-    </div>
-  )
-})
+const Comp = defineCustomElement(() => () => <slot name="name">default</slot>)
 
 export default defineComponent(() => {
   !customElements.get('ce-comp') && customElements.define('ce-comp', Comp)
   return () => (
     <>
-      <ce-comp></ce-comp>
-      <ce-comp v-for={i in [1, 2]}>
-        <div slot="name">bar</div>
-      </ce-comp>
+      <ce-comp />
+      {[1, 2].map((id) => (
+        <ce-comp key={id}>
+          <div slot="name">bar {id}</div>
+        </ce-comp>
+      ))}
     </>
   )
 })

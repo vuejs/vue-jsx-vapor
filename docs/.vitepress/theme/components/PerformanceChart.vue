@@ -113,19 +113,9 @@ onMounted(async () => {
 <template>
   <div style="height: 300px; max-width: 900px; margin: 0 auto; padding: 0 20px">
     <canvas ref="canvasRef" />
-    <p
-      style="
-        text-align: center;
-        font-size: 0.9em;
-        opacity: 0.6;
-        margin-top: 10px;
-      "
-    >
+    <p style="text-align: center; font-size: 0.9em; opacity: 0.6; margin-top: 10px">
       * Benchmarks run on M1 Pro, Node.js v23 (
-      <a
-        href="https://github.com/vuejs/vue-jsx-vapor/blob/main/benchmark/bench.js"
-        target="_blank"
-      >
+      <a href="https://github.com/vuejs/vue-jsx-vapor/blob/main/benchmark/bench.js" target="_blank">
         Benchmark code
       </a>
       ) <br />
