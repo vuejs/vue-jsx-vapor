@@ -1,6 +1,6 @@
 {
   "name": "@vue-jsx/runtime",
-  "version": "3.3.0-rc.6",
+  "version": "3.3.0-rc.7",
   "description": "Vue JSX Runtime",
   "keywords": [
     "jsx",
