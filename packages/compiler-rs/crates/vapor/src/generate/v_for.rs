@@ -31,6 +31,7 @@ pub fn gen_for<'a>(
 ) {
   let ast = &context.ast;
   let ForIRNode {
+    mapped,
     source,
     mut value,
     mut key,
@@ -350,7 +351,14 @@ pub fn gen_for<'a>(
           Some(
             ast.expression_call(
               SPAN,
-              ast.expression_identifier(SPAN, ast.str(context.options.helper("_createFor"))),
+              ast.expression_identifier(
+                SPAN,
+                ast.str(context.options.helper(if mapped {
+                  "_createMappedFor"
+                } else {
+                  "_createFor"
+                })),
+              ),
               NONE,
               ast.vec_from_iter(
                 [
